@@ -72,6 +72,18 @@ var ANIM = [
   '@keyframes milestoneOut{from{opacity:1}to{opacity:0;transform:translate(-50%,-50%) translateY(-18px)}}',
 ].join('\n');
 
+// ─── Room ambiance themes ─────────────────────────────────────────────────────
+var ROOM_THEMES = {
+  default: { label: 'Default',  emoji: '◉', bg: null },
+  cosmic:  { label: 'Cosmic',   emoji: '🌌', bg: 'radial-gradient(ellipse at 20% 30%, #1a0a3a 0%, #0e0c09 70%)' },
+  forest:  { label: 'Forest',   emoji: '🌿', bg: 'radial-gradient(ellipse at 50% 0%, #0a1f0a 0%, #0e0c09 70%)' },
+  sunset:  { label: 'Sunset',   emoji: '🌅', bg: 'radial-gradient(ellipse at 50% 0%, #2a0e00 0%, #0e0c09 65%)' },
+  ocean:   { label: 'Ocean',    emoji: '🌊', bg: 'radial-gradient(ellipse at 50% 0%, #001a2a 0%, #0e0c09 65%)' },
+  neon:    { label: 'Neon',     emoji: '💡', bg: 'radial-gradient(ellipse at 50% 10%, #001a10 0%, #0e0c09 70%)' },
+  rose:    { label: 'Rose',     emoji: '🌹', bg: 'radial-gradient(ellipse at 50% 0%, #2a0010 0%, #0e0c09 70%)' },
+  gold:    { label: 'Gold',     emoji: '✨', bg: 'radial-gradient(ellipse at 50% 0%, #1a1000 0%, #0e0c09 70%)' },
+};
+
 // ─── AI visual filter CSS presets ────────────────────────────────────────────
 var AI_FILTERS = {
   vivid:   'saturate(1.8) contrast(1.1)',
@@ -155,7 +167,7 @@ function RolePill({ role }) {
   );
 }
 
-function AudienceCircle({ g, speaking, handRaised, onInvite }) {
+function AudienceCircle({ g, speaking, handRaised, onInvite, engScore }) {
   var name = g.username || g.guestId || '?';
   var init = name.charAt(0).toUpperCase();
   return (
@@ -188,6 +200,9 @@ function AudienceCircle({ g, speaking, handRaised, onInvite }) {
             background: RED, display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 7, border: '1.5px solid ' + BG,
           }}>🔇</div>
+        )}
+        {engScore > 0 && (
+          <div style={{ position: 'absolute', top: -4, left: -4, background: 'rgba(212,133,74,.9)', borderRadius: 999, padding: '1px 5px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: BG, border: '1px solid ' + BG, fontWeight: 700 }}>{engScore}</div>
         )}
       </div>
       <span style={{
@@ -530,6 +545,16 @@ export default function LiveRoomPage({
   var [watchUrl,          setWatchUrl]           = useState('');
   var [streamMilestone,   setStreamMilestone]    = useState(null);     // { count, label } for celebration
   var [soundAlertPanel,   setSoundAlertPanel]    = useState(false);    // host sound-alert picker
+  // ── Batch 22: Room Theme, Shop Carousel, Q&A Answers, Engagement Scores ──
+  var [roomTheme,         setRoomTheme]          = useState('default'); // stage ambiance preset
+  var [showThemePicker,   setShowThemePicker]    = useState(false);
+  var [shopCarousel,      setShopCarousel]       = useState([]);        // [{id,name,price,image,url}]
+  var [showCarouselEdit,  setShowCarouselEdit]   = useState(false);
+  var [carouselDraft,     setCarouselDraft]      = useState({ name: '', price: '', image: '', url: '' });
+  var [qaAnswers,         setQaAnswers]          = useState({});        // { [qaId]: { answer, by, ts } }
+  var [qaAnswerTarget,    setQaAnswerTarget]     = useState(null);      // qaId being answered
+  var [qaAnswerDraft,     setQaAnswerDraft]      = useState('');
+  var [engagementScores,  setEngagementScores]   = useState({});        // userId → score
   var [showTopFans,        setShowTopFans]        = useState(false);    // public top-fans leaderboard panel
   var [shoutoutQueue,      setShoutoutQueue]      = useState([]);       // [{ username, reason, ts }]
   var [activeShoutout,     setActiveShoutout]     = useState(null);     // currently displayed shoutout
@@ -953,6 +978,30 @@ export default function LiveRoomPage({
       if (addToast) addToast('🎉 ' + data.label + ' reached!', 'success');
     });
 
+    // ── Batch 22 socket events ─────────────────────────────────────────────
+    socket.on('qa-answered', function(data) {
+      if (!data || !data.id) return;
+      setQaAnswers(function(prev) {
+        var next = Object.assign({}, prev);
+        next[data.id] = { answer: data.answer, by: data.by, ts: data.ts };
+        return next;
+      });
+    });
+    socket.on('room-theme', function(data) {
+      if (!data || !data.theme) return;
+      setRoomTheme(data.theme);
+    });
+    socket.on('shop-carousel', function(data) {
+      if (!data || !Array.isArray(data.items)) return;
+      setShopCarousel(data.items);
+    });
+    socket.on('top-fans', function(data) {
+      if (!data || !Array.isArray(data.fans)) return;
+      var scores = {};
+      data.fans.forEach(function(f) { if (f.userId) scores[f.userId] = f.score; });
+      setEngagementScores(scores);
+    });
+
     socket.on('sound-alert', function(data) {
       if (!data) return;
       // Play a synthesized beep/tone using Web Audio API
@@ -1236,6 +1285,10 @@ export default function LiveRoomPage({
       socket.off('watch-together-end');
       socket.off('stream-milestone');
       socket.off('sound-alert');
+      socket.off('qa-answered');
+      socket.off('room-theme');
+      socket.off('shop-carousel');
+      socket.off('top-fans');
     };
   }, [socket]);
 
@@ -1940,7 +1993,7 @@ export default function LiveRoomPage({
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
 
         {/* ── Stage Section ── */}
-        <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden', background: (ROOM_THEMES[roomTheme] && ROOM_THEMES[roomTheme].bg) || undefined, transition: 'background .5s ease' }}>
 
           {/* Stage header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -2400,6 +2453,7 @@ export default function LiveRoomPage({
                   return (
                     <AudienceCircle key={gid} g={g} speaking={!!speakingIds[gid]}
                       handRaised={isHand}
+                      engScore={engagementScores[(g.userId || gid)] || 0}
                       onInvite={role === 'host' && onStage.length < MAX_STAGE ? function() { if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); } : undefined}
                     />
                   );
@@ -2413,6 +2467,7 @@ export default function LiveRoomPage({
                   return (
                     <AudienceCircle key={gid} g={g} speaking={!!speakingIds[gid]}
                       handRaised={isHand}
+                      engScore={engagementScores[(g.userId || gid)] || 0}
                       onInvite={role === 'host' && onStage.length < MAX_STAGE ? function() { if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); } : undefined}
                     />
                   );
@@ -2483,6 +2538,8 @@ export default function LiveRoomPage({
                 else { setShowWatchInput(true); }
               }},
               { emoji: '🔔', label: 'Sound', active: soundAlertPanel, onTap: function() { setSoundAlertPanel(function(s) { return !s; }); } },
+              { emoji: '🎭', label: 'Theme', active: roomTheme !== 'default', onTap: function() { setShowThemePicker(function(s) { return !s; }); } },
+              { emoji: '🛒', label: 'Carousel', active: shopCarousel.length > 0, onTap: function() { setShowCarouselEdit(function(s) { return !s; }); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -3590,31 +3647,60 @@ export default function LiveRoomPage({
               <div style={{ textAlign: 'center', padding: '28px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>No questions yet — be the first!</div>
             )}
             {qaQueue.map(function(item) {
-              var isPinned = pinnedQa && pinnedQa.id === item.id;
+              var isPinned   = pinnedQa && pinnedQa.id === item.id;
+              var qAnswer    = qaAnswers[item.id];
+              var isAnswering = qaAnswerTarget === item.id;
               return (
-                <div key={item.id} style={{ marginBottom: 10, background: isPinned ? 'rgba(201,168,76,.1)' : CARD, border: isPinned ? '1px solid rgba(201,168,76,.35)' : '1px solid transparent', borderRadius: 10, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'flex-start', animation: 'qaIn .2s ease' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: GOLD, marginBottom: 3 }}>{item.username}</div>
-                    <div style={{ fontSize: 13, color: TEXT, lineHeight: 1.4 }}>{item.text}</div>
+                <div key={item.id} style={{ marginBottom: 10, background: isPinned ? 'rgba(201,168,76,.1)' : CARD, border: isPinned ? '1px solid rgba(201,168,76,.35)' : '1px solid transparent', borderRadius: 10, padding: '10px 12px', animation: 'qaIn .2s ease' }}>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: GOLD, marginBottom: 3 }}>{item.username}</div>
+                      <div style={{ fontSize: 13, color: TEXT, lineHeight: 1.4 }}>{item.text}</div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                      <button onClick={function() {
+                        if (qaMyVotes[item.id]) return;
+                        if (socket) socket.emit('qa-upvote', { roomId: roomId, id: item.id });
+                        setQaMyVotes(function(v) { return Object.assign({}, v, { [item.id]: true }); });
+                        setQaQueue(function(q) { return q.map(function(x) { return x.id === item.id ? { id: x.id, username: x.username, text: x.text, upvotes: x.upvotes + 1 } : x; }).sort(function(a, b) { return b.upvotes - a.upvotes; }); });
+                      }} style={{ background: qaMyVotes[item.id] ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (qaMyVotes[item.id] ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '4px 8px', color: qaMyVotes[item.id] ? GOLD : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                        ▲ {item.upvotes}
+                      </button>
+                      {role === 'host' && (
+                        <button onClick={function() { setPinnedQa(isPinned ? null : item); }}
+                          style={{ background: 'none', border: 'none', color: isPinned ? GOLD : MUTED, fontSize: 10, cursor: 'pointer', padding: '2px 4px' }} title="Pin question">📌</button>
+                      )}
+                      {role === 'host' && (
+                        <button onClick={function() { setQaAnswerTarget(isAnswering ? null : item.id); setQaAnswerDraft(''); }}
+                          style={{ background: isAnswering ? 'rgba(201,168,76,.2)' : 'none', border: isAnswering ? '1px solid rgba(201,168,76,.4)' : 'none', color: isAnswering ? GOLD : TEAL, fontSize: 10, cursor: 'pointer', borderRadius: 4, padding: '2px 4px' }} title="Answer">💬</button>
+                      )}
+                      {role === 'host' && (
+                        <button onClick={function() { if (socket) socket.emit('qa-dismiss', { roomId: roomId, id: item.id }); setQaQueue(function(q) { return q.filter(function(x) { return x.id !== item.id; }); }); if (isPinned) setPinnedQa(null); }}
+                          style={{ background: 'none', border: 'none', color: MUTED, fontSize: 10, cursor: 'pointer', padding: '2px 4px' }}>✕</button>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-                    <button onClick={function() {
-                      if (qaMyVotes[item.id]) return;
-                      if (socket) socket.emit('qa-upvote', { roomId: roomId, id: item.id });
-                      setQaMyVotes(function(v) { return Object.assign({}, v, { [item.id]: true }); });
-                      setQaQueue(function(q) { return q.map(function(x) { return x.id === item.id ? { id: x.id, username: x.username, text: x.text, upvotes: x.upvotes + 1 } : x; }).sort(function(a, b) { return b.upvotes - a.upvotes; }); });
-                    }} style={{ background: qaMyVotes[item.id] ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (qaMyVotes[item.id] ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '4px 8px', color: qaMyVotes[item.id] ? GOLD : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
-                      ▲ {item.upvotes}
-                    </button>
-                    {role === 'host' && (
-                      <button onClick={function() { setPinnedQa(isPinned ? null : item); }}
-                        style={{ background: 'none', border: 'none', color: isPinned ? GOLD : MUTED, fontSize: 10, cursor: 'pointer', padding: '2px 4px' }} title="Pin question">📌</button>
-                    )}
-                    {role === 'host' && (
-                      <button onClick={function() { if (socket) socket.emit('qa-dismiss', { roomId: roomId, id: item.id }); setQaQueue(function(q) { return q.filter(function(x) { return x.id !== item.id; }); }); if (isPinned) setPinnedQa(null); }}
-                        style={{ background: 'none', border: 'none', color: MUTED, fontSize: 10, cursor: 'pointer', padding: '2px 4px' }}>✕</button>
-                    )}
-                  </div>
+                  {/* Host answer input */}
+                  {isAnswering && (
+                    <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
+                      <input value={qaAnswerDraft} onChange={function(e) { setQaAnswerDraft(e.target.value.slice(0, 300)); }}
+                        placeholder="Type your answer…"
+                        style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 8, padding: '7px 11px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }} />
+                      <button onClick={function() {
+                        var ans = qaAnswerDraft.trim();
+                        if (!ans) return;
+                        if (socket) socket.emit('qa-answer', { roomId: roomId, id: item.id, answer: ans });
+                        setQaAnswerTarget(null); setQaAnswerDraft('');
+                      }} style={{ background: GOLD, border: 'none', borderRadius: 8, padding: '7px 12px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: BG, cursor: 'pointer', letterSpacing: 1 }}>POST</button>
+                    </div>
+                  )}
+                  {/* Pinned answer display */}
+                  {qAnswer && (
+                    <div style={{ marginTop: 8, background: 'rgba(212,133,74,.1)', border: '1px solid rgba(212,133,74,.3)', borderRadius: 8, padding: '7px 10px' }}>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, marginBottom: 3 }}>💬 {qAnswer.by}</div>
+                      <div style={{ fontSize: 12, color: TEXT, lineHeight: 1.4 }}>{qAnswer.answer}</div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -5279,6 +5365,138 @@ export default function LiveRoomPage({
                 <button onClick={function() { setShowPkLeaderboard(false); }} style={{ flex: 2, background: GOLD, border: 'none', borderRadius: 10, padding: '10px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
                   CLOSE
                 </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ SHOP CAROUSEL ════════════════ */}
+      {shopCarousel.length > 0 && (
+        <div style={{ position: 'absolute', bottom: watchTogether ? 230 : 80, left: 0, right: 0, zIndex: 52, background: CARD, borderTop: '1px solid ' + BORDER, padding: '10px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: GOLD, letterSpacing: 1 }}>🛒 SHOP</span>
+            {(role === 'host' || role === 'cohost') && (
+              <button onClick={function() { if (socket) socket.emit('shop-carousel-set', { roomId: roomId, items: [] }); setShopCarousel([]); }}
+                style={{ marginLeft: 'auto', background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", fontSize: 8, letterSpacing: .5 }}>CLOSE ✕</button>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 10, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', paddingBottom: 4 }}>
+            {shopCarousel.map(function(item) {
+              return (
+                <div key={item.id} style={{ flexShrink: 0, width: 120, background: CARD2, borderRadius: 12, overflow: 'hidden', border: '1px solid ' + BORDER }}>
+                  {item.image ? (
+                    <img src={item.image} alt={item.name} style={{ width: '100%', height: 80, objectFit: 'cover', display: 'block' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: 80, background: 'linear-gradient(135deg,' + BURG + '44,' + CARD + ')', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🛒</div>
+                  )}
+                  <div style={{ padding: '6px 8px 8px' }}>
+                    <div style={{ fontWeight: 700, fontSize: 11, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }}>{item.name}</div>
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD }}>${((item.price || 0) / 100).toFixed(2)}</div>
+                    <button onClick={function() {
+                      if (socket) socket.emit('shop-add-to-cart', { roomId: roomId, itemId: item.id });
+                      if (addToast) addToast('🛒 Added to cart!', 'success');
+                    }} style={{ width: '100%', marginTop: 4, background: GOLD, border: 'none', borderRadius: 8, padding: '5px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                      BUY
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ ROOM THEME PICKER ════════════════ */}
+      {showThemePicker && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 76, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={function() { setShowThemePicker(false); }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 18, padding: '22px 24px', width: 320, boxShadow: '0 12px 48px rgba(0,0,0,.75)', animation: 'statsFadeIn .2s ease' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1.5 }}>🎭 ROOM AMBIANCE</div>
+              <button onClick={function() { setShowThemePicker(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+              {Object.keys(ROOM_THEMES).map(function(key) {
+                var t = ROOM_THEMES[key];
+                var isActive = roomTheme === key;
+                return (
+                  <button key={key} onClick={function() {
+                    setRoomTheme(key);
+                    if (socket) socket.emit('room-theme', { roomId: roomId, theme: key });
+                    setShowThemePicker(false);
+                    if (addToast) addToast('🎭 Theme: ' + t.label, 'success');
+                  }} style={{ background: t.bg ? t.bg.replace('ellipse at 20% 30%', 'ellipse at 50% 50%').replace('ellipse at 50% 0%', 'ellipse at 50% 50%') : CARD2, border: '2px solid ' + (isActive ? GOLD : BORDER), borderRadius: 10, padding: '12px 6px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, transition: 'border-color .15s' }}>
+                    <span style={{ fontSize: 18 }}>{t.emoji}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: isActive ? GOLD : MUTED, letterSpacing: .5 }}>{t.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ SHOP CAROUSEL EDITOR ════════════════ */}
+      {showCarouselEdit && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 77, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={function() { setShowCarouselEdit(false); }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 18, padding: '22px 24px', width: 340, maxHeight: 560, overflowY: 'auto', boxShadow: '0 12px 48px rgba(0,0,0,.75)', animation: 'statsFadeIn .2s ease' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1.5 }}>🛒 SHOP CAROUSEL</div>
+              <button onClick={function() { setShowCarouselEdit(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              {[
+                { key: 'name',  placeholder: 'Product name', label: 'Name' },
+                { key: 'price', placeholder: 'Price in USD (e.g. 19.99)', label: 'Price' },
+                { key: 'image', placeholder: 'Image URL (optional)', label: 'Image URL' },
+                { key: 'url',   placeholder: 'Buy link (optional)', label: 'Buy URL' },
+              ].map(function(field) {
+                return (
+                  <div key={field.key} style={{ marginBottom: 8 }}>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 4, letterSpacing: .5 }}>{field.label}</div>
+                    <input value={carouselDraft[field.key]} onChange={function(e) { setCarouselDraft(function(d) { var n = Object.assign({}, d); n[field.key] = e.target.value; return n; }); }}
+                      placeholder={field.placeholder}
+                      style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }} />
+                  </div>
+                );
+              })}
+              <button onClick={function() {
+                var name = carouselDraft.name.trim();
+                if (!name) { if (addToast) addToast('Product name is required', 'error'); return; }
+                var priceVal = Math.round(parseFloat(carouselDraft.price || '0') * 100) || 0;
+                var newItem = { id: 'ci_' + Date.now(), name: name, price: priceVal, image: carouselDraft.image.trim(), url: carouselDraft.url.trim() };
+                var updated = shopCarousel.concat([newItem]);
+                setShopCarousel(updated);
+                if (socket) socket.emit('shop-carousel-set', { roomId: roomId, items: updated });
+                setCarouselDraft({ name: '', price: '', image: '', url: '' });
+                if (addToast) addToast('🛒 Product added to carousel!', 'success');
+              }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 10, padding: '12px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: BG, cursor: 'pointer', letterSpacing: 2, marginTop: 4 }}>
+                + ADD PRODUCT
+              </button>
+            </div>
+            {shopCarousel.length > 0 && (
+              <div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 8, letterSpacing: .5 }}>CURRENT CAROUSEL ({shopCarousel.length} ITEMS)</div>
+                {shopCarousel.map(function(item) {
+                  return (
+                    <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: CARD2, borderRadius: 8, padding: '8px 10px', marginBottom: 6 }}>
+                      <span style={{ fontSize: 16 }}>{item.image ? '🖼' : '📦'}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 12, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD }}>${((item.price || 0) / 100).toFixed(2)}</div>
+                      </div>
+                      <button onClick={function() {
+                        var updated = shopCarousel.filter(function(i) { return i.id !== item.id; });
+                        setShopCarousel(updated);
+                        if (socket) socket.emit('shop-carousel-set', { roomId: roomId, items: updated });
+                      }} style={{ background: 'none', border: 'none', color: RED, cursor: 'pointer', fontSize: 14, padding: 4 }}>✕</button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -3341,6 +3341,47 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('watch-together-end', { ts: Math.floor(Date.now() / 1000) });
   });
 
+  // ── Batch 22: Q&A Answer, Room Theme, Shop Carousel ──────────────────────
+
+  // qa-answer — host attaches a typed answer to a Q&A question
+  socket.on('qa-answer', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var id     = String(data.id || '').slice(0, 40);
+    var answer = String(data.answer || '').slice(0, 300).trim();
+    if (!id || !answer) return;
+    io.to(roomId).emit('qa-answered', { id: id, answer: answer, by: socket.data.username || 'host', ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // room-theme — host sets a visual ambiance theme for the stage
+  socket.on('room-theme', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var VALID_THEMES = ['default', 'cosmic', 'forest', 'sunset', 'ocean', 'neon', 'rose', 'gold'];
+    var theme = String(data.theme || 'default');
+    if (VALID_THEMES.indexOf(theme) < 0) theme = 'default';
+    io.to(roomId).emit('room-theme', { theme: theme, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // shop-carousel-set — host sets an array of shop items as a carousel
+  socket.on('shop-carousel-set', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var items = Array.isArray(data.items) ? data.items.slice(0, 12).map(function(item) {
+      return {
+        id:    String(item.id || '').slice(0, 40),
+        name:  String(item.name || '').slice(0, 80),
+        price: Math.max(0, Math.floor(Number(item.price) || 0)),
+        image: String(item.image || '').slice(0, 300),
+        url:   String(item.url || '').slice(0, 300),
+      };
+    }) : [];
+    io.to(roomId).emit('shop-carousel', { items: items, ts: Math.floor(Date.now() / 1000) });
+  });
+
   // sound-alert — host triggers a named alert sound for the room
   socket.on('sound-alert', function(data) {
     var roomId = data.roomId || socket.data.roomId;
