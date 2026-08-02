@@ -7,6 +7,7 @@ import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
 import ReferralConfig from '../components/admin/ReferralConfig';
+import PayoutSummary from '../components/admin/PayoutSummary';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
@@ -568,6 +569,8 @@ export default function AdminDashboard() {
 
         {/* REVENUE */}
         {activeTab === 'revenue' && (
+          <div className="space-y-6">
+          <PayoutSummary />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <DarkCard title="Monthly Revenue">
               {revenueChartData.length === 0
@@ -594,6 +597,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </DarkCard>
+          </div>
           </div>
         )}
 

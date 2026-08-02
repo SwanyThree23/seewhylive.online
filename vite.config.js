@@ -51,6 +51,7 @@ export default defineConfig({
       'lodash', 'lodash-es',
       'recharts',
     ],
+    force: true,
   },
   plugins: [
     lodashDeepImportFix(),
