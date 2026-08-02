@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 var CUSTOM_DEST_TEMPLATE = { name: '', url: '', key: '' };
 
 var PLATFORMS = [
-  { id: 'seewhy',   name: 'SeeWhy LIVE', color: '#C9A84C', icon: '📡', rtmp: 'rtmp://2.24.194.112:1935/live',                          locked: true  },
+  { id: 'seewhy',   name: 'SeeWhy LIVE', color: '#C9A84C', icon: '📡', rtmp: 'rtmp://seewhylive.online:1935/live',                          locked: true  },
   { id: 'youtube',  name: 'YouTube',     color: '#FF0000', icon: '▶',  rtmp: 'rtmp://a.rtmp.youtube.com/live2',                        locked: false },
   { id: 'twitch',   name: 'Twitch',      color: '#9146FF', icon: '⬡',  rtmp: 'rtmp://live.twitch.tv/app',                              locked: false },
   { id: 'facebook', name: 'Facebook',    color: '#1877F2', icon: 'f',  rtmp: 'rtmp://live-api-s.facebook.com/rtmp',                    locked: false },
@@ -135,7 +135,7 @@ export default function RTMPFanoutTab({ isLive, addToast, socket }) {
   }
 
   function copyRtmpUrl() {
-    navigator.clipboard.writeText('rtmp://2.24.194.112:1935/live');
+    navigator.clipboard.writeText('rtmp://seewhylive.online:1935/live');
     setCopiedRtmp(true);
     addToast('RTMP URL copied to clipboard', 'success');
     setTimeout(function() { setCopiedRtmp(false); }, 1500);

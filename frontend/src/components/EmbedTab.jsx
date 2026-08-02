@@ -51,7 +51,6 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
       var verifyData = await verifyRes.json();
       if (!verifyData || !verifyData.token) throw new Error('Payment verification failed');
 
-      sessionStorage.setItem('sw_ppv_token', verifyData.token);
       onUnlock(verifyData.token);
     } catch (err) {
       setError(err.message);
@@ -182,7 +181,9 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
   var setRetrying = retryingState[1];
   var retryTimerRef = useRef(null);
 
-  var HLS_URL = 'https://srv1581658.hstgr.cloud/hls/' + roomId + '/index.m3u8' + (ppvToken ? '?token=' + ppvToken : '');
+  // Token is passed as a request header (xhrSetup below) — never in the URL
+  // so it is not written to CDN access logs or Referer headers.
+  var HLS_URL = 'https://srv1581658.hstgr.cloud/hls/' + roomId + '/index.m3u8';
 
   useEffect(function() {
     if (!isLive) return;
@@ -191,7 +192,14 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
       setPlayerReady(true);
       return;
     }
-    var hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+    var hlsCfg = { enableWorker: true, lowLatencyMode: true };
+    if (ppvToken) {
+      // Deliver the PPV token via request header rather than a URL param.
+      // Requires the CDN nginx config to accept X-PPV-Token instead of ?token=
+      var _tok = ppvToken;
+      hlsCfg.xhrSetup = function(xhr) { xhr.setRequestHeader('X-PPV-Token', _tok); };
+    }
+    var hls = new Hls(hlsCfg);
     hlsRef.current = hls;
     hls.loadSource(HLS_URL);
     if (videoRef.current) {

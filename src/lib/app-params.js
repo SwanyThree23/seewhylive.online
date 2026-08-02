@@ -13,6 +13,20 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 	const storageKey = `base44_${toSnakeCase(paramName)}`;
 	const urlParams = new URLSearchParams(window.location.search);
 	const searchParam = urlParams.get(paramName);
+
+	// Prefer fragment (#) delivery: hash is never sent to the server, so the
+	// token cannot appear in server access logs or Referer headers.
+	const hashParams = new URLSearchParams(window.location.hash.slice(1));
+	const hashParam = hashParams.get(paramName);
+	if (hashParam) {
+		hashParams.delete(paramName);
+		const cleanHash = hashParams.toString() ? '#' + hashParams.toString() : '';
+		window.history.replaceState({}, document.title,
+			`${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ''}${cleanHash}`);
+		storage.setItem(storageKey, hashParam);
+		return hashParam;
+	}
+
 	if (removeFromUrl) {
 		urlParams.delete(paramName);
 		const newUrl = `${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ""
