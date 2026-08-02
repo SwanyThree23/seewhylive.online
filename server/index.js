@@ -1682,7 +1682,7 @@ io.on('connection', function(socket) {
       io.to(socket.id).emit('muted', { reason: 'Too many messages' });
       return;
     }
-    swanybot.onChatMessage(roomId, _swKey, message, { username: username, room: rooms.get(roomId) });
+    swanybot.onChatMessage(roomId, _swKey, message, { username: username, userId: _swKey, room: rooms.get(roomId) });
 
     // Analytics: increment per-minute message count
     var chatA = getAnalytics(roomId);
