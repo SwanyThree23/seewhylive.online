@@ -26,6 +26,8 @@ var RTMP_BASE_URLS = {
 // roomId → { process, destinations, restartCount, lastRestart, healthTimer }
 var fanouts = new Map();
 
+var SAFE_ROOM_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 var MAX_RESTARTS  = 3;
 var BASE_BACKOFF  = 2000;  // ms
 var HEALTH_INTERVAL = 30000; // ms
@@ -46,6 +48,10 @@ function ensureDir(dir) {
 }
 
 function buildFfmpegArgs(roomId, destinations) {
+  if (!SAFE_ROOM_RE.test(roomId)) {
+    throw new Error('buildFfmpegArgs: invalid roomId');
+  }
+
   var inputUrl = 'rtmp://localhost:1935/live/' + roomId;
   var hlsPath  = HLS_DIR + '/' + roomId + '/index.m3u8';
   var dashPath = DASH_DIR + '/' + roomId + '/manifest.mpd';
@@ -65,7 +71,8 @@ function buildFfmpegArgs(roomId, destinations) {
     if (dest.platform === 'custom' || !baseUrl) {
       baseUrl = dest.rtmpUrl;
     }
-    var fullUrl = baseUrl + '/' + dest.streamKey;
+    var _safeKey = String(dest.streamKey || '').replace(/[^A-Za-z0-9_\-\.]/g, '').slice(0, 200);
+    var fullUrl = baseUrl + '/' + _safeKey;
     args.push('-c', 'copy', '-f', 'flv', fullUrl);
   }
 

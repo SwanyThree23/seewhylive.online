@@ -673,7 +673,14 @@ app.post('/api/ppv/verify', requireAuth, function(req, res) {
     res.status(400).json({ error: 'Missing required fields: paymentIntentId, roomId' });
     return;
   }
-  stripeModule.verifyPPVPayment(body.paymentIntentId, body.roomId, req.user.id)
+  var _piId = String(body.paymentIntentId);
+  if (!/^pi_[A-Za-z0-9]{10,}$/.test(_piId)) {
+    return res.status(400).json({ error: 'invalid paymentIntentId format' });
+  }
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(body.roomId))) {
+    return res.status(400).json({ error: 'invalid roomId' });
+  }
+  stripeModule.verifyPPVPayment(_piId, body.roomId, req.user.id)
     .then(function(result) {
       res.json(result);
     }).catch(function(err) {
@@ -2800,6 +2807,17 @@ io.on('connection', function(socket) {
           var _gdDns = await require('dns').promises.lookup(_gdp.hostname);
           if (_PRIV_GL.test(_gdDns.address)) continue;
         } catch(_) { continue; }
+        // For custom destinations rtmpUrl is used by buildFfmpegArgs — validate it too
+        if (_gd.platform === 'custom' && _gd.rtmpUrl) {
+          var _gdrp;
+          try { _gdrp = new URL(String(_gd.rtmpUrl)); } catch(_) { continue; }
+          if (!/^rtmps?:$/i.test(_gdrp.protocol)) continue;
+          if (!_gdrp.hostname || _PRIV_GL.test(_gdrp.hostname)) continue;
+          try {
+            var _gdrDns = await require('dns').promises.lookup(_gdrp.hostname);
+            if (_PRIV_GL.test(_gdrDns.address)) continue;
+          } catch(_) { continue; }
+        }
         _validDests.push(_gd);
       }
       try {
