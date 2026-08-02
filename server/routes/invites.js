@@ -11,9 +11,11 @@ const requireAuth   = require('../middleware/auth');
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Per-user per-token redemption guard: one successful redemption per user per token per 10 minutes
+// Per-user per-token redemption guard: one successful redemption per user per token.
+// The 24-hour window means a single user cannot exhaust multi-use invite links
+// by cycling before the previous redemption is acknowledged.
 var _redeemLog = new Map(); // key: `${userId}:${token}` → timestamp
-var REDEEM_COOLDOWN_MS = 10 * 60 * 1000;
+var REDEEM_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 // Prune expired entries once per minute so the Map doesn't grow unboundedly
 setInterval(function() {

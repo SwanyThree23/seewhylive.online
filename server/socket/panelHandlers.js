@@ -10,6 +10,21 @@ const panelJoinThrottle    = new Map(); // userId -> last join timestamp
 const panelRequestThrottle = new Map(); // userId -> last request timestamp
 const panelReactThrottle   = new Map(); // userId -> last react timestamp
 const panelHandThrottle    = new Map(); // userId -> last hand-raise timestamp
+const panelLoyaltyThrottle = new Map(); // `userId:roomId` -> last award timestamp
+
+const LOYALTY_AWARD_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour per user per room
+const THROTTLE_STALE_MS = 30000; // 30 s >> any window (max 3 s) — safe to prune
+
+// Prune stale throttle entries every 5 minutes so the Maps don't grow
+// unboundedly on long-running PM2 processes (one entry per unique userId otherwise).
+setInterval(function() {
+  var now = Date.now();
+  panelJoinThrottle.forEach(function(ts, k) { if (now - ts > THROTTLE_STALE_MS) panelJoinThrottle.delete(k); });
+  panelRequestThrottle.forEach(function(ts, k) { if (now - ts > THROTTLE_STALE_MS) panelRequestThrottle.delete(k); });
+  panelReactThrottle.forEach(function(ts, k) { if (now - ts > THROTTLE_STALE_MS) panelReactThrottle.delete(k); });
+  panelHandThrottle.forEach(function(ts, k) { if (now - ts > THROTTLE_STALE_MS) panelHandThrottle.delete(k); });
+  panelLoyaltyThrottle.forEach(function(ts, k) { if (now - ts > LOYALTY_AWARD_COOLDOWN_MS) panelLoyaltyThrottle.delete(k); });
+}, 5 * 60 * 1000).unref();
 
 const PANEL_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -39,7 +54,14 @@ function registerPanelHandlers(io, socket) {
       const { slot, isNew } = await panelService.assignSlot({ roomId, userId });
       socket.join(roomId);
       io.to(roomId).emit('panel:slot_assigned', { roomId, slot });
-      if (isNew) loyaltyService.awardPoints({ userId, points: 25, source: 'panel_join', sourceId: roomId }).catch(() => {});
+      if (isNew) {
+        var _loyKey = userId + ':' + roomId;
+        var _loyNow = Date.now();
+        if (_loyNow - (panelLoyaltyThrottle.get(_loyKey) || 0) >= LOYALTY_AWARD_COOLDOWN_MS) {
+          panelLoyaltyThrottle.set(_loyKey, _loyNow);
+          loyaltyService.awardPoints({ userId, points: 25, source: 'panel_join', sourceId: roomId }).catch(function() {});
+        }
+      }
       ack?.({ ok: true, slot });
     } catch (err) {
       ack?.({ ok: false, error: 'Panel error' });
@@ -161,6 +183,15 @@ function registerPanelHandlers(io, socket) {
         ack?.({ ok: false, error: 'invalid targetUserId' });
         return;
       }
+      // Cohosts may not kick the room's host
+      if (socket.data.role === 'cohost') {
+        const _roomSockets = await io.in(roomId).fetchSockets();
+        const _targetSock = _roomSockets.find(function(s) { return s.data && s.data.userId === targetUserId; });
+        if (_targetSock && _targetSock.data.role === 'host') {
+          ack?.({ ok: false, error: 'forbidden' });
+          return;
+        }
+      }
       await panelService.releaseSlot({ roomId, userId: targetUserId });
       io.to(roomId).emit('panel:slot_released', { roomId, userId: targetUserId });
       const roomSockets = await io.in(roomId).fetchSockets();
@@ -213,7 +244,7 @@ function registerPanelHandlers(io, socket) {
 
   // Throttle entries are intentionally NOT cleared on disconnect — clearing
   // them would allow bypass via rapid reconnect (same userId, new socket.id).
-  // Entries expire naturally once the throttle window passes (1-3 s).
+  // Stale entries are pruned by the module-scope setInterval above.
 }
 
 module.exports = { registerPanelHandlers };
