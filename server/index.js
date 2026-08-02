@@ -421,6 +421,7 @@ var emojiTallyMap       = new Map();  // roomId → Map<emoji, count>
 var tagsMap             = new Map();  // roomId → string[]
 var pinnedLinkMap       = new Map();  // roomId → { url, label, emoji } | null
 var giftChainMap        = new Map();  // roomId → { count, lastTs }
+var watchTogetherMap    = new Map();  // roomId → { url, currentTime, playing, ts } | null
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -523,9 +524,10 @@ function getJoinStateForRoom(roomId) {
     state.spotlight = joinRoom.spotlight;
   }
   if (joinRoom && joinRoom.liveStartedAt) state.liveStartedAt = joinRoom.liveStartedAt;
-  state.roomTags  = tagsMap.get(roomId) || [];
-  state.pinnedLink = pinnedLinkMap.get(roomId) || null;
-  state.slowMode  = slowModeMap.get(roomId) || 0;
+  state.roomTags      = tagsMap.get(roomId) || [];
+  state.pinnedLink    = pinnedLinkMap.get(roomId) || null;
+  state.slowMode      = slowModeMap.get(roomId) || 0;
+  state.watchTogether = watchTogetherMap.get(roomId) || null;
   return state;
 }
 
@@ -3303,6 +3305,53 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('layout-sync', { layout: layout, by: socket.data.username || 'host', ts: Math.floor(Date.now() / 1000) });
   });
 
+  // ── Batch 21: Watch Together, Sound Alert, stream-milestone broadcast ─────
+
+  // watch-together-start — host shares a video URL for synchronized co-watching
+  socket.on('watch-together-start', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var url  = String(data.url || '').slice(0, 500);
+    var ts   = Math.floor(Date.now() / 1000);
+    if (!url) return;
+    var session = { url: url, currentTime: 0, playing: true, ts: ts, by: socket.data.username || 'host' };
+    watchTogetherMap.set(roomId, session);
+    io.to(roomId).emit('watch-together', session);
+  });
+
+  // watch-together-sync — host sends current playback time for late joiners
+  socket.on('watch-together-sync', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var currentTime = Math.max(0, Number(data.currentTime) || 0);
+    var playing     = data.playing !== false;
+    var session = watchTogetherMap.get(roomId);
+    if (session) { session.currentTime = currentTime; session.playing = playing; }
+    io.to(roomId).emit('watch-together-sync', { currentTime: currentTime, playing: playing, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // watch-together-end — host ends the co-watch session
+  socket.on('watch-together-end', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    watchTogetherMap.delete(roomId);
+    io.to(roomId).emit('watch-together-end', { ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // sound-alert — host triggers a named alert sound for the room
+  socket.on('sound-alert', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var VALID_ALERTS = ['goal', 'hype', 'sub', 'win', 'alarm', 'fanfare', 'applause'];
+    var alertType = String(data.type || 'hype').slice(0, 20);
+    if (VALID_ALERTS.indexOf(alertType) < 0) return;
+    io.to(roomId).emit('sound-alert', { type: alertType, ts: Math.floor(Date.now() / 1000), by: socket.data.username || 'host' });
+  });
+
   // ── set-guest-role — host promotes/demotes a guest to/from co-host ──────
   socket.on('set-guest-role', function(data) {
     var roomId  = data.roomId || socket.data.roomId;
@@ -3764,6 +3813,7 @@ io.on('connection', function(socket) {
 
     // Clean up room state
     rooms.delete(roomId);
+    watchTogetherMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -4081,6 +4131,8 @@ io.on('connection', function(socket) {
         if (viewerCount >= m && !seen.has(m)) {
           seen.add(m);
           (function(milestone) {
+            // Broadcast milestone to all room clients for UI celebration
+            io.to(roomId).emit('stream-milestone', { count: milestone, label: milestone.toLocaleString() + ' VIEWERS', ts: Math.floor(Date.now() / 1000) });
             autoAura(roomId, function(cb) {
               aura.triggerNewViewer(roomId, milestone.toLocaleString() + ' VIEWERS', false, cb);
             });

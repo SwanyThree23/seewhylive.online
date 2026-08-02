@@ -68,6 +68,8 @@ var ANIM = [
   '@keyframes shoutoutIn{0%{opacity:0;transform:scale(.85) translateY(14px)}60%{transform:scale(1.04)}100%{opacity:1;transform:scale(1) translateY(0)}}',
   '@keyframes shoutoutOut{from{opacity:1}to{opacity:0;transform:translateY(-12px)}}',
   '@keyframes countdownTick{0%{transform:scale(1.06)}100%{transform:scale(1)}}',
+  '@keyframes milestoneIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}60%{transform:translate(-50%,-50%) scale(1.06)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}',
+  '@keyframes milestoneOut{from{opacity:1}to{opacity:0;transform:translate(-50%,-50%) translateY(-18px)}}',
 ].join('\n');
 
 // ─── AI visual filter CSS presets ────────────────────────────────────────────
@@ -522,6 +524,12 @@ export default function LiveRoomPage({
   var [showPkLeaderboard,  setShowPkLeaderboard]  = useState(false);
   var [pkCurrentBattle,    setPkCurrentBattle]    = useState(null);     // { challenger, defender } for leaderboard tracking
   var [showClipGallery,   setShowClipGallery]    = useState(false);    // clip gallery overlay
+  // ── Batch 21: Watch Together, Sound Alerts, Stream Milestones ────────────
+  var [watchTogether,     setWatchTogether]      = useState(null);     // { url, currentTime, playing, by }
+  var [showWatchInput,    setShowWatchInput]      = useState(false);   // host URL input
+  var [watchUrl,          setWatchUrl]           = useState('');
+  var [streamMilestone,   setStreamMilestone]    = useState(null);     // { count, label } for celebration
+  var [soundAlertPanel,   setSoundAlertPanel]    = useState(false);    // host sound-alert picker
   var [showTopFans,        setShowTopFans]        = useState(false);    // public top-fans leaderboard panel
   var [shoutoutQueue,      setShoutoutQueue]      = useState([]);       // [{ username, reason, ts }]
   var [activeShoutout,     setActiveShoutout]     = useState(null);     // currently displayed shoutout
@@ -579,6 +587,7 @@ export default function LiveRoomPage({
       if (Array.isArray(data.roomTags)) setRoomTags(data.roomTags);
       if (data.pinnedLink) setPinnedLink(data.pinnedLink);
       if (data.slowMode) setSlowMode(data.slowMode);
+      if (data.watchTogether) setWatchTogether(data.watchTogether);
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -921,6 +930,62 @@ export default function LiveRoomPage({
       setPkCurrentBattle(null);
     });
 
+    // ── Batch 21: Watch Together, Sound Alerts, Stream Milestones ──────────
+    socket.on('watch-together', function(data) {
+      if (!data) return;
+      setWatchTogether(data);
+    });
+    socket.on('watch-together-sync', function(data) {
+      if (!data) return;
+      setWatchTogether(function(prev) {
+        if (!prev) return prev;
+        return Object.assign({}, prev, { currentTime: data.currentTime, playing: data.playing });
+      });
+    });
+    socket.on('watch-together-end', function() {
+      setWatchTogether(null);
+    });
+
+    socket.on('stream-milestone', function(data) {
+      if (!data) return;
+      setStreamMilestone(data);
+      setTimeout(function() { setStreamMilestone(null); }, 8000);
+      if (addToast) addToast('🎉 ' + data.label + ' reached!', 'success');
+    });
+
+    socket.on('sound-alert', function(data) {
+      if (!data) return;
+      // Play a synthesized beep/tone using Web Audio API
+      try {
+        var ALERT_TONES = {
+          goal:      { freq: [880, 1100, 1320], dur: 0.12, type: 'sine'   },
+          hype:      { freq: [440, 660, 880],   dur: 0.08, type: 'square' },
+          sub:       { freq: [523, 659, 784],   dur: 0.14, type: 'sine'   },
+          win:       { freq: [784, 1047, 1319], dur: 0.1,  type: 'sine'   },
+          alarm:     { freq: [880, 440],         dur: 0.15, type: 'sawtooth' },
+          fanfare:   { freq: [523, 659, 784, 1047], dur: 0.12, type: 'sine' },
+          applause:  { freq: [300],             dur: 0.05, type: 'triangle' },
+        };
+        var tone = ALERT_TONES[data.type] || ALERT_TONES['hype'];
+        var ctx  = new (window.AudioContext || window.webkitAudioContext)();
+        var t    = ctx.currentTime;
+        tone.freq.forEach(function(freq, i) {
+          var osc  = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type      = tone.type;
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.25, t + i * tone.dur);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + i * tone.dur + tone.dur * 2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(t + i * tone.dur);
+          osc.stop(t + i * tone.dur + tone.dur * 2);
+        });
+        setTimeout(function() { ctx.close(); }, 3000);
+      } catch(e) {}
+      if (addToast) addToast('🔔 Sound alert: ' + data.type, 'info');
+    });
+
     socket.on('room-tags', function(data) {
       if (!data || !Array.isArray(data.tags)) return;
       setRoomTags(data.tags);
@@ -1166,6 +1231,11 @@ export default function LiveRoomPage({
       socket.off('layout-sync');
       socket.off('pk-start');
       socket.off('pk-end');
+      socket.off('watch-together');
+      socket.off('watch-together-sync');
+      socket.off('watch-together-end');
+      socket.off('stream-milestone');
+      socket.off('sound-alert');
     };
   }, [socket]);
 
@@ -2408,6 +2478,11 @@ export default function LiveRoomPage({
               { emoji: '🎨', label: 'AI Filter', active: aiFilter !== 'none', onTap: function() { setShowFilterPanel(function(s) { return !s; }); } },
               { emoji: '🏆', label: 'PK Board', active: showPkLeaderboard, onTap: function() { setShowPkLeaderboard(function(s) { return !s; }); } },
               { emoji: '📂', label: 'Gallery', active: showClipGallery, onTap: function() { setShowClipGallery(function(s) { return !s; }); } },
+              { emoji: '📺', label: 'Co-Watch', active: !!watchTogether, onTap: function() {
+                if (watchTogether) { if (socket) socket.emit('watch-together-end', { roomId: roomId }); }
+                else { setShowWatchInput(true); }
+              }},
+              { emoji: '🔔', label: 'Sound', active: soundAlertPanel, onTap: function() { setSoundAlertPanel(function(s) { return !s; }); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -5206,6 +5281,111 @@ export default function LiveRoomPage({
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ WATCH TOGETHER URL INPUT ════════════════ */}
+      {showWatchInput && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 76, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={function() { setShowWatchInput(false); }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 18, padding: '22px 24px', width: 340, boxShadow: '0 12px 48px rgba(0,0,0,.75)', animation: 'statsFadeIn .2s ease' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1.5 }}>📺 CO-WATCH TOGETHER</div>
+              <button onClick={function() { setShowWatchInput(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 14, lineHeight: 1.6 }}>SHARE A VIDEO URL WITH YOUR AUDIENCE. ALL VIEWERS WILL SEE THE VIDEO EMBEDDED BELOW THE STAGE.</div>
+            <input
+              value={watchUrl}
+              onChange={function(e) { setWatchUrl(e.target.value); }}
+              placeholder="Paste YouTube, Vimeo, or direct video URL…"
+              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 10, padding: '11px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', marginBottom: 12 }}
+            />
+            <button onClick={function() {
+              var url = watchUrl.trim();
+              if (!url) return;
+              if (socket) socket.emit('watch-together-start', { roomId: roomId, url: url });
+              setShowWatchInput(false);
+              setWatchUrl('');
+            }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
+              START CO-WATCH
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ WATCH TOGETHER PLAYER ════════════════ */}
+      {watchTogether && watchTogether.url && (
+        <div style={{ position: 'absolute', bottom: 80, left: 0, right: 0, zIndex: 55, background: CARD, borderTop: '2px solid ' + GOLD + '44', padding: '10px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 14 }}>📺</span>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: GOLD, letterSpacing: 1 }}>CO-WATCH</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>started by {watchTogether.by || 'host'}</span>
+            </div>
+            {(role === 'host' || role === 'cohost') && (
+              <button onClick={function() { if (socket) socket.emit('watch-together-end', { roomId: roomId }); }}
+                style={{ background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 8, padding: '4px 10px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: RED, cursor: 'pointer', letterSpacing: .5 }}>
+                END
+              </button>
+            )}
+          </div>
+          <div style={{ position: 'relative', paddingBottom: '35%', borderRadius: 10, overflow: 'hidden', background: '#000' }}>
+            <iframe
+              src={(function() {
+                var url = watchTogether.url;
+                var ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/\s]{11})/);
+                if (ytMatch) return 'https://www.youtube.com/embed/' + ytMatch[1] + '?autoplay=1&start=' + Math.floor(watchTogether.currentTime || 0);
+                var vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+                if (vimeoMatch) return 'https://player.vimeo.com/video/' + vimeoMatch[1] + '?autoplay=1#t=' + Math.floor(watchTogether.currentTime || 0) + 's';
+                return url;
+              })()}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+              allow="autoplay; fullscreen"
+              allowFullScreen
+              title="Co-Watch"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ SOUND ALERT PANEL ════════════════ */}
+      {soundAlertPanel && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', bottom: 190, right: 12, zIndex: 70, background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 14, padding: '14px 16px', width: 220, boxShadow: '0 8px 32px rgba(0,0,0,.7)', animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: TEXT, letterSpacing: 1 }}>🔔 SOUND ALERTS</div>
+            <button onClick={function() { setSoundAlertPanel(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 14, cursor: 'pointer' }}>✕</button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            {[
+              { type: 'hype',     label: 'Hype',     emoji: '🔥' },
+              { type: 'goal',     label: 'Goal',     emoji: '🎯' },
+              { type: 'sub',      label: 'New Sub',  emoji: '⭐' },
+              { type: 'win',      label: 'Winner',   emoji: '🏆' },
+              { type: 'fanfare',  label: 'Fanfare',  emoji: '🎺' },
+              { type: 'applause', label: 'Applause', emoji: '👏' },
+            ].map(function(a) {
+              return (
+                <button key={a.type} onClick={function() {
+                  if (socket) socket.emit('sound-alert', { roomId: roomId, type: a.type });
+                }} style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 6px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, transition: 'background .15s' }}>
+                  <span style={{ fontSize: 16 }}>{a.emoji}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>{a.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ STREAM MILESTONE OVERLAY ════════════════ */}
+      {streamMilestone && (
+        <div style={{ position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 90, pointerEvents: 'none', textAlign: 'center', animation: 'milestoneIn .5s cubic-bezier(.17,.67,.39,1.3) forwards' }}>
+          <div style={{ background: 'linear-gradient(135deg,' + BURG + ',' + '#5A0018' + ')', border: '2.5px solid ' + GOLD, borderRadius: 20, padding: '18px 32px', boxShadow: '0 12px 48px rgba(0,0,0,.8), 0 0 60px ' + GOLD + '44' }}>
+            <div style={{ fontSize: 34, marginBottom: 6 }}>🎉</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: GOLD, letterSpacing: 3, lineHeight: 1 }}>{streamMilestone.label}</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: TEXT, marginTop: 4, letterSpacing: 1, opacity: .8 }}>MILESTONE REACHED!</div>
           </div>
         </div>
       )}
