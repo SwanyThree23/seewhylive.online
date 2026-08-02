@@ -59,6 +59,8 @@ var ANIM = [
   '@keyframes goalFill{from{width:0}to{width:var(--goal-pct)}}',
   '@keyframes challengeIn{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}',
   '@keyframes statsFadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}',
+  '@keyframes starPop{0%{transform:scale(0.5)}60%{transform:scale(1.25)}100%{transform:scale(1)}}',
+  '@keyframes voteBarGrow{from{width:0}to{width:var(--vote-pct)}}',
   '@keyframes pointFlash{0%{opacity:0;transform:translateY(8px) scale(.8)}40%{opacity:1;transform:translateY(-4px) scale(1.1)}100%{opacity:0;transform:translateY(-18px) scale(.9)}}',
   '@keyframes shoutoutIn{0%{opacity:0;transform:scale(.85) translateY(14px)}60%{transform:scale(1.04)}100%{opacity:1;transform:scale(1) translateY(0)}}',
   '@keyframes shoutoutOut{from{opacity:1}to{opacity:0;transform:translateY(-12px)}}',
@@ -476,6 +478,16 @@ export default function LiveRoomPage({
   // ── Batch 18: Channel Points, Top-Fans Wall, Shoutout Queue, Schedule ───
   var [pointBalance,       setPointBalance]       = useState(0);        // viewer's SeeWhy Points balance
   var [pointFlash,         setPointFlash]         = useState(null);     // { amount, reason } transient flash
+  // ── Batch 19: Stream Rating, Audience Vote, Clip Pin, Layout Sync ───────
+  var [myRating,           setMyRating]           = useState(0);        // 0 = not yet rated
+  var [ratingAvg,          setRatingAvg]          = useState(null);     // { avg, count } from host perspective
+  var [showRateStream,     setShowRateStream]     = useState(false);    // viewer rate-stream sheet
+  var [audienceVote,       setAudienceVote]       = useState(null);     // { id, question, optA, optB, countA, countB, endsAt }
+  var [myVoteSide,         setMyVoteSide]         = useState(null);     // 'A' | 'B' | null
+  var [audienceVoteResult, setAudienceVoteResult] = useState(null);     // { countA, countB, optA, optB }
+  var [showVoteCreate,     setShowVoteCreate]     = useState(false);    // host vote creation modal
+  var [voteInput,          setVoteInput]          = useState({ question: '', optA: 'YES', optB: 'NO', durationSec: 30 });
+  var [pinnedClip,         setPinnedClip]         = useState(null);     // { label, url, ts }
   var [showTopFans,        setShowTopFans]        = useState(false);    // public top-fans leaderboard panel
   var [shoutoutQueue,      setShoutoutQueue]      = useState([]);       // [{ username, reason, ts }]
   var [activeShoutout,     setActiveShoutout]     = useState(null);     // currently displayed shoutout
@@ -806,6 +818,48 @@ export default function LiveRoomPage({
       setStreamCountdown(data || null);
     });
 
+    // ── Batch 19 listeners ────────────────────────────────────────────────
+    socket.on('stream-rating-ack', function(data) {
+      if (!data) return;
+      if (data.rating) setMyRating(data.rating);
+    });
+
+    socket.on('stream-rating-update', function(data) {
+      if (!data) return;
+      setRatingAvg({ avg: data.avg, count: data.count });
+    });
+
+    socket.on('audience-vote', function(data) {
+      if (!data) return;
+      setAudienceVote(data);
+      setMyVoteSide(null);
+      setAudienceVoteResult(null);
+    });
+
+    socket.on('audience-vote-update', function(data) {
+      if (!data) return;
+      setAudienceVote(function(v) { return v ? Object.assign({}, v, { countA: data.countA, countB: data.countB }) : v; });
+    });
+
+    socket.on('audience-vote-end', function(data) {
+      if (!data) return;
+      setAudienceVoteResult(data);
+      setAudienceVote(null);
+      setTimeout(function() { setAudienceVoteResult(null); }, 8000);
+    });
+
+    socket.on('clip-pinned', function(data) {
+      if (!data) return;
+      setPinnedClip(data);
+      if (addToast) addToast('🎬 Clip pinned: ' + (data.label || 'Highlight'), 'info');
+      setTimeout(function() { setPinnedClip(null); }, 12000);
+    });
+
+    socket.on('layout-sync', function(data) {
+      if (!data || !data.layout) return;
+      setStageLayout(data.layout);
+    });
+
     socket.on('room-tags', function(data) {
       if (!data || !Array.isArray(data.tags)) return;
       setRoomTags(data.tags);
@@ -1042,6 +1096,13 @@ export default function LiveRoomPage({
       socket.off('points-earned');
       socket.off('shoutout');
       socket.off('stream-countdown');
+      socket.off('stream-rating-ack');
+      socket.off('stream-rating-update');
+      socket.off('audience-vote');
+      socket.off('audience-vote-update');
+      socket.off('audience-vote-end');
+      socket.off('clip-pinned');
+      socket.off('layout-sync');
     };
   }, [socket]);
 
@@ -2200,6 +2261,15 @@ export default function LiveRoomPage({
                 else { setShowScheduleSet(true); }
               }},
               { emoji: '👑', label: 'Top Fans', active: showTopFans, onTap: function() { setShowTopFans(function(s) { return !s; }); } },
+              { emoji: '🗳️', label: 'Vote', active: !!audienceVote, onTap: function() { setShowVoteCreate(true); } },
+              { emoji: '🎬', label: 'Clip Pin', active: !!pinnedClip, onTap: function() {
+                var label = window.prompt('Clip label:'); if (!label || !label.trim()) return;
+                var url = window.prompt('Clip URL (optional):') || '';
+                if (socket) socket.emit('clip-pin', { roomId: roomId, label: label.trim(), url: url.trim() });
+              }},
+              { emoji: '⭐', label: 'Ratings', active: !!ratingAvg, onTap: function() {
+                if (ratingAvg) { if (addToast) addToast('⭐ Avg: ' + ratingAvg.avg + '/5 from ' + ratingAvg.count + ' viewers', 'info'); }
+              }},
             ] : []),
           ].map(function(tool) {
             return (
@@ -2522,6 +2592,14 @@ export default function LiveRoomPage({
                   fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: showTopFans ? GOLD : MUTED, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
                 }}>
                   👑 Top Fans
+                </button>
+              )}
+              {!myRating && isLive && (
+                <button onClick={function() { setShowRateStream(true); }} style={{
+                  background: CARD2, border: '1px solid rgba(201,168,76,.2)', borderRadius: 999, padding: '3px 9px',
+                  fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: MUTED, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
+                }}>
+                  ⭐ Rate
                 </button>
               )}
               {[{l:'💛 $1',c:100},{l:'🧡 $5',c:500},{l:'❤️ $10',c:1000},{l:'💜 $25',c:2500}].map(function(p) {
@@ -4274,6 +4352,130 @@ export default function LiveRoomPage({
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ RATE STREAM SHEET (viewer) ════════════════ */}
+      {showRateStream && !myRating && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', display: 'flex', alignItems: 'flex-end', zIndex: 84, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowRateStream(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '28px 20px 40px', border: '1px solid ' + BORDER, textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: TEXT, letterSpacing: 3, marginBottom: 4 }}>RATE THIS STREAM</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 20 }}>Tap a star to rate the quality</div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
+              {[1, 2, 3, 4, 5].map(function(star) {
+                return (
+                  <button key={star} onClick={function() {
+                    setMyRating(star);
+                    if (socket) socket.emit('stream-rating', { roomId: roomId, rating: star });
+                    setShowRateStream(false);
+                    if (addToast) addToast('⭐ Thanks for rating ' + star + '/5!', 'success');
+                  }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 36, lineHeight: 1, animation: 'starPop .2s ease', color: '#F59E0B' }}>
+                    ★
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={function() { setShowRateStream(false); }} style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 12, padding: '10px 28px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', letterSpacing: 1 }}>SKIP</button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ AUDIENCE VOTE CARD ════════════════ */}
+      {audienceVote && (
+        <div style={{ position: 'absolute', left: 10, right: 10, bottom: 180, zIndex: 65, animation: 'fadeSlideIn .3s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.9)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 18, padding: '14px 16px', backdropFilter: 'blur(10px)' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: GOLD, letterSpacing: 2, marginBottom: 6 }}>🗳️ AUDIENCE VOTE</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15, color: TEXT, fontWeight: 600, marginBottom: 12 }}>{audienceVote.question}</div>
+            {(function() {
+              var total = (audienceVote.countA || 0) + (audienceVote.countB || 0);
+              var pctA  = total > 0 ? Math.round((audienceVote.countA || 0) / total * 100) : 50;
+              var pctB  = 100 - pctA;
+              return (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {[{ side: 'A', label: audienceVote.optA, pct: pctA, count: audienceVote.countA || 0, color: TEAL },
+                    { side: 'B', label: audienceVote.optB, pct: pctB, count: audienceVote.countB || 0, color: BURG }].map(function(opt) {
+                    var isVoted = myVoteSide === opt.side;
+                    return (
+                      <button key={opt.side} onClick={function() {
+                        if (myVoteSide) return;
+                        setMyVoteSide(opt.side);
+                        if (socket) socket.emit('audience-vote-cast', { roomId: roomId, side: opt.side });
+                      }} style={{ flex: 1, background: isVoted ? opt.color + '33' : CARD2, border: '2px solid ' + (isVoted ? opt.color : BORDER), borderRadius: 14, padding: '10px 8px', cursor: myVoteSide ? 'default' : 'pointer', transition: 'all .15s' }}>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: isVoted ? opt.color : TEXT, letterSpacing: 1, marginBottom: 4 }}>{opt.label}</div>
+                        <div style={{ height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 999, overflow: 'hidden', marginBottom: 4 }}>
+                          <div style={{ height: '100%', borderRadius: 999, background: opt.color, width: opt.pct + '%', transition: 'width .4s ease' }} />
+                        </div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{opt.pct}% · {opt.count}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ AUDIENCE VOTE RESULT ════════════════ */}
+      {audienceVoteResult && (
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 200, zIndex: 66, pointerEvents: 'none', animation: 'shopBurst .35s ease', whiteSpace: 'nowrap' }}>
+          <div style={{ background: 'rgba(14,12,9,.9)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 18, padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 2, marginBottom: 4 }}>VOTE RESULTS</div>
+              {(function() {
+                var total = (audienceVoteResult.countA || 0) + (audienceVoteResult.countB || 0);
+                var winnerLabel = (audienceVoteResult.countA || 0) >= (audienceVoteResult.countB || 0) ? audienceVoteResult.optA : audienceVoteResult.optB;
+                var pctA = total > 0 ? Math.round((audienceVoteResult.countA || 0) / total * 100) : 50;
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: TEAL }}>{audienceVoteResult.optA}: {pctA}%</span>
+                    <span style={{ color: MUTED }}>vs</span>
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: BURG }}>{audienceVoteResult.optB}: {100 - pctA}%</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD }}>🏆 {winnerLabel}</span>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ PINNED CLIP CARD ════════════════ */}
+      {pinnedClip && (
+        <div style={{ position: 'absolute', left: 10, right: 10, top: 64, zIndex: 63, animation: 'fadeSlideIn .25s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(212,133,74,.4)', borderRadius: 14, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 20, flexShrink: 0 }}>🎬</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pinnedClip.label}</div>
+              {pinnedClip.url && <a href={pinnedClip.url} target="_blank" rel="noopener noreferrer" style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, textDecoration: 'none', letterSpacing: 1 }}>WATCH CLIP →</a>}
+            </div>
+            <button onClick={function() { setPinnedClip(null); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 14, cursor: 'pointer', flexShrink: 0 }}>✕</button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ VOTE CREATE MODAL (host) ════════════════ */}
+      {showVoteCreate && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 85, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowVoteCreate(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 40px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>🗳️ Audience Vote</div>
+              <button onClick={function() { setShowVoteCreate(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <input value={voteInput.question} onChange={function(e) { var v = e.target.value.slice(0, 100); setVoteInput(function(s) { return Object.assign({}, s, { question: v }); }); }} placeholder="Question (e.g. 'Should I go longer?')" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <input value={voteInput.optA} onChange={function(e) { var v = e.target.value.slice(0, 30); setVoteInput(function(s) { return Object.assign({}, s, { optA: v }); }); }} placeholder="Option A" style={{ flex: 1, background: CARD2, border: '1.5px solid rgba(212,133,74,.35)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+              <input value={voteInput.optB} onChange={function(e) { var v = e.target.value.slice(0, 30); setVoteInput(function(s) { return Object.assign({}, s, { optB: v }); }); }} placeholder="Option B" style={{ flex: 1, background: CARD2, border: '1.5px solid rgba(128,0,32,.5)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <input type="number" min="10" max="300" value={voteInput.durationSec} onChange={function(e) { var v = Math.min(300, Math.max(10, parseInt(e.target.value) || 30)); setVoteInput(function(s) { return Object.assign({}, s, { durationSec: v }); }); }} placeholder="Duration (seconds)" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 12 }} />
+            <button onClick={function() {
+              var q = voteInput.question.trim();
+              if (!q) return;
+              if (socket) socket.emit('audience-vote-start', { roomId: roomId, question: q, optA: voteInput.optA || 'YES', optB: voteInput.optB || 'NO', durationSec: voteInput.durationSec });
+              setShowVoteCreate(false);
+              if (addToast) addToast('🗳️ Audience vote started!', 'success');
+            }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 12, padding: 13, fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>START VOTE</button>
           </div>
         </div>
       )}

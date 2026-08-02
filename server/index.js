@@ -3215,6 +3215,94 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('stream-countdown', null);
   });
 
+  // ── stream-rating — viewer submits a 1-5 star rating for the stream ────
+  socket.on('stream-rating', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var rating = Math.min(5, Math.max(1, Math.floor(data.rating || 3)));
+    var userId = socket.data.userId || socket.id;
+    // Store in an in-memory map keyed by roomId; userId may only rate once
+    if (!rooms.has(roomId)) return;
+    var room = rooms.get(roomId);
+    if (!room.ratings) room.ratings = new Map();
+    room.ratings.set(userId, rating);
+    // Compute aggregate
+    var total = 0; var count = 0;
+    room.ratings.forEach(function(r) { total += r; count += 1; });
+    var avg = count > 0 ? (Math.round((total / count) * 10) / 10) : 0;
+    // Broadcast updated average to host
+    if (room.hostSocketId) {
+      io.to(room.hostSocketId).emit('stream-rating-update', { avg: avg, count: count, ts: Math.floor(Date.now() / 1000) });
+    }
+    io.to(socket.id).emit('stream-rating-ack', { rating: rating, avg: avg, count: count });
+  });
+
+  // ── audience-vote — host poses a binary yes/no or A/B question ──────────
+  socket.on('audience-vote-start', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var question = String(data.question || 'Vote now!').slice(0, 100);
+    var optA     = String(data.optA || 'YES').slice(0, 30);
+    var optB     = String(data.optB || 'NO').slice(0, 30);
+    var durationSec = Math.max(10, Math.min(300, Math.floor(data.durationSec || 30)));
+    var room = rooms.get(roomId);
+    if (!room) return;
+    var vote = { id: uuidv4(), question: question, optA: optA, optB: optB, votesA: new Map(), votesB: new Map(), active: true, endsAt: Math.floor(Date.now() / 1000) + durationSec };
+    room.audienceVote = vote;
+    io.to(roomId).emit('audience-vote', { id: vote.id, question: question, optA: optA, optB: optB, endsAt: vote.endsAt, countA: 0, countB: 0 });
+    vote.timer = setTimeout(function() {
+      if (room.audienceVote && room.audienceVote.id === vote.id) {
+        vote.active = false;
+        io.to(roomId).emit('audience-vote-end', { id: vote.id, countA: vote.votesA.size, countB: vote.votesB.size, optA: optA, optB: optB });
+      }
+    }, durationSec * 1000);
+  });
+
+  socket.on('audience-vote-cast', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var room = rooms.get(roomId);
+    if (!room || !room.audienceVote || !room.audienceVote.active) return;
+    var vote = room.audienceVote;
+    var side = data.side; // 'A' or 'B'
+    if (side !== 'A' && side !== 'B') return;
+    var userId = socket.data.userId || socket.id;
+    vote.votesA.delete(userId); vote.votesB.delete(userId);
+    if (side === 'A') vote.votesA.set(userId, 1);
+    else vote.votesB.set(userId, 1);
+    io.to(roomId).emit('audience-vote-update', { id: vote.id, countA: vote.votesA.size, countB: vote.votesB.size });
+  });
+
+  // ── clip-pin — host pins a clip/moment link to chat ─────────────────────
+  socket.on('clip-pin', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var label = String(data.label || '🎬 Highlight clip').slice(0, 60);
+    var url   = String(data.url   || '').slice(0, 300);
+    var ts    = Math.floor(Date.now() / 1000);
+    io.to(roomId).emit('chat-message', {
+      id:       uuidv4(),
+      username: 'SYSTEM',
+      message:  '🎬 ' + label + (url ? ' → ' + url : ''),
+      role:     'system',
+      ts:       ts,
+      clipUrl:  url,
+      clipLabel: label,
+    });
+    io.to(roomId).emit('clip-pinned', { label: label, url: url, ts: ts });
+  });
+
+  // ── layout-sync — host broadcasts stage layout preference ───────────────
+  socket.on('layout-sync', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var layout = String(data.layout || 'grid').slice(0, 20);
+    io.to(roomId).emit('layout-sync', { layout: layout, by: socket.data.username || 'host', ts: Math.floor(Date.now() / 1000) });
+  });
+
   // ── set-guest-role — host promotes/demotes a guest to/from co-host ──────
   socket.on('set-guest-role', function(data) {
     var roomId  = data.roomId || socket.data.roomId;
