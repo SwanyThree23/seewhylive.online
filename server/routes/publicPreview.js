@@ -19,8 +19,18 @@
 // rather than falling through to the static SPA build.
 
 const express = require('express');
+const { rateLimit } = require('express-rate-limit');
 const router = express.Router();
 const db = require('../db');
+
+const previewRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: 'Too many preview requests — please wait.',
+});
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -84,7 +94,7 @@ function renderPreviewPage({ title, description, thumbnailUrl, videoUrl, canonic
 </html>`;
 }
 
-router.get('/watch/:id', async (req, res) => {
+router.get('/watch/:id', previewRateLimit, async (req, res) => {
   if (!UUID_RE.test(req.params.id)) return res.status(400).send('Invalid ID');
   try {
     const result = await db.query(
@@ -111,7 +121,7 @@ router.get('/watch/:id', async (req, res) => {
   }
 });
 
-router.get('/post/:id', async (req, res) => {
+router.get('/post/:id', previewRateLimit, async (req, res) => {
   if (!UUID_RE.test(req.params.id)) return res.status(400).send('Invalid ID');
   try {
     const result = await db.query(

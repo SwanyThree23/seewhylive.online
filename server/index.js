@@ -1,3 +1,4 @@
+'use strict';
 require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: true });
 const battleRoutes = require('./routes/battles');
 const rewardsRoutes = require('./routes/rewards');
@@ -12,7 +13,6 @@ const loginRoutes = require('./routes/login');
 const { registerBattleHandlers } = require('./socket/battleHandlers');
 const { registerPanelHandlers } = require('./socket/panelHandlers');
 const requireAuth = require('./middleware/auth');
-'use strict';
 
 /**
  * index.js - SeeWhy LIVE v33.0 main server entry point
@@ -318,7 +318,8 @@ var stripeOnboardRateLimit = rateLimit({
   validate: { xForwardedForHeader: false },
   message: { error: 'Too many onboard requests — please try again later.' }
 });
-app.use('/api/connect/onboard', stripeOnboardRateLimit);
+// NOTE: stripeOnboardRateLimit is applied on the route itself (after requireAuth)
+// so req.user.id is available for per-user keying.
 app.use(express.json({ limit: '2mb' }));
 app.use(xssClean());
 app.use('/api/battles', battleRoutes);
@@ -429,6 +430,21 @@ var loveCounts          = new Map();  // roomId → total love count
 var loveEarnings        = new Map();  // roomId → { creator: microcents, platform: microcents }
 var giftLeaderboards    = new Map();  // roomId → [{username, totalCents}] top 10
 var triviaRooms         = new Map();  // roomId → { question, options:[{text}], answers:Map<socketId,idx>, correctIdx, timer, active }
+
+// Prune stale throttle map entries every 5 minutes to prevent unbounded growth
+// from unauthenticated connections (each reconnect gets a fresh anon key).
+// 300 000 ms >> the longest throttle window (60 s) so live entries are unaffected.
+var _THROTTLE_PRUNE_MS = 300000;
+setInterval(function() {
+  var _cut = Date.now() - _THROTTLE_PRUNE_MS;
+  [viewerReactThrottle, sendGiftThrottle, qaQuestionThrottle, loveThrottle,
+   audioChunkThrottle, collabThrottle, superChatThrottle, subscribeThrottle,
+   merchOrderThrottle, updateUsernameThrottle, handRaiseThrottle, speakingThrottle,
+   chatMsgThrottle, pollVoteThrottle, vsVoteThrottle, qaUpvoteThrottle,
+   judgeScoreThrottle].forEach(function(m) {
+    m.forEach(function(ts, k) { if (ts < _cut) m.delete(k); });
+  });
+}, 5 * 60 * 1000).unref();
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -827,7 +843,7 @@ app.get('/api/leaderboard', function(req, res) {
 });
 
 // POST /api/connect/onboard
-app.post('/api/connect/onboard', requireAuth, function(req, res) {
+app.post('/api/connect/onboard', requireAuth, stripeOnboardRateLimit, function(req, res) {
   var body = req.body;
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   var _ceEmail = String(body.email || '').slice(0, 254);
@@ -856,8 +872,13 @@ app.post('/api/turn/credentials', requireAuth, function(req, res) {
     var hmac     = crypto.createHmac('sha256', process.env.TURN_SECRET);
     var credential = hmac.update(username).digest('base64');
 
+    if (!process.env.TURN_URL || !process.env.TURNS_URL) {
+      logger.error('[turn/credentials] TURN_URL or TURNS_URL env var not set');
+      res.status(500).json({ error: 'TURN server not configured' });
+      return;
+    }
     res.json({
-      urls:       [process.env.TURN_URL || 'turn:2.24.194.112:3478', process.env.TURNS_URL || 'turns:2.24.194.112:5349'],
+      urls:       [process.env.TURN_URL, process.env.TURNS_URL],
       username:   username,
       credential: credential
     });
@@ -1211,16 +1232,25 @@ io.on('connection', function(socket) {
       }
     }
 
-    // If claiming host, verify this user actually owns the room (if it exists)
+    // If claiming host, verify ownership and INSERT atomically in a transaction
+    // to prevent TOCTOU: two concurrent join-room calls both see no room and
+    // both pass the ownership check, but the last one wins the in-memory state.
     if (role === 'host') {
       try {
-        var existingRoom = db.prepare('SELECT host_id FROM rooms WHERE room_id = ?').get(roomId);
-        if (existingRoom && existingRoom.host_id !== socket.data.userId) {
+        var _hostJoinTx = db.transaction(function() {
+          var _existing = db.prepare('SELECT host_id FROM rooms WHERE room_id = ?').get(roomId);
+          if (_existing && _existing.host_id !== guestId) return { forbidden: true };
+          db.prepare('INSERT OR IGNORE INTO rooms (room_id, host_id, created_at) VALUES (?, ?, ?)')
+            .run(roomId, guestId, Math.floor(Date.now() / 1000));
+          return { forbidden: false };
+        });
+        var _txResult = _hostJoinTx();
+        if (_txResult.forbidden) {
           if (ack) ack({ error: 'forbidden' });
           return;
         }
       } catch (ownerErr) {
-        logger.warn('[join-room] ownership check error: ' + ownerErr.message);
+        logger.warn('[join-room] ownership tx error: ' + ownerErr.message);
       }
     }
 
@@ -1238,15 +1268,7 @@ io.on('connection', function(socket) {
       if (role === 'host') {
         room.hostSocketId = socket.id;
         room.hostUserId   = guestId;
-        // Insert/update room record
-        try {
-          db.prepare(`
-            INSERT OR IGNORE INTO rooms (room_id, host_id, created_at)
-            VALUES (?, ?, ?)
-          `).run(roomId, guestId, Math.floor(Date.now() / 1000));
-        } catch (dbErr) {
-          logger.error('[join-room] DB insert rooms failed: ' + dbErr.message);
-        }
+        // DB INSERT already handled in the transaction above.
       }
     } else {
       room.viewers.add(socket.id);

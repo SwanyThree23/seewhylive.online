@@ -985,6 +985,9 @@ function spawnFanout(streamId, ingestUrl, resolvedDests, restartCount) {
 }
 
 router.post('/fanout-start', requireAuth, async function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+    return res.status(403).json({ ok: false, error: 'only hosts may start a fanout' });
+  }
   try {
     var b = req.body;
     var streamId = b.stream_id || 'default';
