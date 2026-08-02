@@ -32,11 +32,16 @@ router.post('/streams/:streamId/join', requireAuth, async (req, res) => {
 router.patch('/guests/:guestId', requireAuth, async (req, res) => {
   if (!UUID_RE.test(req.params.guestId)) return res.status(400).json({ error: 'invalid guest id' });
   // is_spotlighted is host-controlled — guests cannot spotlight themselves
-  if (req.body.isSpotlighted !== undefined && req.user.role !== 'host' && req.user.role !== 'admin') {
+  const isHostOp = req.body.isSpotlighted !== undefined;
+  if (isHostOp && req.user.role !== 'host' && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'only hosts may set spotlight' });
   }
   try {
-    const guest = await guestService.updateGuestState(req.params.guestId, req.body, req.user.id);
+    // Host operations scope by stream ownership to prevent cross-stream IDOR;
+    // self-updates scope by user_id (guest owns their own record).
+    const guest = isHostOp
+      ? await guestService.updateGuestState(req.params.guestId, req.body, null, req.user.id)
+      : await guestService.updateGuestState(req.params.guestId, req.body, req.user.id);
     if (!guest) return res.status(403).json({ error: 'not found or forbidden' });
     res.json(guest);
   } catch (err) {
@@ -84,11 +89,15 @@ router.post('/streams/:streamId/participants', requireAuth, async (req, res) => 
 router.patch('/participants/:participantId', requireAuth, async (req, res) => {
   if (!UUID_RE.test(req.params.participantId)) return res.status(400).json({ error: 'invalid participant id' });
   // is_on_stage is host-controlled — viewers cannot promote themselves onto stage
-  if (req.body.isOnStage !== undefined && req.user.role !== 'host' && req.user.role !== 'admin') {
+  const isHostOp = req.body.isOnStage !== undefined;
+  if (isHostOp && req.user.role !== 'host' && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'only hosts may move participants on stage' });
   }
   try {
-    const participant = await guestService.updateParticipantState(req.params.participantId, req.body, req.user.id);
+    // Host operations scope by stream ownership; self-updates scope by user_id.
+    const participant = isHostOp
+      ? await guestService.updateParticipantState(req.params.participantId, req.body, null, req.user.id)
+      : await guestService.updateParticipantState(req.params.participantId, req.body, req.user.id);
     if (!participant) return res.status(403).json({ error: 'not found or forbidden' });
     res.json(participant);
   } catch (err) {
