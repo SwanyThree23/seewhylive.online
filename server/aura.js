@@ -302,6 +302,7 @@ function callAura(streamId, userPrompt, mode) {
 // Internal helper: enqueue a typed item and schedule drain
 // ---------------------------------------------------------------------------
 function enqueue(type, params, callback) {
+  if (queue.length >= 200) return;
   queue.push({ type: type, params: params, callback: callback });
   var now = Date.now();
   var elapsed = now - lastEmitTime;
@@ -457,6 +458,7 @@ function generateShoutout(username, tier) {
 }
 
 function queueMessage(type, params, callback) {
+  if (queue.length >= 200) return;
   queue.push({ type: type, params: params, callback: callback });
   var now = Date.now();
   var elapsed = now - lastEmitTime;
