@@ -98,7 +98,15 @@ async function requestJoin({ roomId, userId }) {
   return row;
 }
 
-async function resolveJoinRequest({ roomId, userId, approve }) {
+async function resolveJoinRequest({ roomId, userId, approve, resolverId }) {
+  if (resolverId) {
+    const ownerCheck = await db.query('SELECT creator_id FROM streams WHERE id = $1', [roomId]);
+    if (!ownerCheck.rows[0] || ownerCheck.rows[0].creator_id !== resolverId) {
+      const err = new Error('forbidden');
+      err.status = 403;
+      throw err;
+    }
+  }
   const result = await db.query(
     `UPDATE room_join_requests SET status = $3, resolved_at = now()
      WHERE stream_id = $1 AND user_id = $2 RETURNING *`,

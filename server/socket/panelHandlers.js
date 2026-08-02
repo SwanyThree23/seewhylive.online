@@ -115,7 +115,7 @@ function registerPanelHandlers(io, socket) {
         ack?.({ ok: false, error: 'invalid userId' });
         return;
       }
-      const resolved = await panelService.resolveJoinRequest({ roomId, userId, approve });
+      const resolved = await panelService.resolveJoinRequest({ roomId, userId, approve, resolverId: socket.data.userId });
       // Emit only to the requesting user, not the entire room
       const roomSockets = await io.in(roomId).fetchSockets();
       const targetSocket = roomSockets.find(function(s) { return s.data && s.data.userId === userId; });
