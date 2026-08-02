@@ -82,7 +82,7 @@ function recordEarning(creatorId, streamId, paymentType, amountCents, note) {
   var id = uuidv4();
   var now = Date.now();
   var creatorCents = Math.floor(amountCents * CREATOR);
-  var platformCents = Math.floor(amountCents * PLATFORM);
+  var platformCents = amountCents - creatorCents;
   stmtInsertEarning.run(id, creatorId, streamId || null, paymentType, amountCents, creatorCents, platformCents, note || null, now);
 }
 
