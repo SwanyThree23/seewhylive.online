@@ -582,6 +582,16 @@ router.post('/push/subscribe', requireAuth, function(req, res) {
     if (!endpoint || !/^https:\/\//.test(endpoint) || endpoint.length > 2048) {
       return res.status(400).json({ success: false, error: 'invalid push subscription endpoint' });
     }
+    // Hostname guard: push notifications are dispatched as server-initiated HTTPS requests;
+    // a private-IP endpoint would let any authenticated user trigger SSRF on every go-live event.
+    var _PUSH_PRIV = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+    var _pushParsed;
+    try { _pushParsed = new URL(endpoint); } catch (_) {
+      return res.status(400).json({ success: false, error: 'invalid push subscription endpoint' });
+    }
+    if (!_pushParsed.hostname || _PUSH_PRIV.test(_pushParsed.hostname)) {
+      return res.status(400).json({ success: false, error: 'invalid push subscription endpoint' });
+    }
     var subscription = { endpoint: endpoint, keys: raw.keys || {} };
     if (!_pushSubscriptions[userId] && Object.keys(_pushSubscriptions).length >= 50000) {
       return res.status(503).json({ success: false, error: 'Server at capacity' });
