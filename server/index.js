@@ -1162,14 +1162,15 @@ io.use(function(socket, next) {
     return next();
   }
   if (!process.env.JWT_SECRET) {
-    // Mirror the HTTP requireAuth behaviour: hard-fail in production so a
-    // mis-deploy that drops JWT_SECRET does not silently open all socket events.
-    if (process.env.NODE_ENV === 'production') {
-      return next(new Error('server misconfigured'));
+    // Mirror the HTTP requireAuth behaviour: hard-fail unless explicitly in
+    // development or test — staging/qa/empty NODE_ENV must fail closed.
+    var _sockEnv = process.env.NODE_ENV || '';
+    if (_sockEnv === 'development' || _sockEnv === 'test') {
+      socket.data.role = 'viewer';
+      socket.data.userId = 'anon-' + uuidv4();
+      return next();
     }
-    socket.data.role = 'viewer';
-    socket.data.userId = 'anon-' + uuidv4();
-    return next();
+    return next(new Error('server misconfigured'));
   }
   try {
     var decoded = jwt.verify(token, process.env.JWT_SECRET);

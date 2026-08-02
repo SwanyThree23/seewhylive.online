@@ -21,11 +21,15 @@ function requireAuth(req, res, next) {
   }
 
   if (!process.env.JWT_SECRET) {
-    if (process.env.NODE_ENV === 'production') {
-      return res.status(500).json({ error: 'server misconfigured: JWT_SECRET not set' });
+    // Only allow the anon-passthrough in explicitly local environments.
+    // Any other NODE_ENV value (staging, qa, empty string, undefined) is treated
+    // the same as production so a misconfigured deploy fails closed, not open.
+    var _env = process.env.NODE_ENV || '';
+    if (_env === 'development' || _env === 'test') {
+      req.user = { id: 'anon', userId: 'anon', role: 'viewer' };
+      return next();
     }
-    req.user = { id: 'anon', userId: 'anon', role: 'viewer' };
-    return next();
+    return res.status(500).json({ error: 'server misconfigured: JWT_SECRET not set' });
   }
 
   try {
