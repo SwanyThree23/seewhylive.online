@@ -55,6 +55,10 @@ var ANIM = [
   '@keyframes speakPulseGrid{0%,100%{box-shadow:0 0 0 2px '+TEAL+'99,0 0 8px '+TEAL+'22}50%{box-shadow:0 0 0 3px '+TEAL+',0 0 18px '+TEAL+'44}}',
   '@keyframes handBadgePulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.85}}',
   '@keyframes cellMenuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}',
+  '@keyframes shopBurst{0%{opacity:0;transform:scale(.7) translateY(10px)}60%{transform:scale(1.06)}100%{opacity:1;transform:scale(1) translateY(0)}}',
+  '@keyframes goalFill{from{width:0}to{width:var(--goal-pct)}}',
+  '@keyframes challengeIn{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}',
+  '@keyframes statsFadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}',
 ].join('\n');
 
 // ─── Direct Pay platforms ───────────────────────────────────────────────────
@@ -449,6 +453,22 @@ export default function LiveRoomPage({
   var [chatKeyword,        setChatKeyword]        = useState('');   // host highlight keyword
   var [showKeywordSet,     setShowKeywordSet]     = useState(false);
   var [keywordInput,       setKeywordInput]       = useState('');
+  // ── Batch 17: Live Shopping, Challenges, Creator Goal, Live Stats ────────
+  var [pinnedShopItem,     setPinnedShopItem]     = useState(null);     // { id, name, price, image, url }
+  var [shopCartConfirm,    setShopCartConfirm]    = useState(null);     // itemId confirmed
+  var [shopPurchaseBurst,  setShopPurchaseBurst]  = useState(null);     // { username }
+  var [showShopPin,        setShowShopPin]        = useState(false);    // host shop pin modal
+  var [shopItemInput,      setShopItemInput]      = useState({ name: '', price: '', image: '', url: '' });
+  var [activeChallenge,    setActiveChallenge]    = useState(null);     // { title, goal, progress, unit, reward, active }
+  var [challengeComplete,  setChallengeComplete]  = useState(null);     // { title, reward }
+  var [showChallengeSet,   setShowChallengeSet]   = useState(false);    // host set challenge modal
+  var [challengeInput,     setChallengeInput]     = useState({ title: '', goal: 10, unit: 'reactions', reward: '' });
+  var [creatorGoal,        setCreatorGoal]        = useState(null);     // { title, targetCents, currentCents, active }
+  var [goalReached,        setGoalReached]        = useState(null);     // { title }
+  var [showGoalSet,        setShowGoalSet]        = useState(false);    // host set goal modal
+  var [goalInput,          setGoalInput]          = useState({ title: 'Stream Goal', targetCents: 1000 });
+  var [showLiveStats,      setShowLiveStats]      = useState(false);    // host live stats panel
+  var [liveStats,          setLiveStats]          = useState(null);     // { viewers, revenueCents, topGifter, topEmoji }
   var [showTagEdit,        setShowTagEdit]        = useState(false);
   var [tagInput,           setTagInput]           = useState('');
   var [showLinkPin,        setShowLinkPin]        = useState(false);
@@ -707,6 +727,54 @@ export default function LiveRoomPage({
       if (addToast) addToast('💌 ' + data.from + ': ' + data.message, 'info');
     });
 
+    // ── Batch 17 listeners ────────────────────────────────────────────────
+    socket.on('shop-item-pin', function(data) {
+      setPinnedShopItem(data && data.item ? data.item : null);
+      if (data && data.item && addToast) addToast('🛍️ Shop: ' + (data.item.name || 'Item') + ' — $' + ((data.item.price || 0) / 100).toFixed(2), 'info');
+    });
+
+    socket.on('shop-cart-confirm', function(data) {
+      if (!data || !data.itemId) return;
+      setShopCartConfirm(data.itemId);
+      if (addToast) addToast('✅ Added to cart!', 'success');
+      setTimeout(function() { setShopCartConfirm(null); }, 2500);
+    });
+
+    socket.on('shop-purchase-burst', function(data) {
+      if (!data || !data.username) return;
+      setShopPurchaseBurst(data);
+      setTimeout(function() { setShopPurchaseBurst(null); }, 3000);
+    });
+
+    socket.on('challenge-update', function(data) {
+      if (!data) return;
+      setActiveChallenge(data);
+    });
+
+    socket.on('challenge-complete', function(data) {
+      if (!data) return;
+      setChallengeComplete(data);
+      if (addToast) addToast('🏆 Challenge complete: ' + data.title + (data.reward ? ' — ' + data.reward : ''), 'success');
+      setTimeout(function() { setChallengeComplete(null); }, 5000);
+    });
+
+    socket.on('creator-goal', function(data) {
+      if (!data) return;
+      setCreatorGoal(data);
+    });
+
+    socket.on('creator-goal-reached', function(data) {
+      if (!data) return;
+      setGoalReached(data);
+      if (addToast) addToast('🎯 Goal reached: ' + (data.title || 'Stream Goal') + '!', 'success');
+      setTimeout(function() { setGoalReached(null); }, 5000);
+    });
+
+    socket.on('live-stats', function(data) {
+      if (!data) return;
+      setLiveStats(data);
+    });
+
     socket.on('room-tags', function(data) {
       if (!data || !Array.isArray(data.tags)) return;
       setRoomTags(data.tags);
@@ -932,6 +1000,14 @@ export default function LiveRoomPage({
       socket.off('link-pinned');
       socket.off('role-changed');
       socket.off('guest-role-changed');
+      socket.off('shop-item-pin');
+      socket.off('shop-cart-confirm');
+      socket.off('shop-purchase-burst');
+      socket.off('challenge-update');
+      socket.off('challenge-complete');
+      socket.off('creator-goal');
+      socket.off('creator-goal-reached');
+      socket.off('live-stats');
     };
   }, [socket]);
 
@@ -990,6 +1066,9 @@ export default function LiveRoomPage({
       });
     }
     setChatInput('');
+    if (activeChallenge && activeChallenge.active && activeChallenge.unit === 'chat messages') {
+      socket.emit('challenge-progress', { roomId: roomId, amount: 1 });
+    }
   }
 
   function raiseHand() {
@@ -1150,6 +1229,10 @@ export default function LiveRoomPage({
     if (socket) socket.emit('viewer-react', { roomId: roomId, userId: userId, emoji: emoji });
     setMyEngagement(function(e) { return { chat: e.chat, react: e.react + 1, gift: e.gift }; });
     setReactsOpen(false);
+    // Contribute to active challenge if unit is 'reactions'
+    if (socket && activeChallenge && activeChallenge.active && activeChallenge.unit === 'reactions') {
+      socket.emit('challenge-progress', { roomId: roomId, amount: 1 });
+    }
   }
 
   function stopScreenShare() {
@@ -2042,6 +2125,10 @@ export default function LiveRoomPage({
               { emoji: '📌', label: 'Banner', active: !!pinnedAnnouncement, onTap: function() { setPinAnnounceInput(pinnedAnnouncement ? pinnedAnnouncement.text : ''); setShowPinAnnounce(true); } },
               { emoji: '🔇', label: 'Mute All', active: false, onTap: function() { setShowMuteAllConfirm(true); } },
               { emoji: '🔑', label: 'Keyword', active: !!chatKeyword, onTap: function() { setKeywordInput(chatKeyword); setShowKeywordSet(true); } },
+              { emoji: '🛍️', label: 'Shop', active: !!pinnedShopItem, onTap: function() { setShopItemInput(pinnedShopItem ? { name: pinnedShopItem.name, price: String((pinnedShopItem.price || 0) / 100), image: pinnedShopItem.image || '', url: pinnedShopItem.url || '' } : { name: '', price: '', image: '', url: '' }); setShowShopPin(true); } },
+              { emoji: '🏆', label: 'Challenge', active: !!(activeChallenge && activeChallenge.active), onTap: function() { setShowChallengeSet(true); } },
+              { emoji: '🎯', label: 'Goal', active: !!(creatorGoal && creatorGoal.active), onTap: function() { setShowGoalSet(true); } },
+              { emoji: '📊', label: 'Stats', active: showLiveStats, onTap: function() { if (socket) socket.emit('live-stats-request', { roomId: roomId }); setShowLiveStats(function(s) { return !s; }); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -3928,6 +4015,99 @@ export default function LiveRoomPage({
         </div>
       )}
 
+      {/* ════════════════ PINNED SHOP CARD ════════════════ */}
+      {pinnedShopItem && (
+        <div style={{ position: 'absolute', left: 10, right: 10, bottom: 130, zIndex: 64, animation: 'shopBurst .35s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.9)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 16, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, backdropFilter: 'blur(10px)', boxShadow: '0 8px 30px rgba(0,0,0,.5)' }}>
+            {pinnedShopItem.image ? (
+              <img src={pinnedShopItem.image} alt={pinnedShopItem.name} style={{ width: 54, height: 54, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(201,168,76,.2)' }} />
+            ) : (
+              <div style={{ width: 54, height: 54, borderRadius: 10, background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>🛍️</div>
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15, color: TEXT, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pinnedShopItem.name}</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, letterSpacing: 1 }}>${((pinnedShopItem.price || 0) / 100).toFixed(2)}</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+              <button onClick={function() {
+                if (!socket) return;
+                socket.emit('shop-add-to-cart', { roomId: roomId, itemId: pinnedShopItem.id });
+              }} style={{ background: shopCartConfirm === pinnedShopItem.id ? '#22C55E' : 'linear-gradient(135deg,' + GOLD + ',' + TEAL + ')', border: 'none', borderRadius: 10, padding: '7px 14px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: BG, cursor: 'pointer', letterSpacing: 1, transition: 'background .2s' }}>
+                {shopCartConfirm === pinnedShopItem.id ? '✓ ADDED' : 'BUY NOW'}
+              </button>
+              {pinnedShopItem.url && (
+                <a href={pinnedShopItem.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>VIEW DETAILS →</a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ CREATOR GOAL BAR ════════════════ */}
+      {creatorGoal && creatorGoal.active && (
+        <div style={{ position: 'absolute', left: 10, right: 10, top: 58, zIndex: 55, pointerEvents: 'none', animation: 'fadeSlideIn .25s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.82)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 12, padding: '8px 12px', backdropFilter: 'blur(6px)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, fontWeight: 600 }}>🎯 {creatorGoal.title}</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD }}>${((creatorGoal.currentCents || 0) / 100).toFixed(2)} / ${((creatorGoal.targetCents || 0) / 100).toFixed(2)}</span>
+            </div>
+            <div style={{ height: 5, background: 'rgba(255,255,255,.08)', borderRadius: 999, overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 999, background: 'linear-gradient(90deg,' + BURG + ',' + GOLD + ')', width: Math.min(100, Math.round(((creatorGoal.currentCents || 0) / (creatorGoal.targetCents || 1)) * 100)) + '%', transition: 'width .6s ease' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ GOAL REACHED BANNER ════════════════ */}
+      {goalReached && (
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 80, zIndex: 90, pointerEvents: 'none', animation: 'shopBurst .35s ease' }}>
+          <div style={{ background: 'linear-gradient(135deg,rgba(128,0,32,.92),rgba(201,168,76,.25))', border: '2px solid ' + GOLD, borderRadius: 999, padding: '10px 28px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 6px 28px rgba(201,168,76,.4)', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 22 }}>🎯</span>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: GOLD, letterSpacing: 3 }}>GOAL REACHED!</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT }}>{goalReached.title}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ ACTIVE CHALLENGE BAR ════════════════ */}
+      {activeChallenge && activeChallenge.active && (
+        <div style={{ position: 'absolute', right: 8, bottom: 175, zIndex: 62, minWidth: 150, maxWidth: 190, animation: 'challengeIn .3s ease', pointerEvents: 'none' }}>
+          <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 14, padding: '10px 13px', backdropFilter: 'blur(8px)' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: GOLD, letterSpacing: 2, marginBottom: 4 }}>🏆 CHALLENGE</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, fontWeight: 600, lineHeight: 1.2, marginBottom: 7 }}>{activeChallenge.title}</div>
+            <div style={{ height: 5, background: 'rgba(255,255,255,.08)', borderRadius: 999, overflow: 'hidden', marginBottom: 4 }}>
+              <div style={{ height: '100%', borderRadius: 999, background: 'linear-gradient(90deg,' + TEAL + ',' + GOLD + ')', width: Math.min(100, Math.round(((activeChallenge.progress || 0) / (activeChallenge.goal || 1)) * 100)) + '%', transition: 'width .4s ease' }} />
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{activeChallenge.progress || 0}/{activeChallenge.goal} {activeChallenge.unit}</div>
+            {activeChallenge.reward && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, marginTop: 3 }}>🎁 {activeChallenge.reward}</div>}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ CHALLENGE COMPLETE BANNER ════════════════ */}
+      {challengeComplete && (
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 100, zIndex: 92, pointerEvents: 'none', animation: 'shopBurst .35s ease', whiteSpace: 'nowrap' }}>
+          <div style={{ background: 'linear-gradient(135deg,rgba(128,0,32,.95),rgba(201,168,76,.3))', border: '2px solid ' + GOLD, borderRadius: 999, padding: '12px 32px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 8px 36px rgba(201,168,76,.5)' }}>
+            <span style={{ fontSize: 28 }}>🏆</span>
+            <div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: GOLD, letterSpacing: 4 }}>CHALLENGE COMPLETE!</div>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT }}>{challengeComplete.title}</div>
+              {challengeComplete.reward && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: TEAL }}>🎁 {challengeComplete.reward}</div>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ SHOP PURCHASE BURST ════════════════ */}
+      {shopPurchaseBurst && (
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 165, zIndex: 63, pointerEvents: 'none', animation: 'shopBurst .3s ease', whiteSpace: 'nowrap' }}>
+          <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 999, padding: '6px 18px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 16 }}>🛍️</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT }}><strong style={{ color: GOLD }}>{shopPurchaseBurst.username}</strong> just bought!</span>
+          </div>
+        </div>
+      )}
+
       {/* ════════════════ EMOJI TALLY BAR ════════════════ */}
       {emojiTally.length > 0 && (
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 78, zIndex: 50, display: 'flex', gap: 8, background: 'rgba(14,12,9,.72)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 999, padding: '4px 12px', backdropFilter: 'blur(6px)', pointerEvents: 'none' }}>
@@ -4139,6 +4319,118 @@ export default function LiveRoomPage({
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ════════════════ SHOP PIN MODAL (host) ════════════════ */}
+      {showShopPin && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 78, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowShopPin(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>🛍️ Pin Shop Item</div>
+              <button onClick={function() { setShowShopPin(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            {['name', 'price', 'image', 'url'].map(function(field) {
+              return (
+                <input key={field}
+                  value={shopItemInput[field]}
+                  onChange={function(e) { var v = e.target.value; setShopItemInput(function(s) { var n = Object.assign({}, s); n[field] = v; return n; }); }}
+                  placeholder={field === 'name' ? 'Product name' : field === 'price' ? 'Price (e.g. 19.99)' : field === 'image' ? 'Image URL' : 'Buy link URL'}
+                  style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
+                />
+              );
+            })}
+            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+              <button onClick={function() {
+                var name = shopItemInput.name.trim();
+                if (!name) return;
+                var item = { id: Date.now().toString(36), name: name, price: Math.round(parseFloat(shopItemInput.price || '0') * 100), image: shopItemInput.image.trim(), url: shopItemInput.url.trim(), stock: 999 };
+                if (socket) socket.emit('shop-item-pin', { roomId: roomId, item: item });
+                setShowShopPin(false);
+                if (addToast) addToast('🛍️ "' + name + '" pinned to stream!', 'success');
+              }} style={{ flex: 1, background: GOLD, border: 'none', borderRadius: 12, padding: 13, fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>PIN ITEM</button>
+              {pinnedShopItem && (
+                <button onClick={function() {
+                  if (socket) socket.emit('shop-item-pin', { roomId: roomId, item: null });
+                  setPinnedShopItem(null); setShowShopPin(false);
+                  if (addToast) addToast('🛍️ Shop item unpinned', 'info');
+                }} style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 12, padding: 13, fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: MUTED, cursor: 'pointer', letterSpacing: 2 }}>UNPIN</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ CHALLENGE SET MODAL (host) ════════════════ */}
+      {showChallengeSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 79, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowChallengeSet(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>🏆 Viewer Challenge</div>
+              <button onClick={function() { setShowChallengeSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <input value={challengeInput.title} onChange={function(e) { var v = e.target.value.slice(0, 80); setChallengeInput(function(s) { return Object.assign({}, s, { title: v }); }); }} placeholder="Challenge title (e.g. Get 100 reactions!)" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <input type="number" value={challengeInput.goal} onChange={function(e) { var v = Math.max(1, parseInt(e.target.value) || 1); setChallengeInput(function(s) { return Object.assign({}, s, { goal: v }); }); }} placeholder="Goal (e.g. 100)" style={{ flex: 1, background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+              <select value={challengeInput.unit} onChange={function(e) { var v = e.target.value; setChallengeInput(function(s) { return Object.assign({}, s, { unit: v }); }); }} style={{ flex: 1, background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none' }}>
+                {['reactions', 'gifts', 'chat messages', 'follows', 'subscriptions'].map(function(u) { return <option key={u} value={u}>{u}</option>; })}
+              </select>
+            </div>
+            <input value={challengeInput.reward} onChange={function(e) { var v = e.target.value.slice(0, 100); setChallengeInput(function(s) { return Object.assign({}, s, { reward: v }); }); }} placeholder="Reward for completion (optional)" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 12 }} />
+            <button onClick={function() {
+              var title = challengeInput.title.trim();
+              if (!title) return;
+              if (socket) socket.emit('challenge-set', { roomId: roomId, title: title, goal: challengeInput.goal, unit: challengeInput.unit, reward: challengeInput.reward.trim() });
+              setShowChallengeSet(false);
+              if (addToast) addToast('🏆 Challenge started!', 'success');
+            }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 12, padding: 13, fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>START CHALLENGE</button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ GOAL SET MODAL (host) ════════════════ */}
+      {showGoalSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 80, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowGoalSet(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>🎯 Stream Goal</div>
+              <button onClick={function() { setShowGoalSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <input value={goalInput.title} onChange={function(e) { var v = e.target.value.slice(0, 60); setGoalInput(function(s) { return Object.assign({}, s, { title: v }); }); }} placeholder="Goal title (e.g. New Microphone)" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+            <input type="number" value={goalInput.targetCents / 100} onChange={function(e) { var v = Math.max(1, parseFloat(e.target.value) || 1) * 100; setGoalInput(function(s) { return Object.assign({}, s, { targetCents: Math.round(v) }); }); }} placeholder="Target $ amount" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 12 }} />
+            <button onClick={function() {
+              var title = goalInput.title.trim() || 'Stream Goal';
+              if (socket) socket.emit('creator-goal', { roomId: roomId, title: title, targetCents: goalInput.targetCents });
+              setShowGoalSet(false);
+              if (addToast) addToast('🎯 Goal set: ' + title + ' ($' + (goalInput.targetCents / 100).toFixed(2) + ')', 'success');
+            }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 12, padding: 13, fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>SET GOAL</button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ LIVE STATS PANEL (host) ════════════════ */}
+      {showLiveStats && liveStats && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', right: 8, top: 360, zIndex: 65, background: 'rgba(14,12,9,.92)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 16, padding: '16px 18px', minWidth: 170, animation: 'statsFadeIn .2s ease', backdropFilter: 'blur(8px)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 2 }}>LIVE STATS</span>
+            <button onClick={function() { setShowLiveStats(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 14, cursor: 'pointer', lineHeight: 1 }}>✕</button>
+          </div>
+          {[
+            { label: 'VIEWERS', value: liveStats.viewers || 0, icon: '👁' },
+            { label: 'PEAK', value: liveStats.peakViewers || 0, icon: '📈' },
+            { label: 'REVENUE', value: '$' + ((liveStats.revenueCents || 0) / 100).toFixed(2), icon: '💰' },
+            { label: 'CHAT', value: liveStats.chatCount || 0, icon: '💬' },
+            { label: 'TOP EMOJI', value: liveStats.topEmoji || '—', icon: '' },
+            { label: 'TOP GIFTER', value: liveStats.topGifter ? liveStats.topGifter.username : '—', icon: '🎁' },
+          ].map(function(row) {
+            return (
+              <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,.04)' }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>{row.icon} {row.label}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, fontWeight: 600 }}>{row.value}</span>
+              </div>
+            );
+          })}
+          <button onClick={function() { if (socket) socket.emit('live-stats-request', { roomId: roomId }); }} style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '7px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', letterSpacing: 1, marginTop: 4 }}>REFRESH</button>
         </div>
       )}
 

@@ -384,7 +384,23 @@ var vsPolls             = new Map();  // roomId → { id, sideA, sideB, votesA:S
 var judgeRosters        = new Map();  // roomId → Map<userId, { userId, username, scores:[] }>
 var chatReactions       = new Map();  // roomId → Map<msgId, Map<emoji, Set<socketId>>>
 var viewerReactThrottle = new Map();  // socketId → lastReactTs ms (2s per-socket throttle)
-var pkVotes             = new Map();  // roomId → { challenger: n, defender: n }
+var sendGiftThrottle        = new Map();  // userId → lastGiftTs ms (1s throttle)
+var qaQuestionThrottle      = new Map();  // userId → lastQuestionTs ms (3s throttle)
+var loveThrottle            = new Map();  // userId → lastLoveTs ms (1s throttle)
+var audioChunkThrottle      = new Map();  // userId → lastChunkTs ms (500ms throttle)
+var collabThrottle          = new Map();  // userId → lastCollabTs ms (2s throttle)
+var superChatThrottle       = new Map();  // userId → lastSuperChatTs ms (2s throttle)
+var subscribeThrottle       = new Map();  // userId → lastSubscribeTs ms (60s throttle)
+var merchOrderThrottle      = new Map();  // userId → lastMerchOrderTs ms (2s throttle)
+var updateUsernameThrottle  = new Map();  // userId → lastUpdateTs ms (2s throttle)
+var handRaiseThrottle       = new Map();  // userId → lastHandRaiseTs ms (500ms throttle)
+var speakingThrottle        = new Map();  // userId → lastSpeakingTs ms (250ms throttle)
+var chatMsgThrottle         = new Map();  // userId → lastChatTs ms (500ms throttle)
+var pollVoteThrottle        = new Map();  // userId → lastPollVoteTs ms (500ms throttle)
+var vsVoteThrottle          = new Map();  // userId → lastVsVoteTs ms (500ms throttle)
+var qaUpvoteThrottle        = new Map();  // userId → lastQaUpvoteTs ms (500ms throttle)
+var judgeScoreThrottle      = new Map();  // userId → lastJudgeScoreTs ms (500ms throttle)
+var pkVotes             = new Map();  // roomId → { voters: Map<userId,side>, challenger: n, defender: n }
 var roomAnalytics       = new Map();  // roomId → { viewerHistory:[], msgCounts:{}, sessionEarnings:0, peak:0 }
 var activePolls         = new Map();  // roomId → { id, question, options, votes:{}, totalVotes, endsAt, timer }
 var stageRooms          = new Map();  // roomId → { speakers:[], listeners:[] }
@@ -1715,6 +1731,9 @@ io.on('connection', function(socket) {
     var roomId   = data.roomId || socket.data.roomId;
     var newName  = String(data.username || '').trim().slice(0, 32);
     if (!roomId || !newName) return;
+    var _unNow = Date.now();
+    if (_unNow - (updateUsernameThrottle.get(socket.data.userId) || 0) < 2000) return;
+    updateUsernameThrottle.set(socket.data.userId, _unNow);
 
     socket.data.username = newName;
 
@@ -1743,6 +1762,9 @@ io.on('connection', function(socket) {
     var userId   = data.userId  || socket.data.userId;
 
     if (!roomId || !message.trim()) return;
+    var _cmNow = Date.now(); var _cmKey = socket.data.userId || socket.id;
+    if (_cmNow - (chatMsgThrottle.get(_cmKey) || 0) < 500) return;
+    chatMsgThrottle.set(_cmKey, _cmNow);
 
     // Banned words filter
     var _bwSet = bannedWordsMap.get(roomId);
@@ -1862,6 +1884,9 @@ io.on('connection', function(socket) {
     var creatorStripeAccountId = data.creatorStripeAccountId || '';
 
     if (!roomId || valueCents <= 0) return;
+    var _moThNow = Date.now();
+    if (_moThNow - (merchOrderThrottle.get(socket.data.userId) || 0) < 2000) return;
+    merchOrderThrottle.set(socket.data.userId, _moThNow);
 
     var creatorCents  = Math.floor(valueCents * CREATOR);
     var platformCents = valueCents - creatorCents;
@@ -1915,6 +1940,9 @@ io.on('connection', function(socket) {
     var creatorStripeAccountId = data.creatorStripeAccountId || '';
 
     if (!roomId || valueCents <= 0 || !toGuestId) return;
+    var _sgNow = Date.now();
+    if (_sgNow - (sendGiftThrottle.get(socket.data.userId) || 0) < 1000) return;
+    sendGiftThrottle.set(socket.data.userId, _sgNow);
 
     // Validate toGuestId is an active guest in the room
     var giftRoom = rooms.get(roomId);
@@ -2049,6 +2077,17 @@ io.on('connection', function(socket) {
       io.to(roomId).emit('gift-chain', { count: chain.count, emoji: emoji, ts: now10 });
     }
 
+    // Update creator goal progress on every gift
+    var giftRoom2 = rooms.get(roomId);
+    if (giftRoom2 && giftRoom2.creatorGoal && giftRoom2.creatorGoal.active) {
+      giftRoom2.creatorGoal.currentCents = sessionRevenue.get(roomId) || 0;
+      io.to(roomId).emit('creator-goal', giftRoom2.creatorGoal);
+      if (giftRoom2.creatorGoal.currentCents >= giftRoom2.creatorGoal.targetCents) {
+        giftRoom2.creatorGoal.active = false;
+        io.to(roomId).emit('creator-goal-reached', { title: giftRoom2.creatorGoal.title, ts: now10 });
+      }
+    }
+
     // Optionally create a gift PaymentIntent if a Stripe account is provided
     if (creatorStripeAccountId) {
       stripeModule.createGiftCharge(
@@ -2073,6 +2112,9 @@ io.on('connection', function(socket) {
     var guestId  = data.guestId || socket.data.guestId;
     var speaking = !!data.speaking;
     if (!roomId) return;
+    var _spNow = Date.now();
+    if (_spNow - (speakingThrottle.get(socket.data.userId) || 0) < 250) return;
+    speakingThrottle.set(socket.data.userId, _spNow);
     io.to(roomId).emit('speaking', { guestId: guestId, speaking: speaking });
     try {
       var videoConsumers = mediasoup.getVideoConsumersByGuest(guestId);
@@ -2097,6 +2139,9 @@ io.on('connection', function(socket) {
     var username = data.username || socket.data.username || guestId;
     var ts       = Math.floor(Date.now() / 1000);
     if (!roomId) return;
+    var _hrNow = Date.now();
+    if (_hrNow - (handRaiseThrottle.get(socket.data.userId) || 0) < 500) return;
+    handRaiseThrottle.set(socket.data.userId, _hrNow);
     io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: ts });
     // Ordered speaker queue: add if not already present
     if (!handQueues.has(roomId)) handQueues.set(roomId, []);
@@ -2343,6 +2388,9 @@ io.on('connection', function(socket) {
     var CREATOR    = 0.90;
     var creatorCents = Math.floor(priceCents * CREATOR);
     if (!roomId) return;
+    var _subNow = Date.now();
+    if (_subNow - (subscribeThrottle.get(socket.data.userId) || 0) < 60000) return;
+    subscribeThrottle.set(socket.data.userId, _subNow);
     io.to(roomId).emit('new-subscription', {
       username:      fromUser,
       tier:          tier,
@@ -2382,12 +2430,15 @@ io.on('connection', function(socket) {
   socket.on('poll-vote', function(data) {
     var roomId    = data.roomId || socket.data.roomId;
     if (!roomId) return;
+    var _pvNow = Date.now(); var _pvKey = socket.data.userId || socket.id;
+    if (_pvNow - (pollVoteThrottle.get(_pvKey) || 0) < 500) return;
+    pollVoteThrottle.set(_pvKey, _pvNow);
     var optionIdx = Math.floor(data.optionIdx || 0);
     var poll      = polls.get(roomId);
     if (!poll || !poll.active) return;
     if (optionIdx < 0 || optionIdx >= poll.options.length) return;
-    poll.options.forEach(function(o) { o.votes.delete(socket.id); });
-    poll.options[optionIdx].votes.add(socket.id);
+    poll.options.forEach(function(o) { o.votes.delete(socket.data.userId || socket.id); });
+    poll.options[optionIdx].votes.add(socket.data.userId || socket.id);
     io.to(roomId).emit('poll-update', serializePoll(poll));
   });
 
@@ -2406,6 +2457,9 @@ io.on('connection', function(socket) {
   socket.on('qa-question', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.text) return;
+    var _qaNow = Date.now(); var _qaKey = socket.data.userId || socket.id;
+    if (_qaNow - (qaQuestionThrottle.get(_qaKey) || 0) < 3000) return;
+    qaQuestionThrottle.set(_qaKey, _qaNow);
     var text = String(data.text).slice(0, 300);
     var id   = data.id || uuidv4();
     var user = socket.data.username || data.username || 'Guest';
@@ -2418,13 +2472,17 @@ io.on('connection', function(socket) {
   socket.on('qa-upvote', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.id) return;
+    var _quNow = Date.now(); var _quKey = socket.data.userId || socket.id;
+    if (_quNow - (qaUpvoteThrottle.get(_quKey) || 0) < 500) return;
+    qaUpvoteThrottle.set(_quKey, _quNow);
     var queue = qaQueues.get(roomId);
     if (!queue) return;
     var item = queue.get(data.id);
     if (!item) return;
     if (!item.upvoters) item.upvoters = new Set();
-    if (item.upvoters.has(socket.id)) return;
-    item.upvoters.add(socket.id);
+    var _quUserId = socket.data.userId || socket.id;
+    if (item.upvoters.has(_quUserId)) return;
+    item.upvoters.add(_quUserId);
     item.upvotes += 1;
     io.to(roomId).emit('qa-upvote', { id: data.id, upvotes: item.upvotes });
   });
@@ -2482,14 +2540,18 @@ io.on('connection', function(socket) {
   socket.on('vs-vote', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
+    var _vvNow = Date.now(); var _vvKey = socket.data.userId || socket.id;
+    if (_vvNow - (vsVoteThrottle.get(_vvKey) || 0) < 500) return;
+    vsVoteThrottle.set(_vvKey, _vvNow);
     var vp = vsPolls.get(roomId);
     if (!vp || !vp.active) return;
     var side = data.side; // 'A' or 'B'
     if (side !== 'A' && side !== 'B') return;
-    vp.votesA.delete(socket.id);
-    vp.votesB.delete(socket.id);
-    if (side === 'A') vp.votesA.add(socket.id);
-    else vp.votesB.add(socket.id);
+    var _vvUserId = socket.data.userId || socket.id;
+    vp.votesA.delete(_vvUserId);
+    vp.votesB.delete(_vvUserId);
+    if (side === 'A') vp.votesA.add(_vvUserId);
+    else vp.votesB.add(_vvUserId);
     io.to(roomId).emit('vs-update', serializeVs(vp));
   });
 
@@ -2530,6 +2592,9 @@ io.on('connection', function(socket) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
     var uid = socket.data.userId || socket.id;
+    var _jsNow = Date.now();
+    if (_jsNow - (judgeScoreThrottle.get(uid) || 0) < 500) return;
+    judgeScoreThrottle.set(uid, _jsNow);
     var roster = judgeRosters.get(roomId);
     if (!roster || !roster.has(uid)) return;
     var score = Math.min(10, Math.max(0, Math.floor(data.score || 0)));
@@ -2595,6 +2660,9 @@ io.on('connection', function(socket) {
     var amountCents = Math.floor(data.amountCents || 0);
     var VALID_SC    = [100, 200, 500, 1000, 2000, 5000];
     if (!roomId || !message || VALID_SC.indexOf(amountCents) === -1) return;
+    var _scThNow = Date.now();
+    if (_scThNow - (superChatThrottle.get(socket.data.userId) || 0) < 2000) return;
+    superChatThrottle.set(socket.data.userId, _scThNow);
 
     var creatorCents  = Math.floor(amountCents * CREATOR);
     var platformCents = amountCents - creatorCents;
@@ -2805,6 +2873,9 @@ io.on('connection', function(socket) {
     var roomId   = data.roomId || socket.data.roomId;
     var fromUser = data.fromUser || socket.data.username || 'Host';
     if (!roomId) return;
+    var _cNow = Date.now();
+    if (_cNow - (collabThrottle.get(socket.data.userId) || 0) < 2000) return;
+    collabThrottle.set(socket.data.userId, _cNow);
     io.to(roomId).emit('collab-message', {
       collabId: data.collabId || '',
       from:     fromUser,
@@ -2950,6 +3021,129 @@ io.on('connection', function(socket) {
       username: socket.data.username || 'Guest',
       ts:       Math.floor(Date.now() / 1000),
     });
+  });
+
+  // ── shop-item-pin — host pins a product card to the live feed ───────────
+  socket.on('shop-item-pin', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var item = data.item ? {
+      id:       String(data.item.id    || '').slice(0, 64),
+      name:     String(data.item.name  || '').slice(0, 80),
+      price:    Number(data.item.price || 0),
+      image:    String(data.item.image || '').slice(0, 300),
+      url:      String(data.item.url   || '').slice(0, 300),
+      stock:    Number(data.item.stock || 0),
+    } : null;
+    io.to(roomId).emit('shop-item-pin', { item: item, by: socket.data.username || 'host', ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── shop-add-to-cart — viewer taps "Buy Now" on a pinned product ─────────
+  socket.on('shop-add-to-cart', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    var itemId = String(data.itemId || '').slice(0, 64);
+    if (!roomId || !itemId) return;
+    var username = socket.data.username || 'Guest';
+    var room = rooms.get(roomId);
+    if (!room || !room.hostSocketId) return;
+    io.to(room.hostSocketId).emit('shop-cart-event', {
+      type:     'add',
+      itemId:   itemId,
+      userId:   socket.data.userId,
+      username: username,
+      ts:       Math.floor(Date.now() / 1000),
+    });
+    io.to(socket.id).emit('shop-cart-confirm', { itemId: itemId, ts: Math.floor(Date.now() / 1000) });
+    io.to(roomId).emit('shop-purchase-burst', { username: username, itemId: itemId, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── challenge-set — host creates a viewer challenge ────────────────────
+  socket.on('challenge-set', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var challenge = {
+      id:          uuidv4(),
+      title:       String(data.title   || '').slice(0, 80),
+      goal:        Math.max(1, Math.floor(data.goal   || 1)),
+      unit:        String(data.unit    || 'reactions').slice(0, 20),
+      reward:      String(data.reward  || '').slice(0, 100),
+      progress:    0,
+      active:      true,
+      createdAt:   Math.floor(Date.now() / 1000),
+    };
+    if (!challenge.title) return;
+    var room = rooms.get(roomId);
+    if (!room) return;
+    room.activeChallenge = challenge;
+    io.to(roomId).emit('challenge-update', challenge);
+  });
+
+  // ── challenge-progress — server increments challenge progress ─────────
+  socket.on('challenge-progress', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var room = rooms.get(roomId);
+    if (!room || !room.activeChallenge || !room.activeChallenge.active) return;
+    room.activeChallenge.progress = Math.min(
+      room.activeChallenge.goal,
+      (room.activeChallenge.progress || 0) + Math.max(1, Math.floor(data.amount || 1))
+    );
+    io.to(roomId).emit('challenge-update', room.activeChallenge);
+    if (room.activeChallenge.progress >= room.activeChallenge.goal) {
+      room.activeChallenge.active = false;
+      io.to(roomId).emit('challenge-complete', {
+        id:     room.activeChallenge.id,
+        title:  room.activeChallenge.title,
+        reward: room.activeChallenge.reward,
+        ts:     Math.floor(Date.now() / 1000),
+      });
+    }
+  });
+
+  // ── live-stats-request — host polls aggregated live session stats ──────
+  socket.on('live-stats-request', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var room     = rooms.get(roomId);
+    var analytics = roomAnalytics.get(roomId) || {};
+    var revenue   = sessionRevenue.get(roomId) || 0;
+    var viewers   = room ? room.viewers.size : 0;
+    var gifts     = giftLeaderboards.get(roomId) || [];
+    var tally     = emojiTallyMap.get(roomId);
+    var topEmoji  = null;
+    if (tally && tally.size > 0) {
+      var topCount = 0;
+      tally.forEach(function(count, emoji) { if (count > topCount) { topCount = count; topEmoji = emoji; } });
+    }
+    io.to(socket.id).emit('live-stats', {
+      viewers:        viewers,
+      peakViewers:    analytics.peak || viewers,
+      revenueCents:   revenue,
+      topGifter:      gifts.length > 0 ? gifts[0] : null,
+      topEmoji:       topEmoji,
+      chatCount:      analytics.msgCounts ? Object.values(analytics.msgCounts).reduce(function(a, b) { return a + b; }, 0) : 0,
+      ts:             Math.floor(Date.now() / 1000),
+    });
+  });
+
+  // ── creator-goal — host sets/updates a tipping goal bar ────────────────
+  socket.on('creator-goal', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var room = rooms.get(roomId);
+    if (!room) return;
+    var goal = {
+      title:       String(data.title    || 'Stream Goal').slice(0, 60),
+      targetCents: Math.max(100, Math.floor(data.targetCents || 1000)),
+      currentCents: sessionRevenue.get(roomId) || 0,
+      active:      true,
+    };
+    room.creatorGoal = goal;
+    io.to(roomId).emit('creator-goal', goal);
   });
 
   // ── set-guest-role — host promotes/demotes a guest to/from co-host ──────
@@ -3269,6 +3463,9 @@ io.on('connection', function(socket) {
   // ── Love micro-tip handler ─────────────────────────────────────────────
   socket.on('love-send', function(data) {
     if (!data || !data.roomId) return;
+    var _lsNow = Date.now();
+    if (_lsNow - (loveThrottle.get(socket.data.userId) || 0) < 1000) return;
+    loveThrottle.set(socket.data.userId, _lsNow);
     var loveRoomId = String(data.roomId);
     var prev = loveCounts.get(loveRoomId) || 0;
     var newTotal = prev + 1;
@@ -3421,6 +3618,9 @@ io.on('connection', function(socket) {
     var chunk  = data.chunk;
 
     if (!roomId || !chunk) return;
+    var _acNow = Date.now();
+    if (_acNow - (audioChunkThrottle.get(socket.data.userId) || 0) < 500) return;
+    audioChunkThrottle.set(socket.data.userId, _acNow);
 
     whisper.processChunk(roomId, chunk, function(text) {
       var ts = Math.floor(Date.now() / 1000);
@@ -3732,7 +3932,21 @@ io.on('connection', function(socket) {
       }
     }
 
-    viewerReactThrottle.delete(socket.id);
+    var _tKey = socket.data.userId || socket.id;
+    viewerReactThrottle.delete(_tKey);    viewerReactThrottle.delete(socket.id);
+    sendGiftThrottle.delete(_tKey);
+    qaQuestionThrottle.delete(_tKey);     qaQuestionThrottle.delete(socket.id);
+    loveThrottle.delete(_tKey);           audioChunkThrottle.delete(_tKey);
+    collabThrottle.delete(_tKey);
+    // superChatThrottle and subscribeThrottle are intentionally NOT cleared on disconnect
+    // (prevent rapid reconnect abuse)
+    merchOrderThrottle.delete(_tKey);     updateUsernameThrottle.delete(_tKey);
+    handRaiseThrottle.delete(_tKey);      speakingThrottle.delete(_tKey);
+    chatMsgThrottle.delete(_tKey);        chatMsgThrottle.delete(socket.id);
+    pollVoteThrottle.delete(_tKey);       pollVoteThrottle.delete(socket.id);
+    vsVoteThrottle.delete(_tKey);         vsVoteThrottle.delete(socket.id);
+    qaUpvoteThrottle.delete(_tKey);       qaUpvoteThrottle.delete(socket.id);
+    judgeScoreThrottle.delete(_tKey);
 
     // Remove empty rooms
     if (room.viewers.size === 0 && room.guests.size === 0) {
