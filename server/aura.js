@@ -98,6 +98,18 @@ function incrementHourlyCount(streamId) {
   _hourlyCallCounts[key] = _hourlyCallCounts[key] + 1;
 }
 
+// Prune keys from previous hours so _hourlyCallCounts doesn't grow indefinitely
+setInterval(function() {
+  var now = currentHour();
+  Object.keys(_hourlyCallCounts).forEach(function(k) {
+    var parts = k.split('_');
+    var hour = parseInt(parts[parts.length - 1], 10);
+    if (Number.isFinite(hour) && hour < now) {
+      delete _hourlyCallCounts[k];
+    }
+  });
+}, 3600000).unref();
+
 // ---------------------------------------------------------------------------
 // Response cap — trim to 180 characters max
 // ---------------------------------------------------------------------------
