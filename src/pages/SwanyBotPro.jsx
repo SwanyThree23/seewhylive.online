@@ -3,6 +3,12 @@ import { motion } from 'framer-motion';
 import { Sparkles, Check, Clock } from 'lucide-react';
 import { SWANYBOT_PRO_MODULES } from '@/lib/swanybotProModules';
 import VideoTransformStudio from '@/components/swanybotpro/VideoTransformStudio';
+import VoiceLipSyncStudio from '@/components/swanybotpro/VoiceLipSyncStudio';
+
+const MODULE_COMPONENTS = {
+  'video-transform': VideoTransformStudio,
+  'voice-lipsync': VoiceLipSyncStudio,
+};
 
 const G = '#D4AF37';
 const PURPLE = '#7B5DA6';
@@ -88,7 +94,7 @@ export default function SwanyBotPro() {
 
           {/* Module body */}
           {active.status === 'live' ? (
-            <VideoTransformStudio />
+            (() => { const Comp = MODULE_COMPONENTS[active.id] || VideoTransformStudio; return <Comp />; })()
           ) : (
             <div className="rounded-2xl p-6" style={{ background: 'rgba(13,16,34,0.6)', border: `1px solid ${BORDER}` }}>
               <p className="text-[11px] font-black uppercase tracking-widest mb-3" style={{ color: active.accent, fontFamily: 'Barlow Condensed, sans-serif' }}>What this module will do</p>

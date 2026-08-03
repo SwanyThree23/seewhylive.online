@@ -25,7 +25,7 @@ export const SWANYBOT_PRO_MODULES = [
     name: 'Voice + Lip-Sync Studio',
     tagline: 'Clone voice · sync avatar lips',
     icon: Mic2,
-    status: 'next',
+    status: 'live',
     accent: '#4A8A7A',
     description:
       'Clone your voice with emotional control, transcribe audio, drive a character avatar with lip-synced dialogue.',
