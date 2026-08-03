@@ -454,6 +454,10 @@ var tipTickerMap        = new Map();  // roomId → [{ text, id }]
 var viewerJoinMap       = new Map();  // roomId → Map<socketId, joinedAtSecs>
 var giftGoalMap         = new Map();  // roomId → { target, current, label, active }
 var moodMap             = new Map();  // roomId → { emoji, label, counts:{fire,party,chill,love,wow} }
+var clipVotesMap        = new Map();  // clipId → { up: N, down: N, voters: Map<socketId, vote> }
+var cohostQueueMap      = new Map();  // roomId → [{ socketId, userId, username, ts }]
+var userBadgesMap       = new Map();  // userId → Set<badge> (earned badges)
+var cohostQueueThrottle = new Map();  // userId → lastRequestTs ms
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -584,8 +588,9 @@ function getJoinStateForRoom(roomId) {
   state.sentiment  = sm ? { up: sm.up, down: sm.down } : { up: 0, down: 0 };
   state.nowPlaying = nowPlayingMap.get(roomId) || null;
   state.tipTicker  = tipTickerMap.get(roomId) || [];
-  state.giftGoal   = giftGoalMap.get(roomId)  || null;
-  state.mood       = moodMap.get(roomId)       || null;
+  state.giftGoal    = giftGoalMap.get(roomId)   || null;
+  state.mood        = moodMap.get(roomId)        || null;
+  state.cohostQueue = (cohostQueueMap.get(roomId) || []).map(function(e) { return { userId: e.userId, username: e.username, ts: e.ts }; });
   return state;
 }
 
@@ -4142,6 +4147,98 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('mood-update', { emoji: m.emoji, label: m.label, key: top, counts: Object.assign({}, m.counts) });
   });
 
+  // ── clip-vote — viewer votes on a saved clip ──────────────────────────
+  socket.on('clip-vote', function(data) {
+    var clipId = String(data.clipId || '').slice(0, 128);
+    var vote   = data.vote; // 'up' or 'down'
+    if (!clipId || (vote !== 'up' && vote !== 'down')) return;
+    var _cvNow = Date.now();
+    if (!clipVotesMap.has(clipId)) clipVotesMap.set(clipId, { up: 0, down: 0, voters: new Map() });
+    var cv = clipVotesMap.get(clipId);
+    var prevVote = cv.voters.get(socket.id);
+    if (prevVote) {
+      if (prevVote === vote) return; // same vote, ignore
+      cv[prevVote] = Math.max(0, cv[prevVote] - 1);
+    }
+    cv[vote]++;
+    cv.voters.set(socket.id, vote);
+    // Broadcast to anyone in the room if provided, else just ack to sender
+    var roomId = socket.data.roomId;
+    var payload = { clipId: clipId, up: cv.up, down: cv.down };
+    if (roomId) {
+      io.to(roomId).emit('clip-vote-update', payload);
+    } else {
+      io.to(socket.id).emit('clip-vote-update', payload);
+    }
+  });
+
+  // ── cohost-request — viewer requests co-host slot ─────────────────────
+  socket.on('cohost-request', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role === 'host' || socket.data.role === 'cohost') return;
+    var _cqNow = Date.now();
+    if (_cqNow - (cohostQueueThrottle.get(socket.data.userId) || 0) < 30000) return;
+    cohostQueueThrottle.set(socket.data.userId, _cqNow);
+    if (!cohostQueueMap.has(roomId)) cohostQueueMap.set(roomId, []);
+    var queue = cohostQueueMap.get(roomId);
+    var alreadyQueued = queue.some(function(e) { return e.userId === socket.data.userId; });
+    if (alreadyQueued) return;
+    if (queue.length >= 20) return; // cap queue
+    var entry = { socketId: socket.id, userId: socket.data.userId, username: socket.data.username || 'Guest', ts: Math.floor(_cqNow / 1000) };
+    queue.push(entry);
+    var room = rooms.get(roomId);
+    if (room && room.hostSocketId) {
+      io.to(room.hostSocketId).emit('cohost-queue-update', { queue: queue.map(function(e) { return { userId: e.userId, username: e.username, ts: e.ts }; }) });
+    }
+    io.to(socket.id).emit('cohost-request-ack', { status: 'queued', position: queue.length });
+  });
+
+  // ── cohost-queue-approve — host approves a co-host request ───────────
+  socket.on('cohost-queue-approve', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || socket.data.role !== 'host') return;
+    var targetUserId = String(data.userId || '');
+    if (!targetUserId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetUserId)) return;
+    var queue = cohostQueueMap.get(roomId);
+    if (!queue) return;
+    var entryIdx = queue.findIndex(function(e) { return e.userId === targetUserId; });
+    if (entryIdx < 0) return;
+    var entry = queue[entryIdx];
+    queue.splice(entryIdx, 1);
+    cohostQueueMap.set(roomId, queue);
+    // Notify the approved socket
+    io.to(entry.socketId).emit('role-changed', { role: 'cohost', approvedBy: socket.data.username });
+    io.to(roomId).emit('guest-role-changed', { guestId: entry.userId, role: 'cohost' });
+    // Update queue for host
+    io.to(socket.id).emit('cohost-queue-update', { queue: queue.map(function(e) { return { userId: e.userId, username: e.username, ts: e.ts }; }) });
+  });
+
+  // ── cohost-queue-dismiss — host removes someone from queue ────────────
+  socket.on('cohost-queue-dismiss', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || socket.data.role !== 'host') return;
+    var targetUserId = String(data.userId || '');
+    var queue = cohostQueueMap.get(roomId) || [];
+    cohostQueueMap.set(roomId, queue.filter(function(e) { return e.userId !== targetUserId; }));
+    io.to(socket.id).emit('cohost-queue-update', { queue: cohostQueueMap.get(roomId).map(function(e) { return { userId: e.userId, username: e.username, ts: e.ts }; }) });
+  });
+
+  // ── badge-award — host awards a badge to a user ───────────────────────
+  socket.on('badge-award', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var targetUserId = String(data.userId || '');
+    if (!targetUserId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetUserId)) return;
+    var badge = String(data.badge || '').slice(0, 32);
+    var VALID_BADGES = ['🏆', '⭐', '🔥', '💎', '👑', '🎯', '💜', '🎤', '🎁', '🚀'];
+    if (!VALID_BADGES.includes(badge)) return;
+    if (!userBadgesMap.has(targetUserId)) userBadgesMap.set(targetUserId, new Set());
+    userBadgesMap.get(targetUserId).add(badge);
+    io.to(roomId).emit('badge-awarded', { userId: targetUserId, badge: badge, awardedBy: socket.data.username || 'Host' });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -4612,6 +4709,7 @@ io.on('connection', function(socket) {
     viewerJoinMap.delete(roomId);
     giftGoalMap.delete(roomId);
     moodMap.delete(roomId);
+    cohostQueueMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

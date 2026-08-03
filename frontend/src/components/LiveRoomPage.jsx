@@ -643,6 +643,12 @@ export default function LiveRoomPage({
   var [streamMood,         setStreamMood]         = useState(null);   // { emoji, label, key, counts }
   var [showMoodPanel,      setShowMoodPanel]      = useState(false);
   var [myMoodVote,         setMyMoodVote]         = useState(null);
+  var [clipVotes,          setClipVotes]          = useState({});     // clipId → { up, down, myVote }
+  var [cohostQueue,        setCohostQueue]        = useState([]);     // [{ userId, username, ts }]
+  var [showCohostQueue,    setShowCohostQueue]    = useState(false);
+  var [myBadges,           setMyBadges]           = useState([]);     // badges earned this session
+  var [userBadges,         setUserBadges]         = useState({});     // userId → [badge, ...]
+  var [cohostRequested,    setCohostRequested]    = useState(false);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -739,6 +745,7 @@ export default function LiveRoomPage({
       if (Array.isArray(data.tipTicker) && data.tipTicker.length > 0) setTipTickerItems(data.tipTicker);
       if (data.giftGoal) setGiftGoal(data.giftGoal);
       if (data.mood) setStreamMood(data.mood);
+      if (Array.isArray(data.cohostQueue) && data.cohostQueue.length > 0) setCohostQueue(data.cohostQueue);
       if (Array.isArray(data.whiteboardStrokes) && data.whiteboardStrokes.length > 0) {
         setTimeout(function() {
           var canvas = wbCanvasRef.current;
@@ -1330,6 +1337,37 @@ export default function LiveRoomPage({
       }
     });
 
+    socket.on('clip-vote-update', function(data) {
+      if (!data || !data.clipId) return;
+      setClipVotes(function(prev) {
+        var n = Object.assign({}, prev);
+        n[data.clipId] = Object.assign({}, n[data.clipId] || {}, { up: data.up, down: data.down });
+        return n;
+      });
+    });
+
+    socket.on('cohost-queue-update', function(data) {
+      if (!data || !Array.isArray(data.queue)) return;
+      setCohostQueue(data.queue);
+    });
+
+    socket.on('cohost-request-ack', function(data) {
+      if (data && data.status === 'queued' && addToast) addToast('✋ Co-host request sent — position #' + data.position, 'info');
+    });
+
+    socket.on('badge-awarded', function(data) {
+      if (!data || !data.badge) return;
+      setUserBadges(function(prev) {
+        var n = Object.assign({}, prev);
+        n[data.userId] = (n[data.userId] || []).concat([data.badge]);
+        return n;
+      });
+      if (data.userId === userId) {
+        setMyBadges(function(b) { return b.indexOf(data.badge) >= 0 ? b : b.concat([data.badge]); });
+        if (addToast) addToast('🏆 You earned a badge: ' + data.badge, 'success');
+      }
+    });
+
     socket.on('gift-goal-update', function(data) {
       setGiftGoal(data);
     });
@@ -1512,6 +1550,10 @@ export default function LiveRoomPage({
       socket.off('gift-goal-update');
       socket.off('gift-goal-complete');
       socket.off('mood-update');
+      socket.off('clip-vote-update');
+      socket.off('cohost-queue-update');
+      socket.off('cohost-request-ack');
+      socket.off('badge-awarded');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
@@ -3069,6 +3111,13 @@ export default function LiveRoomPage({
             { emoji: '🔀', label: 'Compare', active: showCompare, onTap: function() { setShowCompare(function(s) { return !s; }); } },
             { emoji: '🎯', label: 'Gift Goal', active: !!giftGoal, onTap: function() { setShowGiftGoal(function(s) { return !s; }); } },
             { emoji: '🎭', label: 'Mood', active: showMoodPanel, onTap: function() { setShowMoodPanel(function(s) { return !s; }); } },
+            ...(role === 'host' ? [
+              { emoji: '👥', label: 'Co-Queue', active: showCohostQueue, onTap: function() { setShowCohostQueue(function(s) { return !s; }); } },
+            ] : role === 'viewer' ? [
+              { emoji: '✋', label: 'Co-Host', active: cohostRequested, onTap: function() {
+                if (!cohostRequested && socket) { socket.emit('cohost-request', { roomId: roomId }); setCohostRequested(true); }
+              }},
+            ] : []),
           ].map(function(tool) {
             return (
               <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
@@ -3685,6 +3734,14 @@ export default function LiveRoomPage({
                       <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: isSuper ? '#C9A84C' : '#8A7A62' }}>
                         {msg.username}
                         {isSuper && <span style={{ color: '#C9A84C', marginLeft: 4 }}>💛 ${(Math.floor(msg.amountCents || 0) / 100).toFixed(2)}</span>}
+                        {(function() {
+                          var badges = userBadges[msg.userId] || (msg.userId === userId ? myBadges : []);
+                          return badges.length > 0 ? (
+                            <span style={{ marginLeft: 4, display: 'inline-flex', gap: 1 }}>
+                              {badges.slice(0, 4).map(function(b, bi) { return <span key={bi} style={{ fontSize: 9 }}>{b}</span>; })}
+                            </span>
+                          ) : null;
+                        })()}
                       </span>
                       <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4', lineHeight: 1.3 }}>{msg.message}</span>
                     </div>
@@ -7347,6 +7404,68 @@ export default function LiveRoomPage({
         }}>
           <span style={{ fontSize: 16 }}>{streamMood.emoji}</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, letterSpacing: 1 }}>{streamMood.label.toUpperCase()}</span>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 32: CO-HOST QUEUE PANEL (host only) ════════════════ */}
+      {showCohostQueue && role === 'host' && (
+        <div style={{
+          position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 96, background: CARD, border: '1px solid ' + BORDER, borderRadius: 14,
+          padding: 16, width: 280, backdropFilter: 'blur(8px)', maxHeight: 360, overflowY: 'auto',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1 }}>👥 CO-HOST QUEUE</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginLeft: 4 }}>{cohostQueue.length} waiting</span>
+            <button onClick={function() { setShowCohostQueue(false); }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+          </div>
+          {cohostQueue.length === 0 && (
+            <div style={{ textAlign: 'center', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 10, padding: '20px 0' }}>No requests yet</div>
+          )}
+          {cohostQueue.map(function(entry, i) {
+            return (
+              <div key={entry.userId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: i < cohostQueue.length - 1 ? '1px solid ' + BORDER : 'none' }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, width: 14 }}>{i + 1}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, flex: 1 }}>{entry.username}</span>
+                <button onClick={function() {
+                  if (socket) socket.emit('cohost-queue-approve', { roomId: roomId, userId: entry.userId });
+                }} style={{ background: GOLD, color: BG, border: 'none', borderRadius: 6, padding: '4px 10px', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', fontWeight: 700 }}>
+                  APPROVE
+                </button>
+                <button onClick={function() {
+                  if (socket) socket.emit('cohost-queue-dismiss', { roomId: roomId, userId: entry.userId });
+                }} style={{ background: 'none', color: MUTED, border: '1px solid ' + BORDER, borderRadius: 6, padding: '4px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                  ✕
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Co-host queue notification badge for host */}
+      {role === 'host' && cohostQueue.length > 0 && !showCohostQueue && (
+        <div onClick={function() { setShowCohostQueue(true); }} style={{
+          position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 75, background: BURG, border: '1px solid rgba(255,26,60,.4)',
+          borderRadius: 20, padding: '4px 12px', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 5,
+        }}>
+          <span style={{ fontSize: 14 }}>✋</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: TEXT, letterSpacing: 0.5 }}>{cohostQueue.length} CO-HOST REQUEST{cohostQueue.length !== 1 ? 'S' : ''}</span>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 32: MY BADGES STRIP ════════════════ */}
+      {myBadges.length > 0 && (
+        <div style={{
+          position: 'absolute', bottom: 120, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 72, background: 'rgba(14,12,9,.88)', border: '1px solid rgba(201,168,76,.2)',
+          borderRadius: 20, padding: '4px 14px',
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>BADGES</span>
+          {myBadges.map(function(b, i) { return <span key={i} style={{ fontSize: 18 }}>{b}</span>; })}
         </div>
       )}
 
