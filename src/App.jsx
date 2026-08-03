@@ -16,6 +16,7 @@ const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword  = lazy(() => import('@/pages/ResetPassword'));
 const UnifiedRoom   = lazy(() => import('@/pages/UnifiedRoom'));
 const MomentDetail  = lazy(() => import('@/pages/MomentDetail'));
+const SwanyBotPro   = lazy(() => import('@/pages/SwanyBotPro'));
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -93,6 +94,7 @@ const AuthenticatedApp = () => {
         <Route path="/moments/:id" element={<MomentDetail />} />
         <Route path="/newsletter"  element={<LayoutWrapper currentPageName="NewsletterHub"><Pages.NewsletterHub /></LayoutWrapper>} />
         <Route path="/unified-room" element={<UnifiedRoom />} />
+        <Route path="/SwanyBotPro" element={<LayoutWrapper currentPageName="SwanyBotPro"><SwanyBotPro /></LayoutWrapper>} />
         <Route path="*"            element={<PageNotFound />} />
       </Route>
     </Routes>

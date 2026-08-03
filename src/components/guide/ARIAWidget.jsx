@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
@@ -470,9 +471,22 @@ export default function SwanyBotWidget({ pageName }) {
                          <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
                            Your guide, your hype man — ask me anything!
                          </p>
-                       </div>
+                         </div>
 
-                       {/* History quick access */}
+                         {/* SwanyBot Pro launcher */}
+                         <Link to="/SwanyBotPro" onClick={() => { setOpen(false); setMinimized(false); }} className="block">
+                         <div className="rounded-xl p-3 flex items-center gap-3 transition-all" style={{ background: 'linear-gradient(135deg, rgba(123,93,166,0.18), rgba(212,175,55,0.10))', border: '1px solid rgba(123,93,166,0.45)' }}>
+                           <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #7B5DA6, #D4AF37)' }}>
+                             <Sparkles className="w-4 h-4 text-white" />
+                           </div>
+                           <div className="flex-1 min-w-0">
+                             <p className="text-xs font-black uppercase tracking-wider" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>SwanyBot Pro <span style={{ color: '#7B5DA6' }}>·</span> SwanyThree</p>
+                             <p className="text-[10px] mt-0.5 leading-tight" style={{ color: 'rgba(255,255,255,0.55)' }}>Real-time video transform, voice clone, music videos, product ads — open the studio →</p>
+                           </div>
+                         </div>
+                         </Link>
+
+                         {/* History quick access */}
                        {conversationHistory && conversationHistory.length > 0 && (
                          <div>
                            <button
