@@ -736,6 +736,19 @@ export default function LiveRoomPage({
   var [nameTagDraft,       setNameTagDraft]       = useState('');
   var [showQueuePanel,     setShowQueuePanel]     = useState(false);
   var [questionAnswered,   setQuestionAnswered]   = useState(null);    // { username, text }
+  // Batch 48 — Viewer Location, Highlight Vote, Donation Match, Watch Time Leaders
+  var [locationShoutouts, setLocationShoutouts]  = useState([]);      // [{ userId, username, location, ts }]
+  var [showLocationPanel, setShowLocationPanel]  = useState(false);
+  var [locationDraft,     setLocationDraft]      = useState('');
+  var [myLocation,        setMyLocation]         = useState(null);
+  var [highlightVote,     setHighlightVote]      = useState(null);    // { label, yes, no, endsAt }
+  var [myHighlightVote,   setMyHighlightVote]    = useState(null);    // 'yes'|'no'
+  var [donationMatch,     setDonationMatch]      = useState(null);    // { label, limitCents, matchedCents }
+  var [showMatchSet,      setShowMatchSet]        = useState(false);
+  var [matchDraft,        setMatchDraft]          = useState({ limitDollars: '50', label: 'DONATION MATCH' });
+  var [matchCompleteFlash,setMatchCompleteFlash]  = useState(null);
+  var [watchLeaders,      setWatchLeaders]        = useState([]);
+  var [showWatchLeaders,  setShowWatchLeaders]   = useState(false);
   // Batch 43 — Prize Wheel, Gift Combo, Sign-In Log, Outro Countdown
   var [prizeWheel,         setPrizeWheel]         = useState(null);    // { segments, active, lastWinner }
   var [showWheelSet,       setShowWheelSet]       = useState(false);
@@ -973,6 +986,9 @@ export default function LiveRoomPage({
       if (Array.isArray(data.viewerQueue) && data.viewerQueue.length > 0) setViewerQueue(data.viewerQueue);
       if (data.moodRing && typeof data.moodRing.score === 'number') setMoodRingScore(data.moodRing.score);
       if (data.triviaDrop && data.triviaDrop.endsAt > Date.now()) setTriviaDrop(data.triviaDrop);
+      if (Array.isArray(data.locationShoutouts) && data.locationShoutouts.length > 0) setLocationShoutouts(data.locationShoutouts);
+      if (data.highlightVote && data.highlightVote.endsAt > Date.now()) setHighlightVote(data.highlightVote);
+      if (data.donationMatch) setDonationMatch(data.donationMatch);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -1943,6 +1959,44 @@ export default function LiveRoomPage({
       setNameTags(function(prev) { var n = Object.assign({}, prev); if (data.tag) n[data.userId] = data.tag; else delete n[data.userId]; return n; });
     });
 
+    // Batch 48 listeners
+    socket.on('location-update', function(data) {
+      if (!data || !data.entry) return;
+      setLocationShoutouts(function(l) {
+        var existing = l.findIndex(function(e) { return e.userId === data.entry.userId; });
+        var next = l.slice();
+        if (existing >= 0) next[existing] = data.entry; else next = next.concat([data.entry]);
+        return next.slice(-20);
+      });
+    });
+
+    socket.on('highlight-vote-start', function(data) {
+      if (!data) return;
+      setHighlightVote({ label: data.label, yes: 0, no: 0, endsAt: data.endsAt });
+      setMyHighlightVote(null);
+    });
+
+    socket.on('highlight-vote-update', function(data) {
+      if (!data) return;
+      setHighlightVote(function(h) { return h ? Object.assign({}, h, { yes: data.yes, no: data.no }) : null; });
+    });
+
+    socket.on('highlight-vote-result', function(data) {
+      if (!data) return;
+      setHighlightVote(null);
+      if (addToast) addToast((data.clip ? '✂️ Clip it! ' : '👎 Not that one — ') + data.yes + ' vs ' + data.no, data.clip ? 'success' : 'info');
+    });
+
+    socket.on('donation-match-update', function(data) {
+      setDonationMatch(data || null);
+    });
+
+    socket.on('donation-match-complete', function(data) {
+      if (!data) return;
+      setMatchCompleteFlash(data);
+      setTimeout(function() { setMatchCompleteFlash(null); }, 6000);
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2264,6 +2318,12 @@ export default function LiveRoomPage({
       socket.off('trivia-results');
       socket.off('trivia-ended');
       socket.off('name-tag-update');
+      socket.off('location-update');
+      socket.off('highlight-vote-start');
+      socket.off('highlight-vote-update');
+      socket.off('highlight-vote-result');
+      socket.off('donation-match-update');
+      socket.off('donation-match-complete');
       socket.off('scoreboard-update');
       socket.off('auction-update');
       socket.off('auction-ended');
@@ -3220,6 +3280,35 @@ export default function LiveRoomPage({
         </div>
       )}
 
+      {/* ════════════════ BATCH 48: DONATION MATCH BAR ════════════════ */}
+      {donationMatch && (
+        <div style={{ background: 'rgba(14,12,9,.9)', borderBottom: '1px solid ' + BORDER, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#A855F7', letterSpacing: 1, flexShrink: 0 }}>🤝 MATCH</span>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: TEXT, flexShrink: 0, maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{donationMatch.label}</span>
+          <div style={{ flex: 1, background: 'rgba(255,255,255,.07)', borderRadius: 999, height: 6, overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: 999, background: '#A855F7', width: Math.min(100, Math.floor((donationMatch.matchedCents / donationMatch.limitCents) * 100)) + '%', transition: 'width .6s ease' }} />
+          </div>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#A855F7', flexShrink: 0 }}>${Math.floor(donationMatch.matchedCents / 100)}/${Math.floor(donationMatch.limitCents / 100)}</span>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 48: HIGHLIGHT VOTE BAR ════════════════ */}
+      {highlightVote && (
+        <div style={{ background: 'rgba(14,12,9,.9)', borderBottom: '1px solid ' + BORDER, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 1, flexShrink: 0 }}>✂️ CLIP?</span>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, flex: 1 }}>{highlightVote.label}</span>
+          {!myHighlightVote && (
+            <>
+              <button onClick={function() { setMyHighlightVote('yes'); if (socket) socket.emit('highlight-cast', { roomId: roomId, choice: 'yes' }); }} style={{ background: 'rgba(0,204,102,.15)', border: '1px solid rgba(0,204,102,.4)', borderRadius: 8, padding: '4px 12px', color: '#00CC66', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>👍 {highlightVote.yes}</button>
+              <button onClick={function() { setMyHighlightVote('no'); if (socket) socket.emit('highlight-cast', { roomId: roomId, choice: 'no' }); }} style={{ background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 8, padding: '4px 12px', color: RED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>👎 {highlightVote.no}</button>
+            </>
+          )}
+          {myHighlightVote && (
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>👍 {highlightVote.yes} · 👎 {highlightVote.no}</span>
+          )}
+        </div>
+      )}
+
       {/* ════════════════ SCROLLABLE BODY ════════════════ */}
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
 
@@ -4064,6 +4153,24 @@ export default function LiveRoomPage({
               { emoji: '🎙️', label: 'Audio Meter', active: showAudioMeter, onTap: function() { setShowAudioMeter(function(s) { return !s; }); } },
               { emoji: '🧠', label: 'Trivia', active: !!triviaDrop || showTriviaSet, onTap: function() { setShowTriviaSet(function(s) { return !s; }); } },
               { emoji: '📋', label: 'Q Queue', active: showQueuePanel || viewerQueue.length > 0, onTap: function() { setShowQueuePanel(function(s) { return !s; }); } },
+              { emoji: '✂️', label: 'Clip Vote', active: !!highlightVote, onTap: function() {
+                if (highlightVote) return;
+                if (socket) socket.emit('highlight-vote', { roomId: roomId, label: 'Should we clip this moment?', secs: 30 }, function(res) {
+                  if (res && res.ok) { if (addToast) addToast('✂️ Clip vote started!', 'success'); }
+                  else if (res && res.error) { if (addToast) addToast(res.error, 'error'); }
+                });
+              }},
+              { emoji: '🤝', label: donationMatch ? 'Match ✓' : 'Don. Match', active: !!donationMatch || showMatchSet, onTap: function() {
+                if (donationMatch) {
+                  if (socket) socket.emit('set-donation-match', { roomId: roomId }, function() { setDonationMatch(null); });
+                } else { setShowMatchSet(function(s) { return !s; }); }
+              }},
+              { emoji: '⏱️', label: 'Watch Time', active: showWatchLeaders, onTap: function() {
+                if (socket) socket.emit('watch-time-leaders', { roomId: roomId }, function(res) {
+                  if (res && Array.isArray(res.leaders)) setWatchLeaders(res.leaders);
+                });
+                setShowWatchLeaders(function(s) { return !s; });
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Check In', active: false, onTap: function() {
@@ -4101,6 +4208,13 @@ export default function LiveRoomPage({
               { emoji: '📊', label: 'Sesh Stats', active: showSessionStats, onTap: function() { setShowSessionStats(function(s) { return !s; }); } },
               { emoji: '❓', label: 'Ask Host', active: !!myQueueId || showViewerQueue, onTap: function() { setShowViewerQueue(function(s) { return !s; }); } },
               { emoji: '🏷️', label: nameTag ? 'Tag ✓' : 'Name Tag', active: !!nameTag || showNameTagEdit, onTap: function() { setNameTagDraft(nameTag); setShowNameTagEdit(function(s) { return !s; }); } },
+              { emoji: '🌍', label: myLocation ? 'Loc ✓' : 'Where From', active: !!myLocation || showLocationPanel, onTap: function() { setShowLocationPanel(function(s) { return !s; }); } },
+              { emoji: '✂️', label: highlightVote ? (myHighlightVote ? 'Voted ✓' : 'Clip Vote') : 'Clip Vote', active: !!highlightVote, onTap: function() {
+                if (highlightVote && !myHighlightVote) {
+                  setMyHighlightVote('yes');
+                  if (socket) socket.emit('highlight-cast', { roomId: roomId, choice: 'yes' });
+                }
+              }},
             ] : [])),
           ].map(function(tool) {
             return (
@@ -10435,6 +10549,107 @@ export default function LiveRoomPage({
                 }} style={{ background: 'transparent', border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}>CLEAR</button>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 48: DONATION MATCH COMPLETE FLASH ════════════════ */}
+      {matchCompleteFlash && (
+        <div style={{ position: 'fixed', top: '22%', left: 0, right: 0, zIndex: 8800, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+          <div style={{ background: 'linear-gradient(135deg, #0d0026, ' + CARD + ')', border: '2px solid #A855F7', borderRadius: 20, padding: '18px 32px', textAlign: 'center', boxShadow: '0 0 40px #A855F755' }}>
+            <div style={{ fontSize: 36, marginBottom: 6 }}>🤝</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 28, color: '#A855F7', letterSpacing: 3, lineHeight: 1 }}>MATCH COMPLETE!</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15, color: TEXT, marginTop: 6 }}>{matchCompleteFlash.label} — ${Math.floor((matchCompleteFlash.totalCents || 0) / 100)} matched!</div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 48: VIEWER LOCATION PANEL ════════════════ */}
+      {showLocationPanel && (
+        <div style={{ position: 'fixed', bottom: 90, left: 0, right: 0, zIndex: 700, padding: '0 12px' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '16px', maxWidth: 400, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1.5 }}>🌍 WHERE ARE YOU WATCHING FROM?</span>
+              <button onClick={function() { setShowLocationPanel(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+            {!myLocation && (
+              <div style={{ marginBottom: 14 }}>
+                <input value={locationDraft} onChange={function(e) { setLocationDraft(e.target.value.slice(0, 60)); }} placeholder="City, Country — e.g. Atlanta, USA" style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, marginBottom: 8, boxSizing: 'border-box' }} />
+                <button onClick={function() {
+                  if (!locationDraft.trim()) return;
+                  if (socket) socket.emit('viewer-location', { roomId: roomId, location: locationDraft.trim() }, function(res) {
+                    if (res && res.ok) { setMyLocation(locationDraft.trim()); if (addToast) addToast('🌍 Location shared!', 'success'); }
+                  });
+                }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 10, padding: '10px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1.5 }}>SHARE</button>
+              </div>
+            )}
+            {myLocation && <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEAL, marginBottom: 12 }}>✓ You shared: {myLocation}</div>}
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 8, letterSpacing: .5 }}>VIEWERS ({locationShoutouts.length})</div>
+            <div style={{ maxHeight: 160, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {locationShoutouts.length === 0 && <div style={{ color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, textAlign: 'center', padding: '8px 0' }}>NONE YET</div>}
+              {locationShoutouts.slice().reverse().map(function(entry) {
+                return (
+                  <div key={entry.userId} style={{ background: CARD2, borderRadius: 8, padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 14 }}>📍</span>
+                    <div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{entry.username}</div>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT }}>{entry.location}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 48: DONATION MATCH SETUP ════════════════ */}
+      {showMatchSet && (role === 'host' || role === 'cohost') && !donationMatch && (
+        <div style={{ position: 'fixed', bottom: 90, left: 0, right: 0, zIndex: 700, padding: '0 12px' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '16px', maxWidth: 400, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1.5 }}>🤝 DONATION MATCH</span>
+              <button onClick={function() { setShowMatchSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 8 }}>LABEL</div>
+            <input value={matchDraft.label} onChange={function(e) { setMatchDraft(function(d) { return Object.assign({}, d, { label: e.target.value }); }); }} style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, marginBottom: 10, boxSizing: 'border-box' }} />
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 8 }}>MATCH UP TO (USD)</div>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+              {['25','50','100','250'].map(function(d) {
+                return <button key={d} onClick={function() { setMatchDraft(function(m) { return Object.assign({}, m, { limitDollars: d }); }); }} style={{ flex: 1, background: matchDraft.limitDollars === d ? 'rgba(168,85,247,.18)' : CARD2, border: '1.5px solid ' + (matchDraft.limitDollars === d ? '#A855F7' : BORDER), borderRadius: 8, padding: '8px', fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: matchDraft.limitDollars === d ? '#A855F7' : MUTED, cursor: 'pointer' }}>${d}</button>;
+              })}
+            </div>
+            <button onClick={function() {
+              var limitCents = Math.floor(parseFloat(matchDraft.limitDollars) * 100) || 0;
+              if (!limitCents) { if (addToast) addToast('Invalid amount', 'error'); return; }
+              if (socket) socket.emit('set-donation-match', { roomId: roomId, limitCents: limitCents, label: matchDraft.label.trim() || 'DONATION MATCH' }, function(res) {
+                if (res && res.ok) { setShowMatchSet(false); if (addToast) addToast('🤝 Donation match active!', 'success'); }
+                else if (res && res.error) { if (addToast) addToast(res.error, 'error'); }
+              });
+            }} style={{ width: '100%', background: '#A855F7', border: 'none', borderRadius: 12, padding: '12px', fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: '#fff', cursor: 'pointer', letterSpacing: 2 }}>START MATCH</button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 48: WATCH TIME LEADERBOARD ════════════════ */}
+      {showWatchLeaders && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, right: 12, zIndex: 700, width: 300 }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>⏱️ TOP WATCH TIME</span>
+              <button onClick={function() { setShowWatchLeaders(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            {watchLeaders.length === 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center', padding: '10px 0' }}>NO DATA YET</div>}
+            {watchLeaders.map(function(e, i) {
+              var mins = Math.floor((e.totalMs || 0) / 60000);
+              return (
+                <div key={e.userId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < watchLeaders.length - 1 ? '1px solid ' + BORDER : 'none' }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: i === 0 ? GOLD : MUTED, width: 16 }}>#{i + 1}</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, flex: 1 }}>{e.userId}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: TEAL }}>{mins}m</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

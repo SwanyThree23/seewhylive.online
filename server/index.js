@@ -521,6 +521,11 @@ var viewerQueueMap     = new Map();  // roomId → [{ id, userId, username, text
 var moodRingMap        = new Map();  // roomId → { score, ts, intervalId }
 var triviaDropMap      = new Map();  // roomId → { q, opts, answer, votes:{A,B,C,D}, endsAt, timerId, revealed }
 var nameTagMap         = new Map();  // userId → string (tagline)
+// Batch 48
+var locationMap        = new Map();  // roomId → [{ userId, username, location, ts }]
+var watchTimeMap       = new Map();  // userId → { joinTs, roomId }
+var highlightVoteMap   = new Map();  // roomId → { label, yes: Set, no: Set, endsAt, timerId }
+var donationMatchMap   = new Map();  // roomId → { totalCents, limitCents, matchedCents, label }
 // Batch 42
 var chatWordMap         = new Map();  // roomId → Map<word, count>  (word frequency for cloud)
 var chatWordMsgCount   = new Map();  // roomId → int (messages since last broadcast)
@@ -723,6 +728,12 @@ function getJoinStateForRoom(roomId) {
   state.moodRing = (mr47 && mr47.ts > Date.now() - 20000) ? { score: mr47.score } : null;
   var td47 = triviaDropMap.get(roomId);
   state.triviaDrop = td47 ? { q: td47.q, opts: td47.opts, endsAt: td47.endsAt, revealed: td47.revealed, results: td47.revealed ? td47.votes : null, answer: td47.revealed ? td47.answer : null } : null;
+  // Batch 48
+  var loc48 = locationMap.get(roomId);
+  state.locationShoutouts = loc48 ? loc48.slice(-20) : [];
+  var hv48 = highlightVoteMap.get(roomId);
+  state.highlightVote = (hv48 && hv48.endsAt > Date.now()) ? { label: hv48.label, yes: hv48.yes.size, no: hv48.no.size, endsAt: hv48.endsAt } : null;
+  state.donationMatch = donationMatchMap.get(roomId) || null;
   // Batch 44
   state.schedule = scheduleMap.get(roomId) || [];
   var rw44 = reactWallMap.get(roomId);
@@ -1690,6 +1701,8 @@ io.on('connection', function(socket) {
             }
             viewerAck.watchStreak = _vsStr.days;
           }
+          // Batch 48: track watch time start
+          if (socket.data.userId) watchTimeMap.set(socket.data.userId, { joinTs: Date.now(), roomId: roomId });
           io.to(socket.id).emit('join-room-ack', viewerAck);
           if (ack) ack(viewerAck);
         })
@@ -2606,6 +2619,16 @@ io.on('connection', function(socket) {
 
     // Mood ring boost on gift
     updateMoodRing(roomId, Math.min(10, Math.floor(valueCents / 100)));
+
+    // Batch 48: donation match progress
+    var _dmMatch = donationMatchMap.get(roomId);
+    if (_dmMatch && _dmMatch.matchedCents < _dmMatch.limitCents) {
+      _dmMatch.matchedCents = Math.min(_dmMatch.limitCents, _dmMatch.matchedCents + valueCents);
+      io.to(roomId).emit('donation-match-update', _dmMatch);
+      if (_dmMatch.matchedCents >= _dmMatch.limitCents) {
+        io.to(roomId).emit('donation-match-complete', { label: _dmMatch.label, totalCents: _dmMatch.limitCents });
+      }
+    }
 
     // Award points to gift sender
     var giftPoints = Math.max(10, Math.floor(valueCents / 10));
@@ -5691,6 +5714,80 @@ io.on('connection', function(socket) {
     if (ack) ack({ ok: true });
   });
 
+  // ── Batch 48: viewer-location ────────────────────────────────────────
+  socket.on('viewer-location', function(data, ack) {
+    var roomId = socket.data.roomId; if (!roomId) return;
+    var location = data && typeof data.location === 'string' ? data.location.trim().slice(0, 60) : '';
+    if (!location) { if (ack) ack({ error: 'empty' }); return; }
+    if (!locationMap.has(roomId)) locationMap.set(roomId, []);
+    var locs = locationMap.get(roomId);
+    var existing = locs.findIndex(function(e) { return e.userId === socket.data.userId; });
+    var entry = { userId: socket.data.userId, username: socket.data.username || 'Viewer', location: location, ts: Date.now() };
+    if (existing >= 0) locs[existing] = entry; else locs.push(entry);
+    if (locs.length > 100) locationMap.set(roomId, locs.slice(-100));
+    io.to(roomId).emit('location-update', { entry: entry, total: locs.length });
+    if (ack) ack({ ok: true });
+  });
+
+  // ── Batch 48: watch-time-leaders ─────────────────────────────────────
+  socket.on('watch-time-leaders', function(data, ack) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId; if (!roomId) return;
+    var now = Date.now();
+    var leaders = [];
+    watchTimeMap.forEach(function(entry, uid) {
+      if (entry.roomId !== roomId) return;
+      var totalMs = (entry.totalMs || 0) + (entry.joinTs ? now - entry.joinTs : 0);
+      leaders.push({ userId: uid, totalMs: totalMs });
+    });
+    leaders.sort(function(a, b) { return b.totalMs - a.totalMs; });
+    if (ack) ack({ leaders: leaders.slice(0, 10) });
+  });
+
+  // ── Batch 48: highlight-vote ─────────────────────────────────────────
+  socket.on('highlight-vote', function(data, ack) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId; if (!roomId) return;
+    if (highlightVoteMap.has(roomId)) { if (ack) ack({ error: 'already active' }); return; }
+    var label = data && typeof data.label === 'string' ? data.label.trim().slice(0, 80) : 'Should we clip this?';
+    var secs = Math.max(15, Math.min(60, Math.floor(Number(data && data.secs) || 30)));
+    var endsAt = Date.now() + secs * 1000;
+    var vote = { label: label, yes: new Set(), no: new Set(), endsAt: endsAt };
+    vote.timerId = setTimeout(function() {
+      var v = highlightVoteMap.get(roomId); if (!v) return;
+      io.to(roomId).emit('highlight-vote-result', { label: v.label, yes: v.yes.size, no: v.no.size, clip: v.yes.size > v.no.size });
+      highlightVoteMap.delete(roomId);
+    }, secs * 1000);
+    highlightVoteMap.set(roomId, vote);
+    io.to(roomId).emit('highlight-vote-start', { label: label, endsAt: endsAt });
+    if (ack) ack({ ok: true });
+  });
+
+  // ── Batch 48: highlight-cast ─────────────────────────────────────────
+  socket.on('highlight-cast', function(data) {
+    var roomId = socket.data.roomId; if (!roomId) return;
+    var hv = highlightVoteMap.get(roomId); if (!hv || hv.endsAt < Date.now()) return;
+    var choice = data && data.choice ? String(data.choice).toLowerCase() : '';
+    if (choice !== 'yes' && choice !== 'no') return;
+    var uid = socket.data.userId; if (!uid || hv.yes.has(uid) || hv.no.has(uid)) return;
+    hv[choice].add(uid);
+    io.to(roomId).emit('highlight-vote-update', { yes: hv.yes.size, no: hv.no.size });
+  });
+
+  // ── Batch 48: set-donation-match ─────────────────────────────────────
+  socket.on('set-donation-match', function(data, ack) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId; if (!roomId) return;
+    if (!data) { donationMatchMap.delete(roomId); io.to(roomId).emit('donation-match-update', null); if (ack) ack({ ok: true }); return; }
+    var limitCents = Math.max(100, Math.min(1000000, Math.floor(Number(data.limitCents) || 0)));
+    var label = typeof data.label === 'string' ? data.label.trim().slice(0, 60) : 'DONATION MATCH';
+    if (!limitCents) { if (ack) ack({ error: 'invalid amount' }); return; }
+    var match = { label: label, limitCents: limitCents, matchedCents: 0 };
+    donationMatchMap.set(roomId, match);
+    io.to(roomId).emit('donation-match-update', match);
+    if (ack) ack({ ok: true });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -6227,6 +6324,11 @@ io.on('connection', function(socket) {
     var tdEnd = triviaDropMap.get(roomId);
     if (tdEnd && tdEnd.timerId) clearTimeout(tdEnd.timerId);
     triviaDropMap.delete(roomId);
+    locationMap.delete(roomId);
+    var hvEnd = highlightVoteMap.get(roomId);
+    if (hvEnd && hvEnd.timerId) clearTimeout(hvEnd.timerId);
+    highlightVoteMap.delete(roomId);
+    donationMatchMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -6541,6 +6643,16 @@ io.on('connection', function(socket) {
     var wasViewer = room.viewers.has(socket.id);
     room.viewers.delete(socket.id);
     room.guests.delete(socket.id);
+
+    // Batch 48: record watch time on disconnect
+    if (socket.data.userId) {
+      var _wtEntry = watchTimeMap.get(socket.data.userId);
+      if (_wtEntry && _wtEntry.roomId === roomId) {
+        _wtEntry.totalMs = (_wtEntry.totalMs || 0) + (Date.now() - _wtEntry.joinTs);
+        _wtEntry.joinTs = null;
+        watchTimeMap.set(socket.data.userId, _wtEntry);
+      }
+    }
 
     if (wasViewer) {
       try {
