@@ -42,7 +42,7 @@ export const SWANYBOT_PRO_MODULES = [
     name: 'Story / Music Video Pipeline',
     tagline: 'Lyrics → song → avatar → music video',
     icon: Music,
-    status: 'next',
+    status: 'live',
     accent: '#D4854A',
     description:
       'End-to-end: chatbot lyrics → TTS song → character avatar → lip-synced music video with B-roll and beat-matched cuts.',
