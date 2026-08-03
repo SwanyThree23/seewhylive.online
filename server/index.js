@@ -423,6 +423,7 @@ var pinnedLinkMap       = new Map();  // roomId → { url, label, emoji } | null
 var giftChainMap        = new Map();  // roomId → { count, lastTs }
 var watchTogetherMap    = new Map();  // roomId → { url, currentTime, playing, ts } | null
 var teamBattleMap       = new Map();  // roomId → { redLabel, blueLabel, redScore, blueScore, active, endsAt, timerId }
+var whiteboardMap       = new Map();  // roomId → [{ x1, y1, x2, y2, color, size }] last 800 segments
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -531,6 +532,7 @@ function getJoinStateForRoom(roomId) {
   state.watchTogether = watchTogetherMap.get(roomId) || null;
   var tb = teamBattleMap.get(roomId);
   state.teamBattle = tb ? { redLabel: tb.redLabel, blueLabel: tb.blueLabel, redScore: tb.redScore, blueScore: tb.blueScore, active: tb.active, endsAt: tb.endsAt } : null;
+  state.whiteboardStrokes = (whiteboardMap.get(roomId) || []).slice(-200);
   return state;
 }
 
@@ -3477,6 +3479,37 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('reaction-heat', { x: x, y: y, emoji: emoji, ts: Date.now() });
   });
 
+  // ── Batch 25: Collaborative Whiteboard ───────────────────────────────────
+
+  // canvas-draw — any user draws a line segment on the shared whiteboard
+  socket.on('canvas-draw', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var VALID_COLORS = /^#[0-9a-fA-F]{3,6}$|^rgba?\(/;
+    var color  = String(data.color || '#C9A84C').slice(0, 24);
+    if (!VALID_COLORS.test(color)) color = '#C9A84C';
+    var size   = Math.min(Math.max(Number(data.size) || 3, 1), 40);
+    var x1 = Math.min(Math.max(Number(data.x1) || 0, 0), 100);
+    var y1 = Math.min(Math.max(Number(data.y1) || 0, 0), 100);
+    var x2 = Math.min(Math.max(Number(data.x2) || 0, 0), 100);
+    var y2 = Math.min(Math.max(Number(data.y2) || 0, 0), 100);
+    var seg = { x1: x1, y1: y1, x2: x2, y2: y2, color: color, size: size };
+    var strokes = whiteboardMap.get(roomId) || [];
+    strokes.push(seg);
+    if (strokes.length > 800) strokes = strokes.slice(-800);
+    whiteboardMap.set(roomId, strokes);
+    io.to(roomId).emit('canvas-draw', seg);
+  });
+
+  // canvas-clear — host/cohost clears the whiteboard
+  socket.on('canvas-clear', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    whiteboardMap.set(roomId, []);
+    io.to(roomId).emit('canvas-clear', {});
+  });
+
   // sound-alert — host triggers a named alert sound for the room
   socket.on('sound-alert', function(data) {
     var roomId = data.roomId || socket.data.roomId;
@@ -3953,6 +3986,7 @@ io.on('connection', function(socket) {
     var endedBattle = teamBattleMap.get(roomId);
     if (endedBattle && endedBattle.timerId) clearTimeout(endedBattle.timerId);
     teamBattleMap.delete(roomId);
+    whiteboardMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

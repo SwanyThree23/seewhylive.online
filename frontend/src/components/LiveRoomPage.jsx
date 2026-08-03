@@ -590,10 +590,19 @@ export default function LiveRoomPage({
   var [showCamPicker,      setShowCamPicker]      = useState(false);
   var [heatPoints,         setHeatPoints]         = useState([]);      // [{ x, y, emoji, id }]
   var [showHeatmap,        setShowHeatmap]        = useState(false);
+  // ── Batch 25: Collaborative Whiteboard, Stream Health, Revenue Split ──────
+  var [showWhiteboard,     setShowWhiteboard]     = useState(false);   // whiteboard overlay
+  var [wbColor,            setWbColor]            = useState('#C9A84C');
+  var [wbSize,             setWbSize]             = useState(3);
+  var [showHealthBar,      setShowHealthBar]      = useState(false);   // stream health compact HUD
+  var [showRevSplit,       setShowRevSplit]       = useState(false);   // revenue split breakdown
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
   var screenStreamRef = useRef(null);
+  var wbCanvasRef     = useRef(null);
+  var wbDrawing       = useRef(false);
+  var wbLastPos       = useRef({ x: 0, y: 0 });
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Camera warm-up ──
@@ -646,6 +655,23 @@ export default function LiveRoomPage({
       if (data.slowMode) setSlowMode(data.slowMode);
       if (data.watchTogether) setWatchTogether(data.watchTogether);
       if (data.teamBattle && data.teamBattle.active) setTeamBattle(data.teamBattle);
+      if (Array.isArray(data.whiteboardStrokes) && data.whiteboardStrokes.length > 0) {
+        setTimeout(function() {
+          var canvas = wbCanvasRef.current;
+          if (!canvas) return;
+          var ctx = canvas.getContext('2d');
+          var w = canvas.width; var h = canvas.height;
+          data.whiteboardStrokes.forEach(function(seg) {
+            ctx.beginPath();
+            ctx.strokeStyle = seg.color || '#C9A84C';
+            ctx.lineWidth   = seg.size  || 3;
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            ctx.moveTo(seg.x1 / 100 * w, seg.y1 / 100 * h);
+            ctx.lineTo(seg.x2 / 100 * w, seg.y2 / 100 * h);
+            ctx.stroke();
+          });
+        }, 300);
+      }
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -1074,6 +1100,28 @@ export default function LiveRoomPage({
       setTimeout(function() {
         setHeatPoints(function(prev) { return prev.filter(function(p) { return p.id !== pid; }); });
       }, 2500);
+    });
+
+    // ── Batch 25: Whiteboard ───────────────────────────────────────────────
+    socket.on('canvas-draw', function(seg) {
+      if (!seg || !wbCanvasRef.current) return;
+      var canvas = wbCanvasRef.current;
+      var ctx    = canvas.getContext('2d');
+      var w = canvas.width; var h = canvas.height;
+      ctx.beginPath();
+      ctx.strokeStyle = seg.color || '#C9A84C';
+      ctx.lineWidth   = seg.size  || 3;
+      ctx.lineCap     = 'round';
+      ctx.lineJoin    = 'round';
+      ctx.moveTo(seg.x1 / 100 * w, seg.y1 / 100 * h);
+      ctx.lineTo(seg.x2 / 100 * w, seg.y2 / 100 * h);
+      ctx.stroke();
+    });
+
+    socket.on('canvas-clear', function() {
+      if (!wbCanvasRef.current) return;
+      var canvas = wbCanvasRef.current;
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     });
 
     socket.on('sound-alert', function(data) {
@@ -2703,6 +2751,9 @@ export default function LiveRoomPage({
               { emoji: '⌨️', label: 'Hotkeys', active: hotkeysEnabled, onTap: function() { setHotkeysEnabled(function(s) { return !s; }); if (!hotkeysEnabled && addToast) addToast('⌨️ Host hotkeys enabled (M=mute, V=cam, C=chat, H=hype, Esc=clear)', 'info'); } },
               { emoji: '📅', label: 'Schedule', active: !!nextStreamTs, onTap: function() { setShowNextStream(function(s) { return !s; }); } },
               { emoji: '⚔️', label: 'Battle', active: !!(teamBattle && teamBattle.active), onTap: function() { setShowTeamBattle(function(s) { return !s; }); } },
+              { emoji: '🖊️', label: 'Board', active: showWhiteboard, onTap: function() { setShowWhiteboard(function(s) { return !s; }); } },
+              { emoji: '📡', label: 'Health', active: showHealthBar, onTap: function() { setShowHealthBar(function(s) { return !s; }); } },
+              { emoji: '💰', label: 'Rev Split', active: showRevSplit, onTap: function() { setShowRevSplit(function(s) { return !s; }); } },
             ].concat(multiCamDevices.length > 1 ? [
               { emoji: '📷', label: 'Camera', active: showCamPicker, onTap: function() { setShowCamPicker(function(s) { return !s; }); } },
             ] : [])
@@ -6083,6 +6134,173 @@ export default function LiveRoomPage({
       {showHeatmap && heatPoints.length === 0 && (
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 62, pointerEvents: 'none', textAlign: 'center', color: MUTED }}>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, opacity: .7 }}>Tap on the stage to drop reactions</div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 25: COLLABORATIVE WHITEBOARD ════════════════ */}
+      {showWhiteboard && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 220, background: 'rgba(14,12,9,.92)', display: 'flex', flexDirection: 'column' }}>
+          {/* Toolbar */}
+          <div style={{ background: CARD, borderBottom: '1px solid ' + BORDER, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: GOLD, letterSpacing: 2 }}>🖊️ WHITEBOARD</div>
+            {/* Pen size */}
+            {[1, 3, 7, 14].map(function(sz) {
+              return (
+                <button key={sz} onClick={function() { setWbSize(sz); }}
+                  style={{ width: 28, height: 28, borderRadius: '50%', background: wbSize === sz ? GOLD + '33' : CARD2, border: '1px solid ' + (wbSize === sz ? GOLD + '88' : BORDER), cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: Math.max(2, sz * 1.6), height: Math.max(2, sz * 1.6), borderRadius: '50%', background: wbColor }} />
+                </button>
+              );
+            })}
+            {/* Color swatches */}
+            {['#C9A84C','#FF1A3C','#4A90D9','#00CC66','#FF8C00','#CC44FF','#F0E8D4','#000000'].map(function(col) {
+              return (
+                <button key={col} onClick={function() { setWbColor(col); }}
+                  style={{ width: 22, height: 22, borderRadius: '50%', background: col, border: '2px solid ' + (wbColor === col ? TEXT : 'transparent'), cursor: 'pointer', flexShrink: 0 }} />
+              );
+            })}
+            <div style={{ flex: 1 }} />
+            {(role === 'host' || role === 'cohost') && (
+              <button onClick={function() { if (socket) socket.emit('canvas-clear', { roomId: roomId }); }}
+                style={{ background: 'rgba(255,26,60,.12)', border: '1px solid ' + RED + '44', borderRadius: 8, padding: '6px 14px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: RED, cursor: 'pointer', letterSpacing: .5 }}>
+                CLEAR
+              </button>
+            )}
+            <button onClick={function() { setShowWhiteboard(false); }}
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '6px 12px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}>
+              CLOSE
+            </button>
+          </div>
+
+          {/* Canvas area */}
+          <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            <canvas ref={wbCanvasRef}
+              width={1200} height={700}
+              style={{ width: '100%', height: '100%', background: '#1A1510', cursor: 'crosshair', display: 'block' }}
+              onPointerDown={function(e) {
+                e.currentTarget.setPointerCapture(e.pointerId);
+                wbDrawing.current = true;
+                var rect = e.currentTarget.getBoundingClientRect();
+                var scaleX = 1200 / rect.width; var scaleY = 700 / rect.height;
+                wbLastPos.current = { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+              }}
+              onPointerMove={function(e) {
+                if (!wbDrawing.current) return;
+                var rect  = e.currentTarget.getBoundingClientRect();
+                var scaleX = 1200 / rect.width; var scaleY = 700 / rect.height;
+                var nx = (e.clientX - rect.left) * scaleX;
+                var ny = (e.clientY - rect.top)  * scaleY;
+                var prev = wbLastPos.current;
+                // Draw locally
+                var ctx = wbCanvasRef.current.getContext('2d');
+                ctx.beginPath(); ctx.strokeStyle = wbColor; ctx.lineWidth = wbSize; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.moveTo(prev.x, prev.y); ctx.lineTo(nx, ny); ctx.stroke();
+                // Broadcast as percentage coords
+                if (socket) socket.emit('canvas-draw', { roomId: roomId, x1: prev.x / 12, y1: prev.y / 7, x2: nx / 12, y2: ny / 7, color: wbColor, size: wbSize });
+                wbLastPos.current = { x: nx, y: ny };
+              }}
+              onPointerUp={function() { wbDrawing.current = false; }}
+              onPointerLeave={function() { wbDrawing.current = false; }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 25: STREAM HEALTH BAR ════════════════ */}
+      {showHealthBar && (role === 'host' || role === 'cohost') && (
+        <div style={{
+          position: 'absolute', top: 56, right: 12, zIndex: 85,
+          background: 'rgba(14,12,9,.88)', border: '1px solid ' + BORDER,
+          borderRadius: 10, padding: '8px 14px', backdropFilter: 'blur(6px)',
+          display: 'flex', gap: 14, alignItems: 'center',
+          fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED,
+          animation: 'fadeSlideIn .2s ease',
+        }}>
+          <span style={{ color: GOLD, letterSpacing: 1 }}>📡 HEALTH</span>
+          {streamStats ? (
+            <>
+              <span style={{ color: streamStats.bitrateKbps >= 1500 ? '#00CC66' : streamStats.bitrateKbps >= 500 ? TEAL : RED }}>
+                {streamStats.bitrateKbps || 0} kbps
+              </span>
+              <span style={{ color: streamStats.rttMs < 80 ? '#00CC66' : streamStats.rttMs < 200 ? TEAL : RED }}>
+                RTT {streamStats.rttMs || 0}ms
+              </span>
+              {streamStats.lossPct > 0 && (
+                <span style={{ color: streamStats.lossPct > 5 ? RED : TEAL }}>
+                  loss {streamStats.lossPct.toFixed(1)}%
+                </span>
+              )}
+              <span style={{ color: streamStats.bitrateKbps >= 1000 ? '#00CC66' : RED }}>
+                {streamStats.bitrateKbps >= 2000 ? '●●●' : streamStats.bitrateKbps >= 800 ? '●●○' : '●○○'}
+              </span>
+            </>
+          ) : (
+            <span style={{ color: MUTED, opacity: .6 }}>waiting for stats…</span>
+          )}
+          <button onClick={function() { setShowHealthBar(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 10, marginLeft: 4 }}>✕</button>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 25: REVENUE SPLIT PANEL ════════════════ */}
+      {showRevSplit && (role === 'host' || role === 'cohost') && (
+        <div style={{
+          position: 'absolute', bottom: 90, right: 12, zIndex: 200,
+          background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 16,
+          padding: '16px 20px', minWidth: 240, animation: 'fadeSlideIn .2s ease',
+          boxShadow: '0 8px 28px rgba(0,0,0,.6)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: GOLD, letterSpacing: 2 }}>💰 REVENUE SPLIT</div>
+            <button onClick={function() { setShowRevSplit(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+          </div>
+
+          {(function() {
+            var total   = sessionEarningsCents || 0;
+            var creator = Math.round(total * 0.70);
+            var platform = Math.round(total * 0.30);
+            var perCohost = 0;
+            var cohostCount = 0;
+            if (onStage) {
+              onStage.forEach(function(g) { if (g.role === 'cohost') cohostCount++; });
+            }
+            if (role === 'cohost' && cohostCount > 0) {
+              perCohost = Math.round((creator * 0.20) / cohostCount);
+            }
+            var rows = [
+              { label: 'Host (70%)', value: creator, color: GOLD },
+              { label: 'Platform (30%)', value: platform, color: MUTED },
+            ];
+            if (cohostCount > 0) {
+              rows.splice(1, 0, { label: cohostCount + ' Co-host' + (cohostCount > 1 ? 's' : '') + ' (20% of host)', value: Math.round(creator * 0.20), color: TEAL });
+              rows[0] = { label: 'Host (net 56%)', value: Math.round(total * 0.56), color: GOLD };
+            }
+            return (
+              <div>
+                {rows.map(function(r) {
+                  return (
+                    <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: .3 }}>{r.label}</span>
+                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: r.color, letterSpacing: 1 }}>
+                        ${(r.value / 100).toFixed(2)}
+                      </span>
+                    </div>
+                  );
+                })}
+                <div style={{ height: 1, background: BORDER, margin: '10px 0' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: .3 }}>SESSION TOTAL</span>
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1 }}>
+                    ${(total / 100).toFixed(2)}
+                  </span>
+                </div>
+                {perCohost > 0 && (
+                  <div style={{ marginTop: 6, fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, textAlign: 'right' }}>
+                    Your share: ${(perCohost / 100).toFixed(2)}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
