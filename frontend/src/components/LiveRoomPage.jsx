@@ -668,6 +668,20 @@ export default function LiveRoomPage({
   var [fanWall,            setFanWall]            = useState([]);      // [{userId, username, points}]
   var [showFanWall,        setShowFanWall]        = useState(false);
   var [pipActive,          setPipActive]          = useState(false);
+  // Batch 36 — Audience Challenge, BRB, Flash Drop, Applause, VIP
+  var [audienceChallenge,  setAudienceChallenge]  = useState(null);    // { text, durationSecs, startTs, responseCount }
+  var [showChallengeSet,   setShowChallengeSet]   = useState(false);
+  var [challengeDraft,     setChallengeDraft]     = useState({ text: '', durationSecs: 60 });
+  var [challengeResponded, setChallengeResponded] = useState(false);
+  var [brbMode,            setBrbMode]            = useState(null);    // { active, message, returnEta, startTs }
+  var [showBrbSet,         setShowBrbSet]         = useState(false);
+  var [brbDraft,           setBrbDraft]           = useState({ message: 'Be Right Back…', returnEta: 120 });
+  var [flashDrop,          setFlashDrop]          = useState(null);    // { name, price, url, endsAt }
+  var [showFlashDropSet,   setShowFlashDropSet]   = useState(false);
+  var [flashDraft,         setFlashDraft]         = useState({ name: '', price: '', url: '', durationSecs: 60 });
+  var [applauseCount,      setApplauseCount]      = useState(0);
+  var [applauseBurst,      setApplauseBurst]      = useState(null);   // { count } for flash
+  var [vips,               setVips]               = useState([]);     // [userId]
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -767,6 +781,10 @@ export default function LiveRoomPage({
       if (Array.isArray(data.cohostQueue) && data.cohostQueue.length > 0) setCohostQueue(data.cohostQueue);
       if (data.energy) setStreamEnergy(data.energy.score || 0);
       if (Array.isArray(data.fanWall) && data.fanWall.length > 0) setFanWall(data.fanWall);
+      if (data.audienceChallenge) setAudienceChallenge(data.audienceChallenge);
+      if (data.intermission && data.intermission.active) setBrbMode(data.intermission);
+      if (data.flashDrop && data.flashDrop.endsAt > Date.now()) setFlashDrop(data.flashDrop);
+      if (Array.isArray(data.vips) && data.vips.length > 0) setVips(data.vips);
       if (Array.isArray(data.whiteboardStrokes) && data.whiteboardStrokes.length > 0) {
         setTimeout(function() {
           var canvas = wbCanvasRef.current;
@@ -1457,6 +1475,51 @@ export default function LiveRoomPage({
       setFanWall(data.fans);
     });
 
+    socket.on('audience-challenge', function(data) {
+      if (!data) return;
+      setChallengeResponded(false);
+      setAudienceChallenge({ text: data.text, durationSecs: data.durationSecs, startTs: data.startTs, responseCount: 0 });
+    });
+
+    socket.on('audience-challenge-update', function(data) {
+      if (!data) return;
+      setAudienceChallenge(function(c) { return c ? Object.assign({}, c, { responseCount: data.responseCount }) : c; });
+    });
+
+    socket.on('audience-challenge-ended', function(data) {
+      setTimeout(function() { setAudienceChallenge(null); }, 3000);
+    });
+
+    socket.on('brb-update', function(data) {
+      if (!data) return;
+      setBrbMode(data.active ? data : null);
+    });
+
+    socket.on('flash-drop', function(data) {
+      if (!data) return;
+      setFlashDrop(data);
+    });
+
+    socket.on('flash-drop-ended', function() {
+      setFlashDrop(null);
+    });
+
+    socket.on('applause-update', function(data) {
+      if (!data) return;
+      setApplauseCount(data.count || 0);
+    });
+
+    socket.on('applause-burst', function(data) {
+      if (!data) return;
+      setApplauseBurst(data);
+      setTimeout(function() { setApplauseBurst(null); }, 1800);
+    });
+
+    socket.on('vip-update', function(data) {
+      if (!data || !Array.isArray(data.vips)) return;
+      setVips(data.vips);
+    });
+
     socket.on('mood-update', function(data) {
       if (!data) return;
       setStreamMood(data);
@@ -1642,6 +1705,15 @@ export default function LiveRoomPage({
       socket.off('chat-raffle-result');
       socket.off('energy-update');
       socket.off('fan-wall-update');
+      socket.off('audience-challenge');
+      socket.off('audience-challenge-update');
+      socket.off('audience-challenge-ended');
+      socket.off('brb-update');
+      socket.off('flash-drop');
+      socket.off('flash-drop-ended');
+      socket.off('applause-update');
+      socket.off('applause-burst');
+      socket.off('vip-update');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
@@ -3236,7 +3308,27 @@ export default function LiveRoomPage({
                   document.exitPictureInPicture().then(function() { setPipActive(false); }).catch(function() {});
                 }
               }},
-            ]),
+              { emoji: '👏', label: 'Applause', active: false, onTap: function() {
+                if (socket) socket.emit('applause-tap', { roomId: roomId });
+              }},
+            ].concat(role === 'host' ? [
+              { emoji: '⏸', label: 'BRB', active: !!(brbMode && brbMode.active), onTap: function() {
+                if (brbMode && brbMode.active) {
+                  if (socket) socket.emit('brb-toggle', { roomId: roomId, active: false });
+                } else {
+                  setShowBrbSet(function(s) { return !s; });
+                }
+              }},
+              { emoji: '⚡', label: 'Challenge', active: !!(audienceChallenge && audienceChallenge.active !== false), onTap: function() { setShowChallengeSet(function(s) { return !s; }); } },
+              { emoji: '🛒', label: 'Flash Drop', active: !!flashDrop, onTap: function() {
+                if (flashDrop) {
+                  if (socket) socket.emit('flash-drop-ended', { roomId: roomId });
+                  setFlashDrop(null);
+                } else {
+                  setShowFlashDropSet(function(s) { return !s; });
+                }
+              }},
+            ] : [])),
           ].map(function(tool) {
             return (
               <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
@@ -3853,6 +3945,7 @@ export default function LiveRoomPage({
                       <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: isSuper ? '#C9A84C' : '#8A7A62' }}>
                         {msg.username}
                         {isSuper && <span style={{ color: '#C9A84C', marginLeft: 4 }}>💛 ${(Math.floor(msg.amountCents || 0) / 100).toFixed(2)}</span>}
+                        {vips.indexOf(msg.userId) !== -1 && <span style={{ marginLeft: 4, fontSize: 8, color: '#A855F7', fontWeight: 700 }}>💎VIP</span>}
                         {(function() {
                           var badges = userBadges[msg.userId] || (msg.userId === userId ? myBadges : []);
                           return badges.length > 0 ? (
@@ -7801,6 +7894,143 @@ export default function LiveRoomPage({
               {streamEnergy < 20 ? 'Warm it up — react, chat, and gift!' : streamEnergy < 50 ? "Chat's warming up " : streamEnergy < 80 ? 'Stream is 🔥 — keep going!' : 'PEAK ENERGY — crowd is going wild!'}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Audience Challenge banner ────────────────────────────────── */}
+      {audienceChallenge && (
+        <div style={{
+          position: 'absolute', bottom: 130, left: 10, right: 10, zIndex: 190,
+          background: 'rgba(14,12,9,.95)', border: '1.5px solid ' + GOLD, borderRadius: 14,
+          padding: '12px 16px', boxShadow: '0 0 24px rgba(201,168,76,.3)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: GOLD, letterSpacing: 2 }}>⚡ HOST CHALLENGE</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{audienceChallenge.responseCount || 0} responses</span>
+          </div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 16, color: TEXT, marginBottom: 10 }}>{audienceChallenge.text}</div>
+          {!challengeResponded && (
+            <button onClick={function() {
+              if (socket) { socket.emit('audience-challenge-respond', { roomId: roomId }); setChallengeResponded(true); }
+            }} style={{ background: GOLD, border: 'none', borderRadius: 8, padding: '7px 18px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#0E0C09', cursor: 'pointer' }}>
+              ✓ I Did It!
+            </button>
+          )}
+          {challengeResponded && (
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: TEAL }}>✓ Responded!</span>
+          )}
+        </div>
+      )}
+
+      {/* ── Audience Challenge setup panel ──────────────────────────── */}
+      {showChallengeSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>⚡ AUDIENCE CHALLENGE</span>
+            <div onClick={function() { setShowChallengeSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <textarea value={challengeDraft.text} onChange={function(e) { var v = e.target.value.slice(0, 120); setChallengeDraft(function(s) { return Object.assign({}, s, { text: v }); }); }} placeholder="e.g. Say hello in your native language!" rows={3} style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>DURATION (sec)</span>
+            {[30, 60, 120].map(function(s) {
+              return <button key={s} onClick={function() { setChallengeDraft(function(d) { return Object.assign({}, d, { durationSecs: s }); }); }} style={{ background: challengeDraft.durationSecs === s ? GOLD : CARD2, border: '1px solid ' + (challengeDraft.durationSecs === s ? GOLD : BORDER), borderRadius: 8, padding: '4px 12px', color: challengeDraft.durationSecs === s ? '#0E0C09' : TEXT, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer' }}>{s}s</button>;
+            })}
+          </div>
+          <button onClick={function() {
+            if (!challengeDraft.text.trim()) return;
+            if (socket) socket.emit('audience-challenge-set', { roomId: roomId, text: challengeDraft.text.trim(), durationSecs: challengeDraft.durationSecs });
+            setShowChallengeSet(false);
+          }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}>LAUNCH CHALLENGE</button>
+        </div>
+      )}
+
+      {/* ── BRB / Intermission screen ───────────────────────────────── */}
+      {brbMode && brbMode.active && role !== 'host' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.97)', zIndex: 250, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+          <div style={{ fontSize: 52 }}>⏸</div>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 28, color: GOLD, letterSpacing: 3 }}>BE RIGHT BACK</div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 18, color: TEXT, textAlign: 'center', maxWidth: 260 }}>{brbMode.message || 'Hang tight…'}</div>
+          {brbMode.returnEta && (
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: MUTED }}>Back in ~{Math.ceil(brbMode.returnEta / 60)} min</div>
+          )}
+        </div>
+      )}
+
+      {/* ── BRB setup panel (host) ──────────────────────────────────── */}
+      {showBrbSet && role === 'host' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>⏸ BRB MODE</span>
+            <div onClick={function() { setShowBrbSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <input value={brbDraft.message} onChange={function(e) { setBrbDraft(function(s) { return Object.assign({}, s, { message: e.target.value.slice(0, 100) }); }); }} placeholder="Be Right Back…" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>EST. RETURN (s)</span>
+            {[60, 120, 300].map(function(s) {
+              return <button key={s} onClick={function() { setBrbDraft(function(d) { return Object.assign({}, d, { returnEta: s }); }); }} style={{ background: brbDraft.returnEta === s ? GOLD : CARD2, border: '1px solid ' + (brbDraft.returnEta === s ? GOLD : BORDER), borderRadius: 8, padding: '4px 10px', color: brbDraft.returnEta === s ? '#0E0C09' : TEXT, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer' }}>{s / 60}m</button>;
+            })}
+          </div>
+          <button onClick={function() {
+            if (socket) socket.emit('brb-toggle', { roomId: roomId, active: true, message: brbDraft.message, returnEta: brbDraft.returnEta });
+            setShowBrbSet(false);
+          }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}>ACTIVATE BRB</button>
+        </div>
+      )}
+
+      {/* ── Flash Drop banner ───────────────────────────────────────── */}
+      {flashDrop && (
+        <div style={{
+          position: 'absolute', bottom: 170, left: 10, right: 10, zIndex: 190,
+          background: 'linear-gradient(135deg, rgba(14,12,9,.97) 0%, rgba(36,28,18,.97) 100%)',
+          border: '2px solid ' + GOLD, borderRadius: 14, padding: '12px 16px',
+          boxShadow: '0 0 32px rgba(201,168,76,.4)',
+          animation: 'entranceSlide .4s ease',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: RED, letterSpacing: 2 }}>🛒 FLASH DROP</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD }}>LIMITED TIME</span>
+          </div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 18, color: TEXT }}>{flashDrop.name}</div>
+          {flashDrop.price && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, color: GOLD, marginTop: 2 }}>{flashDrop.price}</div>}
+          {flashDrop.url && (
+            <a href={flashDrop.url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 8, background: GOLD, color: '#0E0C09', borderRadius: 8, padding: '6px 16px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, textDecoration: 'none', letterSpacing: 1 }}>GET IT NOW</a>
+          )}
+        </div>
+      )}
+
+      {/* ── Flash Drop setup panel (host) ───────────────────────────── */}
+      {showFlashDropSet && role === 'host' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>🛒 FLASH DROP</span>
+            <div onClick={function() { setShowFlashDropSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <input value={flashDraft.name} onChange={function(e) { setFlashDraft(function(s) { return Object.assign({}, s, { name: e.target.value.slice(0, 60) }); }); }} placeholder="Product name" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+          <input value={flashDraft.price} onChange={function(e) { setFlashDraft(function(s) { return Object.assign({}, s, { price: e.target.value.slice(0, 20) }); }); }} placeholder="Price (e.g. $24.99)" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+          <input value={flashDraft.url} onChange={function(e) { setFlashDraft(function(s) { return Object.assign({}, s, { url: e.target.value.slice(0, 300) }); }); }} placeholder="Buy link (optional)" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>TIMER</span>
+            {[30, 60, 120].map(function(s) {
+              return <button key={s} onClick={function() { setFlashDraft(function(d) { return Object.assign({}, d, { durationSecs: s }); }); }} style={{ background: flashDraft.durationSecs === s ? GOLD : CARD2, border: '1px solid ' + (flashDraft.durationSecs === s ? GOLD : BORDER), borderRadius: 8, padding: '4px 10px', color: flashDraft.durationSecs === s ? '#0E0C09' : TEXT, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer' }}>{s}s</button>;
+            })}
+          </div>
+          <button onClick={function() {
+            if (!flashDraft.name.trim()) return;
+            if (socket) socket.emit('flash-drop-start', { roomId: roomId, name: flashDraft.name.trim(), price: flashDraft.price.trim(), url: flashDraft.url.trim(), durationSecs: flashDraft.durationSecs });
+            setShowFlashDropSet(false);
+          }} style={{ background: RED, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#fff', cursor: 'pointer', letterSpacing: 1 }}>DROP IT NOW</button>
+        </div>
+      )}
+
+      {/* ── Applause burst overlay ──────────────────────────────────── */}
+      {applauseBurst && (
+        <div style={{
+          position: 'absolute', top: '30%', left: 0, right: 0, zIndex: 300,
+          pointerEvents: 'none', textAlign: 'center',
+          animation: 'comboFlash 1.8s ease forwards',
+        }}>
+          <div style={{ fontSize: 52 }}>👏</div>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 28, color: GOLD, letterSpacing: 3 }}>{applauseBurst.count} CLAPS!</div>
         </div>
       )}
 

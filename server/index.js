@@ -466,6 +466,12 @@ var starThrottle        = new Map();  // userId → lastStarTs
 var energyMap           = new Map();  // roomId → { score:0-100, points:N, lastDecay:ts }
 var fanWallMap          = new Map();  // roomId → Map<userId, { username, points, lastSeen }>
 var fanWallThrottle     = new Map();  // userId → lastFanWallTs
+// Batch 36
+var audienceChallengeMap = new Map(); // roomId → { text, durationSecs, startTs, active, responseCount, respondedBy: Set }
+var intermissionMap     = new Map();  // roomId → { active, message, returnEta } | null
+var flashDropMap        = new Map();  // roomId → { name, price, url, endsAt, timerId }
+var applauseMap         = new Map();  // roomId → { count, windowStart, peak }
+var vipMap              = new Map();  // roomId → Set<userId>
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -607,6 +613,14 @@ function getJoinStateForRoom(roomId) {
   } else {
     state.fanWall = [];
   }
+  // Batch 36
+  var ac = audienceChallengeMap.get(roomId);
+  state.audienceChallenge = (ac && ac.active) ? { text: ac.text, durationSecs: ac.durationSecs, startTs: ac.startTs, responseCount: ac.responseCount } : null;
+  state.intermission = intermissionMap.get(roomId) || null;
+  var fd = flashDropMap.get(roomId);
+  state.flashDrop = (fd && Date.now() < fd.endsAt) ? { name: fd.name, price: fd.price, url: fd.url, endsAt: fd.endsAt } : null;
+  var vips = vipMap.get(roomId);
+  state.vips = vips ? Array.from(vips) : [];
   return state;
 }
 
@@ -4425,6 +4439,125 @@ io.on('connection', function(socket) {
   // Also track raffle entries from chat messages
   // (if user types the keyword in chat while raffle is active)
 
+  // ── audience-challenge-set — host posts a timed task for viewers ──────
+  socket.on('audience-challenge-set', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var text = (data && data.text) ? String(data.text).slice(0, 120).trim() : '';
+    if (!text) return;
+    var durationSecs = Math.min(300, Math.max(10, parseInt(data.durationSecs, 10) || 60));
+    var startTs = Date.now();
+    var challenge = { text: text, durationSecs: durationSecs, startTs: startTs, active: true, responseCount: 0, respondedBy: new Set() };
+    if (audienceChallengeMap.has(roomId)) {
+      var old = audienceChallengeMap.get(roomId);
+      if (old.timerId) clearTimeout(old.timerId);
+    }
+    challenge.timerId = setTimeout(function() {
+      var cur = audienceChallengeMap.get(roomId);
+      if (cur && cur.startTs === startTs) {
+        cur.active = false;
+        io.to(roomId).emit('audience-challenge-ended', { responseCount: cur.responseCount });
+      }
+    }, durationSecs * 1000);
+    audienceChallengeMap.set(roomId, challenge);
+    io.to(roomId).emit('audience-challenge', { text: text, durationSecs: durationSecs, startTs: startTs });
+  });
+
+  // ── audience-challenge-respond — viewer marks task done ───────────────
+  socket.on('audience-challenge-respond', function(data) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) return;
+    var ch = audienceChallengeMap.get(roomId);
+    if (!ch || !ch.active) return;
+    if (ch.respondedBy.has(userId)) return;
+    ch.respondedBy.add(userId);
+    ch.responseCount += 1;
+    io.to(roomId).emit('audience-challenge-update', { responseCount: ch.responseCount });
+    addEnergy(roomId, userId, socket.data.username, 3);
+  });
+
+  // ── brb-toggle — host sets/clears BRB intermission screen ──────────
+  socket.on('brb-toggle', function(data) {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var active = !!(data && data.active);
+    if (active) {
+      var message = (data.message) ? String(data.message).slice(0, 100).trim() : 'Be Right Back…';
+      var returnEta = (data.returnEta) ? parseInt(data.returnEta, 10) : null;
+      var brb = { active: true, message: message, returnEta: returnEta, startTs: Date.now() };
+      intermissionMap.set(roomId, brb);
+      io.to(roomId).emit('brb-update', brb);
+    } else {
+      intermissionMap.delete(roomId);
+      io.to(roomId).emit('brb-update', { active: false });
+    }
+  });
+
+  // ── flash-drop-start — host triggers a time-limited merch/product drop ──
+  socket.on('flash-drop-start', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var name = (data && data.name) ? String(data.name).slice(0, 60).trim() : '';
+    var price = (data && data.price) ? String(data.price).slice(0, 20).trim() : '';
+    var url = (data && data.url) ? String(data.url).slice(0, 300).trim() : '';
+    if (!name) return;
+    var durationSecs = Math.min(300, Math.max(15, parseInt((data && data.durationSecs) || 60, 10)));
+    var endsAt = Date.now() + durationSecs * 1000;
+    var prev = flashDropMap.get(roomId);
+    if (prev && prev.timerId) clearTimeout(prev.timerId);
+    var timerId = setTimeout(function() {
+      flashDropMap.delete(roomId);
+      io.to(roomId).emit('flash-drop-ended', { roomId: roomId });
+    }, durationSecs * 1000);
+    flashDropMap.set(roomId, { name: name, price: price, url: url, endsAt: endsAt, timerId: timerId });
+    io.to(roomId).emit('flash-drop', { name: name, price: price, url: url, endsAt: endsAt });
+  });
+
+  // ── applause-tap — viewer taps the clap button ──────────────────────
+  socket.on('applause-tap', function(data) {
+    var roomId = (data && data.roomId) || socket.data.roomId;
+    if (!roomId) return;
+    var now = Date.now();
+    if (!applauseMap.has(roomId)) applauseMap.set(roomId, { count: 0, windowStart: now, peak: 0 });
+    var a = applauseMap.get(roomId);
+    if (now - a.windowStart > 3000) { a.count = 0; a.windowStart = now; }
+    a.count += 1;
+    if (a.count > a.peak) { a.peak = a.count; }
+    applauseMap.set(roomId, a);
+    io.to(roomId).emit('applause-update', { count: a.count, peak: a.peak });
+    if (a.count === 10 || a.count === 25 || a.count === 50 || a.count === 100) {
+      io.to(roomId).emit('applause-burst', { count: a.count });
+    }
+  });
+
+  // ── vip-grant — host marks a viewer as VIP ───────────────────────────
+  socket.on('vip-grant', function(data) {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    var targetId = data && data.userId;
+    if (!roomId || !targetId) return;
+    if (!vipMap.has(roomId)) vipMap.set(roomId, new Set());
+    vipMap.get(roomId).add(String(targetId));
+    io.to(roomId).emit('vip-update', { userId: targetId, vip: true, vips: Array.from(vipMap.get(roomId)) });
+  });
+
+  // ── vip-revoke — host removes VIP from a viewer ──────────────────────
+  socket.on('vip-revoke', function(data) {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    var targetId = data && data.userId;
+    if (!roomId || !targetId) return;
+    var vips = vipMap.get(roomId);
+    if (vips) {
+      vips.delete(String(targetId));
+      io.to(roomId).emit('vip-update', { userId: targetId, vip: false, vips: Array.from(vips) });
+    }
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -4904,6 +5037,13 @@ io.on('connection', function(socket) {
     chatRaffleMap.delete(roomId);
     energyMap.delete(roomId);
     fanWallMap.delete(roomId);
+    audienceChallengeMap.delete(roomId);
+    intermissionMap.delete(roomId);
+    var fd = flashDropMap.get(roomId);
+    if (fd && fd.timerId) clearTimeout(fd.timerId);
+    flashDropMap.delete(roomId);
+    applauseMap.delete(roomId);
+    vipMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
