@@ -26,17 +26,32 @@ git -C "$REPO_DIR" reset --hard "origin/$BRANCH"
 echo "  ✓ Code updated"
 
 # ── 2. Build frontend ────────────────────────────────────────────────────────
-echo "▶ Building frontend (root src/)..."
+echo "▶ Building root frontend (src/)..."
 cd "$REPO_DIR"
 npm install
 npm run build
-echo "  ✓ Frontend built → dist/"
+echo "  ✓ Root frontend built → dist/"
+
+# ── 2a. Build mediasoup frontend (frontend/) ─────────────────────────────────
+echo "▶ Building mediasoup frontend (frontend/)..."
+cd "$REPO_DIR/frontend"
+npm install
+npm run build
+cd "$REPO_DIR"
+echo "  ✓ Mediasoup frontend built → frontend/dist/"
 
 # ── 3. Deploy frontend dist ──────────────────────────────────────────────────
-echo "▶ Deploying frontend to $PROD_FRONTEND/dist..."
+echo "▶ Deploying root frontend to $PROD_FRONTEND/dist..."
 mkdir -p "$PROD_FRONTEND/dist"
 rsync -a --delete "$REPO_DIR/dist/" "$PROD_FRONTEND/dist/"
-echo "  ✓ Frontend deployed"
+echo "  ✓ Root frontend deployed"
+
+# ── 3a. Deploy mediasoup frontend dist ───────────────────────────────────────
+echo "▶ Deploying mediasoup frontend to $PROD_SERVER/../frontend/dist..."
+PROD_MEDIASOUP_DIST="$(dirname "$PROD_SERVER")/frontend/dist"
+mkdir -p "$PROD_MEDIASOUP_DIST"
+rsync -a --delete "$REPO_DIR/frontend/dist/" "$PROD_MEDIASOUP_DIST/"
+echo "  ✓ Mediasoup frontend deployed"
 
 # ── 4. Deploy server files ───────────────────────────────────────────────────
 echo "▶ Deploying server to $PROD_SERVER..."
