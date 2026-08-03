@@ -46,7 +46,9 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
   var [data,     setData]     = useState(null);
   var [loading,  setLoading]  = useState(true);
   var [error,    setError]    = useState(null);
-  var [tab,      setTab]      = useState('in');  // 'in' | 'out' | 'rooms'
+  var [tab,      setTab]      = useState('in');  // 'in' | 'out' | 'rooms' | 'leaders'
+  var [leaders,  setLeaders]  = useState([]);
+  var [leadersLoading, setLeadersLoading] = useState(false);
   var timerRef = useRef(null);
 
   function fetchData() {
@@ -68,6 +70,18 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
     timerRef.current = setInterval(fetchData, REFRESH_MS);
     return function() { clearInterval(timerRef.current); };
   }, []);
+
+  useEffect(function() {
+    if (tab !== 'leaders') return;
+    setLeadersLoading(true);
+    fetch('/api/battles/leaderboard?limit=20')
+      .then(function(r) { return r.json(); })
+      .then(function(rows) {
+        setLeaders(Array.isArray(rows) ? rows : []);
+        setLeadersLoading(false);
+      })
+      .catch(function() { setLeadersLoading(false); });
+  }, [tab]);
 
   var streamsIn  = (data && data.streamsIn)  || [];
   var streamsOut = (data && data.streamsOut) || [];
@@ -118,7 +132,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
       </div>
 
       {/* Tab switcher */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
         <button style={tabBtn('in', '#FF1A3C')} onClick={function() { setTab('in'); }}>
           ↓ IN ({activeIn.length})
         </button>
@@ -127,6 +141,9 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
         </button>
         <button style={tabBtn('rooms', '#C9A84C')} onClick={function() { setTab('rooms'); }}>
           ◈ ROOMS ({rooms.length})
+        </button>
+        <button style={tabBtn('leaders', '#C9A84C')} onClick={function() { setTab('leaders'); }}>
+          🏆 LEADERBOARD
         </button>
       </div>
 
@@ -300,6 +317,46 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
                     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C', lineHeight: 1 }}>{r.viewers}</div>
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#8A7A62' }}>VIEWERS</div>
                   </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── LEADERBOARD ── */}
+      {tab === 'leaders' && (
+        <div>
+          <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 10, padding: '10px 14px', marginBottom: 10 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', letterSpacing: 2, marginBottom: 2 }}>PK BATTLE LEADERBOARD</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>All-time wins across every event</div>
+          </div>
+          {leadersLoading && (
+            <div style={{ textAlign: 'center', padding: '32px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3020', letterSpacing: 2 }}>LOADING...</div>
+          )}
+          {!leadersLoading && leaders.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '32px 20px' }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>⚔️</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#3D3020', letterSpacing: 2 }}>NO BATTLES YET</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3020', marginTop: 4 }}>Completed PK battles will rank creators here</div>
+            </div>
+          )}
+          {!leadersLoading && leaders.map(function(entry) {
+            var rankColor = entry.rank === 1 ? '#C9A84C' : entry.rank === 2 ? '#A0A0A0' : entry.rank === 3 ? '#C87533' : '#8A7A62';
+            var rankBg = entry.rank <= 3 ? 'rgba(201,168,76,.08)' : 'transparent';
+            return (
+              <div key={entry.userId} style={Object.assign({}, card, { border: entry.rank <= 3 ? '1px solid rgba(201,168,76,.2)' : '1px solid rgba(255,255,255,.07)', background: rankBg, display: 'flex', alignItems: 'center', gap: 12 })}>
+                <div style={{ width: 28, textAlign: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: rankColor, flexShrink: 0, lineHeight: 1 }}>
+                  {entry.rank <= 3 ? ['🥇','🥈','🥉'][entry.rank - 1] : entry.rank}
+                </div>
+                <AvatarPortrait username={entry.displayName} size={36} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#F0E8D4', marginBottom: 2 }}>{entry.displayName}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{entry.totalPoints} total pts</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: rankColor, lineHeight: 1 }}>{entry.wins}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#8A7A62' }}>WINS</div>
                 </div>
               </div>
             );

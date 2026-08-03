@@ -8,6 +8,7 @@ const express = require('express');
 const router = express.Router();
 const battleService = require('../services/battleService');
 const requireAuth   = require('../middleware/auth');
+const pool          = require('../db');
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function validateId(req, res, next) {
@@ -95,6 +96,34 @@ router.get('/active', async (req, res) => {
   try {
     const battles = await battleService.getActiveBattles();
     res.json(battles);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/leaderboard', async (req, res) => {
+  try {
+    var limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
+    var result = await pool.query(
+      'SELECT winner_id, COUNT(*) AS wins, ' +
+      'COALESCE(SUM(CASE WHEN winner_id = challenger_id THEN challenger_points ELSE defender_points END), 0) AS total_points, ' +
+      'MAX(CASE WHEN winner_id = challenger_id THEN challenger_name ELSE defender_name END) AS display_name ' +
+      'FROM pk_battles ' +
+      'WHERE status = $1 AND winner_id IS NOT NULL ' +
+      'GROUP BY winner_id ' +
+      'ORDER BY wins DESC, total_points DESC ' +
+      'LIMIT $2',
+      ['completed', limit]
+    );
+    res.json(result.rows.map(function(r, i) {
+      return {
+        rank: i + 1,
+        userId: r.winner_id,
+        displayName: r.display_name || 'Unknown',
+        wins: parseInt(r.wins) || 0,
+        totalPoints: parseInt(r.total_points) || 0,
+      };
+    }));
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
