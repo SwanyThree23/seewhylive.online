@@ -427,6 +427,9 @@ var whiteboardMap       = new Map();  // roomId → [{ x1, y1, x2, y2, color, si
 var karaokeMap          = new Map();  // roomId → { text, active } | null
 var chaptersMap         = new Map();  // roomId → [{ ts, label, elapsed }]
 var sentimentMap        = new Map();  // roomId → { up: N, down: N, voters: Set<socketId> }
+var nowPlayingMap       = new Map();  // roomId → { title, artist, emoji } | null
+var tipTickerMap        = new Map();  // roomId → [{ text, id }]
+var viewerJoinMap       = new Map();  // roomId → Map<socketId, joinedAtSecs>
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -539,7 +542,9 @@ function getJoinStateForRoom(roomId) {
   state.karaoke  = karaokeMap.get(roomId)  || null;
   state.chapters = chaptersMap.get(roomId) || [];
   var sm = sentimentMap.get(roomId);
-  state.sentiment = sm ? { up: sm.up, down: sm.down } : { up: 0, down: 0 };
+  state.sentiment  = sm ? { up: sm.up, down: sm.down } : { up: 0, down: 0 };
+  state.nowPlaying = nowPlayingMap.get(roomId) || null;
+  state.tipTicker  = tipTickerMap.get(roomId) || [];
   return state;
 }
 
@@ -3612,6 +3617,51 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('guest-intro', { username: username, bio: bio, emoji: emoji, ts: Math.floor(Date.now() / 1000) });
   });
 
+  // ── Batch 28: Now Playing, Tip Ticker, Watch-Time Loyalty ────────────────
+
+  // Track viewer join time when they join the room
+  socket.on('viewer-ping', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (!viewerJoinMap.has(roomId)) viewerJoinMap.set(roomId, new Map());
+    var rMap = viewerJoinMap.get(roomId);
+    if (!rMap.has(socket.id)) rMap.set(socket.id, Math.floor(Date.now() / 1000));
+    // Return current watch time to the requesting socket
+    var elapsed = Math.floor(Date.now() / 1000) - (rMap.get(socket.id) || Math.floor(Date.now() / 1000));
+    io.to(socket.id).emit('watch-time', { elapsed: elapsed });
+  });
+
+  // now-playing-set — host sets the "Now Playing" song name
+  socket.on('now-playing-set', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var title  = String(data.title  || '').slice(0, 80);
+    var artist = String(data.artist || '').slice(0, 60);
+    var emoji  = String(data.emoji  || '🎵').slice(0, 4);
+    if (!title) {
+      nowPlayingMap.delete(roomId);
+      io.to(roomId).emit('now-playing', null);
+      return;
+    }
+    var np = { title: title, artist: artist, emoji: emoji, ts: Math.floor(Date.now() / 1000) };
+    nowPlayingMap.set(roomId, np);
+    io.to(roomId).emit('now-playing', np);
+  });
+
+  // tip-ticker-set — host queues up rotating tip/fact lines
+  socket.on('tip-ticker-set', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var items = Array.isArray(data.items) ? data.items : [];
+    var cleaned = items.slice(0, 10).map(function(item, i) {
+      return { text: String(item.text || item || '').slice(0, 120), id: i };
+    }).filter(function(item) { return item.text; });
+    tipTickerMap.set(roomId, cleaned);
+    io.to(roomId).emit('tip-ticker', { items: cleaned });
+  });
+
   // sound-alert — host triggers a named alert sound for the room
   socket.on('sound-alert', function(data) {
     var roomId = data.roomId || socket.data.roomId;
@@ -4092,6 +4142,9 @@ io.on('connection', function(socket) {
     karaokeMap.delete(roomId);
     chaptersMap.delete(roomId);
     sentimentMap.delete(roomId);
+    nowPlayingMap.delete(roomId);
+    tipTickerMap.delete(roomId);
+    viewerJoinMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

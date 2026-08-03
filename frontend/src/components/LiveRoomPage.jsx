@@ -612,6 +612,15 @@ export default function LiveRoomPage({
   var [showSentiment,      setShowSentiment]      = useState(false);   // sentiment bar overlay
   var [screenAnnotDots,    setScreenAnnotDots]    = useState([]);      // [{ x, y, color, id }]
   var [guestIntroCard,     setGuestIntroCard]     = useState(null);    // { username, bio, emoji } current card
+  // ── Batch 28: Now Playing, Tip Ticker, Watch-Time Badges ─────────────────
+  var [nowPlaying,         setNowPlaying]         = useState(null);    // { title, artist, emoji } | null
+  var [showNowPlayingEdit, setShowNowPlayingEdit] = useState(false);
+  var [nowPlayingInput,    setNowPlayingInput]    = useState({ title: '', artist: '', emoji: '🎵' });
+  var [tipTickerItems,     setTipTickerItems]     = useState([]);      // [{ text, id }]
+  var [tipTickerIdx,       setTipTickerIdx]       = useState(0);       // current rotating index
+  var [showTipEdit,        setShowTipEdit]        = useState(false);
+  var [tipEditInput,       setTipEditInput]       = useState('');      // newline-separated
+  var [myWatchSecs,        setMyWatchSecs]        = useState(0);       // seconds I've been watching
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -638,6 +647,26 @@ export default function LiveRoomPage({
       setMultiCamDevices(cams);
     }).catch(function() {});
   }, [role]);
+
+  // ── Watch time ping every 60 seconds ──
+  useEffect(function() {
+    if (!socket || !roomId) return;
+    socket.emit('viewer-ping', { roomId: roomId });
+    var interval = setInterval(function() {
+      setMyWatchSecs(function(s) { return s + 60; });
+      socket.emit('viewer-ping', { roomId: roomId });
+    }, 60000);
+    return function() { clearInterval(interval); };
+  }, [socket, roomId]);
+
+  // ── Tip ticker rotation ──
+  useEffect(function() {
+    if (tipTickerItems.length < 2) return;
+    var interval = setInterval(function() {
+      setTipTickerIdx(function(i) { return (i + 1) % tipTickerItems.length; });
+    }, 5000);
+    return function() { clearInterval(interval); };
+  }, [tipTickerItems]);
 
   // ── RTC + socket events ──
   useEffect(function() {
@@ -674,6 +703,8 @@ export default function LiveRoomPage({
       if (data.karaoke && data.karaoke.active) { setKaraokeText(data.karaoke.text || ''); setKaraokeActive(true); }
       if (Array.isArray(data.chapters) && data.chapters.length > 0) setStreamChapters(data.chapters);
       if (data.sentiment) setSentiment(data.sentiment);
+      if (data.nowPlaying) setNowPlaying(data.nowPlaying);
+      if (Array.isArray(data.tipTicker) && data.tipTicker.length > 0) setTipTickerItems(data.tipTicker);
       if (Array.isArray(data.whiteboardStrokes) && data.whiteboardStrokes.length > 0) {
         setTimeout(function() {
           var canvas = wbCanvasRef.current;
@@ -1179,6 +1210,22 @@ export default function LiveRoomPage({
       if (!data || !data.username) return;
       setGuestIntroCard(data);
       setTimeout(function() { setGuestIntroCard(null); }, 6000);
+    });
+
+    // ── Batch 28: Now Playing, Tip Ticker, Watch Time ─────────────────────
+    socket.on('now-playing', function(data) {
+      setNowPlaying(data || null);
+    });
+
+    socket.on('tip-ticker', function(data) {
+      if (!data || !Array.isArray(data.items)) return;
+      setTipTickerItems(data.items);
+      setTipTickerIdx(0);
+    });
+
+    socket.on('watch-time', function(data) {
+      if (!data) return;
+      setMyWatchSecs(data.elapsed || 0);
     });
 
     socket.on('sound-alert', function(data) {
@@ -2818,6 +2865,14 @@ export default function LiveRoomPage({
                 var name = window.prompt('Guest name:'); if (!name || !name.trim()) return;
                 var bio  = window.prompt('Bio / role (optional):') || '';
                 if (socket) socket.emit('guest-intro', { roomId: roomId, username: name.trim(), bio: bio.trim(), emoji: '🎤' });
+              }},
+              { emoji: '🎵', label: 'Now Playing', active: !!nowPlaying, onTap: function() {
+                setNowPlayingInput(nowPlaying ? { title: nowPlaying.title, artist: nowPlaying.artist || '', emoji: nowPlaying.emoji || '🎵' } : { title: '', artist: '', emoji: '🎵' });
+                setShowNowPlayingEdit(function(s) { return !s; });
+              }},
+              { emoji: '📝', label: 'Tip Ticker', active: tipTickerItems.length > 0, onTap: function() {
+                setTipEditInput(tipTickerItems.map(function(t) { return t.text; }).join('\n'));
+                setShowTipEdit(function(s) { return !s; });
               }},
             ].concat(multiCamDevices.length > 1 ? [
               { emoji: '📷', label: 'Camera', active: showCamPicker, onTap: function() { setShowCamPicker(function(s) { return !s; }); } },
@@ -6588,6 +6643,149 @@ export default function LiveRoomPage({
               }} />
             );
           })}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 28: NOW PLAYING TICKER ════════════════ */}
+      {nowPlaying && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 84,
+          background: 'linear-gradient(90deg,' + BURG + 'CC,' + CARD + 'CC)',
+          borderBottom: '1px solid ' + BORDER, padding: '5px 16px',
+          display: 'flex', alignItems: 'center', gap: 10,
+          backdropFilter: 'blur(6px)', overflow: 'hidden',
+        }}>
+          <span style={{ fontSize: 15, flexShrink: 0, animation: 'goldPulse 2s ease-in-out infinite' }}>{nowPlaying.emoji || '🎵'}</span>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', overflow: 'hidden', flex: 1 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: GOLD, letterSpacing: 2, flexShrink: 0 }}>NOW PLAYING</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, fontWeight: 700, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {nowPlaying.title}{nowPlaying.artist ? ' — ' + nowPlaying.artist : ''}
+            </span>
+          </div>
+          {(role === 'host' || role === 'cohost') && (
+            <button onClick={function() { if (socket) socket.emit('now-playing-set', { roomId: roomId, title: '' }); }}
+              style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 11, flexShrink: 0 }}>✕</button>
+          )}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 28: TIP TICKER ════════════════ */}
+      {tipTickerItems.length > 0 && (
+        <div style={{
+          position: 'absolute', bottom: 74, left: 0, right: 0, zIndex: 83,
+          background: 'rgba(14,12,9,.88)', borderTop: '1px solid ' + BORDER,
+          padding: '5px 16px', display: 'flex', alignItems: 'center', gap: 10,
+          backdropFilter: 'blur(4px)',
+        }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1.5, flexShrink: 0 }}>💡 TIP</span>
+          <span key={tipTickerIdx} style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, animation: 'fadeSlideIn .3s ease', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+            {tipTickerItems[tipTickerIdx] && tipTickerItems[tipTickerIdx].text}
+          </span>
+          {tipTickerItems.length > 1 && (
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, flexShrink: 0 }}>{tipTickerIdx + 1}/{tipTickerItems.length}</span>
+          )}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 28: WATCH TIME BADGE (my own) ════════════════ */}
+      {myWatchSecs >= 300 && (
+        <div style={{
+          position: 'absolute', top: nowPlaying ? 30 : 6, right: 60, zIndex: 85,
+          background: 'rgba(14,12,9,.85)', border: '1px solid ' + (myWatchSecs >= 1800 ? GOLD : myWatchSecs >= 900 ? TEAL : BORDER),
+          borderRadius: 20, padding: '3px 10px', display: 'flex', alignItems: 'center', gap: 5,
+          pointerEvents: 'none',
+        }}>
+          <span style={{ fontSize: 11 }}>{myWatchSecs >= 1800 ? '👑' : myWatchSecs >= 900 ? '⭐' : '🕐'}</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: myWatchSecs >= 1800 ? GOLD : myWatchSecs >= 900 ? TEAL : MUTED }}>
+            {myWatchSecs >= 1800 ? '30m' : myWatchSecs >= 900 ? '15m' : '5m'} VIEWER
+          </span>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 28: NOW PLAYING EDIT MODAL ════════════════ */}
+      {showNowPlayingEdit && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 218, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 18, padding: '22px 26px', width: 360, animation: 'fadeSlideIn .2s ease' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: GOLD, letterSpacing: 2, marginBottom: 16 }}>🎵 NOW PLAYING</div>
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 4, letterSpacing: .5 }}>SONG TITLE *</div>
+              <input value={nowPlayingInput.title} onChange={function(e) { setNowPlayingInput(function(s) { return Object.assign({}, s, { title: e.target.value }); }); }}
+                placeholder="Song title…"
+                style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 4, letterSpacing: .5 }}>ARTIST (OPTIONAL)</div>
+              <input value={nowPlayingInput.artist} onChange={function(e) { setNowPlayingInput(function(s) { return Object.assign({}, s, { artist: e.target.value }); }); }}
+                placeholder="Artist name…"
+                style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {['🎵','🎸','🎹','🎷','🥁','🎺','🎻','🎤'].map(function(em) {
+                return (
+                  <button key={em} onClick={function() { setNowPlayingInput(function(s) { return Object.assign({}, s, { emoji: em }); }); }}
+                    style={{ fontSize: 18, background: nowPlayingInput.emoji === em ? GOLD + '22' : 'none', border: '1px solid ' + (nowPlayingInput.emoji === em ? GOLD + '88' : 'transparent'), borderRadius: 6, padding: '4px 6px', cursor: 'pointer' }}>
+                    {em}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {nowPlaying && (
+                <button onClick={function() { if (socket) socket.emit('now-playing-set', { roomId: roomId, title: '' }); setShowNowPlayingEdit(false); }}
+                  style={{ flex: 1, background: 'rgba(255,26,60,.1)', border: '1px solid ' + RED + '44', borderRadius: 10, padding: '10px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: RED, cursor: 'pointer' }}>
+                  CLEAR
+                </button>
+              )}
+              <button onClick={function() { setShowNowPlayingEdit(false); }}
+                style={{ background: 'none', border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}>
+                CANCEL
+              </button>
+              <button onClick={function() {
+                if (!nowPlayingInput.title.trim()) return;
+                if (socket) socket.emit('now-playing-set', { roomId: roomId, title: nowPlayingInput.title.trim(), artist: nowPlayingInput.artist.trim(), emoji: nowPlayingInput.emoji });
+                setShowNowPlayingEdit(false);
+              }}
+                style={{ flex: 2, background: BURG, border: 'none', borderRadius: 10, padding: '10px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: TEXT, cursor: 'pointer', letterSpacing: 1.5 }}>
+                🎵 SET TRACK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 28: TIP TICKER EDIT MODAL ════════════════ */}
+      {showTipEdit && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 218, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 18, padding: '22px 26px', width: 380, animation: 'fadeSlideIn .2s ease' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: GOLD, letterSpacing: 2, marginBottom: 12 }}>📝 TIP TICKER</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 8 }}>Enter one tip per line (max 10 tips, 120 chars each)</div>
+            <textarea value={tipEditInput} onChange={function(e) { setTipEditInput(e.target.value); }}
+              rows={8} placeholder={'Tip 1: Use the reaction buttons to engage...\nTip 2: Subscribe for exclusive content...\nTip 3: Follow for notifications...'}
+              style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+            <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+              <button onClick={function() {
+                if (socket) socket.emit('tip-ticker-set', { roomId: roomId, items: [] });
+                setTipTickerItems([]);
+                setShowTipEdit(false);
+              }}
+                style={{ flex: 1, background: 'rgba(255,26,60,.1)', border: '1px solid ' + RED + '44', borderRadius: 10, padding: '10px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: RED, cursor: 'pointer' }}>
+                CLEAR
+              </button>
+              <button onClick={function() { setShowTipEdit(false); }}
+                style={{ background: 'none', border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}>
+                CANCEL
+              </button>
+              <button onClick={function() {
+                var lines = tipEditInput.split('\n').map(function(l) { return l.trim(); }).filter(Boolean).slice(0, 10);
+                var items = lines.map(function(t, i) { return { text: t.slice(0, 120), id: i }; });
+                if (socket) socket.emit('tip-ticker-set', { roomId: roomId, items: items });
+                setShowTipEdit(false);
+              }}
+                style={{ flex: 2, background: BURG, border: 'none', borderRadius: 10, padding: '10px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: TEXT, cursor: 'pointer', letterSpacing: 1.5 }}>
+                📝 ACTIVATE TICKER
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
