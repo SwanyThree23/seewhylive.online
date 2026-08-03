@@ -516,6 +516,11 @@ var pinnedEmojiMap     = new Map();  // roomId → { emoji, ts, timerId }
 var colorTierMap       = new Map();  // userId → tier string (bronze|silver|gold|platinum)
 var audioLevelMap      = new Map();  // roomId → { level, ts }
 var COLOR_TIER_CENTS = { bronze: 200, silver: 1000, gold: 5000, platinum: 10000 };
+// Batch 47
+var viewerQueueMap     = new Map();  // roomId → [{ id, userId, username, text, ts, votes }]
+var moodRingMap        = new Map();  // roomId → { score, ts, intervalId }
+var triviaDropMap      = new Map();  // roomId → { q, opts, answer, votes:{A,B,C,D}, endsAt, timerId, revealed }
+var nameTagMap         = new Map();  // userId → string (tagline)
 // Batch 42
 var chatWordMap         = new Map();  // roomId → Map<word, count>  (word frequency for cloud)
 var chatWordMsgCount   = new Map();  // roomId → int (messages since last broadcast)
@@ -711,6 +716,13 @@ function getJoinStateForRoom(roomId) {
   state.pinnedEmoji = (pe46 && pe46.ts > Date.now() - 30000) ? { emoji: pe46.emoji } : null;
   var al46 = audioLevelMap.get(roomId);
   state.audioLevel = (al46 && al46.ts > Date.now() - 5000) ? al46.level : null;
+  // Batch 47
+  var vq47 = viewerQueueMap.get(roomId);
+  state.viewerQueue = vq47 ? vq47.slice(0, 30) : [];
+  var mr47 = moodRingMap.get(roomId);
+  state.moodRing = (mr47 && mr47.ts > Date.now() - 20000) ? { score: mr47.score } : null;
+  var td47 = triviaDropMap.get(roomId);
+  state.triviaDrop = td47 ? { q: td47.q, opts: td47.opts, endsAt: td47.endsAt, revealed: td47.revealed, results: td47.revealed ? td47.votes : null, answer: td47.revealed ? td47.answer : null } : null;
   // Batch 44
   state.schedule = scheduleMap.get(roomId) || [];
   var rw44 = reactWallMap.get(roomId);
@@ -759,6 +771,16 @@ function addEnergy(roomId, userId, username, pts) {
 // Helper: add points to hype train; level up on threshold
 var HYPE_LEVELS = [0, 50, 150, 300, 500, 800]; // cumulative pts per level
 var HYPE_EXPIRE_MS = 30000; // train resets if no activity for 30s
+// Batch 47: mood ring updater — computes a 0-100 score from recent activity
+function updateMoodRing(roomId, delta) {
+  if (!roomId) return;
+  var mr = moodRingMap.get(roomId) || { score: 50, ts: Date.now() };
+  mr.score = Math.min(100, Math.max(0, mr.score + delta));
+  mr.ts = Date.now();
+  moodRingMap.set(roomId, mr);
+  io.to(roomId).emit('mood-ring-update', { score: mr.score });
+}
+
 function addHype(roomId, pts) {
   if (!roomId) return;
   var now = Date.now();
@@ -2582,6 +2604,9 @@ io.on('connection', function(socket) {
       });
     })();
 
+    // Mood ring boost on gift
+    updateMoodRing(roomId, Math.min(10, Math.floor(valueCents / 100)));
+
     // Award points to gift sender
     var giftPoints = Math.max(10, Math.floor(valueCents / 10));
     io.to(socket.id).emit('points-earned', { amount: giftPoints, reason: 'gift sent', ts: now10 });
@@ -3474,6 +3499,7 @@ io.on('connection', function(socket) {
     // Stream energy: +1 per reaction
     addEnergy(roomId, socket.data.userId, socket.data.username, 1);
     addHype(roomId, 2);
+    updateMoodRing(roomId, 1);
     // Batch 44: react wall
     if (!reactWallMap.has(roomId)) reactWallMap.set(roomId, []);
     var _rw = reactWallMap.get(roomId);
@@ -5567,6 +5593,104 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('audio-level-update', { level: level });
   });
 
+  // ── Batch 47: viewer-question ─────────────────────────────────────────
+  socket.on('viewer-question', function(data, ack) {
+    var roomId = socket.data.roomId; if (!roomId) return;
+    var text = data && typeof data.text === 'string' ? data.text.trim().slice(0, 200) : '';
+    if (!text) { if (ack) ack({ error: 'empty' }); return; }
+    if (!viewerQueueMap.has(roomId)) viewerQueueMap.set(roomId, []);
+    var q = viewerQueueMap.get(roomId);
+    var id = Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+    q.push({ id: id, userId: socket.data.userId, username: socket.data.username || 'Viewer', text: text, ts: Date.now(), votes: 0 });
+    if (q.length > 50) viewerQueueMap.set(roomId, q.slice(-50));
+    io.to(roomId).emit('viewer-queue-update', { queue: q.slice(0, 30) });
+    if (ack) ack({ ok: true, id: id });
+  });
+
+  // ── Batch 47: upvote-question ─────────────────────────────────────────
+  socket.on('upvote-question', function(data) {
+    var roomId = socket.data.roomId; if (!roomId) return;
+    var qId = data && data.id ? String(data.id) : ''; if (!qId) return;
+    var q = viewerQueueMap.get(roomId); if (!q) return;
+    var entry = q.find(function(e) { return e.id === qId; });
+    if (!entry) return;
+    entry.votes = (entry.votes || 0) + 1;
+    q.sort(function(a, b) { return b.votes - a.votes; });
+    io.to(roomId).emit('viewer-queue-update', { queue: q.slice(0, 30) });
+  });
+
+  // ── Batch 47: answer-question ──────────────────────────────────────────
+  socket.on('answer-question', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId; if (!roomId) return;
+    var qId = data && data.id ? String(data.id) : ''; if (!qId) return;
+    var q = viewerQueueMap.get(roomId); if (!q) return;
+    var entry = q.find(function(e) { return e.id === qId; });
+    if (!entry) return;
+    viewerQueueMap.set(roomId, q.filter(function(e) { return e.id !== qId; }));
+    io.to(roomId).emit('question-answered', { id: qId, username: entry.username, text: entry.text });
+    io.to(roomId).emit('viewer-queue-update', { queue: viewerQueueMap.get(roomId).slice(0, 30) });
+  });
+
+  // ── Batch 47: dismiss-question ────────────────────────────────────────
+  socket.on('dismiss-question', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId; if (!roomId) return;
+    var qId = data && data.id ? String(data.id) : ''; if (!qId) return;
+    var q = viewerQueueMap.get(roomId); if (!q) return;
+    viewerQueueMap.set(roomId, q.filter(function(e) { return e.id !== qId; }));
+    io.to(roomId).emit('viewer-queue-update', { queue: viewerQueueMap.get(roomId).slice(0, 30) });
+  });
+
+  // ── Batch 47: trivia-drop ─────────────────────────────────────────────
+  socket.on('trivia-drop', function(data, ack) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId; if (!roomId) return;
+    if (triviaDropMap.has(roomId)) { if (ack) ack({ error: 'already active' }); return; }
+    var q = data && typeof data.q === 'string' ? data.q.trim().slice(0, 200) : '';
+    if (!q) { if (ack) ack({ error: 'empty question' }); return; }
+    var opts = data && Array.isArray(data.opts) ? data.opts.slice(0, 4).map(function(o) { return String(o).trim().slice(0, 80); }).filter(Boolean) : [];
+    if (opts.length < 2) { if (ack) ack({ error: 'need ≥2 options' }); return; }
+    var answer = data && data.answer ? String(data.answer).toUpperCase().charAt(0) : 'A';
+    var secs = Math.max(20, Math.min(60, Math.floor(Number(data && data.secs) || 30)));
+    var endsAt = Date.now() + secs * 1000;
+    var trivia = { q: q, opts: opts, answer: answer, votes: { A: 0, B: 0, C: 0, D: 0 }, voters: new Set(), endsAt: endsAt, revealed: false };
+    trivia.timerId = setTimeout(function() {
+      var t = triviaDropMap.get(roomId); if (!t) return;
+      t.revealed = true;
+      delete t.timerId;
+      io.to(roomId).emit('trivia-results', { q: t.q, opts: t.opts, votes: t.votes, answer: t.answer });
+      setTimeout(function() { triviaDropMap.delete(roomId); io.to(roomId).emit('trivia-ended'); }, 15000);
+    }, secs * 1000);
+    triviaDropMap.set(roomId, trivia);
+    io.to(roomId).emit('trivia-drop', { q: q, opts: opts, endsAt: endsAt });
+    if (ack) ack({ ok: true });
+  });
+
+  // ── Batch 47: trivia-vote ─────────────────────────────────────────────
+  socket.on('trivia-vote', function(data) {
+    var roomId = socket.data.roomId; if (!roomId) return;
+    var t = triviaDropMap.get(roomId); if (!t || t.revealed) return;
+    var choice = data && typeof data.choice === 'string' ? data.choice.toUpperCase().charAt(0) : '';
+    if (!['A','B','C','D'].includes(choice)) return;
+    var voterId = socket.data.userId; if (!voterId || t.voters.has(voterId)) return;
+    t.voters.add(voterId);
+    t.votes[choice] = (t.votes[choice] || 0) + 1;
+    var totals = { A: t.votes.A, B: t.votes.B, C: t.votes.C, D: t.votes.D };
+    io.to(roomId).emit('trivia-vote-update', { votes: totals, total: t.voters.size });
+  });
+
+  // ── Batch 47: set-name-tag ────────────────────────────────────────────
+  socket.on('set-name-tag', function(data, ack) {
+    var userId = socket.data.userId; if (!userId) return;
+    var roomId = socket.data.roomId;
+    var tag = data && typeof data.tag === 'string' ? data.tag.trim().slice(0, 50) : '';
+    if (tag) nameTagMap.set(userId, tag);
+    else nameTagMap.delete(userId);
+    if (roomId) io.to(roomId).emit('name-tag-update', { userId: userId, username: socket.data.username || 'Viewer', tag: tag || null });
+    if (ack) ack({ ok: true });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -6096,6 +6220,13 @@ io.on('connection', function(socket) {
     if (peEnd && peEnd.timerId) clearTimeout(peEnd.timerId);
     pinnedEmojiMap.delete(roomId);
     audioLevelMap.delete(roomId);
+    viewerQueueMap.delete(roomId);
+    var mrEnd = moodRingMap.get(roomId);
+    if (mrEnd && mrEnd.intervalId) clearInterval(mrEnd.intervalId);
+    moodRingMap.delete(roomId);
+    var tdEnd = triviaDropMap.get(roomId);
+    if (tdEnd && tdEnd.timerId) clearTimeout(tdEnd.timerId);
+    triviaDropMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

@@ -718,6 +718,24 @@ export default function LiveRoomPage({
   var [audioLevelPct,      setAudioLevelPct]      = useState(null);    // 0-100 or null
   var [showAudioMeter,     setShowAudioMeter]     = useState(false);
   var [tipMilestoneFlash,  setTipMilestoneFlash]  = useState(null);    // { pct, label }
+  // Batch 47 — Viewer Q Queue, Mood Ring, Trivia Drop, Name Tag
+  var [viewerQueue,        setViewerQueue]        = useState([]);      // [{ id, username, text, votes }]
+  var [showViewerQueue,    setShowViewerQueue]    = useState(false);
+  var [queueDraft,         setQueueDraft]         = useState('');
+  var [myQueueId,          setMyQueueId]          = useState(null);
+  var [moodRingScore,      setMoodRingScore]      = useState(50);      // 0-100
+  var [triviaDrop,         setTriviaDrop]         = useState(null);    // { q, opts, endsAt }
+  var [triviaVote,         setTriviaVote]         = useState(null);    // 'A'|'B'|'C'|'D'
+  var [triviaResults,      setTriviaResults]      = useState(null);    // { votes, answer }
+  var [showTriviaSet,      setShowTriviaSet]      = useState(false);
+  var [triviaDraft,        setTriviaDraft]        = useState({ q: '', opts: ['', '', '', ''], answer: 'A', secs: '30' });
+  var [showTriviaPanel,    setShowTriviaPanel]    = useState(false);
+  var [nameTag,            setNameTag]            = useState('');      // own name tag
+  var [nameTags,           setNameTags]           = useState({});      // userId → tag
+  var [showNameTagEdit,    setShowNameTagEdit]    = useState(false);
+  var [nameTagDraft,       setNameTagDraft]       = useState('');
+  var [showQueuePanel,     setShowQueuePanel]     = useState(false);
+  var [questionAnswered,   setQuestionAnswered]   = useState(null);    // { username, text }
   // Batch 43 — Prize Wheel, Gift Combo, Sign-In Log, Outro Countdown
   var [prizeWheel,         setPrizeWheel]         = useState(null);    // { segments, active, lastWinner }
   var [showWheelSet,       setShowWheelSet]       = useState(false);
@@ -952,6 +970,9 @@ export default function LiveRoomPage({
       if (data.stageFilter) setStageFilter(data.stageFilter);
       if (data.pinnedEmoji) setPinnedEmoji(data.pinnedEmoji);
       if (typeof data.audioLevel === 'number') setAudioLevelPct(data.audioLevel);
+      if (Array.isArray(data.viewerQueue) && data.viewerQueue.length > 0) setViewerQueue(data.viewerQueue);
+      if (data.moodRing && typeof data.moodRing.score === 'number') setMoodRingScore(data.moodRing.score);
+      if (data.triviaDrop && data.triviaDrop.endsAt > Date.now()) setTriviaDrop(data.triviaDrop);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -1876,6 +1897,52 @@ export default function LiveRoomPage({
       setTimeout(function() { setTipMilestoneFlash(null); }, 5000);
     });
 
+    // Batch 47 listeners
+    socket.on('viewer-queue-update', function(data) {
+      if (!data || !Array.isArray(data.queue)) return;
+      setViewerQueue(data.queue);
+    });
+
+    socket.on('question-answered', function(data) {
+      if (!data) return;
+      setQuestionAnswered(data);
+      setTimeout(function() { setQuestionAnswered(null); }, 5000);
+    });
+
+    socket.on('mood-ring-update', function(data) {
+      if (!data || typeof data.score !== 'number') return;
+      setMoodRingScore(data.score);
+    });
+
+    socket.on('trivia-drop', function(data) {
+      if (!data) return;
+      setTriviaDrop(data);
+      setTriviaVote(null);
+      setTriviaResults(null);
+      setShowTriviaPanel(true);
+    });
+
+    socket.on('trivia-vote-update', function(data) {
+      if (!data) return;
+      setTriviaResults(function(r) { return r ? Object.assign({}, r, { votes: data.votes, total: data.total }) : { votes: data.votes, total: data.total }; });
+    });
+
+    socket.on('trivia-results', function(data) {
+      if (!data) return;
+      setTriviaResults({ votes: data.votes, answer: data.answer, total: null });
+      setTriviaDrop(function(t) { return t ? Object.assign({}, t, { revealed: true }) : null; });
+    });
+
+    socket.on('trivia-ended', function() {
+      setTriviaDrop(null);
+      setTimeout(function() { setTriviaResults(null); setShowTriviaPanel(false); }, 3000);
+    });
+
+    socket.on('name-tag-update', function(data) {
+      if (!data) return;
+      setNameTags(function(prev) { var n = Object.assign({}, prev); if (data.tag) n[data.userId] = data.tag; else delete n[data.userId]; return n; });
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2189,6 +2256,14 @@ export default function LiveRoomPage({
       socket.off('viewer-color-tier');
       socket.off('audio-level-update');
       socket.off('tip-milestone');
+      socket.off('viewer-queue-update');
+      socket.off('question-answered');
+      socket.off('mood-ring-update');
+      socket.off('trivia-drop');
+      socket.off('trivia-vote-update');
+      socket.off('trivia-results');
+      socket.off('trivia-ended');
+      socket.off('name-tag-update');
       socket.off('scoreboard-update');
       socket.off('auction-update');
       socket.off('auction-ended');
@@ -3182,6 +3257,7 @@ export default function LiveRoomPage({
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontWeight: 700, fontSize: 20, color: TEXT, letterSpacing: .3 }}>Stage</span>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: MUTED, letterSpacing: 1 }}>{onStage.length}/{MAX_STAGE}</span>
+              <div title={'Mood: ' + moodRingScore + '%'} style={{ width: 10, height: 10, borderRadius: '50%', background: moodRingScore >= 75 ? '#FF1A3C' : moodRingScore >= 50 ? '#C9A84C' : moodRingScore >= 25 ? '#D4854A' : '#8A7A62', boxShadow: '0 0 6px ' + (moodRingScore >= 75 ? '#FF1A3C' : moodRingScore >= 50 ? '#C9A84C' : '#D4854A') + '88', flexShrink: 0 }} />
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               {/* Panel mode (list vs grid for 20-person) */}
@@ -3986,6 +4062,8 @@ export default function LiveRoomPage({
               { emoji: '📊', label: 'Sesh Stats', active: showSessionStats, onTap: function() { setShowSessionStats(function(s) { return !s; }); } },
               { emoji: '📍', label: pinnedEmoji ? 'Emoji ✓' : 'Pin Emoji', active: !!pinnedEmoji || showEmojiPin, onTap: function() { setShowEmojiPin(function(s) { return !s; }); } },
               { emoji: '🎙️', label: 'Audio Meter', active: showAudioMeter, onTap: function() { setShowAudioMeter(function(s) { return !s; }); } },
+              { emoji: '🧠', label: 'Trivia', active: !!triviaDrop || showTriviaSet, onTap: function() { setShowTriviaSet(function(s) { return !s; }); } },
+              { emoji: '📋', label: 'Q Queue', active: showQueuePanel || viewerQueue.length > 0, onTap: function() { setShowQueuePanel(function(s) { return !s; }); } },
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Check In', active: false, onTap: function() {
@@ -4021,6 +4099,8 @@ export default function LiveRoomPage({
               { emoji: '📅', label: 'Schedule', active: schedule.length > 0, onTap: function() { setShowSchedule(function(s) { return !s; }); } },
               { emoji: 'ℹ️', label: 'About', active: showBioPanel, onTap: function() { setShowBioPanel(function(s) { return !s; }); } },
               { emoji: '📊', label: 'Sesh Stats', active: showSessionStats, onTap: function() { setShowSessionStats(function(s) { return !s; }); } },
+              { emoji: '❓', label: 'Ask Host', active: !!myQueueId || showViewerQueue, onTap: function() { setShowViewerQueue(function(s) { return !s; }); } },
+              { emoji: '🏷️', label: nameTag ? 'Tag ✓' : 'Name Tag', active: !!nameTag || showNameTagEdit, onTap: function() { setNameTagDraft(nameTag); setShowNameTagEdit(function(s) { return !s; }); } },
             ] : [])),
           ].map(function(tool) {
             return (
@@ -4667,6 +4747,9 @@ export default function LiveRoomPage({
                           ) : null;
                         })()}
                       </span>
+                      {nameTags[msg.userId] && (
+                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 9, color: MUTED, marginBottom: 1, fontStyle: 'italic', letterSpacing: .2 }}>{nameTags[msg.userId]}</div>
+                      )}
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
                         <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4', lineHeight: 1.3, flex: 1 }}>{msg.message}</span>
                         <button onClick={function() {
@@ -10168,6 +10251,191 @@ export default function LiveRoomPage({
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, textAlign: 'center', marginTop: 4 }}>WAITING...</div>
           )}
           <button onClick={function() { setShowAudioMeter(false); }} style={{ display: 'block', margin: '8px auto 0', background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 10 }}>✕ close</button>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 47: QUESTION ANSWERED BANNER ════════════════ */}
+      {questionAnswered && (
+        <div style={{ position: 'fixed', top: 80, left: 0, right: 0, zIndex: 8000, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+          <div style={{ background: CARD, border: '1px solid ' + GOLD, borderRadius: 16, padding: '12px 20px', maxWidth: 320, textAlign: 'center', boxShadow: '0 0 30px ' + GOLD + '44' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1, marginBottom: 4 }}>🎤 NOW ANSWERING</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: MUTED, marginBottom: 4 }}>{questionAnswered.username}</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15, color: TEXT, lineHeight: 1.4 }}>{questionAnswered.text}</div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 47: TRIVIA PANEL ════════════════ */}
+      {showTriviaPanel && triviaDrop && (
+        <div style={{ position: 'fixed', bottom: 90, left: 0, right: 0, zIndex: 700, padding: '0 12px' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '16px', maxWidth: 400, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1.5 }}>🧠 TRIVIA</span>
+              <button onClick={function() { setShowTriviaPanel(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 16, color: TEXT, marginBottom: 14, lineHeight: 1.4 }}>{triviaDrop.q}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {(triviaDrop.opts || []).map(function(opt, oi) {
+                var letter = ['A','B','C','D'][oi] || String(oi);
+                var voted = triviaVote === letter;
+                var isAnswer = triviaResults && triviaResults.answer === letter;
+                var voteCount = triviaResults && triviaResults.votes ? (triviaResults.votes[letter] || 0) : 0;
+                var totalVotes = triviaResults && triviaResults.total ? triviaResults.total : 0;
+                var pct = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
+                return (
+                  <button key={letter} onClick={function() {
+                    if (triviaVote || (triviaDrop.revealed)) return;
+                    setTriviaVote(letter);
+                    if (socket) socket.emit('trivia-vote', { roomId: roomId, choice: letter });
+                  }} style={{ background: isAnswer ? 'rgba(201,168,76,.2)' : voted ? 'rgba(212,133,74,.15)' : CARD2, border: '1.5px solid ' + (isAnswer ? GOLD : voted ? TEAL : BORDER), borderRadius: 10, padding: '10px 12px', cursor: (triviaVote || triviaDrop.revealed) ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 10, position: 'relative', overflow: 'hidden', transition: 'border-color .2s' }}>
+                    {triviaResults && (
+                      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: pct + '%', background: isAnswer ? 'rgba(201,168,76,.12)' : 'rgba(255,255,255,.04)', transition: 'width .5s ease', borderRadius: 10 }} />
+                    )}
+                    <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: isAnswer ? GOLD : voted ? TEAL : MUTED, letterSpacing: 1, zIndex: 1, flexShrink: 0 }}>{letter}</span>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, flex: 1, textAlign: 'left', zIndex: 1 }}>{opt}</span>
+                    {triviaResults && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: isAnswer ? GOLD : MUTED, zIndex: 1 }}>{pct}%</span>}
+                  </button>
+                );
+              })}
+            </div>
+            {triviaDrop.revealed && triviaResults && (
+              <div style={{ marginTop: 10, fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, textAlign: 'center', letterSpacing: .5 }}>✓ ANSWER: {triviaResults.answer}</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 47: TRIVIA SETUP (HOST) ════════════════ */}
+      {showTriviaSet && (role === 'host' || role === 'cohost') && !triviaDrop && (
+        <div style={{ position: 'fixed', bottom: 90, left: 0, right: 0, zIndex: 710, padding: '0 12px' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '16px', maxWidth: 400, margin: '0 auto', maxHeight: '70vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1.5 }}>🧠 DROP TRIVIA</span>
+              <button onClick={function() { setShowTriviaSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+            <input value={triviaDraft.q} onChange={function(e) { setTriviaDraft(function(d) { return Object.assign({}, d, { q: e.target.value }); }); }} placeholder="Question..." style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, marginBottom: 10, boxSizing: 'border-box' }} />
+            {['A','B','C','D'].map(function(letter, i) {
+              return (
+                <div key={letter} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
+                  <button onClick={function() { setTriviaDraft(function(d) { return Object.assign({}, d, { answer: letter }); }); }} style={{ width: 28, height: 28, borderRadius: '50%', background: triviaDraft.answer === letter ? GOLD : CARD2, border: '1.5px solid ' + (triviaDraft.answer === letter ? GOLD : BORDER), color: triviaDraft.answer === letter ? '#0E0C09' : MUTED, fontFamily: "'Bebas Neue',cursive", fontSize: 14, cursor: 'pointer', flexShrink: 0 }}>{letter}</button>
+                  <input value={triviaDraft.opts[i] || ''} onChange={function(e) { var v = e.target.value; setTriviaDraft(function(d) { var opts = d.opts.slice(); opts[i] = v; return Object.assign({}, d, { opts: opts }); }); }} placeholder={'Option ' + letter} style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '6px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }} />
+                </div>
+              );
+            })}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 14, marginTop: 6 }}>
+              {['20','30','45','60'].map(function(s) {
+                return <button key={s} onClick={function() { setTriviaDraft(function(d) { return Object.assign({}, d, { secs: s }); }); }} style={{ flex: 1, background: triviaDraft.secs === s ? 'rgba(201,168,76,.18)' : CARD2, border: '1.5px solid ' + (triviaDraft.secs === s ? GOLD : BORDER), borderRadius: 8, padding: '6px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: triviaDraft.secs === s ? GOLD : MUTED, cursor: 'pointer' }}>{s}s</button>;
+              })}
+            </div>
+            <button onClick={function() {
+              var opts = triviaDraft.opts.filter(function(o) { return o.trim(); });
+              if (!triviaDraft.q.trim() || opts.length < 2) { if (addToast) addToast('Need question + ≥2 options', 'error'); return; }
+              if (socket) socket.emit('trivia-drop', { roomId: roomId, q: triviaDraft.q.trim(), opts: opts, answer: triviaDraft.answer, secs: parseInt(triviaDraft.secs, 10) || 30 }, function(res) {
+                if (res && res.ok) { setShowTriviaSet(false); if (addToast) addToast('🧠 Trivia dropped!', 'success'); }
+                else if (res && res.error) { if (addToast) addToast(res.error, 'error'); }
+              });
+            }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 12, padding: '12px', fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1.5 }}>DROP TRIVIA</button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 47: VIEWER Q QUEUE PANEL ════════════════ */}
+      {showViewerQueue && (
+        <div style={{ position: 'fixed', bottom: 90, left: 0, right: 0, zIndex: 700, padding: '0 12px' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '16px', maxWidth: 400, margin: '0 auto', maxHeight: '70vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1.5 }}>❓ ASK THE HOST</span>
+              <button onClick={function() { setShowViewerQueue(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+            {!myQueueId && (
+              <div style={{ marginBottom: 12 }}>
+                <textarea value={queueDraft} onChange={function(e) { setQueueDraft(e.target.value.slice(0, 200)); }} placeholder="Your question..." rows={2} style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', boxSizing: 'border-box', marginBottom: 6 }} />
+                <button onClick={function() {
+                  if (!queueDraft.trim()) return;
+                  if (socket) socket.emit('viewer-question', { roomId: roomId, text: queueDraft.trim() }, function(res) {
+                    if (res && res.ok) { setMyQueueId(res.id); setQueueDraft(''); if (addToast) addToast('❓ Question submitted!', 'success'); }
+                    else if (res && res.error) { if (addToast) addToast(res.error, 'error'); }
+                  });
+                }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 10, padding: '10px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1.5 }}>SUBMIT</button>
+              </div>
+            )}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {viewerQueue.length === 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center', padding: '16px 0' }}>NO QUESTIONS YET</div>}
+              {viewerQueue.map(function(q) {
+                var isOwn = q.id === myQueueId;
+                return (
+                  <div key={q.id} style={{ background: CARD2, borderRadius: 10, padding: '10px 12px', marginBottom: 6, border: '1px solid ' + (isOwn ? GOLD + '66' : BORDER) }}>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: isOwn ? GOLD : MUTED, marginBottom: 3 }}>{q.username}{isOwn ? ' (you)' : ''}</div>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, marginBottom: 6 }}>{q.text}</div>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <button onClick={function() { if (socket) socket.emit('upvote-question', { roomId: roomId, id: q.id }); }} style={{ background: 'transparent', border: '1px solid ' + BORDER, borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}>▲ {q.votes || 0}</button>
+                      {(role === 'host' || role === 'cohost') && (
+                        <>
+                          <button onClick={function() { if (socket) socket.emit('answer-question', { roomId: roomId, id: q.id }); }} style={{ background: 'rgba(201,168,76,.15)', border: '1px solid ' + GOLD + '66', borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, cursor: 'pointer' }}>✓ Answer</button>
+                          <button onClick={function() { if (socket) socket.emit('dismiss-question', { roomId: roomId, id: q.id }); }} style={{ background: 'transparent', border: '1px solid ' + BORDER, borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}>✕</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 47: HOST Q QUEUE PANEL ════════════════ */}
+      {showQueuePanel && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, right: 12, zIndex: 700, width: 320 }}>
+          <div style={{ background: CARD, border: '1px solid ' + GOLD + '55', borderRadius: 16, padding: '14px', maxHeight: '65vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>📋 Q QUEUE ({viewerQueue.length})</span>
+              <button onClick={function() { setShowQueuePanel(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {viewerQueue.length === 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center', padding: '12px 0' }}>NONE YET</div>}
+              {viewerQueue.map(function(q) {
+                return (
+                  <div key={q.id} style={{ background: CARD2, borderRadius: 8, padding: '8px 10px', marginBottom: 6, border: '1px solid ' + BORDER }}>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, marginBottom: 2 }}>{q.username} · ▲{q.votes || 0}</div>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, marginBottom: 6 }}>{q.text}</div>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <button onClick={function() { if (socket) socket.emit('answer-question', { roomId: roomId, id: q.id }); }} style={{ background: 'rgba(201,168,76,.15)', border: '1px solid ' + GOLD + '55', borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, cursor: 'pointer' }}>✓ Answer</button>
+                      <button onClick={function() { if (socket) socket.emit('dismiss-question', { roomId: roomId, id: q.id }); }} style={{ background: 'transparent', border: '1px solid ' + BORDER, borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, cursor: 'pointer' }}>✕</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 47: NAME TAG EDITOR ════════════════ */}
+      {showNameTagEdit && (
+        <div style={{ position: 'fixed', bottom: 90, left: 0, right: 0, zIndex: 700, padding: '0 12px' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '16px', maxWidth: 400, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1.5 }}>🏷️ NAME TAG</span>
+              <button onClick={function() { setShowNameTagEdit(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 8 }}>ADD A TAGLINE SHOWN UNDER YOUR NAME IN CHAT</div>
+            <input value={nameTagDraft} onChange={function(e) { setNameTagDraft(e.target.value.slice(0, 50)); }} placeholder="e.g. Music producer from LA..." maxLength={50} style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, boxSizing: 'border-box', marginBottom: 12 }} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() {
+                if (socket) socket.emit('set-name-tag', { roomId: roomId, tag: nameTagDraft.trim() }, function(res) {
+                  if (res && res.ok) { setNameTag(nameTagDraft.trim()); setNameTags(function(prev) { var n = Object.assign({}, prev); if (nameTagDraft.trim()) n[userId] = nameTagDraft.trim(); else delete n[userId]; return n; }); setShowNameTagEdit(false); if (addToast) addToast('🏷️ Name tag set!', 'success'); }
+                });
+              }} style={{ flex: 1, background: GOLD, border: 'none', borderRadius: 10, padding: '10px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1.5 }}>SAVE</button>
+              {nameTag && (
+                <button onClick={function() {
+                  if (socket) socket.emit('set-name-tag', { roomId: roomId, tag: '' }, function(res) {
+                    if (res && res.ok) { setNameTag(''); setNameTags(function(prev) { var n = Object.assign({}, prev); delete n[userId]; return n; }); setShowNameTagEdit(false); }
+                  });
+                }} style={{ background: 'transparent', border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}>CLEAR</button>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
