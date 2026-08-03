@@ -502,6 +502,11 @@ var prizeWheelMap      = new Map();  // roomId → { segments:[{label,color}], a
 var giftComboMap       = new Map();  // userId → { roomId, count, lastTs, timerId }
 var signInLogMap       = new Map();  // roomId → [{ userId, username, ts }]
 var outroCountdownMap  = new Map();  // roomId → { endsAt, label, timerId }
+// Batch 44
+var scheduleMap        = new Map();  // roomId → [{ id, label, done }] max 8 segments
+var reactWallMap       = new Map();  // roomId → [{ userId, username, emoji, ts }] last 30
+var hostBioMap         = new Map();  // roomId → { bio, links:[{label,url}] } | null
+var spotlightPickMap   = new Map();  // roomId → { userId, username, ts, timerId } | null
 // Batch 42
 var chatWordMap         = new Map();  // roomId → Map<word, count>  (word frequency for cloud)
 var chatWordMsgCount   = new Map();  // roomId → int (messages since last broadcast)
@@ -690,6 +695,13 @@ function getJoinStateForRoom(roomId) {
   state.fanClub = fc ? Array.from(fc) : [];
   state.hostNote = hostNoteMap.get(roomId) || null;
   state.collabBanner = collabBannerMap.get(roomId) || null;
+  // Batch 44
+  state.schedule = scheduleMap.get(roomId) || [];
+  var rw44 = reactWallMap.get(roomId);
+  state.reactWall = rw44 ? rw44.slice(-20) : [];
+  state.hostBio = hostBioMap.get(roomId) || null;
+  var sp44 = spotlightPickMap.get(roomId);
+  state.spotlightPick = (sp44 && sp44.ts > Date.now() - 12000) ? { userId: sp44.userId, username: sp44.username } : null;
   // Batch 43
   var pw = prizeWheelMap.get(roomId);
   state.prizeWheel = pw ? { segments: pw.segments, active: pw.active, lastWinner: pw.lastWinner || null } : null;
@@ -3409,6 +3421,12 @@ io.on('connection', function(socket) {
     // Stream energy: +1 per reaction
     addEnergy(roomId, socket.data.userId, socket.data.username, 1);
     addHype(roomId, 2);
+    // Batch 44: react wall
+    if (!reactWallMap.has(roomId)) reactWallMap.set(roomId, []);
+    var _rw = reactWallMap.get(roomId);
+    _rw.push({ userId: socket.data.userId, username: socket.data.username || 'Viewer', emoji: emoji, ts: now });
+    if (_rw.length > 30) reactWallMap.set(roomId, _rw.slice(-30));
+    io.to(roomId).emit('react-wall-update', { entry: { username: socket.data.username || 'Viewer', emoji: emoji, ts: now } });
   });
 
   // ── hot-moment — viewer tags a timestamp as a highlight ────────────────
@@ -5364,6 +5382,66 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('outro-countdown-update', null);
   });
 
+  // ── schedule-set / schedule-update ─────────────────────────────────────
+  socket.on('schedule-set', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var rawItems = Array.isArray(data && data.items) ? data.items.slice(0, 8) : [];
+    var items = rawItems.map(function(item, i) { return { id: String(i), label: String(item.label || '').trim().slice(0, 60), done: !!item.done }; }).filter(function(item) { return item.label; });
+    if (!items.length) { scheduleMap.delete(roomId); io.to(roomId).emit('schedule-update', { items: [] }); return; }
+    scheduleMap.set(roomId, items);
+    io.to(roomId).emit('schedule-update', { items: items });
+  });
+
+  socket.on('schedule-mark-done', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var id = data && String(data.id);
+    var items = scheduleMap.get(roomId);
+    if (!items || !id) return;
+    items = items.map(function(item) { return item.id === id ? Object.assign({}, item, { done: !item.done }) : item; });
+    scheduleMap.set(roomId, items);
+    io.to(roomId).emit('schedule-update', { items: items });
+  });
+
+  // ── set-host-bio ────────────────────────────────────────────────────────
+  socket.on('set-host-bio', function(data) {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var bio = data && typeof data.bio === 'string' ? data.bio.trim().slice(0, 300) : '';
+    var rawLinks = Array.isArray(data && data.links) ? data.links.slice(0, 4) : [];
+    var links = rawLinks.map(function(l) {
+      var u; try { u = new URL(String(l.url || '')); } catch(_) { return null; }
+      if (!/^https?:$/i.test(u.protocol)) return null;
+      return { label: String(l.label || '').slice(0, 30), url: u.href };
+    }).filter(Boolean);
+    if (!bio && !links.length) { hostBioMap.delete(roomId); io.to(roomId).emit('host-bio-update', null); return; }
+    var bioData = { bio: bio, links: links };
+    hostBioMap.set(roomId, bioData);
+    io.to(roomId).emit('host-bio-update', bioData);
+  });
+
+  // ── spotlight-random-pick ───────────────────────────────────────────────
+  socket.on('spotlight-random-pick', function(data, ack) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var signIns = signInLogMap.get(roomId) || [];
+    var eligible = signIns.filter(function(e) { return e.userId !== socket.data.userId; });
+    if (!eligible.length) { if (ack) ack({ error: 'No signed-in viewers to spotlight' }); return; }
+    var picked = eligible[Math.floor(Math.random() * eligible.length)];
+    var old = spotlightPickMap.get(roomId);
+    if (old && old.timerId) clearTimeout(old.timerId);
+    var dur = Math.max(5000, Math.min(30000, Number((data && data.duration) || 10) * 1000));
+    var timerId = setTimeout(function() { spotlightPickMap.delete(roomId); io.to(roomId).emit('spotlight-pick-update', null); }, dur);
+    spotlightPickMap.set(roomId, { userId: picked.userId, username: picked.username, ts: Date.now(), timerId: timerId });
+    io.to(roomId).emit('spotlight-pick-update', { userId: picked.userId, username: picked.username, duration: dur });
+    if (ack) ack({ picked: picked.username });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -5874,6 +5952,12 @@ io.on('connection', function(socket) {
     chatWordMsgCount.delete(roomId);
     momentLogMap.delete(roomId);
     roomCapacityMap.delete(roomId);
+    scheduleMap.delete(roomId);
+    reactWallMap.delete(roomId);
+    hostBioMap.delete(roomId);
+    var sp44end = spotlightPickMap.get(roomId);
+    if (sp44end && sp44end.timerId) clearTimeout(sp44end.timerId);
+    spotlightPickMap.delete(roomId);
     prizeWheelMap.delete(roomId);
     signInLogMap.delete(roomId);
     var ocEnd = outroCountdownMap.get(roomId);

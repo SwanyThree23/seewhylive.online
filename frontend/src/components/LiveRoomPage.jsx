@@ -670,6 +670,17 @@ export default function LiveRoomPage({
   var [showFanWall,        setShowFanWall]        = useState(false);
   var [pipActive,          setPipActive]          = useState(false);
   // Batch 39 — Song Request, Hype Train, Marquee, Shoutout Queue
+  // Batch 44 — Schedule, React Wall, Spotlight Pick, Host Bio
+  var [schedule,           setSchedule]           = useState([]);      // [{id, label, done}]
+  var [showSchedule,       setShowSchedule]       = useState(false);
+  var [scheduleDraft,      setScheduleDraft]      = useState('');
+  var [reactWall,          setReactWall]          = useState([]);      // [{username, emoji, ts}]
+  var [showReactWall,      setShowReactWall]      = useState(false);
+  var [hostBio,            setHostBio]            = useState(null);    // { bio, links }
+  var [showBioPanel,       setShowBioPanel]       = useState(false);
+  var [showBioEdit,        setShowBioEdit]        = useState(false);
+  var [bioDraft,           setBioDraft]           = useState({ bio: '', links: [{ label: '', url: '' }] });
+  var [spotlightPick,      setSpotlightPick]      = useState(null);    // { userId, username, duration }
   // Batch 43 — Prize Wheel, Gift Combo, Sign-In Log, Outro Countdown
   var [prizeWheel,         setPrizeWheel]         = useState(null);    // { segments, active, lastWinner }
   var [showWheelSet,       setShowWheelSet]       = useState(false);
@@ -897,6 +908,10 @@ export default function LiveRoomPage({
       if (data.prizeWheel) setPrizeWheel(data.prizeWheel);
       if (Array.isArray(data.signInLog)) { setSignInLog(data.signInLog); if (data.signInLog.some(function(e) { return e.userId === userId; })) setSignedIn(true); }
       if (data.outroCountdown && data.outroCountdown.endsAt > Date.now()) setOutroCountdown(data.outroCountdown);
+      if (Array.isArray(data.schedule) && data.schedule.length > 0) setSchedule(data.schedule);
+      if (Array.isArray(data.reactWall) && data.reactWall.length > 0) setReactWall(data.reactWall);
+      if (data.hostBio) setHostBio(data.hostBio);
+      if (data.spotlightPick) setSpotlightPick(data.spotlightPick);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -1763,6 +1778,25 @@ export default function LiveRoomPage({
       setTimeout(function() { setCheckinFlash(null); }, 3000);
     });
 
+    // Batch 44 listeners
+    socket.on('schedule-update', function(data) {
+      if (!data) return;
+      setSchedule(Array.isArray(data.items) ? data.items : []);
+    });
+
+    socket.on('react-wall-update', function(data) {
+      if (!data || !data.entry) return;
+      setReactWall(function(w) { return w.concat([data.entry]).slice(-30); });
+    });
+
+    socket.on('host-bio-update', function(data) {
+      setHostBio(data || null);
+    });
+
+    socket.on('spotlight-pick-update', function(data) {
+      setSpotlightPick(data || null);
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2066,6 +2100,10 @@ export default function LiveRoomPage({
       socket.off('stream-sign-in');
       socket.off('outro-countdown-update');
       socket.off('gift-combo');
+      socket.off('schedule-update');
+      socket.off('react-wall-update');
+      socket.off('host-bio-update');
+      socket.off('spotlight-pick-update');
       socket.off('scoreboard-update');
       socket.off('auction-update');
       socket.off('auction-ended');
@@ -3817,6 +3855,14 @@ export default function LiveRoomPage({
                 if (outroCountdown) { if (socket) socket.emit('outro-countdown-cancel', { roomId: roomId }); }
                 else { setShowOutroSet(function(s) { return !s; }); }
               }},
+              { emoji: '📅', label: 'Schedule', active: schedule.length > 0 || showSchedule, onTap: function() { setShowSchedule(function(s) { return !s; }); } },
+              { emoji: '🎯', label: 'Spotlight', active: !!spotlightPick, onTap: function() {
+                if (socket) socket.emit('spotlight-random-pick', { roomId: roomId }, function(res) {
+                  if (res && res.error) { if (addToast) addToast(res.error, 'error'); }
+                  else if (res) { if (addToast) addToast('🎯 Spotlighting ' + res.picked + '!', 'success'); }
+                });
+              }},
+              { emoji: 'ℹ️', label: 'About Me', active: !!hostBio || showBioEdit, onTap: function() { setBioDraft(hostBio ? { bio: hostBio.bio || '', links: hostBio.links && hostBio.links.length ? hostBio.links : [{ label: '', url: '' }] } : { bio: '', links: [{ label: '', url: '' }] }); setShowBioEdit(function(s) { return !s; }); } },
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Check In', active: false, onTap: function() {
@@ -3848,6 +3894,9 @@ export default function LiveRoomPage({
                   });
                 }
               }},
+              { emoji: '💫', label: 'React Wall', active: showReactWall, onTap: function() { setShowReactWall(function(s) { return !s; }); } },
+              { emoji: '📅', label: 'Schedule', active: schedule.length > 0, onTap: function() { setShowSchedule(function(s) { return !s; }); } },
+              { emoji: 'ℹ️', label: 'About', active: showBioPanel, onTap: function() { setShowBioPanel(function(s) { return !s; }); } },
             ] : [])),
           ].map(function(tool) {
             return (
@@ -9621,6 +9670,164 @@ export default function LiveRoomPage({
               style={{ background: wheelSpinning ? CARD2 : GOLD, border: 'none', borderRadius: 12, padding: '14px 40px', fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: '#0E0C09', cursor: wheelSpinning ? 'default' : 'pointer', letterSpacing: 2, opacity: wheelSpinning ? .6 : 1 }}
             >{wheelSpinning ? 'SPINNING...' : '🎡 SPIN!'}</button>
           )}
+        </div>
+      )}
+
+      {/* ── Batch 44: Spotlight pick overlay ─────────────────────────────── */}
+      {spotlightPick && (
+        <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 310, textAlign: 'center', animation: 'spotlightGlow 2s ease infinite', pointerEvents: 'none' }}>
+          <div style={{ background: 'rgba(201,168,76,.2)', border: '2px solid rgba(201,168,76,.6)', borderRadius: 20, padding: '16px 28px', backdropFilter: 'blur(8px)' }}>
+            <div style={{ fontSize: 36, marginBottom: 6 }}>🎯</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: 1.5, marginBottom: 4 }}>VIEWER SPOTLIGHT</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 26, color: GOLD, letterSpacing: 2 }}>{spotlightPick.username}</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 4, letterSpacing: .5 }}>YOU'RE IN THE SPOTLIGHT!</div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Batch 44: Schedule panel ──────────────────────────────────────── */}
+      {showSchedule && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>📅 STREAM SCHEDULE</span>
+            <div onClick={function() { setShowSchedule(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          {role === 'host' && (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 6, letterSpacing: .8 }}>SEGMENTS (one per line, up to 8)</div>
+              <textarea
+                value={scheduleDraft}
+                onChange={function(e) { setScheduleDraft(e.target.value); }}
+                rows={5}
+                placeholder={'Intro & Greetings\nQ&A Session\nGift Unboxing\nGiveaway'}
+                style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
+              />
+              <button
+                onClick={function() {
+                  var items = scheduleDraft.split('\n').map(function(l) { return { label: l.trim(), done: false }; }).filter(function(i) { return i.label; }).slice(0, 8);
+                  if (!items.length) return;
+                  if (socket) socket.emit('schedule-set', { roomId: roomId, items: items });
+                  setScheduleDraft('');
+                }}
+                style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 8, padding: '9px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}
+              >UPDATE SCHEDULE</button>
+            </div>
+          )}
+          {schedule.length === 0 && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14 }}>No schedule set yet</div>
+          )}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {schedule.map(function(item, i) {
+              return (
+                <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < schedule.length - 1 ? '1px solid ' + BORDER : 'none', opacity: item.done ? .5 : 1 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: item.done ? 'rgba(0,200,100,.2)' : 'rgba(201,168,76,.15)', border: '1px solid ' + (item.done ? '#00C864' : 'rgba(201,168,76,.4)'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, color: item.done ? '#00C864' : GOLD }}>{item.done ? '✓' : (i+1)}</div>
+                  <span style={{ flex: 1, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15, color: TEXT, textDecoration: item.done ? 'line-through' : 'none' }}>{item.label}</span>
+                  {role === 'host' && (
+                    <button onClick={function() { if (socket) socket.emit('schedule-mark-done', { roomId: roomId, id: item.id }); }} style={{ background: 'transparent', border: '1px solid ' + BORDER, borderRadius: 6, padding: '3px 8px', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>{item.done ? 'UNDO' : 'DONE'}</button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Batch 44: React wall panel ────────────────────────────────────── */}
+      {showReactWall && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>💫 LIVE REACTIONS</span>
+            <div onClick={function() { setShowReactWall(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          {reactWall.length === 0 && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14 }}>Send reactions to see them here!</div>
+          )}
+          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column-reverse' }}>
+            {reactWall.slice().reverse().map(function(entry, i) {
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid ' + BORDER }}>
+                  <span style={{ fontSize: 20, flexShrink: 0 }}>{entry.emoji}</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, flex: 1 }}>{entry.username}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>
+                    {(function() { var s = Math.floor((Date.now() - entry.ts) / 1000); return s < 60 ? s + 's' : Math.floor(s/60) + 'm'; })()}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Batch 44: Host bio panel (viewer) ─────────────────────────────── */}
+      {showBioPanel && hostBio && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '20px 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>ℹ️ ABOUT {hostName.toUpperCase()}</span>
+            <div onClick={function() { setShowBioPanel(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          {hostBio.bio && (
+            <p style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15, color: TEXT, lineHeight: 1.6, marginBottom: 16 }}>{hostBio.bio}</p>
+          )}
+          {hostBio.links && hostBio.links.length > 0 && (
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: 1, marginBottom: 8 }}>LINKS</div>
+              {hostBio.links.map(function(link, i) {
+                return (
+                  <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15, color: TEAL, textDecoration: 'none', padding: '8px 0', borderBottom: '1px solid ' + BORDER }}>
+                    🔗 {link.label || link.url}
+                  </a>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Batch 44: Host bio edit (host only) ───────────────────────────── */}
+      {showBioEdit && role === 'host' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>ℹ️ ABOUT ME</span>
+            <div onClick={function() { setShowBioEdit(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 5, letterSpacing: .8 }}>BIO</div>
+          <textarea
+            value={bioDraft.bio}
+            onChange={function(e) { setBioDraft(function(d) { return Object.assign({}, d, { bio: e.target.value.slice(0, 300) }); }); }}
+            placeholder="Tell viewers about yourself..."
+            rows={4}
+            style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 14 }}
+          />
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 8, letterSpacing: .8 }}>LINKS (up to 4)</div>
+          {bioDraft.links.map(function(link, i) {
+            return (
+              <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                <input
+                  value={link.label}
+                  onChange={function(e) { setBioDraft(function(d) { var ls = d.links.slice(); ls[i] = Object.assign({}, ls[i], { label: e.target.value.slice(0, 30) }); return Object.assign({}, d, { links: ls }); }); }}
+                  placeholder="Label"
+                  style={{ width: 90, background: CARD2, border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '6px 8px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', flexShrink: 0 }}
+                />
+                <input
+                  value={link.url}
+                  onChange={function(e) { setBioDraft(function(d) { var ls = d.links.slice(); ls[i] = Object.assign({}, ls[i], { url: e.target.value }); return Object.assign({}, d, { links: ls }); }); }}
+                  placeholder="https://..."
+                  style={{ flex: 1, background: CARD2, border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '6px 8px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }}
+                />
+              </div>
+            );
+          })}
+          {bioDraft.links.length < 4 && (
+            <button onClick={function() { setBioDraft(function(d) { return Object.assign({}, d, { links: d.links.concat([{ label: '', url: '' }]) }); }); }} style={{ background: 'transparent', border: '1px dashed ' + BORDER, borderRadius: 8, padding: '6px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', marginBottom: 14 }}>+ ADD LINK</button>
+          )}
+          <button
+            onClick={function() {
+              var links = bioDraft.links.filter(function(l) { return l.url.trim(); });
+              if (socket) socket.emit('set-host-bio', { roomId: roomId, bio: bioDraft.bio, links: links });
+              setShowBioEdit(false);
+            }}
+            style={{ background: GOLD, border: 'none', borderRadius: 12, padding: '12px', fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1.5 }}
+          >SAVE BIO</button>
         </div>
       )}
 
