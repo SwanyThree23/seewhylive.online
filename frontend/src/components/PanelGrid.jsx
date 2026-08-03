@@ -1,68 +1,126 @@
-import React, { useState, useEffect } from 'react';
-import OctCell from './OctCell';
+import React from 'react';
+import OctCell from './OctCell.jsx';
 
-var COLS = 5;
-var ROWS = 4;
-var TOTAL = COLS * ROWS; // 20 seats
+var MAX_SEATS = 20;
 
-export default function PanelGrid({ guests, socket, roomId, userId, rtcManager, mediaConfig, branding, onTap, isMutedMap, isCamOffMap }) {
-  var [giftTotals, setGiftTotals] = useState({}); // guestId → cents
-
-  useEffect(function() {
-    if (!socket) return;
-    function onGiftReceived(data) {
-      if (data.guestTotals) {
-        setGiftTotals(function(prev) { return Object.assign({}, prev, data.guestTotals); });
-      } else if (data.toGuestId && data.valueCents) {
-        setGiftTotals(function(prev) {
-          var next = Object.assign({}, prev);
-          next[data.toGuestId] = (next[data.toGuestId] || 0) + data.valueCents;
-          return next;
-        });
-      }
-    }
-    socket.on('gift-received', onGiftReceived);
-    return function() { socket.off('gift-received', onGiftReceived); };
-  }, [socket]);
+/**
+ * PanelGrid — scalable 20-seat octagonal panel layout.
+ *
+ * Layout: CSS grid, 5 columns × 4 rows = 20 cells.
+ * Cells are square, sized so the grid fills the container without overflow scroll.
+ * Responsive: column count drops to 4 on narrow viewports (≤600 px) via a
+ * calc()-based minmax so the grid always fills 100% width.
+ * Inline styles only — matches existing codebase convention.
+ *
+ * Props:
+ *   guests      {Array}   — up to 20 guest objects with guestId, username, producerId, speaking
+ *   isHost      {boolean}
+ *   fadesMode   {boolean}
+ *   branding    {object}
+ *   socket      {object}
+ *   roomId      {string}
+ *   userId      {string}
+ *   rtcManager  {object}
+ *   mediaConfig {object}
+ *   isMuted     {boolean} — applies to own cell only
+ *   isCamOff    {boolean} — applies to own cell only
+ *   onMuteToggle  {function}
+ *   onCamToggle   {function}
+ *   onTap         {function|null}
+ */
+export default function PanelGrid({
+  guests,
+  isHost,
+  fadesMode,
+  branding,
+  socket,
+  roomId,
+  userId,
+  rtcManager,
+  mediaConfig,
+  isMuted,
+  isCamOff,
+  onMuteToggle,
+  onCamToggle,
+  onTap,
+  onCameraTrack,
+  giftTotals,
+}) {
+  if (!giftTotals) giftTotals = {};
+  var seats = (guests || []).slice(0, MAX_SEATS);
 
   return (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(' + COLS + ', 1fr)',
-        gridTemplateRows: 'repeat(' + ROWS + ', 1fr)',
+        // 5 columns; each column is at least 1px wide so the grid never overflows.
+        // repeat(5, minmax(0, 1fr)) distributes space evenly without scroll.
+        gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+        gridTemplateRows: 'repeat(4, minmax(0, 1fr))',
         gap: 6,
         width: '100%',
         height: '100%',
+        padding: 4,
         boxSizing: 'border-box',
-        overflow: 'hidden',
+        background: '#080B12',
       }}
     >
-      {Array.from({ length: TOTAL }, function(_, i) {
-        var guest  = guests && guests[i] ? guests[i] : { guestId: 'empty-' + i, username: '' };
-        var gid    = guest.guestId || guest.userId || ('empty-' + i);
-        var muted  = isMutedMap  ? !!isMutedMap[gid]  : false;
-        var camOff = isCamOffMap ? !!isCamOffMap[gid] : false;
+      {Array.from({ length: MAX_SEATS }).map(function(_, idx) {
+        var g   = seats[idx] || null;
+        var gid = g ? (g.guestId || g.userId || ('seat-' + idx)) : ('empty-' + idx);
+        var isOwn = g && gid === userId;
 
         return (
           <div
             key={gid}
-            style={{ position: 'relative', minWidth: 0, minHeight: 0 }}
+            style={{
+              position: 'relative',
+              borderRadius: 8,
+              overflow: 'hidden',
+              background: g ? '#0E0C09' : 'rgba(255,255,255,0.02)',
+              border: g
+                ? '1px solid rgba(201,168,76,0.12)'
+                : '1px dashed rgba(255,255,255,0.06)',
+              minHeight: 0,
+            }}
           >
-            <OctCell
-              guest={guest}
-              fill
-              socket={socket}
-              roomId={roomId}
-              userId={userId}
-              rtcManager={rtcManager}
-              mediaConfig={mediaConfig}
-              branding={branding}
-              isMuted={muted}
-              isCamOff={camOff}
-              giftTotal={giftTotals[gid] || 0}
-              onTap={guest.guestId && !guest.guestId.startsWith('empty-') ? onTap : undefined}
-            />
+            {g ? (
+              <OctCell
+                guest={g}
+                fill={true}
+                isHost={isHost}
+                fadesMode={fadesMode}
+                branding={branding}
+                onTap={onTap}
+                socket={socket}
+                roomId={roomId}
+                userId={userId}
+                rtcManager={rtcManager}
+                mediaConfig={isOwn ? mediaConfig : null}
+                isMuted={isOwn ? isMuted : false}
+                isCamOff={isOwn ? isCamOff : false}
+                onMuteToggle={isOwn ? onMuteToggle : null}
+                onCamToggle={isOwn ? onCamToggle : null}
+                onCameraTrack={isOwn ? onCameraTrack : null}
+                giftTotal={giftTotals[gid] || 0}
+              />
+            ) : (
+              /* Empty seat placeholder */
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'rgba(255,255,255,0.08)',
+                  fontSize: 18,
+                  userSelect: 'none',
+                }}
+              >
+                +
+              </div>
+            )}
           </div>
         );
       })}

@@ -15,30 +15,30 @@ async function assignSlot({ roomId, userId }) {
     'SELECT * FROM room_panel_slots WHERE stream_id = $1 AND user_id = $2',
     [roomId, userId]
   );
-  if (existing.rows.length) return existing.rows[0];
+  if (existing.rows.length) return { slot: existing.rows[0], isNew: false };
 
-  const taken = await db.query(
-    'SELECT slot_index FROM room_panel_slots WHERE stream_id = $1 ORDER BY slot_index',
-    [roomId]
+  // Atomically find the lowest free slot and claim it in one round-trip.
+  // This eliminates the TOCTOU between reading taken slots and inserting —
+  // the NOT EXISTS subquery and the INSERT run at the same snapshot.
+  const result = await db.query(
+    `INSERT INTO room_panel_slots (stream_id, slot_index, user_id)
+     SELECT $1, s.i, $3
+     FROM generate_series(0, $2::int - 1) AS s(i)
+     WHERE NOT EXISTS (
+       SELECT 1 FROM room_panel_slots
+       WHERE stream_id = $1 AND slot_index = s.i
+     )
+     ORDER BY s.i
+     LIMIT 1
+     RETURNING *`,
+    [roomId, maxGuests, userId]
   );
-  const takenIndexes = new Set(taken.rows.map((r) => r.slot_index));
-
-  let nextIndex = null;
-  for (let i = 0; i <= maxGuests; i++) {
-    if (!takenIndexes.has(i)) { nextIndex = i; break; }
-  }
-  if (nextIndex === null) {
+  if (!result.rows.length) {
     const err = new Error('Panel is full');
     err.status = 409;
     throw err;
   }
-
-  const result = await db.query(
-    `INSERT INTO room_panel_slots (stream_id, slot_index, user_id)
-     VALUES ($1, $2, $3) RETURNING *`,
-    [roomId, nextIndex, userId]
-  );
-  return result.rows[0];
+  return { slot: result.rows[0], isNew: true };
 }
 
 async function releaseSlot({ roomId, userId }) {
@@ -59,7 +59,12 @@ async function checkJoinGate({ roomId, userId, inviteCode = null }) {
   if (r.privacy !== 'private' || userId === r.creator_id) return { allowed: true };
 
   if (r.private_gating_mode === 'invite_code') {
-    if (inviteCode && inviteCode === r.invite_code) return { allowed: true };
+    if (inviteCode && r.invite_code) {
+      const cappedCode = String(inviteCode).slice(0, 512);
+      const h1 = crypto.createHash('sha256').update(cappedCode).digest();
+      const h2 = crypto.createHash('sha256').update(String(r.invite_code)).digest();
+      if (crypto.timingSafeEqual(h1, h2)) return { allowed: true };
+    }
     return { allowed: false, reason: 'invalid_code' };
   }
 
@@ -93,17 +98,25 @@ async function requestJoin({ roomId, userId }) {
   return row;
 }
 
-async function resolveJoinRequest({ roomId, userId, approve }) {
+async function resolveJoinRequest({ roomId, userId, approve, resolverId }) {
+  if (resolverId) {
+    const ownerCheck = await db.query('SELECT creator_id FROM streams WHERE id = $1', [roomId]);
+    if (!ownerCheck.rows[0] || ownerCheck.rows[0].creator_id !== resolverId) {
+      const err = new Error('forbidden');
+      err.status = 403;
+      throw err;
+    }
+  }
   const result = await db.query(
     `UPDATE room_join_requests SET status = $3, resolved_at = now()
      WHERE stream_id = $1 AND user_id = $2 RETURNING *`,
-    [roomId, userId, approve ? 'approved' : 'denied']
+    [roomId, userId, approve === true ? 'approved' : 'denied']
   );
   return result.rows[0];
 }
 
 function generateInviteCode() {
-  return crypto.randomBytes(4).toString('hex').toUpperCase();
+  return crypto.randomBytes(12).toString('hex').toUpperCase();
 }
 
 async function setExpandedSlot({ roomId, slotIndex, expanded }) {

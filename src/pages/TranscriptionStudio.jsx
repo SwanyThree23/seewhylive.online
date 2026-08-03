@@ -33,6 +33,7 @@ const TEXTD = '#B8AECF';
 const TEXTM = '#7A6E8A';
 const CYAN  = '#D4AF37';
 const GREEN = '#6DBF7E';
+const SCARL = '#C0392B';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
 
@@ -111,6 +112,10 @@ export default function TranscriptionStudio() {
   const bottomRef = useRef(null);
   const tickRef   = useRef(null);
   const idRef     = useRef(1);
+  const startMsRef = useRef(Date.now());
+  const [captionHistory, setCaptionHistory] = useState([]);
+  const [demoText, setDemoText] = useState('');
+  const activeLang = SUPPORTED_LANGS.find(l => l.label === lang)?.code || 'en';
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -203,6 +208,30 @@ export default function TranscriptionStudio() {
     dgRecRef.current = null;
     dgWsRef.current  = null;
     setDgLive(false);
+  }
+
+  function stopLive() {
+    setLive(false);
+    clearInterval(tickRef.current);
+    stopDeepgram();
+  }
+
+  function msToSrt(ms) {
+    const pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
+    const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10);
+    return `${pad(h)}:${pad(m)}:${pad(s)},${pad(cs)}`;
+  }
+
+  const fullText = lines.map(l => `[${l.time}] ${l.text}`).join('\n');
+  const srtText = lines.map((l, i) => `${i + 1}\n${l.time},000 --> ${l.time},999\n${l.text}\n`).join('\n');
+
+  function downloadSRT() {
+    const blob = new Blob([srtText], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'transcript.srt';
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
 
   useEffect(() => () => stopDeepgram(), []);

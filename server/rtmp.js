@@ -26,6 +26,8 @@ var RTMP_BASE_URLS = {
 // roomId → { process, destinations, restartCount, lastRestart, healthTimer }
 var fanouts = new Map();
 
+var SAFE_ROOM_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 var MAX_RESTARTS  = 3;
 var BASE_BACKOFF  = 2000;  // ms
 var HEALTH_INTERVAL = 30000; // ms
@@ -46,6 +48,10 @@ function ensureDir(dir) {
 }
 
 function buildFfmpegArgs(roomId, destinations) {
+  if (!SAFE_ROOM_RE.test(roomId)) {
+    throw new Error('buildFfmpegArgs: invalid roomId');
+  }
+
   var inputUrl = 'rtmp://localhost:1935/live/' + roomId;
   var hlsPath  = HLS_DIR + '/' + roomId + '/index.m3u8';
   var dashPath = DASH_DIR + '/' + roomId + '/manifest.mpd';
@@ -65,7 +71,8 @@ function buildFfmpegArgs(roomId, destinations) {
     if (dest.platform === 'custom' || !baseUrl) {
       baseUrl = dest.rtmpUrl;
     }
-    var fullUrl = baseUrl + '/' + dest.streamKey;
+    var _safeKey = String(dest.streamKey || '').replace(/[^A-Za-z0-9_\-\.]/g, '').slice(0, 200);
+    var fullUrl = baseUrl + '/' + _safeKey;
     args.push('-c', 'copy', '-f', 'flv', fullUrl);
   }
 
@@ -104,7 +111,14 @@ function startFanout(roomId, hostGuestId, destinations) {
   var logStream = openLogStream(roomId);
 
   var ts = new Date().toISOString();
-  logStream.write('[' + ts + '] Starting FFmpeg: ffmpeg ' + args.join(' ') + '\n');
+  var _redactedArgs = args.map(function(a, i) {
+    // Redact stream key (last path segment of every RTMP destination URL)
+    if (i > 0 && args[i - 1] === 'flv' && /^rtmps?:\/\//i.test(a)) {
+      return a.replace(/\/[^/]*$/, '/<redacted>');
+    }
+    return a;
+  });
+  logStream.write('[' + ts + '] Starting FFmpeg: ffmpeg ' + _redactedArgs.join(' ') + '\n');
 
   var proc = spawn('ffmpeg', args, { stdio: ['ignore', 'ignore', 'pipe'] });
 
@@ -152,6 +166,7 @@ function healthCheck(roomId) {
 
   if (entry.restartCount >= MAX_RESTARTS) {
     entry.logStream.write('[' + new Date().toISOString() + '] Max restarts reached, giving up.\n');
+    entry.logStream.end();
     clearInterval(entry.healthTimer);
     fanouts.delete(roomId);
     emitter.emit('fanout-failed', { roomId: roomId });

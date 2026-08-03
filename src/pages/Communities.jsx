@@ -117,7 +117,7 @@ export default function CommunitiesPage() {
       if (ctx?.prevCommunities) queryClient.setQueryData(['communities', selectedCategory], ctx.prevCommunities);
       toast.error('Failed to join community');
     },
-    onSuccess: () => {
+    onSuccess: (_data, communityId) => {
       queryClient.invalidateQueries({ queryKey: ['myMemberships'] });
       queryClient.invalidateQueries({ queryKey: ['communities'] });
       toast.success('Joined community!');

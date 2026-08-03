@@ -5,9 +5,6 @@ import LevelBadge from '../components/rewards/LevelBadge';
 import rewardsService from '../services/rewardsService';
 
 // Base44 ruleset: function expressions only, var only, no optional chaining/??.
-// INTEGRATION: pass currentUserId in and swap the `entry.user_id` display for
-// your real display-name/avatar lookup (currently shows raw user_id) — wire
-// to your existing user profile lookup used elsewhere (e.g. PublicProfile.jsx).
 var Leaderboard = function (props) {
   var currentUserId = props.currentUserId;
 
@@ -131,13 +128,13 @@ var Leaderboard = function (props) {
 
       <div>
         {rows.map(function (entry, index) {
-          var points = activeTab === 'weekly' ? entry.points_this_week : entry.total_points;
+          var points = activeTab === 'weekly' ? entry.total_points : entry.total_points;
           var isMe = currentUserId && entry.user_id === currentUserId;
           return (
             <div key={entry.user_id} style={isMe ? { outline: '2px solid #D4AF37', borderRadius: '6px' } : null}>
               <LeaderboardRow
                 rank={index + 1}
-                displayName={entry.user_id}
+                displayName={entry.display_name || entry.user_id}
                 points={points}
                 level={entry.level || 1}
               />

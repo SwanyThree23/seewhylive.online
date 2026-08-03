@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts';
+import SafeResponsiveContainer from '@/components/shared/SafeChart';
 import { TrendingUp, TrendingDown, Users, Eye, MessageSquare, Heart } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -128,7 +129,7 @@ export default function BroadcastAnalyticsDashboard({ roomId, streamSession, isL
       <div className="bg-white/5 border border-white/10 rounded-lg p-3">
         <p className="text-[11px] text-white/60 uppercase font-semibold mb-2">Viewer Trend</p>
         {viewerHistory.length > 1 ? (
-          <ResponsiveContainer width="100%" height={150}>
+          <SafeResponsiveContainer width="100%" height={150}>
             <LineChart data={viewerHistory}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis dataKey="time" tick={{ fill: '#fff', fontSize: 10 }} />
@@ -139,7 +140,7 @@ export default function BroadcastAnalyticsDashboard({ roomId, streamSession, isL
               />
               <Line type="monotone" dataKey="viewers" stroke="#C9A84C" dot={false} strokeWidth={2} />
             </LineChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         ) : (
           <div className="h-[150px] flex items-center justify-center text-white/30 text-xs">
             {isLive ? 'Collecting data…' : 'Start stream to see viewer trend'}
@@ -150,7 +151,7 @@ export default function BroadcastAnalyticsDashboard({ roomId, streamSession, isL
       {/* Engagement breakdown */}
       <div className="bg-white/5 border border-white/10 rounded-lg p-3">
         <p className="text-[11px] text-white/60 uppercase font-semibold mb-2">Engagement</p>
-        <ResponsiveContainer width="100%" height={120}>
+        <SafeResponsiveContainer width="100%" height={120}>
           <BarChart data={engagementData}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
             <XAxis dataKey="label" tick={{ fill: '#fff', fontSize: 11 }} />
@@ -161,7 +162,7 @@ export default function BroadcastAnalyticsDashboard({ roomId, streamSession, isL
             />
             <Bar dataKey="value" fill="#d4af37" radius={[3,3,0,0]} />
           </BarChart>
-        </ResponsiveContainer>
+        </SafeResponsiveContainer>
       </div>
     </motion.div>
   );

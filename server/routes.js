@@ -5,10 +5,41 @@ var router = express.Router();
 var uuidv4 = require('uuid').v4;
 var Database = require('better-sqlite3');
 var jwt = require('jsonwebtoken');
+var requireAuth = require('./middleware/auth');
+var { rateLimit } = require('express-rate-limit');
 
 // ─── Revenue split constants (immutable) ──────────────────────────────────────
 var CREATOR  = 0.90;
 var PLATFORM = 0.10;
+
+var ROUTES_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+var moderationRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'too many requests' },
+});
+
+var tipRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'too many tip requests' },
+});
+
+var ppvCreateRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'too many PPV token requests' },
+});
 
 // ─── Optional module loading (graceful fallback) ──────────────────────────────
 var analytics = null;
@@ -40,9 +71,10 @@ var _pushSubscriptions = {};
 
 // ─── AURA routes ──────────────────────────────────────────────────────────────
 
-router.get('/aura/usage', function(req, res) {
+router.get('/aura/usage', requireAuth, function(req, res) {
   try {
-    var streamId = req.query.streamId || req.body.streamId || '';
+    var streamId = String(req.query.streamId || '');
+    if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
     if (aura) {
       var usage = aura.getUsage(streamId);
       return res.json({
@@ -53,26 +85,34 @@ router.get('/aura/usage', function(req, res) {
     }
     return res.json({ callsThisHour: 0, limit: 20, streamId: streamId });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.post('/aura/mode', function(req, res) {
+router.post('/aura/mode', requireAuth, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'forbidden' });
+  }
   try {
-    var mode = req.body.mode || 'hype';
+    var VALID_MODES = ['hype', 'chill', 'professional', 'comedy'];
+    var mode = VALID_MODES.includes(req.body.mode) ? req.body.mode : 'hype';
     if (aura) {
       aura.setMode(mode);
     }
     return res.json({ mode: mode, success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.post('/aura/trigger', function(req, res) {
+router.post('/aura/trigger', requireAuth, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'forbidden' });
+  }
   try {
     var type = req.body.type || '';
-    var streamId = req.body.streamId || '';
+    var streamId = String(req.body.streamId || '');
+    if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
     var mode = req.body.mode || 'hype';
     var data = req.body.data || {};
 
@@ -82,25 +122,34 @@ router.post('/aura/trigger', function(req, res) {
 
     var triggerFn = null;
 
+    var _vn  = String(data.viewerName  || 'Viewer').slice(0, 80);
+    var _st  = String(data.streamTitle || 'SeeWhy LIVE').slice(0, 120);
+    var _gn  = String(data.giftName   || 'Gift').slice(0, 60);
+    var _nt  = String(data.note       || '').slice(0, 200);
+    var _ac  = Math.min(Math.max(Math.floor(Number(data.amountCents)  || 0), 0), 5000000);
+    var _pv  = Math.min(Math.max(Math.floor(Number(data.peakViewers)  || 0), 0), 1000000);
+    var _tec = Math.min(Math.max(Math.floor(Number(data.totalEarningsCents) || 0), 0), 5000000);
+    var _vc  = Math.min(Math.max(Math.floor(Number(data.viewerCount)  || 0), 0), 1000000);
+
     if (type === 'stream_start') {
       triggerFn = function(cb) {
-        aura.triggerStreamStart(streamId, data.streamTitle || 'SeeWhy LIVE', data.viewerCount || 0, cb);
+        aura.triggerStreamStart(streamId, _st, _vc, cb);
       };
     } else if (type === 'tip_received') {
       triggerFn = function(cb) {
-        aura.triggerTip(streamId, data.viewerName || 'Viewer', data.amountCents || 500, data.note || '', cb);
+        aura.triggerTip(streamId, _vn, _ac || 500, _nt, cb);
       };
     } else if (type === 'gift_received') {
       triggerFn = function(cb) {
-        aura.triggerGift(streamId, data.viewerName || 'Viewer', data.giftName || 'Gift', data.amountCents || 100, cb);
+        aura.triggerGift(streamId, _vn, _gn, _ac || 100, cb);
       };
     } else if (type === 'new_viewer') {
       triggerFn = function(cb) {
-        aura.triggerNewViewer(streamId, data.viewerName || 'Viewer', data.isReturning || false, cb);
+        aura.triggerNewViewer(streamId, _vn, data.isReturning || false, cb);
       };
     } else if (type === 'stream_end') {
       triggerFn = function(cb) {
-        aura.triggerStreamEnd(streamId, data.peakViewers || 0, data.totalEarningsCents || 0, cb);
+        aura.triggerStreamEnd(streamId, _pv, _tec, cb);
       };
     }
 
@@ -112,7 +161,7 @@ router.post('/aura/trigger', function(req, res) {
       res.json({ success: true, text: text || 'AURA response', mode: mode });
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -120,16 +169,16 @@ router.post('/aura/trigger', function(req, res) {
 
 router.get('/search', function(req, res) {
   try {
-    var q = req.query.q || '';
+    var q = String(req.query.q || '').slice(0, 200);
     var type = req.query.type || 'all';
-    var limit = parseInt(req.query.limit || '20', 10);
+    var limit = Math.min(parseInt(req.query.limit || '20', 10) || 20, 100);
     if (search) {
       var data = search.search(q, type, limit);
       return res.json({ results: data, total: data.length });
     }
     return res.json({ results: [], total: 0 });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -145,16 +194,21 @@ router.get('/streams/count', function(req, res) {
     }
     return res.json({ liveCount: 0 });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
 // ─── ANALYTICS routes ─────────────────────────────────────────────────────────
 
-router.get('/creator/analytics', function(req, res) {
+router.get('/creator/analytics', requireAuth, function(req, res) {
   try {
-    var creatorId = req.headers['x-creator-id'] || 'default';
-    var period = req.query.period || 'month';
+    var creatorId = req.user.id;
+    var _rawPeriod = req.query.period || 'month';
+    var VALID_PERIODS = ['today', 'week', 'month'];
+    if (!VALID_PERIODS.includes(_rawPeriod)) {
+      return res.status(400).json({ error: 'period must be one of: today, week, month' });
+    }
+    var period = _rawPeriod;
     if (analytics) {
       var result = analytics.getCreatorAnalytics(creatorId, period);
       return res.json(result);
@@ -171,11 +225,12 @@ router.get('/creator/analytics', function(req, res) {
       peakViewers: 0
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.get('/admin/metrics', function(req, res) {
+router.get('/admin/metrics', requireAuth, function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
     if (analytics) {
       var metrics = analytics.getPlatformMetrics();
@@ -188,28 +243,28 @@ router.get('/admin/metrics', function(req, res) {
       platformCutCents: 0
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
 // ─── MODERATION routes ────────────────────────────────────────────────────────
 
-router.get('/moderation/word-filters', function(req, res) {
+router.get('/moderation/word-filters', requireAuth, function(req, res) {
   try {
-    var creatorId = req.query.creatorId || 'default';
+    var creatorId = req.user.id;
     if (moderation) {
       return res.json({ filters: moderation.getWordFilters(creatorId) });
     }
     return res.json({ filters: [] });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.post('/moderation/word-filters', function(req, res) {
+router.post('/moderation/word-filters', requireAuth, function(req, res) {
   try {
-    var word = req.body.word || '';
-    var creatorId = req.body.creatorId || 'default';
+    var word = String(req.body.word || '').slice(0, 200);
+    var creatorId = req.user.id;
     if (!word) {
       return res.json({ success: false, error: 'word is required' });
     }
@@ -219,107 +274,120 @@ router.post('/moderation/word-filters', function(req, res) {
     }
     return res.json({ success: false, error: 'moderation module unavailable' });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.delete('/moderation/word-filters/:word', function(req, res) {
+router.delete('/moderation/word-filters/:word', requireAuth, function(req, res) {
   try {
-    var creatorId = req.query.creatorId || 'default';
+    var creatorId = req.user.id;
     if (moderation) {
-      moderation.removeWordFilter(creatorId, req.params.word);
+      moderation.removeWordFilter(creatorId, String(req.params.word || '').slice(0, 200));
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.post('/moderation/subscriber-only', function(req, res) {
+router.post('/moderation/subscriber-only', requireAuth, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
-    var roomId = req.body.roomId || '';
-    var creatorId = req.body.creatorId || 'default';
+    var roomId = String(req.body.roomId || '');
+    if (!ROUTES_UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
+    var creatorId = req.user.id;
     var enabled = req.body.enabled || false;
     if (moderation) {
       moderation.setSubscriberOnly(roomId, creatorId, enabled);
     }
     return res.json({ success: true, enabled: enabled });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.post('/moderation/ban', function(req, res) {
+router.post('/moderation/ban', requireAuth, moderationRateLimit, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
-    var creatorId = req.body.creatorId || 'default';
-    var bannedUserId = req.body.bannedUserId || '';
-    var bannedUsername = req.body.bannedUsername || '';
-    var reason = req.body.reason || '';
+    var creatorId = req.user.id;
+    var bannedUserId = String(req.body.bannedUserId || '');
+    if (!ROUTES_UUID_RE.test(bannedUserId)) return res.status(400).json({ error: 'invalid bannedUserId' });
+    var bannedUsername = String(req.body.bannedUsername || '').slice(0, 80);
+    var reason = String(req.body.reason || '').slice(0, 200);
     if (moderation) {
       var ban = moderation.banUser(creatorId, bannedUserId, bannedUsername, reason);
       return res.json({ success: true, ban: ban });
     }
     return res.json({ success: false, error: 'moderation module unavailable' });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.delete('/moderation/ban/:userId', function(req, res) {
+router.delete('/moderation/ban/:userId', requireAuth, moderationRateLimit, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  if (!ROUTES_UUID_RE.test(req.params.userId)) return res.status(400).json({ error: 'invalid userId' });
   try {
-    var creatorId = req.query.creatorId || 'default';
+    var creatorId = req.user.id;
     if (moderation) {
       moderation.unbanUser(creatorId, req.params.userId);
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.get('/moderation/bans', function(req, res) {
+router.get('/moderation/bans', requireAuth, function(req, res) {
   try {
-    var creatorId = req.query.creatorId || 'default';
+    var creatorId = req.user.id;
     if (moderation) {
       return res.json({ bans: moderation.getBannedUsers(creatorId) });
     }
     return res.json({ bans: [] });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.post('/moderation/shadow-ban', function(req, res) {
+router.post('/moderation/shadow-ban', requireAuth, moderationRateLimit, function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
-    var userId = req.body.userId || '';
-    var reason = req.body.reason || '';
-    var bannedBy = req.body.bannedBy || 'system';
+    var userId = String(req.body.userId || '');
+    if (!ROUTES_UUID_RE.test(userId)) return res.status(400).json({ error: 'invalid userId' });
+    var reason = String(req.body.reason || '').slice(0, 200);
+    var bannedBy = req.user.id;
     if (moderation) {
       moderation.shadowBanUser(userId, reason, bannedBy);
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
 // ─── STRIPE / PAYMENT routes ──────────────────────────────────────────────────
 
-router.get('/creator/onboard/status', function(req, res) {
+router.get('/creator/onboard/status', requireAuth, function(req, res) {
   try {
     return res.json({
       connected: !!(process.env.STRIPE_SECRET_KEY),
       accountId: null
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.get('/creator/onboard/link', function(req, res) {
+router.get('/creator/onboard/link', requireAuth, function(req, res) {
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var email = req.query.email ? String(req.query.email).slice(0, 254) : '';
+  if (!email || !EMAIL_RE.test(email)) {
+    return res.status(400).json({ error: 'valid email query param is required' });
+  }
   try {
     if (stripe) {
-      stripe.createConnectAccount('creator@seewhylive.online')
+      stripe.createConnectAccount(email)
         .then(function(result) {
           res.json({ url: result.onboardingUrl });
         })
@@ -330,16 +398,17 @@ router.get('/creator/onboard/link', function(req, res) {
     }
     return res.json({ url: 'https://stripe.com/connect' });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.post('/payments/tip', function(req, res) {
+router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
   try {
-    var streamId = req.body.streamId || '';
+    var streamId = String(req.body.streamId || '');
+    if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
     var amountCents = req.body.amountCents || 0;
-    var note = req.body.note || '';
-    var fromUserId = req.body.fromUserId || 'anon';
+    var note = String(req.body.note || '').slice(0, 200);
+    var fromUserId = req.user.id;
     var creatorStripeAccountId = req.body.creatorStripeAccountId || '';
 
     if (!amountCents || Math.floor(amountCents) < 50) {
@@ -347,10 +416,19 @@ router.post('/payments/tip', function(req, res) {
     }
 
     var amtCents = Math.floor(amountCents);
+    if (!Number.isFinite(amtCents) || amtCents > 50000) {
+      return res.status(400).json({ success: false, error: 'Tip amount exceeds maximum of $500.00' });
+    }
     var creatorCents = Math.floor(amtCents * CREATOR);
     var platformCents = amtCents - creatorCents;
 
-    if (stripe && creatorStripeAccountId) {
+    // A Stripe account is required — without one there is no actual charge,
+    // so we must not record earnings (prevents fake analytics injection).
+    if (!creatorStripeAccountId) {
+      return res.status(400).json({ success: false, error: 'creatorStripeAccountId is required to process a tip' });
+    }
+
+    if (stripe) {
       stripe.createGiftCharge(fromUserId, streamId, amtCents, creatorStripeAccountId)
         .then(function(result) {
           if (analytics) {
@@ -367,56 +445,52 @@ router.post('/payments/tip', function(req, res) {
           });
         })
         .catch(function(err) {
-          res.json({ success: false, error: err.message });
+          res.json({ success: false, error: 'Internal server error' });
         });
       return;
     }
 
-    if (analytics) {
-      try {
-        analytics.recordEarning(streamId, fromUserId, 'tip', amtCents, creatorCents, platformCents, note);
-      } catch (e) { /* ignore analytics error */ }
-    }
-
-    return res.json({
-      success: true,
-      clientSecret: null,
-      amountCents: amtCents,
-      creatorCents: creatorCents,
-      platformCents: platformCents
-    });
+    return res.status(503).json({ success: false, error: 'Payment processing unavailable' });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.post('/payments/payout', function(req, res) {
+router.post('/payments/payout', requireAuth, function(req, res) {
   try {
-    var creatorId = req.body.creatorId || 'default';
+    var creatorId = req.user.id;
     var amountCents = req.body.amountCents || 0;
 
-    if (Math.floor(amountCents) < 1000) {
+    var flooredCents = Math.floor(amountCents);
+    if (!Number.isFinite(flooredCents) || flooredCents < 1000) {
       return res.status(400).json({ success: false, error: 'Minimum payout is $10.00' });
     }
-
-    var flooredCents = Math.floor(amountCents);
+    if (flooredCents > 5000000) {
+      return res.status(400).json({ success: false, error: 'Payout amount exceeds maximum' });
+    }
     return res.json({
       success: true,
       amountCents: flooredCents,
       message: 'Payout of $' + (flooredCents / 100).toFixed(2) + ' initiated'
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.post('/payments/subscribe', function(req, res) {
+router.post('/payments/subscribe', requireAuth, function(req, res) {
   try {
-    var subscriberId = req.body.subscriberId || 'anon';
-    var creatorId = req.body.creatorId || 'default';
-    var tier = req.body.tier || 'fan';
+    var subscriberId = req.user.id;
+    var creatorId = String(req.body.creatorId || '');
+    if (!ROUTES_UUID_RE.test(creatorId)) return res.status(400).json({ error: 'invalid creatorId' });
+    var VALID_TIERS = ['fan', 'supporter', 'ride_or_die'];
+    var tier = VALID_TIERS.includes(String(req.body.tier || '')) ? String(req.body.tier) : 'fan';
     var amountCents = req.body.amountCents || 0;
     var id = uuidv4();
+
+    if (!Number.isFinite(amountCents) || amountCents < 1 || amountCents > 50000) {
+      return res.status(400).json({ success: false, error: 'amountCents must be between 1 and 50000' });
+    }
 
     if (moderation) {
       try {
@@ -426,15 +500,31 @@ router.post('/payments/subscribe', function(req, res) {
 
     return res.json({ success: true, tier: tier, id: id });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
 // ─── USER routes ──────────────────────────────────────────────────────────────
 
+router.get('/users/me', requireAuth, function(req, res) {
+  try {
+    var profile = _userProfiles[req.user.id] || {};
+    return res.json({
+      username: profile.username || 'SwanyThree',
+      displayName: profile.displayName || 'SwanyThree',
+      bio: profile.bio || 'SeeWhy LIVE creator · Washington Classic host',
+      avatarEmoji: profile.avatarEmoji || '👑',
+      tier: 'pro',
+      isLive: false
+    });
+  } catch (err) {
+    return res.json({ success: false, error: 'Internal server error' });
+  }
+});
+
 router.get('/users/:username', function(req, res) {
   try {
-    var username = req.params.username;
+    var username = String(req.params.username || '').slice(0, 80);
     var profile = _userProfiles[username] || null;
     if (profile) {
       return res.json(profile);
@@ -448,56 +538,64 @@ router.get('/users/:username', function(req, res) {
       tier: 'free'
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.get('/users/me', function(req, res) {
+router.put('/users/me', requireAuth, function(req, res) {
   try {
-    var profile = _userProfiles['default'] || {};
-    return res.json({
-      username: profile.username || 'SwanyThree',
-      displayName: profile.displayName || 'SwanyThree',
-      bio: profile.bio || 'SeeWhy LIVE creator · Washington Classic host',
-      avatarEmoji: profile.avatarEmoji || '👑',
-      tier: 'pro',
-      isLive: false
-    });
-  } catch (err) {
-    return res.json({ success: false, error: err.message });
-  }
-});
-
-router.put('/users/me', function(req, res) {
-  try {
-    var displayName = req.body.displayName || '';
-    var bio = req.body.bio || '';
-    var avatarEmoji = req.body.avatarEmoji || '';
-    _userProfiles['default'] = {
+    var displayName = String(req.body.displayName || '').slice(0, 80);
+    var bio         = String(req.body.bio         || '').slice(0, 500);
+    var avatarEmoji = String(req.body.avatarEmoji || '').slice(0, 8);
+    if (!_userProfiles[req.user.id] && Object.keys(_userProfiles).length >= 50000) {
+      return res.status(503).json({ success: false, error: 'Server at capacity' });
+    }
+    _userProfiles[req.user.id] = {
       displayName: displayName,
       bio: bio,
       avatarEmoji: avatarEmoji
     };
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.get('/users/me/earnings', function(req, res) {
+router.get('/users/me/earnings', requireAuth, function(req, res) {
   try {
     return res.json({ availableCents: 0, totalEarnedCents: 0, pendingCents: 0 });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
 // ─── NOTIFICATION routes ──────────────────────────────────────────────────────
 
-router.post('/push/subscribe', function(req, res) {
+router.post('/push/subscribe', requireAuth, function(req, res) {
   try {
-    var userId = req.body.userId || 'default';
-    var subscription = req.body.subscription || {};
+    var userId = req.user.id;
+    var raw = req.body.subscription || {};
+    var endpoint = String(raw.endpoint || '');
+    // Endpoint must be a valid https:// URL — any other scheme (http, data, javascript)
+    // would cause the server to make outbound requests to an attacker-controlled host (SSRF)
+    // when push notifications are dispatched.
+    if (!endpoint || !/^https:\/\//.test(endpoint) || endpoint.length > 2048) {
+      return res.status(400).json({ success: false, error: 'invalid push subscription endpoint' });
+    }
+    // Hostname guard: push notifications are dispatched as server-initiated HTTPS requests;
+    // a private-IP endpoint would let any authenticated user trigger SSRF on every go-live event.
+    var _PUSH_PRIV = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+    var _pushParsed;
+    try { _pushParsed = new URL(endpoint); } catch (_) {
+      return res.status(400).json({ success: false, error: 'invalid push subscription endpoint' });
+    }
+    if (!_pushParsed.hostname || _PUSH_PRIV.test(_pushParsed.hostname)) {
+      return res.status(400).json({ success: false, error: 'invalid push subscription endpoint' });
+    }
+    var subscription = { endpoint: endpoint, keys: raw.keys || {} };
+    if (!_pushSubscriptions[userId] && Object.keys(_pushSubscriptions).length >= 50000) {
+      return res.status(503).json({ success: false, error: 'Server at capacity' });
+    }
     _pushSubscriptions[userId] = subscription;
     if (notifications) {
       try {
@@ -506,13 +604,16 @@ router.post('/push/subscribe', function(req, res) {
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.post('/users/me/notifications', function(req, res) {
+router.post('/users/me/notifications', requireAuth, function(req, res) {
   try {
-    var prefKey = req.body.userId || 'default';
+    var prefKey = req.user.id;
+    if (!_notificationPrefs[prefKey] && Object.keys(_notificationPrefs).length >= 50000) {
+      return res.status(503).json({ success: false, error: 'Server at capacity' });
+    }
     _notificationPrefs[prefKey] = {
       notifyNewStream: req.body.notifyNewStream || false,
       notifyTip: req.body.notifyTip || false,
@@ -521,15 +622,21 @@ router.post('/users/me/notifications', function(req, res) {
     };
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
 // ─── METRICS / LEADERBOARD routes ────────────────────────────────────────────
 
-router.get('/metrics', function(req, res) {
+router.get('/metrics', requireAuth, function(req, res) {
   try {
-    var roomId = req.query.roomId || 'default';
+    var roomId = req.query.roomId || req.user.id;
+    if (roomId !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'forbidden' });
+    }
+    if (!ROUTES_UUID_RE.test(roomId)) {
+      return res.status(400).json({ error: 'invalid roomId' });
+    }
     if (analytics) {
       var result = analytics.getCreatorAnalytics(roomId, 'month');
       return res.json({
@@ -552,20 +659,20 @@ router.get('/metrics', function(req, res) {
       recentEarnings: []
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
 router.get('/leaderboard', function(req, res) {
   try {
-    var limit = parseInt(req.query.limit || '20', 10);
+    var limit = Math.min(parseInt(req.query.limit || '20', 10), 100);
     if (analytics && analytics.getTopCreators) {
       var top = analytics.getTopCreators(limit);
       return res.json({ leaderboard: top, updatedAt: Date.now() });
     }
     return res.json({ leaderboard: [], updatedAt: Date.now() });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -573,23 +680,54 @@ router.get('/leaderboard', function(req, res) {
 
 var _ppvTokens = {};
 
-router.post('/ppv/create', function(req, res) {
+// Evict expired PPV tokens every 30 minutes
+setInterval(function() {
+  var now = Date.now();
+  Object.keys(_ppvTokens).forEach(function(k) {
+    if (_ppvTokens[k] && now > _ppvTokens[k].expiresAt) delete _ppvTokens[k];
+  });
+}, 30 * 60 * 1000);
+
+router.post('/ppv/create', requireAuth, ppvCreateRateLimit, async function(req, res) {
   try {
-    var streamId = req.body.streamId || 'default';
+    var streamId = String(req.body.streamId || '');
+    if (!streamId || !ROUTES_UUID_RE.test(streamId)) {
+      return res.status(400).json({ success: false, error: 'valid streamId is required' });
+    }
     var priceCents = Math.floor(req.body.priceCents || 499);
+    if (!Number.isFinite(priceCents) || priceCents < 100 || priceCents > 50000) {
+      return res.status(400).json({ success: false, error: 'priceCents must be between 100 and 50000' });
+    }
+    // Verify the caller owns this stream
+    var ownerResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(streamId) + '&select=host_user_id&limit=1', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    });
+    var ownerData = await ownerResp.json();
+    if (!Array.isArray(ownerData) || !ownerData[0] || ownerData[0].host_user_id !== req.user.id) {
+      return res.status(403).json({ success: false, error: 'forbidden' });
+    }
+    if (Object.keys(_ppvTokens).length >= 1000) {
+      return res.status(429).json({ success: false, error: 'Too many active PPV tokens — try again later' });
+    }
     var token = require('crypto').randomBytes(16).toString('hex');
     var expiresAt = Date.now() + (24 * 60 * 60 * 1000);
     _ppvTokens[token] = { streamId: streamId, priceCents: priceCents, expiresAt: expiresAt };
     return res.json({ token: token, priceCents: priceCents, expiresAt: expiresAt });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
-router.post('/ppv/verify', function(req, res) {
+router.post('/ppv/verify', requireAuth, function(req, res) {
   try {
-    var token = req.body.token || '';
-    var streamId = req.body.streamId || '';
+    var token = String(req.body.token || '');
+    if (!token || !/^[0-9a-f]{32}$/i.test(token)) {
+      return res.status(400).json({ valid: false, error: 'invalid token format' });
+    }
+    var streamId = String(req.body.streamId || '');
+    if (!streamId || !ROUTES_UUID_RE.test(streamId)) {
+      return res.status(400).json({ valid: false, error: 'invalid streamId' });
+    }
     var entry = _ppvTokens[token];
     if (!entry) {
       return res.json({ valid: false, error: 'Invalid or expired PPV token' });
@@ -598,48 +736,73 @@ router.post('/ppv/verify', function(req, res) {
       delete _ppvTokens[token];
       return res.json({ valid: false, error: 'PPV token expired' });
     }
-    if (entry.streamId !== streamId && streamId) {
+    if (!streamId || entry.streamId !== streamId) {
       return res.json({ valid: false, error: 'Token not valid for this stream' });
     }
+    delete _ppvTokens[token];
     return res.json({ valid: true, streamId: entry.streamId, priceCents: entry.priceCents });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
 // ─── N8N / AUTOMATION routes ──────────────────────────────────────────────────
 
-router.post('/n8n/test', function(req, res) {
+router.post('/n8n/test', requireAuth, async function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: 'forbidden' });
   try {
     var webhookUrl = req.body.webhookUrl || '';
-    var payload = req.body.payload || { test: true, source: 'seewhy-live', ts: Date.now() };
+    var _rawPayload = req.body.payload || { test: true, source: 'seewhy-live', ts: Date.now() };
+    var _payloadStr = JSON.stringify(_rawPayload);
+    if (_payloadStr.length > 10240) {
+      return res.status(400).json({ success: false, error: 'payload exceeds 10 KB limit' });
+    }
+    var payload = JSON.parse(_payloadStr);
     if (!webhookUrl) {
       return res.json({ success: false, error: 'webhookUrl is required' });
     }
     var https = require('https');
-    var http = require('http');
     var url = require('url');
+    var dns = require('dns');
     var parsed = url.parse(webhookUrl);
     var isHttps = parsed.protocol === 'https:';
+    if (!isHttps) {
+      return res.status(400).json({ success: false, error: 'webhookUrl must use https://' });
+    }
+    var PRIVATE_HOST = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+    if (!parsed.hostname || PRIVATE_HOST.test(parsed.hostname)) {
+      return res.status(400).json({ success: false, error: 'webhookUrl hostname not allowed' });
+    }
+    // DNS rebinding guard: resolve hostname and verify the IP is not private
+    var lookupResult;
+    try {
+      lookupResult = await dns.promises.lookup(parsed.hostname);
+    } catch (dnsErr) {
+      return res.status(400).json({ success: false, error: 'DNS lookup failed' });
+    }
+    if (PRIVATE_HOST.test(lookupResult.address)) {
+      return res.status(400).json({ success: false, error: 'webhookUrl resolves to disallowed IP' });
+    }
     var bodyStr = JSON.stringify(payload);
     var options = {
-      hostname: parsed.hostname,
+      hostname: lookupResult.address,  // use resolved IP to prevent TOCTOU re-resolution
+      servername: parsed.hostname,     // preserve SNI for TLS certificate validation
       port: parsed.port || (isHttps ? 443 : 80),
       path: parsed.path,
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(bodyStr) }
     };
-    var reqLib = isHttps ? https : http;
+    var reqLib = https;
     var outReq = reqLib.request(options, function(outRes) {
       return res.json({ success: true, statusCode: outRes.statusCode, webhookUrl: webhookUrl });
     });
     outReq.on('error', function(e) {
-      return res.json({ success: false, error: e.message });
+      return res.json({ success: false, error: 'Webhook request failed' });
     });
     outReq.write(bodyStr);
     outReq.end();
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -648,23 +811,19 @@ router.post('/n8n/test', function(req, res) {
 var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
 var SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
-router.post('/stream-sync', async function(req, res) {
+router.post('/stream-sync', requireAuth, async function(req, res) {
   try {
-    var b = req.body;
-    var creatorId = b.creator_id;
-    // If not a UUID, look up by username
-    if (creatorId && !creatorId.match(/^[0-9a-f-]{36}$/i)) {
-      var uResp = await fetch(SUPA_URL + '/rest/v1/users?username=eq.' + encodeURIComponent(creatorId) + '&select=id&limit=1', {
-        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
-      });
-      var uData = await uResp.json();
-      if (uData && uData[0] && uData[0].id) { creatorId = uData[0].id; }
-      else { creatorId = null; }
-      // fallback: hardcoded known users
-      if (!creatorId && b.creator_id === 'swanythree23') { creatorId = 'fa691550-9019-4f89-8a25-b1f88c10ac9e'; }
+    if (req.user.role !== 'host' && req.user.role !== 'admin') {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
     }
-    var payload = { title: b.title, status: b.status || 'live', viewer_count: b.viewer_count || 0, started_at: new Date().toISOString(), category: b.category || 'live', is_live: true, host_user_id: creatorId || null };
-    if (creatorId) payload.creator_id = creatorId;
+    var b = req.body;
+    var creatorId = req.user.id;
+    var STREAM_STATUSES = ['live', 'offline'];
+    var safeStatus = STREAM_STATUSES.includes(b.status) ? b.status : 'live';
+    var safeTitle = String(b.title || '').slice(0, 120);
+    var safeCategory = String(b.category || 'live').slice(0, 40);
+    var safeViewerCount = Math.max(0, Math.min(Math.floor(Number(b.viewer_count) || 0), 1000000));
+    var payload = { title: safeTitle, status: safeStatus, viewer_count: safeViewerCount, started_at: new Date().toISOString(), category: safeCategory, is_live: true, host_user_id: creatorId, creator_id: creatorId };
     var resp = await fetch(SUPA_URL + '/rest/v1/streams', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Prefer': 'return=representation' },
@@ -672,19 +831,29 @@ router.post('/stream-sync', async function(req, res) {
     });
     var data = await resp.json();
     res.json({ ok: true, stream: data });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
-router.post('/stream-end', async function(req, res) {
+router.post('/stream-end', requireAuth, async function(req, res) {
   try {
-    var stream_id = req.body.stream_id;
-    await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + stream_id, {
+    var stream_id = String(req.body.stream_id || '');
+    if (!stream_id || !ROUTES_UUID_RE.test(stream_id)) {
+      return res.status(400).json({ ok: false, error: 'Invalid stream_id' });
+    }
+    var ownerResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(stream_id) + '&select=host_user_id&limit=1', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    });
+    var ownerData = await ownerResp.json();
+    if (!Array.isArray(ownerData) || !ownerData[0] || ownerData[0].host_user_id !== req.user.id) {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
+    }
+    await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(stream_id), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY },
       body: JSON.stringify({ status: 'ended', ended_at: new Date().toISOString() })
     });
     res.json({ ok: true });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
 
@@ -693,47 +862,47 @@ router.post('/stream-end', async function(req, res) {
 // /vault/key-exists — client can check presence without getting the raw key
 // /vault/delete-key — remove stored key when destination is deleted
 
-router.post('/vault/save-key', function(req, res) {
+router.post('/vault/save-key', requireAuth, function(req, res) {
   if (!vault) return res.status(501).json({ ok: false, error: 'Vault not available on this server' });
   try {
-    var guestId = req.body.guest_id;
-    var destId  = req.body.dest_id;
-    var plainKey = req.body.plain_key;
-    if (!guestId || !destId || !plainKey) {
-      return res.status(400).json({ ok: false, error: 'guest_id, dest_id, plain_key are required' });
+    var destId   = String(req.body.dest_id  || '').slice(0, 200);
+    var plainKey = String(req.body.plain_key || '').slice(0, 2000);
+    if (!destId || !plainKey) {
+      return res.status(400).json({ ok: false, error: 'dest_id, plain_key are required' });
     }
-    vault.saveKey(guestId, destId, plainKey);
+    vault.saveKey(req.user.id, destId, plainKey);
     res.json({ ok: true, stored: true });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
-router.get('/vault/key-exists', function(req, res) {
+router.get('/vault/key-exists', requireAuth, function(req, res) {
   if (!vault) return res.json({ ok: true, exists: false });
   try {
-    var exists = vault.hasKey(req.query.guest_id || '', req.query.dest_id || '');
+    var exists = vault.hasKey(req.user.id, req.query.dest_id || '');
     res.json({ ok: true, exists: exists });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
-router.post('/vault/delete-key', function(req, res) {
+router.post('/vault/delete-key', requireAuth, function(req, res) {
   if (!vault) return res.json({ ok: true });
   try {
-    vault.deleteKey(req.body.guest_id || '', req.body.dest_id || '');
+    vault.deleteKey(req.user.id, req.body.dest_id || '');
     res.json({ ok: true });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
-router.get('/vault/key-meta', function(req, res) {
+router.get('/vault/key-meta', requireAuth, function(req, res) {
   if (!vault) return res.json({ ok: true, keys: [] });
   try {
-    var meta = vault.listGuestKeyMeta(req.query.guest_id || '');
+    var meta = vault.listGuestKeyMeta(req.user.id);
     res.json({ ok: true, keys: meta });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
 // Dedicated health check — tests whether VAULT_SECRET is configured and
 // encryption is operational without reading or writing any real key data.
-router.get('/vault/health', function(req, res) {
+router.get('/vault/health', requireAuth, function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ ok: false, error: 'forbidden' });
   if (!vault) {
     return res.status(503).json({ ok: false, ready: false, reason: 'vault module not loaded' });
   }
@@ -760,7 +929,8 @@ router.get('/vault/health', function(req, res) {
 var { spawn } = require('child_process');
 
 // Map of streamId → { process, restarts, destCount, startedAt }
-var activeFanouts = {};
+var activeFanouts = Object.create(null); // null prototype prevents __proto__ pollution
+var FANOUT_KEY_BLOCKLIST = new Set(['__proto__', 'constructor', 'prototype']);
 var MAX_RESTARTS = 3;
 var RESTART_DELAY_MS = 5000;
 
@@ -814,20 +984,65 @@ function spawnFanout(streamId, ingestUrl, resolvedDests, restartCount) {
   return ffmpeg;
 }
 
-router.post('/fanout-start', async function(req, res) {
+router.post('/fanout-start', requireAuth, async function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+    return res.status(403).json({ ok: false, error: 'only hosts may start a fanout' });
+  }
   try {
     var b = req.body;
     var streamId = b.stream_id || 'default';
-    var guestId  = b.guest_id  || streamId;
+    if (!/^[\w.\-]{1,128}$/.test(streamId) || FANOUT_KEY_BLOCKLIST.has(streamId)) {
+      return res.status(400).json({ ok: false, error: 'invalid stream_id' });
+    }
+    var guestId  = req.user.id;
     var rtmpHost  = process.env.RTMP_INGEST_HOST || 'localhost';
     var rtmpPort  = process.env.RTMP_INGEST_PORT || '1935';
     var ingestUrl = b.ingest_url || ('rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + (b.room_id || b.stream_key || 'stream'));
+    if (b.ingest_url) {
+      var parsedIngest;
+      try { parsedIngest = new URL(b.ingest_url); } catch (_) { return res.status(400).json({ ok: false, error: 'ingest_url is not a valid URL' }); }
+      if (!/^rtmps?:$/i.test(parsedIngest.protocol)) {
+        return res.status(400).json({ ok: false, error: 'ingest_url must use rtmp:// or rtmps://' });
+      }
+      var PRIV = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+      if (!parsedIngest.hostname || PRIV.test(parsedIngest.hostname)) {
+        return res.status(400).json({ ok: false, error: 'ingest_url hostname not allowed' });
+      }
+      // Resolve hostname to guard against DNS rebinding (FFmpeg re-resolves on connect)
+      var _dnsLookup;
+      try { _dnsLookup = await require('dns').promises.lookup(parsedIngest.hostname); } catch(_) { return res.status(400).json({ ok: false, error: 'ingest_url hostname DNS resolution failed' }); }
+      if (PRIV.test(_dnsLookup.address)) {
+        return res.status(400).json({ ok: false, error: 'ingest_url hostname resolves to disallowed address' });
+      }
+    }
     var destinations = b.destinations || [];
+    if (destinations.length > 10) {
+      return res.status(400).json({ ok: false, error: 'maximum 10 destinations per fanout' });
+    }
 
-    // Stop any existing fanout for this stream
-    if (activeFanouts[streamId] && activeFanouts[streamId].process) {
-      activeFanouts[streamId].process.kill('SIGTERM');
-      delete activeFanouts[streamId];
+    // Per-user fanout cap checked BEFORE claiming the stream-ID entry.
+    // Checking after the claim leaves orphaned entries that permanently block the user
+    // from starting any new fanout (concurrent requests each claim a slot then all fail).
+    var userFanoutCount = Object.keys(activeFanouts).filter(function(id) {
+      return activeFanouts[id] && activeFanouts[id].ownerId === req.user.id;
+    }).length;
+    if (userFanoutCount >= 5) {
+      return res.status(429).json({ ok: false, error: 'Maximum 5 active fanout streams per user' });
+    }
+
+    // Ownership check and atomic reservation (JS event loop: no await here, so race-free)
+    if (activeFanouts[streamId]) {
+      if (activeFanouts[streamId].ownerId && activeFanouts[streamId].ownerId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ ok: false, error: 'forbidden' });
+      }
+      if (activeFanouts[streamId].process) {
+        activeFanouts[streamId].process.kill('SIGTERM');
+        delete activeFanouts[streamId];
+      }
+    }
+    // Claim this stream_id before async dest-resolution to prevent first-come-first-served bypass
+    if (!activeFanouts[streamId]) {
+      activeFanouts[streamId] = { ownerId: req.user.id };
     }
 
     // Resolve stream keys: Vault Pro first, fall back to body key
@@ -843,23 +1058,43 @@ router.post('/fanout-start', async function(req, res) {
         } catch (_) { /* key not in vault, use body key */ }
       }
       if (!resolvedKey) continue;
+      // Validate destination URL to prevent SSRF via FFmpeg output targets
+      var destParsed;
+      try { destParsed = new URL(d.url); } catch (_) { continue; }
+      if (!/^rtmps?:$/i.test(destParsed.protocol)) continue;
+      var PRIV2 = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+      if (!destParsed.hostname || PRIV2.test(destParsed.hostname)) continue;
+      try {
+        var _destDns = await require('dns').promises.lookup(destParsed.hostname);
+        if (PRIV2.test(_destDns.address)) continue;
+      } catch(_) { continue; }
       resolvedDests.push({ url: d.url, key: resolvedKey, label: d.label || d.platform || 'custom' });
     }
 
     if (resolvedDests.length === 0) {
+      // Clean up the claim slot so the user's cap count is not inflated
+      if (activeFanouts[streamId] && !activeFanouts[streamId].process) delete activeFanouts[streamId];
       return res.json({ ok: false, error: 'No enabled destinations with resolvable keys' });
     }
 
     spawnFanout(streamId, ingestUrl, resolvedDests, 0);
+    activeFanouts[streamId] = activeFanouts[streamId] || { ownerId: req.user.id };
     console.log('[fanout:%s] started → %d destinations (guest=%s)', streamId, resolvedDests.length, guestId);
     res.json({ ok: true, stream_id: streamId, destinations: resolvedDests.length });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
-router.post('/fanout-stop', function(req, res) {
+router.post('/fanout-stop', requireAuth, function(req, res) {
   var streamId = req.body.stream_id || 'default';
+  if (!/^[\w.\-]{1,128}$/.test(streamId) || FANOUT_KEY_BLOCKLIST.has(streamId)) {
+    return res.status(400).json({ ok: false, error: 'invalid stream_id' });
+  }
   var entry = activeFanouts[streamId];
-  if (entry && entry.process) {
+  if (!entry) return res.json({ ok: false, error: 'No active fanout for ' + streamId });
+  if (entry.ownerId && entry.ownerId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'forbidden' });
+  }
+  if (entry.process) {
     entry.process.kill('SIGTERM');
     delete activeFanouts[streamId];
     res.json({ ok: true, stopped: streamId });
@@ -869,7 +1104,8 @@ router.post('/fanout-stop', function(req, res) {
 });
 
 // Kill every active FFmpeg fanout process — admin/cleanup endpoint.
-router.post('/fanout-stop-all', function(req, res) {
+router.post('/fanout-stop-all', requireAuth, function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   var ids = Object.keys(activeFanouts);
   var killed = 0;
   ids.forEach(function(id) {
@@ -884,16 +1120,21 @@ router.post('/fanout-stop-all', function(req, res) {
   res.json({ ok: true, killed: killed, stream_ids: ids });
 });
 
-router.get('/fanout-status', function(req, res) {
+router.get('/fanout-status', requireAuth, function(req, res) {
+  var isAdmin = req.user.role === 'admin';
   var streamId = req.query.stream_id;
   if (streamId) {
     var entry = activeFanouts[streamId];
     if (entry) {
+      if (!isAdmin && entry.ownerId !== req.user.id) {
+        return res.status(403).json({ ok: false, error: 'forbidden' });
+      }
       res.json({ ok: true, active: true, stream_id: streamId, destinations: entry.destCount, restarts: entry.restarts, uptime_ms: Date.now() - entry.startedAt });
     } else {
       res.json({ ok: true, active: false, stream_id: streamId });
     }
   } else {
+    if (!isAdmin) return res.status(403).json({ ok: false, error: 'admin only' });
     var active = Object.keys(activeFanouts).map(function(id) {
       var e = activeFanouts[id];
       return { stream_id: id, destinations: e.destCount, restarts: e.restarts, uptime_ms: Date.now() - e.startedAt };

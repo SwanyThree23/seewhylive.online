@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
@@ -30,6 +31,8 @@ const TEXTM = '#7A6E8A';
 const CRIMSON = '#800020';
 const RED   = '#C0392B';
 const GREEN = '#6DBF7E';
+const SCARL = '#C0392B';
+const CRIM = '#800020';
 const CYAN  = '#D4AF37';
 // SCARL (scarlet) and CRIM (crimson) — used throughout battle card UI
 const SCARL = '#C0392B';
@@ -252,6 +255,12 @@ export default function PKBattleArena() {
   });
   const [tab, setTab] = useState('live');
   const [votes, setVotes] = useState({});
+  const { data: rawBattles = [] } = useQuery({
+    queryKey: ['pk-arena-battles'],
+    queryFn: () => base44.entities.PKBattle.list('-created_date', 20),
+    refetchInterval: 5000,
+  });
+  const battles = rawBattles.map(battleToUI);
   const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [battleSecs, setBattleSecs]             = useState(0);
   const [hostVotes, setHostVotes]               = useState(50);

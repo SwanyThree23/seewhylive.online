@@ -76,10 +76,13 @@ function recordStreamEvent(streamId, hostId, eventType, viewerCount, earningsCen
 }
 
 function recordEarning(creatorId, streamId, paymentType, amountCents, note) {
+  if (!Number.isInteger(amountCents) || amountCents <= 0) {
+    throw new Error('recordEarning: invalid amountCents ' + amountCents);
+  }
   var id = uuidv4();
   var now = Date.now();
   var creatorCents = Math.floor(amountCents * CREATOR);
-  var platformCents = Math.floor(amountCents * PLATFORM);
+  var platformCents = amountCents - creatorCents;
   stmtInsertEarning.run(id, creatorId, streamId || null, paymentType, amountCents, creatorCents, platformCents, note || null, now);
 }
 
@@ -89,6 +92,7 @@ function recordViewerSession(streamId, userId, joinedAt) {
 }
 
 function endViewerSession(streamId, userId, leftAt) {
+  if (!Number.isInteger(leftAt) || leftAt <= 0) return;
   stmtEndSession.run(leftAt, leftAt, streamId, userId);
 }
 
@@ -105,7 +109,7 @@ function _getPeriodStart(period) {
   if (period === 'month') {
     return now - 30 * 24 * 60 * 60 * 1000;
   }
-  return 0;
+  throw new Error('_getPeriodStart: unknown period "' + period + '"');
 }
 
 function getCreatorAnalytics(creatorId, period) {

@@ -1,23 +1,30 @@
 // server/routes/battles.js
 // INTEGRATION: mount this in your main router, e.g.:
 //   app.use('/api/battles', require('./routes/battles'));
-// Also wire your existing auth middleware in place of `requireAuth` below.
 // CORRECTED: uses defenderId (not opponentId) and durationMinutes (not durationSeconds),
 // matching the real pre-existing pk_battles schema.
 
 const express = require('express');
 const router = express.Router();
 const battleService = require('../services/battleService');
+const requireAuth   = require('../middleware/auth');
 
-// TODO: replace with your real auth middleware import
-function requireAuth(req, res, next) {
-  if (!req.user) return res.status(401).json({ error: 'unauthorized' });
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function validateId(req, res, next) {
+  if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid battle id' });
   next();
 }
 
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { defenderId, challengerName, defenderName, roomId, durationMinutes } = req.body;
+    const { defenderId, roomId } = req.body;
+    if (!UUID_RE.test(defenderId)) return res.status(400).json({ error: 'invalid defenderId' });
+    if (defenderId === req.user.id) return res.status(400).json({ error: 'cannot challenge yourself' });
+    if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
+    const challengerName = String(req.body.challengerName || '').slice(0, 80);
+    const defenderName   = String(req.body.defenderName  || '').slice(0, 80);
+    const rawDuration = Math.floor(Number(req.body.durationMinutes) || 5);
+    const durationMinutes = Math.min(Math.max(rawDuration, 1), 60);
     const battle = await battleService.createChallenge({
       challengerId: req.user.id,
       defenderId,
@@ -32,9 +39,13 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/:id/accept', requireAuth, async (req, res) => {
+router.post('/:id/accept', requireAuth, validateId, async (req, res) => {
   try {
+    const existing = await battleService.getBattle(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'battle not found' });
+    if (existing.defender_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
     const { roomId } = req.body;
+    if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
     const battle = await battleService.acceptChallenge(req.params.id, roomId);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
@@ -43,21 +54,31 @@ router.post('/:id/accept', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/:id/start', requireAuth, async (req, res) => {
+router.post('/:id/start', requireAuth, validateId, async (req, res) => {
   try {
+    const existing = await battleService.getBattle(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'battle not found' });
+    if (existing.challenger_id !== req.user.id && existing.defender_id !== req.user.id) {
+      return res.status(403).json({ error: 'forbidden' });
+    }
     const battle = await battleService.startBattle(req.params.id);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
-    // Socket broadcast happens in battleHandlers.js — call it from here if you
-    // prefer REST-triggered start, or drive entirely from sockets instead.
     res.json(battle);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-router.post('/:id/vote', requireAuth, async (req, res) => {
+router.post('/:id/vote', requireAuth, validateId, async (req, res) => {
   try {
-    const { side, giftValueCents } = req.body; // side: 'challenger' | 'defender'
+    const { side } = req.body;
+    if (side !== 'challenger' && side !== 'defender') {
+      return res.status(400).json({ error: 'side must be challenger or defender' });
+    }
+    const giftValueCents = Math.floor(req.body.giftValueCents);
+    if (!Number.isFinite(giftValueCents) || giftValueCents < 1 || giftValueCents > 50000) {
+      return res.status(400).json({ error: 'giftValueCents must be between 1 and 50000' });
+    }
     const battle = await battleService.castVote({
       battleId: req.params.id,
       voterId: req.user.id,
@@ -75,17 +96,17 @@ router.get('/active', async (req, res) => {
     const battles = await battleService.getActiveBattles();
     res.json(battles);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateId, async (req, res) => {
   try {
     const battle = await battleService.getBattle(req.params.id);
     if (!battle) return res.status(404).json({ error: 'battle not found' });
     res.json(battle);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

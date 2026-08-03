@@ -157,7 +157,7 @@ ${instructions ? `Additional instructions: ${instructions}` : ''}`;
     URL.revokeObjectURL(url);
   }
 
-  function useExample(ex) {
+  function applyExample(ex) {
     setInputText(ex.text);
     setOutputText('');
     setStats(null);
@@ -217,7 +217,7 @@ ${instructions ? `Additional instructions: ${instructions}` : ''}`;
           <div style={{ borderRadius: 12, background: 'rgba(13,6,24,0.8)', border: '1px solid rgba(255,255,255,0.07)', padding: 12 }}>
             <p style={{ fontSize: 10, fontWeight: 700, color: GOLD, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>Examples</p>
             {EXAMPLE_TEXTS.map(ex => (
-              <button key={ex.label} onClick={() => useExample(ex)} style={{
+              <button key={ex.label} onClick={() => applyExample(ex)} style={{
                 width: '100%', padding: '7px 10px', borderRadius: 8, textAlign: 'left', cursor: 'pointer', marginBottom: 4,
                 background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 700, ...T,
               }}>{ex.label}</button>

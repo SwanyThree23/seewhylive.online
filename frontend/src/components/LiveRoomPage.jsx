@@ -431,7 +431,7 @@ export default function LiveRoomPage({
   var [scAmt,              setScAmt]              = useState(100);
   var [giftCount,          setGiftCount]          = useState(0);
   var [superChatCount,     setSuperChatCount]     = useState(0);
-  var [guestGiftTotals,    setGuestGiftTotals]    = useState({}); // guestId → cents running total
+  var [guestGiftTotals,    setGuestGiftTotals]    = useState({});  // { [guestId]: totalCents }
   var [joinRequested,      setJoinRequested]      = useState(false); // viewer stage-join request pending
   var [streamStats,        setStreamStats]        = useState(null); // { bitratekbps, rttMs, lossPct }
   var [theaterMode,        setTheaterMode]        = useState(false);
@@ -1306,6 +1306,18 @@ export default function LiveRoomPage({
       }
     });
 
+    socket.on('merch-order-received', function(order) {
+      if (!order) return;
+      if (order.toGuestId) {
+        var cents = Math.floor(order.priceCents || 0);
+        setGuestGiftTotals(function(prev) {
+          var next = Object.assign({}, prev);
+          next[order.toGuestId] = (next[order.toGuestId] || 0) + cents;
+          return next;
+        });
+      }
+    });
+
     socket.on('react-burst', function(data) {
       if (!data || !data.emoji) return;
       var fid = Date.now() + Math.random();
@@ -1470,6 +1482,7 @@ export default function LiveRoomPage({
       socket.off('super-chat');
       socket.off('react-burst');
       socket.off('gift-received');
+      socket.off('merch-order-received');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
@@ -2362,6 +2375,7 @@ export default function LiveRoomPage({
                 {[
                   { id: 'grid',     icon: '⊞' },
                   { id: 'featured', icon: '◻' },
+                  { id: 'split',    icon: '⤢' },
                 ].map(function(l) {
                   return (
                     <button key={l.id} onClick={function() { setStageLayout(l.id); }}
@@ -2677,6 +2691,112 @@ export default function LiveRoomPage({
             </div>
           )}
 
+          {/* ── SPLIT MODE ── Active speakers/pinned as tiles, others as avatar strip */}
+          {stageLayout === 'split' && (function() {
+            var activeTileIds = new Set();
+            onStage.forEach(function(g) {
+              var gid = g.guestId || g.userId || 'x';
+              if (speakingIds[gid] || gid === pinnedId) activeTileIds.add(gid);
+            });
+            if (activeTileIds.size === 0) activeTileIds.add(userId);
+            var tileGuests  = onStage.filter(function(g) { var gid = g.guestId || g.userId || 'x'; return activeTileIds.has(gid); });
+            var stripGuests = onStage.filter(function(g) { var gid = g.guestId || g.userId || 'x'; return !activeTileIds.has(gid); });
+            var tileCols = tileGuests.length <= 1 ? 1 : tileGuests.length <= 4 ? 2 : 3;
+            return (
+              <div key='split-root'>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + tileCols + ',1fr)', gap: 4 }}>
+                  {tileGuests.map(function(g) {
+                    var gid      = g.guestId || g.userId || 'x';
+                    var isOwn    = gid === userId;
+                    var isSp     = !!speakingIds[gid];
+                    var isHand   = !!raisedHands[gid];
+                    var isPinned = gid === pinnedId;
+                    return (
+                      <div key={gid}
+                        style={{ position: 'relative', background: CARD, borderRadius: 10, overflow: 'hidden',
+                          border: '2px solid ' + (isSp ? TEAL + 'BB' : isPinned ? GOLD + '66' : isHand ? 'rgba(255,140,0,.65)' : BORDER),
+                          animation: isSp ? 'speakPulseGrid 1.4s ease-in-out infinite' : 'fadeSlideIn .22s ease',
+                          transition: 'border-color .2s' }}>
+                        <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
+                          <div style={{ position: 'absolute', inset: 0 }}>
+                            {audioOnly ? (
+                              <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,' + CARD2 + ',' + BG + ')', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                                <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg,' + BURG + '55,' + CARD + ')', border: '2px solid ' + (isSp ? TEAL : DIM), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD }}>{(g.username || gid).charAt(0).toUpperCase()}</span>
+                                </div>
+                                {isSp && <WaveBars color={TEAL} />}
+                              </div>
+                            ) : (
+                              <OctCell
+                                guest={g}
+                                fill={true}
+                                isHost={role === 'host'}
+                                fadesMode={false}
+                                branding={branding}
+                                onTap={null}
+                                socket={socket}
+                                roomId={roomId}
+                                userId={userId}
+                                rtcManager={rtcReady ? rtcManager : null}
+                                mediaConfig={isOwn ? medConf : null}
+                                isMuted={isOwn ? isMuted : false}
+                                isCamOff={isOwn ? isCamOff : false}
+                                onMuteToggle={isOwn ? toggleMute : null}
+                                onCamToggle={isOwn ? toggleCam : null}
+                                onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; } : null}
+                                handRaised={isHand}
+                                giftTotal={guestGiftTotals[gid] || 0}
+                              />
+                            )}
+                          </div>
+                        </div>
+                        <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
+                          {isHand && <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋</div>}
+                          {isPinned && <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09' }}>📌</div>}
+                          {isSp && <div style={{ background: 'rgba(212,133,74,.85)', borderRadius: 999, padding: '1px 5px', display: 'flex', alignItems: 'center' }}><SpeakBars color='#fff' small /></div>}
+                        </div>
+                        <button onClick={function(e) { e.stopPropagation(); setExpandedCell(gid); }}
+                          style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, background: 'rgba(0,0,0,.6)', border: '1px solid rgba(255,255,255,.18)', borderRadius: 4, color: TEXT, fontSize: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                          ⤢
+                        </button>
+                        <div style={{ padding: '4px 8px 6px', background: CARD, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ fontWeight: 700, fontSize: 11, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {g.username || gid}
+                            {isOwn && <span style={{ color: MUTED, fontWeight: 400, fontSize: 9, marginLeft: 3 }}>(YOU)</span>}
+                          </span>
+                          <RolePill role={g.role || (isOwn ? role : 'guest')} />
+                          {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 9 }}>🔇</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {stripGuests.length > 0 && (
+                  <div style={{ marginTop: 8 }}>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1, marginBottom: 5 }}>
+                      {'OTHERS ON STAGE (' + stripGuests.length + ')'}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+                      {stripGuests.map(function(g) {
+                        var gid    = g.guestId || g.userId || 'x';
+                        var isHand = !!raisedHands[gid];
+                        return (
+                          <AudienceCircle
+                            key={gid}
+                            g={g}
+                            speaking={!!speakingIds[gid]}
+                            handRaised={isHand}
+                            onInvite={null}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Featured layout */}
           {stageLayout === 'featured' && (
             <div>
@@ -2746,6 +2866,7 @@ export default function LiveRoomPage({
                           isCamOff={isOwn ? isCamOff : false}
                           onMuteToggle={null}
                           onCamToggle={null}
+                          giftTotal={guestGiftTotals[gid] || 0}
                         />
                         <div style={{ padding: '3px 5px 5px' }}>
                           <span style={{ fontSize: 10, color: MUTED, fontWeight: 500, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -4359,6 +4480,7 @@ export default function LiveRoomPage({
                     isCamOff={isOwn ? isCamOff : false}
                     onMuteToggle={isOwn ? toggleMute : null}
                     onCamToggle={isOwn ? toggleCam : null}
+                    giftTotal={guestGiftTotals[gid] || 0}
                   />
                 </div>
               )}

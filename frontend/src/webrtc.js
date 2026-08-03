@@ -1,4 +1,13 @@
-import * as mediasoupClient from 'mediasoup-client';
+// Lazy-loaded so bundlers without mediasoup-client installed (e.g. the Base44
+// preview build) don't fail static analysis. At runtime (VPS) the dynamic
+// import resolves against the real package.
+let _mediasoupClient = null;
+async function _getMediasoupClient() {
+  if (!_mediasoupClient) {
+    _mediasoupClient = await import(/* @vite-ignore */ 'mediasoup-client');
+  }
+  return _mediasoupClient;
+}
 
 class SeeWhyRTC {
   constructor() {
@@ -20,6 +29,7 @@ class SeeWhyRTC {
     this.roomId = roomId;
     this.userId = userId;
     this.role = role;
+    const mediasoupClient = await _getMediasoupClient();
     this.device = new mediasoupClient.Device();
 
     var rtpCapabilities = await new Promise(function(resolve, reject) {

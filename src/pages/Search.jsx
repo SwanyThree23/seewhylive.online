@@ -116,6 +116,11 @@ export default function SearchPage() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [query, setQuery]     = useState('');
   const [activeTab, setActiveTab] = useState('rooms');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [recentSearches, setRecentSearches] = useState(() => { try { return JSON.parse(localStorage.getItem('sw_recent_searches') || '[]'); } catch { return []; } });
+  const inputRef = useRef(null);
+
+  useEffect(() => { const t = setTimeout(() => setDebouncedQuery(query), 300); return () => clearTimeout(t); }, [query]);
 
   const { data: rooms = [] } = useQuery({
     queryKey: ['search-rooms'],
@@ -154,6 +159,8 @@ export default function SearchPage() {
     enabled: !!currentUser?.id,
   });
   const userCommunityId = userCommunity?.id || null;
+
+  const liveRooms = rooms.filter(r => r.status === 'live');
 
   const q = debouncedQuery.toLowerCase().trim();
 

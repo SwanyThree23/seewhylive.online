@@ -2,6 +2,10 @@
   "name": "PKBattle",
   "type": "object",
   "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Associated room / watch-party ID"
+    },
     "challenger_id": {
       "type": "string"
     },

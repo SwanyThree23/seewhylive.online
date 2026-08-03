@@ -2,7 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from 'recharts';
+import SafeResponsiveContainer from '@/components/shared/SafeChart';
 import { TrendingUp, Users, MessageSquare, Zap, Heart, Eye } from 'lucide-react';
 
 const G = '#D4AF37';
@@ -89,7 +90,7 @@ export default function StreamAnalyticsDashboard({ roomId }) {
           <h3 className="text-xs font-bold mb-3" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
             📊 Viewer Trend
           </h3>
-          <ResponsiveContainer width="100%" height={200}>
+          <SafeResponsiveContainer width="100%" height={200}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,175,55,0.1)" />
               <XAxis dataKey="time" tick={{ fontSize: 10 }} stroke="rgba(255,255,255,0.3)" />
@@ -100,7 +101,7 @@ export default function StreamAnalyticsDashboard({ roomId }) {
               />
               <Line type="monotone" dataKey="viewers" stroke={G} strokeWidth={2} dot={{ fill: G, r: 3 }} />
             </LineChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </motion.div>
 
         {/* Engagement Metrics */}
@@ -114,7 +115,7 @@ export default function StreamAnalyticsDashboard({ roomId }) {
           <h3 className="text-xs font-bold mb-3" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
             💬 Chat Activity
           </h3>
-          <ResponsiveContainer width="100%" height={200}>
+          <SafeResponsiveContainer width="100%" height={200}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,175,55,0.1)" />
               <XAxis dataKey="time" tick={{ fontSize: 10 }} stroke="rgba(255,255,255,0.3)" />
@@ -124,7 +125,7 @@ export default function StreamAnalyticsDashboard({ roomId }) {
               />
               <Bar dataKey="messages" fill="#D4AF37" radius={[4, 4, 0, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </motion.div>
       </div>
 

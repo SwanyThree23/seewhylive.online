@@ -1,8 +1,11 @@
 const { createClient } = require('@supabase/supabase-js');
 const ws = require('ws');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { realtime: { transport: ws } });
+const db = require('../db');
 
 async function awardPoints(userId, points, source, sourceId) {
+  if (!Number.isFinite(points) || points <= 0) throw new Error('awardPoints: points must be a positive finite number');
+  // Insert event record
   const { error: eventErr } = await supabase.from('loyalty_point_events').insert({
     user_id: userId,
     points,
@@ -11,24 +14,19 @@ async function awardPoints(userId, points, source, sourceId) {
   });
   if (eventErr) throw eventErr;
 
-  const { data: existing } = await supabase
-    .from('user_loyalty')
-    .select('*')
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  const newTotal = (existing ? existing.total_points : 0) + points;
-  const newLevel = Math.floor(newTotal / 1000) + 1;
-
-  const { error: upsertErr } = await supabase.from('user_loyalty').upsert({
-    user_id: userId,
-    total_points: newTotal,
-    level: newLevel,
-    updated_at: new Date().toISOString(),
-  });
-  if (upsertErr) throw upsertErr;
-
-  return { total_points: newTotal, level: newLevel };
+  // Atomic upsert via pg pool — eliminates the read-modify-write race
+  const result = await db.query(
+    `INSERT INTO user_loyalty (user_id, total_points, level, updated_at)
+     VALUES ($1, $2, floor($2::numeric / 1000)::int + 1, now())
+     ON CONFLICT (user_id) DO UPDATE SET
+       total_points = user_loyalty.total_points + EXCLUDED.total_points,
+       level        = floor((user_loyalty.total_points + EXCLUDED.total_points)::numeric / 1000)::int + 1,
+       updated_at   = now()
+     RETURNING total_points, level`,
+    [userId, points]
+  );
+  const row = result.rows[0];
+  return { total_points: row.total_points, level: row.level };
 }
 
 async function getUserPoints(userId) {
@@ -86,13 +84,25 @@ async function completeChallenge(userId, challengeId) {
     .eq('id', challengeId)
     .single();
   if (chErr) throw chErr;
+  if (!challenge || challenge.status !== 'active') throw new Error('challenge is not active');
+  if (challenge.ends_at && new Date(challenge.ends_at) < new Date()) throw new Error('challenge has expired');
 
   const { error: insErr } = await supabase
     .from('challenge_completions')
     .insert({ challenge_id: challengeId, user_id: userId });
-  if (insErr) throw insErr;
+  if (insErr) {
+    if (insErr.code === '23505') return { alreadyCompleted: true };
+    throw insErr;
+  }
 
-  return awardPoints(userId, challenge.points_reward, 'challenge_complete', challengeId);
+  try {
+    return await awardPoints(userId, challenge.points_reward, 'challenge_complete', challengeId);
+  } catch (awardErr) {
+    await supabase.from('challenge_completions')
+      .delete().eq('challenge_id', challengeId).eq('user_id', userId)
+      .catch(function() {});
+    throw awardErr;
+  }
 }
 
 module.exports = {

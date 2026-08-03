@@ -6,7 +6,7 @@
 set -e
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-BRANCH="claude/seewhy-live-v33-build-v0L5Z"
+BRANCH="main"
 PROD_SERVER="/opt/seewhy/server"
 PROD_FRONTEND="/opt/seewhy/frontend"
 PM2_APP="seewhy-server"
@@ -78,7 +78,7 @@ if command -v ufw &>/dev/null; then
   ufw allow 3478/tcp  2>/dev/null || true   # TURN/STUN
   ufw allow 3478/udp  2>/dev/null || true
   ufw allow 5349/tcp  2>/dev/null || true   # TURN TLS
-  ufw allow 49152:65535/udp 2>/dev/null || true  # mediasoup RTP
+  ufw allow 40000:49999/udp 2>/dev/null || true  # mediasoup RTP (matches rtcMinPort/rtcMaxPort)
   echo "  ✓ UFW rules applied"
 else
   echo "  ⚠ ufw not found — skipping firewall step"

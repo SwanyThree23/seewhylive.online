@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useLocalMedia } from '@/hooks/useLocalMedia';
 import { useWebRTCPeers } from '@/hooks/useWebRTCPeers';
+import { useAudioLevel } from '@/hooks/useAudioLevel';
 
 const MAX_SEATS   = 20;
 const BG          = '#080B18';
@@ -49,37 +50,6 @@ function QualityIcon({ state, size = 12 }) {
   );
 }
 
-/* ── VAD hook ──────────────────────────────────────── */
-function useAudioLevel(stream) {
-  const [level, setLevel] = useState(0);
-  const refs = useRef({});
-  useEffect(() => {
-    if (!stream || stream.getAudioTracks().length === 0) { setLevel(0); return; }
-    let running = true;
-    try {
-      const ctx      = new AudioContext();
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 256;
-      ctx.createMediaStreamSource(stream).connect(analyser);
-      const data = new Uint8Array(analyser.frequencyBinCount);
-      const tick = () => {
-        if (!running) return;
-        analyser.getByteFrequencyData(data);
-        setLevel(data.reduce((s, v) => s + v, 0) / data.length);
-        refs.current.raf = requestAnimationFrame(tick);
-      };
-      refs.current.raf = requestAnimationFrame(tick);
-      refs.current.ctx = ctx;
-    } catch {}
-    return () => {
-      running = false;
-      cancelAnimationFrame(refs.current.raf);
-      refs.current.ctx?.close();
-    };
-  }, [stream]);
-  return level;
-}
-
 /* ── Single seat tile ──────────────────────────────── */
 function SeatTile({
   participant, stream, isLocal, peerState,
@@ -88,8 +58,7 @@ function SeatTile({
   size = 120,
 }) {
   const videoRef = useRef(null);
-  const level    = useAudioLevel(stream);
-  const speaking = level > 12;
+  const { level, isSpeaking: speaking } = useAudioLevel(stream);
   const glow     = ROLE_COLOR[participant?.role] || GOLD;
   const quality  = peerState ? connQuality(peerState) : null;
 

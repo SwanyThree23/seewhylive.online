@@ -19,8 +19,20 @@
 // rather than falling through to the static SPA build.
 
 const express = require('express');
+const { rateLimit } = require('express-rate-limit');
 const router = express.Router();
 const db = require('../db');
+
+const previewRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: 'Too many preview requests — please wait.',
+});
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const APP_NAME = 'SeeWhy LIVE';
 const SITE_URL = 'https://www.seewhylive.online';
@@ -31,6 +43,12 @@ function escapeHtml(str = '') {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+// Only allow https:// URLs in rendered HTML to block javascript:/data: URI injection
+function safeMediaUrl(url, fallback) {
+  if (url && /^https:\/\//i.test(String(url))) return url;
+  return fallback;
 }
 
 function renderPreviewPage({ title, description, thumbnailUrl, videoUrl, canonicalUrl, isLive }) {
@@ -76,7 +94,8 @@ function renderPreviewPage({ title, description, thumbnailUrl, videoUrl, canonic
 </html>`;
 }
 
-router.get('/watch/:id', async (req, res) => {
+router.get('/watch/:id', previewRateLimit, async (req, res) => {
+  if (!UUID_RE.test(req.params.id)) return res.status(400).send('Invalid ID');
   try {
     const result = await db.query(
       `SELECT r.id, r.title, r.thumbnail_url, r.hls_url, r.status,
@@ -92,8 +111,8 @@ router.get('/watch/:id', async (req, res) => {
     res.send(renderPreviewPage({
       title: room.title || `${room.creator_name} is live on ${APP_NAME}`,
       description: isLive ? `${room.creator_name} is live now on ${APP_NAME} — creators keep 90%.` : `Watch ${room.creator_name} on ${APP_NAME}.`,
-      thumbnailUrl: room.thumbnail_url || `${SITE_URL}/default-preview.jpg`,
-      videoUrl: room.hls_url || null,
+      thumbnailUrl: safeMediaUrl(room.thumbnail_url, `${SITE_URL}/default-preview.jpg`),
+      videoUrl: safeMediaUrl(room.hls_url, null),
       canonicalUrl: `/watch/${room.id}`,
       isLive,
     }));
@@ -102,7 +121,8 @@ router.get('/watch/:id', async (req, res) => {
   }
 });
 
-router.get('/post/:id', async (req, res) => {
+router.get('/post/:id', previewRateLimit, async (req, res) => {
+  if (!UUID_RE.test(req.params.id)) return res.status(400).send('Invalid ID');
   try {
     const result = await db.query(
       `SELECT p.id, p.caption, p.thumbnail_url, p.video_url, u.display_name AS creator_name
@@ -116,8 +136,8 @@ router.get('/post/:id', async (req, res) => {
     res.send(renderPreviewPage({
       title: post.caption ? post.caption.slice(0, 60) : `${post.creator_name} on ${APP_NAME}`,
       description: `Posted by ${post.creator_name} on ${APP_NAME}.`,
-      thumbnailUrl: post.thumbnail_url || `${SITE_URL}/default-preview.jpg`,
-      videoUrl: post.video_url,
+      thumbnailUrl: safeMediaUrl(post.thumbnail_url, `${SITE_URL}/default-preview.jpg`),
+      videoUrl: safeMediaUrl(post.video_url, null),
       canonicalUrl: `/post/${post.id}`,
       isLive: false,
     }));

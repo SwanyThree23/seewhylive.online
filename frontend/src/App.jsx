@@ -10,6 +10,7 @@ import Ticker from './components/Ticker.jsx';
 import BrandChyron from './components/BrandChyron.jsx';
 import MobileNavBar from './components/MobileNavBar.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
+import Login from './components/Login.jsx';
 import WelcomeAudio from './components/WelcomeAudio.jsx';
 import AgeGate from './components/AgeGate.jsx';
 import LoveTap from './components/LoveTap.jsx';
@@ -67,6 +68,7 @@ var PanelGrid           = React.lazy(function() { return import('./components/pa
 var LiveSyncTab         = React.lazy(function() { return import('./components/LiveSyncTab.jsx'); });
 var PlatformHealthTab   = React.lazy(function() { return import('./components/PlatformHealthTab.jsx'); });
 var CreatorDashboard    = React.lazy(function() { return import('./components/CreatorDashboard.jsx'); });
+var DesktopStudioTab   = React.lazy(function() { return import('./components/DesktopStudioTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -123,6 +125,7 @@ var TABS = [
   { id: "vsbattle", label: "VS Battle" },
   { id: "livesync", label: "Live Sync" },
   { id: "health", label: "Platform Health" },
+  { id: 'desktop-studio', label: '🖥 DESKTOP STUDIO' },
 ];
 
 function CountdownClock({ targetTs }) {
@@ -161,7 +164,7 @@ function useSocket(room) {
 
   useEffect(function() {
     if (typeof window === "undefined" || !window.io) return undefined;
-    var s = window.io(SOCKET_URL, { transports: ["websocket"] });
+    var s = window.io(SOCKET_URL, { transports: ["websocket"], auth: { token: localStorage.getItem("sw_token") || "" } });
     setSock(s);
     s.emit("join-room", { room: room || "main" });
     s.on("viewer-count", function(d) { setViewers(d.count); });
@@ -375,6 +378,7 @@ export default function App() {
     var key = (localStorage.getItem('sw_role') === 'host' || localStorage.getItem('sw_role') === 'cohost') ? 'sw_age_ok_host' : 'sw_age_ok_viewer';
     return !localStorage.getItem(key);
   });
+  var [showLoginModal, setShowLoginModal] = useState(false);
   var [branding, setBranding] = useState(function() {
     try {
       var b = localStorage.getItem('sw_branding');
@@ -1005,10 +1009,26 @@ export default function App() {
               style={{ background: 'none', border: 'none', color: '#6B5A44', fontFamily: "'DM Mono',monospace", fontSize: 11, cursor: 'pointer', textDecoration: 'underline', textAlign: 'center' }}>
               Join anonymously
             </button>
+              <button
+                onClick={function() { setShowLoginModal(true); }}
+                style={{ background: 'none', border: 'none', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 11, cursor: 'pointer', textDecoration: 'underline', textAlign: 'center' }}
+              >
+                Already a host? Log In
+              </button>
           </div>
         </div>
       </div>
     );
+  }
+
+  if (showLoginModal) {
+    return <Login
+      onClose={function() { setShowLoginModal(false); }}
+      onSuccess={function(newRole, newUserId) {
+        setRole(newRole);
+        setShowLoginModal(false);
+      }}
+    />;
   }
 
   if (showAgeGate) {
@@ -1465,6 +1485,9 @@ export default function App() {
             roomId={APP_ID}
           />
         )}
+        {activeTab === 'desktop-studio' && (
+          <DesktopStudioTab />
+        )}
         {activeTab === 'discover' && (
           <DiscoverTab
             addToast={addToast}
@@ -1634,6 +1657,9 @@ export default function App() {
           <PKBattleArenaPage
             battleId={APP_ID}
             socket={socketRef.current}
+            userId={userId}
+            guests={guests}
+            rtcManager={rtcManager}
           />
         )}
       </div>

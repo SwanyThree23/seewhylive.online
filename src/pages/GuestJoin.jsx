@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, Video, Mic, MicOff, VideoOff, CheckCircle, Clock, AlertCircle, Wifi, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useLocalMedia } from '../hooks/useLocalMedia';
 import { createPageUrl } from '../utils';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';

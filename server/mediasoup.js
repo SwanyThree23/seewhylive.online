@@ -11,12 +11,12 @@ var os = require('os');
 var ANNOUNCED_IP = process.env.MEDIASOUP_ANNOUNCED_IP || '2.24.194.112';
 
 // ─── Internal state maps ───────────────────────────────────────────────────
-var workers = [];             // mediasoup.Worker[]
-var routers = {};             // roomId → mediasoup.Router
-var transports = {};          // transportId → mediasoup.WebRtcTransport
-var producers = {};           // producerId → { producer, guestId, kind, roomId }
-var consumers = {};           // consumerId → mediasoup.Consumer
-var guestVideoConsumers = {}; // guestId → consumerId[] (video only, for setPreferredLayers)
+var workers = [];               // mediasoup.Worker[]
+var routers = {};               // roomId → mediasoup.Router
+var transports = {};            // transportId → mediasoup.WebRtcTransport
+var producers = {};             // producerId → { producer, guestId, kind, roomId }
+var consumers = {};             // consumerId → mediasoup.Consumer  (do not change key scheme)
+var guestVideoConsumers = {};   // producerGuestId → Set<consumerId> — secondary index for layer control
 
 var workerIndex = 0;
 
@@ -261,12 +261,23 @@ async function createConsumer(routerId, transportId, producerId, rtpCapabilities
   consumer.guestId  = producerEntry.guestId;
   consumers[consumer.id] = consumer;
 
+  // Tag the consumer with the producer's guestId so the speaking handler can
+  // find it later using only guestId — does not change the consumers key scheme.
+  var producerGuestId = producerEntry.guestId;
+  consumer._producerGuestId = producerGuestId;
+
   if (consumer.kind === 'video') {
-    if (!guestVideoConsumers[producerEntry.guestId]) {
-      guestVideoConsumers[producerEntry.guestId] = [];
+    // Default to the lowest simulcast layer (r0 / 100 kbps) for all grid tiles.
+    // The speaking handler upgrades active speakers to layer 2 (r2 / 900 kbps).
+    try {
+      await consumer.setPreferredLayers({ spatialLayer: 0 });
+    } catch (_) { /* consumer may be audio-only or not yet negotiated */ }
+
+    // Add to the secondary guestId → Set<consumerId> index
+    if (!guestVideoConsumers[producerGuestId]) {
+      guestVideoConsumers[producerGuestId] = new Set();
     }
-    guestVideoConsumers[producerEntry.guestId].push(consumer.id);
-    try { await consumer.setPreferredLayers({ spatialLayer: 0 }); } catch (e) { /* not simulcast */ }
+    guestVideoConsumers[producerGuestId].add(consumer.id);
   }
 
   var params = {
@@ -320,6 +331,13 @@ function cleanupRoom(roomId) {
     for (var k = 0; k < consumerIds.length; k++) {
       var c = consumers[consumerIds[k]];
       if (c.routerId === router.id) {
+        // Remove from secondary guestVideoConsumers index before deleting
+        if (c._producerGuestId && guestVideoConsumers[c._producerGuestId]) {
+          guestVideoConsumers[c._producerGuestId].delete(consumerIds[k]);
+          if (guestVideoConsumers[c._producerGuestId].size === 0) {
+            delete guestVideoConsumers[c._producerGuestId];
+          }
+        }
         try { c.close(); } catch (e) { /* ignore */ }
         delete consumers[consumerIds[k]];
       }
@@ -340,9 +358,24 @@ function getWorkerCount() {
   return workers.length;
 }
 
-function getVideoConsumersByGuest(guestId) {
-  var ids = guestVideoConsumers[guestId] || [];
-  return ids.map(function(id) { return consumers[id]; }).filter(Boolean);
+// ─── Speaking-driven layer selector ────────────────────────────────────────
+// Called by the 'speaking' socket handler in index.js.
+// For every subscriber currently consuming the named guest's video stream,
+// flip to spatialLayer 2 (r2/900 kbps) while speaking or back to 0 (r0/100 kbps)
+// when silent.  Fire-and-forget: wrapped in try/catch in the caller.
+async function setPreferredLayersByGuestId(producerGuestId, spatialLayer) {
+  var ids = guestVideoConsumers[producerGuestId];
+  if (!ids || ids.size === 0) return;
+  var promises = [];
+  ids.forEach(function(cid) {
+    var c = consumers[cid];
+    if (c) {
+      promises.push(
+        c.setPreferredLayers({ spatialLayer: spatialLayer }).catch(function() {})
+      );
+    }
+  });
+  await Promise.all(promises);
 }
 
 
@@ -388,5 +421,6 @@ module.exports = {
   getRouterRtpCapabilities: getRouterRtpCapabilities,
   getRoomProducers: getRoomProducers,
   cleanupRoom: cleanupRoom,
-  getWorkerCount: getWorkerCount
+  getWorkerCount: getWorkerCount,
+  setPreferredLayersByGuestId: setPreferredLayersByGuestId
 };

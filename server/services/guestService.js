@@ -9,14 +9,22 @@ const db = require('../db'); // <-- verify this matches your actual db module
 async function joinStreamAsGuest({ streamId, userId, displayName, role, vdoStreamId, mediasoupProducerId }) {
   const result = await db.query(
     `INSERT INTO stream_guests (stream_id, user_id, display_name, role, vdo_stream_id, mediasoup_producer_id, is_host)
-     VALUES ($1, $2, $3, $4, $5, $6, false) RETURNING *`,
+     VALUES ($1, $2, $3, $4, $5, $6, false)
+     ON CONFLICT (stream_id, user_id) DO UPDATE
+       SET display_name = EXCLUDED.display_name,
+           role = EXCLUDED.role,
+           joined_at = now()
+     RETURNING *`,
     [streamId, userId, displayName || null, role || 'guest', vdoStreamId || null, mediasoupProducerId || null]
   );
   return result.rows[0];
 }
 
 // Toggle speaking/muted/audio-only/spotlighted state for an active guest.
-async function updateGuestState(guestId, patch) {
+// Self-update (guest): pass userId, omit streamOwnerId.
+// Host-controlled update (e.g. spotlight): pass streamOwnerId instead; the query
+// scopes to guests in streams owned by that user, preventing cross-stream IDOR.
+async function updateGuestState(guestId, patch, userId, streamOwnerId) {
   const fields = [];
   const values = [];
   let i = 1;
@@ -31,12 +39,24 @@ async function updateGuestState(guestId, patch) {
   });
   if (fields.length === 0) return null;
 
-  values.push(guestId);
-  const result = await db.query(
-    `UPDATE stream_guests SET ${fields.join(', ')} WHERE id = $${i} RETURNING *`,
-    values
-  );
-  return result.rows[0];
+  let result;
+  if (streamOwnerId) {
+    values.push(guestId, streamOwnerId);
+    result = await db.query(
+      `UPDATE stream_guests SET ${fields.join(', ')}
+       FROM streams
+       WHERE stream_guests.id = $${i} AND stream_guests.stream_id = streams.id AND streams.creator_id = $${i + 1}
+       RETURNING stream_guests.*`,
+      values
+    );
+  } else {
+    values.push(guestId, userId);
+    result = await db.query(
+      `UPDATE stream_guests SET ${fields.join(', ')} WHERE id = $${i} AND user_id = $${i + 1} RETURNING *`,
+      values
+    );
+  }
+  return result.rows[0] || null;
 }
 
 async function leaveStreamAsGuest(streamId, userId) {
@@ -60,18 +80,26 @@ async function getStreamGuests(streamId) {
 
 async function joinRoomAsParticipant({ streamId, userId, role }) {
   const result = await db.query(
-    `INSERT INTO room_participants (stream_id, user_id, role) VALUES ($1, $2, $3) RETURNING *`,
+    `INSERT INTO room_participants (stream_id, user_id, role) VALUES ($1, $2, $3)
+     ON CONFLICT (stream_id, user_id) DO UPDATE
+       SET role = EXCLUDED.role,
+           joined_at = now()
+     RETURNING *`,
     [streamId, userId, role || 'viewer']
   );
   return result.rows[0];
 }
 
-async function updateParticipantState(participantId, patch) {
+// Self-update: pass userId, omit streamOwnerId.
+// Host-controlled (e.g. isOnStage): pass streamOwnerId; scopes to participants
+// in streams owned by that user to prevent cross-stream IDOR.
+async function updateParticipantState(participantId, patch, userId, streamOwnerId) {
   const fields = [];
   const values = [];
   let i = 1;
 
-  ['is_on_stage', 'is_muted', 'is_camera_off', 'role'].forEach(function (col) {
+  // 'role' excluded — callers cannot self-escalate their own role
+  ['is_on_stage', 'is_muted', 'is_camera_off'].forEach(function (col) {
     const camelKey = col.replace(/_([a-z])/g, function (_, c) { return c.toUpperCase(); });
     if (patch[camelKey] !== undefined) {
       fields.push(`${col} = $${i}`);
@@ -81,12 +109,24 @@ async function updateParticipantState(participantId, patch) {
   });
   if (fields.length === 0) return null;
 
-  values.push(participantId);
-  const result = await db.query(
-    `UPDATE room_participants SET ${fields.join(', ')} WHERE id = $${i} RETURNING *`,
-    values
-  );
-  return result.rows[0];
+  let result;
+  if (streamOwnerId) {
+    values.push(participantId, streamOwnerId);
+    result = await db.query(
+      `UPDATE room_participants SET ${fields.join(', ')}
+       FROM streams
+       WHERE room_participants.id = $${i} AND room_participants.stream_id = streams.id AND streams.creator_id = $${i + 1}
+       RETURNING room_participants.*`,
+      values
+    );
+  } else {
+    values.push(participantId, userId);
+    result = await db.query(
+      `UPDATE room_participants SET ${fields.join(', ')} WHERE id = $${i} AND user_id = $${i + 1} RETURNING *`,
+      values
+    );
+  }
+  return result.rows[0] || null;
 }
 
 async function leaveRoom(streamId, userId) {

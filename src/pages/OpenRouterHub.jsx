@@ -151,7 +151,7 @@ export default function OpenRouterHub() {
     setPrompt('');
   }
 
-  function useTemplate(t) {
+  function applyTemplate(t) {
     setPrompt(t.text);
     setShowTemplates(false);
   }
@@ -259,7 +259,7 @@ export default function OpenRouterHub() {
             {showTemplates && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {PROMPT_TEMPLATES.map(pt => (
-                  <button key={pt.label} onClick={() => useTemplate(pt)} style={{ padding: '5px 12px', borderRadius: 20, cursor: 'pointer', fontSize: 10, fontWeight: 700, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: GOLD, ...T }}>
+                  <button key={pt.label} onClick={() => applyTemplate(pt)} style={{ padding: '5px 12px', borderRadius: 20, cursor: 'pointer', fontSize: 10, fontWeight: 700, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: GOLD, ...T }}>
                     {pt.label}
                   </button>
                 ))}

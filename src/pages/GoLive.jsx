@@ -141,6 +141,7 @@ import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import FanoutEnginePanel from '../components/live/FanoutEnginePanel';
 import LiveStage from '../components/live/LiveStage';
+import { useZegoToken } from '../hooks/useZegoToken';
 import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
@@ -554,6 +555,7 @@ export default function GoLive() {
   const [launching,   setLaunching]   = useState(false);
   const [countdown,   setCountdown]   = useState(false);
   const [partyId,     setPartyId]     = useState(null);
+  const { token: zegoToken } = useZegoToken({ roomId: partyId, userId: user?.id, enabled: !!partyId && !!user?.id });
   const [titleSuggestions, setTitleSuggestions] = useState([]);
   const [suggestingTitles, setSuggestingTitles] = useState(false);
   const [localStream,  setLocalStream]  = useState(null);
@@ -563,6 +565,8 @@ export default function GoLive() {
   const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [elapsed,     setElapsed]     = useState(0);
+  const [noiseSupp,   setNoiseSupp]   = useState(true);
+  const [echoCan,     setEchoCan]     = useState(true);
   const handleStreamReady = useCallback((s) => setLocalStream(s), []);
   const cameraRetryRef = useRef(null);
   // cameras + handleVideoChange hoisted so PreJoinSettingsModal can access them
@@ -1217,6 +1221,7 @@ export default function GoLive() {
           role="panelist"
           userId={user.id}
           userName={user.full_name || user.email || 'Host'}
+          token={zegoToken}
           onLeave={function() { setPartyId(null); setStep('pick'); }}
           minHeight={280}
         />

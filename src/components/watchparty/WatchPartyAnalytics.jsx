@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line } from 'recharts';
+import SafeResponsiveContainer from '@/components/shared/SafeChart';
 import { Users, TrendingUp, Clock, ThumbsUp, MessageSquare, BarChart2 } from 'lucide-react';
 
 function StatCard({ icon: IconComp, label, value, sub, color = '#d4af37' }) {
@@ -79,7 +80,7 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
           <div className="text-[11px] font-bold uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Viewer Growth
           </div>
-          <ResponsiveContainer width="100%" height={80}>
+          <SafeResponsiveContainer width="100%" height={80}>
             <LineChart data={joinTimeline}>
               <XAxis dataKey="time" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.2)' }} />
               <YAxis hide />
@@ -90,7 +91,7 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
               />
               <Line type="monotone" dataKey="viewers" stroke="#d4af37" strokeWidth={2} dot={false} />
             </LineChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       )}
 
@@ -99,7 +100,7 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
         <div className="text-[11px] font-bold uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           Engagement Breakdown
         </div>
-        <ResponsiveContainer width="100%" height={80}>
+        <SafeResponsiveContainer width="100%" height={80}>
           <BarChart data={engagementData} barSize={20}>
             <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} />
             <YAxis hide />
@@ -113,7 +114,7 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
               label={{ position: 'top', fontSize: 11, fill: 'rgba(255,255,255,0.4)' }}
             />
           </BarChart>
-        </ResponsiveContainer>
+        </SafeResponsiveContainer>
       </div>
 
       {/* Member list */}

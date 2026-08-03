@@ -76,6 +76,11 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
     },
   ];
 
+  const guestLinks = [
+    { name: 'Guest Invite', url: guestJoinUrl },
+    ...vdoLinks.map(v => ({ name: v.name, url: v.pushUrl })),
+  ];
+
   return (
     <div className="flex flex-col gap-2">
       <button

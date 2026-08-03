@@ -366,6 +366,13 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
           </div>
         )}
 
+        {/* Gift total badge */}
+        {giftTotal > 0 && (
+          <div style={{ position: 'absolute', bottom: 6, left: 6, background: 'rgba(201,168,76,.85)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09', zIndex: 5 }}>
+            {'🎁 $' + (giftTotal / 100).toFixed(2)}
+          </div>
+        )}
+
         {/* Connection quality dot */}
         <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: connDotColor, boxShadow: '0 0 4px ' + connDotColor, border: '1px solid rgba(0,0,0,.5)' }} />
         {isHost && (
@@ -490,18 +497,26 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   );
 }
 
-function octCellEqual(prev, next) {
-  if (prev.isMuted    !== next.isMuted)    return false;
-  if (prev.isCamOff   !== next.isCamOff)   return false;
-  if (prev.giftTotal  !== next.giftTotal)  return false;
-  if (prev.sz !== next.sz || prev.fill !== next.fill) return false;
-  if (prev.guest === next.guest) return true;
-  if (!prev.guest || !next.guest) return false;
+// Re-render only when the props that affect visual output actually change.
+// Sibling cells' prop changes and unrelated parent re-renders are suppressed.
+function areOctCellPropsEqual(prev, next) {
+  var pg = prev.guest || {};
+  var ng = next.guest || {};
   return (
-    prev.guest.producerId === next.guest.producerId &&
-    prev.guest.speaking   === next.guest.speaking   &&
-    prev.guest.isMuted    === next.guest.isMuted
+    pg.producerId      === ng.producerId      &&
+    pg.audioProducerId === ng.audioProducerId &&
+    pg.speaking        === ng.speaking        &&
+    pg.role             === ng.role            &&
+    pg.teamColor        === ng.teamColor       &&
+    prev.rtcManager     === next.rtcManager    &&
+    prev.isMuted        === next.isMuted       &&
+    prev.isCamOff       === next.isCamOff      &&
+    prev.giftTotal      === next.giftTotal     &&
+    prev.handRaised     === next.handRaised    &&
+    prev.isHost         === next.isHost        &&
+    prev.fadesMode      === next.fadesMode     &&
+    prev.branding       === next.branding
   );
 }
 
-export default React.memo(OctCell, octCellEqual);
+export default React.memo(OctCell, areOctCellPropsEqual);
