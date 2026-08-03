@@ -511,6 +511,11 @@ var spotlightPickMap   = new Map();  // roomId → { userId, username, ts, timer
 var stageFilterMap     = new Map();  // roomId → filter string (css filter name)
 var dramaticCdMap      = new Map();  // roomId → { count, timerId }
 var ALLOWED_STAGE_FILTERS = ['normal','warm','cool','bw','vivid','soft','golden','neon'];
+// Batch 46
+var pinnedEmojiMap     = new Map();  // roomId → { emoji, ts, timerId }
+var colorTierMap       = new Map();  // userId → tier string (bronze|silver|gold|platinum)
+var audioLevelMap      = new Map();  // roomId → { level, ts }
+var COLOR_TIER_CENTS = { bronze: 200, silver: 1000, gold: 5000, platinum: 10000 };
 // Batch 42
 var chatWordMap         = new Map();  // roomId → Map<word, count>  (word frequency for cloud)
 var chatWordMsgCount   = new Map();  // roomId → int (messages since last broadcast)
@@ -701,6 +706,11 @@ function getJoinStateForRoom(roomId) {
   state.collabBanner = collabBannerMap.get(roomId) || null;
   // Batch 45
   state.stageFilter = stageFilterMap.get(roomId) || null;
+  // Batch 46
+  var pe46 = pinnedEmojiMap.get(roomId);
+  state.pinnedEmoji = (pe46 && pe46.ts > Date.now() - 30000) ? { emoji: pe46.emoji } : null;
+  var al46 = audioLevelMap.get(roomId);
+  state.audioLevel = (al46 && al46.ts > Date.now() - 5000) ? al46.level : null;
   // Batch 44
   state.schedule = scheduleMap.get(roomId) || [];
   var rw44 = reactWallMap.get(roomId);
@@ -2534,6 +2544,43 @@ io.on('connection', function(socket) {
       var _gcTimer = setTimeout(function() { giftComboMap.delete(_gcKey); }, 8000);
       giftComboMap.set(_gcKey, { roomId: roomId, count: 1, lastTs: _gcNow, timerId: _gcTimer });
     }
+
+    // Batch 46: color tier upgrade based on cumulative session spend
+    (function() {
+      var _ctUserId = fromUserId;
+      if (!_ctUserId) return;
+      var _ctCurrent = colorTierMap.get(_ctUserId) || null;
+      // recompute from tip leader list accumulated this session
+      var _ctLeader = giftLeaderboards.get(roomId) || [];
+      var _ctEntry = _ctLeader.find(function(e) { return e.userId === _ctUserId; });
+      var _ctCents = _ctEntry ? (_ctEntry.totalCents || 0) : valueCents;
+      var _ctTier = null;
+      if (_ctCents >= COLOR_TIER_CENTS.platinum) _ctTier = 'platinum';
+      else if (_ctCents >= COLOR_TIER_CENTS.gold)     _ctTier = 'gold';
+      else if (_ctCents >= COLOR_TIER_CENTS.silver)   _ctTier = 'silver';
+      else if (_ctCents >= COLOR_TIER_CENTS.bronze)   _ctTier = 'bronze';
+      if (_ctTier && _ctTier !== _ctCurrent) {
+        colorTierMap.set(_ctUserId, _ctTier);
+        io.to(roomId).emit('viewer-color-tier', { userId: _ctUserId, username: fromUser, tier: _ctTier });
+        io.to(socket.id).emit('viewer-color-tier', { userId: _ctUserId, username: fromUser, tier: _ctTier, ownTier: true });
+      }
+    })();
+
+    // Batch 46: tip goal milestone toast (25/50/75/100% of stream goal)
+    (function() {
+      var _mgRoom = rooms.get(roomId);
+      if (!_mgRoom || !_mgRoom.creatorGoal || !_mgRoom.creatorGoal.active) return;
+      var _mgTarget = _mgRoom.creatorGoal.targetCents || 0;
+      if (_mgTarget <= 0) return;
+      var _mgNow = sessionRevenue.get(roomId) || 0;
+      var _mgPrev = _mgNow - valueCents;
+      [25, 50, 75, 100].forEach(function(pct) {
+        var thresh = Math.floor(_mgTarget * pct / 100);
+        if (_mgPrev < thresh && _mgNow >= thresh) {
+          io.to(roomId).emit('tip-milestone', { pct: pct, label: _mgRoom.creatorGoal.title || 'Goal', ts: Date.now() });
+        }
+      });
+    })();
 
     // Award points to gift sender
     var giftPoints = Math.max(10, Math.floor(valueCents / 10));
@@ -5485,6 +5532,41 @@ io.on('connection', function(socket) {
     dramaticCdMap.set(roomId, { count: count, timerId: firstTimerId });
   });
 
+  // ── Batch 46: pin-emoji ────────────────────────────────────────────────
+  socket.on('pin-emoji', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId; if (!roomId) return;
+    var emoji = data && typeof data.emoji === 'string' ? data.emoji.trim().slice(0, 8) : '';
+    if (!emoji) return;
+    var old = pinnedEmojiMap.get(roomId);
+    if (old && old.timerId) clearTimeout(old.timerId);
+    var timerId = setTimeout(function() {
+      pinnedEmojiMap.delete(roomId);
+      io.to(roomId).emit('pinned-emoji-update', null);
+    }, 30000);
+    pinnedEmojiMap.set(roomId, { emoji: emoji, ts: Date.now(), timerId: timerId });
+    io.to(roomId).emit('pinned-emoji-update', { emoji: emoji });
+  });
+
+  // ── Batch 46: unpin-emoji ──────────────────────────────────────────────
+  socket.on('unpin-emoji', function() {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId; if (!roomId) return;
+    var old = pinnedEmojiMap.get(roomId);
+    if (old && old.timerId) clearTimeout(old.timerId);
+    pinnedEmojiMap.delete(roomId);
+    io.to(roomId).emit('pinned-emoji-update', null);
+  });
+
+  // ── Batch 46: audio-level ──────────────────────────────────────────────
+  socket.on('audio-level', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId; if (!roomId) return;
+    var level = typeof (data && data.level) === 'number' ? Math.max(0, Math.min(100, Math.floor(data.level))) : 0;
+    audioLevelMap.set(roomId, { level: level, ts: Date.now() });
+    io.to(roomId).emit('audio-level-update', { level: level });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -6010,6 +6092,10 @@ io.on('connection', function(socket) {
     var ocEnd = outroCountdownMap.get(roomId);
     if (ocEnd && ocEnd.timerId) clearTimeout(ocEnd.timerId);
     outroCountdownMap.delete(roomId);
+    var peEnd = pinnedEmojiMap.get(roomId);
+    if (peEnd && peEnd.timerId) clearTimeout(peEnd.timerId);
+    pinnedEmojiMap.delete(roomId);
+    audioLevelMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

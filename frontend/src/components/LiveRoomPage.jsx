@@ -710,6 +710,14 @@ export default function LiveRoomPage({
   var [dramaticCdFrom,     setDramaticCdFrom]     = useState('5');
   var [dramaticCdLabel,    setDramaticCdLabel]    = useState('');
   var [showSessionStats,   setShowSessionStats]   = useState(false);
+  // Batch 46 — Pinned Emoji, Color Tier, Audio Level, Tip Milestone
+  var [pinnedEmoji,        setPinnedEmoji]        = useState(null);    // { emoji } or null
+  var [showEmojiPin,       setShowEmojiPin]       = useState(false);
+  var [myColorTier,        setMyColorTier]        = useState(null);    // 'bronze'|'silver'|'gold'|'platinum'
+  var [colorTiers,         setColorTiers]         = useState({});      // userId → tier
+  var [audioLevelPct,      setAudioLevelPct]      = useState(null);    // 0-100 or null
+  var [showAudioMeter,     setShowAudioMeter]     = useState(false);
+  var [tipMilestoneFlash,  setTipMilestoneFlash]  = useState(null);    // { pct, label }
   // Batch 43 — Prize Wheel, Gift Combo, Sign-In Log, Outro Countdown
   var [prizeWheel,         setPrizeWheel]         = useState(null);    // { segments, active, lastWinner }
   var [showWheelSet,       setShowWheelSet]       = useState(false);
@@ -942,6 +950,8 @@ export default function LiveRoomPage({
       if (data.hostBio) setHostBio(data.hostBio);
       if (data.spotlightPick) setSpotlightPick(data.spotlightPick);
       if (data.stageFilter) setStageFilter(data.stageFilter);
+      if (data.pinnedEmoji) setPinnedEmoji(data.pinnedEmoji);
+      if (typeof data.audioLevel === 'number') setAudioLevelPct(data.audioLevel);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -1840,6 +1850,32 @@ export default function LiveRoomPage({
       }
     });
 
+    // Batch 46 listeners
+    socket.on('pinned-emoji-update', function(data) {
+      setPinnedEmoji(data || null);
+    });
+
+    socket.on('viewer-color-tier', function(data) {
+      if (!data) return;
+      setColorTiers(function(prev) { var n = Object.assign({}, prev); n[data.userId] = data.tier; return n; });
+      if (data.ownTier) {
+        setMyColorTier(data.tier);
+        var tierLabels = { bronze: '🥉 Bronze Gifter', silver: '🥈 Silver Gifter', gold: '🥇 Gold Gifter', platinum: '💎 Platinum Gifter' };
+        if (addToast) addToast(tierLabels[data.tier] + ' tier unlocked!', 'success');
+      }
+    });
+
+    socket.on('audio-level-update', function(data) {
+      if (!data || typeof data.level !== 'number') return;
+      setAudioLevelPct(data.level);
+    });
+
+    socket.on('tip-milestone', function(data) {
+      if (!data) return;
+      setTipMilestoneFlash(data);
+      setTimeout(function() { setTipMilestoneFlash(null); }, 5000);
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2149,6 +2185,10 @@ export default function LiveRoomPage({
       socket.off('spotlight-pick-update');
       socket.off('stage-filter-update');
       socket.off('dramatic-countdown-tick');
+      socket.off('pinned-emoji-update');
+      socket.off('viewer-color-tier');
+      socket.off('audio-level-update');
+      socket.off('tip-milestone');
       socket.off('scoreboard-update');
       socket.off('auction-update');
       socket.off('auction-ended');
@@ -2256,6 +2296,39 @@ export default function LiveRoomPage({
     window.addEventListener('keydown', onKey);
     return function() { window.removeEventListener('keydown', onKey); };
   }, [hotkeysEnabled, role, socket, roomId, toggleMute, toggleCam]);
+
+  // ── Batch 46: Host audio level meter ──────────────────────────────────────
+  useEffect(function() {
+    if (!showAudioMeter || (role !== 'host' && role !== 'cohost') || !socket) return;
+    var audioCtx = null;
+    var source = null;
+    var analyser = null;
+    var intervalId = null;
+    var stream = null;
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(s) {
+      stream = s;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      source = audioCtx.createMediaStreamSource(s);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 32;
+      source.connect(analyser);
+      var buf = new Uint8Array(analyser.frequencyBinCount);
+      intervalId = setInterval(function() {
+        analyser.getByteFrequencyData(buf);
+        var sum = 0;
+        for (var i = 0; i < buf.length; i++) sum += buf[i];
+        var avg = Math.floor((sum / buf.length / 255) * 100);
+        setAudioLevelPct(avg);
+        socket.emit('audio-level', { roomId: roomId, level: avg });
+      }, 2000);
+    }).catch(function() {});
+    return function() {
+      clearInterval(intervalId);
+      if (source) { try { source.disconnect(); } catch(e) {} }
+      if (audioCtx) { try { audioCtx.close(); } catch(e) {} }
+      if (stream) { stream.getTracks().forEach(function(t) { t.stop(); }); }
+    };
+  }, [showAudioMeter, role, socket, roomId]);
 
   // ── Batch 23: Live captions via Web Speech API ────────────────────────────
   useEffect(function() {
@@ -3911,6 +3984,8 @@ export default function LiveRoomPage({
               { emoji: '🎞️', label: 'Stage Filter', active: !!stageFilter || showFilterPicker, onTap: function() { setShowFilterPicker(function(s) { return !s; }); } },
               { emoji: '🔢', label: 'Countdown', active: !!dramaticCountdown || showDramaticSet, onTap: function() { setShowDramaticSet(function(s) { return !s; }); } },
               { emoji: '📊', label: 'Sesh Stats', active: showSessionStats, onTap: function() { setShowSessionStats(function(s) { return !s; }); } },
+              { emoji: '📍', label: pinnedEmoji ? 'Emoji ✓' : 'Pin Emoji', active: !!pinnedEmoji || showEmojiPin, onTap: function() { setShowEmojiPin(function(s) { return !s; }); } },
+              { emoji: '🎙️', label: 'Audio Meter', active: showAudioMeter, onTap: function() { setShowAudioMeter(function(s) { return !s; }); } },
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Check In', active: false, onTap: function() {
@@ -4577,6 +4652,11 @@ export default function LiveRoomPage({
                           var cents = tl.totalCents || 0;
                           var rank = cents >= 10000 ? { label: '💎', color: '#00BFFF' } : cents >= 5000 ? { label: '🥇', color: '#FFD700' } : cents >= 1000 ? { label: '🥈', color: '#C0C0C0' } : cents >= 200 ? { label: '🥉', color: '#CD7F32' } : null;
                           return rank ? <span style={{ marginLeft: 4, fontSize: 8, color: rank.color, fontWeight: 700 }}>{rank.label}GIFTER</span> : null;
+                        })()}
+                        {(function() {
+                          var tier = colorTiers[msg.userId];
+                          var tierMeta = { bronze: { emoji: '🥉', color: '#CD7F32' }, silver: { emoji: '🥈', color: '#C0C0C0' }, gold: { emoji: '🥇', color: '#FFD700' }, platinum: { emoji: '💎', color: '#00BFFF' } };
+                          return tier && tierMeta[tier] ? <span style={{ marginLeft: 3, fontSize: 8 }}>{tierMeta[tier].emoji}</span> : null;
                         })()}
                         {(function() {
                           var badges = userBadges[msg.userId] || (msg.userId === userId ? myBadges : []);
@@ -10016,6 +10096,78 @@ export default function LiveRoomPage({
               })}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 46: TIP MILESTONE FLASH ════════════════ */}
+      {tipMilestoneFlash && (
+        <div style={{ position: 'fixed', top: '20%', left: 0, right: 0, zIndex: 8500, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+          <div style={{ background: 'linear-gradient(135deg, #1a1000, ' + CARD + ')', border: '2px solid ' + GOLD, borderRadius: 20, padding: '18px 32px', textAlign: 'center', boxShadow: '0 0 40px ' + GOLD + '55' }}>
+            <div style={{ fontSize: 36, marginBottom: 6 }}>{tipMilestoneFlash.pct >= 100 ? '🎉' : tipMilestoneFlash.pct >= 75 ? '🔥' : tipMilestoneFlash.pct >= 50 ? '⚡' : '✨'}</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 32, color: GOLD, letterSpacing: 3, lineHeight: 1 }}>{tipMilestoneFlash.pct}% GOAL</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, marginTop: 4, letterSpacing: .5 }}>{tipMilestoneFlash.label || 'REACHED!'}</div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 46: PINNED EMOJI OVERLAY ════════════════ */}
+      {pinnedEmoji && (
+        <div style={{ position: 'fixed', bottom: 160, right: 20, zIndex: 500, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'none', animation: 'spotlightIn .3s ease' }}>
+          <div style={{ fontSize: 52, filter: 'drop-shadow(0 0 12px rgba(255,255,255,.4))', lineHeight: 1 }}>{pinnedEmoji.emoji}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 1 }}>PINNED</div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 46: PIN EMOJI PICKER ════════════════ */}
+      {showEmojiPin && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: 0, right: 0, zIndex: 700, padding: '0 12px' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '16px', maxWidth: 400, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1.5 }}>📍 PIN EMOJI (30s)</span>
+              <button onClick={function() { setShowEmojiPin(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8, marginBottom: 14 }}>
+              {['🔥','❤️','💎','⭐','🎉','👑','💜','🚀','🎯','💰','🌟','✨'].map(function(e) {
+                return (
+                  <button key={e} onClick={function() {
+                    if (socket) socket.emit('pin-emoji', { roomId: roomId, emoji: e });
+                    setShowEmojiPin(false);
+                  }} style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px', fontSize: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {e}
+                  </button>
+                );
+              })}
+            </div>
+            {pinnedEmoji && (
+              <button onClick={function() {
+                if (socket) socket.emit('unpin-emoji', { roomId: roomId });
+                setShowEmojiPin(false);
+              }} style={{ width: '100%', background: 'transparent', border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+                UNPIN
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 46: AUDIO LEVEL METER ════════════════ */}
+      {showAudioMeter && (
+        <div style={{ position: 'fixed', top: 80, right: 16, zIndex: 600, background: CARD, border: '1px solid ' + BORDER, borderRadius: 14, padding: '12px 14px', minWidth: 120 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1, marginBottom: 8, textAlign: 'center' }}>🎙️ AUDIO LEVEL</div>
+          <div style={{ height: 80, width: 20, background: 'rgba(255,255,255,.06)', borderRadius: 10, overflow: 'hidden', margin: '0 auto', position: 'relative' }}>
+            <div style={{
+              position: 'absolute', bottom: 0, width: '100%',
+              height: ((audioLevelPct !== null ? audioLevelPct : 0)) + '%',
+              background: (audioLevelPct || 0) > 70 ? RED : (audioLevelPct || 0) > 40 ? GOLD : TEAL,
+              borderRadius: 10,
+              transition: 'height .3s ease, background .3s ease',
+            }} />
+          </div>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, textAlign: 'center', marginTop: 6, letterSpacing: 1 }}>{audioLevelPct !== null ? audioLevelPct : '—'}%</div>
+          {(role !== 'host' && role !== 'cohost') && audioLevelPct === null && (
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, textAlign: 'center', marginTop: 4 }}>WAITING...</div>
+          )}
+          <button onClick={function() { setShowAudioMeter(false); }} style={{ display: 'block', margin: '8px auto 0', background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 10 }}>✕ close</button>
         </div>
       )}
 
