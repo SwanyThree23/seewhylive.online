@@ -76,6 +76,8 @@ var ANIM = [
   '@keyframes goalFill{from{width:0}to{width:var(--goal-pct)}}',
   '@keyframes goalComplete{0%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.05);filter:brightness(1.3)}100%{transform:scale(1);filter:brightness(1)}}',
   '@keyframes moodPulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}',
+  '@keyframes comboFlash{0%{transform:scale(.5);opacity:0}40%{transform:scale(1.2);opacity:1}70%{transform:scale(1)}100%{opacity:0}}',
+  '@keyframes spotlightGlow{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}50%{box-shadow:0 0 0 8px rgba(201,168,76,.3)}}',
 ].join('\n');
 
 // ─── Room ambiance themes ─────────────────────────────────────────────────────
@@ -649,6 +651,10 @@ export default function LiveRoomPage({
   var [myBadges,           setMyBadges]           = useState([]);     // badges earned this session
   var [userBadges,         setUserBadges]         = useState({});     // userId → [badge, ...]
   var [cohostRequested,    setCohostRequested]    = useState(false);
+  var [reactCombo,         setReactCombo]         = useState(null);   // { emoji, count } — flashes on milestone
+  var [viewerSpotlight,    setViewerSpotlight]    = useState(null);   // { userId, username, endsAt }
+  var [ttsEnabled,         setTtsEnabled]         = useState(false);  // local: TTS gift alerts
+  var [showTtsPanel,       setShowTtsPanel]       = useState(false);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -797,6 +803,16 @@ export default function LiveRoomPage({
       // Populate tip feed so GiftLayer animations fire and tip feed panel shows
       var entry = { id: gift.id || Date.now(), from: gift.fromUser || 'Fan', amount: gift.valueCents || 0, emoji: gift.emoji || '🎁', toGuestId: gift.toGuestId || null, ts: gift.ts || Math.floor(Date.now() / 1000) };
       setTipFeed(function(prev) { return [entry].concat(prev).slice(0, 20); });
+      // TTS gift alert (host/cohost only, if enabled)
+      setTtsEnabled(function(enabled) {
+        if (enabled && (role === 'host' || role === 'cohost') && window.speechSynthesis) {
+          var dollars = ((gift.valueCents || 0) / 100).toFixed(2);
+          var msg = new window.SpeechSynthesisUtterance((gift.fromUser || 'Someone') + ' sent ' + (gift.name || 'a gift') + ' for dollar ' + dollars);
+          msg.rate = 1.1; msg.pitch = 1.05; msg.volume = 0.8;
+          window.speechSynthesis.speak(msg);
+        }
+        return enabled;
+      });
       // Merge per-guest gift totals from server snapshot (guestTotals) or compute locally
       if (gift.guestTotals) {
         setGuestGiftTotals(function(prev) { return Object.assign({}, prev, gift.guestTotals); });
@@ -1368,6 +1384,16 @@ export default function LiveRoomPage({
       }
     });
 
+    socket.on('react-combo-hit', function(data) {
+      if (!data) return;
+      setReactCombo({ emoji: data.emoji, count: data.count });
+      setTimeout(function() { setReactCombo(null); }, 1800);
+    });
+
+    socket.on('viewer-spotlight', function(data) {
+      setViewerSpotlight(data || null);
+    });
+
     socket.on('gift-goal-update', function(data) {
       setGiftGoal(data);
     });
@@ -1554,6 +1580,8 @@ export default function LiveRoomPage({
       socket.off('cohost-queue-update');
       socket.off('cohost-request-ack');
       socket.off('badge-awarded');
+      socket.off('react-combo-hit');
+      socket.off('viewer-spotlight');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
@@ -1925,7 +1953,10 @@ export default function LiveRoomPage({
     var fid = Date.now() + Math.random();
     setFloatReacts(function(r) { return r.concat([{ emoji: emoji, fid: fid }]); });
     setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200);
-    if (socket) socket.emit('viewer-react', { roomId: roomId, userId: userId, emoji: emoji });
+    if (socket) {
+      socket.emit('viewer-react', { roomId: roomId, userId: userId, emoji: emoji });
+      socket.emit('react-combo', { roomId: roomId, emoji: emoji });
+    }
     setMyEngagement(function(e) { return { chat: e.chat, react: e.react + 1, gift: e.gift }; });
     setReactsOpen(false);
     // Contribute to active challenge if unit is 'reactions'
@@ -3113,6 +3144,14 @@ export default function LiveRoomPage({
             { emoji: '🎭', label: 'Mood', active: showMoodPanel, onTap: function() { setShowMoodPanel(function(s) { return !s; }); } },
             ...(role === 'host' ? [
               { emoji: '👥', label: 'Co-Queue', active: showCohostQueue, onTap: function() { setShowCohostQueue(function(s) { return !s; }); } },
+              { emoji: '🔊', label: 'TTS Gifts', active: ttsEnabled, onTap: function() {
+                setTtsEnabled(function(s) { return !s; });
+                if (addToast) addToast(ttsEnabled ? '🔇 TTS alerts off' : '🔊 TTS gift alerts on', 'info');
+              }},
+              { emoji: '🎲', label: 'Spotlight', active: !!viewerSpotlight, onTap: function() {
+                if (!viewerSpotlight && socket) socket.emit('viewer-spotlight-spin', { roomId: roomId, duration: 30 });
+                else if (viewerSpotlight && socket) socket.emit('viewer-spotlight-spin', { roomId: roomId, duration: 0 });
+              }},
             ] : role === 'viewer' ? [
               { emoji: '✋', label: 'Co-Host', active: cohostRequested, onTap: function() {
                 if (!cohostRequested && socket) { socket.emit('cohost-request', { roomId: roomId }); setCohostRequested(true); }
@@ -7466,6 +7505,47 @@ export default function LiveRoomPage({
         }}>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>BADGES</span>
           {myBadges.map(function(b, i) { return <span key={i} style={{ fontSize: 18 }}>{b}</span>; })}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 33: REACTION COMBO OVERLAY ════════════════ */}
+      {reactCombo && (
+        <div style={{
+          position: 'absolute', right: 14, bottom: 200, zIndex: 88, pointerEvents: 'none',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+          animation: 'comboFlash 1.8s ease forwards',
+        }}>
+          <span style={{ fontSize: 36 }}>{reactCombo.emoji}</span>
+          <div style={{
+            fontFamily: "'Bebas Neue',cursive", fontSize: 22, letterSpacing: 2,
+            color: reactCombo.count >= 50 ? RED : reactCombo.count >= 10 ? GOLD : TEAL,
+            textShadow: '0 0 12px currentColor',
+          }}>×{reactCombo.count}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>COMBO</div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 33: VIEWER SPOTLIGHT BANNER ════════════════ */}
+      {viewerSpotlight && (
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+          zIndex: 87, pointerEvents: 'none',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+        }}>
+          <div style={{
+            background: 'rgba(14,12,9,.9)', border: '2px solid ' + GOLD, borderRadius: 16,
+            padding: '16px 28px', textAlign: 'center',
+            animation: 'spotlightGlow 1.5s ease infinite',
+          }}>
+            <div style={{ fontSize: 32, marginBottom: 6 }}>🎲</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: GOLD, letterSpacing: 2 }}>VIEWER SPOTLIGHT</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 24, color: TEXT, marginTop: 4 }}>
+              {viewerSpotlight.username}
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 4, letterSpacing: 1 }}>
+              YOU'RE IN THE SPOTLIGHT!
+            </div>
+          </div>
         </div>
       )}
 

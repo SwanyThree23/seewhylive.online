@@ -458,6 +458,8 @@ var clipVotesMap        = new Map();  // clipId → { up: N, down: N, voters: Ma
 var cohostQueueMap      = new Map();  // roomId → [{ socketId, userId, username, ts }]
 var userBadgesMap       = new Map();  // userId → Set<badge> (earned badges)
 var cohostQueueThrottle = new Map();  // userId → lastRequestTs ms
+var reactionComboMap    = new Map();  // roomId → { emoji, count, lastTs, timerId }
+var viewerSpotlightMap  = new Map();  // roomId → { userId, username, socketId, endsAt }
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -4239,6 +4241,64 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('badge-awarded', { userId: targetUserId, badge: badge, awardedBy: socket.data.username || 'Host' });
   });
 
+  // ── react-combo — server tracks rapid same-emoji reactions for combo overlay ──
+  socket.on('react-combo', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var emoji = String(data.emoji || '❤️').slice(0, 4);
+    var _rcNow = Date.now();
+    if (!reactionComboMap.has(roomId)) reactionComboMap.set(roomId, { emoji: emoji, count: 0, lastTs: 0, timerId: null });
+    var combo = reactionComboMap.get(roomId);
+    if (_rcNow - combo.lastTs > 3000) {
+      // stale — reset
+      if (combo.timerId) clearTimeout(combo.timerId);
+      combo.count = 0; combo.emoji = emoji;
+    }
+    if (combo.emoji !== emoji) { combo.count = 0; combo.emoji = emoji; }
+    combo.count++;
+    combo.lastTs = _rcNow;
+    // Broadcast on milestones
+    var MILESTONES = [3, 5, 10, 20, 50, 100];
+    if (MILESTONES.indexOf(combo.count) >= 0) {
+      io.to(roomId).emit('react-combo-hit', { emoji: emoji, count: combo.count, ts: _rcNow });
+    }
+    // Auto-reset after 3s of inactivity
+    if (combo.timerId) clearTimeout(combo.timerId);
+    combo.timerId = setTimeout(function() {
+      var c = reactionComboMap.get(roomId);
+      if (c && c.emoji === emoji) c.count = 0;
+    }, 3000);
+  });
+
+  // ── viewer-spotlight — host spins to spotlight a random viewer ────────
+  socket.on('viewer-spotlight-spin', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var candidates = [];
+    io.sockets.sockets.forEach(function(s) {
+      if (s.data.roomId === roomId && s.data.role === 'viewer' && s.data.username) {
+        candidates.push({ socketId: s.id, userId: s.data.userId, username: s.data.username });
+      }
+    });
+    if (candidates.length === 0) {
+      io.to(socket.id).emit('viewer-spotlight-result', { error: 'No viewers to spotlight' });
+      return;
+    }
+    var picked = candidates[Math.floor(Math.random() * candidates.length)];
+    var endsAt = Math.floor(Date.now() / 1000) + (data.duration || 30);
+    viewerSpotlightMap.set(roomId, { userId: picked.userId, username: picked.username, socketId: picked.socketId, endsAt: endsAt });
+    io.to(roomId).emit('viewer-spotlight', { userId: picked.userId, username: picked.username, endsAt: endsAt });
+    // Auto-clear
+    setTimeout(function() {
+      var sp = viewerSpotlightMap.get(roomId);
+      if (sp && sp.userId === picked.userId) {
+        viewerSpotlightMap.delete(roomId);
+        io.to(roomId).emit('viewer-spotlight', null);
+      }
+    }, (data.duration || 30) * 1000);
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -4710,6 +4770,10 @@ io.on('connection', function(socket) {
     giftGoalMap.delete(roomId);
     moodMap.delete(roomId);
     cohostQueueMap.delete(roomId);
+    var endedCombo = reactionComboMap.get(roomId);
+    if (endedCombo && endedCombo.timerId) clearTimeout(endedCombo.timerId);
+    reactionComboMap.delete(roomId);
+    viewerSpotlightMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
