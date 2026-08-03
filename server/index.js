@@ -426,6 +426,7 @@ var teamBattleMap       = new Map();  // roomId → { redLabel, blueLabel, redSc
 var whiteboardMap       = new Map();  // roomId → [{ x1, y1, x2, y2, color, size }] last 800 segments
 var karaokeMap          = new Map();  // roomId → { text, active } | null
 var chaptersMap         = new Map();  // roomId → [{ ts, label, elapsed }]
+var sentimentMap        = new Map();  // roomId → { up: N, down: N, voters: Set<socketId> }
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -537,6 +538,8 @@ function getJoinStateForRoom(roomId) {
   state.whiteboardStrokes = (whiteboardMap.get(roomId) || []).slice(-200);
   state.karaoke  = karaokeMap.get(roomId)  || null;
   state.chapters = chaptersMap.get(roomId) || [];
+  var sm = sentimentMap.get(roomId);
+  state.sentiment = sm ? { up: sm.up, down: sm.down } : { up: 0, down: 0 };
   return state;
 }
 
@@ -3568,6 +3571,47 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('chapter-mark', chapter);
   });
 
+  // ── Batch 27: Sentiment Meter, Screen Annotations, Guest Intro Cards ─────
+
+  // sentiment-vote — viewer thumbs up or down (deduplicated per socket)
+  socket.on('sentiment-vote', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var vote = data.vote === 'down' ? 'down' : 'up';
+    var sm = sentimentMap.get(roomId);
+    if (!sm) { sm = { up: 0, down: 0, voters: new Map() }; sentimentMap.set(roomId, sm); }
+    var prevVote = sm.voters.get(socket.id);
+    if (prevVote) {
+      if (prevVote === vote) return; // same vote, ignore
+      sm[prevVote] = Math.max(0, sm[prevVote] - 1); // remove old vote
+    }
+    sm[vote]++;
+    sm.voters.set(socket.id, vote);
+    io.to(roomId).emit('sentiment-update', { up: sm.up, down: sm.down });
+  });
+
+  // screen-annotate — viewer taps on screen share to leave a floating dot
+  socket.on('screen-annotate', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var x     = Math.min(Math.max(Number(data.x) || 50, 0), 100);
+    var y     = Math.min(Math.max(Number(data.y) || 50, 0), 100);
+    var color = String(data.color || '#C9A84C').slice(0, 24);
+    io.to(roomId).emit('screen-annotate', { x: x, y: y, color: color, by: socket.data.username || 'viewer', ts: Date.now() });
+  });
+
+  // guest-intro — server auto-broadcasts when a guest joins the stage (triggered by host/server)
+  socket.on('guest-intro', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var username = String(data.username || '').slice(0, 60);
+    var bio      = String(data.bio || '').slice(0, 120);
+    var emoji    = String(data.emoji || '🎤').slice(0, 4);
+    if (!username) return;
+    io.to(roomId).emit('guest-intro', { username: username, bio: bio, emoji: emoji, ts: Math.floor(Date.now() / 1000) });
+  });
+
   // sound-alert — host triggers a named alert sound for the room
   socket.on('sound-alert', function(data) {
     var roomId = data.roomId || socket.data.roomId;
@@ -4047,6 +4091,7 @@ io.on('connection', function(socket) {
     whiteboardMap.delete(roomId);
     karaokeMap.delete(roomId);
     chaptersMap.delete(roomId);
+    sentimentMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

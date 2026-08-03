@@ -606,6 +606,12 @@ export default function LiveRoomPage({
   var [luckyPrize,         setLuckyPrize]         = useState('');
   var [streamChapters,     setStreamChapters]     = useState([]);      // [{ label, ts, elapsed }]
   var [showChapters,       setShowChapters]       = useState(false);   // chapters panel
+  // ── Batch 27: Sentiment Meter, Screen Annotations, Guest Intro Cards ─────
+  var [sentiment,          setSentiment]          = useState({ up: 0, down: 0 });
+  var [myVote,             setMyVote]             = useState(null);    // 'up' | 'down' | null
+  var [showSentiment,      setShowSentiment]      = useState(false);   // sentiment bar overlay
+  var [screenAnnotDots,    setScreenAnnotDots]    = useState([]);      // [{ x, y, color, id }]
+  var [guestIntroCard,     setGuestIntroCard]     = useState(null);    // { username, bio, emoji } current card
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -667,6 +673,7 @@ export default function LiveRoomPage({
       if (data.teamBattle && data.teamBattle.active) setTeamBattle(data.teamBattle);
       if (data.karaoke && data.karaoke.active) { setKaraokeText(data.karaoke.text || ''); setKaraokeActive(true); }
       if (Array.isArray(data.chapters) && data.chapters.length > 0) setStreamChapters(data.chapters);
+      if (data.sentiment) setSentiment(data.sentiment);
       if (Array.isArray(data.whiteboardStrokes) && data.whiteboardStrokes.length > 0) {
         setTimeout(function() {
           var canvas = wbCanvasRef.current;
@@ -1153,6 +1160,25 @@ export default function LiveRoomPage({
       if (!data) return;
       setStreamChapters(function(prev) { return prev.concat([data]).slice(-50); });
       if (addToast) addToast('📍 Chapter: ' + (data.label || 'Moment marked'), 'info');
+    });
+
+    // ── Batch 27: Sentiment, Annotations, Guest Intros ────────────────────
+    socket.on('sentiment-update', function(data) {
+      if (!data) return;
+      setSentiment({ up: data.up || 0, down: data.down || 0 });
+    });
+
+    socket.on('screen-annotate', function(data) {
+      if (!data) return;
+      var aid = Date.now() + Math.random();
+      setScreenAnnotDots(function(prev) { return [{ x: data.x, y: data.y, color: data.color || '#C9A84C', id: aid }].concat(prev.slice(0, 49)); });
+      setTimeout(function() { setScreenAnnotDots(function(prev) { return prev.filter(function(d) { return d.id !== aid; }); }); }, 4000);
+    });
+
+    socket.on('guest-intro', function(data) {
+      if (!data || !data.username) return;
+      setGuestIntroCard(data);
+      setTimeout(function() { setGuestIntroCard(null); }, 6000);
     });
 
     socket.on('sound-alert', function(data) {
@@ -2788,11 +2814,17 @@ export default function LiveRoomPage({
               { emoji: '🎤', label: 'Karaoke', active: karaokeActive, onTap: function() { setKaraokeInput(karaokeText); setShowKaraokeEdit(function(s) { return !s; }); } },
               { emoji: '🎰', label: 'Lucky Draw', active: showLuckyDraw, onTap: function() { setShowLuckyDraw(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Chapters', active: streamChapters.length > 0, onTap: function() { setShowChapters(function(s) { return !s; }); } },
+              { emoji: '👋', label: 'Intro Card', active: false, onTap: function() {
+                var name = window.prompt('Guest name:'); if (!name || !name.trim()) return;
+                var bio  = window.prompt('Bio / role (optional):') || '';
+                if (socket) socket.emit('guest-intro', { roomId: roomId, username: name.trim(), bio: bio.trim(), emoji: '🎤' });
+              }},
             ].concat(multiCamDevices.length > 1 ? [
               { emoji: '📷', label: 'Camera', active: showCamPicker, onTap: function() { setShowCamPicker(function(s) { return !s; }); } },
             ] : [])
             : []),
             { emoji: '🌡', label: 'Heatmap', active: showHeatmap, onTap: function() { setShowHeatmap(function(s) { return !s; }); } },
+            { emoji: '📊', label: 'Vibe', active: showSentiment, onTap: function() { setShowSentiment(function(s) { return !s; }); } },
           ].map(function(tool) {
             return (
               <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
@@ -6463,6 +6495,99 @@ export default function LiveRoomPage({
               );
             })
           )}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 27: SENTIMENT METER ════════════════ */}
+      {showSentiment && (
+        <div style={{
+          position: 'absolute', bottom: 90, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 92, minWidth: 300, animation: 'fadeSlideIn .2s ease',
+          background: 'rgba(14,12,9,.9)', border: '1px solid ' + BORDER,
+          borderRadius: 14, padding: '12px 18px', backdropFilter: 'blur(8px)',
+        }}>
+          {/* Tally numbers */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#00CC66', letterSpacing: 2 }}>
+              👍 {sentiment.up}
+            </span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>
+              VIEWER VIBE
+            </span>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: RED, letterSpacing: 2 }}>
+              {sentiment.down} 👎
+            </span>
+          </div>
+          {/* Sentiment bar */}
+          {(function() {
+            var total = (sentiment.up + sentiment.down) || 1;
+            var upPct = Math.round((sentiment.up / total) * 100);
+            return (
+              <div style={{ height: 8, borderRadius: 99, background: RED + '44', overflow: 'hidden', marginBottom: 10 }}>
+                <div style={{ height: '100%', width: upPct + '%', background: 'linear-gradient(90deg,#00CC66,#44DD88)', borderRadius: 99, transition: 'width .5s ease' }} />
+              </div>
+            );
+          })()}
+          {/* Vote buttons */}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={function() {
+              if (socket) socket.emit('sentiment-vote', { roomId: roomId, vote: 'up' });
+              setMyVote('up');
+            }}
+              style={{ flex: 1, background: myVote === 'up' ? '#00CC6633' : CARD2, border: '1px solid ' + (myVote === 'up' ? '#00CC66' : BORDER), borderRadius: 10, padding: '8px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: myVote === 'up' ? '#00CC66' : MUTED, cursor: 'pointer' }}>
+              👍 GOOD VIBES
+            </button>
+            <button onClick={function() {
+              if (socket) socket.emit('sentiment-vote', { roomId: roomId, vote: 'down' });
+              setMyVote('down');
+            }}
+              style={{ flex: 1, background: myVote === 'down' ? RED + '22' : CARD2, border: '1px solid ' + (myVote === 'down' ? RED : BORDER), borderRadius: 10, padding: '8px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: myVote === 'down' ? RED : MUTED, cursor: 'pointer' }}>
+              👎 MEH
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 27: GUEST INTRO CARD ════════════════ */}
+      {guestIntroCard && (
+        <div style={{
+          position: 'absolute', bottom: 140, left: 16, zIndex: 89,
+          animation: 'fadeSlideIn .35s ease',
+          maxWidth: 260,
+        }}>
+          <div style={{ background: 'linear-gradient(135deg,' + BURG + '88,' + CARD + 'EE)', border: '1.5px solid ' + GOLD + '66', borderRadius: 16, padding: '14px 18px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 20px rgba(0,0,0,.6)' }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(201,168,76,.18)', border: '2px solid ' + GOLD + '66', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
+                {guestIntroCard.emoji || '🎤'}
+              </div>
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: GOLD, letterSpacing: 1.5, lineHeight: 1 }}>{guestIntroCard.username}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 2, letterSpacing: .3 }}>JOINED THE STAGE</div>
+              </div>
+            </div>
+            {guestIntroCard.bio && (
+              <div style={{ marginTop: 8, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, lineHeight: 1.4 }}>{guestIntroCard.bio}</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 27: SCREEN ANNOTATE DOTS ════════════════ */}
+      {screenAnnotDots.length > 0 && (
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 59, overflow: 'hidden' }}>
+          {screenAnnotDots.map(function(dot) {
+            return (
+              <div key={dot.id} style={{
+                position: 'absolute',
+                left: dot.x + '%', top: dot.y + '%',
+                transform: 'translate(-50%, -50%)',
+                width: 18, height: 18, borderRadius: '50%',
+                background: dot.color,
+                animation: 'heatPop 4s ease-out forwards',
+                boxShadow: '0 0 8px ' + dot.color + '88',
+              }} />
+            );
+          })}
         </div>
       )}
     </div>
