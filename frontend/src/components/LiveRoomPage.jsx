@@ -670,6 +670,20 @@ export default function LiveRoomPage({
   var [showFanWall,        setShowFanWall]        = useState(false);
   var [pipActive,          setPipActive]          = useState(false);
   // Batch 39 — Song Request, Hype Train, Marquee, Shoutout Queue
+  // Batch 43 — Prize Wheel, Gift Combo, Sign-In Log, Outro Countdown
+  var [prizeWheel,         setPrizeWheel]         = useState(null);    // { segments, active, lastWinner }
+  var [showWheelSet,       setShowWheelSet]       = useState(false);
+  var [wheelDraft,         setWheelDraft]         = useState('');      // newline-separated segment labels
+  var [wheelSpinning,      setWheelSpinning]      = useState(false);
+  var [wheelWinner,        setWheelWinner]        = useState(null);    // { label, color, idx }
+  var [signInLog,          setSignInLog]          = useState([]);      // [{ userId, username, ts }]
+  var [signedIn,           setSignedIn]           = useState(false);
+  var [signInFlash,        setSignInFlash]        = useState(null);    // { username, count }
+  var [outroCountdown,     setOutroCountdown]     = useState(null);    // { endsAt, label }
+  var [outroSecs,          setOutroSecs]          = useState(0);
+  var [showOutroSet,       setShowOutroSet]       = useState(false);
+  var [outroDraft,         setOutroDraft]         = useState({ minutes: '5', label: 'GOING OFFLINE IN' });
+  var [giftComboFlash,     setGiftComboFlash]     = useState(null);    // { username, count, emoji }
   // Batch 42 — Word Cloud, Viewer Status, Moment Log, Room Capacity
   var [wordCloud,          setWordCloud]          = useState([]);      // [{word, count}]
   var [showWordCloud,      setShowWordCloud]      = useState(false);
@@ -880,6 +894,9 @@ export default function LiveRoomPage({
       if (Array.isArray(data.wordCloud) && data.wordCloud.length > 0) setWordCloud(data.wordCloud);
       if (Array.isArray(data.momentLog) && data.momentLog.length > 0) setMomentLog(data.momentLog);
       if (data.roomCapacity) setRoomCapacity(data.roomCapacity);
+      if (data.prizeWheel) setPrizeWheel(data.prizeWheel);
+      if (Array.isArray(data.signInLog)) { setSignInLog(data.signInLog); if (data.signInLog.some(function(e) { return e.userId === userId; })) setSignedIn(true); }
+      if (data.outroCountdown && data.outroCountdown.endsAt > Date.now()) setOutroCountdown(data.outroCountdown);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -1746,6 +1763,38 @@ export default function LiveRoomPage({
       setTimeout(function() { setCheckinFlash(null); }, 3000);
     });
 
+    // Batch 43 listeners
+    socket.on('prize-wheel-update', function(data) {
+      setPrizeWheel(data || null);
+      if (!data) { setWheelSpinning(false); setWheelWinner(null); }
+    });
+
+    socket.on('prize-wheel-spin', function(data) {
+      if (!data) return;
+      setWheelSpinning(true);
+      setTimeout(function() {
+        setWheelSpinning(false);
+        setWheelWinner({ label: data.winner, idx: data.winIdx });
+      }, 3000);
+    });
+
+    socket.on('stream-sign-in', function(data) {
+      if (!data) return;
+      setSignInLog(function(l) { return l.concat([data]).slice(-50); });
+      setSignInFlash({ username: data.username, count: data.count });
+      setTimeout(function() { setSignInFlash(null); }, 3000);
+    });
+
+    socket.on('outro-countdown-update', function(data) {
+      setOutroCountdown(data || null);
+    });
+
+    socket.on('gift-combo', function(data) {
+      if (!data) return;
+      setGiftComboFlash(data);
+      setTimeout(function() { setGiftComboFlash(null); }, 3500);
+    });
+
     // Batch 42 listeners
     socket.on('word-cloud-update', function(data) {
       if (!data || !Array.isArray(data.words)) return;
@@ -2012,6 +2061,11 @@ export default function LiveRoomPage({
       socket.off('moment-flash');
       socket.off('moment-log-update');
       socket.off('room-capacity-update');
+      socket.off('prize-wheel-update');
+      socket.off('prize-wheel-spin');
+      socket.off('stream-sign-in');
+      socket.off('outro-countdown-update');
+      socket.off('gift-combo');
       socket.off('scoreboard-update');
       socket.off('auction-update');
       socket.off('auction-ended');
@@ -2340,6 +2394,15 @@ export default function LiveRoomPage({
     var tid = setInterval(tickTimer, 1000);
     return function() { clearInterval(tid); };
   }, [timerWidget]);
+
+  // Batch 43: outro countdown tick
+  useEffect(function() {
+    if (!outroCountdown) { setOutroSecs(0); return; }
+    function tickOutro() { setOutroSecs(Math.max(0, Math.floor((outroCountdown.endsAt - Date.now()) / 1000))); }
+    tickOutro();
+    var oid = setInterval(tickOutro, 1000);
+    return function() { clearInterval(oid); };
+  }, [outroCountdown]);
 
   // Track peak viewer count
   useEffect(function() {
@@ -2855,6 +2918,23 @@ export default function LiveRoomPage({
           </div>
         </div>
 
+        {/* Batch 43: Outro countdown bar */}
+        {outroCountdown && outroSecs > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, paddingTop: 7, borderTop: '1px solid ' + BORDER }}>
+            <span style={{ fontSize: 14 }}>⏳</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: outroSecs < 60 ? RED : GOLD, letterSpacing: .5 }}>{outroCountdown.label || 'GOING OFFLINE IN'}</span>
+                <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: outroSecs < 60 ? RED : TEXT, letterSpacing: 1 }}>
+                  {Math.floor(outroSecs / 60)}:{String(outroSecs % 60).padStart(2,'0')}
+                </span>
+              </div>
+              <div style={{ height: 3, background: 'rgba(255,255,255,.08)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: ((outroSecs / ((outroCountdown.endsAt - Date.now()) / 1000 + outroSecs)) * 100).toFixed(1) + '%', background: outroSecs < 60 ? RED : GOLD, borderRadius: 3, transition: 'width 1s linear' }} />
+              </div>
+            </div>
+          </div>
+        )}
         {/* Speaking indicator */}
         {speakerName && !isScreenSharing && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 7, paddingTop: 7, borderTop: '1px solid ' + BORDER }}>
@@ -3729,6 +3809,14 @@ export default function LiveRoomPage({
               { emoji: '🎬', label: 'Moment', active: showMomentLog, onTap: function() { setShowMomentLog(function(s) { return !s; }); } },
               { emoji: '☁️', label: 'Word Cloud', active: showWordCloud, onTap: function() { setShowWordCloud(function(s) { return !s; }); } },
               { emoji: '📊', label: 'Capacity', active: !!roomCapacity || showCapacitySet, onTap: function() { setShowCapacitySet(function(s) { return !s; }); } },
+              { emoji: '🎡', label: 'Prize Wheel', active: !!prizeWheel || showWheelSet, onTap: function() {
+                if (prizeWheel) { setShowWheelSet(false); }
+                else { setWheelDraft('Grand Prize\nRunner Up\nConsolation\nTry Again'); setShowWheelSet(function(s) { return !s; }); }
+              }},
+              { emoji: '⏳', label: 'Outro', active: !!outroCountdown || showOutroSet, onTap: function() {
+                if (outroCountdown) { if (socket) socket.emit('outro-countdown-cancel', { roomId: roomId }); }
+                else { setShowOutroSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Check In', active: false, onTap: function() {
@@ -3752,6 +3840,14 @@ export default function LiveRoomPage({
               { emoji: myStatus ? myStatus.emoji : '😊', label: myStatus ? 'Status ✓' : 'My Status', active: !!myStatus, onTap: function() { setShowStatusPicker(function(s) { return !s; }); } },
               { emoji: '☁️', label: 'Word Cloud', active: showWordCloud, onTap: function() { setShowWordCloud(function(s) { return !s; }); } },
               { emoji: '🎬', label: 'Moments', active: showMomentLog, onTap: function() { setShowMomentLog(function(s) { return !s; }); } },
+              { emoji: signedIn ? '✅' : '✍️', label: signedIn ? 'Signed In' : 'Sign In', active: signedIn, onTap: function() {
+                if (!signedIn) {
+                  if (socket) socket.emit('stream-sign-in', { roomId: roomId, username: username }, function(res) {
+                    if (res && res.ok) { setSignedIn(true); if (addToast) addToast('✍️ Signed in! ' + res.count + ' here', 'success'); }
+                    else if (res && res.already) { setSignedIn(true); if (addToast) addToast('Already signed in!', 'info'); }
+                  });
+                }
+              }},
             ] : [])),
           ].map(function(tool) {
             return (
@@ -9395,6 +9491,135 @@ export default function LiveRoomPage({
           </div>
           {roomCapacity && (
             <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEAL, marginTop: 8 }}>Current max: {roomCapacity.max.toLocaleString()} · {viewerCount || 0} watching</div>
+          )}
+        </div>
+      )}
+
+      {/* ── Batch 43: Gift combo flash ────────────────────────────────────── */}
+      {giftComboFlash && (
+        <div style={{ position: 'absolute', top: '35%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 320, textAlign: 'center', animation: 'comboFlash .4s ease', pointerEvents: 'none' }}>
+          <div style={{ fontSize: 36 }}>{giftComboFlash.emoji || '🎁'}</div>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 32, color: GOLD, letterSpacing: 3, textShadow: '0 0 20px rgba(201,168,76,.8)' }}>COMBO x{giftComboFlash.count}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: TEXT }}>{giftComboFlash.username}</div>
+        </div>
+      )}
+
+      {/* ── Batch 43: Sign-in flash ───────────────────────────────────────── */}
+      {signInFlash && (
+        <div style={{ position: 'absolute', bottom: 80, left: 16, right: 16, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(14,12,9,.92)', border: '1px solid rgba(212,133,74,.3)', borderRadius: 10, padding: '7px 12px', zIndex: 100, animation: 'entranceSlide .3s ease' }}>
+          <span style={{ fontSize: 16 }}>✍️</span>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, flex: 1 }}><span style={{ color: TEAL, fontWeight: 700 }}>{signInFlash.username}</span> signed in · {signInFlash.count} here</span>
+        </div>
+      )}
+
+      {/* ── Batch 43: Outro countdown setup ──────────────────────────────── */}
+      {showOutroSet && role === 'host' && !outroCountdown && (
+        <div style={{ position: 'absolute', bottom: 90, left: 16, right: 16, background: 'rgba(14,12,9,.97)', border: '1.5px solid rgba(255,140,0,.3)', borderRadius: 14, padding: '14px 16px', zIndex: 130 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#FF8C00', letterSpacing: 1.5 }}>⏳ GOING OFFLINE IN...</span>
+            <div onClick={function() { setShowOutroSet(false); }} style={{ cursor: 'pointer', fontSize: 16, color: MUTED }}>✕</div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+            {[1,3,5,10,15,30].map(function(m) {
+              return (
+                <button
+                  key={m}
+                  onClick={function() { setOutroDraft(function(d) { return Object.assign({}, d, { minutes: String(m) }); }); }}
+                  style={{ padding: '6px 12px', background: outroDraft.minutes === String(m) ? 'rgba(255,140,0,.2)' : CARD2, border: '1px solid ' + (outroDraft.minutes === String(m) ? '#FF8C00' : BORDER), borderRadius: 8, color: outroDraft.minutes === String(m) ? '#FF8C00' : TEXT, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer' }}
+                >{m}m</button>
+              );
+            })}
+          </div>
+          <button
+            onClick={function() {
+              var mins = parseInt(outroDraft.minutes, 10);
+              if (!mins || mins < 1) return;
+              if (socket) socket.emit('outro-countdown-set', { roomId: roomId, minutes: mins, label: outroDraft.label });
+              setShowOutroSet(false);
+            }}
+            style={{ width: '100%', background: '#FF8C00', border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1.5 }}
+          >START COUNTDOWN</button>
+        </div>
+      )}
+
+      {/* ── Batch 43: Prize wheel setup ───────────────────────────────────── */}
+      {showWheelSet && role === 'host' && !prizeWheel && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '20px 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: GOLD, letterSpacing: 2 }}>🎡 PRIZE WHEEL SETUP</span>
+            <div onClick={function() { setShowWheelSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 6, letterSpacing: .8 }}>SEGMENT LABELS (one per line, 2–8 segments)</div>
+          <textarea
+            value={wheelDraft}
+            onChange={function(e) { setWheelDraft(e.target.value); }}
+            rows={8}
+            style={{ flex: 1, background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '10px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', outline: 'none', marginBottom: 14 }}
+          />
+          <button
+            onClick={function() {
+              var segs = wheelDraft.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l.length > 0; }).slice(0, 8);
+              if (segs.length < 2) { if (addToast) addToast('Add at least 2 segments', 'error'); return; }
+              if (socket) socket.emit('prize-wheel-set', { roomId: roomId, segments: segs.map(function(l) { return { label: l }; }) });
+              setShowWheelSet(false);
+            }}
+            style={{ background: GOLD, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1.5 }}
+          >SAVE WHEEL</button>
+        </div>
+      )}
+
+      {/* ── Batch 43: Prize wheel display ─────────────────────────────────── */}
+      {prizeWheel && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.97)', zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 16 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: GOLD, letterSpacing: 2 }}>🎡 PRIZE WHEEL</span>
+            <div onClick={function() { if (socket) socket.emit('prize-wheel-clear', { roomId: roomId }); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <div style={{ width: '100%', maxWidth: 300, position: 'relative', margin: '0 auto 20px' }}>
+            <svg viewBox="0 0 200 200" style={{ width: '100%', animation: wheelSpinning ? 'goalFill 3s cubic-bezier(.15,.5,.3,1) forwards' : 'none', transformOrigin: '100px 100px' }}>
+              {(function() {
+                var segs = prizeWheel.segments;
+                var n = segs.length;
+                var arc = (2 * Math.PI) / n;
+                return segs.map(function(seg, i) {
+                  var startAngle = i * arc - Math.PI / 2;
+                  var endAngle   = startAngle + arc;
+                  var x1 = 100 + 90 * Math.cos(startAngle);
+                  var y1 = 100 + 90 * Math.sin(startAngle);
+                  var x2 = 100 + 90 * Math.cos(endAngle);
+                  var y2 = 100 + 90 * Math.sin(endAngle);
+                  var la = arc > Math.PI ? 1 : 0;
+                  var d = 'M100,100 L' + x1 + ',' + y1 + ' A90,90,0,' + la + ',1,' + x2 + ',' + y2 + ' Z';
+                  var midAngle = startAngle + arc / 2;
+                  var tx = 100 + 58 * Math.cos(midAngle);
+                  var ty = 100 + 58 * Math.sin(midAngle);
+                  return (
+                    <g key={i}>
+                      <path d={d} fill={seg.color} stroke="rgba(0,0,0,.3)" strokeWidth="1" />
+                      <text x={tx} y={ty} textAnchor="middle" dominantBaseline="middle" fontSize={Math.max(7, 14 - segs.length)} fill="#fff" fontFamily="'DM Mono',monospace" transform={'rotate(' + (((startAngle + arc/2) * 180 / Math.PI) + 90) + ',' + tx + ',' + ty + ')'} style={{ pointerEvents: 'none' }}>{seg.label.slice(0,12)}</text>
+                    </g>
+                  );
+                });
+              })()}
+              <circle cx="100" cy="100" r="10" fill="#0E0C09" stroke={GOLD} strokeWidth="2" />
+              <polygon points="100,2 96,18 104,18" fill={GOLD} />
+            </svg>
+          </div>
+          {wheelWinner && !wheelSpinning && (
+            <div style={{ background: 'rgba(201,168,76,.18)', border: '2px solid rgba(201,168,76,.5)', borderRadius: 12, padding: '10px 20px', textAlign: 'center', marginBottom: 16 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 4 }}>WINNER</div>
+              <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 22, color: GOLD, letterSpacing: 2 }}>{wheelWinner.label}</div>
+            </div>
+          )}
+          {role === 'host' && (
+            <button
+              onClick={function() {
+                if (wheelSpinning) return;
+                if (socket) socket.emit('prize-wheel-spin', { roomId: roomId });
+              }}
+              disabled={wheelSpinning}
+              style={{ background: wheelSpinning ? CARD2 : GOLD, border: 'none', borderRadius: 12, padding: '14px 40px', fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: '#0E0C09', cursor: wheelSpinning ? 'default' : 'pointer', letterSpacing: 2, opacity: wheelSpinning ? .6 : 1 }}
+            >{wheelSpinning ? 'SPINNING...' : '🎡 SPIN!'}</button>
           )}
         </div>
       )}

@@ -497,6 +497,11 @@ var fanClubMap          = new Map();  // roomId → Set<userId>
 var watchStreakMap       = new Map();  // userId → { days, lastDate } (date string YYYY-MM-DD)
 var hostNoteMap         = new Map();  // roomId → { text, ts } | null
 var collabBannerMap     = new Map();  // roomId → { name, platform, ts } | null
+// Batch 43
+var prizeWheelMap      = new Map();  // roomId → { segments:[{label,color}], active, lastWinner }
+var giftComboMap       = new Map();  // userId → { roomId, count, lastTs, timerId }
+var signInLogMap       = new Map();  // roomId → [{ userId, username, ts }]
+var outroCountdownMap  = new Map();  // roomId → { endsAt, label, timerId }
 // Batch 42
 var chatWordMap         = new Map();  // roomId → Map<word, count>  (word frequency for cloud)
 var chatWordMsgCount   = new Map();  // roomId → int (messages since last broadcast)
@@ -685,6 +690,13 @@ function getJoinStateForRoom(roomId) {
   state.fanClub = fc ? Array.from(fc) : [];
   state.hostNote = hostNoteMap.get(roomId) || null;
   state.collabBanner = collabBannerMap.get(roomId) || null;
+  // Batch 43
+  var pw = prizeWheelMap.get(roomId);
+  state.prizeWheel = pw ? { segments: pw.segments, active: pw.active, lastWinner: pw.lastWinner || null } : null;
+  var sl = signInLogMap.get(roomId);
+  state.signInLog = sl ? sl.slice(-30) : [];
+  var oc = outroCountdownMap.get(roomId);
+  state.outroCountdown = (oc && oc.endsAt > Date.now()) ? { endsAt: oc.endsAt, label: oc.label } : null;
   // Batch 42
   var wcMap = chatWordMap.get(roomId);
   state.wordCloud = wcMap ? Array.from(wcMap.entries()).sort(function(a,b){return b[1]-a[1];}).slice(0,20).map(function(e){return{word:e[0],count:e[1]};}) : [];
@@ -2489,6 +2501,21 @@ io.on('connection', function(socket) {
     // Stream energy: +50 per gift
     addEnergy(roomId, fromUserId, fromUser, 50);
     addHype(roomId, 20);
+    // Batch 43: gift combo burst
+    var _gcKey = fromUserId + ':' + roomId;
+    var _gcNow = Date.now();
+    var _gcEntry = giftComboMap.get(_gcKey);
+    if (_gcEntry && _gcNow - _gcEntry.lastTs < 8000) {
+      clearTimeout(_gcEntry.timerId);
+      _gcEntry.count += 1; _gcEntry.lastTs = _gcNow;
+      if (_gcEntry.count >= 2) io.to(roomId).emit('gift-combo', { username: fromUser, count: _gcEntry.count, emoji: emoji, ts: _gcNow });
+      _gcEntry.timerId = setTimeout(function() { giftComboMap.delete(_gcKey); }, 8000);
+      giftComboMap.set(_gcKey, _gcEntry);
+    } else {
+      if (_gcEntry && _gcEntry.timerId) clearTimeout(_gcEntry.timerId);
+      var _gcTimer = setTimeout(function() { giftComboMap.delete(_gcKey); }, 8000);
+      giftComboMap.set(_gcKey, { roomId: roomId, count: 1, lastTs: _gcNow, timerId: _gcTimer });
+    }
 
     // Award points to gift sender
     var giftPoints = Math.max(10, Math.floor(valueCents / 10));
@@ -5261,6 +5288,82 @@ io.on('connection', function(socket) {
     else io.to(socket.id).emit('word-cloud-update', { words: words });
   });
 
+  // ── prize-wheel-set / prize-wheel-spin ─────────────────────────────────
+  var DEFAULT_WHEEL_COLORS = ['#FF4444','#FF8C00','#FFD700','#00CC66','#00BFFF','#A855F7','#FF69B4','#F472B6'];
+  socket.on('prize-wheel-set', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var rawSegs = Array.isArray(data && data.segments) ? data.segments.slice(0, 8) : [];
+    if (rawSegs.length < 2) return;
+    var segments = rawSegs.map(function(s, i) { return { label: String(s.label || ('Prize ' + (i+1))).slice(0, 40), color: DEFAULT_WHEEL_COLORS[i % DEFAULT_WHEEL_COLORS.length] }; });
+    prizeWheelMap.set(roomId, { segments: segments, active: true, lastWinner: null });
+    io.to(roomId).emit('prize-wheel-update', { segments: segments, active: true, lastWinner: null });
+  });
+
+  socket.on('prize-wheel-spin', function(data, ack) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var wheel = prizeWheelMap.get(roomId);
+    if (!wheel || !wheel.active || !wheel.segments.length) { if (ack) ack({ error: 'No wheel set' }); return; }
+    var winIdx = Math.floor(Math.random() * wheel.segments.length);
+    var winner = wheel.segments[winIdx];
+    wheel.lastWinner = { label: winner.label, color: winner.color, idx: winIdx, ts: Date.now() };
+    io.to(roomId).emit('prize-wheel-spin', { winIdx: winIdx, winner: winner.label, segments: wheel.segments });
+    if (ack) ack({ winIdx: winIdx, winner: winner.label });
+  });
+
+  socket.on('prize-wheel-clear', function() {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    prizeWheelMap.delete(roomId);
+    io.to(roomId).emit('prize-wheel-update', null);
+  });
+
+  // ── stream-sign-in ─────────────────────────────────────────────────────
+  socket.on('stream-sign-in', function(data, ack) {
+    var userId   = socket.data.userId;
+    var roomId   = socket.data.roomId;
+    var username = (data && data.username) ? String(data.username).slice(0, 40) : ('guest-' + String(userId || '').slice(0, 6));
+    if (!userId || !roomId) { if (ack) ack({ error: 'not in room' }); return; }
+    if (!signInLogMap.has(roomId)) signInLogMap.set(roomId, []);
+    var log = signInLogMap.get(roomId);
+    if (log.some(function(e) { return e.userId === userId; })) { if (ack) ack({ already: true }); return; }
+    var entry = { userId: userId, username: username, ts: Date.now() };
+    log.push(entry);
+    if (log.length > 200) signInLogMap.set(roomId, log.slice(-200));
+    io.to(roomId).emit('stream-sign-in', { username: username, count: log.length, ts: entry.ts });
+    addEnergy(roomId, userId, username, 3);
+    if (ack) ack({ ok: true, count: log.length });
+  });
+
+  // ── outro-countdown-set / outro-countdown-cancel ────────────────────────
+  socket.on('outro-countdown-set', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var mins = Math.max(1, Math.min(60, Math.floor(Number(data && data.minutes) || 5)));
+    var label = data && typeof data.label === 'string' ? data.label.trim().slice(0, 60) : 'GOING OFFLINE IN';
+    var endsAt = Date.now() + mins * 60000;
+    var old = outroCountdownMap.get(roomId);
+    if (old && old.timerId) clearTimeout(old.timerId);
+    var timerId = setTimeout(function() { outroCountdownMap.delete(roomId); io.to(roomId).emit('outro-countdown-update', null); }, mins * 60000 + 5000);
+    outroCountdownMap.set(roomId, { endsAt: endsAt, label: label, timerId: timerId });
+    io.to(roomId).emit('outro-countdown-update', { endsAt: endsAt, label: label });
+  });
+
+  socket.on('outro-countdown-cancel', function() {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var oc = outroCountdownMap.get(roomId);
+    if (oc && oc.timerId) clearTimeout(oc.timerId);
+    outroCountdownMap.delete(roomId);
+    io.to(roomId).emit('outro-countdown-update', null);
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -5771,6 +5874,11 @@ io.on('connection', function(socket) {
     chatWordMsgCount.delete(roomId);
     momentLogMap.delete(roomId);
     roomCapacityMap.delete(roomId);
+    prizeWheelMap.delete(roomId);
+    signInLogMap.delete(roomId);
+    var ocEnd = outroCountdownMap.get(roomId);
+    if (ocEnd && ocEnd.timerId) clearTimeout(ocEnd.timerId);
+    outroCountdownMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
