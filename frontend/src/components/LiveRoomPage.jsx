@@ -596,6 +596,16 @@ export default function LiveRoomPage({
   var [wbSize,             setWbSize]             = useState(3);
   var [showHealthBar,      setShowHealthBar]      = useState(false);   // stream health compact HUD
   var [showRevSplit,       setShowRevSplit]       = useState(false);   // revenue split breakdown
+  // ── Batch 26: Karaoke, Lucky Draw, Stream Chapters ───────────────────────
+  var [karaokeText,        setKaraokeText]        = useState('');      // live lyrics text
+  var [karaokeActive,      setKaraokeActive]      = useState(false);
+  var [showKaraokeEdit,    setShowKaraokeEdit]    = useState(false);   // host edit modal
+  var [karaokeInput,       setKaraokeInput]       = useState('');
+  var [luckyWinner,        setLuckyWinner]        = useState(null);    // { winner, prize, ts }
+  var [showLuckyDraw,      setShowLuckyDraw]      = useState(false);   // lucky draw panel
+  var [luckyPrize,         setLuckyPrize]         = useState('');
+  var [streamChapters,     setStreamChapters]     = useState([]);      // [{ label, ts, elapsed }]
+  var [showChapters,       setShowChapters]       = useState(false);   // chapters panel
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -655,6 +665,8 @@ export default function LiveRoomPage({
       if (data.slowMode) setSlowMode(data.slowMode);
       if (data.watchTogether) setWatchTogether(data.watchTogether);
       if (data.teamBattle && data.teamBattle.active) setTeamBattle(data.teamBattle);
+      if (data.karaoke && data.karaoke.active) { setKaraokeText(data.karaoke.text || ''); setKaraokeActive(true); }
+      if (Array.isArray(data.chapters) && data.chapters.length > 0) setStreamChapters(data.chapters);
       if (Array.isArray(data.whiteboardStrokes) && data.whiteboardStrokes.length > 0) {
         setTimeout(function() {
           var canvas = wbCanvasRef.current;
@@ -1122,6 +1134,25 @@ export default function LiveRoomPage({
       if (!wbCanvasRef.current) return;
       var canvas = wbCanvasRef.current;
       canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    // ── Batch 26: Karaoke, Lucky Draw, Chapters ────────────────────────────
+    socket.on('karaoke-update', function(data) {
+      if (!data) return;
+      setKaraokeText(data.text || '');
+      setKaraokeActive(!!data.active && !!data.text);
+    });
+
+    socket.on('lucky-draw-result', function(data) {
+      if (!data) return;
+      setLuckyWinner(data);
+      setTimeout(function() { setLuckyWinner(null); }, 8000);
+    });
+
+    socket.on('chapter-mark', function(data) {
+      if (!data) return;
+      setStreamChapters(function(prev) { return prev.concat([data]).slice(-50); });
+      if (addToast) addToast('📍 Chapter: ' + (data.label || 'Moment marked'), 'info');
     });
 
     socket.on('sound-alert', function(data) {
@@ -2754,6 +2785,9 @@ export default function LiveRoomPage({
               { emoji: '🖊️', label: 'Board', active: showWhiteboard, onTap: function() { setShowWhiteboard(function(s) { return !s; }); } },
               { emoji: '📡', label: 'Health', active: showHealthBar, onTap: function() { setShowHealthBar(function(s) { return !s; }); } },
               { emoji: '💰', label: 'Rev Split', active: showRevSplit, onTap: function() { setShowRevSplit(function(s) { return !s; }); } },
+              { emoji: '🎤', label: 'Karaoke', active: karaokeActive, onTap: function() { setKaraokeInput(karaokeText); setShowKaraokeEdit(function(s) { return !s; }); } },
+              { emoji: '🎰', label: 'Lucky Draw', active: showLuckyDraw, onTap: function() { setShowLuckyDraw(function(s) { return !s; }); } },
+              { emoji: '📍', label: 'Chapters', active: streamChapters.length > 0, onTap: function() { setShowChapters(function(s) { return !s; }); } },
             ].concat(multiCamDevices.length > 1 ? [
               { emoji: '📷', label: 'Camera', active: showCamPicker, onTap: function() { setShowCamPicker(function(s) { return !s; }); } },
             ] : [])
@@ -6301,6 +6335,134 @@ export default function LiveRoomPage({
               </div>
             );
           })()}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 26: KARAOKE LYRICS OVERLAY ════════════════ */}
+      {karaokeActive && karaokeText && (
+        <div style={{
+          position: 'absolute', bottom: 130, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 86, maxWidth: '88%', textAlign: 'center', pointerEvents: 'none',
+          animation: 'fadeSlideIn .3s ease',
+        }}>
+          <div style={{
+            background: 'rgba(0,0,0,.78)', borderRadius: 14,
+            padding: '12px 24px',
+            fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, letterSpacing: 3,
+            color: GOLD, textShadow: '0 2px 12px rgba(0,0,0,.8)',
+            lineHeight: 1.3, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+          }}>
+            {karaokeText}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 26: KARAOKE EDIT MODAL (host) ════════════════ */}
+      {showKaraokeEdit && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.7)', zIndex: 215, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 18, padding: '24px 28px', width: 380, animation: 'fadeSlideIn .2s ease' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, letterSpacing: 2, marginBottom: 14 }}>🎤 LIVE LYRICS</div>
+            <textarea value={karaokeInput} onChange={function(e) { setKaraokeInput(e.target.value); }}
+              rows={4} maxLength={300}
+              placeholder="Type lyrics or text to display on stream…"
+              style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, textAlign: 'right', marginTop: 4 }}>{karaokeInput.length}/300</div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+              <button onClick={function() { if (socket) socket.emit('karaoke-clear', { roomId: roomId }); setShowKaraokeEdit(false); }}
+                style={{ flex: 1, background: 'rgba(255,26,60,.1)', border: '1px solid ' + RED + '44', borderRadius: 10, padding: '10px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: RED, cursor: 'pointer' }}>
+                CLEAR
+              </button>
+              <button onClick={function() { setShowKaraokeEdit(false); }}
+                style={{ background: 'none', border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 16px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}>
+                CANCEL
+              </button>
+              <button onClick={function() {
+                if (!karaokeInput.trim()) return;
+                if (socket) socket.emit('karaoke-set', { roomId: roomId, text: karaokeInput.trim() });
+                setShowKaraokeEdit(false);
+              }}
+                style={{ flex: 2, background: BURG, border: 'none', borderRadius: 10, padding: '10px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: TEXT, cursor: 'pointer', letterSpacing: 1.5 }}>
+                🎤 SHOW LYRICS
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 26: LUCKY DRAW PANEL ════════════════ */}
+      {showLuckyDraw && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', bottom: 90, left: 16, zIndex: 200, background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 16, padding: '16px 20px', minWidth: 260, animation: 'fadeSlideIn .2s ease', boxShadow: '0 8px 28px rgba(0,0,0,.6)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: GOLD, letterSpacing: 2 }}>🎰 LUCKY DRAW</div>
+            <button onClick={function() { setShowLuckyDraw(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 6, letterSpacing: .5 }}>PRIZE (OPTIONAL)</div>
+            <input value={luckyPrize} onChange={function(e) { setLuckyPrize(e.target.value); }}
+              placeholder="e.g. 500 coins, shoutout, gift card…"
+              style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+          </div>
+          <button onClick={function() {
+            if (socket) socket.emit('lucky-draw', { roomId: roomId, prize: luckyPrize });
+          }}
+            style={{ width: '100%', background: 'linear-gradient(135deg,' + BURG + ',' + GOLD + '66)', border: 'none', borderRadius: 10, padding: '12px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: TEXT, cursor: 'pointer', letterSpacing: 2 }}>
+            🎰 SPIN &amp; PICK WINNER
+          </button>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 26: LUCKY DRAW WINNER BANNER ════════════════ */}
+      {luckyWinner && (
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+          zIndex: 230, textAlign: 'center', animation: 'milestoneIn .4s ease',
+          pointerEvents: 'none',
+        }}>
+          <div style={{ background: 'linear-gradient(135deg,' + BURG + '88,' + CARD + 'EE)', border: '2px solid ' + GOLD, borderRadius: 20, padding: '28px 40px', backdropFilter: 'blur(12px)', boxShadow: '0 0 40px ' + GOLD + '44, 0 8px 40px rgba(0,0,0,.8)' }}>
+            <div style={{ fontSize: 48, marginBottom: 8 }}>🎰</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: MUTED, letterSpacing: 3, marginBottom: 6 }}>LUCKY WINNER</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: GOLD, letterSpacing: 4, lineHeight: 1 }}>{luckyWinner.winner}</div>
+            {luckyWinner.prize && (
+              <div style={{ marginTop: 10, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 16, color: TEXT }}>🎁 {luckyWinner.prize}</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 26: STREAM CHAPTERS PANEL ════════════════ */}
+      {showChapters && (
+        <div style={{ position: 'absolute', top: 56, left: 16, zIndex: 200, background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 14, padding: '14px 16px', minWidth: 260, maxHeight: 360, overflowY: 'auto', animation: 'fadeSlideIn .2s ease', boxShadow: '0 8px 28px rgba(0,0,0,.6)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 2 }}>📍 CHAPTERS</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() {
+                  var label = window.prompt('Chapter name:');
+                  if (!label || !label.trim()) return;
+                  if (socket) socket.emit('chapter-mark', { roomId: roomId, label: label.trim() });
+                }}
+                  style={{ background: GOLD + '22', border: '1px solid ' + GOLD + '44', borderRadius: 6, padding: '4px 10px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, cursor: 'pointer' }}>
+                  + MARK
+                </button>
+              )}
+              <button onClick={function() { setShowChapters(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+          </div>
+          {streamChapters.length === 0 ? (
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center', padding: '16px 0' }}>No chapters marked yet</div>
+          ) : (
+            streamChapters.map(function(ch, i) {
+              var mins  = Math.floor((ch.elapsed || 0) / 60);
+              var secs  = (ch.elapsed || 0) % 60;
+              var stamp = mins + ':' + (secs < 10 ? '0' : '') + secs;
+              return (
+                <div key={ch.ts || i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '7px 0', borderBottom: i < streamChapters.length - 1 ? '1px solid ' + BORDER : 'none' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: TEAL, flexShrink: 0, minWidth: 36 }}>{stamp}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT }}>{ch.label}</div>
+                </div>
+              );
+            })
+          )}
         </div>
       )}
     </div>

@@ -424,6 +424,8 @@ var giftChainMap        = new Map();  // roomId → { count, lastTs }
 var watchTogetherMap    = new Map();  // roomId → { url, currentTime, playing, ts } | null
 var teamBattleMap       = new Map();  // roomId → { redLabel, blueLabel, redScore, blueScore, active, endsAt, timerId }
 var whiteboardMap       = new Map();  // roomId → [{ x1, y1, x2, y2, color, size }] last 800 segments
+var karaokeMap          = new Map();  // roomId → { text, active } | null
+var chaptersMap         = new Map();  // roomId → [{ ts, label, elapsed }]
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -533,6 +535,8 @@ function getJoinStateForRoom(roomId) {
   var tb = teamBattleMap.get(roomId);
   state.teamBattle = tb ? { redLabel: tb.redLabel, blueLabel: tb.blueLabel, redScore: tb.redScore, blueScore: tb.blueScore, active: tb.active, endsAt: tb.endsAt } : null;
   state.whiteboardStrokes = (whiteboardMap.get(roomId) || []).slice(-200);
+  state.karaoke  = karaokeMap.get(roomId)  || null;
+  state.chapters = chaptersMap.get(roomId) || [];
   return state;
 }
 
@@ -3510,6 +3514,60 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('canvas-clear', {});
   });
 
+  // ── Batch 26: Karaoke/Lyrics, Lucky Draw, Stream Chapters ────────────────
+
+  // karaoke-set — host sets/updates live lyrics text
+  socket.on('karaoke-set', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var text = String(data.text || '').slice(0, 300);
+    var k = { text: text, active: !!text, ts: Math.floor(Date.now() / 1000) };
+    karaokeMap.set(roomId, k);
+    io.to(roomId).emit('karaoke-update', k);
+  });
+
+  // karaoke-clear — host clears lyrics
+  socket.on('karaoke-clear', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    karaokeMap.delete(roomId);
+    io.to(roomId).emit('karaoke-update', { text: '', active: false });
+  });
+
+  // lucky-draw — host spins a lucky draw; server picks random viewer from active sockets
+  socket.on('lucky-draw', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var room = rooms.get(roomId);
+    if (!room || !room.guests) return;
+    var viewers = room.guests.filter(function(g) { return g.role === 'viewer' || g.role === 'guest'; });
+    if (viewers.length === 0) {
+      io.to(socket.id).emit('lucky-draw-result', { winner: null, error: 'No viewers to pick from' });
+      return;
+    }
+    var winner = viewers[Math.floor(Math.random() * viewers.length)];
+    var prize = String(data.prize || '').slice(0, 80);
+    io.to(roomId).emit('lucky-draw-result', { winner: winner.username || winner.guestId, prize: prize, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // chapter-mark — host marks a named chapter/timestamp during live
+  socket.on('chapter-mark', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var label = String(data.label || 'Chapter').slice(0, 60);
+    var room  = rooms.get(roomId);
+    var elapsed = room && room.liveStartedAt ? Math.floor(Date.now() / 1000) - room.liveStartedAt : 0;
+    var chapter = { label: label, ts: Math.floor(Date.now() / 1000), elapsed: Math.max(0, elapsed) };
+    var chapters = chaptersMap.get(roomId) || [];
+    chapters.push(chapter);
+    chaptersMap.set(roomId, chapters.slice(-50));
+    io.to(roomId).emit('chapter-mark', chapter);
+  });
+
   // sound-alert — host triggers a named alert sound for the room
   socket.on('sound-alert', function(data) {
     var roomId = data.roomId || socket.data.roomId;
@@ -3987,6 +4045,8 @@ io.on('connection', function(socket) {
     if (endedBattle && endedBattle.timerId) clearTimeout(endedBattle.timerId);
     teamBattleMap.delete(roomId);
     whiteboardMap.delete(roomId);
+    karaokeMap.delete(roomId);
+    chaptersMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
