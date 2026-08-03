@@ -668,6 +668,20 @@ export default function LiveRoomPage({
   var [fanWall,            setFanWall]            = useState([]);      // [{userId, username, points}]
   var [showFanWall,        setShowFanWall]        = useState(false);
   var [pipActive,          setPipActive]          = useState(false);
+  // Batch 37 — Chat Colors, Lower Third, Emoji Shower, Shoutout Card, Chat Theme
+  var [chatColors,         setChatColors]         = useState({});      // { [userId]: hexColor }
+  var [myChatColor,        setMyChatColor]        = useState(null);
+  var [showColorPicker,    setShowColorPicker]    = useState(false);
+  var [lowerThird,         setLowerThird]         = useState(null);    // { title, subtitle, endsAt } | null
+  var [showLowerThirdSet,  setShowLowerThirdSet]  = useState(false);
+  var [lowerThirdDraft,    setLowerThirdDraft]    = useState({ title: '', subtitle: '', durationSecs: 10 });
+  var [emojiShower,        setEmojiShower]        = useState(null);    // { emoji, ts } → clears after 3s
+  var [showEmojiPicker37,  setShowEmojiPicker37]  = useState(false);
+  var [shoutoutCard,       setShoutoutCard]       = useState(null);    // { username, message }
+  var [showShoutoutSet,    setShowShoutoutSet]    = useState(false);
+  var [shoutoutDraft,      setShoutoutDraft]      = useState({ username: '', message: '' });
+  var [chatTheme,          setChatTheme]          = useState(null);    // 'party'|'chill'|'sports'|'gaming'|'news'|null
+  var [showThemePicker,    setShowThemePicker]    = useState(false);
   // Batch 36 — Audience Challenge, BRB, Flash Drop, Applause, VIP
   var [audienceChallenge,  setAudienceChallenge]  = useState(null);    // { text, durationSecs, startTs, responseCount }
   var [showChallengeSet,   setShowChallengeSet]   = useState(false);
@@ -785,6 +799,8 @@ export default function LiveRoomPage({
       if (data.intermission && data.intermission.active) setBrbMode(data.intermission);
       if (data.flashDrop && data.flashDrop.endsAt > Date.now()) setFlashDrop(data.flashDrop);
       if (Array.isArray(data.vips) && data.vips.length > 0) setVips(data.vips);
+      if (data.lowerThird) setLowerThird(data.lowerThird);
+      if (data.chatTheme) setChatTheme(data.chatTheme);
       if (Array.isArray(data.whiteboardStrokes) && data.whiteboardStrokes.length > 0) {
         setTimeout(function() {
           var canvas = wbCanvasRef.current;
@@ -1520,6 +1536,37 @@ export default function LiveRoomPage({
       setVips(data.vips);
     });
 
+    socket.on('chat-color-set', function(data) {
+      if (!data || !data.userId) return;
+      setChatColors(function(c) { var n = Object.assign({}, c); n[data.userId] = data.color; return n; });
+    });
+
+    socket.on('chat-color-ack', function(data) {
+      if (!data) return;
+      setMyChatColor(data.color);
+    });
+
+    socket.on('lower-third', function(data) {
+      setLowerThird(data || null);
+    });
+
+    socket.on('emoji-shower', function(data) {
+      if (!data) return;
+      setEmojiShower(data);
+      setTimeout(function() { setEmojiShower(null); }, 3200);
+    });
+
+    socket.on('shoutout-card', function(data) {
+      if (!data) return;
+      setShoutoutCard(data);
+      setTimeout(function() { setShoutoutCard(null); }, 5000);
+    });
+
+    socket.on('chat-theme-update', function(data) {
+      if (!data) return;
+      setChatTheme(data.theme || null);
+    });
+
     socket.on('mood-update', function(data) {
       if (!data) return;
       setStreamMood(data);
@@ -1714,6 +1761,12 @@ export default function LiveRoomPage({
       socket.off('applause-update');
       socket.off('applause-burst');
       socket.off('vip-update');
+      socket.off('chat-color-set');
+      socket.off('chat-color-ack');
+      socket.off('lower-third');
+      socket.off('emoji-shower');
+      socket.off('shoutout-card');
+      socket.off('chat-theme-update');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
@@ -3328,6 +3381,16 @@ export default function LiveRoomPage({
                   setShowFlashDropSet(function(s) { return !s; });
                 }
               }},
+            ] : []).concat([
+              { emoji: '🎨', label: 'My Color', active: !!myChatColor, onTap: function() { setShowColorPicker(function(s) { return !s; }); } },
+            ]).concat(role === 'host' ? [
+              { emoji: '📺', label: 'Lower 3rd', active: !!lowerThird, onTap: function() {
+                if (lowerThird) { if (socket) socket.emit('lower-third-clear', { roomId: roomId }); }
+                else { setShowLowerThirdSet(function(s) { return !s; }); }
+              }},
+              { emoji: '🌊', label: 'Emoji Rain', active: false, onTap: function() { setShowEmojiPicker37(function(s) { return !s; }); } },
+              { emoji: '📣', label: 'Shoutout', active: false, onTap: function() { setShowShoutoutSet(function(s) { return !s; }); } },
+              { emoji: '🎨', label: 'Chat Vibe', active: !!chatTheme, onTap: function() { setShowThemePicker(function(s) { return !s; }); } },
             ] : [])),
           ].map(function(tool) {
             return (
@@ -3497,9 +3560,15 @@ export default function LiveRoomPage({
           borderTop: '1px solid ' + BORDER, display: 'flex', flexDirection: 'column',
           animation: 'slideUp .2s ease', zIndex: 48,
         }}>
+          {/* Chat theme accent */}
+          {chatTheme && (
+            <div style={{ height: 3, background: chatTheme === 'party' ? 'linear-gradient(90deg,#FF1A3C,#FF8C00,#FFD700,#00CC66,#00BFFF,#A855F7)' : chatTheme === 'chill' ? '#00BFFF' : chatTheme === 'sports' ? '#22C55E' : chatTheme === 'gaming' ? '#A855F7' : '#C9A84C', flexShrink: 0 }} />
+          )}
           {/* Chat header */}
           <div style={{ padding: '10px 14px', borderBottom: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-            <span style={{ fontWeight: 700, fontSize: 18, color: TEXT, letterSpacing: .3 }}>Chat</span>
+            <span style={{ fontWeight: 700, fontSize: 18, color: TEXT, letterSpacing: .3 }}>
+              Chat{chatTheme && <span style={{ marginLeft: 6, fontSize: 12 }}>{chatTheme === 'party' ? '🎉' : chatTheme === 'chill' ? '☁️' : chatTheme === 'sports' ? '🏆' : chatTheme === 'gaming' ? '🎮' : '📰'}</span>}
+            </span>
             <button onClick={function() { setChatOpen(false); }}
               style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
           </div>
@@ -3562,7 +3631,7 @@ export default function LiveRoomPage({
                               m.role === 'sub'    ? { label: '⭐ SUB',     color: '#22C55E' } :
                               m.role === 'guest'  ? { label: '🎤 GUEST',   color: TEAL } :
                               m.role === 'system' ? { label: '📢',         color: GOLD } : null;
-              var userColor = m.role === 'host' ? GOLD : m.role === 'cohost' ? TEAL : m.role === 'vip' ? '#A855F7' : m.role === 'sub' ? '#22C55E' : gold;
+              var userColor = m.role === 'host' ? GOLD : m.role === 'cohost' ? TEAL : m.role === 'vip' ? '#A855F7' : m.role === 'sub' ? '#22C55E' : (chatColors[m.userId] || m.nameColor || gold);
               return (
                 <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease', position: 'relative', paddingRight: canMod ? 38 : 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2, flexWrap: 'wrap' }}>
@@ -3942,7 +4011,7 @@ export default function LiveRoomPage({
                   var isSuper = msg.type === 'super';
                   return (
                     <div key={msg.id || i} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: isSuper ? '#C9A84C' : '#8A7A62' }}>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: isSuper ? '#C9A84C' : (chatColors[msg.userId] || msg.nameColor || '#8A7A62') }}>
                         {msg.username}
                         {isSuper && <span style={{ color: '#C9A84C', marginLeft: 4 }}>💛 ${(Math.floor(msg.amountCents || 0) / 100).toFixed(2)}</span>}
                         {vips.indexOf(msg.userId) !== -1 && <span style={{ marginLeft: 4, fontSize: 8, color: '#A855F7', fontWeight: 700 }}>💎VIP</span>}
@@ -8031,6 +8100,157 @@ export default function LiveRoomPage({
         }}>
           <div style={{ fontSize: 52 }}>👏</div>
           <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 28, color: GOLD, letterSpacing: 3 }}>{applauseBurst.count} CLAPS!</div>
+        </div>
+      )}
+
+      {/* ── Chat color picker ──────────────────────────────────────── */}
+      {showColorPicker && (
+        <div style={{ position: 'absolute', bottom: 120, right: 10, zIndex: 210, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: '12px 14px', boxShadow: '0 4px 24px rgba(0,0,0,.6)' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 10, letterSpacing: 1 }}>PICK YOUR CHAT COLOR</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, maxWidth: 160 }}>
+            {['#FF4444','#FF8C00','#FFD700','#00CC66','#00BFFF','#A855F7','#FF69B4','#FF1A3C','#C9A84C','#D4854A'].map(function(c) {
+              return (
+                <div key={c} onClick={function() {
+                  if (socket) socket.emit('set-chat-color', { roomId: roomId, color: c });
+                  setShowColorPicker(false);
+                }} style={{ width: 26, height: 26, borderRadius: '50%', background: c, cursor: 'pointer', border: myChatColor === c ? '2px solid #fff' : '2px solid transparent', boxSizing: 'border-box' }} />
+              );
+            })}
+          </div>
+          <div onClick={function() { setShowColorPicker(false); }} style={{ marginTop: 10, textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, cursor: 'pointer' }}>CLOSE</div>
+        </div>
+      )}
+
+      {/* ── Lower Third overlay ─────────────────────────────────────── */}
+      {lowerThird && (
+        <div style={{
+          position: 'absolute', bottom: 60, left: 0, right: 0, zIndex: 160,
+          background: 'linear-gradient(90deg, rgba(14,12,9,.97) 0%, rgba(26,21,16,.97) 60%, rgba(14,12,9,.0) 100%)',
+          padding: '10px 18px', borderLeft: '4px solid ' + GOLD,
+          animation: 'entranceSlide .3s ease',
+        }}>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2, lineHeight: 1 }}>{lowerThird.title}</div>
+          {lowerThird.subtitle && <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, marginTop: 2 }}>{lowerThird.subtitle}</div>}
+        </div>
+      )}
+
+      {/* ── Lower Third setup panel ─────────────────────────────────── */}
+      {showLowerThirdSet && role === 'host' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>📺 LOWER THIRD</span>
+            <div onClick={function() { setShowLowerThirdSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <input value={lowerThirdDraft.title} onChange={function(e) { setLowerThirdDraft(function(s) { return Object.assign({}, s, { title: e.target.value.slice(0, 80) }); }); }} placeholder="Title (e.g. Hosted by @username)" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+          <input value={lowerThirdDraft.subtitle} onChange={function(e) { setLowerThirdDraft(function(s) { return Object.assign({}, s, { subtitle: e.target.value.slice(0, 120) }); }); }} placeholder="Subtitle (optional)" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>DURATION</span>
+            {[5, 10, 20, 30].map(function(s) {
+              return <button key={s} onClick={function() { setLowerThirdDraft(function(d) { return Object.assign({}, d, { durationSecs: s }); }); }} style={{ background: lowerThirdDraft.durationSecs === s ? GOLD : CARD2, border: '1px solid ' + (lowerThirdDraft.durationSecs === s ? GOLD : BORDER), borderRadius: 8, padding: '4px 10px', color: lowerThirdDraft.durationSecs === s ? '#0E0C09' : TEXT, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer' }}>{s}s</button>;
+            })}
+          </div>
+          <button onClick={function() {
+            if (!lowerThirdDraft.title.trim()) return;
+            if (socket) socket.emit('lower-third-set', { roomId: roomId, title: lowerThirdDraft.title.trim(), subtitle: lowerThirdDraft.subtitle.trim(), durationSecs: lowerThirdDraft.durationSecs });
+            setShowLowerThirdSet(false);
+          }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}>PUSH LOWER THIRD</button>
+        </div>
+      )}
+
+      {/* ── Emoji shower particle rain ──────────────────────────────── */}
+      {showEmojiPicker37 && role === 'host' && (
+        <div style={{ position: 'absolute', bottom: 120, right: 10, zIndex: 210, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: '12px 14px', boxShadow: '0 4px 24px rgba(0,0,0,.6)' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 10, letterSpacing: 1 }}>EMOJI RAIN</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, maxWidth: 150 }}>
+            {['🎉','🔥','💜','❤️','💰','⭐','🎊','🌊','🎈','💎','🚀','🏆'].map(function(e) {
+              return (
+                <div key={e} onClick={function() {
+                  if (socket) socket.emit('emoji-shower', { roomId: roomId, emoji: e });
+                  setShowEmojiPicker37(false);
+                }} style={{ fontSize: 22, cursor: 'pointer', padding: 2, borderRadius: 6, background: CARD2, width: 34, textAlign: 'center' }}>{e}</div>
+              );
+            })}
+          </div>
+          <div onClick={function() { setShowEmojiPicker37(false); }} style={{ marginTop: 10, textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, cursor: 'pointer' }}>CLOSE</div>
+        </div>
+      )}
+
+      {/* ── Emoji shower animation ──────────────────────────────────── */}
+      {emojiShower && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 290, pointerEvents: 'none', overflow: 'hidden' }}>
+          {Array.from({ length: 18 }).map(function(_, i) {
+            var left = (5 + (i * 5.5) % 90) + '%';
+            var delay = (i * 0.08) + 's';
+            var dur = (1.4 + (i % 3) * 0.3) + 's';
+            return (
+              <div key={i} style={{ position: 'absolute', top: '-50px', left: left, fontSize: 28 + (i % 4) * 4, animation: 'entranceSlide ' + dur + ' ease ' + delay + ' forwards', opacity: 0.9 }}>
+                {emojiShower.emoji}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Shoutout card ───────────────────────────────────────────── */}
+      {shoutoutCard && (
+        <div style={{
+          position: 'absolute', top: '20%', left: '5%', right: '5%', zIndex: 280,
+          background: 'rgba(14,12,9,.97)', border: '2px solid ' + GOLD, borderRadius: 18,
+          padding: '24px 20px', textAlign: 'center',
+          boxShadow: '0 0 48px rgba(201,168,76,.5)',
+          animation: 'spotlightGlow 1s ease',
+        }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>📣</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, letterSpacing: 2, marginBottom: 6 }}>SHOUTOUT TO</div>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 32, color: TEXT, letterSpacing: 2 }}>{shoutoutCard.username}</div>
+          {shoutoutCard.message && (
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 16, color: MUTED, marginTop: 8, lineHeight: 1.4 }}>{shoutoutCard.message}</div>
+          )}
+        </div>
+      )}
+
+      {/* ── Shoutout setup panel ────────────────────────────────────── */}
+      {showShoutoutSet && role === 'host' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>📣 SHOUTOUT</span>
+            <div onClick={function() { setShowShoutoutSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <input value={shoutoutDraft.username} onChange={function(e) { setShoutoutDraft(function(s) { return Object.assign({}, s, { username: e.target.value.slice(0, 40) }); }); }} placeholder="Username to shoutout" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+          <textarea value={shoutoutDraft.message} onChange={function(e) { setShoutoutDraft(function(s) { return Object.assign({}, s, { message: e.target.value.slice(0, 120) }); }); }} placeholder="Add a message (optional)" rows={2} style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 14 }} />
+          <button onClick={function() {
+            if (!shoutoutDraft.username.trim()) return;
+            if (socket) socket.emit('shoutout-card', { roomId: roomId, username: shoutoutDraft.username.trim(), message: shoutoutDraft.message.trim() });
+            setShowShoutoutSet(false);
+            setShoutoutDraft({ username: '', message: '' });
+          }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}>SEND SHOUTOUT</button>
+        </div>
+      )}
+
+      {/* ── Chat Theme picker ─────────────────────────────────────────── */}
+      {showThemePicker && role === 'host' && (
+        <div style={{ position: 'absolute', bottom: 120, right: 10, zIndex: 210, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: '12px 14px', boxShadow: '0 4px 24px rgba(0,0,0,.6)', minWidth: 160 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 10, letterSpacing: 1 }}>CHAT VIBE</div>
+          {[
+            { key: 'party',  emoji: '🎉', label: 'Party' },
+            { key: 'chill',  emoji: '☁️', label: 'Chill' },
+            { key: 'sports', emoji: '🏆', label: 'Sports' },
+            { key: 'gaming', emoji: '🎮', label: 'Gaming' },
+            { key: 'news',   emoji: '📰', label: 'News' },
+          ].map(function(t) {
+            return (
+              <div key={t.key} onClick={function() {
+                if (socket) socket.emit('chat-theme-set', { roomId: roomId, theme: chatTheme === t.key ? 'off' : t.key });
+                setShowThemePicker(false);
+              }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 8px', borderRadius: 8, background: chatTheme === t.key ? 'rgba(201,168,76,.15)' : 'transparent', cursor: 'pointer', marginBottom: 4 }}>
+                <span style={{ fontSize: 16 }}>{t.emoji}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: chatTheme === t.key ? GOLD : TEXT }}>{t.label}</span>
+                {chatTheme === t.key && <span style={{ fontSize: 10, color: GOLD, marginLeft: 'auto' }}>✓</span>}
+              </div>
+            );
+          })}
+          {chatTheme && <div onClick={function() { if (socket) socket.emit('chat-theme-set', { roomId: roomId, theme: 'off' }); setShowThemePicker(false); }} style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, textAlign: 'center', marginTop: 6, cursor: 'pointer', padding: '4px' }}>CLEAR THEME</div>}
+          <div onClick={function() { setShowThemePicker(false); }} style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, textAlign: 'center', marginTop: 4, cursor: 'pointer', padding: '4px' }}>CLOSE</div>
         </div>
       )}
 

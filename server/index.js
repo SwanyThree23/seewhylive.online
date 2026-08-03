@@ -472,6 +472,10 @@ var intermissionMap     = new Map();  // roomId → { active, message, returnEta
 var flashDropMap        = new Map();  // roomId → { name, price, url, endsAt, timerId }
 var applauseMap         = new Map();  // roomId → { count, windowStart, peak }
 var vipMap              = new Map();  // roomId → Set<userId>
+// Batch 37
+var chatColorMap        = new Map();  // userId → hexColor string
+var lowerThirdMap       = new Map();  // roomId → { title, subtitle, endsAt, timerId }
+var chatThemeMap        = new Map();  // roomId → theme string (party|chill|sports|gaming|news)
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -621,6 +625,10 @@ function getJoinStateForRoom(roomId) {
   state.flashDrop = (fd && Date.now() < fd.endsAt) ? { name: fd.name, price: fd.price, url: fd.url, endsAt: fd.endsAt } : null;
   var vips = vipMap.get(roomId);
   state.vips = vips ? Array.from(vips) : [];
+  // Batch 37
+  var lt = lowerThirdMap.get(roomId);
+  state.lowerThird = (lt && Date.now() < lt.endsAt) ? { title: lt.title, subtitle: lt.subtitle, endsAt: lt.endsAt } : null;
+  state.chatTheme = chatThemeMap.get(roomId) || null;
   return state;
 }
 
@@ -2093,6 +2101,7 @@ io.on('connection', function(socket) {
           translated:      result.translated,
           lang:            result.detectedLang,
           hasExternalLinks: _hasExternalLinks,
+          nameColor:       chatColorMap.get(userId) || null,
           ts:              ts
         });
         io.to(socket.id).emit('points-earned', { amount: 2, reason: 'chat', ts: ts });
@@ -4558,6 +4567,86 @@ io.on('connection', function(socket) {
     }
   });
 
+  // ── set-chat-color — viewer sets custom chat name color ────────────────
+  var ALLOWED_CHAT_COLORS = ['#FF4444','#FF8C00','#FFD700','#00CC66','#00BFFF','#A855F7','#FF69B4','#FF1A3C','#C9A84C','#D4854A'];
+  socket.on('set-chat-color', function(data) {
+    var userId = socket.data.userId;
+    if (!userId || userId.startsWith('anon')) return;
+    var color = data && data.color ? String(data.color) : '';
+    if (ALLOWED_CHAT_COLORS.indexOf(color) === -1) return;
+    chatColorMap.set(userId, color);
+    io.to(socket.data.roomId || '').emit('chat-color-set', { userId: userId, color: color });
+    io.to(socket.id).emit('chat-color-ack', { color: color });
+  });
+
+  // ── lower-third-set — host sets a news-style lower-third overlay ──────
+  socket.on('lower-third-set', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var title    = (data && data.title)    ? String(data.title).slice(0, 80).trim()    : '';
+    var subtitle = (data && data.subtitle) ? String(data.subtitle).slice(0, 120).trim() : '';
+    if (!title) return;
+    var durationSecs = Math.min(60, Math.max(5, parseInt((data && data.durationSecs) || 10, 10)));
+    var endsAt = Date.now() + durationSecs * 1000;
+    var prev = lowerThirdMap.get(roomId);
+    if (prev && prev.timerId) clearTimeout(prev.timerId);
+    var timerId = setTimeout(function() {
+      lowerThirdMap.delete(roomId);
+      io.to(roomId).emit('lower-third', null);
+    }, durationSecs * 1000);
+    lowerThirdMap.set(roomId, { title: title, subtitle: subtitle, endsAt: endsAt, timerId: timerId });
+    io.to(roomId).emit('lower-third', { title: title, subtitle: subtitle, endsAt: endsAt });
+  });
+
+  // ── lower-third-clear — host manually clears the lower third ──────────
+  socket.on('lower-third-clear', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var lt = lowerThirdMap.get(roomId);
+    if (lt && lt.timerId) clearTimeout(lt.timerId);
+    lowerThirdMap.delete(roomId);
+    io.to(roomId).emit('lower-third', null);
+  });
+
+  // ── emoji-shower — host triggers a brief emoji particle rain ──────────
+  socket.on('emoji-shower', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var emoji = (data && data.emoji) ? String(data.emoji).slice(0, 4) : '🎉';
+    io.to(roomId).emit('emoji-shower', { emoji: emoji, ts: Date.now() });
+    addEnergy(roomId, null, null, 5);
+  });
+
+  // ── shoutout-card — host gives a big visual shoutout to a viewer ──────
+  socket.on('shoutout-card', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var username = (data && data.username) ? String(data.username).slice(0, 40).trim() : '';
+    var message  = (data && data.message)  ? String(data.message).slice(0, 120).trim()  : '';
+    if (!username) return;
+    io.to(roomId).emit('shoutout-card', { username: username, message: message, ts: Date.now() });
+    addEnergy(roomId, null, null, 10);
+  });
+
+  // ── chat-theme-set — host sets room chat vibe/theme ──────────────────
+  var VALID_CHAT_THEMES = ['party', 'chill', 'sports', 'gaming', 'news', 'off'];
+  socket.on('chat-theme-set', function(data) {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var theme = (data && data.theme && VALID_CHAT_THEMES.indexOf(data.theme) !== -1) ? data.theme : 'off';
+    if (theme === 'off') {
+      chatThemeMap.delete(roomId);
+    } else {
+      chatThemeMap.set(roomId, theme);
+    }
+    io.to(roomId).emit('chat-theme-update', { theme: theme === 'off' ? null : theme });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -5044,6 +5133,10 @@ io.on('connection', function(socket) {
     flashDropMap.delete(roomId);
     applauseMap.delete(roomId);
     vipMap.delete(roomId);
+    var endLt = lowerThirdMap.get(roomId);
+    if (endLt && endLt.timerId) clearTimeout(endLt.timerId);
+    lowerThirdMap.delete(roomId);
+    chatThemeMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
