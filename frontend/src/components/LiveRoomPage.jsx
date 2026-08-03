@@ -663,6 +663,11 @@ export default function LiveRoomPage({
   var [showRafflePanel,    setShowRafflePanel]    = useState(false);
   var [raffleInput,        setRaffleInput]        = useState({ keyword: '!join', prize: '' });
   var [raffleWinner,       setRaffleWinner]       = useState(null);   // { winner, prize, count }
+  // Batch 35 — Stream Energy, Fan Wall, PiP
+  var [streamEnergy,       setStreamEnergy]       = useState(0);       // 0–100
+  var [fanWall,            setFanWall]            = useState([]);      // [{userId, username, points}]
+  var [showFanWall,        setShowFanWall]        = useState(false);
+  var [pipActive,          setPipActive]          = useState(false);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -760,6 +765,8 @@ export default function LiveRoomPage({
       if (data.giftGoal) setGiftGoal(data.giftGoal);
       if (data.mood) setStreamMood(data.mood);
       if (Array.isArray(data.cohostQueue) && data.cohostQueue.length > 0) setCohostQueue(data.cohostQueue);
+      if (data.energy) setStreamEnergy(data.energy.score || 0);
+      if (Array.isArray(data.fanWall) && data.fanWall.length > 0) setFanWall(data.fanWall);
       if (Array.isArray(data.whiteboardStrokes) && data.whiteboardStrokes.length > 0) {
         setTimeout(function() {
           var canvas = wbCanvasRef.current;
@@ -1440,6 +1447,16 @@ export default function LiveRoomPage({
       setTimeout(function() { setGoalComplete(false); }, 4000);
     });
 
+    socket.on('energy-update', function(data) {
+      if (!data) return;
+      setStreamEnergy(data.score || 0);
+    });
+
+    socket.on('fan-wall-update', function(data) {
+      if (!data || !Array.isArray(data.fans)) return;
+      setFanWall(data.fans);
+    });
+
     socket.on('mood-update', function(data) {
       if (!data) return;
       setStreamMood(data);
@@ -1623,6 +1640,8 @@ export default function LiveRoomPage({
       socket.off('guest-entrance');
       socket.off('chat-raffle-update');
       socket.off('chat-raffle-result');
+      socket.off('energy-update');
+      socket.off('fan-wall-update');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
@@ -2390,6 +2409,12 @@ export default function LiveRoomPage({
                   <div style={{ height: '100%', width: Math.min(100, ((viewerCount || 0) / 5000) * 100) + '%', background: (viewerCount || 0) > 4500 ? RED : TEAL, borderRadius: 3, transition: 'width .6s ease' }} />
                 </div>
               )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: streamEnergy > 80 ? '#FF1A3C' : streamEnergy > 50 ? GOLD : MUTED }}>⚡</span>
+                <div style={{ width: 60, height: 3, background: 'rgba(255,255,255,.08)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: streamEnergy + '%', background: streamEnergy > 80 ? '#FF1A3C' : streamEnergy > 50 ? GOLD : TEAL, borderRadius: 3, transition: 'width .8s ease' }} />
+                </div>
+              </div>
             </div>
             {watchSeconds >= 3600 && (
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>👑 LEGEND</span>
@@ -3199,7 +3224,19 @@ export default function LiveRoomPage({
               { emoji: '✋', label: 'Co-Host', active: cohostRequested, onTap: function() {
                 if (!cohostRequested && socket) { socket.emit('cohost-request', { roomId: roomId }); setCohostRequested(true); }
               }},
-            ] : []),
+            ] : []).concat([
+              { emoji: '🏆', label: 'Fan Wall', active: showFanWall, onTap: function() { setShowFanWall(function(s) { return !s; }); } },
+              { emoji: '📱', label: 'PiP', active: pipActive, onTap: function() {
+                if (!document.pictureInPictureElement) {
+                  var vid = document.querySelector('video[autoplay]');
+                  if (vid && vid.requestPictureInPicture) {
+                    vid.requestPictureInPicture().then(function() { setPipActive(true); }).catch(function() {});
+                  }
+                } else {
+                  document.exitPictureInPicture().then(function() { setPipActive(false); }).catch(function() {});
+                }
+              }},
+            ]),
           ].map(function(tool) {
             return (
               <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
@@ -7712,6 +7749,57 @@ export default function LiveRoomPage({
             <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 28, color: GOLD, marginTop: 4 }}>{raffleWinner.winner}</div>
             {raffleWinner.prize && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: TEAL, marginTop: 6 }}>Prize: {raffleWinner.prize}</div>}
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 4 }}>from {raffleWinner.count} entries</div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Fan Wall overlay ─────────────────────────────────────────── */}
+      {showFanWall && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(8,11,18,.92)', zIndex: 180, display: 'flex', flexDirection: 'column',
+          padding: '16px 14px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: GOLD, letterSpacing: 2 }}>🏆 FAN WALL</span>
+            <div onClick={function() { setShowFanWall(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          {fanWall.length === 0 ? (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15 }}>
+              Be the first to appear here — react, chat, or send a gift!
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+              {fanWall.slice(0, 9).map(function(fan, idx) {
+                var medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1);
+                return (
+                  <div key={fan.userId} style={{
+                    background: idx === 0 ? 'rgba(201,168,76,.12)' : CARD,
+                    border: '1px solid ' + (idx === 0 ? 'rgba(201,168,76,.35)' : BORDER),
+                    borderRadius: 12, padding: '12px 8px', textAlign: 'center',
+                  }}>
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: CARD2, margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, border: '2px solid ' + (idx < 3 ? GOLD : BORDER) }}>
+                      {fan.username ? fan.username.charAt(0).toUpperCase() : '?'}
+                    </div>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fan.username || 'Fan'}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD }}>{medal}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, marginTop: 2 }}>{fan.points} pts</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div style={{ marginTop: 16, padding: '10px 12px', background: CARD, borderRadius: 10, border: '1px solid ' + BORDER }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 4, letterSpacing: 1 }}>ENERGY SCORE</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,.08)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: streamEnergy + '%', background: streamEnergy > 80 ? RED : streamEnergy > 50 ? GOLD : TEAL, borderRadius: 3, transition: 'width 1s ease' }} />
+              </div>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: streamEnergy > 80 ? RED : GOLD, minWidth: 28 }}>{streamEnergy}%</span>
+            </div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: MUTED, marginTop: 6 }}>
+              {streamEnergy < 20 ? 'Warm it up — react, chat, and gift!' : streamEnergy < 50 ? "Chat's warming up " : streamEnergy < 80 ? 'Stream is 🔥 — keep going!' : 'PEAK ENERGY — crowd is going wild!'}
+            </div>
           </div>
         </div>
       )}

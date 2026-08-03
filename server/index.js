@@ -463,6 +463,9 @@ var viewerSpotlightMap  = new Map();  // roomId → { userId, username, socketId
 var starredMsgsMap      = new Map();  // roomId → [{ id, username, message, starCount, ts }] last 20
 var chatRaffleMap       = new Map();  // roomId → { keyword, entries: Map<userId, username>, active }
 var starThrottle        = new Map();  // userId → lastStarTs
+var energyMap           = new Map();  // roomId → { score:0-100, points:N, lastDecay:ts }
+var fanWallMap          = new Map();  // roomId → Map<userId, { username, points, lastSeen }>
+var fanWallThrottle     = new Map();  // userId → lastFanWallTs
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -595,8 +598,39 @@ function getJoinStateForRoom(roomId) {
   state.tipTicker  = tipTickerMap.get(roomId) || [];
   state.giftGoal    = giftGoalMap.get(roomId)   || null;
   state.mood        = moodMap.get(roomId)        || null;
-  state.cohostQueue = (cohostQueueMap.get(roomId) || []).map(function(e) { return { userId: e.userId, username: e.username, ts: e.ts }; });
+  state.cohostQueue  = (cohostQueueMap.get(roomId) || []).map(function(e) { return { userId: e.userId, username: e.username, ts: e.ts }; });
+  var eng = energyMap.get(roomId);
+  state.energy    = eng ? { score: eng.score } : null;
+  var fw = fanWallMap.get(roomId);
+  if (fw) {
+    state.fanWall = Array.from(fw.values()).sort(function(a, b) { return b.points - a.points; }).slice(0, 9).map(function(e) { return { userId: e.userId, username: e.username, points: e.points }; });
+  } else {
+    state.fanWall = [];
+  }
   return state;
+}
+
+// Helper: add engagement points to energy bar and fan wall; broadcast score
+function addEnergy(roomId, userId, username, pts) {
+  if (!roomId) return;
+  // Energy bar
+  if (!energyMap.has(roomId)) energyMap.set(roomId, { score: 0, points: 0, lastDecay: Date.now() });
+  var eng = energyMap.get(roomId);
+  eng.points += pts;
+  eng.score = Math.min(100, Math.round((eng.points / 200) * 100));
+  energyMap.set(roomId, eng);
+  io.to(roomId).emit('energy-update', { score: eng.score, pts: pts });
+  // Fan wall
+  if (userId && username) {
+    if (!fanWallMap.has(roomId)) fanWallMap.set(roomId, new Map());
+    var fw = fanWallMap.get(roomId);
+    var entry = fw.get(userId) || { userId: userId, username: username, points: 0, lastSeen: 0 };
+    entry.points += pts; entry.lastSeen = Date.now(); entry.username = username;
+    fw.set(userId, entry);
+    var topFanWall = Array.from(fw.values()).sort(function(a, b) { return b.points - a.points; }).slice(0, 9)
+      .map(function(e) { return { userId: e.userId, username: e.username, points: e.points }; });
+    io.to(roomId).emit('fan-wall-update', { fans: topFanWall });
+  }
 }
 
 // Helper: auto-trigger AURA and broadcast to room
@@ -2054,6 +2088,8 @@ io.on('connection', function(socket) {
           raffle.entries.set(userId, username);
           io.to(roomId).emit('chat-raffle-update', { keyword: raffle.keyword, active: true, count: raffle.entries.size });
         }
+        // Stream energy: +2 per chat message
+        addEnergy(roomId, userId, username, 2);
       })
       .catch(function(err) {
         logger.error('[chat-message] translation failed: ' + err.message);
@@ -2292,6 +2328,8 @@ io.on('connection', function(socket) {
     if (chain.count >= 3) {
       io.to(roomId).emit('gift-chain', { count: chain.count, emoji: emoji, ts: now10 });
     }
+    // Stream energy: +50 per gift
+    addEnergy(roomId, fromUserId, fromUser, 50);
 
     // Award points to gift sender
     var giftPoints = Math.max(10, Math.floor(valueCents / 10));
@@ -3182,6 +3220,8 @@ io.on('connection', function(socket) {
     }
     // Award 1 point per reaction (throttled by the react throttle above)
     io.to(socket.id).emit('points-earned', { amount: 1, reason: 'reaction', ts: Math.floor(now / 1000) });
+    // Stream energy: +1 per reaction
+    addEnergy(roomId, socket.data.userId, socket.data.username, 1);
   });
 
   // ── hot-moment — viewer tags a timestamp as a highlight ────────────────
@@ -4862,6 +4902,8 @@ io.on('connection', function(socket) {
     viewerSpotlightMap.delete(roomId);
     starredMsgsMap.delete(roomId);
     chatRaffleMap.delete(roomId);
+    energyMap.delete(roomId);
+    fanWallMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
