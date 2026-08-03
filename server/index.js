@@ -452,6 +452,8 @@ var sentimentMap        = new Map();  // roomId → { up: N, down: N, voters: Se
 var nowPlayingMap       = new Map();  // roomId → { title, artist, emoji } | null
 var tipTickerMap        = new Map();  // roomId → [{ text, id }]
 var viewerJoinMap       = new Map();  // roomId → Map<socketId, joinedAtSecs>
+var giftGoalMap         = new Map();  // roomId → { target, current, label, active }
+var moodMap             = new Map();  // roomId → { emoji, label, counts:{fire,party,chill,love,wow} }
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -582,6 +584,8 @@ function getJoinStateForRoom(roomId) {
   state.sentiment  = sm ? { up: sm.up, down: sm.down } : { up: 0, down: 0 };
   state.nowPlaying = nowPlayingMap.get(roomId) || null;
   state.tipTicker  = tipTickerMap.get(roomId) || [];
+  state.giftGoal   = giftGoalMap.get(roomId)  || null;
+  state.mood       = moodMap.get(roomId)       || null;
   return state;
 }
 
@@ -2195,6 +2199,19 @@ io.on('connection', function(socket) {
     }
 
     swanybot.onGiftReceived(roomId, fromUser, name, valueCents);
+
+    // Auto-advance gift goal if active
+    var activeGoal = giftGoalMap.get(roomId);
+    if (activeGoal && activeGoal.active && valueCents > 0) {
+      activeGoal.current = Math.min(activeGoal.target, activeGoal.current + valueCents);
+      giftGoalMap.set(roomId, activeGoal);
+      var goalPct = Math.round((activeGoal.current / activeGoal.target) * 100);
+      io.to(roomId).emit('gift-goal-update', { target: activeGoal.target, current: activeGoal.current, label: activeGoal.label, active: activeGoal.active, pct: goalPct });
+      if (activeGoal.current >= activeGoal.target) {
+        activeGoal.active = false;
+        setTimeout(function() { io.to(roomId).emit('gift-goal-complete', { label: activeGoal.label }); }, 200);
+      }
+    }
 
     // Push live earnings update to host
     try {
@@ -4069,6 +4086,62 @@ io.on('connection', function(socket) {
     io.to(socket.id).emit('highlight-reel', { roomId: roomId, highlights: list, ts: Date.now() });
   });
 
+  // ── gift-goal-set — host sets a donation goal for the stream ─────────
+  socket.on('gift-goal-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var target = Math.min(1000000, Math.max(1, Math.floor(data.target || 0)));
+    var label  = String(data.label || 'Stream Goal').slice(0, 60);
+    if (target <= 0) {
+      giftGoalMap.delete(roomId);
+      io.to(roomId).emit('gift-goal-update', null);
+      return;
+    }
+    var existing = giftGoalMap.get(roomId);
+    var current  = existing ? existing.current : 0;
+    var goal = { target: target, current: current, label: label, active: true };
+    giftGoalMap.set(roomId, goal);
+    io.to(roomId).emit('gift-goal-update', { target: goal.target, current: goal.current, label: goal.label, active: true });
+  });
+
+  // ── gift-goal-progress — accumulate gift amount toward active goal ────
+  // (auto-called internally from send-gift event — mirrors via room broadcast)
+  socket.on('gift-goal-contribute', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var goal = giftGoalMap.get(roomId);
+    if (!goal || !goal.active) return;
+    var cents = Math.min(50000, Math.max(0, Math.floor(data.cents || 0)));
+    goal.current = Math.min(goal.target, goal.current + cents);
+    giftGoalMap.set(roomId, goal);
+    var pct = Math.round((goal.current / goal.target) * 100);
+    io.to(roomId).emit('gift-goal-update', { target: goal.target, current: goal.current, label: goal.label, active: goal.active, pct: pct });
+    if (goal.current >= goal.target) {
+      goal.active = false;
+      setTimeout(function() { io.to(roomId).emit('gift-goal-complete', { label: goal.label }); }, 200);
+    }
+  });
+
+  // ── stream-mood — viewer submits an emoji mood vote, server tallies ───
+  var MOOD_EMOJIS = { fire: '🔥', party: '🎉', chill: '💜', love: '❤️', wow: '😮' };
+  socket.on('mood-vote', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var key = String(data.key || '');
+    if (!MOOD_EMOJIS[key]) return;
+    if (!moodMap.has(roomId)) moodMap.set(roomId, { emoji: '🔥', label: 'Hot', counts: { fire: 0, party: 0, chill: 0, love: 0, wow: 0 } });
+    var m = moodMap.get(roomId);
+    m.counts[key] = (m.counts[key] || 0) + 1;
+    // Determine dominant mood
+    var top = Object.keys(m.counts).reduce(function(a, b) { return m.counts[a] >= m.counts[b] ? a : b; });
+    var MOOD_LABELS = { fire: 'Hot', party: 'Party', chill: 'Chill', love: 'Love', wow: 'Wow' };
+    m.emoji = MOOD_EMOJIS[top];
+    m.label = MOOD_LABELS[top];
+    moodMap.set(roomId, m);
+    io.to(roomId).emit('mood-update', { emoji: m.emoji, label: m.label, key: top, counts: Object.assign({}, m.counts) });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -4537,6 +4610,8 @@ io.on('connection', function(socket) {
     nowPlayingMap.delete(roomId);
     tipTickerMap.delete(roomId);
     viewerJoinMap.delete(roomId);
+    giftGoalMap.delete(roomId);
+    moodMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

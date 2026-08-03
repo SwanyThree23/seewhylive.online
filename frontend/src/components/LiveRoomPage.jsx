@@ -73,6 +73,9 @@ var ANIM = [
   '@keyframes teamBarGrow{from{width:0}to{width:var(--tb-pct)}}',
   '@keyframes battleWin{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}',
   '@keyframes heatPop{0%{transform:translate(-50%,-50%) scale(.6);opacity:1}100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}}',
+  '@keyframes goalFill{from{width:0}to{width:var(--goal-pct)}}',
+  '@keyframes goalComplete{0%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.05);filter:brightness(1.3)}100%{transform:scale(1);filter:brightness(1)}}',
+  '@keyframes moodPulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}',
 ].join('\n');
 
 // ─── Room ambiance themes ─────────────────────────────────────────────────────
@@ -633,6 +636,13 @@ export default function LiveRoomPage({
   var [compareUrl,         setCompareUrl]         = useState('');
   var [compareInput,       setCompareInput]       = useState('');
   var [showHighlightLine,  setShowHighlightLine]  = useState(false);
+  var [giftGoal,           setGiftGoal]           = useState(null);   // { target, current, label, active, pct }
+  var [showGiftGoal,       setShowGiftGoal]       = useState(false);
+  var [goalInput,          setGoalInput]          = useState({ target: 5000, label: 'Stream Goal' });
+  var [goalComplete,       setGoalComplete]       = useState(false);
+  var [streamMood,         setStreamMood]         = useState(null);   // { emoji, label, key, counts }
+  var [showMoodPanel,      setShowMoodPanel]      = useState(false);
+  var [myMoodVote,         setMyMoodVote]         = useState(null);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -727,6 +737,8 @@ export default function LiveRoomPage({
       if (data.sentiment) setSentiment(data.sentiment);
       if (data.nowPlaying) setNowPlaying(data.nowPlaying);
       if (Array.isArray(data.tipTicker) && data.tipTicker.length > 0) setTipTickerItems(data.tipTicker);
+      if (data.giftGoal) setGiftGoal(data.giftGoal);
+      if (data.mood) setStreamMood(data.mood);
       if (Array.isArray(data.whiteboardStrokes) && data.whiteboardStrokes.length > 0) {
         setTimeout(function() {
           var canvas = wbCanvasRef.current;
@@ -1318,6 +1330,20 @@ export default function LiveRoomPage({
       }
     });
 
+    socket.on('gift-goal-update', function(data) {
+      setGiftGoal(data);
+    });
+
+    socket.on('gift-goal-complete', function(data) {
+      setGoalComplete(true);
+      setTimeout(function() { setGoalComplete(false); }, 4000);
+    });
+
+    socket.on('mood-update', function(data) {
+      if (!data) return;
+      setStreamMood(data);
+    });
+
     socket.on('react-burst', function(data) {
       if (!data || !data.emoji) return;
       var fid = Date.now() + Math.random();
@@ -1483,6 +1509,9 @@ export default function LiveRoomPage({
       socket.off('react-burst');
       socket.off('gift-received');
       socket.off('merch-order-received');
+      socket.off('gift-goal-update');
+      socket.off('gift-goal-complete');
+      socket.off('mood-update');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
@@ -3038,6 +3067,8 @@ export default function LiveRoomPage({
             { emoji: '🌡', label: 'Heatmap', active: showHeatmap, onTap: function() { setShowHeatmap(function(s) { return !s; }); } },
             { emoji: '📊', label: 'Vibe', active: showSentiment, onTap: function() { setShowSentiment(function(s) { return !s; }); } },
             { emoji: '🔀', label: 'Compare', active: showCompare, onTap: function() { setShowCompare(function(s) { return !s; }); } },
+            { emoji: '🎯', label: 'Gift Goal', active: !!giftGoal, onTap: function() { setShowGiftGoal(function(s) { return !s; }); } },
+            { emoji: '🎭', label: 'Mood', active: showMoodPanel, onTap: function() { setShowMoodPanel(function(s) { return !s; }); } },
           ].map(function(tool) {
             return (
               <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
@@ -7170,6 +7201,155 @@ export default function LiveRoomPage({
           </div>
         </div>
       )}
+
+      {/* ════════════════ BATCH 31: GIFT GOAL METER ════════════════ */}
+      {giftGoal && (
+        <div style={{
+          position: 'absolute', bottom: showHighlightLine && highlights.length > 0 ? 120 : 74, left: 10, right: 10, zIndex: 83,
+          background: 'rgba(14,12,9,.92)', border: '1px solid ' + (goalComplete ? GOLD : BORDER),
+          borderRadius: 10, padding: '8px 12px', backdropFilter: 'blur(6px)',
+          animation: goalComplete ? 'goalComplete 0.6s ease 3' : 'none',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <span style={{ fontSize: 16 }}>🎯</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, flex: 1 }}>{giftGoal.label}</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: GOLD }}>
+              ${((giftGoal.current || 0) / 100).toFixed(2)} / ${((giftGoal.target || 1) / 100).toFixed(2)}
+            </span>
+            <button onClick={function() { setGiftGoal(null); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 11 }}>✕</button>
+          </div>
+          {(function() {
+            var pct = Math.min(100, Math.round(((giftGoal.current || 0) / (giftGoal.target || 1)) * 100));
+            return (
+              <div style={{ height: 8, background: CARD2, borderRadius: 4, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', background: 'linear-gradient(90deg,' + BURG + ',' + GOLD + ')',
+                  borderRadius: 4, width: pct + '%', transition: 'width .5s ease',
+                }} />
+              </div>
+            );
+          })()}
+          {goalComplete && (
+            <div style={{ textAlign: 'center', marginTop: 6, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: GOLD }}>
+              🎉 GOAL REACHED!
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 31: GIFT GOAL SETUP PANEL (host only) ════════════════ */}
+      {showGiftGoal && (role === 'host' || role === 'cohost') && (
+        <div style={{
+          position: 'absolute', bottom: 64, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 95, background: CARD, border: '1px solid ' + BORDER, borderRadius: 14,
+          padding: 18, width: 280, backdropFilter: 'blur(8px)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1 }}>🎯 GIFT GOAL</span>
+            <button onClick={function() { setShowGiftGoal(false); }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 4, letterSpacing: 1 }}>LABEL</div>
+            <input
+              value={goalInput.label}
+              onChange={function(e) { setGoalInput(function(p) { return Object.assign({}, p, { label: e.target.value }); }); }}
+              placeholder="Stream Goal"
+              style={{ width: '100%', background: SURF, border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 8px', color: TEXT, fontSize: 12, boxSizing: 'border-box' }}
+            />
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 4, letterSpacing: 1 }}>TARGET ($)</div>
+            <input
+              type="number"
+              value={(goalInput.target / 100).toFixed(0)}
+              onChange={function(e) { setGoalInput(function(p) { return Object.assign({}, p, { target: Math.max(1, (parseInt(e.target.value) || 1) * 100) }); }); }}
+              style={{ width: '100%', background: SURF, border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 8px', color: TEXT, fontSize: 12, boxSizing: 'border-box' }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={function() {
+              if (socket) socket.emit('gift-goal-set', { roomId: roomId, target: goalInput.target, label: goalInput.label });
+              setShowGiftGoal(false);
+            }} style={{ flex: 1, background: GOLD, color: BG, border: 'none', borderRadius: 8, padding: '8px 0', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              SET GOAL
+            </button>
+            {giftGoal && (
+              <button onClick={function() {
+                if (socket) socket.emit('gift-goal-set', { roomId: roomId, target: 0 });
+                setGiftGoal(null); setShowGiftGoal(false);
+              }} style={{ background: CARD2, color: MUTED, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 12px', fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer' }}>
+                CLEAR
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 31: STREAM MOOD RING ════════════════ */}
+      {showMoodPanel && (
+        <div style={{
+          position: 'absolute', bottom: 64, right: 10, zIndex: 95,
+          background: CARD, border: '1px solid ' + BORDER, borderRadius: 14,
+          padding: 14, width: 220, backdropFilter: 'blur(8px)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: GOLD, letterSpacing: 1 }}>🎭 STREAM MOOD</span>
+            <button onClick={function() { setShowMoodPanel(false); }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 13 }}>✕</button>
+          </div>
+          {streamMood && (
+            <div style={{ textAlign: 'center', marginBottom: 12 }}>
+              <div style={{ fontSize: 36, animation: 'moodPulse 1.5s ease infinite', display: 'inline-block' }}>{streamMood.emoji}</div>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT, marginTop: 4 }}>{streamMood.label.toUpperCase()}</div>
+            </div>
+          )}
+          {!streamMood && (
+            <div style={{ textAlign: 'center', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 10, marginBottom: 12 }}>No votes yet</div>
+          )}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            {[
+              { key: 'fire', emoji: '🔥', label: 'Hot' },
+              { key: 'party', emoji: '🎉', label: 'Party' },
+              { key: 'chill', emoji: '💜', label: 'Chill' },
+              { key: 'love', emoji: '❤️', label: 'Love' },
+              { key: 'wow', emoji: '😮', label: 'Wow' },
+            ].map(function(m) {
+              var cnt = streamMood && streamMood.counts ? (streamMood.counts[m.key] || 0) : 0;
+              var isActive = myMoodVote === m.key;
+              var isDominant = streamMood && streamMood.key === m.key;
+              return (
+                <button key={m.key} onClick={function() {
+                  if (socket) socket.emit('mood-vote', { roomId: roomId, key: m.key });
+                  setMyMoodVote(m.key);
+                }} style={{
+                  background: isDominant ? 'rgba(201,168,76,.15)' : CARD2,
+                  border: '1px solid ' + (isActive ? GOLD : (isDominant ? 'rgba(201,168,76,.4)' : BORDER)),
+                  borderRadius: 8, padding: '6px 4px', cursor: 'pointer', color: TEXT,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13,
+                }}>
+                  <span style={{ fontSize: 16 }}>{m.emoji}</span>
+                  <span>{m.label}</span>
+                  {cnt > 0 && <span style={{ marginLeft: 'auto', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>{cnt}</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {streamMood && !showMoodPanel && (
+        <div onClick={function() { setShowMoodPanel(true); }} style={{
+          position: 'absolute', top: 50, right: 10, zIndex: 70,
+          background: 'rgba(14,12,9,.85)', border: '1px solid rgba(201,168,76,.25)',
+          borderRadius: 20, padding: '4px 10px', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 5,
+          animation: 'moodPulse 2s ease infinite',
+        }}>
+          <span style={{ fontSize: 16 }}>{streamMood.emoji}</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, letterSpacing: 1 }}>{streamMood.label.toUpperCase()}</span>
+        </div>
+      )}
+
     </div>
   );
 }
