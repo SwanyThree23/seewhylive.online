@@ -627,6 +627,12 @@ export default function LiveRoomPage({
   var [prompterFontSize,   setPrompterFontSize]   = useState(22);      // px
   var [connQuality,        setConnQuality]        = useState(null);    // 'good'|'fair'|'poor'|null
   var [showSummaryCard,    setShowSummaryCard]    = useState(false);   // post-stream summary overlay
+  // ── Batch 30: Word Cloud, Compare Panel, Highlights Timeline ─────────────
+  var [showWordCloud,      setShowWordCloud]      = useState(false);
+  var [showCompare,        setShowCompare]        = useState(false);
+  var [compareUrl,         setCompareUrl]         = useState('');
+  var [compareInput,       setCompareInput]       = useState('');
+  var [showHighlightLine,  setShowHighlightLine]  = useState(false);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -2899,12 +2905,18 @@ export default function LiveRoomPage({
               }},
               { emoji: '📜', label: 'Prompter', active: showTeleprompter, onTap: function() { setShowTeleprompter(function(s) { return !s; }); } },
               { emoji: '📋', label: 'Summary', active: false, onTap: function() { setShowSummaryCard(function(s) { return !s; }); } },
+              { emoji: '☁️', label: 'Word Cloud', active: showWordCloud, onTap: function() { setShowWordCloud(function(s) { return !s; }); } },
+              { emoji: '⚡', label: 'Highlights', active: showHighlightLine, onTap: function() {
+                if (socket) socket.emit('request-highlights', { roomId: roomId });
+                setShowHighlightLine(function(s) { return !s; });
+              }},
             ].concat(multiCamDevices.length > 1 ? [
               { emoji: '📷', label: 'Camera', active: showCamPicker, onTap: function() { setShowCamPicker(function(s) { return !s; }); } },
             ] : [])
             : []),
             { emoji: '🌡', label: 'Heatmap', active: showHeatmap, onTap: function() { setShowHeatmap(function(s) { return !s; }); } },
             { emoji: '📊', label: 'Vibe', active: showSentiment, onTap: function() { setShowSentiment(function(s) { return !s; }); } },
+            { emoji: '🔀', label: 'Compare', active: showCompare, onTap: function() { setShowCompare(function(s) { return !s; }); } },
           ].map(function(tool) {
             return (
               <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
@@ -6917,6 +6929,122 @@ export default function LiveRoomPage({
               style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 12, padding: '12px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: MUTED, cursor: 'pointer', letterSpacing: 1.5 }}>
               CLOSE
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 30: LIVE WORD CLOUD ════════════════ */}
+      {showWordCloud && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.82)', zIndex: 227, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 20, padding: '22px 28px', width: '90%', maxWidth: 480, animation: 'fadeSlideIn .25s ease' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, letterSpacing: 2 }}>☁️ WORD CLOUD</div>
+              <button onClick={function() { setShowWordCloud(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', minHeight: 120 }}>
+              {(function() {
+                var STOP = new Set(['the','a','an','and','or','in','is','it','to','of','for','on','at','we','be','so','but','as','if','by','up','do','go','my','me','you','he','she','they','are','was','not','this','that','with','from','have','has','will','can','get','all','just','im','its','its','i','its','i\'m','lol','oh','ok','yeah','yes','no']);
+                var words = {};
+                chat.slice(-100).forEach(function(msg) {
+                  if (!msg.message) return;
+                  msg.message.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).forEach(function(w) {
+                    if (w.length < 2 || STOP.has(w)) return;
+                    words[w] = (words[w] || 0) + 1;
+                  });
+                });
+                var sorted = Object.entries(words).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 40);
+                var max = sorted[0] ? sorted[0][1] : 1;
+                var COLORS = [GOLD, TEAL, RED, '#4A90D9', '#00CC66', TEXT, '#CC44FF', '#FF8C00'];
+                if (sorted.length === 0) {
+                  return <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, textAlign: 'center', width: '100%', padding: '20px 0' }}>No chat messages yet</div>;
+                }
+                return sorted.map(function(entry, i) {
+                  var size = Math.max(11, Math.round(12 + (entry[1] / max) * 22));
+                  var color = COLORS[i % COLORS.length];
+                  return (
+                    <span key={entry[0]} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: size, color: color, letterSpacing: Math.max(0.5, size * 0.05), opacity: 0.7 + (entry[1] / max) * 0.3, cursor: 'default' }}>
+                      {entry[0]}
+                    </span>
+                  );
+                });
+              })()}
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, textAlign: 'center', marginTop: 12 }}>Based on last 100 chat messages</div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 30: COMPARE PANEL ════════════════ */}
+      {showCompare && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.9)', zIndex: 228, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: CARD, borderBottom: '1px solid ' + BORDER, flexShrink: 0 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: GOLD, letterSpacing: 2 }}>🔀 COMPARE</span>
+            {!compareUrl && (
+              <input value={compareInput} onChange={function(e) { setCompareInput(e.target.value); }}
+                placeholder="Paste YouTube or video URL to compare…"
+                style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '7px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }}
+                onKeyDown={function(e) { if (e.key === 'Enter' && compareInput.trim()) setCompareUrl(compareInput.trim()); }} />
+            )}
+            {!compareUrl && (
+              <button onClick={function() { if (compareInput.trim()) setCompareUrl(compareInput.trim()); }}
+                style={{ background: BURG, border: 'none', borderRadius: 8, padding: '7px 16px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: TEXT, cursor: 'pointer', letterSpacing: 1 }}>
+                LOAD
+              </button>
+            )}
+            {compareUrl && (
+              <button onClick={function() { setCompareUrl(''); setCompareInput(''); }}
+                style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '7px 12px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, cursor: 'pointer' }}>
+                CHANGE URL
+              </button>
+            )}
+            <div style={{ flex: 1 }} />
+            <button onClick={function() { setShowCompare(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 18 }}>✕</button>
+          </div>
+          {compareUrl ? (
+            <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+              <div style={{ flex: 1, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: '2px solid ' + GOLD + '44', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 8, left: 12, fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1, background: 'rgba(0,0,0,.7)', borderRadius: 4, padding: '2px 8px' }}>THIS STREAM</div>
+                <div style={{ color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 10 }}>Your live video</div>
+              </div>
+              <div style={{ flex: 1, background: '#000', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 8, left: 12, zIndex: 2, fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: 1, background: 'rgba(0,0,0,.7)', borderRadius: 4, padding: '2px 8px' }}>COMPARISON</div>
+                <iframe src={compareUrl.includes('youtube.com/watch') ? compareUrl.replace('watch?v=', 'embed/') : compareUrl}
+                  allow="autoplay; fullscreen"
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  title="comparison" />
+              </div>
+            </div>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: MUTED, flexDirection: 'column', gap: 10 }}>
+              <div style={{ fontSize: 40 }}>🔀</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10 }}>Enter a URL above to load the comparison panel</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 30: HIGHLIGHTS TIMELINE ════════════════ */}
+      {showHighlightLine && highlights.length > 0 && (
+        <div style={{
+          position: 'absolute', bottom: 74, left: 0, right: 0, zIndex: 82,
+          background: 'rgba(14,12,9,.94)', borderTop: '1px solid ' + BORDER,
+          padding: '8px 16px', backdropFilter: 'blur(6px)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1.5 }}>⚡ HOT MOMENTS</span>
+            <button onClick={function() { setShowHighlightLine(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 11, marginLeft: 'auto' }}>✕</button>
+          </div>
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
+            {highlights.slice(0, 20).map(function(h, i) {
+              var elapsed = liveElapsed || 0;
+              var pct = elapsed > 0 ? Math.round(((h.windowStart || 0) / elapsed) * 100) : i * 5;
+              return (
+                <div key={h.windowKey || i} style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                  <div style={{ width: 6, height: 24, background: 'linear-gradient(to top,' + RED + ',' + GOLD + ')', borderRadius: 3 }} />
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, whiteSpace: 'nowrap' }}>{h.count || h.msgCount || '?'}msg</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
