@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useVODRecording } from '../hooks/useVODRecording.js';
+import { saveClip as storePin, deleteClip as storeDelete, listClips as storeList } from '../clipStore.js';
 
 var SEED_CLIPS = [
   { id: 'c1', title: 'Washington Classic Opener',   duration: 47,  size: '12.4 MB', ts: Date.now() - 3600000, thumbnail: '🎲' },
@@ -48,6 +49,7 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
   var [selectedFormat, setFormat] = useState('mp4-1080');
   var [sharing, setSharing]       = useState({});
   var [liveClipping, setLiveClipping] = useState(false);
+  var [gallery, setGallery] = useState([]);
   var recRef = useRef(null);
   var liveClipRef = useRef(null);
 
@@ -63,20 +65,35 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
   }, [recording]);
 
   useEffect(function() {
+    setGallery(storeList());
+  }, []);
+
+  useEffect(function() {
+    if (tab === 'gallery') {
+      setGallery(storeList());
+    }
+  }, [tab]);
+
+  useEffect(function() {
     if (!socket) return;
     function onClipMarked(data) {
       if (!data) return;
+      var markerId = data.id || ('m-' + Date.now());
       var marker = {
-        id: data.id || ('m-' + Date.now()),
+        id: markerId,
         title: 'Clip Marker — ' + (data.label || 'Unmarked'),
         duration: 0,
         size: '—',
         ts: Date.now(),
         thumbnail: '📍',
         isMarker: true,
+        pinned: true,
       };
       setClips(function(prev) { return [marker].concat(prev); });
-      if (addToast) addToast('📍 Clip marker saved: ' + (data.label || 'Unmarked'), 'success');
+      storePin(markerId, null, marker).then(function() {
+        setGallery(storeList());
+      }).catch(function() {});
+      if (addToast) addToast('📍 Clip marker auto-saved to gallery: ' + (data.label || 'Unmarked'), 'success');
     }
     socket.on('clip-marked', onClipMarked);
     return function() { socket.off('clip-marked', onClipMarked); };
@@ -168,7 +185,7 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
 
       {/* Tabs */}
       <div style={{ display: 'flex', background: 'rgba(26,21,16,.8)', borderRadius: 10, border: '1px solid #3D3020', overflow: 'hidden' }}>
-        {[['clips', '🎬 CLIPS'], ['edit', '✂️ EDIT'], ['share', '📤 SHARE']].map(function(t) {
+        {[['clips', '🎬 CLIPS'], ['gallery', '📌 GALLERY'], ['edit', '✂️ EDIT'], ['share', '📤 SHARE']].map(function(t) {
           var active = tab === t[0];
           return (
             <button
@@ -251,6 +268,19 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
                   </div>
                   <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
                     <button
+                      onClick={function() {
+                        var meta = { id: clip.id, title: clip.title, duration: clip.duration, size: clip.size, ts: clip.ts, thumbnail: clip.thumbnail, pinned: true };
+                        storePin(clip.id, null, meta).then(function() {
+                          setGallery(storeList());
+                          if (addToast) addToast('📌 Pinned to gallery', 'success');
+                        }).catch(function() {
+                          if (addToast) addToast('Failed to pin clip', 'error');
+                        });
+                      }}
+                      style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '5px 7px', color: '#C9A84C', fontSize: 10, cursor: 'pointer' }}>
+                      📌
+                    </button>
+                    <button
                       onClick={function() { openEdit(clip); }}
                       style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '5px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
                       EDIT
@@ -265,6 +295,57 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* GALLERY TAB */}
+      {tab === 'gallery' && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#8A7A62', letterSpacing: 1 }}>PINNED GALLERY</div>
+            <div style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 5, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', letterSpacing: 1 }}>
+              {gallery.length} SAVED
+            </div>
+          </div>
+          {gallery.length === 0 ? (
+            <div style={{ background: 'rgba(26,21,16,.8)', border: '1px dashed rgba(201,168,76,.2)', borderRadius: 10, padding: '32px 20px', textAlign: 'center' }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📌</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>No pinned clips yet</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3020', marginTop: 4 }}>Hit 📌 on any clip in the Clips tab, or clip markers auto-save here</div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {gallery.map(function(clip) {
+                return (
+                  <div key={clip.id} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 42, height: 42, borderRadius: 8, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+                      {clip.thumbnail || '🎬'}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {clip.title}
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>{fmtDur(clip.duration || 0)}</span>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{clip.size || '—'}</span>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{fmtAgo(clip.ts || Date.now())}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={function() {
+                        storeDelete(clip.id).then(function() {
+                          setGallery(storeList());
+                          if (addToast) addToast('Removed from gallery', 'info');
+                        }).catch(function() {});
+                      }}
+                      style={{ background: 'rgba(230,57,70,.1)', border: '1px solid rgba(230,57,70,.3)', borderRadius: 6, padding: '5px 7px', color: '#FF6B81', fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>
+                      🗑
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

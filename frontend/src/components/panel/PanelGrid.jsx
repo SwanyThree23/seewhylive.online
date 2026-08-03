@@ -1,6 +1,20 @@
 // frontend/src/components/panel/PanelGrid.jsx
 import { useEffect, useState, useRef } from 'react';
 import panelService from '../../services/panelService';
+
+var _panelGridStyleInjected = false;
+function injectPanelGridStyles() {
+  if (_panelGridStyleInjected || typeof document === 'undefined') return;
+  _panelGridStyleInjected = true;
+  var el = document.createElement('style');
+  el.textContent = [
+    '@keyframes panelTileEnter{from{opacity:0;transform:scale(.78) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}',
+    '@keyframes panelTileExit{from{opacity:1;transform:scale(1) translateY(0)}to{opacity:0;transform:scale(.78) translateY(10px)}}',
+    '@keyframes panelSpeakPulse{0%,100%{box-shadow:0 0 6px rgba(212,175,55,.35)}50%{box-shadow:0 0 20px rgba(212,175,55,.85),0 0 40px rgba(212,175,55,.2)}}',
+    '@keyframes pkScoreBump{0%{transform:scale(1.18)}100%{transform:scale(1)}}',
+  ].join('');
+  document.head.appendChild(el);
+}
 import PanelTile from './PanelTile';
 import PrivateRoomGate from './PrivateRoomGate';
 import PanelJoinModal from './PanelJoinModal';
@@ -27,7 +41,15 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [localStream, setLocalStream] = useState(null);
   const [raisedHands, setRaisedHands] = useState({});
+  const [screenSharingIds, setScreenSharingIds] = useState({});
+  const [spotlightUserId, setSpotlightUserId] = useState(null);
+  const [exitingIds, setExitingIds] = useState(new Set());
+  const [pkBattle, setPkBattle] = useState(null);
+  const exitTimersRef = useRef({});
   const localStreamRef = useRef(null);
+  const prevSlotKeysRef = useRef(new Set());
+
+  useEffect(function() { injectPanelGridStyles(); }, []);
 
   // Acquire local mic stream for speaking-level visualization on local tile
   useEffect(function() {
@@ -78,7 +100,14 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       unsubs.push(panelService.onSlotReleased(socket, function(payload) {
         var rid = payload.roomId, releasedUserId = payload.userId;
         if (rid !== roomId) return;
-        setSlots(function(prev) { return prev.filter(function(s) { return s.user_id !== releasedUserId; }); });
+        prevSlotKeysRef.current.delete(releasedUserId);
+        // Animate exit then remove
+        setExitingIds(function(prev) { var next = new Set(prev); next.add(releasedUserId); return next; });
+        exitTimersRef.current[releasedUserId] = setTimeout(function() {
+          setSlots(function(prev) { return prev.filter(function(s) { return s.user_id !== releasedUserId; }); });
+          setExitingIds(function(prev) { var next = new Set(prev); next.delete(releasedUserId); return next; });
+          delete exitTimersRef.current[releasedUserId];
+        }, 350);
       }));
 
       unsubs.push(panelService.onLayoutUpdate(socket, function(payload) {
@@ -128,9 +157,67 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       }
       socket.on('panel:hand_update', onHandUpdate);
       unsubs.push(function() { socket.off('panel:hand_update', onHandUpdate); });
+
+      function onScreenShareActive(payload) {
+        if (payload.roomId !== roomId) return;
+        setScreenSharingIds(function(prev) {
+          var next = Object.assign({}, prev);
+          next[payload.userId] = true;
+          return next;
+        });
+      }
+      function onScreenShareEnded(payload) {
+        if (payload.roomId !== roomId) return;
+        setScreenSharingIds(function(prev) {
+          var next = Object.assign({}, prev);
+          delete next[payload.userId];
+          return next;
+        });
+      }
+      socket.on('screen-share-active', onScreenShareActive);
+      socket.on('screen-share-ended', onScreenShareEnded);
+      unsubs.push(function() { socket.off('screen-share-active', onScreenShareActive); });
+      unsubs.push(function() { socket.off('screen-share-ended', onScreenShareEnded); });
     })();
 
-    return function() { unsubs.forEach(function(u) { u(); }); };
+      // PK battle score overlay events
+      function onPkStart(data) {
+        if (!data) return;
+        setPkBattle({ active: true, challenger: data.challenger || '', defender: data.defender || '', challengerScore: 0, defenderScore: 0, duration: data.duration || 300 });
+      }
+      function onPkVoteUpdate(data) {
+        if (!data) return;
+        setPkBattle(function(prev) {
+          if (!prev) return prev;
+          return Object.assign({}, prev, {
+            challengerScore: typeof data.challengerVotes === 'number' ? data.challengerVotes : prev.challengerScore,
+            defenderScore: typeof data.defenderVotes === 'number' ? data.defenderVotes : prev.defenderScore,
+          });
+        });
+      }
+      function onPkEnd(data) {
+        if (!data) return;
+        setPkBattle(function(prev) {
+          if (!prev) return null;
+          return Object.assign({}, prev, { active: false, winner: data.winner || null });
+        });
+        setTimeout(function() { setPkBattle(null); }, 8000);
+      }
+      if (socket) {
+        socket.on('pk-start', onPkStart);
+        socket.on('pk-vote-update', onPkVoteUpdate);
+        socket.on('pk-end', onPkEnd);
+      }
+
+    return function() {
+      unsubs.forEach(function(u) { u(); });
+      if (socket) {
+        socket.off('pk-start', onPkStart);
+        socket.off('pk-vote-update', onPkVoteUpdate);
+        socket.off('pk-end', onPkEnd);
+      }
+      Object.keys(exitTimersRef.current).forEach(function(id) { clearTimeout(exitTimersRef.current[id]); });
+    };
   }, [socket, roomId]);
 
   var hasSlot = slots.some(function(s) { return s.user_id === userId; });
@@ -191,11 +278,17 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       onMuteToggle: (!isLocal && isHost)
         ? function(isMuted) { panelService.mutePanelist(socket, roomId, slot.user_id, isMuted); }
         : null,
+      role: guest ? (guest.role || null) : null,
+      isScreenSharing: !!(screenSharingIds[slot.user_id]),
+      isSpotlighted: !!(spotlightUserId && slot.user_id === spotlightUserId),
+      onSpotlight: function() { setSpotlightUserId(function(cur) { return cur === slot.user_id ? null : slot.user_id; }); },
     };
   }
 
   var expandedSlot = slots.find(function(s) { return s.is_expanded; });
   var otherSlots = slots.filter(function(s) { return !s.is_expanded; });
+  var spotlightSlot = spotlightUserId ? slots.find(function(s) { return s.user_id === spotlightUserId; }) : null;
+  var sidebarSlots = spotlightUserId ? slots.filter(function(s) { return s.user_id !== spotlightUserId; }) : [];
 
   var videoProducer = rtcManager && rtcManager.producers && rtcManager.producers['video'];
 
@@ -255,6 +348,47 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {renderControls()}
 
+      {/* PK Battle live score banner */}
+      {pkBattle && (
+        <div style={{
+          margin: '4px 8px 0',
+          background: pkBattle.active
+            ? 'linear-gradient(135deg,rgba(128,0,32,.3),rgba(201,168,76,.15))'
+            : 'rgba(201,168,76,.12)',
+          border: '1px solid ' + (pkBattle.active ? 'rgba(128,0,32,.5)' : 'rgba(201,168,76,.4)'),
+          borderRadius: 8,
+          padding: '6px 10px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          transition: 'all 0.3s ease',
+        }}>
+          <div style={{ fontFamily: '"DM Sans",sans-serif', fontSize: 9, color: pkBattle.active ? '#FF1A3C' : GOLD, letterSpacing: 1, flexShrink: 0 }}>
+            {pkBattle.active ? '⚔ LIVE' : '🏆 RESULT'}
+          </div>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+            <span style={{ fontFamily: '"DM Sans",sans-serif', fontWeight: 700, fontSize: 11, color: '#F0E8D4', maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {pkBattle.challenger}
+            </span>
+            <span style={{ fontFamily: '"Bebas Neue",sans-serif', fontSize: 18, color: '#FF1A3C', minWidth: 26, textAlign: 'center' }}>
+              {pkBattle.challengerScore}
+            </span>
+            <span style={{ fontFamily: '"DM Sans",sans-serif', fontSize: 9, color: '#8A7A62' }}>VS</span>
+            <span style={{ fontFamily: '"Bebas Neue",sans-serif', fontSize: 18, color: GOLD, minWidth: 26, textAlign: 'center' }}>
+              {pkBattle.defenderScore}
+            </span>
+            <span style={{ fontFamily: '"DM Sans",sans-serif', fontWeight: 700, fontSize: 11, color: '#F0E8D4', maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {pkBattle.defender}
+            </span>
+          </div>
+          {pkBattle.winner && (
+            <div style={{ fontFamily: '"DM Sans",sans-serif', fontSize: 8, color: GOLD, flexShrink: 0 }}>
+              🏆 {pkBattle.winner}
+            </div>
+          )}
+        </div>
+      )}
+
       {slots.length === 0 ? (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#555', fontFamily: '"DM Sans", sans-serif' }}>
           <div style={{ fontSize: 36 }}>🎙</div>
@@ -272,6 +406,21 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
             </button>
           )}
         </div>
+      ) : spotlightSlot ? (
+        <div style={{ flex: 1, display: 'flex', gap: 6, padding: 8 }}>
+          <div style={{ flex: '0 0 70%' }}>
+            <PanelTile {...tileProps(spotlightSlot)} />
+          </div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, overflowY: 'auto' }}>
+            {sidebarSlots.map(function(slot) {
+              return (
+                <div key={slot.slot_index} style={{ flexShrink: 0 }}>
+                  <PanelTile {...tileProps(slot)} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
       ) : expandedSlot ? (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, padding: 8 }}>
           <div style={{ flex: 1 }}>
@@ -288,9 +437,27 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
           </div>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', 1fr)', gap: 6, padding: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', 1fr)', gap: 6, padding: 8, transition: 'grid-template-columns 0.35s ease' }}>
           {slots.map(function(slot) {
-            return <PanelTile key={slot.slot_index} {...tileProps(slot)} />;
+            var key = slot.user_id || ('slot-' + slot.slot_index);
+            var isNew = !prevSlotKeysRef.current.has(key);
+            var isExiting = exitingIds.has(slot.user_id);
+            prevSlotKeysRef.current.add(key);
+            return (
+              <div
+                key={slot.slot_index}
+                style={{
+                  animation: isExiting
+                    ? 'panelTileExit 0.35s ease forwards'
+                    : isNew
+                      ? 'panelTileEnter 0.35s ease'
+                      : 'none',
+                  transition: 'opacity 0.2s, transform 0.2s',
+                }}
+              >
+                <PanelTile {...tileProps(slot)} />
+              </div>
+            );
           })}
         </div>
       )}

@@ -259,6 +259,68 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     addToast('Voted for ' + votedName + '!', 'success');
   }
 
+  function handleRematch() {
+    if (!challenger || !defender) return;
+    var cName = challenger;
+    var dName = defender;
+    suddenDeathRef.current = false;
+    setChallengerScore(0);
+    setDefenderScore(0);
+    setBattleDuration(selectedDuration);
+    setCountdown(selectedDuration);
+    setWinner(null);
+    setMyVote(null);
+    setVoteHistory([]);
+    setCheerA([]);
+    setCheerB([]);
+    setBattleLog([{ time: fmtTime(), text: '⚔️ REMATCH! ' + cName + ' vs ' + dName }]);
+    setBattleState('active');
+
+    if (socket && roomId) {
+      socket.emit('pk-start', { roomId: roomId, challenger: cName, defender: dName, duration: selectedDuration });
+    }
+
+    clearAllIntervals();
+
+    countdownRef.current = setInterval(function() {
+      setCountdown(function(prev) {
+        if (prev <= 1) {
+          if (challengerScoreRef.current === defenderScoreRef.current && !suddenDeathRef.current) {
+            suddenDeathRef.current = true;
+            if (addToast) addToast('⚡ Sudden death! 30 more seconds!', 'success');
+            if (socket && roomId) socket.emit('pk-sudden-death', { roomId: roomId });
+            return 30;
+          }
+          clearInterval(countdownRef.current);
+          countdownRef.current = null;
+          endBattle();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    simScoreRef.current = setInterval(function() {
+      var pts = rndInt(1, 5);
+      var side = Math.random() < 0.5 ? 'challenger' : 'defender';
+      if (side === 'challenger') {
+        setChallengerScore(function(prev) { return prev + pts; });
+      } else {
+        setDefenderScore(function(prev) { return prev + pts; });
+      }
+    }, 2000);
+
+    simLogRef.current = setInterval(function() {
+      var side = Math.random() < 0.5 ? cName : dName;
+      var viewer = 'viewer' + rndInt(100, 999);
+      setBattleLog(function(prev) {
+        return prev.concat([{ time: fmtTime(), text: '👍 ' + viewer + ' voted for ' + side }]).slice(-50);
+      });
+    }, 10000);
+
+    addToast('⚔️ REMATCH started!', 'success');
+  }
+
   function resetBattle() {
     clearAllIntervals();
     suddenDeathRef.current = false;
@@ -517,10 +579,18 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
               <span style={{ color: '#8A7A62' }}>·</span>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C' }}>{defender}: {defenderScore}</span>
             </div>
-            <button onClick={function() { setBattleState('idle'); setWinner(null); setChallengerScore(0); setDefenderScore(0); setChallenger(''); setDefender(''); setBattleLog([]); }}
-              style={{ marginTop: 14, padding: '9px 24px', background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>
-              NEW BATTLE
-            </button>
+            <div style={{ display: 'flex', gap: 8, marginTop: 14, justifyContent: 'center' }}>
+              {isHost && (
+                <button onClick={handleRematch}
+                  style={{ padding: '9px 20px', background: 'rgba(128,0,32,.2)', border: '1px solid rgba(128,0,32,.5)', borderRadius: 8, color: '#FF1A3C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>
+                  ⚔️ REMATCH
+                </button>
+              )}
+              <button onClick={function() { setBattleState('idle'); setWinner(null); setChallengerScore(0); setDefenderScore(0); setChallenger(''); setDefender(''); setBattleLog([]); }}
+                style={{ padding: '9px 20px', background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>
+                NEW BATTLE
+              </button>
+            </div>
           </div>
         </div>
       </UpgradeGate>
@@ -595,23 +665,42 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         </div>
 
         {isHost && (
-          <button
-            onClick={resetBattle}
-            style={{
-              width: '100%',
-              padding: '13px',
-              background: 'linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.1))',
-              border: '1px solid rgba(201,168,76,.5)',
-              borderRadius: 10,
-              color: '#C9A84C',
-              fontFamily: "'Bebas Neue',sans-serif",
-              fontSize: 16,
-              letterSpacing: 2,
-              cursor: 'pointer',
-            }}
-          >
-            ⚡ START NEW BATTLE
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <button
+              onClick={handleRematch}
+              style={{
+                width: '100%',
+                padding: '13px',
+                background: 'linear-gradient(135deg,rgba(128,0,32,.35),rgba(128,0,32,.15))',
+                border: '1px solid rgba(128,0,32,.5)',
+                borderRadius: 10,
+                color: '#FF1A3C',
+                fontFamily: "'Bebas Neue',sans-serif",
+                fontSize: 16,
+                letterSpacing: 2,
+                cursor: 'pointer',
+              }}
+            >
+              ⚔️ INSTANT REMATCH
+            </button>
+            <button
+              onClick={resetBattle}
+              style={{
+                width: '100%',
+                padding: '13px',
+                background: 'linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.1))',
+                border: '1px solid rgba(201,168,76,.5)',
+                borderRadius: 10,
+                color: '#C9A84C',
+                fontFamily: "'Bebas Neue',sans-serif",
+                fontSize: 16,
+                letterSpacing: 2,
+                cursor: 'pointer',
+              }}
+            >
+              ⚡ START NEW BATTLE
+            </button>
+          </div>
         )}
       </div>
       </UpgradeGate>
@@ -817,25 +906,57 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         </div>
       </div>
 
-      {/* Host end-battle control */}
+      {/* Host Battle Control Panel */}
       {isHost && (
-        <div style={{ textAlign: 'center', marginTop: 4 }}>
-          <button
-            onClick={endBattle}
-            style={{
-              padding: '10px 24px',
-              background: 'rgba(128,0,32,.15)',
-              border: '1px solid rgba(128,0,32,.4)',
-              borderRadius: 8,
-              color: '#800020',
-              fontFamily: "'Bebas Neue',sans-serif",
-              fontSize: 13,
-              letterSpacing: 1,
-              cursor: 'pointer'
-            }}
-          >
-            END BATTLE NOW
-          </button>
+        <div style={{ background: 'rgba(26,21,16,.95)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 12, padding: '12px 14px', marginTop: 4 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 10 }}>⚙ HOST CONTROLS</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={endBattle}
+              style={{
+                flex: 1,
+                padding: '11px',
+                background: 'linear-gradient(135deg,rgba(128,0,32,.4),rgba(128,0,32,.2))',
+                border: '1px solid rgba(128,0,32,.6)',
+                borderRadius: 9,
+                color: '#FF1A3C',
+                fontFamily: "'Bebas Neue',sans-serif",
+                fontSize: 15,
+                letterSpacing: 2,
+                cursor: 'pointer',
+              }}
+            >
+              ■ END BATTLE
+            </button>
+            <button
+              onClick={handleRematch}
+              style={{
+                flex: 1,
+                padding: '11px',
+                background: 'rgba(201,168,76,.1)',
+                border: '1px solid rgba(201,168,76,.35)',
+                borderRadius: 9,
+                color: '#C9A84C',
+                fontFamily: "'Bebas Neue',sans-serif",
+                fontSize: 15,
+                letterSpacing: 2,
+                cursor: 'pointer',
+              }}
+            >
+              ⚔️ REMATCH
+            </button>
+          </div>
+          <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
+            <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,.06)', overflow: 'hidden' }}>
+              <div style={{ height: 4, width: cPct + '%', background: 'linear-gradient(90deg,#800020,#C01838)', borderRadius: 2, transition: 'width .4s ease' }} />
+            </div>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF1A3C', minWidth: 30, textAlign: 'right' }}>{cPct}%</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>vs</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', minWidth: 30 }}>{dPct}%</span>
+            <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,.06)', overflow: 'hidden' }}>
+              <div style={{ height: 4, width: dPct + '%', background: 'linear-gradient(90deg,#C9A84C,#D4854A)', borderRadius: 2, transition: 'width .4s ease' }} />
+            </div>
+          </div>
         </div>
       )}
     </div>
