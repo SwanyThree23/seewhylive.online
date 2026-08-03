@@ -621,6 +621,12 @@ export default function LiveRoomPage({
   var [showTipEdit,        setShowTipEdit]        = useState(false);
   var [tipEditInput,       setTipEditInput]       = useState('');      // newline-separated
   var [myWatchSecs,        setMyWatchSecs]        = useState(0);       // seconds I've been watching
+  // ── Batch 29: Teleprompter, Connection Quality, Post-Stream Summary ───────
+  var [showTeleprompter,   setShowTeleprompter]   = useState(false);   // host-only local overlay
+  var [prompterText,       setPrompterText]       = useState('');      // script text
+  var [prompterFontSize,   setPrompterFontSize]   = useState(22);      // px
+  var [connQuality,        setConnQuality]        = useState(null);    // 'good'|'fair'|'poor'|null
+  var [showSummaryCard,    setShowSummaryCard]    = useState(false);   // post-stream summary overlay
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -667,6 +673,16 @@ export default function LiveRoomPage({
     }, 5000);
     return function() { clearInterval(interval); };
   }, [tipTickerItems]);
+
+  // ── Connection quality from streamStats ──
+  useEffect(function() {
+    if (!streamStats) return;
+    var rtt = streamStats.rttMs || 0;
+    var bps = streamStats.bitrateKbps || 0;
+    if (rtt < 100 && bps >= 800)  setConnQuality('good');
+    else if (rtt < 300 && bps >= 300) setConnQuality('fair');
+    else setConnQuality('poor');
+  }, [streamStats]);
 
   // ── RTC + socket events ──
   useEffect(function() {
@@ -2152,6 +2168,13 @@ export default function LiveRoomPage({
                     {fmtElapsed(liveElapsed)}
                   </span>
                 )}
+                {connQuality && (role === 'host' || role === 'cohost') && (
+                  <div style={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
+                    <div style={{ width: 3, height: connQuality !== 'poor' ? 6 : 2, background: connQuality === 'good' ? '#00CC66' : connQuality === 'fair' ? TEAL : RED, borderRadius: 1 }} />
+                    <div style={{ width: 3, height: connQuality !== 'poor' ? 9 : 2, background: connQuality === 'good' ? '#00CC66' : connQuality === 'fair' ? TEAL : BORDER, borderRadius: 1 }} />
+                    <div style={{ width: 3, height: connQuality === 'good' ? 12 : 2, background: connQuality === 'good' ? '#00CC66' : BORDER, borderRadius: 1 }} />
+                  </div>
+                )}
               </div>
             ) : role === 'host' ? (
               <button onClick={function() { setShowLiveModal(true); }} style={{ display: 'flex', alignItems: 'center', gap: 5, background: RED, border: 'none', borderRadius: 999, padding: '5px 12px', cursor: 'pointer' }}>
@@ -2874,6 +2897,8 @@ export default function LiveRoomPage({
                 setTipEditInput(tipTickerItems.map(function(t) { return t.text; }).join('\n'));
                 setShowTipEdit(function(s) { return !s; });
               }},
+              { emoji: '📜', label: 'Prompter', active: showTeleprompter, onTap: function() { setShowTeleprompter(function(s) { return !s; }); } },
+              { emoji: '📋', label: 'Summary', active: false, onTap: function() { setShowSummaryCard(function(s) { return !s; }); } },
             ].concat(multiCamDevices.length > 1 ? [
               { emoji: '📷', label: 'Camera', active: showCamPicker, onTap: function() { setShowCamPicker(function(s) { return !s; }); } },
             ] : [])
@@ -6785,6 +6810,113 @@ export default function LiveRoomPage({
                 📝 ACTIVATE TICKER
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 29: TELEPROMPTER (HOST ONLY, LOCAL) ════════════════ */}
+      {showTeleprompter && (role === 'host' || role === 'cohost') && (
+        <div style={{
+          position: 'absolute', top: 60, right: 16, zIndex: 225, width: 320,
+          background: 'rgba(0,0,0,.92)', border: '1.5px solid ' + GOLD + '44',
+          borderRadius: 14, overflow: 'hidden', animation: 'fadeSlideIn .2s ease',
+          boxShadow: '0 8px 32px rgba(0,0,0,.8)',
+        }}>
+          {/* Prompter header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(201,168,76,.08)', borderBottom: '1px solid ' + BORDER }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: GOLD, letterSpacing: 2 }}>📜 TELEPROMPTER</span>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <button onClick={function() { setPrompterFontSize(function(s) { return Math.max(12, s - 2); }); }}
+                style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 4, padding: '2px 7px', color: MUTED, cursor: 'pointer', fontSize: 11 }}>A-</button>
+              <button onClick={function() { setPrompterFontSize(function(s) { return Math.min(40, s + 2); }); }}
+                style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 4, padding: '2px 7px', color: MUTED, cursor: 'pointer', fontSize: 11 }}>A+</button>
+              <button onClick={function() { setShowTeleprompter(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+          </div>
+          {/* Script display (scrollable) */}
+          <div style={{ maxHeight: 280, overflowY: 'auto', padding: '14px 16px' }}>
+            {prompterText ? (
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: prompterFontSize, color: TEXT, lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                {prompterText}
+              </div>
+            ) : (
+              <textarea placeholder="Type your script / notes here…&#10;Only you can see this." rows={6}
+                style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontSize: prompterFontSize, lineHeight: 1.5, resize: 'none', boxSizing: 'border-box' }}
+                onChange={function(e) { setPrompterText(e.target.value); }} />
+            )}
+          </div>
+          {prompterText && (
+            <div style={{ padding: '0 12px 10px', display: 'flex', gap: 8 }}>
+              <button onClick={function() { setPrompterText(''); }}
+                style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '6px 0', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, cursor: 'pointer' }}>
+                EDIT
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 29: POST-STREAM SUMMARY CARD ════════════════ */}
+      {showSummaryCard && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.8)', zIndex: 226, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 20, padding: '28px 32px', minWidth: 340, maxWidth: 420, animation: 'fadeSlideIn .25s ease', boxShadow: '0 12px 40px rgba(0,0,0,.7)' }}>
+            {/* Header */}
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: GOLD, letterSpacing: 3 }}>📋 STREAM SUMMARY</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 4 }}>
+                {streamInfo && streamInfo.title ? streamInfo.title : 'Live Session'}
+              </div>
+            </div>
+
+            {/* Stats grid */}
+            {(function() {
+              var dur = liveElapsed || 0;
+              var durMins = Math.floor(dur / 60);
+              var durSecs = dur % 60;
+              var statsRows = [
+                { icon: '👥', label: 'Peak Viewers',   value: viewerCount || 0 },
+                { icon: '⏱️', label: 'Duration',       value: durMins + 'm ' + durSecs + 's' },
+                { icon: '💰', label: 'Total Earned',   value: '$' + ((sessionEarningsCents || 0) / 100).toFixed(2) },
+                { icon: '🎁', label: 'Gifts Received', value: giftCount || 0 },
+                { icon: '💬', label: 'Messages',       value: chat.length || 0 },
+                { icon: '👑', label: 'Top Gifter',     value: (topFans && topFans[0]) ? topFans[0].username : '—' },
+              ];
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 20px', marginBottom: 20 }}>
+                  {statsRows.map(function(row) {
+                    return (
+                      <div key={row.label} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>{row.icon} {row.label}</span>
+                        <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1 }}>{row.value}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* Top reactions */}
+            {Array.isArray(emojiTally) && emojiTally.length > 0 && (
+              <div style={{ marginBottom: 18 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 6, letterSpacing: .5 }}>TOP REACTIONS</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {emojiTally.slice(0, 6).map(function(e) {
+                    return (
+                      <div key={e.emoji} style={{ display: 'flex', alignItems: 'center', gap: 4, background: CARD2, borderRadius: 20, padding: '4px 10px' }}>
+                        <span style={{ fontSize: 15 }}>{e.emoji}</span>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>{e.count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <button onClick={function() { setShowSummaryCard(false); }}
+              style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 12, padding: '12px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: MUTED, cursor: 'pointer', letterSpacing: 1.5 }}>
+              CLOSE
+            </button>
           </div>
         </div>
       )}
