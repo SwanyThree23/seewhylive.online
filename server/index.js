@@ -460,6 +460,9 @@ var userBadgesMap       = new Map();  // userId → Set<badge> (earned badges)
 var cohostQueueThrottle = new Map();  // userId → lastRequestTs ms
 var reactionComboMap    = new Map();  // roomId → { emoji, count, lastTs, timerId }
 var viewerSpotlightMap  = new Map();  // roomId → { userId, username, socketId, endsAt }
+var starredMsgsMap      = new Map();  // roomId → [{ id, username, message, starCount, ts }] last 20
+var chatRaffleMap       = new Map();  // roomId → { keyword, entries: Map<userId, username>, active }
+var starThrottle        = new Map();  // userId → lastStarTs
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -2045,6 +2048,12 @@ io.on('connection', function(socket) {
           ts:              ts
         });
         io.to(socket.id).emit('points-earned', { amount: 2, reason: 'chat', ts: ts });
+        // Auto-enter raffle if message matches active raffle keyword
+        var raffle = chatRaffleMap.get(roomId);
+        if (raffle && raffle.active && message.toLowerCase().trim() === raffle.keyword && !raffle.entries.has(userId)) {
+          raffle.entries.set(userId, username);
+          io.to(roomId).emit('chat-raffle-update', { keyword: raffle.keyword, active: true, count: raffle.entries.size });
+        }
       })
       .catch(function(err) {
         logger.error('[chat-message] translation failed: ' + err.message);
@@ -4299,6 +4308,83 @@ io.on('connection', function(socket) {
     }, (data.duration || 30) * 1000);
   });
 
+  // ── chat-star — viewer stars a message to lift it to highlights strip ───
+  socket.on('chat-star', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data.msgId) return;
+    var _csNow = Date.now();
+    if (_csNow - (starThrottle.get(socket.data.userId) || 0) < 2000) return;
+    starThrottle.set(socket.data.userId, _csNow);
+    var msgId    = String(data.msgId).slice(0, 64);
+    var message  = String(data.message || '').slice(0, 300);
+    var username = String(data.username || '').slice(0, 40);
+    if (!starredMsgsMap.has(roomId)) starredMsgsMap.set(roomId, []);
+    var starred = starredMsgsMap.get(roomId);
+    var existing = starred.find(function(m) { return m.id === msgId; });
+    if (existing) {
+      existing.starCount++;
+    } else {
+      starred.unshift({ id: msgId, username: username, message: message, starCount: 1, ts: Math.floor(_csNow / 1000) });
+      if (starred.length > 20) starred.pop();
+    }
+    io.to(roomId).emit('chat-star-update', { id: msgId, username: username, message: message, starCount: existing ? existing.starCount : 1, ts: Math.floor(_csNow / 1000) });
+  });
+
+  // ── guest-entrance — emits a guest arrival stinger ────────────────────
+  // Called from client when a new guest track appears in the panel grid
+  socket.on('guest-entrance', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var guestId  = String(data.guestId  || socket.data.guestId || '').slice(0, 64);
+    var username = String(data.username || socket.data.username || '').slice(0, 40);
+    var emoji    = String(data.emoji    || '🎤').slice(0, 4);
+    if (!guestId || !username) return;
+    io.to(roomId).emit('guest-entrance', { guestId: guestId, username: username, emoji: emoji, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── chat-raffle-start — host starts a keyword raffle ─────────────────
+  socket.on('chat-raffle-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var keyword = String(data.keyword || '').toLowerCase().trim().slice(0, 30);
+    if (!keyword) return;
+    chatRaffleMap.set(roomId, { keyword: keyword, entries: new Map(), active: true });
+    io.to(roomId).emit('chat-raffle-update', { keyword: keyword, active: true, count: 0 });
+  });
+
+  // ── chat-raffle-entry — viewer enters raffle by typing keyword ────────
+  socket.on('chat-raffle-entry', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var raffle = chatRaffleMap.get(roomId);
+    if (!raffle || !raffle.active) return;
+    var userId   = socket.data.userId || socket.id;
+    var username = socket.data.username || 'Guest';
+    if (raffle.entries.has(userId)) return; // already entered
+    raffle.entries.set(userId, username);
+    io.to(roomId).emit('chat-raffle-update', { keyword: raffle.keyword, active: true, count: raffle.entries.size });
+  });
+
+  // ── chat-raffle-draw — host draws the winner ──────────────────────────
+  socket.on('chat-raffle-draw', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || socket.data.role !== 'host') return;
+    var raffle = chatRaffleMap.get(roomId);
+    if (!raffle || !raffle.active || raffle.entries.size === 0) {
+      io.to(socket.id).emit('chat-raffle-result', { error: 'No entries' }); return;
+    }
+    raffle.active = false;
+    var entries = Array.from(raffle.entries.entries()); // [[userId, username], ...]
+    var picked  = entries[Math.floor(Math.random() * entries.length)];
+    var prize   = String(data.prize || '').slice(0, 80);
+    io.to(roomId).emit('chat-raffle-result', { winner: picked[1], userId: picked[0], prize: prize, count: entries.length, ts: Math.floor(Date.now() / 1000) });
+    chatRaffleMap.delete(roomId);
+  });
+
+  // Also track raffle entries from chat messages
+  // (if user types the keyword in chat while raffle is active)
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -4774,6 +4860,8 @@ io.on('connection', function(socket) {
     if (endedCombo && endedCombo.timerId) clearTimeout(endedCombo.timerId);
     reactionComboMap.delete(roomId);
     viewerSpotlightMap.delete(roomId);
+    starredMsgsMap.delete(roomId);
+    chatRaffleMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

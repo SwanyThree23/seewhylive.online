@@ -78,6 +78,7 @@ var ANIM = [
   '@keyframes moodPulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}',
   '@keyframes comboFlash{0%{transform:scale(.5);opacity:0}40%{transform:scale(1.2);opacity:1}70%{transform:scale(1)}100%{opacity:0}}',
   '@keyframes spotlightGlow{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}50%{box-shadow:0 0 0 8px rgba(201,168,76,.3)}}',
+  '@keyframes entranceSlide{0%{transform:translateY(40px);opacity:0}30%{transform:translateY(-4px);opacity:1}85%{opacity:1}100%{opacity:0;transform:translateY(-20px)}}',
 ].join('\n');
 
 // ─── Room ambiance themes ─────────────────────────────────────────────────────
@@ -655,6 +656,13 @@ export default function LiveRoomPage({
   var [viewerSpotlight,    setViewerSpotlight]    = useState(null);   // { userId, username, endsAt }
   var [ttsEnabled,         setTtsEnabled]         = useState(false);  // local: TTS gift alerts
   var [showTtsPanel,       setShowTtsPanel]       = useState(false);
+  var [starredMsgs,        setStarredMsgs]        = useState([]);     // [{ id, username, message, starCount }]
+  var [showStarred,        setShowStarred]        = useState(false);
+  var [guestEntrance,      setGuestEntrance]      = useState(null);   // { username, emoji } for 3s
+  var [chatRaffle,         setChatRaffle]         = useState(null);   // { keyword, count, active } | null
+  var [showRafflePanel,    setShowRafflePanel]    = useState(false);
+  var [raffleInput,        setRaffleInput]        = useState({ keyword: '!join', prize: '' });
+  var [raffleWinner,       setRaffleWinner]       = useState(null);   // { winner, prize, count }
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -1384,6 +1392,35 @@ export default function LiveRoomPage({
       }
     });
 
+    socket.on('chat-star-update', function(data) {
+      if (!data || !data.id) return;
+      setStarredMsgs(function(prev) {
+        var exists = prev.findIndex(function(m) { return m.id === data.id; });
+        if (exists >= 0) {
+          var n = prev.slice(); n[exists] = data; return n;
+        }
+        return [data].concat(prev).slice(0, 20);
+      });
+    });
+
+    socket.on('guest-entrance', function(data) {
+      if (!data || !data.username) return;
+      setGuestEntrance(data);
+      setTimeout(function() { setGuestEntrance(null); }, 3500);
+    });
+
+    socket.on('chat-raffle-update', function(data) {
+      if (!data) { setChatRaffle(null); return; }
+      setChatRaffle(data);
+    });
+
+    socket.on('chat-raffle-result', function(data) {
+      if (!data) return;
+      setRaffleWinner(data);
+      setChatRaffle(null);
+      setTimeout(function() { setRaffleWinner(null); }, 8000);
+    });
+
     socket.on('react-combo-hit', function(data) {
       if (!data) return;
       setReactCombo({ emoji: data.emoji, count: data.count });
@@ -1582,6 +1619,10 @@ export default function LiveRoomPage({
       socket.off('badge-awarded');
       socket.off('react-combo-hit');
       socket.off('viewer-spotlight');
+      socket.off('chat-star-update');
+      socket.off('guest-entrance');
+      socket.off('chat-raffle-update');
+      socket.off('chat-raffle-result');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
@@ -3142,6 +3183,7 @@ export default function LiveRoomPage({
             { emoji: '🔀', label: 'Compare', active: showCompare, onTap: function() { setShowCompare(function(s) { return !s; }); } },
             { emoji: '🎯', label: 'Gift Goal', active: !!giftGoal, onTap: function() { setShowGiftGoal(function(s) { return !s; }); } },
             { emoji: '🎭', label: 'Mood', active: showMoodPanel, onTap: function() { setShowMoodPanel(function(s) { return !s; }); } },
+            { emoji: '⭐', label: 'Starred', active: showStarred, onTap: function() { setShowStarred(function(s) { return !s; }); } },
             ...(role === 'host' ? [
               { emoji: '👥', label: 'Co-Queue', active: showCohostQueue, onTap: function() { setShowCohostQueue(function(s) { return !s; }); } },
               { emoji: '🔊', label: 'TTS Gifts', active: ttsEnabled, onTap: function() {
@@ -3152,6 +3194,7 @@ export default function LiveRoomPage({
                 if (!viewerSpotlight && socket) socket.emit('viewer-spotlight-spin', { roomId: roomId, duration: 30 });
                 else if (viewerSpotlight && socket) socket.emit('viewer-spotlight-spin', { roomId: roomId, duration: 0 });
               }},
+              { emoji: '🎰', label: 'Raffle', active: !!chatRaffle, onTap: function() { setShowRafflePanel(function(s) { return !s; }); } },
             ] : role === 'viewer' ? [
               { emoji: '✋', label: 'Co-Host', active: cohostRequested, onTap: function() {
                 if (!cohostRequested && socket) { socket.emit('cohost-request', { roomId: roomId }); setCohostRequested(true); }
@@ -3782,7 +3825,14 @@ export default function LiveRoomPage({
                           ) : null;
                         })()}
                       </span>
-                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4', lineHeight: 1.3 }}>{msg.message}</span>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+                        <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4', lineHeight: 1.3, flex: 1 }}>{msg.message}</span>
+                        <button onClick={function() {
+                          if (socket && msg.id) socket.emit('chat-star', { roomId: roomId, msgId: msg.id, message: msg.message, username: msg.username });
+                        }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8A7A62', fontSize: 10, padding: '0 2px', flexShrink: 0, lineHeight: 1.3 }}>
+                          ⭐
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -7545,6 +7595,123 @@ export default function LiveRoomPage({
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 4, letterSpacing: 1 }}>
               YOU'RE IN THE SPOTLIGHT!
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 34: GUEST ENTRANCE STINGER ════════════════ */}
+      {guestEntrance && (
+        <div style={{
+          position: 'absolute', bottom: 160, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 88, pointerEvents: 'none', whiteSpace: 'nowrap',
+          animation: 'entranceSlide 3.5s ease forwards',
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg,' + BURG + ',' + CARD + ')',
+            border: '1.5px solid ' + GOLD, borderRadius: 12,
+            padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <span style={{ fontSize: 24 }}>{guestEntrance.emoji || '🎤'}</span>
+            <div>
+              <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 10, color: GOLD, letterSpacing: 2, marginBottom: 2 }}>JUST JOINED THE STAGE</div>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 18, color: TEXT }}>{guestEntrance.username}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 34: STARRED MESSAGES PANEL ════════════════ */}
+      {showStarred && (
+        <div style={{
+          position: 'absolute', top: 60, right: 10, zIndex: 94,
+          background: CARD, border: '1px solid ' + BORDER, borderRadius: 14,
+          padding: 14, width: 260, backdropFilter: 'blur(8px)', maxHeight: 340, overflowY: 'auto',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: GOLD, letterSpacing: 1 }}>⭐ TOP MESSAGES</span>
+            <button onClick={function() { setShowStarred(false); }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 13 }}>✕</button>
+          </div>
+          {starredMsgs.length === 0 && (
+            <div style={{ textAlign: 'center', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 10, padding: '16px 0' }}>Star chat messages to highlight them</div>
+          )}
+          {starredMsgs.slice(0, 10).map(function(m) {
+            return (
+              <div key={m.id} style={{ marginBottom: 8, padding: '6px 8px', background: CARD2, borderRadius: 8, borderLeft: '2px solid ' + GOLD }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{m.username}</span>
+                  <span style={{ marginLeft: 'auto', fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD }}>⭐ {m.starCount}</span>
+                </div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, lineHeight: 1.3 }}>{m.message}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 34: CHAT RAFFLE PANEL (host only) ════════════════ */}
+      {showRafflePanel && (role === 'host' || role === 'cohost') && (
+        <div style={{
+          position: 'absolute', bottom: 64, left: 10, zIndex: 95,
+          background: CARD, border: '1px solid ' + BORDER, borderRadius: 14,
+          padding: 16, width: 260, backdropFilter: 'blur(8px)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 15, color: GOLD, letterSpacing: 1 }}>🎰 CHAT RAFFLE</span>
+            <button onClick={function() { setShowRafflePanel(false); }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+          </div>
+          {!chatRaffle ? (
+            <div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 4, letterSpacing: 1 }}>KEYWORD (viewers type to enter)</div>
+                <input value={raffleInput.keyword} onChange={function(e) { setRaffleInput(function(p) { return Object.assign({}, p, { keyword: e.target.value }); }); }}
+                  style={{ width: '100%', background: SURF, border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 8px', color: TEXT, fontSize: 12, boxSizing: 'border-box' }} />
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 4, letterSpacing: 1 }}>PRIZE (optional)</div>
+                <input value={raffleInput.prize} onChange={function(e) { setRaffleInput(function(p) { return Object.assign({}, p, { prize: e.target.value }); }); }}
+                  style={{ width: '100%', background: SURF, border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 8px', color: TEXT, fontSize: 12, boxSizing: 'border-box' }} />
+              </div>
+              <button onClick={function() {
+                if (socket) socket.emit('chat-raffle-start', { roomId: roomId, keyword: raffleInput.keyword.toLowerCase().trim() });
+              }} style={{ width: '100%', background: GOLD, color: BG, border: 'none', borderRadius: 8, padding: '8px 0', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                START RAFFLE
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div style={{ textAlign: 'center', marginBottom: 12 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: 1, marginBottom: 4 }}>TYPE <span style={{ color: GOLD }}>{chatRaffle.keyword}</span> TO ENTER</div>
+                <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 28, color: TEAL }}>{chatRaffle.count || 0}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>entries</div>
+              </div>
+              <button onClick={function() {
+                if (socket) socket.emit('chat-raffle-draw', { roomId: roomId, prize: raffleInput.prize });
+              }} style={{ width: '100%', background: BURG, color: TEXT, border: 'none', borderRadius: 8, padding: '10px 0', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 1 }}>
+                🎲 DRAW WINNER
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Raffle winner announcement */}
+      {raffleWinner && (
+        <div style={{
+          position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%,-50%)',
+          zIndex: 99, pointerEvents: 'none',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          animation: 'comboFlash 1s ease',
+        }}>
+          <div style={{
+            background: 'rgba(14,12,9,.96)', border: '2px solid ' + GOLD, borderRadius: 16,
+            padding: '20px 32px', textAlign: 'center',
+            boxShadow: '0 0 32px rgba(201,168,76,.4)',
+          }}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>🎰</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: MUTED, letterSpacing: 2 }}>RAFFLE WINNER</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 28, color: GOLD, marginTop: 4 }}>{raffleWinner.winner}</div>
+            {raffleWinner.prize && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: TEAL, marginTop: 6 }}>Prize: {raffleWinner.prize}</div>}
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 4 }}>from {raffleWinner.count} entries</div>
           </div>
         </div>
       )}
