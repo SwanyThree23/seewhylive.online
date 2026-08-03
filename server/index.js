@@ -422,6 +422,7 @@ var tagsMap             = new Map();  // roomId → string[]
 var pinnedLinkMap       = new Map();  // roomId → { url, label, emoji } | null
 var giftChainMap        = new Map();  // roomId → { count, lastTs }
 var watchTogetherMap    = new Map();  // roomId → { url, currentTime, playing, ts } | null
+var teamBattleMap       = new Map();  // roomId → { redLabel, blueLabel, redScore, blueScore, active, endsAt, timerId }
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -528,6 +529,8 @@ function getJoinStateForRoom(roomId) {
   state.pinnedLink    = pinnedLinkMap.get(roomId) || null;
   state.slowMode      = slowModeMap.get(roomId) || 0;
   state.watchTogether = watchTogetherMap.get(roomId) || null;
+  var tb = teamBattleMap.get(roomId);
+  state.teamBattle = tb ? { redLabel: tb.redLabel, blueLabel: tb.blueLabel, redScore: tb.redScore, blueScore: tb.blueScore, active: tb.active, endsAt: tb.endsAt } : null;
   return state;
 }
 
@@ -3413,6 +3416,67 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('next-stream', { ts: ts, label: label, by: socket.data.username || 'host' });
   });
 
+  // ── Batch 24: Team Battle Arena, Reaction Heatmap ────────────────────────
+
+  // team-battle-start — host launches a team vs team gift contribution battle
+  socket.on('team-battle-start', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var redLabel  = String(data.redLabel  || 'RED TEAM').slice(0, 40);
+    var blueLabel = String(data.blueLabel || 'BLUE TEAM').slice(0, 40);
+    var duration  = Math.min(Math.max(Number(data.duration) || 60, 10), 300);
+    var endsAt    = Math.floor(Date.now() / 1000) + duration;
+    var prev = teamBattleMap.get(roomId);
+    if (prev && prev.timerId) clearTimeout(prev.timerId);
+    var battle = { redLabel: redLabel, blueLabel: blueLabel, redScore: 0, blueScore: 0, active: true, endsAt: endsAt, timerId: null };
+    battle.timerId = setTimeout(function() {
+      var b = teamBattleMap.get(roomId);
+      if (!b || !b.active) return;
+      b.active = false;
+      var winner = b.redScore >= b.blueScore ? 'red' : 'blue';
+      io.to(roomId).emit('team-battle-update', { redLabel: b.redLabel, blueLabel: b.blueLabel, redScore: b.redScore, blueScore: b.blueScore, active: false, winner: winner });
+    }, duration * 1000);
+    teamBattleMap.set(roomId, battle);
+    io.to(roomId).emit('team-battle-update', { redLabel: redLabel, blueLabel: blueLabel, redScore: 0, blueScore: 0, active: true, endsAt: endsAt });
+  });
+
+  // team-battle-gift — any user contributes points to a team in an active battle
+  socket.on('team-battle-gift', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var b = teamBattleMap.get(roomId);
+    if (!b || !b.active) return;
+    var team   = data.team === 'blue' ? 'blue' : 'red';
+    var amount = Math.min(Math.max(Number(data.amount) || 1, 1), 1000);
+    if (team === 'red')  b.redScore  += amount;
+    if (team === 'blue') b.blueScore += amount;
+    io.to(roomId).emit('team-battle-update', { redLabel: b.redLabel, blueLabel: b.blueLabel, redScore: b.redScore, blueScore: b.blueScore, active: b.active, endsAt: b.endsAt });
+  });
+
+  // team-battle-end — host manually ends battle early
+  socket.on('team-battle-end', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var b = teamBattleMap.get(roomId);
+    if (!b) return;
+    if (b.timerId) clearTimeout(b.timerId);
+    b.active = false;
+    var winner = b.redScore >= b.blueScore ? 'red' : 'blue';
+    io.to(roomId).emit('team-battle-update', { redLabel: b.redLabel, blueLabel: b.blueLabel, redScore: b.redScore, blueScore: b.blueScore, active: false, winner: winner });
+  });
+
+  // reaction-heat — user fires a positioned emoji reaction onto the stage
+  socket.on('reaction-heat', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var x     = Math.min(Math.max(Number(data.x) || 50, 0), 100);
+    var y     = Math.min(Math.max(Number(data.y) || 50, 0), 100);
+    var emoji = String(data.emoji || '❤️').slice(0, 4);
+    io.to(roomId).emit('reaction-heat', { x: x, y: y, emoji: emoji, ts: Date.now() });
+  });
+
   // sound-alert — host triggers a named alert sound for the room
   socket.on('sound-alert', function(data) {
     var roomId = data.roomId || socket.data.roomId;
@@ -3886,6 +3950,9 @@ io.on('connection', function(socket) {
     // Clean up room state
     rooms.delete(roomId);
     watchTogetherMap.delete(roomId);
+    var endedBattle = teamBattleMap.get(roomId);
+    if (endedBattle && endedBattle.timerId) clearTimeout(endedBattle.timerId);
+    teamBattleMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

@@ -70,6 +70,9 @@ var ANIM = [
   '@keyframes countdownTick{0%{transform:scale(1.06)}100%{transform:scale(1)}}',
   '@keyframes milestoneIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}60%{transform:translate(-50%,-50%) scale(1.06)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}',
   '@keyframes milestoneOut{from{opacity:1}to{opacity:0;transform:translate(-50%,-50%) translateY(-18px)}}',
+  '@keyframes teamBarGrow{from{width:0}to{width:var(--tb-pct)}}',
+  '@keyframes battleWin{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}',
+  '@keyframes heatPop{0%{transform:translate(-50%,-50%) scale(.6);opacity:1}100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}}',
 ].join('\n');
 
 // ─── Room ambiance themes ─────────────────────────────────────────────────────
@@ -578,6 +581,15 @@ export default function LiveRoomPage({
   var [linkUrl,            setLinkUrl]            = useState('');
   var [linkLabel,          setLinkLabel]          = useState('');
   var [linkEmoji,          setLinkEmoji]          = useState('🔗');
+  // ── Batch 24: Team Battle Arena, Multi-Camera, Reaction Heatmap ─────────
+  var [teamBattle,         setTeamBattle]         = useState(null);    // { redLabel, blueLabel, redScore, blueScore, active, endsAt, winner }
+  var [showTeamBattle,     setShowTeamBattle]     = useState(false);   // battle setup panel
+  var [battleConfig,       setBattleConfig]       = useState({ redLabel: 'RED TEAM', blueLabel: 'BLUE TEAM', duration: 60 });
+  var [multiCamDevices,    setMultiCamDevices]    = useState([]);      // list of camera MediaDeviceInfo
+  var [activeCamId,        setActiveCamId]        = useState(null);    // currently active camera deviceId
+  var [showCamPicker,      setShowCamPicker]      = useState(false);
+  var [heatPoints,         setHeatPoints]         = useState([]);      // [{ x, y, emoji, id }]
+  var [showHeatmap,        setShowHeatmap]        = useState(false);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -591,6 +603,16 @@ export default function LiveRoomPage({
       .then(function(s) { s.getTracks().forEach(function(t) { t.stop(); }); })
       .catch(function() {});
   }, []);
+
+  // ── Multi-camera enumeration (host/cohost only) ──
+  useEffect(function() {
+    if (role !== 'host' && role !== 'cohost') return;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+    navigator.mediaDevices.enumerateDevices().then(function(devices) {
+      var cams = devices.filter(function(d) { return d.kind === 'videoinput'; });
+      setMultiCamDevices(cams);
+    }).catch(function() {});
+  }, [role]);
 
   // ── RTC + socket events ──
   useEffect(function() {
@@ -623,6 +645,7 @@ export default function LiveRoomPage({
       if (data.pinnedLink) setPinnedLink(data.pinnedLink);
       if (data.slowMode) setSlowMode(data.slowMode);
       if (data.watchTogether) setWatchTogether(data.watchTogether);
+      if (data.teamBattle && data.teamBattle.active) setTeamBattle(data.teamBattle);
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -1031,6 +1054,28 @@ export default function LiveRoomPage({
       setNextStreamTs(data);
     });
 
+    // ── Batch 24: Team Battle, Reaction Heatmap ─────────────────────────────
+    socket.on('team-battle-update', function(data) {
+      if (!data) return;
+      setTeamBattle(data.active === false && !data.winner ? null : data);
+      if (data.active === false && data.winner) {
+        var winLabel = data.winner === 'red' ? data.redLabel : data.blueLabel;
+        if (addToast) addToast('⚔️ Battle over! ' + winLabel + ' wins!', 'success');
+        setTimeout(function() { setTeamBattle(null); }, 6000);
+      }
+    });
+
+    socket.on('reaction-heat', function(data) {
+      if (!data) return;
+      var pid = Date.now() + Math.random();
+      setHeatPoints(function(prev) {
+        return [{ x: data.x, y: data.y, emoji: data.emoji, id: pid }].concat(prev.slice(0, 199));
+      });
+      setTimeout(function() {
+        setHeatPoints(function(prev) { return prev.filter(function(p) { return p.id !== pid; }); });
+      }, 2500);
+    });
+
     socket.on('sound-alert', function(data) {
       if (!data) return;
       // Play a synthesized beep/tone using Web Audio API
@@ -1408,6 +1453,19 @@ export default function LiveRoomPage({
 
   function toggleMute() { setIsMuted(function(v) { return !v; }); }
   function toggleCam()  { setIsCamOff(function(v) { return !v; }); }
+
+  function switchCamera(deviceId) {
+    if (!deviceId) return;
+    setActiveCamId(deviceId);
+    navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId } }, audio: false })
+      .then(function(stream) {
+        var track = stream.getVideoTracks()[0];
+        if (!track) return;
+        cameraTrackRef.current = track;
+        if (rtcManager && rtcManager.replaceVideoTrack) rtcManager.replaceVideoTrack(track);
+      })
+      .catch(function() { if (addToast) addToast('Camera switch failed', 'error'); });
+  }
 
   function sendChat() {
     var msg = chatInput.trim();
@@ -2069,7 +2127,33 @@ export default function LiveRoomPage({
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
 
         {/* ── Stage Section ── */}
-        <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden', background: (ROOM_THEMES[roomTheme] && ROOM_THEMES[roomTheme].bg) || undefined, transition: 'background .5s ease' }}>
+        <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden', background: (ROOM_THEMES[roomTheme] && ROOM_THEMES[roomTheme].bg) || undefined, transition: 'background .5s ease' }}
+          onClick={showHeatmap ? function(e) {
+            var rect = e.currentTarget.getBoundingClientRect();
+            var x    = Math.round(((e.clientX - rect.left) / rect.width)  * 100);
+            var y    = Math.round(((e.clientY - rect.top)  / rect.height) * 100);
+            var EMOJIS = ['❤️','🔥','⭐','💜','👏','🎉','💥','✨'];
+            var emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+            if (socket) socket.emit('reaction-heat', { roomId: roomId, x: x, y: y, emoji: emoji });
+          } : undefined}
+        >
+          {/* Heatmap reaction dots overlay */}
+          {showHeatmap && heatPoints.length > 0 && (
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 60, overflow: 'hidden' }}>
+              {heatPoints.map(function(p) {
+                return (
+                  <div key={p.id} style={{
+                    position: 'absolute',
+                    left: p.x + '%', top: p.y + '%',
+                    transform: 'translate(-50%, -50%)',
+                    fontSize: 22,
+                    animation: 'heatPop 2.5s ease-out forwards',
+                    lineHeight: 1,
+                  }}>{p.emoji}</div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Stage header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -2618,7 +2702,12 @@ export default function LiveRoomPage({
               { emoji: '🛒', label: 'Carousel', active: shopCarousel.length > 0, onTap: function() { setShowCarouselEdit(function(s) { return !s; }); } },
               { emoji: '⌨️', label: 'Hotkeys', active: hotkeysEnabled, onTap: function() { setHotkeysEnabled(function(s) { return !s; }); if (!hotkeysEnabled && addToast) addToast('⌨️ Host hotkeys enabled (M=mute, V=cam, C=chat, H=hype, Esc=clear)', 'info'); } },
               { emoji: '📅', label: 'Schedule', active: !!nextStreamTs, onTap: function() { setShowNextStream(function(s) { return !s; }); } },
-            ] : []),
+              { emoji: '⚔️', label: 'Battle', active: !!(teamBattle && teamBattle.active), onTap: function() { setShowTeamBattle(function(s) { return !s; }); } },
+            ].concat(multiCamDevices.length > 1 ? [
+              { emoji: '📷', label: 'Camera', active: showCamPicker, onTap: function() { setShowCamPicker(function(s) { return !s; }); } },
+            ] : [])
+            : []),
+            { emoji: '🌡', label: 'Heatmap', active: showHeatmap, onTap: function() { setShowHeatmap(function(s) { return !s; }); } },
           ].map(function(tool) {
             return (
               <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
@@ -5840,6 +5929,161 @@ export default function LiveRoomPage({
           title={'Join ' + ((streamInfo && streamInfo.title) || username + ' on SeeWhy LIVE')}
           onClose={function() { setShowShareSheet(false); }}
         />
+      )}
+
+      {/* ════════════════ BATCH 24: TEAM BATTLE OVERLAY ════════════════ */}
+      {teamBattle && (
+        <div style={{
+          position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 88, minWidth: 340, maxWidth: 480, width: '92%',
+          background: 'rgba(14,12,9,.92)', border: '1.5px solid rgba(201,168,76,.22)',
+          borderRadius: 16, padding: '14px 18px', backdropFilter: 'blur(8px)',
+          animation: 'fadeSlideIn .25s ease',
+          boxShadow: teamBattle.active ? '0 0 24px rgba(128,0,32,.35), 0 4px 20px rgba(0,0,0,.6)' : '0 4px 20px rgba(0,0,0,.6)',
+        }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: GOLD, letterSpacing: 2 }}>
+              ⚔️ {teamBattle.active ? 'TEAM BATTLE LIVE' : 'BATTLE ENDED'}
+            </div>
+            {teamBattle.active && teamBattle.endsAt && (
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED }}>
+                {Math.max(0, teamBattle.endsAt - Math.floor(Date.now() / 1000))}s
+              </div>
+            )}
+          </div>
+
+          {/* Score bars */}
+          {(function() {
+            var total = (teamBattle.redScore || 0) + (teamBattle.blueScore || 0) || 1;
+            var redPct  = Math.round(((teamBattle.redScore  || 0) / total) * 100);
+            var bluePct = Math.round(((teamBattle.blueScore || 0) / total) * 100);
+            var isWinner = !teamBattle.active && teamBattle.winner;
+            return (
+              <div>
+                {/* Red team */}
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, fontWeight: 700, color: isWinner && teamBattle.winner === 'red' ? '#FF6B6B' : RED, animation: isWinner && teamBattle.winner === 'red' ? 'battleWin 1s ease infinite' : 'none' }}>
+                      {isWinner && teamBattle.winner === 'red' ? '👑 ' : ''}{teamBattle.redLabel}
+                    </span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: RED }}>{teamBattle.redScore || 0}</span>
+                  </div>
+                  <div style={{ height: 10, background: 'rgba(255,26,60,.15)', borderRadius: 99, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: redPct + '%', background: 'linear-gradient(90deg,' + RED + ',' + BURG + ')', borderRadius: 99, transition: 'width .4s ease', '--tb-pct': redPct + '%' }} />
+                  </div>
+                </div>
+                {/* Blue team */}
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, fontWeight: 700, color: isWinner && teamBattle.winner === 'blue' ? '#7EC8FF' : '#4A90D9', animation: isWinner && teamBattle.winner === 'blue' ? 'battleWin 1s ease infinite' : 'none' }}>
+                      {isWinner && teamBattle.winner === 'blue' ? '👑 ' : ''}{teamBattle.blueLabel}
+                    </span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#4A90D9' }}>{teamBattle.blueScore || 0}</span>
+                  </div>
+                  <div style={{ height: 10, background: 'rgba(74,144,217,.15)', borderRadius: 99, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: bluePct + '%', background: 'linear-gradient(90deg,#4A90D9,#1A4A7A)', borderRadius: 99, transition: 'width .4s ease' }} />
+                  </div>
+                </div>
+
+                {/* Gift buttons (active battle) */}
+                {teamBattle.active && (
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button onClick={function() { if (socket) socket.emit('team-battle-gift', { roomId: roomId, team: 'red', amount: 1 }); }}
+                      style={{ flex: 1, background: 'linear-gradient(135deg,' + BURG + ',' + RED + '44)', border: '1px solid ' + RED + '66', borderRadius: 10, padding: '8px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#FFB3B3', cursor: 'pointer', letterSpacing: 1.5 }}>
+                      🔴 CHEER RED
+                    </button>
+                    <button onClick={function() { if (socket) socket.emit('team-battle-gift', { roomId: roomId, team: 'blue', amount: 1 }); }}
+                      style={{ flex: 1, background: 'linear-gradient(135deg,#1A3A5A,#4A90D944)', border: '1px solid #4A90D966', borderRadius: 10, padding: '8px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#B3D9FF', cursor: 'pointer', letterSpacing: 1.5 }}>
+                      🔵 CHEER BLUE
+                    </button>
+                  </div>
+                )}
+
+                {/* Host end button */}
+                {teamBattle.active && (role === 'host' || role === 'cohost') && (
+                  <button onClick={function() { if (socket) socket.emit('team-battle-end', { roomId: roomId }); }}
+                    style={{ marginTop: 8, width: '100%', background: 'rgba(255,26,60,.08)', border: '1px solid ' + RED + '33', borderRadius: 8, padding: '6px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+                    END BATTLE EARLY
+                  </button>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 24: TEAM BATTLE SETUP PANEL ════════════════ */}
+      {showTeamBattle && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', zIndex: 210, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 18, padding: '24px 28px', width: 340, animation: 'fadeSlideIn .2s ease' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: GOLD, letterSpacing: 2, marginBottom: 18 }}>⚔️ LAUNCH TEAM BATTLE</div>
+
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 5, letterSpacing: .5 }}>RED TEAM NAME</div>
+              <input value={battleConfig.redLabel}
+                onChange={function(e) { setBattleConfig(function(s) { return Object.assign({}, s, { redLabel: e.target.value }); }); }}
+                style={{ width: '100%', background: CARD2, border: '1px solid ' + RED + '44', borderRadius: 8, padding: '8px 12px', color: '#FFB3B3', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none' }} />
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 5, letterSpacing: .5 }}>BLUE TEAM NAME</div>
+              <input value={battleConfig.blueLabel}
+                onChange={function(e) { setBattleConfig(function(s) { return Object.assign({}, s, { blueLabel: e.target.value }); }); }}
+                style={{ width: '100%', background: CARD2, border: '1px solid #4A90D944', borderRadius: 8, padding: '8px 12px', color: '#B3D9FF', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none' }} />
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 5, letterSpacing: .5 }}>DURATION (SECONDS)</div>
+              <input type="number" min="10" max="300" value={battleConfig.duration}
+                onChange={function(e) { setBattleConfig(function(s) { return Object.assign({}, s, { duration: Number(e.target.value) || 60 }); }); }}
+                style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 14, outline: 'none' }} />
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={function() { setShowTeamBattle(false); }}
+                style={{ flex: 1, background: 'none', border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: MUTED, cursor: 'pointer', letterSpacing: 1.5 }}>
+                CANCEL
+              </button>
+              <button onClick={function() {
+                if (socket) socket.emit('team-battle-start', { roomId: roomId, redLabel: battleConfig.redLabel || 'RED TEAM', blueLabel: battleConfig.blueLabel || 'BLUE TEAM', duration: battleConfig.duration || 60 });
+                setShowTeamBattle(false);
+              }}
+                style={{ flex: 2, background: 'linear-gradient(135deg,' + BURG + ',' + RED + ')', border: 'none', borderRadius: 10, padding: '10px 0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: TEXT, cursor: 'pointer', letterSpacing: 1.5 }}>
+                ⚔️ START BATTLE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 24: MULTI-CAMERA PICKER ════════════════ */}
+      {showCamPicker && multiCamDevices.length > 1 && (
+        <div style={{ position: 'absolute', bottom: 90, right: 16, zIndex: 200, background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 14, padding: '14px 16px', minWidth: 240, animation: 'fadeSlideIn .2s ease', boxShadow: '0 8px 24px rgba(0,0,0,.6)' }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>📷 CAMERA</span>
+            <button onClick={function() { setShowCamPicker(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+          </div>
+          {multiCamDevices.map(function(d, i) {
+            var isActive = activeCamId ? d.deviceId === activeCamId : i === 0;
+            return (
+              <div key={d.deviceId} onClick={function() { switchCamera(d.deviceId); setShowCamPicker(false); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, marginBottom: 4, background: isActive ? 'rgba(201,168,76,.12)' : 'transparent', border: '1px solid ' + (isActive ? GOLD + '55' : 'transparent'), cursor: 'pointer', transition: 'background .15s' }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: isActive ? GOLD : MUTED, flexShrink: 0 }} />
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: isActive ? TEXT : MUTED }}>
+                  {d.label || ('Camera ' + (i + 1))}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 24: REACTION HEATMAP HINT ════════════════ */}
+      {showHeatmap && heatPoints.length === 0 && (
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 62, pointerEvents: 'none', textAlign: 'center', color: MUTED }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, opacity: .7 }}>Tap on the stage to drop reactions</div>
+        </div>
       )}
     </div>
   );
