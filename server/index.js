@@ -507,6 +507,10 @@ var scheduleMap        = new Map();  // roomId → [{ id, label, done }] max 8 s
 var reactWallMap       = new Map();  // roomId → [{ userId, username, emoji, ts }] last 30
 var hostBioMap         = new Map();  // roomId → { bio, links:[{label,url}] } | null
 var spotlightPickMap   = new Map();  // roomId → { userId, username, ts, timerId } | null
+// Batch 45
+var stageFilterMap     = new Map();  // roomId → filter string (css filter name)
+var dramaticCdMap      = new Map();  // roomId → { count, timerId }
+var ALLOWED_STAGE_FILTERS = ['normal','warm','cool','bw','vivid','soft','golden','neon'];
 // Batch 42
 var chatWordMap         = new Map();  // roomId → Map<word, count>  (word frequency for cloud)
 var chatWordMsgCount   = new Map();  // roomId → int (messages since last broadcast)
@@ -695,6 +699,8 @@ function getJoinStateForRoom(roomId) {
   state.fanClub = fc ? Array.from(fc) : [];
   state.hostNote = hostNoteMap.get(roomId) || null;
   state.collabBanner = collabBannerMap.get(roomId) || null;
+  // Batch 45
+  state.stageFilter = stageFilterMap.get(roomId) || null;
   // Batch 44
   state.schedule = scheduleMap.get(roomId) || [];
   var rw44 = reactWallMap.get(roomId);
@@ -5442,6 +5448,43 @@ io.on('connection', function(socket) {
     if (ack) ack({ picked: picked.username });
   });
 
+  // ── set-stage-filter ───────────────────────────────────────────────────
+  socket.on('set-stage-filter', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var filter = data && ALLOWED_STAGE_FILTERS.indexOf(String(data.filter || '')) !== -1 ? String(data.filter) : 'normal';
+    if (filter === 'normal') stageFilterMap.delete(roomId);
+    else stageFilterMap.set(roomId, filter);
+    io.to(roomId).emit('stage-filter-update', { filter: filter === 'normal' ? null : filter });
+  });
+
+  // ── dramatic-countdown ─────────────────────────────────────────────────
+  socket.on('dramatic-countdown', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var from = Math.max(3, Math.min(10, Math.floor(Number(data && data.from) || 3)));
+    var label = data && typeof data.label === 'string' ? data.label.trim().slice(0, 40) : '';
+    var old = dramaticCdMap.get(roomId);
+    if (old && old.timerId) clearTimeout(old.timerId);
+    var count = from;
+    io.to(roomId).emit('dramatic-countdown-tick', { count: count, from: from, label: label });
+    function tick() {
+      count -= 1;
+      if (count > 0) {
+        io.to(roomId).emit('dramatic-countdown-tick', { count: count, from: from, label: label });
+        var timerId = setTimeout(tick, 1000);
+        dramaticCdMap.set(roomId, { count: count, timerId: timerId });
+      } else {
+        io.to(roomId).emit('dramatic-countdown-tick', { count: 0, from: from, label: label, done: true });
+        dramaticCdMap.delete(roomId);
+      }
+    }
+    var firstTimerId = setTimeout(tick, 1000);
+    dramaticCdMap.set(roomId, { count: count, timerId: firstTimerId });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -5952,6 +5995,10 @@ io.on('connection', function(socket) {
     chatWordMsgCount.delete(roomId);
     momentLogMap.delete(roomId);
     roomCapacityMap.delete(roomId);
+    stageFilterMap.delete(roomId);
+    var dcEnd = dramaticCdMap.get(roomId);
+    if (dcEnd && dcEnd.timerId) clearTimeout(dcEnd.timerId);
+    dramaticCdMap.delete(roomId);
     scheduleMap.delete(roomId);
     reactWallMap.delete(roomId);
     hostBioMap.delete(roomId);

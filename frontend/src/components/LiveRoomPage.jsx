@@ -115,6 +115,27 @@ var AI_FILTER_META = [
   { key: 'soft',    label: 'Soft',    emoji: '☁️' },
 ];
 
+// ─── Batch 45: Stage filters (broadcast-wide CSS filters) ────────────────────
+var STAGE_FILTERS = {
+  warm:   'sepia(.4) saturate(1.4)',
+  cool:   'hue-rotate(190deg) saturate(.8)',
+  bw:     'grayscale(1)',
+  vivid:  'saturate(1.9) contrast(1.08)',
+  soft:   'brightness(1.06) contrast(.88)',
+  golden: 'sepia(.5) saturate(1.5) brightness(1.05)',
+  neon:   'saturate(2.3) hue-rotate(25deg) brightness(1.08)',
+};
+var STAGE_FILTER_META = [
+  { key: 'normal', label: 'Normal',  emoji: '○'  },
+  { key: 'warm',   label: 'Warm',    emoji: '🌅' },
+  { key: 'cool',   label: 'Cool',    emoji: '❄️' },
+  { key: 'bw',     label: 'B&W',     emoji: '⬛' },
+  { key: 'vivid',  label: 'Vivid',   emoji: '🎨' },
+  { key: 'soft',   label: 'Soft',    emoji: '☁️' },
+  { key: 'golden', label: 'Golden',  emoji: '✨' },
+  { key: 'neon',   label: 'Neon',    emoji: '💡' },
+];
+
 // ─── Direct Pay platforms ───────────────────────────────────────────────────
 var DP_PLATFORMS = [
   { id: 'paypal',  emoji: '💸', name: 'PayPal',  color: '#0070BA', buildUrl: function(h) { return 'https://paypal.me/' + h.replace(/^@/,''); } },
@@ -681,6 +702,14 @@ export default function LiveRoomPage({
   var [showBioEdit,        setShowBioEdit]        = useState(false);
   var [bioDraft,           setBioDraft]           = useState({ bio: '', links: [{ label: '', url: '' }] });
   var [spotlightPick,      setSpotlightPick]      = useState(null);    // { userId, username, duration }
+  // Batch 45 — Stage Filter, Dramatic Countdown, Gifter Rank Badges, Session Stats
+  var [stageFilter,        setStageFilter]        = useState(null);    // string or null
+  var [showFilterPicker,   setShowFilterPicker]   = useState(false);
+  var [dramaticCountdown,  setDramaticCountdown]  = useState(null);    // { count, from, label, done }
+  var [showDramaticSet,    setShowDramaticSet]    = useState(false);
+  var [dramaticCdFrom,     setDramaticCdFrom]     = useState('5');
+  var [dramaticCdLabel,    setDramaticCdLabel]    = useState('');
+  var [showSessionStats,   setShowSessionStats]   = useState(false);
   // Batch 43 — Prize Wheel, Gift Combo, Sign-In Log, Outro Countdown
   var [prizeWheel,         setPrizeWheel]         = useState(null);    // { segments, active, lastWinner }
   var [showWheelSet,       setShowWheelSet]       = useState(false);
@@ -912,6 +941,7 @@ export default function LiveRoomPage({
       if (Array.isArray(data.reactWall) && data.reactWall.length > 0) setReactWall(data.reactWall);
       if (data.hostBio) setHostBio(data.hostBio);
       if (data.spotlightPick) setSpotlightPick(data.spotlightPick);
+      if (data.stageFilter) setStageFilter(data.stageFilter);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -1797,6 +1827,19 @@ export default function LiveRoomPage({
       setSpotlightPick(data || null);
     });
 
+    // Batch 45 listeners
+    socket.on('stage-filter-update', function(data) {
+      setStageFilter((data && data.filter) ? data.filter : null);
+    });
+
+    socket.on('dramatic-countdown-tick', function(data) {
+      if (!data) return;
+      setDramaticCountdown({ count: data.count, from: data.from, label: data.label || '', done: !!data.done });
+      if (data.done || data.count === 0) {
+        setTimeout(function() { setDramaticCountdown(null); }, 1800);
+      }
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2104,6 +2147,8 @@ export default function LiveRoomPage({
       socket.off('react-wall-update');
       socket.off('host-bio-update');
       socket.off('spotlight-pick-update');
+      socket.off('stage-filter-update');
+      socket.off('dramatic-countdown-tick');
       socket.off('scoreboard-update');
       socket.off('auction-update');
       socket.off('auction-ended');
@@ -3031,7 +3076,7 @@ export default function LiveRoomPage({
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
 
         {/* ── Stage Section ── */}
-        <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden', background: (ROOM_THEMES[roomTheme] && ROOM_THEMES[roomTheme].bg) || undefined, transition: 'background .5s ease' }}
+        <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden', background: (ROOM_THEMES[roomTheme] && ROOM_THEMES[roomTheme].bg) || undefined, transition: 'background .5s ease, filter .4s ease', filter: stageFilter && STAGE_FILTERS[stageFilter] ? STAGE_FILTERS[stageFilter] : undefined }}
           onClick={showHeatmap ? function(e) {
             var rect = e.currentTarget.getBoundingClientRect();
             var x    = Math.round(((e.clientX - rect.left) / rect.width)  * 100);
@@ -3863,6 +3908,9 @@ export default function LiveRoomPage({
                 });
               }},
               { emoji: 'ℹ️', label: 'About Me', active: !!hostBio || showBioEdit, onTap: function() { setBioDraft(hostBio ? { bio: hostBio.bio || '', links: hostBio.links && hostBio.links.length ? hostBio.links : [{ label: '', url: '' }] } : { bio: '', links: [{ label: '', url: '' }] }); setShowBioEdit(function(s) { return !s; }); } },
+              { emoji: '🎞️', label: 'Stage Filter', active: !!stageFilter || showFilterPicker, onTap: function() { setShowFilterPicker(function(s) { return !s; }); } },
+              { emoji: '🔢', label: 'Countdown', active: !!dramaticCountdown || showDramaticSet, onTap: function() { setShowDramaticSet(function(s) { return !s; }); } },
+              { emoji: '📊', label: 'Sesh Stats', active: showSessionStats, onTap: function() { setShowSessionStats(function(s) { return !s; }); } },
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Check In', active: false, onTap: function() {
@@ -3897,6 +3945,7 @@ export default function LiveRoomPage({
               { emoji: '💫', label: 'React Wall', active: showReactWall, onTap: function() { setShowReactWall(function(s) { return !s; }); } },
               { emoji: '📅', label: 'Schedule', active: schedule.length > 0, onTap: function() { setShowSchedule(function(s) { return !s; }); } },
               { emoji: 'ℹ️', label: 'About', active: showBioPanel, onTap: function() { setShowBioPanel(function(s) { return !s; }); } },
+              { emoji: '📊', label: 'Sesh Stats', active: showSessionStats, onTap: function() { setShowSessionStats(function(s) { return !s; }); } },
             ] : [])),
           ].map(function(tool) {
             return (
@@ -4522,6 +4571,13 @@ export default function LiveRoomPage({
                         {isSuper && <span style={{ color: '#C9A84C', marginLeft: 4 }}>💛 ${(Math.floor(msg.amountCents || 0) / 100).toFixed(2)}</span>}
                         {vips.indexOf(msg.userId) !== -1 && <span style={{ marginLeft: 4, fontSize: 8, color: '#A855F7', fontWeight: 700 }}>💎VIP</span>}
                         {fanClub.indexOf(msg.userId) !== -1 && <span style={{ marginLeft: 4, fontSize: 8, color: '#F472B6', fontWeight: 700 }}>❤️FAN</span>}
+                        {(function() {
+                          var tl = tipLeader.find(function(e) { return e.username === msg.username; });
+                          if (!tl) return null;
+                          var cents = tl.totalCents || 0;
+                          var rank = cents >= 10000 ? { label: '💎', color: '#00BFFF' } : cents >= 5000 ? { label: '🥇', color: '#FFD700' } : cents >= 1000 ? { label: '🥈', color: '#C0C0C0' } : cents >= 200 ? { label: '🥉', color: '#CD7F32' } : null;
+                          return rank ? <span style={{ marginLeft: 4, fontSize: 8, color: rank.color, fontWeight: 700 }}>{rank.label}GIFTER</span> : null;
+                        })()}
                         {(function() {
                           var badges = userBadges[msg.userId] || (msg.userId === userId ? myBadges : []);
                           return badges.length > 0 ? (
@@ -9828,6 +9884,138 @@ export default function LiveRoomPage({
             }}
             style={{ background: GOLD, border: 'none', borderRadius: 12, padding: '12px', fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1.5 }}
           >SAVE BIO</button>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 45: DRAMATIC COUNTDOWN OVERLAY ════════════════ */}
+      {dramaticCountdown && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', background: 'rgba(0,0,0,.55)' }}>
+          {dramaticCountdown.label ? (
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 3, marginBottom: 10, textTransform: 'uppercase', textShadow: '0 0 20px ' + GOLD + '88' }}>{dramaticCountdown.label}</div>
+          ) : null}
+          <div style={{
+            fontFamily: "'Bebas Neue',cursive",
+            fontSize: dramaticCountdown.done ? 88 : 140,
+            color: dramaticCountdown.done ? GOLD : RED,
+            lineHeight: 1,
+            textShadow: '0 0 60px ' + (dramaticCountdown.done ? GOLD : RED) + 'BB, 0 0 120px ' + (dramaticCountdown.done ? GOLD : RED) + '44',
+            transition: 'font-size .15s ease, color .15s ease',
+            letterSpacing: 4,
+          }}>
+            {dramaticCountdown.done ? '🎉' : dramaticCountdown.count}
+          </div>
+          {dramaticCountdown.done && (
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 28, color: TEXT, letterSpacing: 4, marginTop: 12, textShadow: '0 0 20px ' + GOLD + '66' }}>LET'S GO!</div>
+          )}
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 45: STAGE FILTER PICKER ════════════════ */}
+      {showFilterPicker && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: 0, right: 0, zIndex: 700, padding: '0 12px' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '16px', maxWidth: 400, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1.5 }}>🎞️ STAGE FILTER</span>
+              <button onClick={function() { setShowFilterPicker(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 12, letterSpacing: .3 }}>APPLIES TO ALL VIEWERS IN REAL TIME</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+              {STAGE_FILTER_META.map(function(f) {
+                var active = (stageFilter === f.key) || (f.key === 'normal' && !stageFilter);
+                return (
+                  <button key={f.key} onClick={function() {
+                    if (socket) socket.emit('set-stage-filter', { roomId: roomId, filter: f.key });
+                    setShowFilterPicker(false);
+                  }} style={{ background: active ? 'rgba(201,168,76,.18)' : CARD2, border: '1.5px solid ' + (active ? GOLD : BORDER), borderRadius: 10, padding: '10px 4px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontSize: 20 }}>{f.emoji}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: active ? GOLD : MUTED, letterSpacing: .3 }}>{f.label.toUpperCase()}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {stageFilter && (
+              <button onClick={function() {
+                if (socket) socket.emit('set-stage-filter', { roomId: roomId, filter: 'normal' });
+                setShowFilterPicker(false);
+              }} style={{ marginTop: 12, width: '100%', background: 'transparent', border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+                CLEAR FILTER
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 45: DRAMATIC COUNTDOWN SETUP ════════════════ */}
+      {showDramaticSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: 0, right: 0, zIndex: 700, padding: '0 12px' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '16px', maxWidth: 400, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1.5 }}>🔢 DRAMATIC COUNTDOWN</span>
+              <button onClick={function() { setShowDramaticSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5, marginBottom: 6 }}>LABEL (OPTIONAL)</div>
+              <input
+                value={dramaticCdLabel}
+                onChange={function(e) { setDramaticCdLabel(e.target.value.slice(0, 40)); }}
+                placeholder="e.g. SPECIAL REVEAL IN..."
+
+                style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, boxSizing: 'border-box' }}
+              />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5, marginBottom: 8 }}>COUNT FROM</div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['3','5','7','10'].map(function(n) {
+                  return (
+                    <button key={n} onClick={function() { setDramaticCdFrom(n); }} style={{ flex: 1, background: dramaticCdFrom === n ? 'rgba(201,168,76,.18)' : CARD2, border: '1.5px solid ' + (dramaticCdFrom === n ? GOLD : BORDER), borderRadius: 8, padding: '8px', fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: dramaticCdFrom === n ? GOLD : MUTED, cursor: 'pointer' }}>
+                      {n}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <button
+              onClick={function() {
+                var from = Math.max(3, Math.min(10, parseInt(dramaticCdFrom, 10) || 5));
+                if (socket) socket.emit('dramatic-countdown', { roomId: roomId, from: from, label: dramaticCdLabel.trim() });
+                setShowDramaticSet(false);
+              }}
+              style={{ width: '100%', background: RED, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: '#fff', cursor: 'pointer', letterSpacing: 2 }}
+            >START COUNTDOWN</button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BATCH 45: SESSION STATS PANEL ════════════════ */}
+      {showSessionStats && (
+        <div style={{ position: 'fixed', bottom: 90, right: 12, left: 12, zIndex: 700 }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '16px', maxWidth: 360, marginLeft: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1.5 }}>📊 SESSION STATS</span>
+              <button onClick={function() { setShowSessionStats(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {[
+                { icon: '💫', label: 'Reactions', value: reactWall.length },
+                { icon: '❤️', label: 'Fan Club', value: fanClub.length },
+                { icon: '✍️', label: 'Sign-Ins', value: signInLog.length },
+                { icon: '☁️', label: 'Top Word', value: wordCloud.length > 0 ? wordCloud[0].word : '—' },
+                { icon: '🎡', label: 'Last Winner', value: (prizeWheel && prizeWheel.lastWinner) ? prizeWheel.lastWinner : '—' },
+                { icon: '👁', label: 'Viewers', value: viewerCount || 0 },
+                { icon: '💬', label: 'Chat Msgs', value: (chat || []).length },
+                { icon: '🎯', label: 'Spotlight', value: spotlightPick ? spotlightPick.username : '—' },
+              ].map(function(stat) {
+                return (
+                  <div key={stat.label} style={{ background: CARD2, borderRadius: 10, padding: '10px 12px', border: '1px solid ' + BORDER }}>
+                    <div style={{ fontSize: 18, marginBottom: 4 }}>{stat.icon}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .3, marginBottom: 2 }}>{stat.label.toUpperCase()}</div>
+                    <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: GOLD, letterSpacing: .5 }}>{stat.value}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 
