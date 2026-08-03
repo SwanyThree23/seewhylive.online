@@ -79,6 +79,7 @@ var ANIM = [
   '@keyframes comboFlash{0%{transform:scale(.5);opacity:0}40%{transform:scale(1.2);opacity:1}70%{transform:scale(1)}100%{opacity:0}}',
   '@keyframes spotlightGlow{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}50%{box-shadow:0 0 0 8px rgba(201,168,76,.3)}}',
   '@keyframes entranceSlide{0%{transform:translateY(40px);opacity:0}30%{transform:translateY(-4px);opacity:1}85%{opacity:1}100%{opacity:0;transform:translateY(-20px)}}',
+  '@keyframes marqueeScroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}',
 ].join('\n');
 
 // ─── Room ambiance themes ─────────────────────────────────────────────────────
@@ -668,6 +669,18 @@ export default function LiveRoomPage({
   var [fanWall,            setFanWall]            = useState([]);      // [{userId, username, points}]
   var [showFanWall,        setShowFanWall]        = useState(false);
   var [pipActive,          setPipActive]          = useState(false);
+  // Batch 39 — Song Request, Hype Train, Marquee, Shoutout Queue
+  var [songRequests,       setSongRequests]       = useState([]);      // [{id, userId, username, song, ts}]
+  var [showSongQueue,      setShowSongQueue]      = useState(false);
+  var [hypeTrain,          setHypeTrain]          = useState(null);    // { level, pts, target }
+  var [hypeLevel,          setHypeLevel]          = useState(null);    // level for flash
+  var [marquee,            setMarquee]            = useState(null);    // { text }
+  var [showMarqueeSet,     setShowMarqueeSet]     = useState(false);
+  var [marqueeDraft,       setMarqueeDraft]       = useState('');
+  var [shoutoutQueue,      setShoutoutQueue]      = useState([]);      // [{id, username, message, ts}]
+  var [showShoutoutQueue,  setShowShoutoutQueue]  = useState(false);
+  var [shoutoutQueueAck,   setShoutoutQueueAck]   = useState(null);   // { queued, position }
+  var [shoutoutMsgDraft,   setShoutoutMsgDraft]   = useState('');
   // Batch 38 — Scoreboard, Auction, Timer Widget, Quick Quiz
   var [scoreboard,         setScoreboard]         = useState(null);   // { title, teamA:{name,score,color}, teamB:{name,score,color} }
   var [showScoreboardSet,  setShowScoreboardSet]  = useState(false);
@@ -819,6 +832,10 @@ export default function LiveRoomPage({
       if (Array.isArray(data.vips) && data.vips.length > 0) setVips(data.vips);
       if (data.lowerThird) setLowerThird(data.lowerThird);
       if (data.chatTheme) setChatTheme(data.chatTheme);
+      if (Array.isArray(data.songRequests) && data.songRequests.length > 0) setSongRequests(data.songRequests);
+      if (data.hypeTrain) setHypeTrain(data.hypeTrain);
+      if (data.marquee) setMarquee(data.marquee);
+      if (Array.isArray(data.shoutoutQueue) && data.shoutoutQueue.length > 0) setShoutoutQueue(data.shoutoutQueue);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -1625,6 +1642,41 @@ export default function LiveRoomPage({
       setTimeout(function() { setQuickQuiz(null); setQuickQuizFinal(null); }, 12000);
     });
 
+    socket.on('song-request-update', function(data) {
+      if (!data) return;
+      setSongRequests(Array.isArray(data.requests) ? data.requests : []);
+    });
+
+    socket.on('hype-train-update', function(data) {
+      if (!data) return;
+      setHypeTrain(data);
+    });
+
+    socket.on('hype-train-level', function(data) {
+      if (!data) return;
+      setHypeLevel(data.level);
+      setTimeout(function() { setHypeLevel(null); }, 3500);
+    });
+
+    socket.on('hype-train-ended', function(data) {
+      setHypeTrain(null);
+    });
+
+    socket.on('marquee-update', function(data) {
+      setMarquee(data || null);
+    });
+
+    socket.on('shoutout-queue-update', function(data) {
+      if (!data) return;
+      setShoutoutQueue(Array.isArray(data.queue) ? data.queue : []);
+    });
+
+    socket.on('shoutout-queue-ack', function(data) {
+      if (!data) return;
+      setShoutoutQueueAck(data);
+      setTimeout(function() { setShoutoutQueueAck(null); }, 4000);
+    });
+
     socket.on('mood-update', function(data) {
       if (!data) return;
       setStreamMood(data);
@@ -1825,6 +1877,13 @@ export default function LiveRoomPage({
       socket.off('emoji-shower');
       socket.off('shoutout-card');
       socket.off('chat-theme-update');
+      socket.off('song-request-update');
+      socket.off('hype-train-update');
+      socket.off('hype-train-level');
+      socket.off('hype-train-ended');
+      socket.off('marquee-update');
+      socket.off('shoutout-queue-update');
+      socket.off('shoutout-queue-ack');
       socket.off('scoreboard-update');
       socket.off('auction-update');
       socket.off('auction-ended');
@@ -3494,6 +3553,14 @@ export default function LiveRoomPage({
                 if (quickQuiz) { if (socket) socket.emit('quick-quiz-end', { roomId: roomId }); }
                 else { setShowQuizSet(function(s) { return !s; }); }
               }},
+              { emoji: '🎵', label: 'Song Queue', active: showSongQueue, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
+              { emoji: '📜', label: 'Marquee', active: !!marquee, onTap: function() {
+                if (marquee) { if (socket) socket.emit('marquee-clear', { roomId: roomId }); }
+                else { setShowMarqueeSet(function(s) { return !s; }); }
+              }},
+              { emoji: '📣', label: 'So. Queue', active: showShoutoutQueue || shoutoutQueue.length > 0, onTap: function() { setShowShoutoutQueue(function(s) { return !s; }); } },
+            ] : []).concat(role === 'viewer' ? [
+              { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
             ] : [])),
           ].map(function(tool) {
             return (
@@ -8590,6 +8657,135 @@ export default function LiveRoomPage({
             if (socket) socket.emit('quick-quiz-launch', { roomId: roomId, q: quizDraft.q.trim(), opts: validOpts });
             setShowQuizSet(false);
           }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1, marginTop: 4 }}>LAUNCH QUIZ</button>
+        </div>
+      )}
+
+      {/* ── Hype Train flash overlay ────────────────────────────────── */}
+      {hypeLevel !== null && (
+        <div style={{ position: 'absolute', top: '22%', left: 0, right: 0, zIndex: 300, textAlign: 'center', pointerEvents: 'none', animation: 'comboFlash 3.5s ease forwards' }}>
+          <div style={{ fontSize: 36 }}>🚂🔥</div>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 22, color: GOLD, letterSpacing: 3 }}>HYPE TRAIN LEVEL {hypeLevel}!</div>
+        </div>
+      )}
+
+      {/* ── Hype Train progress bar ─────────────────────────────────── */}
+      {hypeTrain && hypeLevel === null && (
+        <div style={{ position: 'absolute', top: 52, left: 10, right: 10, zIndex: 155 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD }}>🚂 HYPE LVL {hypeTrain.level}</span>
+            <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: Math.min(100, Math.round((hypeTrain.pts / (hypeTrain.target || 1)) * 100)) + '%', background: 'linear-gradient(90deg,' + RED + ',' + GOLD + ')', borderRadius: 2, transition: 'width .4s ease' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Marquee scrolling text ──────────────────────────────────── */}
+      {marquee && (
+        <div style={{ position: 'absolute', bottom: 57, left: 0, right: 0, zIndex: 150, background: 'rgba(9,7,14,.9)', overflow: 'hidden', height: 22, display: 'flex', alignItems: 'center', borderTop: '1px solid rgba(201,168,76,.15)' }}>
+          <div style={{ display: 'inline-block', whiteSpace: 'nowrap', animation: 'marqueeScroll 18s linear infinite', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: GOLD, paddingLeft: '100%' }}>
+            {marquee.text}
+          </div>
+        </div>
+      )}
+
+      {/* ── Song Request panel ──────────────────────────────────────── */}
+      {showSongQueue && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>🎵 SONG QUEUE</span>
+            <div onClick={function() { setShowSongQueue(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          {role === 'viewer' && (
+            <div style={{ marginBottom: 12, padding: '10px 12px', background: CARD, borderRadius: 10, border: '1px solid ' + BORDER }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 6, letterSpacing: 1 }}>TYPE !sr + SONG NAME IN CHAT TO REQUEST</div>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT }}>e.g. <span style={{ color: GOLD }}>!sr Blinding Lights</span></div>
+            </div>
+          )}
+          {songRequests.length === 0 && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14 }}>No requests yet — type !sr in chat</div>
+          )}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {songRequests.map(function(r, i) {
+              return (
+                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0', borderBottom: i < songRequests.length - 1 ? '1px solid ' + BORDER : 'none' }}>
+                  <div style={{ width: 26, height: 26, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, flexShrink: 0 }}>{i + 1}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.song}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>by {r.username}</div>
+                  </div>
+                  {(role === 'host' || role === 'cohost') && (
+                    <button onClick={function() { if (socket) socket.emit('song-request-mark-played', { roomId: roomId, id: r.id }); }} style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 6, padding: '4px 10px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>✓ PLAYED</button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {(role === 'host' || role === 'cohost') && songRequests.length > 0 && (
+            <button onClick={function() { if (socket) socket.emit('song-request-clear', { roomId: roomId }); setShowSongQueue(false); }} style={{ marginTop: 10, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, padding: '8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}>CLEAR ALL</button>
+          )}
+        </div>
+      )}
+
+      {/* ── Marquee setup panel ─────────────────────────────────────── */}
+      {showMarqueeSet && role === 'host' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>📜 MARQUEE TEXT</span>
+            <div onClick={function() { setShowMarqueeSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <input value={marqueeDraft} onChange={function(e) { setMarqueeDraft(e.target.value.slice(0, 200)); }} placeholder="Scrolling text for viewers…" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 14 }} />
+          <button onClick={function() {
+            if (!marqueeDraft.trim()) return;
+            if (socket) socket.emit('marquee-set', { roomId: roomId, text: marqueeDraft.trim() });
+            setShowMarqueeSet(false);
+          }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}>START MARQUEE</button>
+        </div>
+      )}
+
+      {/* ── Viewer Shoutout Queue ────────────────────────────────────── */}
+      {showShoutoutQueue && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>📣 SHOUTOUT QUEUE</span>
+            <div onClick={function() { setShowShoutoutQueue(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          {role === 'viewer' && !shoutoutQueueAck && (
+            <div style={{ marginBottom: 12 }}>
+              <textarea value={shoutoutMsgDraft} onChange={function(e) { setShoutoutMsgDraft(e.target.value.slice(0, 80)); }} placeholder="Add a message for your shoutout (optional)" rows={2} style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+              <button onClick={function() {
+                if (socket) socket.emit('shoutout-queue-add', { roomId: roomId, message: shoutoutMsgDraft.trim() });
+              }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 10, padding: '10px', fontFamily: "'Bebas Neue',cursive", fontSize: 15, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}>REQUEST SHOUTOUT</button>
+            </div>
+          )}
+          {shoutoutQueueAck && (
+            <div style={{ background: 'rgba(212,133,74,.15)', border: '1px solid rgba(212,133,74,.4)', borderRadius: 10, padding: '10px 12px', marginBottom: 12, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEAL }}>
+              ✓ You're #{shoutoutQueueAck.position} in the queue!
+            </div>
+          )}
+          {shoutoutQueue.length === 0 && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14 }}>No pending shoutouts</div>
+          )}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {shoutoutQueue.map(function(e, i) {
+              return (
+                <div key={e.id} style={{ padding: '10px 0', borderBottom: i < shoutoutQueue.length - 1 ? '1px solid ' + BORDER : 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: TEXT }}>{e.username}</div>
+                      {e.message && <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: MUTED, marginTop: 2 }}>{e.message}</div>}
+                    </div>
+                    {role === 'host' && (
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button onClick={function() { if (socket) socket.emit('shoutout-queue-approve', { roomId: roomId, id: e.id }); }} style={{ background: GOLD, border: 'none', borderRadius: 6, padding: '4px 10px', color: '#0E0C09', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>FIRE</button>
+                        <button onClick={function() { if (socket) socket.emit('shoutout-queue-dismiss', { roomId: roomId, id: e.id }); }} style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 6, padding: '4px 10px', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>SKIP</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

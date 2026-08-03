@@ -481,6 +481,12 @@ var scoreboardMap       = new Map();  // roomId → { title, teamA:{name,score,c
 var auctionMap          = new Map();  // roomId → { item, desc, startBid, currentBid, bidder, bidderName, active, startTs }
 var timerWidgetMap      = new Map();  // roomId → { label, type:'countdown'|'countup', startTs, durationSecs, active }
 var quickQuizMap        = new Map();  // roomId → { q, opts:[{text,votes}], answers:Map<userId,idx>, active }
+// Batch 39
+var songRequestMap      = new Map();  // roomId → [{ id, userId, username, song, ts, played }]
+var hypeTrainMap        = new Map();  // roomId → { level, pts, target, startTs, timerId, active }
+var marqueeMap          = new Map();  // roomId → { text, active }
+var shoutoutQueueMap    = new Map();  // roomId → [{ id, userId, username, message, ts }]
+var shoutoutQueueCost   = 50;         // points cost to queue a shoutout
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -643,6 +649,14 @@ function getJoinStateForRoom(roomId) {
   state.timerWidget = (tw && tw.active) ? { label: tw.label, type: tw.type, startTs: tw.startTs, durationSecs: tw.durationSecs } : null;
   var qq = quickQuizMap.get(roomId);
   state.quickQuiz = (qq && qq.active) ? { q: qq.q, opts: qq.opts.map(function(o) { return { text: o.text, votes: o.votes }; }) } : null;
+  // Batch 39
+  var srList = songRequestMap.get(roomId);
+  state.songRequests = srList ? srList.filter(function(s) { return !s.played; }).slice(0, 20) : [];
+  var ht = hypeTrainMap.get(roomId);
+  state.hypeTrain = (ht && ht.active) ? { level: ht.level, pts: ht.pts, target: ht.target } : null;
+  state.marquee = marqueeMap.get(roomId) || null;
+  var sq = shoutoutQueueMap.get(roomId);
+  state.shoutoutQueue = sq ? sq.slice(0, 5) : [];
   return state;
 }
 
@@ -667,6 +681,39 @@ function addEnergy(roomId, userId, username, pts) {
       .map(function(e) { return { userId: e.userId, username: e.username, points: e.points }; });
     io.to(roomId).emit('fan-wall-update', { fans: topFanWall });
   }
+}
+
+// Helper: add points to hype train; level up on threshold
+var HYPE_LEVELS = [0, 50, 150, 300, 500, 800]; // cumulative pts per level
+var HYPE_EXPIRE_MS = 30000; // train resets if no activity for 30s
+function addHype(roomId, pts) {
+  if (!roomId) return;
+  var now = Date.now();
+  if (!hypeTrainMap.has(roomId)) {
+    hypeTrainMap.set(roomId, { level: 0, pts: 0, target: HYPE_LEVELS[1], startTs: now, timerId: null, active: false });
+  }
+  var ht = hypeTrainMap.get(roomId);
+  if (ht.timerId) clearTimeout(ht.timerId);
+  ht.pts += pts;
+  ht.active = true;
+  ht.startTs = now;
+  // Level up
+  while (ht.level < HYPE_LEVELS.length - 1 && ht.pts >= HYPE_LEVELS[ht.level + 1]) {
+    ht.level += 1;
+    ht.target = ht.level < HYPE_LEVELS.length - 1 ? HYPE_LEVELS[ht.level + 1] : ht.pts;
+    io.to(roomId).emit('hype-train-level', { level: ht.level, pts: ht.pts, target: ht.target });
+  }
+  io.to(roomId).emit('hype-train-update', { level: ht.level, pts: ht.pts, target: ht.target });
+  // Auto-expire after 30s idle
+  ht.timerId = setTimeout(function() {
+    var cur = hypeTrainMap.get(roomId);
+    if (cur && cur.startTs === now) {
+      cur.active = false;
+      hypeTrainMap.delete(roomId);
+      io.to(roomId).emit('hype-train-ended', { level: cur.level });
+    }
+  }, HYPE_EXPIRE_MS);
+  hypeTrainMap.set(roomId, ht);
 }
 
 // Helper: auto-trigger AURA and broadcast to room
@@ -2127,6 +2174,20 @@ io.on('connection', function(socket) {
         }
         // Stream energy: +2 per chat message
         addEnergy(roomId, userId, username, 2);
+        addHype(roomId, 1);
+        // Auto-queue song request if message starts with !sr
+        if (message.toLowerCase().startsWith('!sr ') || message.toLowerCase().startsWith('!songrequest ')) {
+          var songText = message.replace(/^!(?:sr|songrequest)\s+/i, '').trim().slice(0, 100);
+          if (songText) {
+            if (!songRequestMap.has(roomId)) songRequestMap.set(roomId, []);
+            var srList2 = songRequestMap.get(roomId);
+            if (srList2.filter(function(r) { return !r.played; }).length < 50) {
+              var srId = uuidv4 ? uuidv4() : (Date.now() + '-' + Math.random());
+              srList2.push({ id: srId, userId: userId, username: username, song: songText, ts: Math.floor(Date.now() / 1000), played: false });
+              io.to(roomId).emit('song-request-update', { requests: srList2.filter(function(r) { return !r.played; }).slice(0, 20) });
+            }
+          }
+        }
       })
       .catch(function(err) {
         logger.error('[chat-message] translation failed: ' + err.message);
@@ -2367,6 +2428,7 @@ io.on('connection', function(socket) {
     }
     // Stream energy: +50 per gift
     addEnergy(roomId, fromUserId, fromUser, 50);
+    addHype(roomId, 20);
 
     // Award points to gift sender
     var giftPoints = Math.max(10, Math.floor(valueCents / 10));
@@ -3259,6 +3321,7 @@ io.on('connection', function(socket) {
     io.to(socket.id).emit('points-earned', { amount: 1, reason: 'reaction', ts: Math.floor(now / 1000) });
     // Stream energy: +1 per reaction
     addEnergy(roomId, socket.data.userId, socket.data.username, 1);
+    addHype(roomId, 2);
   });
 
   // ── hot-moment — viewer tags a timestamp as a highlight ────────────────
@@ -4814,6 +4877,95 @@ io.on('connection', function(socket) {
     setTimeout(function() { quickQuizMap.delete(roomId); }, 30000);
   });
 
+  // ── song-request-mark-played — host marks a song as played ────────────
+  socket.on('song-request-mark-played', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    var reqId = data && data.id;
+    if (!roomId || !reqId) return;
+    var list = songRequestMap.get(roomId);
+    if (!list) return;
+    list.forEach(function(r) { if (r.id === reqId) r.played = true; });
+    io.to(roomId).emit('song-request-update', { requests: list.filter(function(r) { return !r.played; }).slice(0, 20) });
+  });
+
+  // ── song-request-clear — host clears all pending requests ─────────────
+  socket.on('song-request-clear', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    songRequestMap.delete(roomId);
+    io.to(roomId).emit('song-request-update', { requests: [] });
+  });
+
+  // ── marquee-set — host sets scrolling text marquee ────────────────────
+  socket.on('marquee-set', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var text = (data && data.text) ? String(data.text).slice(0, 200).trim() : '';
+    if (!text) { marqueeMap.delete(roomId); io.to(roomId).emit('marquee-update', null); return; }
+    marqueeMap.set(roomId, { text: text, active: true });
+    io.to(roomId).emit('marquee-update', { text: text });
+  });
+
+  // ── marquee-clear — host stops the marquee ────────────────────────────
+  socket.on('marquee-clear', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    marqueeMap.delete(roomId);
+    io.to(roomId).emit('marquee-update', null);
+  });
+
+  // ── shoutout-queue-add — viewer spends points to request a shoutout ───
+  socket.on('shoutout-queue-add', function(data) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId || userId.startsWith('anon')) return;
+    var message = (data && data.message) ? String(data.message).slice(0, 80).trim() : '';
+    if (!shoutoutQueueMap.has(roomId)) shoutoutQueueMap.set(roomId, []);
+    var sq = shoutoutQueueMap.get(roomId);
+    if (sq.length >= 20) return; // cap queue
+    if (sq.some(function(e) { return e.userId === userId; })) return; // one per user
+    var entry = { id: uuidv4 ? uuidv4() : (Date.now() + '-' + Math.random()), userId: userId, username: socket.data.username || userId, message: message, ts: Math.floor(Date.now() / 1000) };
+    sq.push(entry);
+    shoutoutQueueMap.set(roomId, sq);
+    io.to(socket.id).emit('shoutout-queue-ack', { queued: true, position: sq.length });
+    var hostRoom = rooms.get(roomId);
+    if (hostRoom && hostRoom.hostSocketId) {
+      io.to(hostRoom.hostSocketId).emit('shoutout-queue-update', { queue: sq.slice(0, 5) });
+    }
+  });
+
+  // ── shoutout-queue-approve — host fires a queued shoutout ─────────────
+  socket.on('shoutout-queue-approve', function(data) {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    var entryId = data && data.id;
+    if (!roomId || !entryId) return;
+    var sq = shoutoutQueueMap.get(roomId);
+    if (!sq) return;
+    var entry = sq.find(function(e) { return e.id === entryId; });
+    if (!entry) return;
+    shoutoutQueueMap.set(roomId, sq.filter(function(e) { return e.id !== entryId; }));
+    io.to(roomId).emit('shoutout-card', { username: entry.username, message: entry.message, ts: Date.now() });
+    io.to(roomId).emit('shoutout-queue-update', { queue: shoutoutQueueMap.get(roomId).slice(0, 5) });
+    addEnergy(roomId, entry.userId, entry.username, 10);
+  });
+
+  // ── shoutout-queue-dismiss — host removes without firing ──────────────
+  socket.on('shoutout-queue-dismiss', function(data) {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    var entryId = data && data.id;
+    if (!roomId || !entryId) return;
+    var sq = shoutoutQueueMap.get(roomId);
+    if (!sq) return;
+    shoutoutQueueMap.set(roomId, sq.filter(function(e) { return e.id !== entryId; }));
+    io.to(roomId).emit('shoutout-queue-update', { queue: shoutoutQueueMap.get(roomId).slice(0, 5) });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -5308,6 +5460,12 @@ io.on('connection', function(socket) {
     auctionMap.delete(roomId);
     timerWidgetMap.delete(roomId);
     quickQuizMap.delete(roomId);
+    songRequestMap.delete(roomId);
+    var htEnd = hypeTrainMap.get(roomId);
+    if (htEnd && htEnd.timerId) clearTimeout(htEnd.timerId);
+    hypeTrainMap.delete(roomId);
+    marqueeMap.delete(roomId);
+    shoutoutQueueMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
