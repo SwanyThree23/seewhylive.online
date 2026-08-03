@@ -497,6 +497,14 @@ var fanClubMap          = new Map();  // roomId → Set<userId>
 var watchStreakMap       = new Map();  // userId → { days, lastDate } (date string YYYY-MM-DD)
 var hostNoteMap         = new Map();  // roomId → { text, ts } | null
 var collabBannerMap     = new Map();  // roomId → { name, platform, ts } | null
+// Batch 42
+var chatWordMap         = new Map();  // roomId → Map<word, count>  (word frequency for cloud)
+var chatWordMsgCount   = new Map();  // roomId → int (messages since last broadcast)
+var viewerStatusMap    = new Map();  // userId → { emoji, text, ts }
+var momentLogMap       = new Map();  // roomId → [{ id, label, ts, by }]
+var roomCapacityMap    = new Map();  // roomId → { max, warn } (max viewer cap, warn % threshold)
+var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
+
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -677,6 +685,11 @@ function getJoinStateForRoom(roomId) {
   state.fanClub = fc ? Array.from(fc) : [];
   state.hostNote = hostNoteMap.get(roomId) || null;
   state.collabBanner = collabBannerMap.get(roomId) || null;
+  // Batch 42
+  var wcMap = chatWordMap.get(roomId);
+  state.wordCloud = wcMap ? Array.from(wcMap.entries()).sort(function(a,b){return b[1]-a[1];}).slice(0,20).map(function(e){return{word:e[0],count:e[1]};}) : [];
+  state.momentLog = (momentLogMap.get(roomId) || []).slice(-20);
+  state.roomCapacity = roomCapacityMap.get(roomId) || null;
   return state;
 }
 
@@ -2208,6 +2221,20 @@ io.on('connection', function(socket) {
         // Stream energy: +2 per chat message
         addEnergy(roomId, userId, username, 2);
         addHype(roomId, 1);
+        // Batch 42: word frequency for word cloud
+        var _wcWords = message.toLowerCase().replace(/[^a-z0-9\s']/g, '').split(/\s+/).filter(function(w) { return w.length > 2 && !STOP_WORDS.has(w); });
+        if (_wcWords.length > 0) {
+          if (!chatWordMap.has(roomId)) chatWordMap.set(roomId, new Map());
+          var _wcMap = chatWordMap.get(roomId);
+          _wcWords.slice(0, 5).forEach(function(w) { _wcMap.set(w, (_wcMap.get(w) || 0) + 1); });
+          var _wcCount = (chatWordMsgCount.get(roomId) || 0) + 1;
+          chatWordMsgCount.set(roomId, _wcCount);
+          if (_wcCount % 10 === 0) {
+            var _wcTop = Array.from(_wcMap.entries()).sort(function(a,b){return b[1]-a[1];}).slice(0,20).map(function(e){return{word:e[0],count:e[1]};});
+            io.to(roomId).emit('word-cloud-update', { words: _wcTop });
+            if (_wcMap.size > 500) { var _wcArr = Array.from(_wcMap.entries()).sort(function(a,b){return b[1]-a[1];}).slice(0,300); chatWordMap.set(roomId, new Map(_wcArr)); }
+          }
+        }
         // Auto-queue song request if message starts with !sr
         if (message.toLowerCase().startsWith('!sr ') || message.toLowerCase().startsWith('!songrequest ')) {
           var songText = message.replace(/^!(?:sr|songrequest)\s+/i, '').trim().slice(0, 100);
@@ -5175,6 +5202,65 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('collab-banner-update', null);
   });
 
+  // ── set-viewer-status ──────────────────────────────────────────────────
+  var ALLOWED_STATUS_EMOJIS = ['🎉','💤','❓','🔥','👍','❤️','😂','😮','😢','🙏','👏','🎮','🎵','💪','✋'];
+  socket.on('set-viewer-status', function(data, ack) {
+    var userId = socket.data.userId;
+    var roomId = socket.data.roomId;
+    if (!userId || !roomId) return;
+    var emoji = data && ALLOWED_STATUS_EMOJIS.indexOf(String(data.emoji || '')) !== -1 ? String(data.emoji) : null;
+    var text  = data && typeof data.text === 'string' ? data.text.trim().slice(0, 24) : '';
+    if (!emoji) { viewerStatusMap.delete(userId); io.to(roomId).emit('viewer-status-update', { userId: userId, status: null }); if (ack) ack({ ok: true }); return; }
+    var status = { emoji: emoji, text: text, ts: Date.now() };
+    viewerStatusMap.set(userId, status);
+    io.to(roomId).emit('viewer-status-update', { userId: userId, status: status });
+    if (ack) ack({ ok: true });
+  });
+
+  // ── mark-moment ────────────────────────────────────────────────────────
+  socket.on('mark-moment', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var label = data && typeof data.label === 'string' ? data.label.trim().slice(0, 60) : 'Moment';
+    if (!momentLogMap.has(roomId)) momentLogMap.set(roomId, []);
+    var log = momentLogMap.get(roomId);
+    var mom = { id: String(Date.now()), label: label, ts: Date.now(), by: socket.data.username || 'host' };
+    log.push(mom);
+    if (log.length > 50) momentLogMap.set(roomId, log.slice(-50));
+    io.to(roomId).emit('moment-logged', mom);
+    io.to(roomId).emit('moment-flash', { label: label });
+  });
+
+  socket.on('moment-log-clear', function() {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    momentLogMap.delete(roomId);
+    io.to(roomId).emit('moment-log-update', { log: [] });
+  });
+
+  // ── set-room-capacity ──────────────────────────────────────────────────
+  socket.on('set-room-capacity', function(data) {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var max = data && Number(data.max) > 0 ? Math.floor(Math.min(Number(data.max), 100000)) : 0;
+    if (max === 0) { roomCapacityMap.delete(roomId); io.to(roomId).emit('room-capacity-update', null); return; }
+    roomCapacityMap.set(roomId, { max: max });
+    io.to(roomId).emit('room-capacity-update', { max: max });
+  });
+
+  // ── word-cloud-get ─────────────────────────────────────────────────────
+  socket.on('word-cloud-get', function(data, ack) {
+    var roomId = socket.data.roomId;
+    if (!roomId) { if (ack) ack({ words: [] }); return; }
+    var wcMap = chatWordMap.get(roomId);
+    var words = wcMap ? Array.from(wcMap.entries()).sort(function(a,b){return b[1]-a[1];}).slice(0,20).map(function(e){return{word:e[0],count:e[1]};}) : [];
+    if (ack) ack({ words: words });
+    else io.to(socket.id).emit('word-cloud-update', { words: words });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -5681,6 +5767,10 @@ io.on('connection', function(socket) {
     fanClubMap.delete(roomId);
     hostNoteMap.delete(roomId);
     collabBannerMap.delete(roomId);
+    chatWordMap.delete(roomId);
+    chatWordMsgCount.delete(roomId);
+    momentLogMap.delete(roomId);
+    roomCapacityMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

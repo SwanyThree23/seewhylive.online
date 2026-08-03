@@ -670,6 +670,19 @@ export default function LiveRoomPage({
   var [showFanWall,        setShowFanWall]        = useState(false);
   var [pipActive,          setPipActive]          = useState(false);
   // Batch 39 — Song Request, Hype Train, Marquee, Shoutout Queue
+  // Batch 42 — Word Cloud, Viewer Status, Moment Log, Room Capacity
+  var [wordCloud,          setWordCloud]          = useState([]);      // [{word, count}]
+  var [showWordCloud,      setShowWordCloud]      = useState(false);
+  var [viewerStatuses,     setViewerStatuses]     = useState({});      // userId → { emoji, text }
+  var [myStatus,           setMyStatus]           = useState(null);    // { emoji, text }
+  var [showStatusPicker,   setShowStatusPicker]   = useState(false);
+  var [momentLog,          setMomentLog]          = useState([]);      // [{id, label, ts, by}]
+  var [showMomentLog,      setShowMomentLog]      = useState(false);
+  var [momentFlash,        setMomentFlash]        = useState(null);    // { label }
+  var [momentLabelDraft,   setMomentLabelDraft]   = useState('');
+  var [roomCapacity,       setRoomCapacity]       = useState(null);    // { max } | null
+  var [showCapacitySet,    setShowCapacitySet]    = useState(false);
+  var [capacityDraft,      setCapacityDraft]      = useState('');
   // Batch 41 — Fan Club, Watch Streak, Host Note, Collab Banner
   var [fanClub,            setFanClub]            = useState([]);      // [userId, ...]
   var [inFanClub,          setInFanClub]          = useState(false);
@@ -864,6 +877,9 @@ export default function LiveRoomPage({
       if (data.hostNote) setHostNote(data.hostNote);
       if (data.collabBanner) setCollabBanner(data.collabBanner);
       if (data.watchStreak && data.watchStreak > 1) setWatchStreak(data.watchStreak);
+      if (Array.isArray(data.wordCloud) && data.wordCloud.length > 0) setWordCloud(data.wordCloud);
+      if (Array.isArray(data.momentLog) && data.momentLog.length > 0) setMomentLog(data.momentLog);
+      if (data.roomCapacity) setRoomCapacity(data.roomCapacity);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -1730,6 +1746,37 @@ export default function LiveRoomPage({
       setTimeout(function() { setCheckinFlash(null); }, 3000);
     });
 
+    // Batch 42 listeners
+    socket.on('word-cloud-update', function(data) {
+      if (!data || !Array.isArray(data.words)) return;
+      setWordCloud(data.words);
+    });
+
+    socket.on('viewer-status-update', function(data) {
+      if (!data) return;
+      setViewerStatuses(function(s) { var n = Object.assign({}, s); if (data.status) n[data.userId] = data.status; else delete n[data.userId]; return n; });
+    });
+
+    socket.on('moment-logged', function(data) {
+      if (!data) return;
+      setMomentLog(function(l) { return l.concat([data]).slice(-30); });
+    });
+
+    socket.on('moment-flash', function(data) {
+      if (!data || !data.label) return;
+      setMomentFlash(data);
+      setTimeout(function() { setMomentFlash(null); }, 4000);
+    });
+
+    socket.on('moment-log-update', function(data) {
+      if (!data) return;
+      setMomentLog(Array.isArray(data.log) ? data.log : []);
+    });
+
+    socket.on('room-capacity-update', function(data) {
+      setRoomCapacity(data || null);
+    });
+
     // Batch 41 listeners
     socket.on('fanclub-update', function(data) {
       if (!data || !Array.isArray(data.members)) return;
@@ -1959,6 +2006,12 @@ export default function LiveRoomPage({
       socket.off('fanclub-update');
       socket.off('host-note-update');
       socket.off('collab-banner-update');
+      socket.off('word-cloud-update');
+      socket.off('viewer-status-update');
+      socket.off('moment-logged');
+      socket.off('moment-flash');
+      socket.off('moment-log-update');
+      socket.off('room-capacity-update');
       socket.off('scoreboard-update');
       socket.off('auction-update');
       socket.off('auction-ended');
@@ -2766,6 +2819,15 @@ export default function LiveRoomPage({
                   <div style={{ height: '100%', width: streamEnergy + '%', background: streamEnergy > 80 ? '#FF1A3C' : streamEnergy > 50 ? GOLD : TEAL, borderRadius: 3, transition: 'width .8s ease' }} />
                 </div>
               </div>
+              {roomCapacity && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: (viewerCount || 0) / roomCapacity.max > 0.8 ? RED : MUTED }}>🏟</span>
+                  <div style={{ width: 60, height: 3, background: 'rgba(255,255,255,.08)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: Math.min(100, ((viewerCount || 0) / roomCapacity.max) * 100) + '%', background: (viewerCount || 0) / roomCapacity.max > 0.8 ? RED : GOLD, borderRadius: 3, transition: 'width .6s ease' }} />
+                  </div>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED }}>{Math.round(((viewerCount || 0) / roomCapacity.max) * 100)}%</span>
+                </div>
+              )}
             </div>
             {watchSeconds >= 3600 && (
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>👑 LEGEND</span>
@@ -3664,6 +3726,9 @@ export default function LiveRoomPage({
                 if (collabBanner) { if (socket) socket.emit('collab-banner-clear', { roomId: roomId }); }
                 else { setCollabDraft({ name: '', platform: '' }); setShowCollabSet(function(s) { return !s; }); }
               }},
+              { emoji: '🎬', label: 'Moment', active: showMomentLog, onTap: function() { setShowMomentLog(function(s) { return !s; }); } },
+              { emoji: '☁️', label: 'Word Cloud', active: showWordCloud, onTap: function() { setShowWordCloud(function(s) { return !s; }); } },
+              { emoji: '📊', label: 'Capacity', active: !!roomCapacity || showCapacitySet, onTap: function() { setShowCapacitySet(function(s) { return !s; }); } },
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Check In', active: false, onTap: function() {
@@ -3684,6 +3749,9 @@ export default function LiveRoomPage({
                   });
                 }
               }},
+              { emoji: myStatus ? myStatus.emoji : '😊', label: myStatus ? 'Status ✓' : 'My Status', active: !!myStatus, onTap: function() { setShowStatusPicker(function(s) { return !s; }); } },
+              { emoji: '☁️', label: 'Word Cloud', active: showWordCloud, onTap: function() { setShowWordCloud(function(s) { return !s; }); } },
+              { emoji: '🎬', label: 'Moments', active: showMomentLog, onTap: function() { setShowMomentLog(function(s) { return !s; }); } },
             ] : [])),
           ].map(function(tool) {
             return (
@@ -9163,6 +9231,170 @@ export default function LiveRoomPage({
               }}
               style={{ background: '#F472B6', border: 'none', borderRadius: 6, padding: '3px 10px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#0E0C09', cursor: 'pointer', letterSpacing: .5 }}
             >JOIN</button>
+          )}
+        </div>
+      )}
+
+      {/* ── Batch 42: Moment flash ────────────────────────────────────────── */}
+      {momentFlash && (
+        <div style={{ position: 'absolute', top: '38%', left: '50%', transform: 'translate(-50%,-50%)', background: 'rgba(14,12,9,.97)', border: '2px solid rgba(201,168,76,.5)', borderRadius: 16, padding: '14px 24px', zIndex: 320, textAlign: 'center', animation: 'entranceSlide .3s ease', pointerEvents: 'none', boxShadow: '0 0 30px rgba(201,168,76,.3)' }}>
+          <div style={{ fontSize: 32, marginBottom: 4 }}>🎬</div>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>CLIP MOMENT</div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, marginTop: 4 }}>{momentFlash.label}</div>
+        </div>
+      )}
+
+      {/* ── Batch 42: Word cloud overlay ─────────────────────────────────── */}
+      {showWordCloud && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>☁️ LIVE WORD CLOUD</span>
+            <div onClick={function() { setShowWordCloud(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          {wordCloud.length === 0 && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14 }}>Chat to build the word cloud!</div>
+          )}
+          <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 10, padding: '10px' }}>
+            {(function() {
+              var max = wordCloud.length > 0 ? wordCloud[0].count : 1;
+              return wordCloud.slice(0, 20).map(function(w, i) {
+                var size = Math.max(12, Math.min(36, 12 + Math.round((w.count / max) * 24)));
+                var opacity = 0.5 + (w.count / max) * 0.5;
+                var hue = (i * 37) % 360;
+                return (
+                  <span key={w.word} style={{ fontFamily: "'Bebas Neue',cursive", fontSize: size, color: 'hsl(' + hue + ',70%,65%)', opacity: opacity, letterSpacing: 1, transition: 'all .5s ease' }}>{w.word}</span>
+                );
+              });
+            })()}
+          </div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, textAlign: 'center', letterSpacing: .5, marginTop: 8 }}>Updates every 10 messages · {wordCloud.length} words tracked</div>
+        </div>
+      )}
+
+      {/* ── Batch 42: Moment log panel ────────────────────────────────────── */}
+      {showMomentLog && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>🎬 STREAM MOMENTS</span>
+            <div onClick={function() { setShowMomentLog(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          {role === 'host' && (
+            <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+              <input
+                value={momentLabelDraft}
+                onChange={function(e) { setMomentLabelDraft(e.target.value.slice(0, 60)); }}
+                placeholder="Label this moment..."
+                style={{ flex: 1, background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }}
+              />
+              <button
+                onClick={function() {
+                  var label = momentLabelDraft.trim() || 'Highlight';
+                  if (socket) socket.emit('mark-moment', { roomId: roomId, label: label });
+                  setMomentLabelDraft('');
+                }}
+                style={{ background: GOLD, border: 'none', borderRadius: 8, padding: '8px 14px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}
+              >🎬 MARK</button>
+            </div>
+          )}
+          {momentLog.length === 0 && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14 }}>No moments marked yet</div>
+          )}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {momentLog.slice().reverse().map(function(m, i) {
+              var elapsed = Math.floor((Date.now() - m.ts) / 1000);
+              var timeStr = elapsed < 60 ? elapsed + 's ago' : elapsed < 3600 ? Math.floor(elapsed/60) + 'm ago' : Math.floor(elapsed/3600) + 'h ago';
+              return (
+                <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < momentLog.length - 1 ? '1px solid ' + BORDER : 'none' }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎬</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: TEXT }}>{m.label}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 2 }}>{timeStr} · by {m.by}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Batch 42: Viewer status picker ────────────────────────────────── */}
+      {showStatusPicker && (
+        <div style={{ position: 'absolute', bottom: 90, left: 16, right: 16, background: 'rgba(14,12,9,.97)', border: '1.5px solid rgba(201,168,76,.3)', borderRadius: 14, padding: '14px 16px', zIndex: 130 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 15, color: GOLD, letterSpacing: 1.5 }}>😊 SET MY STATUS</span>
+            <div onClick={function() { setShowStatusPicker(false); }} style={{ cursor: 'pointer', fontSize: 16, color: MUTED }}>✕</div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 12 }}>
+            {['🎉','💤','❓','🔥','👍','❤️','😂','😮','😢','🙏','👏','🎮','🎵','💪','✋'].map(function(e) {
+              return (
+                <button
+                  key={e}
+                  onClick={function() { setMyStatus(function(s) { return s && s.emoji === e ? null : { emoji: e, text: myStatus ? myStatus.text : '' }; }); }}
+                  style={{ padding: '8px', background: myStatus && myStatus.emoji === e ? 'rgba(201,168,76,.2)' : CARD2, border: '1px solid ' + (myStatus && myStatus.emoji === e ? GOLD : BORDER), borderRadius: 8, cursor: 'pointer', fontSize: 20 }}
+                >{e}</button>
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              value={myStatus ? (myStatus.text || '') : ''}
+              onChange={function(e) { setMyStatus(function(s) { return s ? Object.assign({}, s, { text: e.target.value.slice(0, 24) }) : { emoji: '😊', text: e.target.value.slice(0, 24) }; }); }}
+              placeholder="Short status text... (optional)"
+              style={{ flex: 1, background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }}
+            />
+            <button
+              onClick={function() {
+                if (socket) socket.emit('set-viewer-status', { roomId: roomId, emoji: myStatus ? myStatus.emoji : null, text: myStatus ? (myStatus.text || '') : '' });
+                setShowStatusPicker(false);
+              }}
+              style={{ background: GOLD, border: 'none', borderRadius: 8, padding: '8px 14px', fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}
+            >SET</button>
+          </div>
+          {myStatus && (
+            <button
+              onClick={function() {
+                setMyStatus(null);
+                if (socket) socket.emit('set-viewer-status', { roomId: roomId, emoji: null });
+                setShowStatusPicker(false);
+              }}
+              style={{ marginTop: 8, width: '100%', background: 'transparent', border: '1px solid ' + BORDER, borderRadius: 8, padding: '7px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}
+            >CLEAR STATUS</button>
+          )}
+        </div>
+      )}
+
+      {/* ── Batch 42: Room capacity setup ─────────────────────────────────── */}
+      {showCapacitySet && role === 'host' && (
+        <div style={{ position: 'absolute', bottom: 90, left: 16, right: 16, background: 'rgba(14,12,9,.97)', border: '1.5px solid rgba(201,168,76,.3)', borderRadius: 14, padding: '14px 16px', zIndex: 130 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, marginBottom: 6, letterSpacing: .8 }}>ROOM CAPACITY (max viewers for FOMO meter)</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              value={capacityDraft}
+              onChange={function(e) { setCapacityDraft(e.target.value.replace(/[^0-9]/g, '')); }}
+              placeholder="e.g. 500"
+              style={{ flex: 1, background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none' }}
+            />
+            <button
+              onClick={function() {
+                var max = parseInt(capacityDraft, 10);
+                if (!max || max < 1) return;
+                if (socket) socket.emit('set-room-capacity', { roomId: roomId, max: max });
+                setShowCapacitySet(false); setCapacityDraft('');
+              }}
+              style={{ background: GOLD, border: 'none', borderRadius: 8, padding: '8px 14px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}
+            >SET</button>
+            {roomCapacity && (
+              <button
+                onClick={function() {
+                  if (socket) socket.emit('set-room-capacity', { roomId: roomId, max: 0 });
+                  setShowCapacitySet(false);
+                }}
+                style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 12px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}
+              >CLEAR</button>
+            )}
+          </div>
+          {roomCapacity && (
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEAL, marginTop: 8 }}>Current max: {roomCapacity.max.toLocaleString()} · {viewerCount || 0} watching</div>
           )}
         </div>
       )}
