@@ -69,6 +69,7 @@ var LiveSyncTab         = React.lazy(function() { return import('./components/Li
 var PlatformHealthTab   = React.lazy(function() { return import('./components/PlatformHealthTab.jsx'); });
 var CreatorDashboard    = React.lazy(function() { return import('./components/CreatorDashboard.jsx'); });
 var DesktopStudioTab   = React.lazy(function() { return import('./components/DesktopStudioTab.jsx'); });
+var AdminDashboard     = React.lazy(function() { return import('./components/AdminDashboard.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -126,6 +127,7 @@ var TABS = [
   { id: "livesync", label: "Live Sync" },
   { id: "health", label: "Platform Health" },
   { id: 'desktop-studio', label: '🖥 DESKTOP STUDIO' },
+  { id: 'admin-dash', label: '🔐 ADMIN', roles: ['admin'] },
 ];
 
 function CountdownClock({ targetTs }) {
@@ -1292,6 +1294,9 @@ export default function App() {
         )}
         {activeTab === 'analytics' && (role === 'host' || role === 'cohost') && (
           <CreatorDashboard />
+        )}
+        {activeTab === 'admin-dash' && role === 'admin' && (
+          <AdminDashboard addToast={addToast} />
         )}
         {activeTab === 'keys' && (
           <StreamKeysTab

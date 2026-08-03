@@ -906,25 +906,57 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         </div>
       </div>
 
-      {/* Host end-battle control */}
+      {/* Host Battle Control Panel */}
       {isHost && (
-        <div style={{ textAlign: 'center', marginTop: 4 }}>
-          <button
-            onClick={endBattle}
-            style={{
-              padding: '10px 24px',
-              background: 'rgba(128,0,32,.15)',
-              border: '1px solid rgba(128,0,32,.4)',
-              borderRadius: 8,
-              color: '#800020',
-              fontFamily: "'Bebas Neue',sans-serif",
-              fontSize: 13,
-              letterSpacing: 1,
-              cursor: 'pointer'
-            }}
-          >
-            END BATTLE NOW
-          </button>
+        <div style={{ background: 'rgba(26,21,16,.95)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 12, padding: '12px 14px', marginTop: 4 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 10 }}>⚙ HOST CONTROLS</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={endBattle}
+              style={{
+                flex: 1,
+                padding: '11px',
+                background: 'linear-gradient(135deg,rgba(128,0,32,.4),rgba(128,0,32,.2))',
+                border: '1px solid rgba(128,0,32,.6)',
+                borderRadius: 9,
+                color: '#FF1A3C',
+                fontFamily: "'Bebas Neue',sans-serif",
+                fontSize: 15,
+                letterSpacing: 2,
+                cursor: 'pointer',
+              }}
+            >
+              ■ END BATTLE
+            </button>
+            <button
+              onClick={handleRematch}
+              style={{
+                flex: 1,
+                padding: '11px',
+                background: 'rgba(201,168,76,.1)',
+                border: '1px solid rgba(201,168,76,.35)',
+                borderRadius: 9,
+                color: '#C9A84C',
+                fontFamily: "'Bebas Neue',sans-serif",
+                fontSize: 15,
+                letterSpacing: 2,
+                cursor: 'pointer',
+              }}
+            >
+              ⚔️ REMATCH
+            </button>
+          </div>
+          <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
+            <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,.06)', overflow: 'hidden' }}>
+              <div style={{ height: 4, width: cPct + '%', background: 'linear-gradient(90deg,#800020,#C01838)', borderRadius: 2, transition: 'width .4s ease' }} />
+            </div>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF1A3C', minWidth: 30, textAlign: 'right' }}>{cPct}%</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>vs</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', minWidth: 30 }}>{dPct}%</span>
+            <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,.06)', overflow: 'hidden' }}>
+              <div style={{ height: 4, width: dPct + '%', background: 'linear-gradient(90deg,#C9A84C,#D4854A)', borderRadius: 2, transition: 'width .4s ease' }} />
+            </div>
+          </div>
         </div>
       )}
     </div>

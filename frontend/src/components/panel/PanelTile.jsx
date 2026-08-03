@@ -296,8 +296,8 @@ export default function PanelTile({
           : slot_index === 0
             ? ('2px solid ' + GOLD)
             : '1px solid #333',
-        boxShadow: effectiveSpeaking ? ('0 0 12px ' + GOLD + '55') : 'none',
-        transition: 'box-shadow 0.15s',
+        animation: effectiveSpeaking ? 'panelSpeakPulse 1.4s ease-in-out infinite' : 'none',
+        transition: 'border-color 0.2s, box-shadow 0.2s',
         cursor: 'pointer',
         aspectRatio: '9/16',
       }}

@@ -809,6 +809,50 @@ app.get('/api/payout-history', requireAuth, function(req, res) {
 });
 
 
+// GET /api/admin/financial-summary  (admin only)
+app.get('/api/admin/financial-summary', requireAuth, function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  try {
+    var gifts = db.prepare(
+      'SELECT COUNT(*) as cnt, COALESCE(SUM(creator_cents),0) as creator, COALESCE(SUM(platform_cents),0) as platform FROM gifts'
+    ).get();
+    var superChats = db.prepare(
+      'SELECT COUNT(*) as cnt, COALESCE(SUM(creator_cents),0) as creator, COALESCE(SUM(platform_cents),0) as platform FROM super_chats'
+    ).get();
+    var ppv = db.prepare(
+      "SELECT COUNT(*) as cnt, COALESCE(SUM(creator_cents),0) as creator, COALESCE(SUM(platform_cents),0) as platform FROM ppv_unlocks WHERE status = 'succeeded'"
+    ).get();
+    var recentGifts = db.prepare(
+      "SELECT 'gift' as type, from_user as actor, value_cents as total_cents, creator_cents, platform_cents, ts FROM gifts ORDER BY ts DESC LIMIT 15"
+    ).all();
+    var recentSuperChats = db.prepare(
+      "SELECT 'superchat' as type, username as actor, amount_cents as total_cents, creator_cents, platform_cents, ts FROM super_chats ORDER BY ts DESC LIMIT 15"
+    ).all();
+    var topCreators = db.prepare(
+      'SELECT user_id, COALESCE(username, user_id) as username, display_name, total_earnings_cents FROM user_profiles WHERE total_earnings_cents > 0 ORDER BY total_earnings_cents DESC LIMIT 20'
+    ).all();
+    var combined = recentGifts.concat(recentSuperChats).sort(function(a, b) { return b.ts - a.ts; }).slice(0, 25);
+    res.json({
+      summary: {
+        totalCreatorCents: Math.floor(gifts.creator + superChats.creator + ppv.creator),
+        totalPlatformCents: Math.floor(gifts.platform + superChats.platform + ppv.platform),
+        gifts:      { count: gifts.cnt,      creatorCents: Math.floor(gifts.creator),      platformCents: Math.floor(gifts.platform) },
+        superChats: { count: superChats.cnt, creatorCents: Math.floor(superChats.creator), platformCents: Math.floor(superChats.platform) },
+        ppv:        { count: ppv.cnt,        creatorCents: Math.floor(ppv.creator),        platformCents: Math.floor(ppv.platform) },
+      },
+      recentTransactions: combined.map(function(r) {
+        return { type: r.type, actor: r.actor, totalCents: Math.floor(r.total_cents), creatorCents: Math.floor(r.creator_cents), platformCents: Math.floor(r.platform_cents), ts: r.ts };
+      }),
+      topCreators: (topCreators || []).map(function(c) {
+        return { userId: c.user_id, username: c.username, displayName: c.display_name, totalEarningsCents: Math.floor(c.total_earnings_cents || 0) };
+      }),
+    });
+  } catch (err) {
+    logger.error('[admin/financial-summary] ' + err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/leaderboard
 app.get('/api/leaderboard', function(req, res) {
   try {
