@@ -492,6 +492,11 @@ var checkInMap          = new Map();  // userId → lastCheckInTs
 var streamTitleMap      = new Map();  // roomId → string (live-edited title)
 var roomVibeMap         = new Map();  // roomId → { vibe: string, ts: number } | null
 var simplePollMap       = new Map();  // roomId → { q, yes:Set<userId>, no:Set<userId>, active, startTs }
+// Batch 41
+var fanClubMap          = new Map();  // roomId → Set<userId>
+var watchStreakMap       = new Map();  // userId → { days, lastDate } (date string YYYY-MM-DD)
+var hostNoteMap         = new Map();  // roomId → { text, ts } | null
+var collabBannerMap     = new Map();  // roomId → { name, platform, ts } | null
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -667,6 +672,11 @@ function getJoinStateForRoom(roomId) {
   state.roomVibe = roomVibeMap.get(roomId) || null;
   var sp = simplePollMap.get(roomId);
   state.simplePoll = (sp && sp.active) ? { q: sp.q, yes: sp.yes.size, no: sp.no.size, startTs: sp.startTs } : null;
+  // Batch 41
+  var fc = fanClubMap.get(roomId);
+  state.fanClub = fc ? Array.from(fc) : [];
+  state.hostNote = hostNoteMap.get(roomId) || null;
+  state.collabBanner = collabBannerMap.get(roomId) || null;
   return state;
 }
 
@@ -1592,6 +1602,19 @@ io.on('connection', function(socket) {
             viewerAck.watchParty = room.watchParty;
           }
           Object.assign(viewerAck, getJoinStateForRoom(roomId));
+          // Batch 41: attach viewer's watch streak
+          var _vsUserId = socket.data.userId;
+          if (_vsUserId) {
+            var _vsToday = new Date().toISOString().slice(0, 10);
+            var _vsYest  = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+            var _vsStr   = watchStreakMap.get(_vsUserId) || { days: 0, lastDate: null };
+            if (_vsStr.lastDate !== _vsToday) {
+              _vsStr.days = (_vsStr.lastDate === _vsYest) ? _vsStr.days + 1 : 1;
+              _vsStr.lastDate = _vsToday;
+              watchStreakMap.set(_vsUserId, _vsStr);
+            }
+            viewerAck.watchStreak = _vsStr.days;
+          }
           io.to(socket.id).emit('join-room-ack', viewerAck);
           if (ack) ack(viewerAck);
         })
@@ -5067,6 +5090,91 @@ io.on('connection', function(socket) {
     simplePollMap.delete(roomId);
   });
 
+  // ── fanclub-join ────────────────────────────────────────────────────────
+  socket.on('fanclub-join', function(data, ack) {
+    var userId   = socket.data.userId;
+    var roomId   = socket.data.roomId;
+    var username = (data && data.username) ? String(data.username).slice(0, 40) : '';
+    if (!userId || !roomId) { if (ack) ack({ error: 'not in room' }); return; }
+    if (!fanClubMap.has(roomId)) fanClubMap.set(roomId, new Set());
+    var fc = fanClubMap.get(roomId);
+    if (fc.has(userId)) { if (ack) ack({ already: true }); return; }
+    fc.add(userId);
+    io.to(roomId).emit('fanclub-update', { members: Array.from(fc), joined: { userId: userId, username: username } });
+    addEnergy(roomId, userId, username, 5);
+    if (ack) ack({ ok: true, count: fc.size });
+  });
+
+  socket.on('fanclub-leave', function(data, ack) {
+    var userId = socket.data.userId;
+    var roomId = socket.data.roomId;
+    if (!userId || !roomId) return;
+    var fc = fanClubMap.get(roomId);
+    if (!fc) return;
+    fc.delete(userId);
+    io.to(roomId).emit('fanclub-update', { members: Array.from(fc) });
+    if (ack) ack({ ok: true });
+  });
+
+  // ── watch-streak-check ──────────────────────────────────────────────────
+  socket.on('watch-streak-check', function(data, ack) {
+    var userId = socket.data.userId;
+    if (!userId) { if (ack) ack({ days: 0 }); return; }
+    var today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    var streak = watchStreakMap.get(userId) || { days: 0, lastDate: null };
+    if (streak.lastDate === today) { if (ack) ack({ days: streak.days }); return; }
+    var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    if (streak.lastDate === yesterday) {
+      streak.days += 1;
+    } else if (streak.lastDate !== today) {
+      streak.days = 1;
+    }
+    streak.lastDate = today;
+    watchStreakMap.set(userId, streak);
+    if (ack) ack({ days: streak.days, isNew: true });
+  });
+
+  // ── host-note-set / host-note-clear ────────────────────────────────────
+  socket.on('host-note-set', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var text = data && typeof data.text === 'string' ? data.text.trim().slice(0, 280) : null;
+    if (!text) { hostNoteMap.delete(roomId); io.to(roomId).emit('host-note-update', null); return; }
+    var note = { text: text, ts: Date.now() };
+    hostNoteMap.set(roomId, note);
+    io.to(roomId).emit('host-note-update', note);
+  });
+
+  socket.on('host-note-clear', function() {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    hostNoteMap.delete(roomId);
+    io.to(roomId).emit('host-note-update', null);
+  });
+
+  // ── collab-banner-set / collab-banner-clear ─────────────────────────────
+  socket.on('collab-banner-set', function(data) {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var name = data && typeof data.name === 'string' ? data.name.trim().slice(0, 60) : null;
+    var platform = data && typeof data.platform === 'string' ? data.platform.trim().slice(0, 30) : '';
+    if (!name) return;
+    var banner = { name: name, platform: platform, ts: Date.now() };
+    collabBannerMap.set(roomId, banner);
+    io.to(roomId).emit('collab-banner-update', banner);
+  });
+
+  socket.on('collab-banner-clear', function() {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    collabBannerMap.delete(roomId);
+    io.to(roomId).emit('collab-banner-update', null);
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -5570,6 +5678,9 @@ io.on('connection', function(socket) {
     streamTitleMap.delete(roomId);
     roomVibeMap.delete(roomId);
     simplePollMap.delete(roomId);
+    fanClubMap.delete(roomId);
+    hostNoteMap.delete(roomId);
+    collabBannerMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

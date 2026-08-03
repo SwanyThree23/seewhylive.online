@@ -670,6 +670,16 @@ export default function LiveRoomPage({
   var [showFanWall,        setShowFanWall]        = useState(false);
   var [pipActive,          setPipActive]          = useState(false);
   // Batch 39 — Song Request, Hype Train, Marquee, Shoutout Queue
+  // Batch 41 — Fan Club, Watch Streak, Host Note, Collab Banner
+  var [fanClub,            setFanClub]            = useState([]);      // [userId, ...]
+  var [inFanClub,          setInFanClub]          = useState(false);
+  var [watchStreak,        setWatchStreak]        = useState(0);       // consecutive days
+  var [hostNote,           setHostNote]           = useState(null);    // { text, ts }
+  var [showHostNoteSet,    setShowHostNoteSet]    = useState(false);
+  var [hostNoteDraft,      setHostNoteDraft]      = useState('');
+  var [collabBanner,       setCollabBanner]       = useState(null);    // { name, platform }
+  var [showCollabSet,      setShowCollabSet]      = useState(false);
+  var [collabDraft,        setCollabDraft]        = useState({ name: '', platform: '' });
   // Batch 40 — Check-in, Stream Title, Room Vibe, Simple Poll
   var [streamTitle,        setStreamTitle]        = useState(null);    // live-edited title string
   var [showTitleEdit,      setShowTitleEdit]      = useState(false);
@@ -850,6 +860,10 @@ export default function LiveRoomPage({
       if (data.streamTitle) setStreamTitle(data.streamTitle);
       if (data.roomVibe) setRoomVibe(data.roomVibe.vibe || null);
       if (data.simplePoll && data.simplePoll.active) setSimplePoll(data.simplePoll);
+      if (Array.isArray(data.fanClub)) { setFanClub(data.fanClub); setInFanClub(data.fanClub.indexOf(userId) !== -1); }
+      if (data.hostNote) setHostNote(data.hostNote);
+      if (data.collabBanner) setCollabBanner(data.collabBanner);
+      if (data.watchStreak && data.watchStreak > 1) setWatchStreak(data.watchStreak);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -1716,6 +1730,21 @@ export default function LiveRoomPage({
       setTimeout(function() { setCheckinFlash(null); }, 3000);
     });
 
+    // Batch 41 listeners
+    socket.on('fanclub-update', function(data) {
+      if (!data || !Array.isArray(data.members)) return;
+      setFanClub(data.members);
+      setInFanClub(data.members.indexOf(userId) !== -1);
+    });
+
+    socket.on('host-note-update', function(data) {
+      setHostNote(data || null);
+    });
+
+    socket.on('collab-banner-update', function(data) {
+      setCollabBanner(data || null);
+    });
+
     socket.on('mood-update', function(data) {
       if (!data) return;
       setStreamMood(data);
@@ -1927,6 +1956,9 @@ export default function LiveRoomPage({
       socket.off('room-vibe-update');
       socket.off('simple-poll-update');
       socket.off('viewer-checkin-event');
+      socket.off('fanclub-update');
+      socket.off('host-note-update');
+      socket.off('collab-banner-update');
       socket.off('scoreboard-update');
       socket.off('auction-update');
       socket.off('auction-ended');
@@ -2751,6 +2783,12 @@ export default function LiveRoomPage({
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#A78BFA', background: 'rgba(167,139,250,.12)', border: '1px solid rgba(167,139,250,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>
                 {{ hype: '🔥 HYPE', chill: '🌊 CHILL', gaming: '🎮 GAMING', music: '🎵 MUSIC', party: '🎉 PARTY', educational: '📚 EDU', news: '📰 NEWS' }[roomVibe] || roomVibe.toUpperCase()}
               </span>
+            )}
+            {watchStreak >= 2 && (
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF8C00', background: 'rgba(255,140,0,.12)', border: '1px solid rgba(255,140,0,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>🔁 {watchStreak}D STREAK</span>
+            )}
+            {inFanClub && (
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#F472B6', background: 'rgba(244,114,182,.12)', border: '1px solid rgba(244,114,182,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>❤️ FAN</span>
             )}
           </div>
         </div>
@@ -3618,6 +3656,14 @@ export default function LiveRoomPage({
                 if (simplePoll && simplePoll.active) { if (socket) socket.emit('simple-poll-end', { roomId: roomId }); }
                 else { setShowPollSet(function(s) { return !s; }); }
               }},
+              { emoji: '📝', label: 'Host Note', active: !!hostNote || showHostNoteSet, onTap: function() {
+                if (hostNote) { if (socket) socket.emit('host-note-clear', { roomId: roomId }); }
+                else { setHostNoteDraft(''); setShowHostNoteSet(function(s) { return !s; }); }
+              }},
+              { emoji: '🤝', label: 'Collab', active: !!collabBanner || showCollabSet, onTap: function() {
+                if (collabBanner) { if (socket) socket.emit('collab-banner-clear', { roomId: roomId }); }
+                else { setCollabDraft({ name: '', platform: '' }); setShowCollabSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Check In', active: false, onTap: function() {
@@ -3625,6 +3671,18 @@ export default function LiveRoomPage({
                   if (res && res.ok) { if (addToast) addToast('📍 Checked in! +' + res.pts + ' pts', 'success'); }
                   else if (res && res.minutesLeft) { if (addToast) addToast('Check in again in ' + res.minutesLeft + ' min', 'info'); }
                 });
+              }},
+              { emoji: '❤️', label: inFanClub ? 'Fan ✓' : 'Fan Club', active: inFanClub, onTap: function() {
+                if (inFanClub) {
+                  if (socket) socket.emit('fanclub-leave', { roomId: roomId }, function(res) {
+                    if (res && res.ok) { if (addToast) addToast('Left the fan club', 'info'); }
+                  });
+                } else {
+                  if (socket) socket.emit('fanclub-join', { roomId: roomId, username: username }, function(res) {
+                    if (res && res.ok) { if (addToast) addToast('❤️ Joined the fan club! Count: ' + res.count, 'success'); }
+                    else if (res && res.already) { if (addToast) addToast('You\'re already in the fan club!', 'info'); }
+                  });
+                }
               }},
             ] : [])),
           ].map(function(tool) {
@@ -4250,6 +4308,7 @@ export default function LiveRoomPage({
                         {msg.username}
                         {isSuper && <span style={{ color: '#C9A84C', marginLeft: 4 }}>💛 ${(Math.floor(msg.amountCents || 0) / 100).toFixed(2)}</span>}
                         {vips.indexOf(msg.userId) !== -1 && <span style={{ marginLeft: 4, fontSize: 8, color: '#A855F7', fontWeight: 700 }}>💎VIP</span>}
+                        {fanClub.indexOf(msg.userId) !== -1 && <span style={{ marginLeft: 4, fontSize: 8, color: '#F472B6', fontWeight: 700 }}>❤️FAN</span>}
                         {(function() {
                           var badges = userBadges[msg.userId] || (msg.userId === userId ? myBadges : []);
                           return badges.length > 0 ? (
@@ -9002,6 +9061,109 @@ export default function LiveRoomPage({
           <div style={{ fontSize: 28, marginBottom: 4 }}>📍</div>
           <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>{checkinFlash.username} CHECKED IN!</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginTop: 2 }}>+25 LOYALTY PTS</div>
+        </div>
+      )}
+
+      {/* ── Batch 41: Collab banner ───────────────────────────────────────── */}
+      {collabBanner && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, background: 'linear-gradient(90deg,rgba(201,168,76,.25),rgba(244,114,182,.2),rgba(201,168,76,.25))', borderBottom: '1px solid rgba(244,114,182,.3)', padding: '6px 16px', zIndex: 80, pointerEvents: 'none' }}>
+          <span style={{ fontSize: 16 }}>🤝</span>
+          <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: TEXT, letterSpacing: 1.5 }}>LIVE WITH</span>
+          <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 15, color: GOLD, letterSpacing: 1 }}>@{collabBanner.name}</span>
+          {collabBanner.platform && (
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#F472B6', background: 'rgba(244,114,182,.15)', border: '1px solid rgba(244,114,182,.3)', borderRadius: 4, padding: '1px 6px', letterSpacing: .5 }}>{collabBanner.platform.toUpperCase()}</span>
+          )}
+        </div>
+      )}
+
+      {/* ── Batch 41: Host note card ──────────────────────────────────────── */}
+      {hostNote && (
+        <div style={{ position: 'absolute', bottom: collabBanner ? 116 : 76, left: 16, right: 16, background: 'rgba(14,12,9,.97)', border: '1.5px solid rgba(201,168,76,.35)', borderRadius: 12, padding: '10px 14px', zIndex: 90, boxShadow: '0 2px 16px rgba(0,0,0,.5)' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>📝</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1, marginBottom: 4 }}>HOST NOTE</div>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, lineHeight: 1.4 }}>{hostNote.text}</div>
+            </div>
+            {role === 'host' && (
+              <button onClick={function() { if (socket) socket.emit('host-note-clear', { roomId: roomId }); }} style={{ background: 'transparent', border: 'none', color: MUTED, fontSize: 14, cursor: 'pointer', flexShrink: 0, padding: 0 }}>✕</button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Batch 41: Host note setup ─────────────────────────────────────── */}
+      {showHostNoteSet && role === 'host' && !hostNote && (
+        <div style={{ position: 'absolute', bottom: 90, left: 16, right: 16, background: 'rgba(14,12,9,.97)', border: '1.5px solid rgba(201,168,76,.3)', borderRadius: 14, padding: '14px 16px', zIndex: 130 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, marginBottom: 6, letterSpacing: .8 }}>HOST NOTE (shows to all viewers)</div>
+          <textarea
+            value={hostNoteDraft}
+            onChange={function(e) { setHostNoteDraft(e.target.value.slice(0, 280)); }}
+            placeholder="Share a note with your audience..."
+            rows={3}
+            style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '10px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 10 }}
+          />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={function() {
+                if (!hostNoteDraft.trim()) return;
+                if (socket) socket.emit('host-note-set', { roomId: roomId, text: hostNoteDraft.trim() });
+                setShowHostNoteSet(false); setHostNoteDraft('');
+              }}
+              style={{ flex: 1, background: GOLD, border: 'none', borderRadius: 10, padding: '10px', fontFamily: "'Bebas Neue',cursive", fontSize: 15, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}
+            >POST NOTE</button>
+            <button onClick={function() { setShowHostNoteSet(false); }} style={{ padding: '10px 16px', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer' }}>CANCEL</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Batch 41: Collab banner setup ─────────────────────────────────── */}
+      {showCollabSet && role === 'host' && !collabBanner && (
+        <div style={{ position: 'absolute', bottom: 90, left: 16, right: 16, background: 'rgba(14,12,9,.97)', border: '1.5px solid rgba(244,114,182,.3)', borderRadius: 14, padding: '14px 16px', zIndex: 130 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#F472B6', letterSpacing: 1.5 }}>🤝 COLLAB BANNER</span>
+            <div onClick={function() { setShowCollabSet(false); }} style={{ cursor: 'pointer', fontSize: 16, color: MUTED }}>✕</div>
+          </div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 5, letterSpacing: .8 }}>CREATOR NAME</div>
+          <input
+            value={collabDraft.name}
+            onChange={function(e) { setCollabDraft(function(d) { return Object.assign({}, d, { name: e.target.value.slice(0, 60) }); }); }}
+            placeholder="username or display name"
+            style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(244,114,182,.25)', borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', marginBottom: 10, boxSizing: 'border-box' }}
+          />
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 5, letterSpacing: .8 }}>PLATFORM (optional)</div>
+          <input
+            value={collabDraft.platform}
+            onChange={function(e) { setCollabDraft(function(d) { return Object.assign({}, d, { platform: e.target.value.slice(0, 30) }); }); }}
+            placeholder="TikTok, YouTube, Instagram..."
+            style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(244,114,182,.25)', borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', marginBottom: 14, boxSizing: 'border-box' }}
+          />
+          <button
+            onClick={function() {
+              if (!collabDraft.name.trim()) return;
+              if (socket) socket.emit('collab-banner-set', { roomId: roomId, name: collabDraft.name.trim(), platform: collabDraft.platform.trim() });
+              setShowCollabSet(false);
+            }}
+            style={{ width: '100%', background: '#F472B6', border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1.5 }}
+          >SHOW COLLAB BANNER</button>
+        </div>
+      )}
+
+      {/* ── Batch 41: Fan club join flash ─────────────────────────────────── */}
+      {collabBanner && (
+        <div style={{ position: 'absolute', bottom: 56, left: 16, right: 16, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(14,12,9,.92)', border: '1px solid rgba(244,114,182,.3)', borderRadius: 10, padding: '6px 12px', zIndex: 70 }}>
+          <span style={{ fontSize: 12 }}>❤️</span>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, flex: 1 }}>Fan club: <span style={{ color: GOLD, fontWeight: 700 }}>{fanClub.length}</span> member{fanClub.length !== 1 ? 's' : ''}</span>
+          {!inFanClub && role === 'viewer' && (
+            <button
+              onClick={function() {
+                if (socket) socket.emit('fanclub-join', { roomId: roomId, username: username }, function(res) {
+                  if (res && res.ok) { if (addToast) addToast('❤️ Joined the fan club!', 'success'); }
+                });
+              }}
+              style={{ background: '#F472B6', border: 'none', borderRadius: 6, padding: '3px 10px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#0E0C09', cursor: 'pointer', letterSpacing: .5 }}
+            >JOIN</button>
+          )}
         </div>
       )}
 
