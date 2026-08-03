@@ -668,6 +668,24 @@ export default function LiveRoomPage({
   var [fanWall,            setFanWall]            = useState([]);      // [{userId, username, points}]
   var [showFanWall,        setShowFanWall]        = useState(false);
   var [pipActive,          setPipActive]          = useState(false);
+  // Batch 38 — Scoreboard, Auction, Timer Widget, Quick Quiz
+  var [scoreboard,         setScoreboard]         = useState(null);   // { title, teamA:{name,score,color}, teamB:{name,score,color} }
+  var [showScoreboardSet,  setShowScoreboardSet]  = useState(false);
+  var [scoreboardDraft,    setScoreboardDraft]    = useState({ title: 'Live Score', teamAName: 'Team A', teamBName: 'Team B', teamAColor: '#FF1A3C', teamBColor: '#00BFFF' });
+  var [auction,            setAuction]            = useState(null);   // { item, desc, startBid, currentBid, bidder, active }
+  var [showAuctionSet,     setShowAuctionSet]     = useState(false);
+  var [auctionDraft,       setAuctionDraft]       = useState({ item: '', desc: '', startBid: 1 });
+  var [myBid,              setMyBid]              = useState('');
+  var [auctionEnded,       setAuctionEnded]       = useState(null);   // { item, winner, winningBid }
+  var [timerWidget,        setTimerWidget]        = useState(null);   // { label, type, startTs, durationSecs }
+  var [showTimerSet,       setShowTimerSet]       = useState(false);
+  var [timerDraft,         setTimerDraft]         = useState({ label: '', type: 'countdown', durationSecs: 60 });
+  var [timerDisplay,       setTimerDisplay]       = useState('');
+  var [quickQuiz,          setQuickQuiz]          = useState(null);   // { q, opts:[{text,votes,pct}] }
+  var [quickQuizMyAnswer,  setQuickQuizMyAnswer]  = useState(null);
+  var [quickQuizFinal,     setQuickQuizFinal]     = useState(null);   // { q, results, winner, winnerIdx, totalVotes }
+  var [showQuizSet,        setShowQuizSet]        = useState(false);
+  var [quizDraft,          setQuizDraft]          = useState({ q: '', opts: ['', '', '', ''] });
   // Batch 37 — Chat Colors, Lower Third, Emoji Shower, Shoutout Card, Chat Theme
   var [chatColors,         setChatColors]         = useState({});      // { [userId]: hexColor }
   var [myChatColor,        setMyChatColor]        = useState(null);
@@ -801,6 +819,10 @@ export default function LiveRoomPage({
       if (Array.isArray(data.vips) && data.vips.length > 0) setVips(data.vips);
       if (data.lowerThird) setLowerThird(data.lowerThird);
       if (data.chatTheme) setChatTheme(data.chatTheme);
+      if (data.scoreboard) setScoreboard(data.scoreboard);
+      if (data.auction && data.auction.active) setAuction(data.auction);
+      if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
+      if (data.quickQuiz) setQuickQuiz(data.quickQuiz);
       if (Array.isArray(data.whiteboardStrokes) && data.whiteboardStrokes.length > 0) {
         setTimeout(function() {
           var canvas = wbCanvasRef.current;
@@ -1567,6 +1589,42 @@ export default function LiveRoomPage({
       setChatTheme(data.theme || null);
     });
 
+    socket.on('scoreboard-update', function(data) {
+      setScoreboard(data || null);
+    });
+
+    socket.on('auction-update', function(data) {
+      if (!data || !data.active) { setAuction(null); return; }
+      setAuction(data);
+    });
+
+    socket.on('auction-ended', function(data) {
+      setAuction(null);
+      if (data) { setAuctionEnded(data); setTimeout(function() { setAuctionEnded(null); }, 6000); }
+    });
+
+    socket.on('timer-widget-update', function(data) {
+      setTimerWidget(data || null);
+    });
+
+    socket.on('quick-quiz', function(data) {
+      if (!data) return;
+      setQuickQuizMyAnswer(null);
+      setQuickQuizFinal(null);
+      setQuickQuiz(data);
+    });
+
+    socket.on('quick-quiz-results', function(data) {
+      if (!data) return;
+      setQuickQuiz(function(q) { return q ? Object.assign({}, q, { opts: data.results }) : q; });
+    });
+
+    socket.on('quick-quiz-final', function(data) {
+      if (!data) return;
+      setQuickQuizFinal(data);
+      setTimeout(function() { setQuickQuiz(null); setQuickQuizFinal(null); }, 12000);
+    });
+
     socket.on('mood-update', function(data) {
       if (!data) return;
       setStreamMood(data);
@@ -1767,6 +1825,13 @@ export default function LiveRoomPage({
       socket.off('emoji-shower');
       socket.off('shoutout-card');
       socket.off('chat-theme-update');
+      socket.off('scoreboard-update');
+      socket.off('auction-update');
+      socket.off('auction-ended');
+      socket.off('timer-widget-update');
+      socket.off('quick-quiz');
+      socket.off('quick-quiz-results');
+      socket.off('quick-quiz-final');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
@@ -2066,6 +2131,28 @@ export default function LiveRoomPage({
       if (addToast) addToast('🏆 You earned Superfan status! Your messages now show a special badge.', 'success');
     }
   }, [myEngagement.chat, myEngagement.react]);
+
+  // Timer widget tick
+  useEffect(function() {
+    if (!timerWidget) { setTimerDisplay(''); return; }
+    function tickTimer() {
+      var now = Date.now();
+      var elapsed = Math.floor((now - timerWidget.startTs) / 1000);
+      var secs;
+      if (timerWidget.type === 'countup') {
+        secs = elapsed;
+      } else {
+        secs = Math.max(0, timerWidget.durationSecs - elapsed);
+      }
+      var h = Math.floor(secs / 3600);
+      var m = Math.floor((secs % 3600) / 60);
+      var s = secs % 60;
+      setTimerDisplay((h > 0 ? String(h).padStart(2, '0') + ':' : '') + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'));
+    }
+    tickTimer();
+    var tid = setInterval(tickTimer, 1000);
+    return function() { clearInterval(tid); };
+  }, [timerWidget]);
 
   // Track peak viewer count
   useEffect(function() {
@@ -3391,6 +3478,22 @@ export default function LiveRoomPage({
               { emoji: '🌊', label: 'Emoji Rain', active: false, onTap: function() { setShowEmojiPicker37(function(s) { return !s; }); } },
               { emoji: '📣', label: 'Shoutout', active: false, onTap: function() { setShowShoutoutSet(function(s) { return !s; }); } },
               { emoji: '🎨', label: 'Chat Vibe', active: !!chatTheme, onTap: function() { setShowThemePicker(function(s) { return !s; }); } },
+              { emoji: '🏅', label: 'Scoreboard', active: !!scoreboard, onTap: function() {
+                if (scoreboard) { if (socket) socket.emit('scoreboard-clear', { roomId: roomId }); }
+                else { setShowScoreboardSet(function(s) { return !s; }); }
+              }},
+              { emoji: '🔨', label: 'Auction', active: !!auction, onTap: function() {
+                if (auction) { if (socket) socket.emit('auction-end', { roomId: roomId }); }
+                else { setShowAuctionSet(function(s) { return !s; }); }
+              }},
+              { emoji: '⏱', label: 'Timer', active: !!timerWidget, onTap: function() {
+                if (timerWidget) { if (socket) socket.emit('timer-widget-stop', { roomId: roomId }); }
+                else { setShowTimerSet(function(s) { return !s; }); }
+              }},
+              { emoji: '🧠', label: 'Quick Quiz', active: !!quickQuiz, onTap: function() {
+                if (quickQuiz) { if (socket) socket.emit('quick-quiz-end', { roomId: roomId }); }
+                else { setShowQuizSet(function(s) { return !s; }); }
+              }},
             ] : [])),
           ].map(function(tool) {
             return (
@@ -8251,6 +8354,242 @@ export default function LiveRoomPage({
           })}
           {chatTheme && <div onClick={function() { if (socket) socket.emit('chat-theme-set', { roomId: roomId, theme: 'off' }); setShowThemePicker(false); }} style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, textAlign: 'center', marginTop: 6, cursor: 'pointer', padding: '4px' }}>CLEAR THEME</div>}
           <div onClick={function() { setShowThemePicker(false); }} style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, textAlign: 'center', marginTop: 4, cursor: 'pointer', padding: '4px' }}>CLOSE</div>
+        </div>
+      )}
+
+      {/* ── Live Scoreboard overlay ──────────────────────────────────── */}
+      {scoreboard && (
+        <div style={{
+          position: 'absolute', top: 10, left: 10, right: 10, zIndex: 155,
+          background: 'rgba(9,7,14,.94)', border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 12,
+          padding: '10px 14px',
+        }}>
+          {scoreboard.title && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 2, textAlign: 'center', marginBottom: 6 }}>{scoreboard.title.toUpperCase()}</div>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: scoreboard.teamA.color || RED, letterSpacing: 1, marginBottom: 2 }}>{scoreboard.teamA.name}</div>
+              <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 32, color: scoreboard.teamA.color || RED, lineHeight: 1 }}>{scoreboard.teamA.score}</div>
+            </div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: MUTED }}>VS</div>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: scoreboard.teamB.color || '#00BFFF', letterSpacing: 1, marginBottom: 2 }}>{scoreboard.teamB.name}</div>
+              <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 32, color: scoreboard.teamB.color || '#00BFFF', lineHeight: 1 }}>{scoreboard.teamB.score}</div>
+            </div>
+          </div>
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ display: 'flex', gap: 6, marginTop: 8, justifyContent: 'center' }}>
+              {[{t:'A',d:1},{t:'A',d:-1},{t:'B',d:1},{t:'B',d:-1}].map(function(b, i) {
+                return <button key={i} onClick={function() { if (socket) socket.emit('scoreboard-score', { roomId: roomId, team: b.t, delta: b.d }); }} style={{ background: b.d > 0 ? (b.t === 'A' ? scoreboard.teamA.color : scoreboard.teamB.color) + '33' : CARD2, border: '1px solid ' + BORDER, borderRadius: 6, padding: '3px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>{b.t} {b.d > 0 ? '+1' : '-1'}</button>;
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Scoreboard setup panel ──────────────────────────────────── */}
+      {showScoreboardSet && role === 'host' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>🏅 SCOREBOARD</span>
+            <div onClick={function() { setShowScoreboardSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <input value={scoreboardDraft.title} onChange={function(e) { setScoreboardDraft(function(s) { return Object.assign({}, s, { title: e.target.value.slice(0, 60) }); }); }} placeholder="Match title" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+          <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+            <input value={scoreboardDraft.teamAName} onChange={function(e) { setScoreboardDraft(function(s) { return Object.assign({}, s, { teamAName: e.target.value.slice(0, 30) }); }); }} placeholder="Team A name" style={{ flex: 1, background: CARD2, border: '1.5px solid rgba(255,26,60,.3)', borderRadius: 10, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+            <input value={scoreboardDraft.teamBName} onChange={function(e) { setScoreboardDraft(function(s) { return Object.assign({}, s, { teamBName: e.target.value.slice(0, 30) }); }); }} placeholder="Team B name" style={{ flex: 1, background: CARD2, border: '1.5px solid rgba(0,191,255,.3)', borderRadius: 10, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+          </div>
+          <button onClick={function() {
+            if (socket) socket.emit('scoreboard-set', { roomId: roomId, title: scoreboardDraft.title, teamAName: scoreboardDraft.teamAName || 'Team A', teamBName: scoreboardDraft.teamBName || 'Team B', teamAColor: '#FF1A3C', teamBColor: '#00BFFF' });
+            setShowScoreboardSet(false);
+          }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}>START SCOREBOARD</button>
+        </div>
+      )}
+
+      {/* ── Live Auction widget ─────────────────────────────────────── */}
+      {auction && (
+        <div style={{
+          position: 'absolute', bottom: 170, left: 10, right: 10, zIndex: 185,
+          background: 'rgba(9,7,14,.95)', border: '1.5px solid ' + GOLD, borderRadius: 14,
+          padding: '12px 16px', animation: 'entranceSlide .4s ease',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: GOLD, letterSpacing: 2 }}>🔨 LIVE AUCTION</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginLeft: 'auto' }}>{auction.bidder ? 'Leading: ' + auction.bidder : 'No bids yet'}</span>
+          </div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT, marginBottom: 2 }}>{auction.item}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: GOLD, marginBottom: 8 }}>Current Bid: ${auction.currentBid}</div>
+          {role === 'viewer' && (
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input value={myBid} onChange={function(e) { setMyBid(e.target.value); }} type="number" placeholder={'>' + auction.currentBid} style={{ flex: 1, background: CARD2, border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '7px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 12, outline: 'none' }} />
+              <button onClick={function() {
+                var b = parseInt(myBid, 10);
+                if (!isNaN(b) && b > auction.currentBid && socket) { socket.emit('auction-bid', { roomId: roomId, bid: b }); setMyBid(''); }
+              }} style={{ background: GOLD, border: 'none', borderRadius: 8, padding: '7px 16px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: '#0E0C09', cursor: 'pointer' }}>BID</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Auction setup panel ─────────────────────────────────────── */}
+      {showAuctionSet && role === 'host' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>🔨 LIVE AUCTION</span>
+            <div onClick={function() { setShowAuctionSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <input value={auctionDraft.item} onChange={function(e) { setAuctionDraft(function(s) { return Object.assign({}, s, { item: e.target.value.slice(0, 80) }); }); }} placeholder="Item name" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+          <textarea value={auctionDraft.desc} onChange={function(e) { setAuctionDraft(function(s) { return Object.assign({}, s, { desc: e.target.value.slice(0, 200) }); }); }} placeholder="Description (optional)" rows={2} style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+          <input type="number" value={auctionDraft.startBid} onChange={function(e) { setAuctionDraft(function(s) { return Object.assign({}, s, { startBid: Math.max(1, parseInt(e.target.value, 10) || 1) }); }); }} placeholder="Starting bid ($)" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 14 }} />
+          <button onClick={function() {
+            if (!auctionDraft.item.trim()) return;
+            if (socket) socket.emit('auction-start', { roomId: roomId, item: auctionDraft.item.trim(), desc: auctionDraft.desc.trim(), startBid: auctionDraft.startBid });
+            setShowAuctionSet(false);
+          }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}>START AUCTION</button>
+        </div>
+      )}
+
+      {/* ── Auction ended card ──────────────────────────────────────── */}
+      {auctionEnded && (
+        <div style={{
+          position: 'absolute', top: '20%', left: '5%', right: '5%', zIndex: 280,
+          background: 'rgba(14,12,9,.97)', border: '2px solid ' + GOLD, borderRadius: 18,
+          padding: '24px 20px', textAlign: 'center',
+          boxShadow: '0 0 48px rgba(201,168,76,.5)',
+          animation: 'spotlightGlow 1s ease',
+        }}>
+          <div style={{ fontSize: 32, marginBottom: 6 }}>🔨</div>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 22, color: GOLD, letterSpacing: 2 }}>SOLD!</div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 18, color: TEXT, marginTop: 4 }}>{auctionEnded.item}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 14, color: GOLD, marginTop: 6 }}>${auctionEnded.winningBid}</div>
+          {auctionEnded.winner && <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: MUTED, marginTop: 4 }}>Won by {auctionEnded.winner}</div>}
+        </div>
+      )}
+
+      {/* ── Timer Widget ────────────────────────────────────────────── */}
+      {timerWidget && (
+        <div style={{
+          position: 'absolute', top: 60, right: 12, zIndex: 155,
+          background: 'rgba(9,7,14,.92)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10,
+          padding: '8px 12px', textAlign: 'center', minWidth: 90,
+        }}>
+          {timerWidget.label && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1, marginBottom: 3 }}>{timerWidget.label.toUpperCase()}</div>}
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 20, color: timerDisplay === '00:00' ? RED : GOLD, letterSpacing: 2 }}>{timerDisplay}</div>
+          {timerWidget.type === 'countdown' && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginTop: 2 }}>⏷ COUNTDOWN</div>}
+          {timerWidget.type === 'countup' && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginTop: 2 }}>⏶ ELAPSED</div>}
+        </div>
+      )}
+
+      {/* ── Timer setup panel ───────────────────────────────────────── */}
+      {showTimerSet && role === 'host' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>⏱ TIMER</span>
+            <div onClick={function() { setShowTimerSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <input value={timerDraft.label} onChange={function(e) { setTimerDraft(function(s) { return Object.assign({}, s, { label: e.target.value.slice(0, 40) }); }); }} placeholder="Label (e.g. Voting closes in…)" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+            {['countdown', 'countup'].map(function(t) {
+              return <button key={t} onClick={function() { setTimerDraft(function(s) { return Object.assign({}, s, { type: t }); }); }} style={{ flex: 1, background: timerDraft.type === t ? GOLD : CARD2, border: '1px solid ' + (timerDraft.type === t ? GOLD : BORDER), borderRadius: 8, padding: '7px', color: timerDraft.type === t ? '#0E0C09' : TEXT, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer' }}>{t.toUpperCase()}</button>;
+            })}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, flexShrink: 0 }}>DURATION</span>
+            {[60, 300, 600, 1800].map(function(s) {
+              return <button key={s} onClick={function() { setTimerDraft(function(d) { return Object.assign({}, d, { durationSecs: s }); }); }} style={{ background: timerDraft.durationSecs === s ? GOLD : CARD2, border: '1px solid ' + (timerDraft.durationSecs === s ? GOLD : BORDER), borderRadius: 8, padding: '4px 8px', color: timerDraft.durationSecs === s ? '#0E0C09' : TEXT, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>{s < 60 ? s + 's' : Math.floor(s / 60) + 'm'}</button>;
+            })}
+          </div>
+          <button onClick={function() {
+            if (socket) socket.emit('timer-widget-start', { roomId: roomId, label: timerDraft.label.trim(), type: timerDraft.type, durationSecs: timerDraft.durationSecs });
+            setShowTimerSet(false);
+          }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}>START TIMER</button>
+        </div>
+      )}
+
+      {/* ── Quick Quiz viewer panel ─────────────────────────────────── */}
+      {quickQuiz && !quickQuizFinal && (
+        <div style={{
+          position: 'absolute', bottom: 120, left: 10, right: 10, zIndex: 190,
+          background: 'rgba(9,7,14,.97)', border: '1.5px solid ' + GOLD, borderRadius: 14,
+          padding: '14px 16px', animation: 'entranceSlide .4s ease',
+        }}>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>🧠 QUICK QUIZ</div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT, marginBottom: 10, lineHeight: 1.3 }}>{quickQuiz.q}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {quickQuiz.opts.map(function(opt, i) {
+              var total = (quickQuiz.opts || []).reduce(function(sum, o) { return sum + (o.votes || 0); }, 0);
+              var pct = total > 0 ? Math.round(((opt.votes || 0) / total) * 100) : 0;
+              var picked = quickQuizMyAnswer === i;
+              return (
+                <div key={i} onClick={function() {
+                  if (quickQuizMyAnswer === null && socket) {
+                    socket.emit('quick-quiz-answer', { roomId: roomId, idx: i });
+                    setQuickQuizMyAnswer(i);
+                  }
+                }} style={{ background: picked ? 'rgba(201,168,76,.18)' : CARD2, border: '1px solid ' + (picked ? GOLD : BORDER), borderRadius: 8, padding: '8px 12px', cursor: quickQuizMyAnswer === null ? 'pointer' : 'default', position: 'relative', overflow: 'hidden' }}>
+                  {quickQuizMyAnswer !== null && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: pct + '%', background: 'rgba(201,168,76,.12)', transition: 'width .5s ease' }} />}
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT }}>{String.fromCharCode(65 + i)}. {opt.text}</span>
+                    {quickQuizMyAnswer !== null && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD }}>{pct}%</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Quick Quiz final result ─────────────────────────────────── */}
+      {quickQuizFinal && (
+        <div style={{
+          position: 'absolute', bottom: 120, left: 10, right: 10, zIndex: 190,
+          background: 'rgba(9,7,14,.97)', border: '2px solid ' + GOLD, borderRadius: 14,
+          padding: '14px 16px', animation: 'entranceSlide .3s ease',
+          boxShadow: '0 0 24px rgba(201,168,76,.3)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: GOLD, letterSpacing: 2 }}>🧠 QUIZ RESULTS</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{quickQuizFinal.totalVotes} votes</span>
+          </div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: TEXT, marginBottom: 10 }}>{quickQuizFinal.q}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {quickQuizFinal.results.map(function(r, i) {
+              var isWinner = i === quickQuizFinal.winnerIdx;
+              return (
+                <div key={i} style={{ background: isWinner ? 'rgba(201,168,76,.15)' : CARD2, border: '1px solid ' + (isWinner ? GOLD : BORDER), borderRadius: 8, padding: '6px 10px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: r.pct + '%', background: isWinner ? 'rgba(201,168,76,.15)' : 'rgba(255,255,255,.04)' }} />
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: isWinner ? GOLD : TEXT }}>{isWinner ? '✓ ' : ''}{String.fromCharCode(65 + i)}. {r.text}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: isWinner ? GOLD : MUTED }}>{r.pct}%</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Quick Quiz setup panel ──────────────────────────────────── */}
+      {showQuizSet && role === 'host' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '18px 16px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2 }}>🧠 QUICK QUIZ</span>
+            <div onClick={function() { setShowQuizSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <textarea value={quizDraft.q} onChange={function(e) { setQuizDraft(function(s) { return Object.assign({}, s, { q: e.target.value.slice(0, 200) }); }); }} placeholder="Question" rows={3} style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+          {quizDraft.opts.map(function(opt, i) {
+            return (
+              <input key={i} value={opt} onChange={function(e) {
+                var v = e.target.value.slice(0, 60);
+                setQuizDraft(function(s) { var newOpts = s.opts.slice(); newOpts[i] = v; return Object.assign({}, s, { opts: newOpts }); });
+              }} placeholder={'Option ' + String.fromCharCode(65 + i)} style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+            );
+          })}
+          <button onClick={function() {
+            var validOpts = quizDraft.opts.filter(function(o) { return o.trim(); });
+            if (!quizDraft.q.trim() || validOpts.length < 2) return;
+            if (socket) socket.emit('quick-quiz-launch', { roomId: roomId, q: quizDraft.q.trim(), opts: validOpts });
+            setShowQuizSet(false);
+          }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1, marginTop: 4 }}>LAUNCH QUIZ</button>
         </div>
       )}
 

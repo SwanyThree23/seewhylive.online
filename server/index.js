@@ -476,6 +476,11 @@ var vipMap              = new Map();  // roomId → Set<userId>
 var chatColorMap        = new Map();  // userId → hexColor string
 var lowerThirdMap       = new Map();  // roomId → { title, subtitle, endsAt, timerId }
 var chatThemeMap        = new Map();  // roomId → theme string (party|chill|sports|gaming|news)
+// Batch 38
+var scoreboardMap       = new Map();  // roomId → { title, teamA:{name,score,color}, teamB:{name,score,color}, active }
+var auctionMap          = new Map();  // roomId → { item, desc, startBid, currentBid, bidder, bidderName, active, startTs }
+var timerWidgetMap      = new Map();  // roomId → { label, type:'countdown'|'countup', startTs, durationSecs, active }
+var quickQuizMap        = new Map();  // roomId → { q, opts:[{text,votes}], answers:Map<userId,idx>, active }
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -629,6 +634,15 @@ function getJoinStateForRoom(roomId) {
   var lt = lowerThirdMap.get(roomId);
   state.lowerThird = (lt && Date.now() < lt.endsAt) ? { title: lt.title, subtitle: lt.subtitle, endsAt: lt.endsAt } : null;
   state.chatTheme = chatThemeMap.get(roomId) || null;
+  // Batch 38
+  var sb = scoreboardMap.get(roomId);
+  state.scoreboard = (sb && sb.active) ? { title: sb.title, teamA: sb.teamA, teamB: sb.teamB } : null;
+  var au = auctionMap.get(roomId);
+  state.auction = (au && au.active) ? { item: au.item, desc: au.desc, startBid: au.startBid, currentBid: au.currentBid, bidder: au.bidderName, startTs: au.startTs } : null;
+  var tw = timerWidgetMap.get(roomId);
+  state.timerWidget = (tw && tw.active) ? { label: tw.label, type: tw.type, startTs: tw.startTs, durationSecs: tw.durationSecs } : null;
+  var qq = quickQuizMap.get(roomId);
+  state.quickQuiz = (qq && qq.active) ? { q: qq.q, opts: qq.opts.map(function(o) { return { text: o.text, votes: o.votes }; }) } : null;
   return state;
 }
 
@@ -4647,6 +4661,159 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('chat-theme-update', { theme: theme === 'off' ? null : theme });
   });
 
+  // ── scoreboard-set — host creates/updates live scoreboard ─────────────
+  socket.on('scoreboard-set', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var title  = (data && data.title)       ? String(data.title).slice(0, 60).trim()       : 'Live Score';
+    var nameA  = (data && data.teamAName)   ? String(data.teamAName).slice(0, 30).trim()   : 'Team A';
+    var nameB  = (data && data.teamBName)   ? String(data.teamBName).slice(0, 30).trim()   : 'Team B';
+    var colorA = (data && data.teamAColor)  ? String(data.teamAColor).slice(0, 7)          : '#FF1A3C';
+    var colorB = (data && data.teamBColor)  ? String(data.teamBColor).slice(0, 7)          : '#00BFFF';
+    var prev = scoreboardMap.get(roomId) || {};
+    var sb = { title: title, teamA: { name: nameA, score: prev.teamA ? prev.teamA.score : 0, color: colorA }, teamB: { name: nameB, score: prev.teamB ? prev.teamB.score : 0, color: colorB }, active: true };
+    scoreboardMap.set(roomId, sb);
+    io.to(roomId).emit('scoreboard-update', { title: sb.title, teamA: sb.teamA, teamB: sb.teamB });
+  });
+
+  // ── scoreboard-score — host adjusts score for a team ─────────────────
+  socket.on('scoreboard-score', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    var sb = scoreboardMap.get(roomId);
+    if (!roomId || !sb) return;
+    var team = (data && data.team === 'B') ? 'teamB' : 'teamA';
+    var delta = parseInt((data && data.delta) || 1, 10);
+    if (isNaN(delta)) delta = 1;
+    sb[team].score = Math.max(0, sb[team].score + delta);
+    scoreboardMap.set(roomId, sb);
+    io.to(roomId).emit('scoreboard-update', { title: sb.title, teamA: sb.teamA, teamB: sb.teamB });
+    addEnergy(roomId, null, null, 3);
+  });
+
+  // ── scoreboard-clear — host hides scoreboard ──────────────────────────
+  socket.on('scoreboard-clear', function(data) {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    scoreboardMap.delete(roomId);
+    io.to(roomId).emit('scoreboard-update', null);
+  });
+
+  // ── auction-start — host starts a live auction ────────────────────────
+  socket.on('auction-start', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (auctionMap.has(roomId) && auctionMap.get(roomId).active) return; // already active
+    var item     = (data && data.item)     ? String(data.item).slice(0, 80).trim()     : '';
+    var desc     = (data && data.desc)     ? String(data.desc).slice(0, 200).trim()    : '';
+    var startBid = Math.max(1, parseInt((data && data.startBid) || 1, 10));
+    if (!item) return;
+    var auction = { item: item, desc: desc, startBid: startBid, currentBid: startBid, bidder: null, bidderName: null, active: true, startTs: Date.now(), bids: [] };
+    auctionMap.set(roomId, auction);
+    io.to(roomId).emit('auction-update', { item: item, desc: desc, startBid: startBid, currentBid: startBid, bidder: null, active: true });
+    addEnergy(roomId, null, null, 10);
+  });
+
+  // ── auction-bid — viewer places a bid ─────────────────────────────────
+  socket.on('auction-bid', function(data) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId || userId.startsWith('anon')) return;
+    var au = auctionMap.get(roomId);
+    if (!au || !au.active) return;
+    var bid = parseInt(data && data.bid, 10);
+    if (isNaN(bid) || bid <= au.currentBid) return;
+    au.currentBid   = bid;
+    au.bidder       = userId;
+    au.bidderName   = socket.data.username || userId;
+    auctionMap.set(roomId, au);
+    io.to(roomId).emit('auction-update', { item: au.item, desc: au.desc, startBid: au.startBid, currentBid: au.currentBid, bidder: au.bidderName, active: true });
+    addEnergy(roomId, userId, au.bidderName, 8);
+  });
+
+  // ── auction-end — host closes the auction ─────────────────────────────
+  socket.on('auction-end', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    var au = auctionMap.get(roomId);
+    if (!roomId || !au) return;
+    io.to(roomId).emit('auction-ended', { item: au.item, winner: au.bidderName, winningBid: au.currentBid });
+    auctionMap.delete(roomId);
+    addEnergy(roomId, null, null, 15);
+  });
+
+  // ── timer-widget-start — host starts visible countdown/countup ────────
+  socket.on('timer-widget-start', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var label       = (data && data.label) ? String(data.label).slice(0, 40).trim() : '';
+    var type        = (data && data.type === 'countup') ? 'countup' : 'countdown';
+    var durationSecs = Math.min(7200, Math.max(10, parseInt((data && data.durationSecs) || 60, 10)));
+    var tw = { label: label, type: type, startTs: Date.now(), durationSecs: durationSecs, active: true };
+    timerWidgetMap.set(roomId, tw);
+    io.to(roomId).emit('timer-widget-update', { label: label, type: type, startTs: tw.startTs, durationSecs: durationSecs, active: true });
+  });
+
+  // ── timer-widget-stop — host stops timer ──────────────────────────────
+  socket.on('timer-widget-stop', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    timerWidgetMap.delete(roomId);
+    io.to(roomId).emit('timer-widget-update', null);
+  });
+
+  // ── quick-quiz-launch — host sends a one-shot quiz question ──────────
+  socket.on('quick-quiz-launch', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var q = (data && data.q) ? String(data.q).slice(0, 200).trim() : '';
+    var rawOpts = (data && Array.isArray(data.opts)) ? data.opts.slice(0, 4) : [];
+    if (!q || rawOpts.length < 2) return;
+    var opts = rawOpts.map(function(o) { return { text: String(o).slice(0, 60).trim(), votes: 0 }; });
+    var quiz = { q: q, opts: opts, answers: new Map(), active: true };
+    quickQuizMap.set(roomId, quiz);
+    io.to(roomId).emit('quick-quiz', { q: q, opts: opts.map(function(o) { return { text: o.text, votes: 0 }; }) });
+    addEnergy(roomId, null, null, 8);
+  });
+
+  // ── quick-quiz-answer — viewer answers ────────────────────────────────
+  socket.on('quick-quiz-answer', function(data) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) return;
+    var quiz = quickQuizMap.get(roomId);
+    if (!quiz || !quiz.active) return;
+    if (quiz.answers.has(userId)) return;
+    var idx = parseInt(data && data.idx, 10);
+    if (isNaN(idx) || idx < 0 || idx >= quiz.opts.length) return;
+    quiz.answers.set(userId, idx);
+    quiz.opts[idx].votes += 1;
+    var totalVotes = quiz.answers.size;
+    var results = quiz.opts.map(function(o, i) { return { text: o.text, votes: o.votes, pct: Math.round((o.votes / totalVotes) * 100) }; });
+    io.to(roomId).emit('quick-quiz-results', { q: quiz.q, results: results, totalVotes: totalVotes });
+    addEnergy(roomId, userId, socket.data.username, 2);
+  });
+
+  // ── quick-quiz-end — host closes quiz ─────────────────────────────────
+  socket.on('quick-quiz-end', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    var quiz = quickQuizMap.get(roomId);
+    if (!roomId || !quiz) return;
+    quiz.active = false;
+    var totalVotes = quiz.answers.size;
+    var winner = quiz.opts.reduce(function(best, o, i) { return o.votes > best.votes ? { idx: i, votes: o.votes, text: o.text } : best; }, { idx: 0, votes: 0, text: '' });
+    var results = quiz.opts.map(function(o, i) { return { text: o.text, votes: o.votes, pct: totalVotes ? Math.round((o.votes / totalVotes) * 100) : 0 }; });
+    io.to(roomId).emit('quick-quiz-final', { q: quiz.q, results: results, winner: winner.text, winnerIdx: winner.idx, totalVotes: totalVotes });
+    setTimeout(function() { quickQuizMap.delete(roomId); }, 30000);
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -5137,6 +5304,10 @@ io.on('connection', function(socket) {
     if (endLt && endLt.timerId) clearTimeout(endLt.timerId);
     lowerThirdMap.delete(roomId);
     chatThemeMap.delete(roomId);
+    scoreboardMap.delete(roomId);
+    auctionMap.delete(roomId);
+    timerWidgetMap.delete(roomId);
+    quickQuizMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
