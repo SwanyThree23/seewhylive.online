@@ -487,6 +487,11 @@ var hypeTrainMap        = new Map();  // roomId → { level, pts, target, startT
 var marqueeMap          = new Map();  // roomId → { text, active }
 var shoutoutQueueMap    = new Map();  // roomId → [{ id, userId, username, message, ts }]
 var shoutoutQueueCost   = 50;         // points cost to queue a shoutout
+// Batch 40
+var checkInMap          = new Map();  // userId → lastCheckInTs
+var streamTitleMap      = new Map();  // roomId → string (live-edited title)
+var roomVibeMap         = new Map();  // roomId → { vibe: string, ts: number } | null
+var simplePollMap       = new Map();  // roomId → { q, yes:Set<userId>, no:Set<userId>, active, startTs }
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -657,6 +662,11 @@ function getJoinStateForRoom(roomId) {
   state.marquee = marqueeMap.get(roomId) || null;
   var sq = shoutoutQueueMap.get(roomId);
   state.shoutoutQueue = sq ? sq.slice(0, 5) : [];
+  // Batch 40
+  state.streamTitle = streamTitleMap.get(roomId) || null;
+  state.roomVibe = roomVibeMap.get(roomId) || null;
+  var sp = simplePollMap.get(roomId);
+  state.simplePoll = (sp && sp.active) ? { q: sp.q, yes: sp.yes.size, no: sp.no.size, startTs: sp.startTs } : null;
   return state;
 }
 
@@ -4966,6 +4976,97 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('shoutout-queue-update', { queue: shoutoutQueueMap.get(roomId).slice(0, 5) });
   });
 
+  // ── viewer-checkin ─────────────────────────────────────────────────────
+  socket.on('viewer-checkin', function(data, ack) {
+    var userId   = socket.data.userId;
+    var roomId   = socket.data.roomId;
+    var username = (data && data.username) ? String(data.username).slice(0, 40) : ('viewer-' + String(userId || '').slice(0, 8));
+    if (!userId || !roomId) { if (ack) ack({ error: 'not in room' }); return; }
+    var CHECK_INTERVAL = 3600000; // 1 hour
+    var last = checkInMap.get(userId + ':' + roomId) || 0;
+    var now = Date.now();
+    if (now - last < CHECK_INTERVAL) {
+      var remaining = Math.ceil((CHECK_INTERVAL - (now - last)) / 60000);
+      if (ack) ack({ error: 'wait', minutesLeft: remaining }); return;
+    }
+    checkInMap.set(userId + ':' + roomId, now);
+    var PTS = 25;
+    addEnergy(roomId, userId, username, PTS);
+    addHype(roomId, PTS);
+    io.to(roomId).emit('viewer-checkin-event', { username: username, ts: now });
+    if (ack) ack({ ok: true, pts: PTS });
+  });
+
+  // ── update-stream-title ────────────────────────────────────────────────
+  socket.on('update-stream-title', function(data) {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var title = data && typeof data.title === 'string' ? data.title.trim().slice(0, 100) : null;
+    if (!title) return;
+    streamTitleMap.set(roomId, title);
+    io.to(roomId).emit('stream-title-updated', { title: title });
+  });
+
+  // ── room-vibe-set ──────────────────────────────────────────────────────
+  var ALLOWED_VIBES = ['hype', 'chill', 'gaming', 'music', 'party', 'educational', 'news'];
+  socket.on('room-vibe-set', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var vibe = data && ALLOWED_VIBES.indexOf(String(data.vibe || '')) !== -1 ? String(data.vibe) : null;
+    if (!vibe) return;
+    roomVibeMap.set(roomId, { vibe: vibe, ts: Date.now() });
+    io.to(roomId).emit('room-vibe-update', { vibe: vibe });
+  });
+
+  socket.on('room-vibe-clear', function() {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    roomVibeMap.delete(roomId);
+    io.to(roomId).emit('room-vibe-update', null);
+  });
+
+  // ── simple-poll-start ──────────────────────────────────────────────────
+  socket.on('simple-poll-start', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var q = data && typeof data.q === 'string' ? data.q.trim().slice(0, 140) : '';
+    if (!q) return;
+    var poll = { q: q, yes: new Set(), no: new Set(), active: true, startTs: Date.now() };
+    simplePollMap.set(roomId, poll);
+    io.to(roomId).emit('simple-poll-update', { q: q, yes: 0, no: 0, active: true, startTs: poll.startTs });
+  });
+
+  socket.on('simple-poll-vote', function(data) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) return;
+    var poll = simplePollMap.get(roomId);
+    if (!poll || !poll.active) return;
+    var vote = data && data.vote;
+    if (vote !== 'yes' && vote !== 'no') return;
+    // Allow changing vote
+    poll.yes.delete(userId);
+    poll.no.delete(userId);
+    poll[vote].add(userId);
+    io.to(roomId).emit('simple-poll-update', { q: poll.q, yes: poll.yes.size, no: poll.no.size, active: true, startTs: poll.startTs });
+    addEnergy(roomId, userId, (data && data.username) ? String(data.username).slice(0, 40) : '', 1);
+  });
+
+  socket.on('simple-poll-end', function() {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var poll = simplePollMap.get(roomId);
+    if (!poll) return;
+    poll.active = false;
+    io.to(roomId).emit('simple-poll-update', { q: poll.q, yes: poll.yes.size, no: poll.no.size, active: false, startTs: poll.startTs });
+    simplePollMap.delete(roomId);
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -5466,6 +5567,9 @@ io.on('connection', function(socket) {
     hypeTrainMap.delete(roomId);
     marqueeMap.delete(roomId);
     shoutoutQueueMap.delete(roomId);
+    streamTitleMap.delete(roomId);
+    roomVibeMap.delete(roomId);
+    simplePollMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });

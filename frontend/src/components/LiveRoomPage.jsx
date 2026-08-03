@@ -670,6 +670,17 @@ export default function LiveRoomPage({
   var [showFanWall,        setShowFanWall]        = useState(false);
   var [pipActive,          setPipActive]          = useState(false);
   // Batch 39 — Song Request, Hype Train, Marquee, Shoutout Queue
+  // Batch 40 — Check-in, Stream Title, Room Vibe, Simple Poll
+  var [streamTitle,        setStreamTitle]        = useState(null);    // live-edited title string
+  var [showTitleEdit,      setShowTitleEdit]      = useState(false);
+  var [titleDraft,         setTitleDraft]         = useState('');
+  var [roomVibe,           setRoomVibe]           = useState(null);    // 'hype'|'chill'|'gaming'|'music'|'party'|'educational'|'news'
+  var [showVibePicker,     setShowVibePicker]     = useState(false);
+  var [simplePoll,         setSimplePoll]         = useState(null);    // { q, yes, no, active, startTs }
+  var [myPollVote,         setMyPollVote]         = useState(null);    // 'yes'|'no'|null
+  var [showPollSet,        setShowPollSet]        = useState(false);
+  var [pollDraft,          setPollDraft]          = useState('');
+  var [checkinFlash,       setCheckinFlash]       = useState(null);    // { username, pts }
   var [songRequests,       setSongRequests]       = useState([]);      // [{id, userId, username, song, ts}]
   var [showSongQueue,      setShowSongQueue]      = useState(false);
   var [hypeTrain,          setHypeTrain]          = useState(null);    // { level, pts, target }
@@ -836,6 +847,9 @@ export default function LiveRoomPage({
       if (data.hypeTrain) setHypeTrain(data.hypeTrain);
       if (data.marquee) setMarquee(data.marquee);
       if (Array.isArray(data.shoutoutQueue) && data.shoutoutQueue.length > 0) setShoutoutQueue(data.shoutoutQueue);
+      if (data.streamTitle) setStreamTitle(data.streamTitle);
+      if (data.roomVibe) setRoomVibe(data.roomVibe.vibe || null);
+      if (data.simplePoll && data.simplePoll.active) setSimplePoll(data.simplePoll);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -1677,6 +1691,31 @@ export default function LiveRoomPage({
       setTimeout(function() { setShoutoutQueueAck(null); }, 4000);
     });
 
+    // Batch 40 listeners
+    socket.on('stream-title-updated', function(data) {
+      if (!data || !data.title) return;
+      setStreamTitle(data.title);
+    });
+
+    socket.on('room-vibe-update', function(data) {
+      setRoomVibe(data ? (data.vibe || null) : null);
+    });
+
+    socket.on('simple-poll-update', function(data) {
+      if (!data) { setSimplePoll(null); return; }
+      setSimplePoll(data);
+      if (!data.active) {
+        setMyPollVote(null);
+        setTimeout(function() { setSimplePoll(null); }, 6000);
+      }
+    });
+
+    socket.on('viewer-checkin-event', function(data) {
+      if (!data || !data.username) return;
+      setCheckinFlash({ username: data.username });
+      setTimeout(function() { setCheckinFlash(null); }, 3000);
+    });
+
     socket.on('mood-update', function(data) {
       if (!data) return;
       setStreamMood(data);
@@ -1884,6 +1923,10 @@ export default function LiveRoomPage({
       socket.off('marquee-update');
       socket.off('shoutout-queue-update');
       socket.off('shoutout-queue-ack');
+      socket.off('stream-title-updated');
+      socket.off('room-vibe-update');
+      socket.off('simple-poll-update');
+      socket.off('viewer-checkin-event');
       socket.off('scoreboard-update');
       socket.off('auction-update');
       socket.off('auction-ended');
@@ -2667,7 +2710,12 @@ export default function LiveRoomPage({
                 {hostName.charAt(0).toUpperCase()}
               </span>
             </div>
-            <span style={{ fontWeight: 600, fontSize: 14, color: TEXT }}>{hostName}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <span style={{ fontWeight: 600, fontSize: 14, color: TEXT }}>{hostName}</span>
+              {streamTitle && (
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: MUTED, letterSpacing: .3, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamTitle}</span>
+              )}
+            </div>
             <RolePill role={hostEntry ? hostEntry.role : role} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -2698,6 +2746,11 @@ export default function LiveRoomPage({
             )}
             {watchSeconds >= 300 && watchSeconds < 900 && (
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, background: 'rgba(212,133,74,.12)', border: '1px solid rgba(212,133,74,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>🔥 LOYAL</span>
+            )}
+            {roomVibe && (
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#A78BFA', background: 'rgba(167,139,250,.12)', border: '1px solid rgba(167,139,250,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>
+                {{ hype: '🔥 HYPE', chill: '🌊 CHILL', gaming: '🎮 GAMING', music: '🎵 MUSIC', party: '🎉 PARTY', educational: '📚 EDU', news: '📰 NEWS' }[roomVibe] || roomVibe.toUpperCase()}
+              </span>
             )}
           </div>
         </div>
@@ -3559,8 +3612,20 @@ export default function LiveRoomPage({
                 else { setShowMarqueeSet(function(s) { return !s; }); }
               }},
               { emoji: '📣', label: 'So. Queue', active: showShoutoutQueue || shoutoutQueue.length > 0, onTap: function() { setShowShoutoutQueue(function(s) { return !s; }); } },
+              { emoji: '✏️', label: 'Title', active: showTitleEdit, onTap: function() { setTitleDraft(streamTitle || ''); setShowTitleEdit(function(s) { return !s; }); } },
+              { emoji: '🌈', label: 'Vibe', active: !!roomVibe || showVibePicker, onTap: function() { setShowVibePicker(function(s) { return !s; }); } },
+              { emoji: '🗳️', label: 'Poll', active: !!simplePoll || showPollSet, onTap: function() {
+                if (simplePoll && simplePoll.active) { if (socket) socket.emit('simple-poll-end', { roomId: roomId }); }
+                else { setShowPollSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
+              { emoji: '📍', label: 'Check In', active: false, onTap: function() {
+                if (socket) socket.emit('viewer-checkin', { roomId: roomId, username: username }, function(res) {
+                  if (res && res.ok) { if (addToast) addToast('📍 Checked in! +' + res.pts + ' pts', 'success'); }
+                  else if (res && res.minutesLeft) { if (addToast) addToast('Check in again in ' + res.minutesLeft + ' min', 'info'); }
+                });
+              }},
             ] : [])),
           ].map(function(tool) {
             return (
@@ -8786,6 +8851,157 @@ export default function LiveRoomPage({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* ── Batch 40: Simple poll — viewer panel ─────────────────────────── */}
+      {simplePoll && (
+        <div style={{ position: 'absolute', bottom: 70, left: 16, right: 16, background: 'rgba(14,12,9,.97)', border: '1.5px solid rgba(201,168,76,.3)', borderRadius: 14, padding: '14px 16px', zIndex: 120, boxShadow: '0 4px 24px rgba(0,0,0,.6)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 15, color: GOLD, letterSpacing: 1.5 }}>🗳️ INSTANT POLL</span>
+            {role === 'host' && simplePoll.active && (
+              <button onClick={function() { if (socket) socket.emit('simple-poll-end', { roomId: roomId }); }} style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 6, padding: '3px 8px', color: RED, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: .5 }}>END</button>
+            )}
+          </div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, marginBottom: 12, lineHeight: 1.4 }}>{simplePoll.q}</div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+            <button
+              onClick={function() {
+                if (!simplePoll.active) return;
+                setMyPollVote('yes');
+                if (socket) socket.emit('simple-poll-vote', { roomId: roomId, vote: 'yes', username: username });
+              }}
+              style={{ flex: 1, padding: '10px', background: myPollVote === 'yes' ? 'rgba(0,200,100,.25)' : CARD2, border: '1.5px solid ' + (myPollVote === 'yes' ? '#00C864' : BORDER), borderRadius: 10, color: myPollVote === 'yes' ? '#00C864' : TEXT, fontFamily: "'Bebas Neue',cursive", fontSize: 16, cursor: 'pointer', letterSpacing: 1, transition: 'all .15s' }}
+            >👍 YES {simplePoll.active ? '(' + (simplePoll.yes || 0) + ')' : ''}</button>
+            <button
+              onClick={function() {
+                if (!simplePoll.active) return;
+                setMyPollVote('no');
+                if (socket) socket.emit('simple-poll-vote', { roomId: roomId, vote: 'no', username: username });
+              }}
+              style={{ flex: 1, padding: '10px', background: myPollVote === 'no' ? 'rgba(255,26,60,.25)' : CARD2, border: '1.5px solid ' + (myPollVote === 'no' ? RED : BORDER), borderRadius: 10, color: myPollVote === 'no' ? RED : TEXT, fontFamily: "'Bebas Neue',cursive", fontSize: 16, cursor: 'pointer', letterSpacing: 1, transition: 'all .15s' }}
+            >👎 NO {simplePoll.active ? '(' + (simplePoll.no || 0) + ')' : ''}</button>
+          </div>
+          {!simplePoll.active && (
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center', letterSpacing: .5 }}>
+              FINAL: YES {simplePoll.yes || 0} · NO {simplePoll.no || 0}
+              {(simplePoll.yes + simplePoll.no) > 0 && (
+                <span style={{ marginLeft: 8, color: (simplePoll.yes || 0) >= (simplePoll.no || 0) ? '#00C864' : RED }}>
+                  — {(simplePoll.yes || 0) >= (simplePoll.no || 0) ? 'YES WINS' : 'NO WINS'}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Batch 40: Poll setup — host only ─────────────────────────────── */}
+      {showPollSet && role === 'host' && !simplePoll && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(8,11,18,.96)', zIndex: 200, display: 'flex', flexDirection: 'column', padding: '24px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: GOLD, letterSpacing: 2 }}>🗳️ LAUNCH POLL</span>
+            <div onClick={function() { setShowPollSet(false); }} style={{ cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT, fontSize: 14 }}>✕</div>
+          </div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, marginBottom: 6, letterSpacing: .8 }}>QUESTION</div>
+          <textarea
+            value={pollDraft}
+            onChange={function(e) { setPollDraft(e.target.value.slice(0, 140)); }}
+            placeholder="Ask viewers a yes/no question..."
+            rows={3}
+            style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '10px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', outline: 'none', boxSizing: 'border-box', marginBottom: 16 }}
+          />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ flex: 1, padding: '10px', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, textAlign: 'center', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#00C864' }}>👍 YES</div>
+            <div style={{ flex: 1, padding: '10px', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, textAlign: 'center', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: RED }}>👎 NO</div>
+          </div>
+          <button
+            onClick={function() {
+              if (!pollDraft.trim()) return;
+              if (socket) socket.emit('simple-poll-start', { roomId: roomId, q: pollDraft.trim() });
+              setShowPollSet(false); setPollDraft('');
+            }}
+            style={{ marginTop: 16, background: GOLD, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1.5 }}
+          >LAUNCH POLL</button>
+        </div>
+      )}
+
+      {/* ── Batch 40: Vibe picker — host only ────────────────────────────── */}
+      {showVibePicker && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', bottom: 90, left: 16, right: 16, background: 'rgba(14,12,9,.97)', border: '1.5px solid rgba(167,139,250,.3)', borderRadius: 14, padding: '14px 16px', zIndex: 130 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 15, color: '#A78BFA', letterSpacing: 1.5 }}>🌈 SET ROOM VIBE</span>
+            <div onClick={function() { setShowVibePicker(false); }} style={{ cursor: 'pointer', fontSize: 16, color: MUTED }}>✕</div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+            {[
+              { key: 'hype', emoji: '🔥', label: 'HYPE' },
+              { key: 'chill', emoji: '🌊', label: 'CHILL' },
+              { key: 'gaming', emoji: '🎮', label: 'GAMING' },
+              { key: 'music', emoji: '🎵', label: 'MUSIC' },
+              { key: 'party', emoji: '🎉', label: 'PARTY' },
+              { key: 'educational', emoji: '📚', label: 'EDU' },
+              { key: 'news', emoji: '📰', label: 'NEWS' },
+            ].map(function(v) {
+              return (
+                <button
+                  key={v.key}
+                  onClick={function() {
+                    if (socket) socket.emit('room-vibe-set', { roomId: roomId, vibe: v.key });
+                    setShowVibePicker(false);
+                  }}
+                  style={{ padding: '8px 4px', background: roomVibe === v.key ? 'rgba(167,139,250,.22)' : CARD2, border: '1px solid ' + (roomVibe === v.key ? '#A78BFA' : BORDER), borderRadius: 8, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}
+                >
+                  <span style={{ fontSize: 18 }}>{v.emoji}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: roomVibe === v.key ? '#A78BFA' : MUTED, letterSpacing: .5 }}>{v.label}</span>
+                </button>
+              );
+            })}
+            {roomVibe && (
+              <button
+                onClick={function() {
+                  if (socket) socket.emit('room-vibe-clear', { roomId: roomId });
+                  setShowVibePicker(false);
+                }}
+                style={{ padding: '8px 4px', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}
+              >
+                <span style={{ fontSize: 18 }}>✕</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5 }}>CLEAR</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Batch 40: Title edit — host only ─────────────────────────────── */}
+      {showTitleEdit && role === 'host' && (
+        <div style={{ position: 'absolute', bottom: 90, left: 16, right: 16, background: 'rgba(14,12,9,.97)', border: '1.5px solid rgba(201,168,76,.3)', borderRadius: 14, padding: '14px 16px', zIndex: 130 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, marginBottom: 6, letterSpacing: .8 }}>STREAM TITLE</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              value={titleDraft}
+              onChange={function(e) { setTitleDraft(e.target.value.slice(0, 100)); }}
+              placeholder="Enter stream title..."
+              style={{ flex: 1, background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none' }}
+            />
+            <button
+              onClick={function() {
+                if (!titleDraft.trim()) return;
+                if (socket) socket.emit('update-stream-title', { roomId: roomId, title: titleDraft.trim() });
+                setShowTitleEdit(false);
+              }}
+              style={{ background: GOLD, border: 'none', borderRadius: 8, padding: '8px 14px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: '#0E0C09', cursor: 'pointer', letterSpacing: 1 }}
+            >SET</button>
+            <div onClick={function() { setShowTitleEdit(false); }} style={{ cursor: 'pointer', width: 36, height: 36, borderRadius: 8, background: CARD2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: MUTED, fontSize: 14 }}>✕</div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Batch 40: Check-in flash ─────────────────────────────────────── */}
+      {checkinFlash && (
+        <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%,-50%)', background: 'rgba(14,12,9,.95)', border: '1.5px solid rgba(201,168,76,.4)', borderRadius: 14, padding: '12px 20px', zIndex: 300, textAlign: 'center', animation: 'entranceSlide .35s ease', pointerEvents: 'none' }}>
+          <div style={{ fontSize: 28, marginBottom: 4 }}>📍</div>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>{checkinFlash.username} CHECKED IN!</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginTop: 2 }}>+25 LOYALTY PTS</div>
         </div>
       )}
 
