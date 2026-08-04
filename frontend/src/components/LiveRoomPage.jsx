@@ -387,6 +387,10 @@ export default function LiveRoomPage({
   var [isScreenSharing,    setIsScreenSharing]    = useState(false);
   var [screenShareHost,    setScreenShareHost]    = useState(null);  // { username } when remote host is sharing
 
+  var [ccEnabled,  setCcEnabled]  = useState(false);
+  var [ccLines,    setCcLines]    = useState([]);
+  var ccRecogRef = useRef(null);
+
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
   var screenStreamRef = useRef(null);
@@ -524,6 +528,15 @@ export default function LiveRoomPage({
       });
     });
 
+    socket.on('stream-caption', function(data) {
+      if (!data || !data.text) return;
+      var line = { id: Date.now() + Math.random(), text: String(data.text).slice(0, 300) };
+      setCcLines(function(prev) { return prev.concat(line).slice(-3); });
+      setTimeout(function() {
+        setCcLines(function(prev) { return prev.filter(function(l) { return l.id !== line.id; }); });
+      }, 6000);
+    });
+
     socket.on('poll-update', function(data) {
       if (!data) return;
       if (!data.active) { setActivePoll(null); setPollVoted(false); return; }
@@ -645,6 +658,7 @@ export default function LiveRoomPage({
       socket.off('subscriber-only-changed');
       socket.off('user-banned');
       socket.off('user-unbanned');
+      socket.off('stream-caption');
     };
   }, [socket]);
 
@@ -657,6 +671,50 @@ export default function LiveRoomPage({
 
   // ── Update medConf when mediaConfig prop changes ──
   useEffect(function() { setMedConf(mediaConfig || null); }, [mediaConfig]);
+
+  // ── Live Closed Captions (host only, Web Speech API) ──
+  useEffect(function() {
+    if (!ccEnabled || role !== 'host' || !isLive || !socket) return;
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      if (addToast) addToast('CC: browser does not support speech recognition', 'error');
+      setCcEnabled(false);
+      return;
+    }
+    var stopped = false;
+    var recog = new SR();
+    recog.continuous = true;
+    recog.interimResults = false;
+    recog.lang = 'en-US';
+    recog.onresult = function(e) {
+      var text = '';
+      for (var i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) text += e.results[i][0].transcript;
+      }
+      text = text.trim().slice(0, 300);
+      if (!text) return;
+      socket.emit('stream-caption', { text: text });
+      var line = { id: Date.now() + Math.random(), text: text };
+      setCcLines(function(prev) { return prev.concat(line).slice(-3); });
+      setTimeout(function() {
+        setCcLines(function(prev) { return prev.filter(function(l) { return l.id !== line.id; }); });
+      }, 6000);
+    };
+    recog.onerror = function(e) {
+      if (e.error !== 'no-speech') console.warn('[CC]', e.error);
+    };
+    recog.onend = function() {
+      if (!stopped) { try { recog.start(); } catch (ex) {} }
+    };
+    recog.start();
+    ccRecogRef.current = recog;
+    return function() {
+      stopped = true;
+      recog.onend = null;
+      try { recog.stop(); } catch (ex) {}
+      ccRecogRef.current = null;
+    };
+  }, [ccEnabled, role, isLive]);
 
   // ── Local mic level analyzer (for GlobalMicButtonV49) ──
   useEffect(function() {
@@ -1595,6 +1653,17 @@ export default function LiveRoomPage({
           <OverlayCountdown countdown={overlayConfig && overlayConfig.countdown} />
           <OverlayScoreBug scoreBug={overlayConfig && overlayConfig.scoreBug} />
           <ChyronOverlay socket={socket} roomId={roomId} role={role} isLive={isLive} />
+          {ccLines.length > 0 && (
+            <div style={{ position: 'absolute', bottom: 10, left: 0, right: 0, padding: '0 14px', zIndex: 50, pointerEvents: 'none' }}>
+              {ccLines.map(function(l) {
+                return (
+                  <div key={l.id} style={{ background: 'rgba(0,0,0,.82)', borderRadius: 6, padding: '4px 10px', marginTop: 3, fontFamily: "'DM Mono',monospace", fontSize: 11, color: TEXT, animation: 'fadeSlideIn .25s ease', textAlign: 'center', lineHeight: 1.5 }}>
+                    {l.text}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* ── Audience Section ── */}
@@ -1663,6 +1732,7 @@ export default function LiveRoomPage({
             { emoji: '⚔',  label: 'VS',      active: false, onTap: function() { setShowQa(true); setShowVsCreate(true); setShowPollCreate(false); setShowJudges(false); setChatOpen(false); } },
             { emoji: '⚖',  label: 'Judges',  active: false, onTap: function() { setShowQa(true); setShowJudges(true); setShowPollCreate(false); setShowVsCreate(false); setChatOpen(false); } },
             { emoji: '⚙',  label: 'Camera',  active: false, onTap: function() { setShowMediaConf(true); } },
+            { emoji: '📝', label: 'CC',      active: ccEnabled, onTap: function() { setCcEnabled(function(v) { var n = !v; if (!n) setCcLines([]); return n; }); if (addToast) addToast(ccEnabled ? 'Closed captions OFF' : '📝 Closed captions ON — mic transcribing', ccEnabled ? 'info' : 'success'); } },
           ].map(function(tool) {
             return (
               <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>

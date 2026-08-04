@@ -561,6 +561,15 @@ router.put('/users/me', requireAuth, function(req, res) {
   }
 });
 
+router.delete('/users/me', requireAuth, function(req, res) {
+  try {
+    delete _userProfiles[req.user.id];
+    return res.json({ deleted: true });
+  } catch (err) {
+    return res.json({ success: false, error: 'Internal server error' });
+  }
+});
+
 router.get('/users/me/earnings', requireAuth, function(req, res) {
   try {
     return res.json({ availableCents: 0, totalEarnedCents: 0, pendingCents: 0 });
