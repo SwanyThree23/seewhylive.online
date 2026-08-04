@@ -1591,8 +1591,44 @@ io.on('connection', function(socket) {
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
-    io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: socket.data.userId });
+    // Find the target viewer's socket and send them a pending invite
+    var found = false;
+    io.sockets.sockets.forEach(function(s) {
+      if (s.data.userId === guestId && s.data.roomId === roomId) {
+        s.emit('stage-invite-pending', {
+          invitedBy: socket.data.username || 'Host',
+          hostSocketId: socket.id,
+          guestId: guestId,
+        });
+        found = true;
+      }
+    });
+    // Fallback: if viewer not found via socket (e.g. reconnecting), add them directly
+    if (!found) {
+      io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: socket.data.userId });
+      io.to(roomId).emit('hand-lower',   { guestId: guestId });
+    }
+  });
+
+  socket.on('stage-invite-accept', function(data) {
+    var roomId  = socket.data.roomId;
+    var guestId = socket.data.userId;
+    if (!roomId || !guestId) return;
+    io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: data.hostSocketId || '' });
     io.to(roomId).emit('hand-lower',   { guestId: guestId });
+    // Notify the host
+    if (data.hostSocketId) {
+      var hostSock = io.sockets.sockets.get(data.hostSocketId);
+      if (hostSock) hostSock.emit('stage-invite-accepted', { username: socket.data.username || guestId });
+    }
+  });
+
+  socket.on('stage-invite-decline', function(data) {
+    var guestId = socket.data.userId;
+    if (data.hostSocketId) {
+      var hostSock = io.sockets.sockets.get(data.hostSocketId);
+      if (hostSock) hostSock.emit('stage-invite-declined', { username: socket.data.username || guestId });
+    }
   });
 
   // ── stage-remove ───────────────────────────────────────────────────────

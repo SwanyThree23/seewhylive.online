@@ -396,6 +396,7 @@ export default function LiveRoomPage({
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
   var ccRecogRef = useRef(null);
+  var [stageInvitePending, setStageInvitePending] = useState(null); // { invitedBy, hostSocketId, guestId }
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -534,6 +535,19 @@ export default function LiveRoomPage({
       });
     });
 
+    socket.on('stage-invite-pending', function(data) {
+      if (!data) return;
+      setStageInvitePending({ invitedBy: data.invitedBy || 'Host', hostSocketId: data.hostSocketId || '', guestId: data.guestId || '' });
+    });
+
+    socket.on('stage-invite-accepted', function(data) {
+      if (addToast) addToast('🎤 ' + (data.username || 'Viewer') + ' joined the stage!', 'success');
+    });
+
+    socket.on('stage-invite-declined', function(data) {
+      if (addToast) addToast((data.username || 'Viewer') + ' declined the stage invite', 'info');
+    });
+
     socket.on('stream-caption', function(data) {
       if (!data || !data.text) return;
       var line = { id: Date.now() + Math.random(), text: String(data.text).slice(0, 300) };
@@ -665,6 +679,9 @@ export default function LiveRoomPage({
       socket.off('user-banned');
       socket.off('user-unbanned');
       socket.off('stream-caption');
+      socket.off('stage-invite-pending');
+      socket.off('stage-invite-accepted');
+      socket.off('stage-invite-declined');
     };
   }, [socket]);
 
@@ -1768,6 +1785,42 @@ export default function LiveRoomPage({
         {/* Bottom spacer for fixed bar */}
         <div style={{ height: 74 }} />
       </div>
+
+      {/* ════════════════ STAGE INVITE MODAL ════════════════ */}
+      {stageInvitePending && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9500, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,.55)', animation: 'fadeSlideIn .25s ease' }}>
+          <div style={{ width: '100%', maxWidth: 480, background: '#1A1510', borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', border: '1px solid rgba(201,168,76,.2)', boxShadow: '0 -8px 40px rgba(0,0,0,.6)' }}>
+            <div style={{ textAlign: 'center', marginBottom: 18 }}>
+              <div style={{ fontSize: 36, marginBottom: 8 }}>🎤</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 2 }}>
+                You're invited to the stage!
+              </div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, marginTop: 6 }}>
+                {stageInvitePending.invitedBy} wants you to join the panel
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={function() {
+                  if (socket) socket.emit('stage-invite-accept', { hostSocketId: stageInvitePending.hostSocketId });
+                  setStageInvitePending(null);
+                  if (addToast) addToast('🎤 You joined the stage!', 'success');
+                }}
+                style={{ flex: 1, padding: '14px 0', background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 12, color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 2, cursor: 'pointer' }}>
+                ACCEPT
+              </button>
+              <button
+                onClick={function() {
+                  if (socket) socket.emit('stage-invite-decline', { hostSocketId: stageInvitePending.hostSocketId });
+                  setStageInvitePending(null);
+                }}
+                style={{ flex: 1, padding: '14px 0', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 12, color: MUTED, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 2, cursor: 'pointer' }}>
+                DECLINE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ════════════════ FLOATING REACTIONS ════════════════ */}
       {floatReacts.map(function(r) {
