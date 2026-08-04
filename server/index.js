@@ -1850,6 +1850,90 @@ io.on('connection', function(socket) {
       });
     }
 
+    // !kick @username command — host/cohost only
+    var _kickMatch = /^\s*!kick\s+@?(\S+)/i.exec(message);
+    if (_kickMatch && (socket.data.role === 'host' || socket.data.role === 'cohost')) {
+      var _kickTarget = String(_kickMatch[1]).slice(0, 60).toLowerCase();
+      var _kickTs     = Math.floor(Date.now() / 1000);
+      var _kicked     = false;
+      var _kickRoom   = rooms.get(roomId);
+      if (_kickRoom) {
+        _kickRoom.guests.forEach(function(g, sid) {
+          if (g.guestId === socket.data.userId) return;
+          if ((g.username || '').toLowerCase() === _kickTarget) {
+            var _tSock = io.sockets.sockets.get(sid);
+            if (_tSock) { _tSock.emit('you-were-kicked', { roomId: roomId }); _tSock.disconnect(true); _kicked = true; }
+            _kickRoom.guests.delete(sid);
+          }
+        });
+      }
+      if (!_kicked) {
+        var _kickRoomSocks = io.sockets.adapter.rooms.get(roomId);
+        if (_kickRoomSocks) {
+          _kickRoomSocks.forEach(function(sid) {
+            var s = io.sockets.sockets.get(sid);
+            if (s && s.data.userId !== socket.data.userId && (s.data.username || '').toLowerCase() === _kickTarget) {
+              s.emit('you-were-kicked', { roomId: roomId });
+              s.disconnect(true);
+              _kicked = true;
+            }
+          });
+        }
+      }
+      io.to(roomId).emit('chat-message', {
+        id: uuidv4(), username: '🛡 SeeWhy',
+        message:    _kicked ? ('🦶 @' + _kickTarget + ' was kicked from the room.') : ('⚠ @' + _kickTarget + ' not found in room.'),
+        translated: _kicked ? ('🦶 @' + _kickTarget + ' was kicked from the room.') : ('⚠ @' + _kickTarget + ' not found in room.'),
+        lang: 'EN', hasExternalLinks: false, isSystem: true, ts: _kickTs,
+      });
+      return;
+    }
+
+    // !ban @username command — host only
+    var _banMatch = /^\s*!ban\s+@?(\S+)/i.exec(message);
+    if (_banMatch && socket.data.role === 'host') {
+      var _banTarget = String(_banMatch[1]).slice(0, 60).toLowerCase();
+      var _banTs     = Math.floor(Date.now() / 1000);
+      var _banned    = false;
+      var _banUserId = null;
+      var _banRoom   = rooms.get(roomId);
+      if (_banRoom) {
+        _banRoom.guests.forEach(function(g, sid) {
+          if (g.guestId === socket.data.userId) return;
+          if ((g.username || '').toLowerCase() === _banTarget) {
+            _banUserId = g.guestId || g.userId || null;
+            var _bSock = io.sockets.sockets.get(sid);
+            if (_bSock) { _bSock.emit('you-were-kicked', { roomId: roomId }); _bSock.disconnect(true); _banned = true; }
+            _banRoom.guests.delete(sid);
+          }
+        });
+      }
+      if (!_banned) {
+        var _banRoomSocks = io.sockets.adapter.rooms.get(roomId);
+        if (_banRoomSocks) {
+          _banRoomSocks.forEach(function(sid) {
+            var s = io.sockets.sockets.get(sid);
+            if (s && s.data.userId !== socket.data.userId && (s.data.username || '').toLowerCase() === _banTarget) {
+              _banUserId = s.data.userId || null;
+              s.emit('you-were-kicked', { roomId: roomId });
+              s.disconnect(true);
+              _banned = true;
+            }
+          });
+        }
+      }
+      if (_banUserId) {
+        io.to(roomId).emit('user-banned', { userId: _banUserId, ts: _banTs });
+      }
+      io.to(roomId).emit('chat-message', {
+        id: uuidv4(), username: '🛡 SeeWhy',
+        message:    _banned ? ('🚫 @' + _banTarget + ' has been banned from this room.') : ('⚠ @' + _banTarget + ' not found in room.'),
+        translated: _banned ? ('🚫 @' + _banTarget + ' has been banned from this room.') : ('⚠ @' + _banTarget + ' not found in room.'),
+        lang: 'EN', hasExternalLinks: false, isSystem: true, ts: _banTs,
+      });
+      return;
+    }
+
     // !clip / "clip that" command — any viewer can request a clip marker
     if (/^\s*(!clip|clip that)\s*$/i.test(message)) {
       var _clipId  = uuidv4();

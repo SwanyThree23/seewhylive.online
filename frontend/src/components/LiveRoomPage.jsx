@@ -408,6 +408,7 @@ export default function LiveRoomPage({
   var [slowModeSec,        setSlowModeSec]        = useState(0);   // room slow mode (seconds)
   var [slowWaitSec,        setSlowWaitSec]        = useState(0);   // viewer countdown until next message
   var slowWaitRef = useRef(null);
+  var [kicked,             setKicked]             = useState(false);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -628,6 +629,10 @@ export default function LiveRoomPage({
       setPinnedMsg(null);
     });
 
+    socket.on('you-were-kicked', function() {
+      setKicked(true);
+    });
+
     socket.on('stream-caption', function(data) {
       if (!data || !data.text) return;
       var line = { id: Date.now() + Math.random(), text: String(data.text).slice(0, 300) };
@@ -772,6 +777,7 @@ export default function LiveRoomPage({
       socket.off('creator-followed');
       socket.off('chat-pinned');
       socket.off('chat-unpinned');
+      socket.off('you-were-kicked');
     };
   }, [socket]);
 
@@ -3399,6 +3405,15 @@ export default function LiveRoomPage({
           title={'Join ' + ((streamInfo && streamInfo.title) || username + ' on SeeWhy LIVE')}
           onClose={function() { setShowShareSheet(false); }}
         />
+      )}
+
+      {/* ════════════════ KICKED OVERLAY ════════════════ */}
+      {kicked && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(9,7,14,.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 300, textAlign: 'center', padding: '32px 24px' }}>
+          <div style={{ fontSize: 56, lineHeight: 1, marginBottom: 20, filter: 'drop-shadow(0 0 20px rgba(255,26,60,.5))' }}>🚫</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 34, color: TEXT, letterSpacing: 5, marginBottom: 10 }}>YOU WERE REMOVED</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, letterSpacing: 1, lineHeight: 1.8, maxWidth: 260 }}>The host has removed you from this room.</div>
+        </div>
       )}
     </div>
   );
