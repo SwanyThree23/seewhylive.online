@@ -405,6 +405,9 @@ export default function LiveRoomPage({
   var [showSubModal,       setShowSubModal]       = useState(false);
   var [subConfirmed,       setSubConfirmed]       = useState(null); // tier id after subscribing
   var [shoutout,           setShoutout]           = useState(null); // { username, by } | null
+  var [slowModeSec,        setSlowModeSec]        = useState(0);   // room slow mode (seconds)
+  var [slowWaitSec,        setSlowWaitSec]        = useState(0);   // viewer countdown until next message
+  var slowWaitRef = useRef(null);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -557,6 +560,25 @@ export default function LiveRoomPage({
 
     socket.on('stage-invite-declined', function(data) {
       if (addToast) addToast((data.username || 'Viewer') + ' declined the stage invite', 'info');
+    });
+
+    socket.on('slow-mode-update', function(data) {
+      if (!data) return;
+      setSlowModeSec(data.seconds || 0);
+      if (addToast) addToast(data.seconds > 0 ? ('🐌 Slow mode: ' + data.seconds + 's cooldown') : '🐌 Slow mode off', 'info');
+    });
+
+    socket.on('chat-slow-mode', function(data) {
+      if (!data) return;
+      var wait = data.waitSeconds || 0;
+      setSlowWaitSec(wait);
+      clearInterval(slowWaitRef.current);
+      slowWaitRef.current = setInterval(function() {
+        setSlowWaitSec(function(w) {
+          if (w <= 1) { clearInterval(slowWaitRef.current); return 0; }
+          return w - 1;
+        });
+      }, 1000);
     });
 
     socket.on('shoutout', function(data) {
@@ -740,6 +762,8 @@ export default function LiveRoomPage({
       socket.off('stage-invite-pending');
       socket.off('stage-invite-accepted');
       socket.off('stage-invite-declined');
+      socket.off('slow-mode-update');
+      socket.off('chat-slow-mode');
       socket.off('shoutout');
       socket.off('qa-answering');
       socket.off('qa-answering-cleared');
@@ -1979,9 +2003,23 @@ export default function LiveRoomPage({
         }}>
           {/* Chat header */}
           <div style={{ padding: '10px 14px', borderBottom: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-            <span style={{ fontWeight: 700, fontSize: 18, color: TEXT, letterSpacing: .3 }}>Chat</span>
-            <button onClick={function() { setChatOpen(false); }}
-              style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 18, color: TEXT, letterSpacing: .3 }}>Chat</span>
+              {slowModeSec > 0 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, background: 'rgba(255,255,255,.07)', borderRadius: 4, padding: '2px 5px', letterSpacing: 1 }}>🐌 {slowModeSec}s</span>}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() {
+                  var steps = [0, 3, 5, 10, 30, 60];
+                  var next = steps[(steps.indexOf(slowModeSec) + 1) % steps.length];
+                  if (socket) socket.emit('set-slow-mode', { seconds: next });
+                }} style={{ background: slowModeSec > 0 ? 'rgba(201,168,76,.15)' : 'rgba(255,255,255,.05)', border: '1px solid ' + (slowModeSec > 0 ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 7px', color: slowModeSec > 0 ? gold : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 1 }}>
+                  🐌 {slowModeSec > 0 ? (slowModeSec + 's') : 'OFF'}
+                </button>
+              )}
+              <button onClick={function() { setChatOpen(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+            </div>
           </div>
           {/* Pinned message banner */}
           {pinnedMsg && (
@@ -2093,11 +2131,13 @@ export default function LiveRoomPage({
                 fontFamily: "'Barlow Condensed',sans-serif",
               }}
             />
-            <button onClick={sendChat} style={{
-              background: gold, border: 'none', borderRadius: 999,
-              padding: '9px 18px', fontWeight: 700, fontSize: 13, color: BG, cursor: 'pointer',
+            <button onClick={slowWaitSec > 0 ? undefined : sendChat} style={{
+              background: slowWaitSec > 0 ? CARD : gold, border: 'none', borderRadius: 999,
+              padding: '9px 18px', fontWeight: 700, fontSize: 13, color: slowWaitSec > 0 ? MUTED : BG,
+              cursor: slowWaitSec > 0 ? 'default' : 'pointer', transition: 'background .2s',
+              minWidth: 58, textAlign: 'center',
             }}>
-              Send
+              {slowWaitSec > 0 ? (slowWaitSec + 's') : 'Send'}
             </button>
           </div>
         </div>
