@@ -137,6 +137,20 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
     ctx.fill();
   }, [previewClip, previewScrub]);
 
+  // Advance scrubber while playing
+  useEffect(function() {
+    if (!previewPlaying || !previewClip) return;
+    var total = previewClip.duration || 60;
+    var iv = setInterval(function() {
+      setPreviewScrub(function(prev) {
+        var next = prev + 1 / total;
+        if (next >= 1) { clearInterval(iv); setPreviewPlaying(false); return 1; }
+        return next;
+      });
+    }, 1000);
+    return function() { clearInterval(iv); };
+  }, [previewPlaying, previewClip]);
+
   function openPreview(clip) {
     setPreviewClip(clip);
     setPreviewScrub(0.15);

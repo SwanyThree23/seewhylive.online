@@ -302,11 +302,13 @@ function OverlayCustomLT({ lowerThirds, guestId }) {
 // ─── Main Component ────────────────────────────────────────────────────────
 
 export default function LiveRoomPage({
-  socket, guests, chat, isLive, setIsLive,
+  socket, guests, chat: initialChat, isLive, setIsLive,
   userId, username, role, roomId, branding,
   addToast, overlayConfig, viewerCount, mediaConfig,
   streamInfo, streamGoal, setStreamGoal, sessionEarningsCents, onLeave,
+  setChat,
 }) {
+  var chat = initialChat || [];
   var [rtcReady,      setRtcReady]      = useState(false);
   var [isMuted,       setIsMuted]       = useState(false);
   var [micLevel,      setMicLevel]      = useState(0);
@@ -353,7 +355,6 @@ export default function LiveRoomPage({
   var [judgeScoreVal,  setJudgeScoreVal]  = useState('');
   var [judgeScoreLabel, setJudgeScoreLabel] = useState('');
   var [showPaySheet,   setShowPaySheet]   = useState(false);
-  var [showShareSheet, setShowShareSheet] = useState(false);
   var [audioOnly,      setAudioOnly]      = useState(false);
   var [privateMode,    setPrivateMode]    = useState(false);
   var [privatePwd,     setPrivatePwd]     = useState('');
@@ -413,7 +414,7 @@ export default function LiveRoomPage({
         setChat(function(prev) { return prev.length > 0 ? prev : data.chatHistory; });
       }
       if (data.activePoll) {
-        setPoll(data.activePoll);
+        setActivePoll(data.activePoll);
         setShowQa(true);
       }
       if (data.activeVsPoll) {

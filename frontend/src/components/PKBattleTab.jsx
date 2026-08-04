@@ -111,15 +111,18 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     });
 
     socket.on('pk-gift-boost', function(data) {
-      if (!data || !data.side) return;
+      if (!data) return;
       var pts = data.points || 5;
       if (data.side === 'challenger') {
         setChallengerScore(function(prev) { return prev + pts; });
-      } else {
+      } else if (data.side === 'defender') {
         setDefenderScore(function(prev) { return prev + pts; });
       }
+      var boostMsg = data.side
+        ? '🎁 ' + (data.username || 'Someone') + ' boosted ' + (data.side === 'challenger' ? challenger : defender) + ' +' + pts
+        : (data.from || 'Viewer') + ' gifted ' + (data.name || data.emoji || 'a gift') + ' — BOOST! 🚀';
       setBattleLog(function(prev) {
-        return prev.concat([{ time: fmtTime(), text: '🎁 ' + (data.username || 'Someone') + ' boosted ' + (data.side === 'challenger' ? challenger : defender) + ' +' + pts }]).slice(-50);
+        return [{ time: fmtTime(), text: boostMsg, ts: Date.now() }].concat(prev).slice(0, 50);
       });
       if (addToast) addToast('🎁 Gift boost! +' + pts, 'success');
     });
@@ -127,13 +130,6 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       if (!data) return;
       if (data.cheerA) setCheerA(data.cheerA.slice(0, 20));
       if (data.cheerB) setCheerB(data.cheerB.slice(0, 20));
-    });
-
-    socket.on('pk-gift-boost', function(data) {
-      if (!data) return;
-      var boostMsg = (data.from || 'Viewer') + ' gifted ' + (data.name || data.emoji || 'a gift') + ' — BOOST! 🚀';
-      setBattleLog(function(prev) { return [{ text: boostMsg, ts: Date.now() }].concat(prev).slice(0, 20); });
-      if (addToast) addToast('🎁 Gift boost from ' + (data.from || 'viewer') + '!', 'success');
     });
 
     socket.on('pk-sudden-death', function() {
@@ -515,7 +511,10 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
                   {r.wins}W-{r.losses}L · {r.elo} ELO
                 </div>
                 <button
-                  onClick={function() { if (addToast) addToast('Challenge sent to ' + r.name + '!', 'success'); }}
+                  onClick={function() {
+                    if (socket) socket.emit('pk-challenge', { roomId: roomId, to: r.name, from: username });
+                    if (addToast) addToast('Challenge sent to ' + r.name + '!', 'success');
+                  }}
                   style={{
                     width: '100%',
                     padding: '7px 0',
