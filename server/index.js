@@ -1809,6 +1809,20 @@ io.on('connection', function(socket) {
     }
     swanybot.onChatMessage(roomId, _swKey, message, { username: username, userId: _swKey, room: rooms.get(roomId) });
 
+    // !so / !shoutout command — host/cohost only
+    var _soMatch = /^\s*!(so|shoutout)\s+@?(\S+)/i.exec(message);
+    if (_soMatch && (socket.data.role === 'host' || socket.data.role === 'cohost')) {
+      var _soUser = String(_soMatch[2]).slice(0, 60);
+      var _soTs   = Math.floor(Date.now() / 1000);
+      io.to(roomId).emit('shoutout', { username: _soUser, by: username, ts: _soTs });
+      io.to(roomId).emit('chat-message', {
+        id: uuidv4(), username: '🎤 SeeWhy',
+        message: '🎤 Shoutout to @' + _soUser + '! Shown to everyone in the room.',
+        translated: '🎤 Shoutout to @' + _soUser + '!',
+        lang: 'EN', hasExternalLinks: false, isSystem: true, ts: _soTs,
+      });
+    }
+
     // !clip / "clip that" command — any viewer can request a clip marker
     if (/^\s*(!clip|clip that)\s*$/i.test(message)) {
       var _clipId  = uuidv4();
