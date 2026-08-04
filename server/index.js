@@ -3822,6 +3822,7 @@ io.on('connection', function(socket) {
             autoAura(roomId, function(cb) {
               aura.triggerNewViewer(roomId, milestone.toLocaleString() + ' VIEWERS', false, cb);
             });
+            io.to(roomId).emit('viewer-milestone', { count: milestone, ts: Math.floor(Date.now() / 1000) });
           })(m);
         }
       }
