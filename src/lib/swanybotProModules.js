@@ -76,7 +76,7 @@ export const SWANYBOT_PRO_MODULES = [
     name: 'Prompt Forge',
     tagline: 'JSON / Sora / Veo prompt converter',
     icon: FileText,
-    status: 'next',
+    status: 'live',
     accent: '#C0392B',
     description:
       'Convert a one-line idea into cinematic JSON prompts optimized for Sora 2, Veo 3.1, Runway, and Nano Banana pipelines.',
