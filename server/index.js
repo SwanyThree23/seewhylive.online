@@ -1752,6 +1752,25 @@ io.on('connection', function(socket) {
     }
     swanybot.onChatMessage(roomId, _swKey, message, { username: username, userId: _swKey, room: rooms.get(roomId) });
 
+    // !clip / "clip that" command — any viewer can request a clip marker
+    if (/^\s*(!clip|clip that)\s*$/i.test(message)) {
+      var _clipId  = uuidv4();
+      var _clipTs  = Math.floor(Date.now() / 1000);
+      var _clipLbl = '✂️ Clipped by ' + username;
+      try {
+        db.prepare('INSERT OR IGNORE INTO clip_markers (id, room_id, ts, label, marked_by) VALUES (?, ?, ?, ?, ?)').run(_clipId, roomId, _clipTs, _clipLbl, username);
+      } catch (_ce) { logger.warn('[!clip] db: ' + _ce.message); }
+      io.sockets.sockets.forEach(function(s) {
+        if (s.data.roomId === roomId && (s.data.role === 'host' || s.data.role === 'cohost')) {
+          s.emit('clip-marked', { id: _clipId, label: _clipLbl, ts: _clipTs });
+        }
+      });
+      io.to(roomId).emit('chat-message', {
+        id: uuidv4(), username: '✂️ SeeWhy', message: username + ' clipped it!',
+        translated: username + ' clipped it!', lang: 'EN', hasExternalLinks: false, isSystem: true, ts: _clipTs,
+      });
+    }
+
     // Analytics: increment per-minute message count
     var chatA = getAnalytics(roomId);
     var chatMinKey = Math.floor(Date.now() / 60000);
