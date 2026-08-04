@@ -50,6 +50,13 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
   var [sharing, setSharing]       = useState({});
   var [liveClipping, setLiveClipping] = useState(false);
   var [gallery, setGallery] = useState([]);
+  var [previewClip, setPreviewClip]   = useState(null);
+  var [previewTab, setPreviewTab]     = useState('audio');
+  var [previewScrub, setPreviewScrub] = useState(0.15);
+  var [previewPlaying, setPreviewPlaying] = useState(false);
+  var [scrubDragging, setScrubDragging]   = useState(false);
+  var waveCanvasRef = useRef(null);
+  var scrubTrackRef = useRef(null);
   var recRef = useRef(null);
   var liveClipRef = useRef(null);
 
@@ -98,6 +105,56 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
     socket.on('clip-marked', onClipMarked);
     return function() { socket.off('clip-marked', onClipMarked); };
   }, [socket, addToast]);
+
+  // Draw waveform on canvas whenever previewClip or previewScrub changes
+  useEffect(function() {
+    if (!previewClip || !waveCanvasRef.current) return;
+    var canvas = waveCanvasRef.current;
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width;
+    var H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    // Seed bars from clip id for deterministic look
+    var seed = 0;
+    for (var ci = 0; ci < previewClip.id.length; ci++) { seed += previewClip.id.charCodeAt(ci); }
+    var BAR_COUNT = 48;
+    var barW = Math.floor(W / BAR_COUNT) - 1;
+    var scrubX = Math.floor(previewScrub * W);
+    for (var bi = 0; bi < BAR_COUNT; bi++) {
+      var x = Math.floor(bi * (W / BAR_COUNT));
+      // Pseudo-random height
+      var h = 8 + ((seed * (bi + 7) * 31 + bi * 17) % 52);
+      var past = x < scrubX;
+      ctx.fillStyle = past ? '#C9A84C' : 'rgba(201,168,76,0.28)';
+      ctx.fillRect(x, Math.floor((H - h) / 2), barW, h);
+    }
+    // Scrub handle
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(scrubX - 1, 0, 3, H);
+    ctx.beginPath();
+    ctx.arc(scrubX, Math.floor(H / 2), 7, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+  }, [previewClip, previewScrub]);
+
+  function openPreview(clip) {
+    setPreviewClip(clip);
+    setPreviewScrub(0.15);
+    setPreviewTab('audio');
+    setPreviewPlaying(false);
+  }
+
+  function handleScrubClick(e) {
+    if (!scrubTrackRef.current) return;
+    var rect = scrubTrackRef.current.getBoundingClientRect();
+    var ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    setPreviewScrub(ratio);
+  }
+
+  function fmtScrubTime(ratio, totalSecs) {
+    var t = Math.floor(ratio * totalSecs);
+    return fmtDur(t);
+  }
 
   function startRec() {
     if (!isLive) { addToast('Start your stream before recording a clip', 'error'); return; }
@@ -281,6 +338,11 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
                       📌
                     </button>
                     <button
+                      onClick={function() { openPreview(clip); }}
+                      style={{ background: previewClip && previewClip.id === clip.id ? 'rgba(201,168,76,.25)' : 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '5px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
+                      ▶
+                    </button>
+                    <button
                       onClick={function() { openEdit(clip); }}
                       style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '5px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
                       EDIT
@@ -295,6 +357,81 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
               );
             })}
           </div>
+
+          {/* Waveform Preview Panel */}
+          {previewClip && (
+            <div style={{ background: '#1A1510', border: '1px solid rgba(201,168,76,.3)', borderRadius: 12, padding: '14px 14px 16px', marginTop: 8 }}>
+
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>{previewClip.thumbnail}</span>
+                  <div>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{previewClip.title}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 1 }}>
+                      {fmtScrubTime(previewScrub, previewClip.duration)} selected
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={function() { setPreviewClip(null); setPreviewPlaying(false); }}
+                  style={{ background: 'none', border: 'none', color: '#8A7A62', fontSize: 16, cursor: 'pointer', lineHeight: 1, padding: '0 2px' }}>
+                  ✕
+                </button>
+              </div>
+
+              {/* Audio / Video / Timing tabs */}
+              <div style={{ display: 'flex', gap: 2, marginBottom: 10, background: 'rgba(14,12,9,.7)', borderRadius: 7, padding: 3 }}>
+                {['audio', 'video', 'timing'].map(function(t) {
+                  var active = previewTab === t;
+                  return (
+                    <button
+                      key={t}
+                      onClick={function() { setPreviewTab(t); }}
+                      style={{ flex: 1, padding: '5px 0', background: active ? 'rgba(201,168,76,.18)' : 'transparent', border: 'none', borderRadius: 5, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1, textTransform: 'uppercase' }}>
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Waveform canvas (click to scrub) */}
+              <div
+                ref={scrubTrackRef}
+                onClick={handleScrubClick}
+                style={{ position: 'relative', cursor: 'crosshair', borderRadius: 6, overflow: 'hidden', marginBottom: 6, background: '#0E0C09' }}>
+                <canvas
+                  ref={waveCanvasRef}
+                  width={380}
+                  height={68}
+                  style={{ display: 'block', width: '100%', height: 68, borderRadius: 6 }}>
+                </canvas>
+              </div>
+
+              {/* Timecode row */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62' }}>00:00</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 1 }}>
+                  {fmtScrubTime(previewScrub, previewClip.duration)} / {fmtDur(previewClip.duration)}
+                </span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62' }}>{fmtDur(previewClip.duration)}</span>
+              </div>
+
+              {/* Play / Edit buttons */}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={function() { setPreviewPlaying(function(p) { return !p; }); }}
+                  style={{ flex: 2, padding: '10px 0', background: previewPlaying ? 'rgba(201,168,76,.15)' : 'linear-gradient(135deg,#C9A84C,#E8C46A)', border: previewPlaying ? '1px solid rgba(201,168,76,.4)' : 'none', borderRadius: 8, color: previewPlaying ? '#C9A84C' : '#07050A', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 1 }}>
+                  {previewPlaying ? '■ PAUSE' : '▶ PLAY'}
+                </button>
+                <button
+                  onClick={function() { openEdit(previewClip); setPreviewClip(null); }}
+                  style={{ flex: 1, padding: '10px 0', background: 'rgba(128,0,32,.2)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                  EDIT →
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

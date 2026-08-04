@@ -13,6 +13,7 @@ import GiftLayer from './GiftLayer.jsx';
 import GoldenWallPanel from './GoldenWallPanel.jsx';
 import GlobalMicButtonV49 from './streaming/GlobalMicButtonV49.jsx';
 import ShareSheet from './share/ShareSheet.jsx';
+import TTSSuperChatModal from './TTSSuperChatModal.jsx';
 
 var MAX_STAGE = 20;
 
@@ -371,8 +372,11 @@ export default function LiveRoomPage({
   var recChunksRef  = useRef([]);
   var [scoreReveal,    setScoreReveal]    = useState(null); // { username, score, label } | null
   var [showSuperChatSheet, setShowSuperChatSheet] = useState(false);
+  var [showTTSSheet,       setShowTTSSheet]       = useState(false);
   var [scMsg,              setScMsg]              = useState('');
   var [scAmt,              setScAmt]              = useState(100);
+  var [gifInput,           setGifInput]           = useState('');
+  var [showGifInput,       setShowGifInput]       = useState(false);
   var [giftCount,          setGiftCount]          = useState(0);
   var [superChatCount,     setSuperChatCount]     = useState(0);
   var [guestGiftTotals,    setGuestGiftTotals]    = useState({});  // { [guestId]: totalCents }
@@ -440,11 +444,25 @@ export default function LiveRoomPage({
 
     socket.on('super-chat', function(sc) {
       if (!sc) return;
-      // Inject into chat stream as a super-chat type message
       var scEntry = Object.assign({ type: 'super' }, sc);
       setChat(function(prev) { return [...prev.slice(-200), scEntry]; });
       setSuperChatCount(function(c) { return c + 1; });
       if (addToast && role !== 'host') addToast('💬 ' + sc.username + ' sent a $' + (Math.floor(sc.amountCents) / 100).toFixed(2) + ' Super Chat!', 'success');
+    });
+
+    socket.on('super-chat:tts', function(sc) {
+      if (!sc) return;
+      var ttsEntry = Object.assign({ type: 'tts-super' }, sc);
+      setChat(function(prev) { return [...prev.slice(-200), ttsEntry]; });
+      setSuperChatCount(function(c) { return c + 1; });
+      if (addToast && role !== 'host') addToast('🚀 ' + sc.username + ' sent a Voice SuperChat!', 'success');
+      if (window.speechSynthesis && sc.message && sc.voice) {
+        window.speechSynthesis.cancel();
+        var u = new window.SpeechSynthesisUtterance(sc.username + ' says: ' + sc.message);
+        u.pitch = sc.voice.pitch || 1;
+        u.rate  = sc.voice.rate  || 1;
+        window.speechSynthesis.speak(u);
+      }
     });
 
     socket.on('gift-received', function(gift) {
@@ -615,6 +633,7 @@ export default function LiveRoomPage({
       socket.off('judges-update');
       socket.off('judge-scored');
       socket.off('super-chat');
+      socket.off('super-chat:tts');
       socket.off('react-burst');
       socket.off('gift-received');
       socket.off('merch-order-received');
@@ -674,6 +693,14 @@ export default function LiveRoomPage({
     if (!msg || !socket) return;
     socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg });
     setChatInput('');
+  }
+
+  function sendGif() {
+    var url = gifInput.trim();
+    if (!url || !socket) return;
+    socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: url, type: 'gif' });
+    setGifInput('');
+    setShowGifInput(false);
   }
 
   function raiseHand() {
@@ -1033,6 +1060,25 @@ export default function LiveRoomPage({
             </span>
           </div>
         </div>
+
+        {/* Stage Room View — Rec strip + viewer count */}
+        {isLive && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite', flexShrink: 0 }} />
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: RED, letterSpacing: 1 }}>REC</span>
+            </div>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>·</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: TEXT }}>{allParticipants.length} here now</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>·</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{viewerCount || 0} total</span>
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+              <button onClick={function() { setShowTTSSheet(true); }} title="Voice SuperChat" style={{ background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: RED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🚀</button>
+              <button onClick={function() { setShowSuperChatSheet(true); }} title="Super Chat" style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: GOLD, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>💬</button>
+              <button onClick={function() { setShowShareSheet(true); }} title="Share" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: TEXT, cursor: 'pointer' }}>🔗</button>
+            </div>
+          </div>
+        )}
 
         {/* Speaking indicator */}
         {speakerName && !isScreenSharing && (
@@ -1606,6 +1652,8 @@ export default function LiveRoomPage({
           {[
             { emoji: '💸', label: 'Pay',      active: false, onTap: function() { setShowPaySheet(true); } },
             { emoji: '💬', label: 'SC',       active: false, onTap: function() { setShowSuperChatSheet(true); } },
+            { emoji: '🚀', label: 'Voice SC', active: false, onTap: function() { setShowTTSSheet(true); } },
+            { emoji: '🎞', label: 'GIF',      active: showGifInput, onTap: function() { setShowGifInput(function(v) { return !v; }); } },
             { emoji: '🔗', label: 'Share',    active: false, onTap: function() { setShowShareSheet(true); } },
             { emoji: '🎤', label: audioOnly ? 'Video ON' : 'Audio', active: audioOnly, onTap: function() { setAudioOnly(function(v) { return !v; }); if (addToast) addToast(audioOnly ? 'Video mode on' : '🎤 Audio-only mode', 'info'); } },
             { emoji: privateMode ? '🔒' : '🔓', label: 'Private', active: privateMode, onTap: function() { if (role === 'host') { setShowPrivateSet(true); } else { if (addToast) addToast(privateMode ? 'Room is private — invite only' : 'Room is open', 'info'); } } },
@@ -1707,6 +1755,34 @@ export default function LiveRoomPage({
                   </div>
                 );
               }
+              if (m.type === 'tts-super') {
+                var ttsColor = m.tierColor || '#C9A84C';
+                var ttsDollars = '$' + (Math.floor(m.amountCents || 0) / 100).toFixed(2);
+                var voiceEmoji = (m.voice && m.voice.emoji) ? m.voice.emoji : '🎙';
+                var voiceLabel = (m.voice && m.voice.label) ? m.voice.label : 'Voice';
+                return (
+                  <div key={m.id || i} style={{ marginBottom: 12, background: 'linear-gradient(135deg,' + ttsColor + '22,rgba(255,26,60,.1))', border: '1.5px solid ' + ttsColor + '88', borderRadius: 12, padding: '10px 12px', animation: 'fadeSlideIn .2s ease' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <span style={{ fontSize: 14 }}>🚀</span>
+                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: ttsColor, letterSpacing: 1 }}>{ttsDollars} VOICE SC</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>from {m.username}</span>
+                      <span style={{ marginLeft: 'auto', fontFamily: "'DM Mono',monospace", fontSize: 8, color: ttsColor, background: ttsColor + '22', borderRadius: 4, padding: '1px 5px' }}>{voiceEmoji} {voiceLabel}</span>
+                    </div>
+                    <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45, fontWeight: 600, fontStyle: 'italic' }}>"{m.message}"</p>
+                  </div>
+                );
+              }
+              if (m.type === 'gif') {
+                return (
+                  <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 }}>
+                      <span style={{ fontWeight: 700, fontSize: 13, color: gold }}>{m.username || 'Guest'}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>GIF</span>
+                    </div>
+                    <img src={m.message} alt="gif" style={{ maxWidth: '100%', maxHeight: 180, borderRadius: 8, display: 'block' }} onError={function(e) { e.target.style.display = 'none'; }} />
+                  </div>
+                );
+              }
               return (
                 <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease' }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
@@ -1724,6 +1800,19 @@ export default function LiveRoomPage({
             })}
             <div ref={chatEndRef} />
           </div>
+          {/* GIF input bar */}
+          {showGifInput && (
+            <div style={{ padding: '6px 12px', display: 'flex', gap: 8, borderTop: '1px solid rgba(255,255,255,.06)', flexShrink: 0 }}>
+              <input
+                value={gifInput}
+                onChange={function(e) { setGifInput(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === 'Enter') sendGif(); }}
+                placeholder="Paste GIF URL (giphy.com, tenor.com...)"
+                style={{ flex: 1, background: '#1E1810', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '7px 14px', fontSize: 12, color: '#F0E8D4', outline: 'none', fontFamily: "'Barlow Condensed',sans-serif" }}
+              />
+              <button onClick={sendGif} style={{ background: '#C9A84C', border: 'none', borderRadius: 999, padding: '7px 14px', fontWeight: 700, fontSize: 12, color: '#0E0C09', cursor: 'pointer' }}>GIF</button>
+            </div>
+          )}
           {/* Input */}
           <div style={{ padding: '8px 12px', borderTop: '1px solid ' + BORDER, display: 'flex', gap: 8, flexShrink: 0 }}>
             <input
@@ -2453,6 +2542,18 @@ export default function LiveRoomPage({
           </div>
         );
       })()}
+
+      {/* ════════════════ VOICE SUPERCHAT (TTS) MODAL ════════════════ */}
+      {showTTSSheet && (
+        <TTSSuperChatModal
+          socket={socket}
+          roomId={roomId}
+          userId={userId}
+          username={username}
+          onClose={function() { setShowTTSSheet(false); }}
+          addToast={addToast}
+        />
+      )}
 
       {/* ════════════════ SUPER CHAT SHEET ════════════════ */}
       {showSuperChatSheet && (function() {
