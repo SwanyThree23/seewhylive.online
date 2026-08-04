@@ -2480,6 +2480,24 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('qa-dismissed', { id: _qdId });
   });
 
+  // ── qa-answering / qa-answering-clear ─────────────────────────────────
+  socket.on('qa-answering', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.id || !data.text) return;
+    io.to(roomId).emit('qa-answering', {
+      id:       String(data.id).slice(0, 60),
+      username: String(data.username || '').slice(0, 80),
+      text:     String(data.text).slice(0, 300),
+    });
+  });
+
+  socket.on('qa-answering-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId || socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('qa-answering-cleared', {});
+  });
+
   // ── share-music ────────────────────────────────────────────────────────
   socket.on('share-music', function(data) {
     var roomId = socket.data.roomId;

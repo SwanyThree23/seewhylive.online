@@ -401,6 +401,7 @@ export default function LiveRoomPage({
   var [followAlert,        setFollowAlert]        = useState(null); // { id, follower } | null
   var [hasFollowed,        setHasFollowed]        = useState(false);
   var [viewerMilestone,    setViewerMilestone]    = useState(null); // { count } | null
+  var [answeringQ,         setAnsweringQ]         = useState(null); // { id, username, text } | null
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -553,6 +554,15 @@ export default function LiveRoomPage({
 
     socket.on('stage-invite-declined', function(data) {
       if (addToast) addToast((data.username || 'Viewer') + ' declined the stage invite', 'info');
+    });
+
+    socket.on('qa-answering', function(data) {
+      if (!data || !data.text) return;
+      setAnsweringQ({ id: data.id || '', username: data.username || '', text: String(data.text).slice(0, 300) });
+    });
+
+    socket.on('qa-answering-cleared', function() {
+      setAnsweringQ(null);
     });
 
     socket.on('viewer-milestone', function(data) {
@@ -720,6 +730,8 @@ export default function LiveRoomPage({
       socket.off('stage-invite-pending');
       socket.off('stage-invite-accepted');
       socket.off('stage-invite-declined');
+      socket.off('qa-answering');
+      socket.off('qa-answering-cleared');
       socket.off('viewer-milestone');
       socket.off('gift-leaderboard');
       socket.off('creator-followed');
@@ -2516,6 +2528,28 @@ export default function LiveRoomPage({
       )}
 
       {/* ════════════════ Q&A PANEL ════════════════ */}
+      {/* ════════════════ NOW ANSWERING BANNER ════════════════ */}
+      {answeringQ && (
+        <div style={{ position: 'absolute', left: 10, right: 10, bottom: showQa ? 'calc(60% + 70px)' : 74, zIndex: 51, animation: 'qaIn .25s ease' }}>
+          <div style={{ background: 'rgba(9,7,14,.97)', border: '1.5px solid rgba(201,168,76,.45)', borderRadius: 14, padding: '10px 14px', boxShadow: '0 4px 20px rgba(0,0,0,.6)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <span style={{ fontSize: 14, lineHeight: 1 }}>🎤</span>
+                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: gold, letterSpacing: 2 }}>NOW ANSWERING</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>from {answeringQ.username}</span>
+              </div>
+              {role === 'host' && (
+                <button onClick={function() {
+                  if (socket) socket.emit('qa-answering-clear', {});
+                  setAnsweringQ(null);
+                }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 12, cursor: 'pointer', padding: '1px 4px', fontFamily: "'DM Mono',monospace", letterSpacing: .5 }}>DONE</button>
+              )}
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: TEXT, lineHeight: 1.45 }}>{answeringQ.text}</p>
+          </div>
+        </div>
+      )}
+
       {showQa && (
         <div style={{
           position: 'absolute', left: 0, right: 0, bottom: 62,
@@ -2687,6 +2721,20 @@ export default function LiveRoomPage({
                     }} style={{ background: qaMyVotes[item.id] ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (qaMyVotes[item.id] ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '4px 8px', color: qaMyVotes[item.id] ? GOLD : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
                       ▲ {item.upvotes}
                     </button>
+                    {role === 'host' && (
+                      <button onClick={function() {
+                        var isActive = answeringQ && answeringQ.id === item.id;
+                        if (isActive) {
+                          if (socket) socket.emit('qa-answering-clear', {});
+                          setAnsweringQ(null);
+                        } else {
+                          if (socket) socket.emit('qa-answering', { id: item.id, username: item.username, text: item.text });
+                          setAnsweringQ({ id: item.id, username: item.username, text: item.text });
+                        }
+                      }} style={{ background: (answeringQ && answeringQ.id === item.id) ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + ((answeringQ && answeringQ.id === item.id) ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '4px 7px', color: (answeringQ && answeringQ.id === item.id) ? gold : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: .5 }}>
+                        {(answeringQ && answeringQ.id === item.id) ? '🎤' : 'ANS'}
+                      </button>
+                    )}
                     {role === 'host' && (
                       <button onClick={function() { if (socket) socket.emit('qa-dismiss', { roomId: roomId, id: item.id }); setQaQueue(function(q) { return q.filter(function(x) { return x.id !== item.id; }); }); }}
                         style={{ background: 'none', border: 'none', color: MUTED, fontSize: 10, cursor: 'pointer', padding: '2px 4px' }}>✕</button>
