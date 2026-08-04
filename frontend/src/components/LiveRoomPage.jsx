@@ -400,6 +400,7 @@ export default function LiveRoomPage({
   var [pinnedMsg,          setPinnedMsg]          = useState(null); // { id, username, message, ts } | null
   var [followAlert,        setFollowAlert]        = useState(null); // { id, follower } | null
   var [hasFollowed,        setHasFollowed]        = useState(false);
+  var [viewerMilestone,    setViewerMilestone]    = useState(null); // { count } | null
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -552,6 +553,12 @@ export default function LiveRoomPage({
 
     socket.on('stage-invite-declined', function(data) {
       if (addToast) addToast((data.username || 'Viewer') + ' declined the stage invite', 'info');
+    });
+
+    socket.on('viewer-milestone', function(data) {
+      if (!data || !data.count) return;
+      setViewerMilestone({ count: data.count });
+      setTimeout(function() { setViewerMilestone(null); }, 5000);
     });
 
     socket.on('gift-leaderboard', function(data) {
@@ -713,6 +720,7 @@ export default function LiveRoomPage({
       socket.off('stage-invite-pending');
       socket.off('stage-invite-accepted');
       socket.off('stage-invite-declined');
+      socket.off('viewer-milestone');
       socket.off('gift-leaderboard');
       socket.off('creator-followed');
       socket.off('chat-pinned');
@@ -1866,6 +1874,20 @@ export default function LiveRoomPage({
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: '#fff', letterSpacing: 1.2 }}>{followAlert.follower}</span>
               <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: 'rgba(255,255,255,.82)', marginLeft: 6 }}>is now following!</span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ VIEWER MILESTONE CELEBRATION ════════════════ */}
+      {viewerMilestone && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 65, pointerEvents: 'none', animation: 'fadeSlideIn .4s ease' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 52, lineHeight: 1, marginBottom: 8, filter: 'drop-shadow(0 0 18px rgba(201,168,76,.8))' }}>🎉</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 54, color: gold, letterSpacing: 4, lineHeight: 1, textShadow: '0 0 32px rgba(201,168,76,.9),0 4px 16px rgba(0,0,0,.9)' }}>
+              {(viewerMilestone.count || 0).toLocaleString()}
+            </div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 6, marginTop: 4, textShadow: '0 2px 12px rgba(0,0,0,.9)' }}>VIEWERS</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginTop: 6, letterSpacing: 2 }}>milestone reached</div>
           </div>
         </div>
       )}
