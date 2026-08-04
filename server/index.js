@@ -1631,6 +1631,26 @@ io.on('connection', function(socket) {
     }
   });
 
+  // ── pin-chat-message / unpin-chat-message ──────────────────────────────
+  socket.on('pin-chat-message', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.message) return;
+    io.to(roomId).emit('chat-pinned', {
+      id:       String(data.id || ''),
+      username: String(data.username || '').slice(0, 80),
+      message:  String(data.message || '').slice(0, 300),
+      ts:       data.ts || 0,
+    });
+  });
+
+  socket.on('unpin-chat-message', function() {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    io.to(roomId).emit('chat-unpinned', {});
+  });
+
   // ── stage-remove ───────────────────────────────────────────────────────
   socket.on('stage-remove', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;

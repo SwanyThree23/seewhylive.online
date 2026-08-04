@@ -397,6 +397,7 @@ export default function LiveRoomPage({
   var [ccLines,    setCcLines]    = useState([]);
   var ccRecogRef = useRef(null);
   var [stageInvitePending, setStageInvitePending] = useState(null); // { invitedBy, hostSocketId, guestId }
+  var [pinnedMsg,          setPinnedMsg]          = useState(null); // { id, username, message, ts } | null
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -548,6 +549,15 @@ export default function LiveRoomPage({
       if (addToast) addToast((data.username || 'Viewer') + ' declined the stage invite', 'info');
     });
 
+    socket.on('chat-pinned', function(data) {
+      if (!data || !data.message) return;
+      setPinnedMsg({ id: data.id || '', username: data.username || '', message: String(data.message).slice(0, 300), ts: data.ts || 0 });
+    });
+
+    socket.on('chat-unpinned', function() {
+      setPinnedMsg(null);
+    });
+
     socket.on('stream-caption', function(data) {
       if (!data || !data.text) return;
       var line = { id: Date.now() + Math.random(), text: String(data.text).slice(0, 300) };
@@ -682,6 +692,8 @@ export default function LiveRoomPage({
       socket.off('stage-invite-pending');
       socket.off('stage-invite-accepted');
       socket.off('stage-invite-declined');
+      socket.off('chat-pinned');
+      socket.off('chat-unpinned');
     };
   }, [socket]);
 
@@ -1879,6 +1891,20 @@ export default function LiveRoomPage({
             <button onClick={function() { setChatOpen(false); }}
               style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
           </div>
+          {/* Pinned message banner */}
+          {pinnedMsg && (
+            <div style={{ padding: '7px 14px', background: 'rgba(201,168,76,.10)', borderBottom: '1px solid rgba(201,168,76,.22)', display: 'flex', alignItems: 'flex-start', gap: 8, flexShrink: 0 }}>
+              <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>📌</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold, display: 'block', marginBottom: 2 }}>{pinnedMsg.username}</span>
+                <p style={{ margin: 0, fontSize: 12, color: TEXT, lineHeight: 1.4, wordBreak: 'break-word' }}>{pinnedMsg.message}</p>
+              </div>
+              {role === 'host' && (
+                <button onClick={function() { if (socket) socket.emit('unpin-chat-message', {}); }}
+                  style={{ background: 'none', border: 'none', color: MUTED, fontSize: 13, cursor: 'pointer', padding: '1px 3px', lineHeight: 1, flexShrink: 0 }}>✕</button>
+              )}
+            </div>
+          )}
           {/* Messages */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
             {(!chat || chat.length === 0) && (
@@ -1928,12 +1954,17 @@ export default function LiveRoomPage({
                 );
               }
               return (
-                <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease' }}>
+                <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease', position: 'relative' }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
                     <span style={{ fontWeight: 700, fontSize: 13, color: gold }}>{m.username || 'Guest'}</span>
                     {m.ts && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>
                       {new Date(m.ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>}
+                    {role === 'host' && (
+                      <button onClick={function() {
+                        if (socket) socket.emit('pin-chat-message', { id: m.id || '', username: m.username || 'Guest', message: m.message || '', ts: m.ts || 0 });
+                      }} title="Pin message" style={{ marginLeft: 'auto', background: 'none', border: 'none', color: pinnedMsg && pinnedMsg.id === m.id ? gold : MUTED, fontSize: 11, cursor: 'pointer', padding: '0 2px', lineHeight: 1, opacity: .75 }}>📌</button>
+                    )}
                   </div>
                   <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45 }}>{m.message}</p>
                   {m.translated && m.translated !== m.message && (
