@@ -398,6 +398,8 @@ export default function LiveRoomPage({
   var ccRecogRef = useRef(null);
   var [stageInvitePending, setStageInvitePending] = useState(null); // { invitedBy, hostSocketId, guestId }
   var [pinnedMsg,          setPinnedMsg]          = useState(null); // { id, username, message, ts } | null
+  var [followAlert,        setFollowAlert]        = useState(null); // { id, follower } | null
+  var [hasFollowed,        setHasFollowed]        = useState(false);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -549,6 +551,15 @@ export default function LiveRoomPage({
       if (addToast) addToast((data.username || 'Viewer') + ' declined the stage invite', 'info');
     });
 
+    socket.on('creator-followed', function(data) {
+      if (!data || !data.follower) return;
+      var alert = { id: Date.now() + Math.random(), follower: String(data.follower).slice(0, 60) };
+      setFollowAlert(alert);
+      setTimeout(function() {
+        setFollowAlert(function(cur) { return (cur && cur.id === alert.id) ? null : cur; });
+      }, 4000);
+    });
+
     socket.on('chat-pinned', function(data) {
       if (!data || !data.message) return;
       setPinnedMsg({ id: data.id || '', username: data.username || '', message: String(data.message).slice(0, 300), ts: data.ts || 0 });
@@ -692,6 +703,7 @@ export default function LiveRoomPage({
       socket.off('stage-invite-pending');
       socket.off('stage-invite-accepted');
       socket.off('stage-invite-declined');
+      socket.off('creator-followed');
       socket.off('chat-pinned');
       socket.off('chat-unpinned');
     };
@@ -1834,6 +1846,19 @@ export default function LiveRoomPage({
         </div>
       )}
 
+      {/* ════════════════ FOLLOW ALERT ════════════════ */}
+      {followAlert && (
+        <div style={{ position: 'absolute', top: 72, left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 60, pointerEvents: 'none', animation: 'fadeSlideIn .3s ease' }}>
+          <div style={{ background: 'rgba(255,26,60,.9)', borderRadius: 14, padding: '8px 20px', display: 'flex', alignItems: 'center', gap: 9, boxShadow: '0 4px 24px rgba(255,26,60,.45)', backdropFilter: 'blur(6px)' }}>
+            <span style={{ fontSize: 18, lineHeight: 1 }}>❤️</span>
+            <div>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: '#fff', letterSpacing: 1.2 }}>{followAlert.follower}</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: 'rgba(255,255,255,.82)', marginLeft: 6 }}>is now following!</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ════════════════ FLOATING REACTIONS ════════════════ */}
       {floatReacts.map(function(r) {
         return (
@@ -2194,6 +2219,21 @@ export default function LiveRoomPage({
             active={reactsOpen}
             onPress={function() { setReactsOpen(function(v) { return !v; }); }}
           />
+          {role === 'viewer' && (
+            <IconBtn
+              icon={hasFollowed ? '❤️' : '🤍'}
+              label={hasFollowed ? 'Following' : 'Follow'}
+              active={hasFollowed}
+              activeColor={RED}
+              onPress={function() {
+                if (hasFollowed) return;
+                var hostGuest = guests.find(function(g) { return g.role === 'host'; });
+                var hUser = hostGuest ? (hostGuest.username || '') : '';
+                if (socket && hUser) socket.emit('follow-creator', { username: hUser });
+                setHasFollowed(true);
+              }}
+            />
+          )}
           <IconBtn
             icon="✋"
             label="Hand"
