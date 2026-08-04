@@ -2774,6 +2774,14 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('chyron-clear', { roomId: roomId, ts: Math.floor(Date.now() / 1000) });
   });
 
+  socket.on('stream-caption', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.text) return;
+    socket.to(roomId).emit('stream-caption', { text: String(data.text).slice(0, 300), ts: Date.now() });
+  });
+
   // ── PK Battle v2 vote aggregation ──────────────────────────────────────
   socket.on('pk-start', function(data) {
     var roomId = socket.data.roomId;
