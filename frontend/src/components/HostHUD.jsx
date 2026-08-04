@@ -40,6 +40,7 @@ export default function HostHUD(props) {
   var addToast             = props.addToast;
   var isVisible            = props.isVisible;
   var streamStats          = props.streamStats || null; // { bitratekbps, rttMs, lossPct }
+  var onHypePeak           = props.onHypePeak || null;
 
   if (!isVisible) return null;
 
@@ -56,10 +57,68 @@ export default function HostHUD(props) {
   var spark      = sparkState[0];
   var setSpark   = sparkState[1];
 
+  // Hype meter (0–100)
+  var hypeState    = useState(0);
+  var hype         = hypeState[0];
+  var setHype      = hypeState[1];
+  var hypeRef      = useRef(0);
+  var prevGiftRef  = useRef(giftCount || 0);
+  var prevScRef    = useRef(superChatCount || 0);
+  var prevViewRef  = useRef(viewerCount || 0);
+  var hypeHighRef  = useRef(null);  // timestamp when hype crossed 80
+  var peakFiredRef = useRef(false);
+  var onPeakRef    = useRef(onHypePeak);
+  onPeakRef.current = onHypePeak;
+
   var prevViewers = useRef(0);
 
   useEffect(function() {
     var id = setInterval(function() { setElapsed(function(e) { return e + 1; }); }, 1000);
+    return function() { clearInterval(id); };
+  }, []);
+
+  // Hype meter tick — runs every 250ms, reads current prop values via refs
+  var gcRefSync = useRef(giftCount || 0);
+  var scRefSync = useRef(superChatCount || 0);
+  var vcRefSync = useRef(viewerCount || 0);
+  gcRefSync.current = giftCount || 0;
+  scRefSync.current = superChatCount || 0;
+  vcRefSync.current = viewerCount || 0;
+
+  useEffect(function() {
+    prevGiftRef.current = gcRefSync.current;
+    prevScRef.current   = scRefSync.current;
+    prevViewRef.current = vcRefSync.current;
+
+    var id = setInterval(function() {
+      var gc = gcRefSync.current;
+      var sc = scRefSync.current;
+      var vc = vcRefSync.current;
+
+      var dg = Math.max(0, gc - prevGiftRef.current);
+      var ds = Math.max(0, sc - prevScRef.current);
+      var dv = Math.max(0, vc - prevViewRef.current);
+      prevGiftRef.current = gc;
+      prevScRef.current   = sc;
+      prevViewRef.current = vc;
+
+      var bump = dg * 15 + ds * 20 + dv * 3;
+      hypeRef.current = Math.min(100, Math.max(0, hypeRef.current + bump - 0.42));
+
+      var now = Date.now();
+      if (hypeRef.current >= 80) {
+        if (!hypeHighRef.current) hypeHighRef.current = now;
+        if (!peakFiredRef.current && now - hypeHighRef.current >= 5000) {
+          peakFiredRef.current = true;
+          if (onPeakRef.current) onPeakRef.current();
+        }
+      } else {
+        hypeHighRef.current = null;
+        peakFiredRef.current = false;
+      }
+
+      setHype(Math.round(hypeRef.current));
+    }, 250);
     return function() { clearInterval(id); };
   }, []);
 
@@ -87,6 +146,9 @@ export default function HostHUD(props) {
   var creatorCents  = Math.floor(totalCents * 0.9);
   var platformCents = totalCents - creatorCents;
   var trendUp       = (viewerCount || 0) >= prevViewers.current;
+
+  var hypeColor = hype >= 80 ? RED : hype >= 40 ? GOLD : MUTED;
+  var hypeLabel = hype >= 80 ? '🔥 ON FIRE' : hype >= 60 ? 'WARMING UP' : hype >= 30 ? 'BUILDING' : 'COOL';
 
   // Stream health
   var rtt   = streamStats ? streamStats.rttMs   : null;
@@ -160,6 +222,22 @@ export default function HostHUD(props) {
             </div>
           </div>
 
+          {/* Hype Meter */}
+          <div style={{ marginBottom: 10, padding: '8px 10px', background: CARD, borderRadius: 8, border: '1px solid ' + hypeColor + '33' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: MUTED, letterSpacing: 1 }}>HYPE METER</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: hypeColor, letterSpacing: 1 }}>{hypeLabel}</div>
+            </div>
+            <div style={{ height: 8, background: 'rgba(255,255,255,.06)', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: hype + '%', background: hype >= 80 ? 'linear-gradient(90deg,#C9A84C,#FF1A3C)' : hype >= 40 ? GOLD : MUTED, borderRadius: 4, transition: 'width .4s ease, background .4s ease', boxShadow: hype >= 80 ? '0 0 8px ' + RED + '88' : 'none' }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED }}>0</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: hypeColor }}>{hype}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED }}>100</div>
+            </div>
+          </div>
+
           {/* Stream health */}
           <div style={{ borderTop: '1px solid rgba(201,168,76,.1)', paddingTop: 10 }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 2, marginBottom: 8 }}>📡 STREAM HEALTH</div>
@@ -189,10 +267,10 @@ export default function HostHUD(props) {
 
       <button
         onClick={function() { setOpen(function(v) { return !v; }); }}
-        style={{ background: open ? 'rgba(26,21,16,.96)' : 'rgba(26,21,16,.85)', border: '1px solid ' + BORDER, borderRight: 'none', borderRadius: open ? '0 6px 6px 0' : '6px 0 0 6px', padding: '10px 7px', cursor: 'pointer', pointerEvents: 'all', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, boxShadow: '-2px 2px 10px rgba(0,0,0,.4)' }}>
-        <span style={{ fontSize: 14 }}>{open ? '▶' : '📊'}</span>
-        {!open && streamStats && (
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: hCol, boxShadow: '0 0 5px ' + hCol }} />
+        style={{ background: open ? 'rgba(26,21,16,.96)' : 'rgba(26,21,16,.85)', border: '1px solid ' + (hype >= 80 && !open ? RED + '99' : BORDER), borderRight: 'none', borderRadius: open ? '0 6px 6px 0' : '6px 0 0 6px', padding: '10px 7px', cursor: 'pointer', pointerEvents: 'all', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, boxShadow: hype >= 80 && !open ? '-2px 2px 14px ' + RED + '55' : '-2px 2px 10px rgba(0,0,0,.4)', transition: 'border-color .3s, box-shadow .3s' }}>
+        <span style={{ fontSize: 14 }}>{open ? '▶' : hype >= 80 ? '🔥' : '📊'}</span>
+        {!open && (
+          <div style={{ width: 6, height: 6, borderRadius: 2, background: hypeColor, boxShadow: '0 0 5px ' + hypeColor, transition: 'background .3s' }} />
         )}
         {!open && (
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: GOLD, letterSpacing: 0.5, writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>HOST</span>
