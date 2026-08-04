@@ -402,6 +402,8 @@ export default function LiveRoomPage({
   var [hasFollowed,        setHasFollowed]        = useState(false);
   var [viewerMilestone,    setViewerMilestone]    = useState(null); // { count } | null
   var [answeringQ,         setAnsweringQ]         = useState(null); // { id, username, text } | null
+  var [showSubModal,       setShowSubModal]       = useState(false);
+  var [subConfirmed,       setSubConfirmed]       = useState(null); // tier id after subscribing
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -2081,6 +2083,47 @@ export default function LiveRoomPage({
         </div>
       )}
 
+      {/* ════════════════ SUBSCRIBE MODAL ════════════════ */}
+      {showSubModal && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 70, animation: 'fadeSlideIn .2s ease' }}
+          onClick={function(e) { if (e.target === e.currentTarget) setShowSubModal(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', border: '1px solid ' + BORDER }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 2, marginBottom: 4 }}>⭐ Subscribe</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 20, letterSpacing: 1 }}>Support this creator every month</div>
+            {[
+              { id: 'bronze', label: 'BRONZE', cents: 500,  icon: '🥉', color: MUTED,  perks: 'Fan badge · Ad-free chat · Exclusive emotes' },
+              { id: 'silver', label: 'SILVER', cents: 1000, icon: '🥈', color: gold,   perks: 'Priority Q&A · Exclusive streams · All Bronze' },
+              { id: 'gold',   label: 'GOLD',   cents: 2000, icon: '👑', color: gold,   perks: 'Direct DMs · Monthly shoutout · All Silver' },
+            ].map(function(tier) {
+              return (
+                <button key={tier.id} onClick={function() {
+                  if (socket) socket.emit('subscribe', { tier: tier.id, price_cents: tier.cents });
+                  setSubConfirmed(tier.id);
+                  setShowSubModal(false);
+                  if (addToast) addToast(tier.icon + ' Thanks for subscribing at ' + tier.label + '!', 'success');
+                }} style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+                  background: 'rgba(255,255,255,.04)', border: '1.5px solid rgba(255,255,255,.1)',
+                  borderRadius: 14, padding: '14px 16px', marginBottom: 10,
+                  cursor: 'pointer', textAlign: 'left', transition: 'background .15s',
+                }}>
+                  <span style={{ fontSize: 26, lineHeight: 1, flexShrink: 0 }}>{tier.icon}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 3 }}>
+                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: tier.color, letterSpacing: 2 }}>{tier.label}</span>
+                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1 }}>${(Math.floor(tier.cents) / 100).toFixed(0)}<span style={{ fontSize: 11, color: MUTED, letterSpacing: 0 }}>/mo</span></span>
+                    </div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .3 }}>{tier.perks}</div>
+                  </div>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: tier.color, letterSpacing: 1, flexShrink: 0 }}>JOIN →</span>
+                </button>
+              );
+            })}
+            <button onClick={function() { setShowSubModal(false); }} style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, color: MUTED, cursor: 'pointer' }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
       {/* ════════════════ GO-LIVE MODAL ════════════════ */}
       {showLiveModal && (
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 70, animation: 'fadeSlideIn .2s ease' }}>
@@ -2277,6 +2320,15 @@ export default function LiveRoomPage({
                 if (socket && hUser) socket.emit('follow-creator', { username: hUser });
                 setHasFollowed(true);
               }}
+            />
+          )}
+          {role === 'viewer' && (
+            <IconBtn
+              icon={subConfirmed ? '⭐' : '✦'}
+              label={subConfirmed ? 'Subbed' : 'Subscribe'}
+              active={!!subConfirmed}
+              activeColor={GOLD}
+              onPress={function() { if (!subConfirmed) setShowSubModal(true); }}
             />
           )}
           <IconBtn
