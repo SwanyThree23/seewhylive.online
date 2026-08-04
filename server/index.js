@@ -420,6 +420,8 @@ var handRaiseThrottle       = new Map();  // userId → lastHandRaiseTs ms (500m
 var speakingThrottle        = new Map();  // userId → lastSpeakingTs ms (250ms throttle)
 var producerOwners      = new Map();  // producerId → guestId (ownership for close/pause/resume)
 var chatMsgThrottle     = new Map();  // socketId → lastChatTs ms (500ms throttle)
+var slowModeSeconds     = new Map();  // roomId → seconds (0 = off)
+var slowModeUserTs      = new Map();  // roomId+':'+userId → last message timestamp ms
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
 var qaUpvoteThrottle    = new Map();  // socketId → lastQaUpvoteTs ms (500ms throttle)
@@ -1652,6 +1654,18 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('chat-unpinned', {});
   });
 
+  // ── set-slow-mode ──────────────────────────────────────────────────────
+  socket.on('set-slow-mode', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var VALID = [0, 3, 5, 10, 30, 60];
+    var sec = Number(data && data.seconds);
+    if (!VALID.includes(sec)) sec = 0;
+    slowModeSeconds.set(roomId, sec);
+    io.to(roomId).emit('slow-mode-update', { seconds: sec });
+  });
+
   // ── stage-remove ───────────────────────────────────────────────────────
   socket.on('stage-remove', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -1807,6 +1821,19 @@ io.on('connection', function(socket) {
       io.to(socket.id).emit('muted', { reason: 'Too many messages' });
       return;
     }
+    // Slow mode check — skip for host/cohost
+    var _smSec = slowModeSeconds.get(roomId) || 0;
+    if (_smSec > 0 && socket.data.role !== 'host' && socket.data.role !== 'cohost') {
+      var _smKey  = roomId + ':' + userId;
+      var _smLast = slowModeUserTs.get(_smKey) || 0;
+      var _smWait = Math.ceil((_smLast + _smSec * 1000 - Date.now()) / 1000);
+      if (_smWait > 0) {
+        io.to(socket.id).emit('chat-slow-mode', { waitSeconds: _smWait, slowSeconds: _smSec });
+        return;
+      }
+      slowModeUserTs.set(_smKey, Date.now());
+    }
+
     swanybot.onChatMessage(roomId, _swKey, message, { username: username, userId: _swKey, room: rooms.get(roomId) });
 
     // !so / !shoutout command — host/cohost only
@@ -3470,6 +3497,7 @@ io.on('connection', function(socket) {
     loveCounts.delete(roomId);
     loveEarnings.delete(roomId);
     giftLeaderboards.delete(roomId);
+    slowModeSeconds.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
 
     try {
