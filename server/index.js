@@ -530,7 +530,7 @@ function serializeJudges(roomId) {
 }
 
 function getJoinStateForRoom(roomId) {
-  var state = { chatHistory: [], activePoll: null, activeVsPoll: null, judges: [], sessionRevenueCents: 0 };
+  var state = { chatHistory: [], activePoll: null, activeVsPoll: null, judges: [], sessionRevenueCents: 0, giftLeaderboard: [] };
   try {
     var rows = db.prepare(
       'SELECT id, username, message, translated, lang, ts FROM chat_history WHERE room_id = ? ORDER BY ts DESC LIMIT 50'
@@ -543,6 +543,7 @@ function getJoinStateForRoom(roomId) {
   if (vp && vp.active) state.activeVsPoll = serializeVs(vp);
   state.judges = serializeJudges(roomId);
   state.sessionRevenueCents = sessionRevenue.get(roomId) || 0;
+  state.giftLeaderboard = (giftLeaderboards.get(roomId) || []).slice(0, 10);
   return state;
 }
 

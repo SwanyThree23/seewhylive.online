@@ -438,6 +438,9 @@ export default function LiveRoomPage({
       if (Array.isArray(data.judges) && data.judges.length > 0) {
         setJudges(data.judges);
       }
+      if (Array.isArray(data.giftLeaderboard) && data.giftLeaderboard.length > 0) {
+        setTipLeader(data.giftLeaderboard.map(function(e) { return { username: e.username || '', totalCents: e.totalCents || 0 }; }));
+      }
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -549,6 +552,13 @@ export default function LiveRoomPage({
 
     socket.on('stage-invite-declined', function(data) {
       if (addToast) addToast((data.username || 'Viewer') + ' declined the stage invite', 'info');
+    });
+
+    socket.on('gift-leaderboard', function(data) {
+      if (!data || !data.leaders) return;
+      setTipLeader(data.leaders.map(function(e) {
+        return { username: e.username || '', totalCents: e.totalCents || 0 };
+      }));
     });
 
     socket.on('creator-followed', function(data) {
@@ -703,6 +713,7 @@ export default function LiveRoomPage({
       socket.off('stage-invite-pending');
       socket.off('stage-invite-accepted');
       socket.off('stage-invite-declined');
+      socket.off('gift-leaderboard');
       socket.off('creator-followed');
       socket.off('chat-pinned');
       socket.off('chat-unpinned');
@@ -2256,6 +2267,13 @@ export default function LiveRoomPage({
             onPress={function() { setShowQa(function(v) { return !v; }); setChatOpen(false); }}
           />
           <IconBtn
+            icon="🏆"
+            label="Leaders"
+            active={showLeader}
+            activeColor={gold}
+            onPress={function() { setShowLeader(function(v) { return !v; }); }}
+          />
+          <IconBtn
             icon="⚙"
             label="Camera"
             active={showMediaConf}
@@ -2325,7 +2343,7 @@ export default function LiveRoomPage({
         </div>
       )}
 
-      {showLeader && tipLeader.length > 0 && (
+      {showLeader && (
         <div style={{
           position: 'absolute', right: 8, top: 80, zIndex: 60,
           background: 'rgba(9,7,14,.97)', border: '1px solid rgba(201,168,76,.3)',
@@ -2337,6 +2355,9 @@ export default function LiveRoomPage({
             <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 2 }}>🏆 TOP TIPPERS</span>
             <button onClick={function() { setShowLeader(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>✕</button>
           </div>
+          {tipLeader.length === 0 && (
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, textAlign: 'center', padding: '8px 0' }}>No gifts yet this stream</div>
+          )}
           {tipLeader.map(function(e, i) {
             var medals = ['🥇', '🥈', '🥉'];
             return (
