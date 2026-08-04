@@ -404,6 +404,7 @@ export default function LiveRoomPage({
   var [answeringQ,         setAnsweringQ]         = useState(null); // { id, username, text } | null
   var [showSubModal,       setShowSubModal]       = useState(false);
   var [subConfirmed,       setSubConfirmed]       = useState(null); // tier id after subscribing
+  var [shoutout,           setShoutout]           = useState(null); // { username, by } | null
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -556,6 +557,13 @@ export default function LiveRoomPage({
 
     socket.on('stage-invite-declined', function(data) {
       if (addToast) addToast((data.username || 'Viewer') + ' declined the stage invite', 'info');
+    });
+
+    socket.on('shoutout', function(data) {
+      if (!data || !data.username) return;
+      var so = { username: String(data.username).slice(0, 60), by: String(data.by || '').slice(0, 60) };
+      setShoutout(so);
+      setTimeout(function() { setShoutout(null); }, 5000);
     });
 
     socket.on('qa-answering', function(data) {
@@ -732,6 +740,7 @@ export default function LiveRoomPage({
       socket.off('stage-invite-pending');
       socket.off('stage-invite-accepted');
       socket.off('stage-invite-declined');
+      socket.off('shoutout');
       socket.off('qa-answering');
       socket.off('qa-answering-cleared');
       socket.off('viewer-milestone');
@@ -1888,6 +1897,17 @@ export default function LiveRoomPage({
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: '#fff', letterSpacing: 1.2 }}>{followAlert.follower}</span>
               <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: 'rgba(255,255,255,.82)', marginLeft: 6 }}>is now following!</span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ SHOUTOUT BANNER ════════════════ */}
+      {shoutout && (
+        <div style={{ position: 'absolute', left: 12, right: 12, top: 72, zIndex: 62, pointerEvents: 'none', animation: 'fadeSlideIn .35s ease' }}>
+          <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.08))', border: '1.5px solid rgba(201,168,76,.55)', borderRadius: 16, padding: '14px 18px', boxShadow: '0 6px 28px rgba(201,168,76,.22),0 2px 12px rgba(0,0,0,.6)', backdropFilter: 'blur(8px)' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 2, marginBottom: 5 }}>🎤 SHOUTOUT from {shoutout.by}</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: gold, letterSpacing: 3, lineHeight: 1, textShadow: '0 0 20px rgba(201,168,76,.6)' }}>@{shoutout.username}</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1, marginTop: 4 }}>✨ show some love in chat!</div>
           </div>
         </div>
       )}
