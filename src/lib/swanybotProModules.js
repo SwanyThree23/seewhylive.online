@@ -59,7 +59,7 @@ export const SWANYBOT_PRO_MODULES = [
     name: 'Product Ad Studio',
     tagline: 'Verve.fm-style product shots',
     icon: ShoppingBag,
-    status: 'next',
+    status: 'live',
     accent: '#D4AF37',
     description:
       'Turn a single product PNG into studio-quality video commercials — cinematic prompts, continue-shot sequences, campaign variations.',

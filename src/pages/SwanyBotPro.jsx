@@ -5,11 +5,13 @@ import { SWANYBOT_PRO_MODULES } from '@/lib/swanybotProModules';
 import VideoTransformStudio from '@/components/swanybotpro/VideoTransformStudio';
 import VoiceLipSyncStudio from '@/components/swanybotpro/VoiceLipSyncStudio';
 import StoryMusicVideoStudio from '@/components/swanybotpro/StoryMusicVideoStudio';
+import ProductAdStudio from '@/components/swanybotpro/ProductAdStudio';
 
 const MODULE_COMPONENTS = {
   'video-transform': VideoTransformStudio,
   'voice-lipsync': VoiceLipSyncStudio,
   'story-music-video': StoryMusicVideoStudio,
+  'product-ad': ProductAdStudio,
 };
 
 const G = '#D4AF37';
