@@ -1042,6 +1042,10 @@ export default function LiveRoomPage({
         addToast={addToast}
         isVisible={role === 'host' || role === 'cohost'}
         streamStats={streamStats}
+        onHypePeak={function() {
+          if (socket) socket.emit('mark-clip', { roomId: roomId, label: '🔥 Hype Peak', ts: Date.now() });
+          if (addToast) addToast('🔥 HYPE PEAK — clip auto-marked!', 'success');
+        }}
       />
 
       {(role === 'host' || role === 'cohost') && (
