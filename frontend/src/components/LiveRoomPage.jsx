@@ -117,7 +117,7 @@ function RolePill({ role }) {
   );
 }
 
-function AudienceCircle({ g, speaking, handRaised, onInvite }) {
+function AudienceCircle({ g, speaking, handRaised, onInvite, isTopGifter }) {
   var name = g.username || g.guestId || '?';
   var init = name.charAt(0).toUpperCase();
   return (
@@ -135,6 +135,12 @@ function AudienceCircle({ g, speaking, handRaised, onInvite }) {
         <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, lineHeight: 1, userSelect: 'none' }}>
           {init}
         </span>
+        {isTopGifter && !handRaised && (
+          <div style={{
+            position: 'absolute', top: -7, left: '50%', transform: 'translateX(-50%)',
+            fontSize: 13, lineHeight: 1, filter: 'drop-shadow(0 0 4px rgba(201,168,76,.8))',
+          }}>👑</div>
+        )}
         {handRaised && (
           <div style={{
             position: 'absolute', top: -6, right: -6,
@@ -1007,6 +1013,14 @@ export default function LiveRoomPage({
     return !g.producerId && !g.audioProducerId;
   });
 
+  // Top gifter this session — show 👑 in audience circle
+  var topGifterId = null;
+  var topGiftMax  = 0;
+  Object.keys(guestGiftTotals).forEach(function(gid) {
+    var v = guestGiftTotals[gid] || 0;
+    if (v > topGiftMax) { topGiftMax = v; topGifterId = gid; }
+  });
+
   // Grid sizing
   var n    = onStage.length;
   var cols = n <= 1 ? 1 : n <= 4 ? 2 : n <= 9 ? 3 : n <= 16 ? 4 : 5;
@@ -1043,7 +1057,7 @@ export default function LiveRoomPage({
         isVisible={role === 'host' || role === 'cohost'}
         streamStats={streamStats}
         onHypePeak={function() {
-          if (socket) socket.emit('mark-clip', { roomId: roomId, label: '🔥 Hype Peak', ts: Date.now() });
+          if (socket) socket.emit('clip-marker', { label: '🔥 Hype Peak' });
           if (addToast) addToast('🔥 HYPE PEAK — clip auto-marked!', 'success');
         }}
       />
@@ -1699,6 +1713,7 @@ export default function LiveRoomPage({
                   return (
                     <AudienceCircle key={gid} g={g} speaking={!!speakingIds[gid]}
                       handRaised={isHand}
+                      isTopGifter={topGifterId === gid && topGiftMax > 0}
                       onInvite={role === 'host' && onStage.length < MAX_STAGE ? function() { if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); } : undefined}
                     />
                   );
@@ -1712,6 +1727,7 @@ export default function LiveRoomPage({
                   return (
                     <AudienceCircle key={gid} g={g} speaking={!!speakingIds[gid]}
                       handRaised={isHand}
+                      isTopGifter={topGifterId === gid && topGiftMax > 0}
                       onInvite={role === 'host' && onStage.length < MAX_STAGE ? function() { if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); } : undefined}
                     />
                   );
