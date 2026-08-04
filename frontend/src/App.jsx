@@ -38,6 +38,7 @@ var AuraTab             = React.lazy(function() { return import('./components/Au
 var SwanAITab           = React.lazy(function() { return import('./components/SwanAITab.jsx'); });
 var AvatarHubTab        = React.lazy(function() { return import('./components/AvatarHubTab.jsx'); });
 var MusicStudioTab      = React.lazy(function() { return import('./components/MusicStudioTab.jsx'); });
+var MusicVideoTab       = React.lazy(function() { return import('./components/MusicVideoTab.jsx'); });
 var CreatorDiscoveryTab = React.lazy(function() { return import('./components/CreatorDiscoveryTab.jsx'); });
 var LeaderboardPage     = React.lazy(function() { return import('./pages/Leaderboard.jsx'); });
 var PKBattleArenaPage   = React.lazy(function() { return import('./pages/PKBattleArena.jsx'); });
@@ -98,6 +99,7 @@ var TABS = [
   { id: 'swanai',    label: '🎯 SWANAI' },
   { id: 'avatar',    label: '🎭 AVATAR' },
   { id: 'music',     label: '🎵 STUDIO' },
+  { id: 'musicvid',  label: '🎬 MV GEN' },
   { id: 'discover',  label: '🔭 DISCOVER' },
   { id: 'creators',  label: '🔭 CREATORS' },
   { id: 'leaderboard', label: '🏅 LEADERBOARD' },
@@ -1458,6 +1460,13 @@ export default function App() {
             isLive={isLive}
             socket={socketRef.current}
             roomId={APP_ID}
+          />
+        )}
+        {activeTab === 'musicvid' && (
+          <MusicVideoTab
+            addToast={addToast}
+            userId={userId}
+            username={username}
           />
         )}
         {activeTab === 'desktop-studio' && (
