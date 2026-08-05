@@ -464,30 +464,32 @@ export default function WatchPartyTab(props) {
       }
     }
 
-    socket.on('watch-party-url',    onWatchUrl);
-    socket.on('watch-party-play',   onWatchPlay);
-    socket.on('watch-party-pause',  onWatchPause);
-    socket.on('watch-party-seek',   onWatchSeek);
-    socket.on('watch-party-sync',   onWatchSync);
-    socket.on('watch-react',        onWatchReact);
-    socket.on('screen-share-active',onScreenShareActive);
-    socket.on('screen-share-ended', onScreenShareEnded);
-    socket.on('watch-sync',         onSyncAction);
+    socket.on('watch-party-url',     onWatchUrl);
+    socket.on('watch-party-play',    onWatchPlay);
+    socket.on('watch-party-pause',   onWatchPause);
+    socket.on('watch-party-seek',    onWatchSeek);
+    socket.on('watch-party-sync',    onWatchSync);
+    socket.on('watch-react',         onWatchReact);
+    socket.on('screen-share-active', onScreenShareActive);
+    socket.on('screen-share-ended',  onScreenShareEnded);
+    socket.on('watch-sync',          onSyncAction);
+    socket.on('watch-party-started', function() { setWatchPartyActive(true); });
 
     if (!isHost && socket && roomId) {
       socket.emit('watch-party-sync-request', { roomId: roomId });
     }
 
     return function() {
-      socket.off('watch-party-url',    onWatchUrl);
-      socket.off('watch-party-play',   onWatchPlay);
-      socket.off('watch-party-pause',  onWatchPause);
-      socket.off('watch-party-seek',   onWatchSeek);
-      socket.off('watch-party-sync',   onWatchSync);
-      socket.off('watch-react',        onWatchReact);
-      socket.off('screen-share-active',onScreenShareActive);
-      socket.off('screen-share-ended', onScreenShareEnded);
-      socket.off('watch-sync',         onSyncAction);
+      socket.off('watch-party-url',     onWatchUrl);
+      socket.off('watch-party-play',    onWatchPlay);
+      socket.off('watch-party-pause',   onWatchPause);
+      socket.off('watch-party-seek',    onWatchSeek);
+      socket.off('watch-party-sync',    onWatchSync);
+      socket.off('watch-react',         onWatchReact);
+      socket.off('screen-share-active', onScreenShareActive);
+      socket.off('screen-share-ended',  onScreenShareEnded);
+      socket.off('watch-sync',          onSyncAction);
+      socket.off('watch-party-started');
     };
   }, [socket, isHost, sourceType]);
 
