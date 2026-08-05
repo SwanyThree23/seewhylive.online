@@ -262,30 +262,10 @@ export default function PollOverlay({ socket, roomId, role, isLive, addToast }) 
     var votes     = activePoll.votes || {};
     var total     = activePoll.totalVotes || 0;
 
-    // votes is an object keyed by socket-id → option index (server format)
-    // or keyed by option index → count (when sent as counts)
-    // Determine max-voted option
-    var counts = {};
-    if (total > 0) {
-      // Check if votes is already counts-by-option
-      var isCountMap = false;
-      Object.keys(votes).forEach(function(k) {
-        if (!isNaN(parseInt(k, 10))) isCountMap = true;
-      });
-      if (isCountMap) {
-        counts = votes;
-      } else {
-        // per-socket map
-        Object.keys(votes).forEach(function(k) {
-          var opt = votes[k];
-          counts[opt] = (counts[opt] || 0) + 1;
-        });
-      }
-    }
-
+    // votes is { 'option text': count } from poll-create system
     var maxVotes = 0;
-    options.forEach(function(opt, idx) {
-      var c = counts[idx] || 0;
+    options.forEach(function(opt) {
+      var c = votes[opt] || 0;
       if (c > maxVotes) maxVotes = c;
     });
 
@@ -321,7 +301,7 @@ export default function PollOverlay({ socket, roomId, role, isLive, addToast }) 
           {/* Options */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {options.map(function(opt, idx) {
-              var cnt  = counts[idx] || 0;
+              var cnt  = votes[opt] || 0;
               var pct  = total > 0 ? Math.floor((cnt / total) * 100) : 0;
               var isWin = pollEnded && maxVotes > 0 && cnt === maxVotes;
               var isMyVote = myVote === idx;
