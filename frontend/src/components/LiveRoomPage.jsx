@@ -417,6 +417,13 @@ export default function LiveRoomPage({
   var screenStreamRef = useRef(null);
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
+  // ── Trivia ──────────────────────────────────────────────────────────────
+  var [activeTrivia,    setActiveTrivia]    = useState(null); // { question, options, durationMs, startTs }
+  var [triviaMyAnswer,  setTriviaMyAnswer]  = useState(-1);   // option index selected by this user, -1=none
+  var [triviaResults,   setTriviaResults]   = useState(null); // { question, options, correctIdx, correct, wrong, total }
+  var [triviaCountdown, setTriviaCountdown] = useState(0);    // ms remaining
+  var [triviaStartId,   setTriviaStartId]   = useState(null); // startTs used to key the countdown useEffect
+
   // ── Web Audio sound alerts ──────────────────────────────────────────────
   var audioCtxRef  = useRef(null);
   var soundOnRef   = useRef(true);
@@ -444,6 +451,18 @@ export default function LiveRoomPage({
       osc.stop(ctx.currentTime + duration + 0.1);
     });
   };
+
+  // ── Trivia countdown (100ms ticks, keyed on triviaStartId) ────────────
+  useEffect(function() {
+    if (!triviaStartId) return;
+    var id = setInterval(function() {
+      setTriviaCountdown(function(prev) {
+        if (prev <= 100) { clearInterval(id); return 0; }
+        return prev - 100;
+      });
+    }, 100);
+    return function() { clearInterval(id); };
+  }, [triviaStartId]);
 
   // ── Camera warm-up ──
   useEffect(function() {
@@ -681,6 +700,33 @@ export default function LiveRoomPage({
       if (addToast) addToast('✂️ ' + entry.label, 'info');
     });
 
+    socket.on('trivia-question', function(data) {
+      if (!data || !data.question) return;
+      var dur = data.durationMs || 20000;
+      var ts  = Date.now();
+      setActiveTrivia({ question: String(data.question).slice(0, 200), options: Array.isArray(data.options) ? data.options : [], durationMs: dur, startTs: ts });
+      setTriviaMyAnswer(-1);
+      setTriviaResults(null);
+      setTriviaCountdown(dur);
+      setTriviaStartId(ts);
+    });
+
+    socket.on('trivia-results', function(data) {
+      if (!data) return;
+      setActiveTrivia(null);
+      setTriviaStartId(null);
+      setTriviaCountdown(0);
+      setTriviaResults({
+        question:   String(data.question || '').slice(0, 200),
+        options:    Array.isArray(data.options) ? data.options : [],
+        correctIdx: typeof data.correctIdx === 'number' ? data.correctIdx : 0,
+        correct:    Array.isArray(data.correct) ? data.correct : [],
+        wrong:      Array.isArray(data.wrong)   ? data.wrong   : [],
+        total:      data.total || 0
+      });
+      setTimeout(function() { setTriviaResults(null); setTriviaMyAnswer(-1); }, 10000);
+    });
+
     socket.on('stream-caption', function(data) {
       if (!data || !data.text) return;
       var line = { id: Date.now() + Math.random(), text: String(data.text).slice(0, 300) };
@@ -827,6 +873,8 @@ export default function LiveRoomPage({
       socket.off('chat-unpinned');
       socket.off('you-were-kicked');
       socket.off('clip-marked');
+      socket.off('trivia-question');
+      socket.off('trivia-results');
     };
   }, [socket]);
 
@@ -1219,6 +1267,8 @@ export default function LiveRoomPage({
         addToast={addToast}
         isVisible={role === 'host' || role === 'cohost'}
         streamStats={streamStats}
+        socket={socket}
+        roomId={roomId}
         onHypePeak={function() {
           if (socket) socket.emit('clip-marker', { label: '🔥 Hype Peak' });
           if (addToast) addToast('🔥 HYPE PEAK — clip auto-marked!', 'success');
@@ -3527,6 +3577,80 @@ export default function LiveRoomPage({
           title={'Join ' + ((streamInfo && streamInfo.title) || username + ' on SeeWhy LIVE')}
           onClose={function() { setShowShareSheet(false); }}
         />
+      )}
+
+      {/* ════════════════ TRIVIA OVERLAY ════════════════ */}
+      {(activeTrivia || triviaResults) && !kicked && (
+        <div style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom,0px) + 76px)', left: '50%', transform: 'translateX(-50%)', zIndex: 200, width: 'min(340px,calc(100vw - 32px))', background: 'rgba(26,21,16,.97)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 12, padding: '14px 14px 12px', boxShadow: '0 8px 32px rgba(0,0,0,.7)', animation: 'fadeSlideIn .3s ease', pointerEvents: 'all' }}>
+
+          {activeTrivia && !triviaResults && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 2 }}>🎯 TRIVIA</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: triviaCountdown <= 5000 ? RED : GOLD, minWidth: 28, textAlign: 'right' }}>
+                  {Math.ceil(triviaCountdown / 1000)}s
+                </div>
+              </div>
+              <div style={{ height: 3, background: 'rgba(255,255,255,.06)', borderRadius: 2, overflow: 'hidden', marginBottom: 10 }}>
+                <div style={{ height: '100%', width: (activeTrivia.durationMs > 0 ? Math.round(triviaCountdown / activeTrivia.durationMs * 100) : 0) + '%', background: triviaCountdown <= 5000 ? RED : GOLD, borderRadius: 2, transition: 'width .1s linear, background .3s' }} />
+              </div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: TEXT, lineHeight: 1.25, marginBottom: 10, letterSpacing: 0.5 }}>
+                {activeTrivia.question}
+              </div>
+              {activeTrivia.options.map(function(opt, i) {
+                var selected = triviaMyAnswer === i;
+                var answered = triviaMyAnswer !== -1;
+                return (
+                  <button key={i} disabled={answered}
+                    onClick={function() {
+                      if (answered) return;
+                      setTriviaMyAnswer(i);
+                      if (socket) socket.emit('trivia-answer', { answerIdx: i });
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '7px 10px', marginBottom: 5, background: selected ? 'rgba(201,168,76,.18)' : answered ? 'rgba(255,255,255,.02)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (selected ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.08)'), borderRadius: 7, cursor: answered ? 'default' : 'pointer', opacity: answered && !selected ? 0.45 : 1, color: TEXT }}>
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: selected ? GOLD : MUTED, flexShrink: 0, width: 14 }}>{['A','B','C','D'][i]}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, flex: 1 }}>{opt.text}</span>
+                    {selected && <span style={{ fontSize: 10, color: GOLD }}>✓</span>}
+                  </button>
+                );
+              })}
+              {triviaMyAnswer !== -1 && (
+                <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginTop: 4 }}>
+                  Locked in — waiting for results
+                </div>
+              )}
+            </div>
+          )}
+
+          {triviaResults && (
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 2, marginBottom: 7 }}>🎯 RESULTS</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: TEXT, lineHeight: 1.25, marginBottom: 10 }}>
+                {triviaResults.question}
+              </div>
+              {triviaResults.options.map(function(opt, i) {
+                var isCorrect  = i === triviaResults.correctIdx;
+                var userPicked = i === triviaMyAnswer;
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', marginBottom: 5, background: isCorrect ? 'rgba(92,184,92,.12)' : userPicked ? 'rgba(255,26,60,.08)' : 'rgba(255,255,255,.03)', border: '1px solid ' + (isCorrect ? 'rgba(92,184,92,.4)' : userPicked ? 'rgba(255,26,60,.3)' : 'rgba(255,255,255,.06)'), borderRadius: 7 }}>
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: isCorrect ? '#5CB85C' : MUTED, flexShrink: 0, width: 14 }}>{['A','B','C','D'][i]}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, flex: 1, color: isCorrect ? TEXT : MUTED }}>{opt.text}</span>
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: isCorrect ? '#5CB85C' : MUTED }}>{opt.votes}</span>
+                    {isCorrect && <span style={{ fontSize: 9 }}>✓</span>}
+                  </div>
+                );
+              })}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 6, borderTop: '1px solid rgba(201,168,76,.1)' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>{triviaResults.total} answered · {triviaResults.correct.length} correct</div>
+                {triviaMyAnswer !== -1 && (
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: triviaMyAnswer === triviaResults.correctIdx ? '#5CB85C' : RED }}>
+                    {triviaMyAnswer === triviaResults.correctIdx ? '🎉 Got it!' : '❌ Wrong'}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* ════════════════ KICKED OVERLAY ════════════════ */}
