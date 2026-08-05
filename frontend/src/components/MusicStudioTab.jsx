@@ -59,6 +59,69 @@ var COVER_GRADIENTS = [
 ];
 var COVER_EMOJIS = ['🎵','🎸','🎹','🎺','🎻','🥁','🎙','🎤','🎼','🎧','💿','🔊','🎶','👑','🔥'];
 
+// ─── Beat Maker audio synthesis ─────────────────────────────────────────────
+var _beatCtx = null;
+function getBeatCtx() {
+  if (!_beatCtx || _beatCtx.state === 'closed') {
+    _beatCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (_beatCtx.state === 'suspended') _beatCtx.resume();
+  return _beatCtx;
+}
+
+function playBeatPad(padId, vol) {
+  try {
+    var ctx = getBeatCtx();
+    var gain = ctx.createGain();
+    gain.gain.value = (vol == null ? 80 : vol) / 100 * 0.6;
+    gain.connect(ctx.destination);
+
+    if (padId === 'kick') {
+      var osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(150, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.25);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.connect(gain); osc.start(); osc.stop(ctx.currentTime + 0.3);
+    } else if (padId === 'snare') {
+      var bufLen = Math.floor(ctx.sampleRate * 0.15);
+      var buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      var d = buf.getChannelData(0);
+      for (var i = 0; i < bufLen; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / bufLen);
+      var src = ctx.createBufferSource();
+      src.buffer = buf;
+      var filt = ctx.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 3500;
+      src.connect(filt); filt.connect(gain); src.start();
+    } else if (padId === 'clap') {
+      var bufLen2 = Math.floor(ctx.sampleRate * 0.08);
+      var buf2 = ctx.createBuffer(1, bufLen2, ctx.sampleRate);
+      var d2 = buf2.getChannelData(0);
+      for (var j = 0; j < bufLen2; j++) d2[j] = (Math.random() * 2 - 1) * (1 - j / bufLen2);
+      var src2 = ctx.createBufferSource();
+      src2.buffer = buf2;
+      var filt2 = ctx.createBiquadFilter(); filt2.type = 'highpass'; filt2.frequency.value = 2000;
+      src2.connect(filt2); filt2.connect(gain); src2.start();
+    } else if (padId === 'hihat') {
+      var bufLen3 = Math.floor(ctx.sampleRate * 0.06);
+      var buf3 = ctx.createBuffer(1, bufLen3, ctx.sampleRate);
+      var d3 = buf3.getChannelData(0);
+      for (var k = 0; k < bufLen3; k++) d3[k] = (Math.random() * 2 - 1) * (1 - k / bufLen3);
+      var src3 = ctx.createBufferSource();
+      src3.buffer = buf3;
+      var filt3 = ctx.createBiquadFilter(); filt3.type = 'highpass'; filt3.frequency.value = 8000;
+      src3.connect(filt3); filt3.connect(gain); src3.start();
+    } else {
+      var freqMap = { bass: 80, chord: 261, lead: 523, fx: 880 };
+      var typeMap = { bass: 'sawtooth', chord: 'sine', lead: 'square', fx: 'sine' };
+      var osc2 = ctx.createOscillator();
+      osc2.type = typeMap[padId] || 'sine';
+      osc2.frequency.value = freqMap[padId] || 440;
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+      osc2.connect(gain); osc2.start(); osc2.stop(ctx.currentTime + 0.2);
+    }
+  } catch(e) {}
+}
+
 // ─── Beat Maker ─────────────────────────────────────────────────────────────
 var PADS = [
   { id: 'kick',  label: '🥁 Kick',  color: RED       },
@@ -281,10 +344,11 @@ export default function MusicStudioTab(props) {
   });
   var [presetName,     setPresetName]     = useState('');
   var [showSavePreset, setShowSavePreset] = useState(false);
-  var beatStepRef = useRef(-1);
-  var beatPlayRef = useRef(null);
-  var gridRef     = useRef(grid);
-  var tapRef      = useRef([]);
+  var beatStepRef     = useRef(-1);
+  var beatPlayRef     = useRef(null);
+  var gridRef         = useRef(grid);
+  var padVolumesRef   = useRef({});
+  var tapRef          = useRef([]);
 
   // ── Library ──
   var [libTab,       setLibTab]      = useState('mine');
@@ -318,6 +382,7 @@ export default function MusicStudioTab(props) {
   var [waveform, setWaveform] = useState([]);
 
   useEffect(function() { gridRef.current = grid; }, [grid]);
+  useEffect(function() { padVolumesRef.current = padVolumes; }, [padVolumes]);
 
   useEffect(function() {
     if (!isLive) { setWaveform([]); return; }
@@ -342,7 +407,12 @@ export default function MusicStudioTab(props) {
       setBeatStep(beatStepRef.current);
       var flash = {};
       var g = gridRef.current;
-      PADS.forEach(function(p) { if (g[p.id] && g[p.id][beatStepRef.current]) flash[p.id] = true; });
+      PADS.forEach(function(p) {
+        if (g[p.id] && g[p.id][beatStepRef.current]) {
+          flash[p.id] = true;
+          playBeatPad(p.id, padVolumesRef.current[p.id]);
+        }
+      });
       if (Object.keys(flash).length > 0) {
         setPadFlash(flash);
         setTimeout(function() { setPadFlash({}); }, 80);

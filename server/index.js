@@ -3616,6 +3616,27 @@ io.on('connection', function(socket) {
     }
   });
 
+  // ── battle:accept / battle:decline — route response back to challenger ──
+  socket.on('battle:accept', function(data) {
+    if (!data || !data.challengerId) return;
+    var defenderName = socket.data.username || socket.data.userId;
+    io.sockets.sockets.forEach(function(s) {
+      if (String(s.data.userId) === String(data.challengerId)) {
+        s.emit('battle:accept', { defender_id: socket.data.userId, defender_username: defenderName, roomId: socket.data.roomId });
+      }
+    });
+  });
+
+  socket.on('battle:decline', function(data) {
+    if (!data || !data.challengerId) return;
+    var defenderName = socket.data.username || socket.data.userId;
+    io.sockets.sockets.forEach(function(s) {
+      if (String(s.data.userId) === String(data.challengerId)) {
+        s.emit('battle:decline', { defender_username: defenderName });
+      }
+    });
+  });
+
   // ── PK cheer handler ──────────────────────────────────────────────────
   socket.on('pk-cheer', function(data) {
     var cheerRoomId = socket.data.roomId;
