@@ -417,6 +417,34 @@ export default function LiveRoomPage({
   var screenStreamRef = useRef(null);
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
+  // ── Web Audio sound alerts ──────────────────────────────────────────────
+  var audioCtxRef  = useRef(null);
+  var soundOnRef   = useRef(true);
+  var [soundOn, setSoundOn] = useState(true);
+
+  var playTone = function(freqs, duration) {
+    if (!soundOnRef.current) return;
+    if (!window.AudioContext && !window.webkitAudioContext) return;
+    if (!audioCtxRef.current) {
+      try { audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return; }
+    }
+    var ctx = audioCtxRef.current;
+    if (ctx.state === 'suspended') { ctx.resume(); }
+    freqs.forEach(function(freq, i) {
+      var osc  = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.12 / freqs.length, ctx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.start(ctx.currentTime + i * 0.055);
+      osc.stop(ctx.currentTime + duration + 0.1);
+    });
+  };
+
   // ── Camera warm-up ──
   useEffect(function() {
     if (role === 'viewer') return;
@@ -477,6 +505,7 @@ export default function LiveRoomPage({
       setChat(function(prev) { return [...prev.slice(-200), scEntry]; });
       setSuperChatCount(function(c) { return c + 1; });
       if (addToast && role !== 'host') addToast('💬 ' + sc.username + ' sent a $' + (Math.floor(sc.amountCents) / 100).toFixed(2) + ' Super Chat!', 'success');
+      playTone([523, 659, 784], 1.5); // C5 E5 G5 — bright chord
     });
 
     socket.on('super-chat:tts', function(sc) {
@@ -497,6 +526,7 @@ export default function LiveRoomPage({
     socket.on('gift-received', function(gift) {
       if (!gift) return;
       setGiftCount(function(c) { return c + 1; });
+      playTone([880, 1109], 1.0); // A5 C#6 — crisp bell
       if (gift.toGuestId) {
         var cents = Math.floor(gift.valueCents || 0);
         setGuestGiftTotals(function(prev) {
@@ -2034,6 +2064,14 @@ export default function LiveRoomPage({
                   🐌 {slowModeSec > 0 ? (slowModeSec + 's') : 'OFF'}
                 </button>
               )}
+              <button onClick={function() {
+                var next = !soundOn;
+                setSoundOn(next);
+                soundOnRef.current = next;
+              }} title={soundOn ? 'Mute sound alerts' : 'Enable sound alerts'}
+                style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 7px', color: soundOn ? MUTED : RED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>
+                {soundOn ? '🔊' : '🔇'}
+              </button>
               <button onClick={function() { setChatOpen(false); }}
                 style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
             </div>
@@ -2178,6 +2216,7 @@ export default function LiveRoomPage({
                   setSubConfirmed(tier.id);
                   setShowSubModal(false);
                   if (addToast) addToast(tier.icon + ' Thanks for subscribing at ' + tier.label + '!', 'success');
+                  playTone([440, 554, 659, 880], 2.0); // A4 C#5 E5 A5 — warm rising chord
                 }} style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 14,
                   background: 'rgba(255,255,255,.04)', border: '1.5px solid rgba(255,255,255,.1)',
