@@ -42,6 +42,7 @@ export default function HostHUD(props) {
   var streamStats          = props.streamStats || null; // { bitratekbps, rttMs, lossPct }
   var onHypePeak           = props.onHypePeak || null;
   var clipCount            = props.clipCount || 0;
+  var socket               = props.socket  || null;
 
   if (!isVisible) return null;
 
@@ -134,6 +135,77 @@ export default function HostHUD(props) {
     prevViewers.current = curr;
     setSpark(function(s) { return s.concat([curr]).slice(-20); });
   }, [viewerCount]);
+
+  // ── Trivia launcher state ───────────────────────────────────────────────
+  var showTriviaFormState = useState(false);
+  var showTriviaForm      = showTriviaFormState[0];
+  var setShowTriviaForm   = showTriviaFormState[1];
+
+  var triviaQState = useState('');
+  var triviaQ      = triviaQState[0];
+  var setTriviaQ   = triviaQState[1];
+
+  var triviaOptsState = useState(['', '']);
+  var triviaOpts      = triviaOptsState[0];
+  var setTriviaOpts   = triviaOptsState[1];
+
+  var triviaCorrectState = useState(0);
+  var triviaCorrect      = triviaCorrectState[0];
+  var setTriviaCorrect   = triviaCorrectState[1];
+
+  var triviaDurState = useState(20);
+  var triviaDur      = triviaDurState[0];
+  var setTriviaDur   = triviaDurState[1];
+
+  var triviaActiveState = useState(false);
+  var triviaActive      = triviaActiveState[0];
+  var setTriviaActive   = triviaActiveState[1];
+
+  var triviaSecsLeftState = useState(0);
+  var triviaSecsLeft      = triviaSecsLeftState[0];
+  var setTriviaSecsLeft   = triviaSecsLeftState[1];
+
+  var triviaDurRef     = useRef(20);
+  triviaDurRef.current = triviaDur;
+
+  useEffect(function() {
+    if (!triviaActive) return;
+    var remaining = triviaDurRef.current;
+    setTriviaSecsLeft(remaining);
+    var id = setInterval(function() {
+      remaining--;
+      setTriviaSecsLeft(remaining);
+      if (remaining <= 0) { clearInterval(id); setTriviaActive(false); }
+    }, 1000);
+    return function() { clearInterval(id); };
+  }, [triviaActive]);
+
+  var launchTrivia = function() {
+    var q         = triviaQ.trim();
+    var validOpts = triviaOpts.filter(function(o) { return o.trim().length > 0; });
+    if (!q || validOpts.length < 2) {
+      if (addToast) addToast('Need a question and at least 2 options', 'error');
+      return;
+    }
+    if (!socket) { if (addToast) addToast('Not connected', 'error'); return; }
+    var correctIdx = Math.min(triviaCorrect, validOpts.length - 1);
+    socket.emit('trivia-start', {
+      question:   q,
+      options:    validOpts.map(function(o) { return { text: o.trim() }; }),
+      correctIdx: correctIdx,
+      durationMs: triviaDur * 1000
+    });
+    setTriviaActive(true);
+    setShowTriviaForm(false);
+    if (addToast) addToast('🎯 Trivia launched!', 'success');
+  };
+
+  var endTrivia = function() {
+    if (socket) socket.emit('trivia-end', {});
+    setTriviaActive(false);
+    setTriviaSecsLeft(0);
+    if (addToast) addToast('Trivia ended', 'info');
+  };
 
   function fmtTime(s) {
     var h   = Math.floor(s / 3600);
@@ -266,6 +338,91 @@ export default function HostHUD(props) {
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: loss < 3 ? GOLD : RED, marginTop: 2 }}>{loss}%</div>
               </div>
             </div>
+          </div>
+
+          {/* ── Trivia launcher ─────────────────────────────────────────── */}
+          <div style={{ borderTop: '1px solid rgba(201,168,76,.1)', paddingTop: 10, marginTop: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 2 }}>🎯 TRIVIA</div>
+              {!triviaActive && (
+                <button onClick={function() { setShowTriviaForm(function(v) { return !v; }); }}
+                  style={{ background: 'none', border: 'none', color: showTriviaForm ? GOLD : MUTED, fontSize: 8, cursor: 'pointer', fontFamily: "'DM Mono',monospace", padding: 0 }}>
+                  {showTriviaForm ? '▲ HIDE' : '▼ CREATE'}
+                </button>
+              )}
+            </div>
+
+            {triviaActive && (
+              <div style={{ padding: '8px 10px', background: CARD, borderRadius: 8, border: '1px solid rgba(201,168,76,.2)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD }}>LIVE</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: triviaSecsLeft <= 5 ? RED : GOLD }}>{triviaSecsLeft}s</div>
+                </div>
+                <div style={{ height: 4, background: 'rgba(255,255,255,.06)', borderRadius: 2, overflow: 'hidden', marginBottom: 8 }}>
+                  <div style={{ height: '100%', width: (triviaDurRef.current > 0 ? Math.round(triviaSecsLeft / triviaDurRef.current * 100) : 0) + '%', background: triviaSecsLeft <= 5 ? RED : GOLD, borderRadius: 2, transition: 'width 1s linear, background .3s' }} />
+                </div>
+                <button onClick={endTrivia}
+                  style={{ width: '100%', padding: '6px 0', background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 6, color: RED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+                  END TRIVIA
+                </button>
+              </div>
+            )}
+
+            {!triviaActive && showTriviaForm && (
+              <div>
+                <input value={triviaQ} onChange={function(e) { setTriviaQ(e.target.value); }} placeholder="Question..."
+                  style={{ width: '100%', boxSizing: 'border-box', background: CARD, border: '1px solid rgba(201,168,76,.15)', borderRadius: 6, padding: '5px 7px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, outline: 'none', marginBottom: 6 }} />
+
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, marginBottom: 4 }}>Radio = correct answer</div>
+
+                {triviaOpts.map(function(opt, i) {
+                  return (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+                      <input type="radio" name="triviaCorrect" checked={triviaCorrect === i}
+                        onChange={function() { setTriviaCorrect(i); }}
+                        style={{ accentColor: GOLD, flexShrink: 0 }} />
+                      <input value={opt}
+                        onChange={function(e) {
+                          var val = e.target.value;
+                          setTriviaOpts(function(prev) { var n = prev.slice(); n[i] = val; return n; });
+                        }}
+                        placeholder={'Option ' + (i + 1)}
+                        style={{ flex: 1, background: CARD, border: '1px solid ' + (triviaCorrect === i ? 'rgba(201,168,76,.4)' : 'rgba(201,168,76,.1)'), borderRadius: 5, padding: '4px 6px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, outline: 'none' }} />
+                      {triviaOpts.length > 2 && (
+                        <button onClick={function() {
+                          var idx = i;
+                          setTriviaOpts(function(prev) { return prev.filter(function(_, j) { return j !== idx; }); });
+                          if (triviaCorrect >= i && triviaCorrect > 0) setTriviaCorrect(function(c) { return c - 1; });
+                        }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 12, padding: 0, lineHeight: 1 }}>×</button>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {triviaOpts.length < 4 && (
+                  <button onClick={function() { setTriviaOpts(function(prev) { return prev.concat(''); }); }}
+                    style={{ background: 'none', border: '1px dashed rgba(201,168,76,.2)', borderRadius: 5, color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 8, padding: '3px 0', cursor: 'pointer', width: '100%', marginBottom: 5 }}>
+                    + OPTION
+                  </button>
+                )}
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, whiteSpace: 'nowrap' }}>DURATION</div>
+                  <select value={triviaDur} onChange={function(e) { setTriviaDur(Number(e.target.value)); }}
+                    style={{ flex: 1, background: CARD, border: '1px solid rgba(201,168,76,.15)', borderRadius: 5, color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 8, padding: '3px 4px', outline: 'none' }}>
+                    <option value={10}>10s</option>
+                    <option value={20}>20s</option>
+                    <option value={30}>30s</option>
+                    <option value={60}>60s</option>
+                  </select>
+                </div>
+
+                <button onClick={launchTrivia}
+                  style={{ width: '100%', padding: '7px 0', background: 'linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.08))', border: '1px solid rgba(201,168,76,.4)', borderRadius: 7, color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 2 }}>
+                  LAUNCH
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
