@@ -3388,7 +3388,7 @@ export default function LiveRoomPage({
                   var next = !paywallOn;
                   var cents = next ? Math.floor((parseFloat(paywallPrice) || 0) * 100) : 0;
                   setPaywallOn(next);
-                  if (socket) socket.emit('room-paywall', { roomId: roomId, enabled: next, priceCents: cents });
+                  if (socket) socket.emit('room-paywall', { roomId: roomId, enabled: next, amountCents: cents });
                   if (addToast) addToast(next ? ('💰 Paywall on — $' + (cents / 100).toFixed(2)) : 'Paywall removed', next ? 'success' : 'info');
                 }} style={{ background: paywallOn ? 'rgba(201,168,76,.6)' : 'rgba(255,255,255,.08)', border: '1px solid ' + (paywallOn ? 'rgba(201,168,76,.5)' : BORDER), borderRadius: 8, padding: '6px 14px', color: paywallOn ? BG : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
                   {paywallOn ? 'ACTIVE' : 'OFF'}
