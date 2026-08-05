@@ -55,13 +55,8 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   var challengerScoreRef = useRef(0);
   var defenderScoreRef   = useRef(0);
   var suddenDeathRef     = useRef(false);
-  var simScoreRef   = useRef(null);
-  var simLogRef     = useRef(null);
-
   function clearAllIntervals() {
     if (countdownRef.current)  { clearInterval(countdownRef.current);  countdownRef.current  = null; }
-    if (simScoreRef.current)   { clearInterval(simScoreRef.current);   simScoreRef.current   = null; }
-    if (simLogRef.current)     { clearInterval(simLogRef.current);     simLogRef.current     = null; }
   }
 
   useEffect(function() {
@@ -187,25 +182,6 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       });
     }, 1000);
 
-    simScoreRef.current = setInterval(function() {
-      var pts = rndInt(1, 5);
-      var side = Math.random() < 0.5 ? 'challenger' : 'defender';
-      if (side === 'challenger') {
-        setChallengerScore(function(prev) { return prev + pts; });
-      } else {
-        setDefenderScore(function(prev) { return prev + pts; });
-      }
-    }, 2000);
-
-    simLogRef.current = setInterval(function() {
-      var side   = Math.random() < 0.5 ? cName : dName;
-      var viewer = 'viewer' + rndInt(100, 999);
-      setBattleLog(function(prev) {
-        var entry = { time: fmtTime(), text: '👍 ' + viewer + ' voted for ' + side };
-        return prev.concat([entry]).slice(-50);
-      });
-    }, 10000);
-
     addToast('Battle started!', 'success');
   }
 
@@ -284,24 +260,6 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         return prev - 1;
       });
     }, 1000);
-
-    simScoreRef.current = setInterval(function() {
-      var pts = rndInt(1, 5);
-      var side = Math.random() < 0.5 ? 'challenger' : 'defender';
-      if (side === 'challenger') {
-        setChallengerScore(function(prev) { return prev + pts; });
-      } else {
-        setDefenderScore(function(prev) { return prev + pts; });
-      }
-    }, 2000);
-
-    simLogRef.current = setInterval(function() {
-      var side = Math.random() < 0.5 ? cName : dName;
-      var viewer = 'viewer' + rndInt(100, 999);
-      setBattleLog(function(prev) {
-        return prev.concat([{ time: fmtTime(), text: '👍 ' + viewer + ' voted for ' + side }]).slice(-50);
-      });
-    }, 10000);
 
     addToast('⚔️ REMATCH started!', 'success');
   }
