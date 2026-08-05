@@ -219,7 +219,7 @@ function DesktopStudioTab() {
 
     rtcManager.destroy();
 
-    if (socket) socket.emit('broadcast-end', { roomId: roomId });
+    if (socket) socket.emit('end-broadcast', { roomId: roomId });
 
     setIsLive(false);
     setStatus('connected');
