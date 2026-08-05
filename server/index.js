@@ -424,6 +424,8 @@ var slowModeSeconds     = new Map();  // roomId → seconds (0 = off)
 var slowModeUserTs      = new Map();  // roomId+':'+userId → last message timestamp ms
 var pinnedMessages      = new Map();  // roomId → { id, username, message, ts } | undefined
 var streamGoals         = new Map();  // roomId → { type, target, label } | undefined
+var chyrons             = new Map();  // roomId → chyron data object | undefined
+var subOnlyRooms        = new Set();  // roomIds where subscriber-only mode is active
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
 var qaUpvoteThrottle    = new Map();  // socketId → lastQaUpvoteTs ms (500ms throttle)
@@ -560,6 +562,26 @@ function getJoinStateForRoom(roomId) {
   }
   return state;
 }
+
+// Emit ephemeral room state (chyron, subscriber-only, active trivia) to a single joining socket
+function seedEphemeralState(socketId, roomId) {
+  var _chyron = chyrons.get(roomId);
+  if (_chyron && _chyron.text) io.to(socketId).emit('chyron-update', _chyron);
+  if (subOnlyRooms.has(roomId)) io.to(socketId).emit('subscriber-only-changed', { enabled: true, ts: Math.floor(Date.now() / 1000) });
+  var _trivia = triviaRooms.get(roomId);
+  if (_trivia && _trivia.active) {
+    var _msRem = Math.max(0, (_trivia.durationMs || 20000) - (Date.now() - (_trivia.startTs || Date.now())));
+    if (_msRem > 2000) {
+      io.to(socketId).emit('trivia-question', {
+        roomId:    roomId,
+        question:  _trivia.question,
+        options:   _trivia.options.map(function(o) { return { text: o.text }; }),
+        durationMs: _msRem
+      });
+    }
+  }
+}
+
 
 // Helper: auto-trigger AURA and broadcast to room
 function autoAura(roomId, triggerFn) {
@@ -1382,6 +1404,7 @@ io.on('connection', function(socket) {
 
           // Emit as socket event (for listeners like RoomTab) AND ack callback
           io.to(socket.id).emit('join-room-ack', ackPayload);
+          seedEphemeralState(socket.id, roomId);
           if (ack) ack(ackPayload);
         })
         .catch(function(err) {
@@ -1414,6 +1437,7 @@ io.on('connection', function(socket) {
           }
           Object.assign(viewerAck, getJoinStateForRoom(roomId));
           io.to(socket.id).emit('join-room-ack', viewerAck);
+          seedEphemeralState(socket.id, roomId);
           if (ack) ack(viewerAck);
         })
         .catch(function(err) {
@@ -1422,6 +1446,7 @@ io.on('connection', function(socket) {
           if (room.watchParty) fallbackAck.watchParty = room.watchParty;
           Object.assign(fallbackAck, getJoinStateForRoom(roomId));
           io.to(socket.id).emit('join-room-ack', fallbackAck);
+          seedEphemeralState(socket.id, roomId);
           if (ack) ack(fallbackAck);
         });
     }
@@ -3013,13 +3038,16 @@ io.on('connection', function(socket) {
     var _cStr; try { _cStr = JSON.stringify(data); } catch(e) { return; }
     if (!_cStr || _cStr.length > 8192) return;
     var safe; try { safe = JSON.parse(_cStr); } catch(e) { return; }
-    io.to(roomId).emit('chyron-update', Object.assign(safe, { roomId: roomId }));
+    Object.assign(safe, { roomId: roomId });
+    if (safe.text) { chyrons.set(roomId, safe); } else { chyrons.delete(roomId); }
+    io.to(roomId).emit('chyron-update', safe);
   });
 
   socket.on('chyron-clear', function() {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    chyrons.delete(roomId);
     io.to(roomId).emit('chyron-clear', { roomId: roomId, ts: Math.floor(Date.now() / 1000) });
   });
 
@@ -3627,6 +3655,8 @@ io.on('connection', function(socket) {
     slowModeSeconds.delete(roomId);
     pinnedMessages.delete(roomId);
     streamGoals.delete(roomId);
+    chyrons.delete(roomId);
+    subOnlyRooms.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
 
     try {
@@ -3773,6 +3803,7 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sId = socket.data.roomId;
     if (!sId) return;
+    if (data.enabled) { subOnlyRooms.add(sId); } else { subOnlyRooms.delete(sId); }
     io.to(sId).emit('subscriber-only-changed', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
   });
 
