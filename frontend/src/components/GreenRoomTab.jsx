@@ -254,7 +254,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
   function togglePaywall() {
     var next = !paywallOn;
     setPaywallOn(next);
-    if (socket) socket.emit('room-paywall', { roomId: roomId, paywallEnabled: next, amountCents: paywallCents });
+    if (socket) socket.emit('room-paywall', { roomId: roomId, enabled: next, amountCents: paywallCents });
     if (addToast) addToast(next ? '💰 Paywall ON — $' + (Math.floor(paywallCents) / 100).toFixed(2) + ' entry' : '🚪 Paywall removed', next ? 'info' : 'success');
   }
 
@@ -264,7 +264,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     var cents = Math.floor(parsed * 100);
     setPaywallCents(cents);
     setPaywallInput((Math.floor(cents) / 100).toFixed(2));
-    if (paywallOn && socket) socket.emit('room-paywall', { roomId: roomId, paywallEnabled: true, amountCents: cents });
+    if (paywallOn && socket) socket.emit('room-paywall', { roomId: roomId, enabled: true, amountCents: cents });
     if (addToast) addToast('Paywall price set: $' + (Math.floor(cents) / 100).toFixed(2), 'success');
   }
 
@@ -969,7 +969,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                         onClick={function() {
                           setPaywallCents(amt * 100);
                           setPaywallInput(amt.toFixed(2));
-                          if (paywallOn && socket) socket.emit('room-paywall', { roomId: roomId, paywallEnabled: true, amountCents: amt * 100 });
+                          if (paywallOn && socket) socket.emit('room-paywall', { roomId: roomId, enabled: true, amountCents: amt * 100 });
                         }}
                         style={{ background: active ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (active ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 8, padding: '12px 14px', minHeight: 44, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                         ${amt}
