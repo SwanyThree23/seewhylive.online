@@ -428,6 +428,7 @@ export default function LiveRoomPage({
   var audioCtxRef  = useRef(null);
   var soundOnRef   = useRef(true);
   var [soundOn, setSoundOn] = useState(true);
+  var [chatReactions, setChatReactions] = useState({}); // msgId → { emoji: count }
 
   var playTone = function(freqs, duration) {
     if (!soundOnRef.current) return;
@@ -730,6 +731,15 @@ export default function LiveRoomPage({
       setTimeout(function() { setTriviaResults(null); setTriviaMyAnswer(-1); }, 10000);
     });
 
+    socket.on('chat-react-update', function(data) {
+      if (!data || !data.msgId) return;
+      setChatReactions(function(prev) {
+        var next = Object.assign({}, prev);
+        next[data.msgId] = data.reactions || {};
+        return next;
+      });
+    });
+
     socket.on('stream-caption', function(data) {
       if (!data || !data.text) return;
       var line = { id: Date.now() + Math.random(), text: String(data.text).slice(0, 300) };
@@ -878,6 +888,7 @@ export default function LiveRoomPage({
       socket.off('clip-marked');
       socket.off('trivia-question');
       socket.off('trivia-results');
+      socket.off('chat-react-update');
     };
   }, [socket]);
 
@@ -965,6 +976,11 @@ export default function LiveRoomPage({
 
   function toggleMute() { setIsMuted(function(v) { return !v; }); }
   function toggleCam()  { setIsCamOff(function(v) { return !v; }); }
+
+  function addChatReaction(msgId, emoji) {
+    if (!socket || !msgId) return;
+    socket.emit('chat-react', { roomId: roomId, msgId: msgId, emoji: emoji });
+  }
 
   function sendChat() {
     var msg = chatInput.trim();
@@ -2223,6 +2239,34 @@ export default function LiveRoomPage({
                   {m.translated && m.translated !== m.message && (
                     <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, margin: '2px 0 0', fontStyle: 'italic' }}>{m.translated}</p>
                   )}
+                  {(function() {
+                    var rxns   = (m.id && chatReactions[m.id]) ? chatReactions[m.id] : {};
+                    var EMOJIS = ['👍','❤️','🔥','😂','🎯'];
+                    var hasAny = EMOJIS.some(function(e) { return (rxns[e] || 0) > 0; });
+                    return (
+                      <div style={{ display: 'flex', gap: 3, marginTop: 3, flexWrap: 'wrap' }}>
+                        {EMOJIS.map(function(emoji) {
+                          var count = rxns[emoji] || 0;
+                          if (!hasAny && count === 0) return null;
+                          return (
+                            <button key={emoji}
+                              onClick={function() { addChatReaction(m.id, emoji); }}
+                              style={{ background: count > 0 ? 'rgba(201,168,76,.12)' : 'transparent', border: count > 0 ? '1px solid rgba(201,168,76,.25)' : '1px dashed rgba(255,255,255,.1)', borderRadius: 10, padding: '1px 5px', cursor: 'pointer', fontSize: 9, display: 'flex', alignItems: 'center', gap: 2, color: count > 0 ? TEXT : MUTED }}>
+                              {emoji}
+                              {count > 0 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7 }}>{count}</span>}
+                            </button>
+                          );
+                        })}
+                        {!hasAny && (
+                          <button
+                            onClick={function() { addChatReaction(m.id, '👍'); }}
+                            style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,.1)', borderRadius: 10, padding: '1px 6px', cursor: 'pointer', fontSize: 8, color: MUTED }}>
+                            + react
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
