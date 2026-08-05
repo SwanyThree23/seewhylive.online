@@ -634,6 +634,14 @@ function seedEphemeralState(socketId, roomId) {
   if (_loveTotal > 0) io.to(socketId).emit('love-update', { roomId: roomId, total: _loveTotal });
   var _ls = liveSyncState.get(roomId);
   if (_ls && _ls.enabled) io.to(socketId).emit('livesync-state', { roomId: roomId, enabled: true, delayMs: _ls.delayMs || 0, viewerCount: 0 });
+  var _rxns = chatReactions.get(roomId);
+  if (_rxns && _rxns.size > 0) {
+    _rxns.forEach(function(msgRxns, msgId) {
+      var serialized = {};
+      msgRxns.forEach(function(set, em) { if (set.size > 0) serialized[em] = set.size; });
+      if (Object.keys(serialized).length > 0) io.to(socketId).emit('chat-react-update', { msgId: msgId, reactions: serialized });
+    });
+  }
 }
 
 
@@ -2601,7 +2609,9 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = socket.data.roomId;
     if (!roomId || !data.trigger) return;
-    io.to(roomId).emit('bot-trigger-added', { trigger: String(data.trigger).slice(0, 300) });
+    var _trig = data.trigger;
+    if (!_trig || typeof _trig !== 'object' || !_trig.id || !_trig.keyword) return;
+    io.to(roomId).emit('bot-trigger-added', { trigger: { id: String(_trig.id).slice(0, 64), keyword: String(_trig.keyword).slice(0, 100), response: String(_trig.response || '').slice(0, 300) } });
   });
 
   socket.on('bot-remove-trigger', function(data) {

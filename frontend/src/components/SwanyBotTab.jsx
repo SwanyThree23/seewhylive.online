@@ -103,13 +103,20 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
       if (!data || !data.triggerId) return;
       setTriggers(function(prev) { return prev.filter(function(t) { return t.id !== data.triggerId; }); });
     }
+    function onPollUpdate(data) {
+      if (!data || !data.votes) return;
+      setPollVotes(data.votes);
+      if (data.ended) { setPollRunning(false); setPollEnded(true); }
+    }
     socket.on('bot-rule-changed',    onRuleChanged);
     socket.on('bot-trigger-added',   onTriggerAdded);
     socket.on('bot-trigger-removed', onTriggerRemoved);
+    socket.on('poll-update',         onPollUpdate);
     return function() {
       socket.off('bot-rule-changed',    onRuleChanged);
       socket.off('bot-trigger-added',   onTriggerAdded);
       socket.off('bot-trigger-removed', onTriggerRemoved);
+      socket.off('poll-update',         onPollUpdate);
     };
   }, [socket]);
 
@@ -126,15 +133,9 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
 
   useEffect(function() {
     if (!isLive) return;
-    var id = setInterval(function() {
-      var cutoff = Date.now() - 60000;
-      setSimLog(function(prev) {
-        setEventsPerMin(prev.filter(function(e) { return e.ts > cutoff; }).length);
-        return prev;
-      });
-    }, 10000);
-    return function() { clearInterval(id); };
-  }, [isLive]);
+    var cutoff = Date.now() - 60000;
+    setEventsPerMin(botLogs.filter(function(e) { return e.ts > cutoff; }).length);
+  }, [botLogs, isLive]);
 
   useEffect(function() {
     if (!pollRunning) { if (pollTimerRef.current) clearInterval(pollTimerRef.current); return; }
@@ -152,25 +153,6 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     return function() { clearInterval(pollTimerRef.current); };
   }, [pollRunning]);
 
-  useEffect(function() {
-    if (!pollRunning || !activePoll) return;
-    var t = setInterval(function() {
-      if (!activePoll) return;
-      var idx = Math.floor(Math.random() * activePoll.options.length);
-      var votes = Math.floor(Math.random() * 8 + 1);
-      setPollVotes(function(prev) {
-        var next = Object.assign({}, prev);
-        next[idx] = (prev[idx] || 0) + votes;
-        return next;
-      });
-      if (socket) {
-        var optionVal = Array.isArray(activePoll.options) ? (activePoll.options[idx] || String(idx)) : String(idx);
-        // Send both field names so either poll system accepts the vote
-        socket.emit('poll-vote', { roomId: roomId, optionIdx: idx, option: optionVal, pollId: activePoll.id || null });
-      }
-    }, 3000);
-    return function() { clearInterval(t); };
-  }, [pollRunning, activePoll, socket, roomId]);
 
   function toggleRule(id) {
     setRules(function(prev) {

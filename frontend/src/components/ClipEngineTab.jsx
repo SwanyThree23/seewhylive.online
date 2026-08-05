@@ -197,14 +197,16 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
     setRecording(true);
     setRecSecs(0);
     addToast('⚡ LIVE CLIP — capturing 30s...', 'info');
+    if (streamId && creatorId) vodRec.startRecording();
     liveClipRef.current = setTimeout(function() {
+      if (streamId && creatorId) vodRec.stopRecording();
       setRecording(false);
       setLiveClipping(false);
-      var id = 'c' + Date.now();
-      var clip = { id: id, title: 'Live Clip ' + new Date().toLocaleTimeString() + ' — 30s', duration: 30, size: '~7.8 MB', ts: Date.now(), thumbnail: '🎬' };
+      var clipId = vodRec.vodId || ('c' + Date.now());
+      var clip = { id: clipId, title: 'Live Clip ' + new Date().toLocaleTimeString() + ' — 30s', duration: 30, ts: Date.now(), thumbnail: '🎬' };
       setClips(function(p) { return [clip].concat(p); });
       setRecSecs(0);
-      addToast('Live Clip saved (30s, ~7.8 MB)', 'success');
+      addToast('Live Clip saved (30s)', 'success');
     }, 30000);
   }
 
