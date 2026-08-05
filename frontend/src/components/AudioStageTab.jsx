@@ -162,7 +162,8 @@ export default function AudioStageTab(props) {
     socket.emit('audio-stage-join', { roomId: roomId, userId: userId, username: username, role: role });
     setJoined(true);
     return function() {
-      socket.emit('audio-stage-leave', { roomId: roomId, userId: userId });
+      // Release mic resources when switching tabs, but do NOT emit audio-stage-leave
+      // — the user stays in the stage roster until they explicitly leave or disconnect.
       stopMic();
     };
   }, [socket]);
@@ -600,9 +601,13 @@ export default function AudioStageTab(props) {
         {isMeOnStage && (
           <button
             onClick={function() {
-              if (socket) socket.emit('audio-stage-demote', { roomId: roomId, targetUserId: userId });
+              if (socket) {
+                socket.emit('audio-stage-leave', { roomId: roomId, userId: userId });
+              }
               stopMic();
               setMyMicOn(false);
+              setMyHandRaised(false);
+              setJoined(false);
             }}
             style={{
               background: 'none',
