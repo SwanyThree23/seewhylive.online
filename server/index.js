@@ -631,6 +631,17 @@ function seedEphemeralState(socketId, roomId) {
       ts:       Math.floor(Date.now() / 1000)
     });
   }
+  if (_room && _room.watchParty) {
+    io.to(socketId).emit('watch-party-started', { ts: Math.floor(Date.now() / 1000) });
+    if (_room.watchParty.url || _room.watchParty.videoId) {
+      io.to(socketId).emit('watch-party-url', { videoId: _room.watchParty.videoId || null, url: _room.watchParty.url || '', type: _room.watchParty.type || 'youtube', urlDomain: _room.watchParty.urlDomain || '' });
+    }
+    var _wpPos = _room.watchParty.position || 0;
+    if (_room.watchParty.playing && _room.watchParty.ts) {
+      _wpPos = Math.min(_wpPos + (Date.now() - _room.watchParty.ts) / 1000, 86400);
+    }
+    io.to(socketId).emit('watch-party-sync', { videoId: _room.watchParty.videoId || null, url: _room.watchParty.url || '', type: _room.watchParty.type || 'youtube', playing: !!_room.watchParty.playing, position: _wpPos, timestamp: Date.now() });
+  }
   var _loveTotal = loveCounts.get(roomId) || 0;
   if (_loveTotal > 0) io.to(socketId).emit('love-update', { roomId: roomId, total: _loveTotal });
   var _ls = liveSyncState.get(roomId);

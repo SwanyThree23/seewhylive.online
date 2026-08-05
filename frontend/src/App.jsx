@@ -730,20 +730,29 @@ export default function App() {
     });
 
     socket.on('join-room-ack', function(ackData) {
-      if (!ackData || !Array.isArray(ackData.existingProducers)) return;
-      setGuests(function(prev) {
-        return prev.map(function(g) {
-          var gid = g.guestId ? g.guestId : g.userId;
-          var update = Object.assign({}, g);
-          for (var i = 0; i < ackData.existingProducers.length; i++) {
-            var p = ackData.existingProducers[i];
-            if (p.guestId !== gid) continue;
-            if (p.kind === 'video') update.producerId      = p.producerId;
-            if (p.kind === 'audio') update.audioProducerId = p.producerId;
-          }
-          return update;
+      if (!ackData) return;
+      if (Array.isArray(ackData.existingProducers)) {
+        setGuests(function(prev) {
+          return prev.map(function(g) {
+            var gid = g.guestId ? g.guestId : g.userId;
+            var update = Object.assign({}, g);
+            for (var i = 0; i < ackData.existingProducers.length; i++) {
+              var p = ackData.existingProducers[i];
+              if (p.guestId !== gid) continue;
+              if (p.kind === 'video') update.producerId      = p.producerId;
+              if (p.kind === 'audio') update.audioProducerId = p.producerId;
+            }
+            return update;
+          });
         });
-      });
+      }
+      if (ackData.streamGoal) {
+        setStreamGoal({ label: ackData.streamGoal.label || 'Stream Goal', goalCents: ackData.streamGoal.target || 0 });
+      }
+      if (typeof ackData.sessionRevenueCents === 'number' && ackData.sessionRevenueCents > 0) {
+        setSessionEarningsCents(ackData.sessionRevenueCents);
+        sessionEarningsRef.current = ackData.sessionRevenueCents;
+      }
     });
 
     socket.on('producer-closed', function(data) {
