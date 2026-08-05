@@ -589,6 +589,17 @@ function seedEphemeralState(socketId, roomId) {
       });
     }
   }
+  var _room = rooms.get(roomId);
+  if (_room && (_room.streamTitle || _room.streamCategory)) {
+    io.to(socketId).emit('stream-info', {
+      title:    _room.streamTitle    || '',
+      category: _room.streamCategory || '',
+      desc:     '',
+      ts:       Math.floor(Date.now() / 1000)
+    });
+  }
+  var _loveTotal = loveCounts.get(roomId) || 0;
+  if (_loveTotal > 0) io.to(socketId).emit('love-update', { roomId: roomId, total: _loveTotal });
 }
 
 
@@ -1303,6 +1314,10 @@ io.on('connection', function(socket) {
   registerBattleHandlers(io, socket);
   registerPanelHandlers(io, socket);
   logger.info('[socket] Connected: ' + socket.id + ' role=' + socket.data.role);
+  // Join a per-user room so battle:challenge / battle:accept / battle:decline reach this socket
+  if (socket.data.userId && !String(socket.data.userId).startsWith('anon')) {
+    socket.join('user:' + socket.data.userId);
+  }
 
   // ── join-room ──────────────────────────────────────────────────────────
   socket.on('join-room', function(data, ack) {
