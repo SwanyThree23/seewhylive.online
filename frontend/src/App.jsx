@@ -670,16 +670,18 @@ export default function App() {
       if (!data || String(data.roomId) !== String(APP_ID)) return;
     });
 
-    socket.on('broadcast-ended', function() {
+    socket.on('broadcast-ended', function(data) {
       setIsLive(false);
       var durationSecs = liveStartRef.current ? Math.floor((Date.now() - liveStartRef.current) / 1000) : 0;
       liveStartRef.current = null;
       addToast('Stream ended', 'info');
       var recap = {
         durationSecs:   durationSecs,
-        peakViewers:    peakViewerRef.current,
-        earningsCents:  sessionEarningsRef.current,
-        giftCount:      0
+        peakViewers:    (data && data.peakViewers)         || peakViewerRef.current,
+        earningsCents:  (data && data.sessionRevenueCents) || sessionEarningsRef.current,
+        topGifters:     (data && data.topGifters)          || [],
+        clipCount:      (data && data.clipCount)           || 0,
+        superChatCount: (data && data.superChatCount)      || 0,
       };
       setStreamRecap(recap);
       window.history.pushState({ swOverlay: 'recap' }, '');
@@ -1657,18 +1659,10 @@ export default function App() {
           <div style={{ background: 'linear-gradient(160deg,#1A1510,#0E0C09)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 16, padding: '28px 24px', maxWidth: 360, width: '100%', textAlign: 'center', boxShadow: '0 0 60px rgba(201,168,76,.15), 0 4px 30px rgba(0,0,0,.7)' }}>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: '#C9A84C', letterSpacing: 4, marginBottom: 4 }}>STREAM RECAP</div>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 2, marginBottom: 20 }}>SeeWhy LIVE · Washington Classic</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
               <div style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 10, padding: '12px 8px' }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#FF6B81', letterSpacing: 1 }}>{streamRecap.peakViewers >= 1000 ? (Math.floor(streamRecap.peakViewers / 100) / 10).toFixed(1) + 'K' : streamRecap.peakViewers}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>PEAK VIEWERS</div>
-              </div>
-              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>SESSION EARNED</div>
-              </div>
-              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents * 0.9) / 100).toFixed(2)}</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>YOUR CUT (90%)</div>
               </div>
               <div style={{ background: 'rgba(212,133,74,.08)', border: '1px solid rgba(212,133,74,.2)', borderRadius: 10, padding: '12px 8px' }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#D4854A', letterSpacing: 1 }}>
@@ -1678,7 +1672,37 @@ export default function App() {
                 </div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>DURATION</div>
               </div>
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents * 0.9) / 100).toFixed(2)}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>YOUR CUT (90%)</div>
+              </div>
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>TOTAL EARNED</div>
+              </div>
+              <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>{streamRecap.superChatCount || 0}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>SUPER CHATS</div>
+              </div>
+              <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>{streamRecap.clipCount || 0}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>CLIPS MARKED</div>
+              </div>
             </div>
+            {streamRecap.topGifters && streamRecap.topGifters.length > 0 && (
+              <div style={{ marginBottom: 16, padding: '10px 12px', background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 10, textAlign: 'left' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>🏆 TOP GIFTERS</div>
+                {streamRecap.topGifters.map(function(g, i) {
+                  var medals = ['🥇', '🥈', '🥉'];
+                  return (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: i < streamRecap.topGifters.length - 1 ? 5 : 0 }}>
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: '#F0E8D4' }}>{medals[i] || '·'} {g.username}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C' }}>${(Math.floor(g.totalCents * 0.9) / 100).toFixed(2)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
             <button
               onClick={function() { window.history.back(); }}
               style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 10, padding: '12px 32px', minHeight: 44, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 3, cursor: 'pointer', width: '100%', userSelect: 'none', WebkitUserSelect: 'none' }}

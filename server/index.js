@@ -3587,7 +3587,18 @@ io.on('connection', function(socket) {
 
     if (room) { room.isLive = false; }
 
-    io.to(roomId).emit('broadcast-ended', { roomId: roomId, ts: now });
+    var _rcPeak    = peakViewers.get(roomId) || 0;
+    var _rcRevenue = sessionRevenue.get(roomId) || 0;
+    var _rcTop     = (giftLeaderboards.get(roomId) || []).slice(0, 3);
+    var _rcClips   = 0;
+    var _rcSc      = 0;
+    try { _rcClips = (db.prepare('SELECT COUNT(*) as c FROM clip_markers WHERE room_id = ?').get(roomId) || {}).c || 0; } catch(e) {}
+    try { _rcSc    = (db.prepare('SELECT COUNT(*) as c FROM super_chats   WHERE room_id = ?').get(roomId) || {}).c || 0; } catch(e) {}
+    io.to(roomId).emit('broadcast-ended', {
+      roomId: roomId, ts: now,
+      peakViewers: _rcPeak, sessionRevenueCents: _rcRevenue,
+      topGifters: _rcTop, clipCount: _rcClips, superChatCount: _rcSc,
+    });
 
     // Auto-trigger AURA stream end wrap-up
     var peak = peakViewers.get(roomId) || 0;
