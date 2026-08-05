@@ -429,6 +429,7 @@ var subOnlyRooms        = new Set();  // roomIds where subscriber-only mode is a
 var roomAudioOnly       = new Map();  // roomId → true when audio-only mode is active
 var roomPrivateMap      = new Map();  // roomId → true when room is private
 var roomPaywallMap      = new Map();  // roomId → { amountCents } when paywall is active
+var pkBattleState       = new Map();  // roomId → { challenger, defender, duration, startTs, challengerVotes, defenderVotes }
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
 var qaUpvoteThrottle    = new Map();  // socketId → lastQaUpvoteTs ms (500ms throttle)
@@ -558,6 +559,7 @@ function getJoinStateForRoom(roomId) {
   state.streamGoal      = streamGoals.get(roomId) || null;
   state.audioOnly       = roomAudioOnly.has(roomId);
   state.privateMode     = roomPrivateMap.has(roomId);
+  state.subscriberOnly  = subOnlyRooms.has(roomId);
   var _qaMap = qaQueues.get(roomId);
   if (_qaMap && _qaMap.size > 0) {
     var _qaArr = [];
@@ -587,6 +589,17 @@ function seedEphemeralState(socketId, roomId) {
         options:   _trivia.options.map(function(o) { return { text: o.text }; }),
         durationMs: _msRem
       });
+    }
+  }
+  var _pk = pkBattleState.get(roomId);
+  if (_pk) {
+    var _pkElapsed = Date.now() - (_pk.startTs || Date.now());
+    var _pkRemaining = Math.max(0, (_pk.duration || 300) - Math.floor(_pkElapsed / 1000));
+    if (_pkRemaining > 5) {
+      io.to(socketId).emit('pk-start', { challenger: _pk.challenger, defender: _pk.defender, duration: _pkRemaining });
+      if (_pk.challengerVotes > 0 || _pk.defenderVotes > 0) {
+        io.to(socketId).emit('pk-vote-update', { challengerVotes: _pk.challengerVotes, defenderVotes: _pk.defenderVotes });
+      }
     }
   }
   var _room = rooms.get(roomId);
@@ -3095,6 +3108,7 @@ io.on('connection', function(socket) {
     if (!_pksStr || _pksStr.length > 4096) return;
     var _pksSafe; try { _pksSafe = JSON.parse(_pksStr); } catch(e) { return; }
     pkVotes.set(roomId, { voters: new Map(), challenger: 0, defender: 0 });
+    pkBattleState.set(roomId, { challenger: _pksSafe.challenger || '', defender: _pksSafe.defender || '', duration: _pksSafe.duration || 300, startTs: Date.now(), challengerVotes: 0, defenderVotes: 0 });
     io.to(roomId).emit('pk-start', _pksSafe);
   });
 
@@ -3109,6 +3123,8 @@ io.on('connection', function(socket) {
     if (data.side !== 'challenger' && data.side !== 'defender') return;
     votes.voters.set(pkUserId, data.side);
     votes[data.side]++;
+    var _pkState = pkBattleState.get(roomId);
+    if (_pkState) { _pkState.challengerVotes = votes.challenger; _pkState.defenderVotes = votes.defender; }
     io.to(roomId).emit('pk-vote-update', { challengerVotes: votes.challenger, defenderVotes: votes.defender });
   });
 
@@ -3120,6 +3136,7 @@ io.on('connection', function(socket) {
     if (!_pkeStr || _pkeStr.length > 4096) return;
     var _pkeSafe; try { _pkeSafe = JSON.parse(_pkeStr); } catch(e) { return; }
     pkVotes.delete(roomId);
+    pkBattleState.delete(roomId);
     io.to(roomId).emit('pk-end', _pkeSafe);
   });
 
@@ -3687,6 +3704,7 @@ io.on('connection', function(socket) {
     roomAudioOnly.delete(roomId);
     roomPrivateMap.delete(roomId);
     roomPaywallMap.delete(roomId);
+    pkBattleState.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
 
     try {
