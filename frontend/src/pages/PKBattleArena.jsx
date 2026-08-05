@@ -31,6 +31,10 @@ var PKBattleArena = function (props) {
   var remainingSeconds = remainingState[0];
   var setRemainingSeconds = remainingState[1];
 
+  var battleErrorState = useState(null);
+  var battleError = battleErrorState[0];
+  var setBattleError = battleErrorState[1];
+
   useEffect(function () {
     battleService.getBattle(battleId).then(function (b) {
       setBattle(b);
@@ -79,11 +83,16 @@ var PKBattleArena = function (props) {
       });
     };
 
+    var handleError = function (payload) {
+      setBattleError((payload && payload.message) ? payload.message : 'Battle error');
+    };
+
     socket.on('battle:start',        handleStart);
     socket.on('battle:accept',       handleAccept);
     socket.on('battle:score_update', handleScoreUpdate);
     socket.on('battle:tick',         handleTick);
     socket.on('battle:end',          handleEnd);
+    socket.on('battle:error',        handleError);
 
     return function () {
       socket.emit('battle:unwatch', { battleId: battleId });
@@ -92,11 +101,22 @@ var PKBattleArena = function (props) {
       socket.off('battle:score_update', handleScoreUpdate);
       socket.off('battle:tick',         handleTick);
       socket.off('battle:end',          handleEnd);
+      socket.off('battle:error',        handleError);
     };
   }, [battleId, socket]);
 
   if (!battle) {
     return <div style={{ color: '#F5F5DC', padding: '24px', fontFamily: '"Barlow Condensed", sans-serif' }}>Loading battle...</div>;
+  }
+
+  if (battleError) {
+    return (
+      <div style={{ color: '#FF1A3C', padding: '24px', fontFamily: '"Barlow Condensed", sans-serif', fontSize: 18, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span>⚠️</span>
+        <span>{battleError}</span>
+        <button onClick={function() { setBattleError(null); }} style={{ marginLeft: 12, background: 'rgba(255,26,60,.15)', border: '1px solid #FF1A3C', borderRadius: 6, color: '#FF1A3C', cursor: 'pointer', padding: '4px 10px', fontFamily: '"Barlow Condensed", sans-serif', fontSize: 14, letterSpacing: 1 }}>DISMISS</button>
+      </div>
+    );
   }
 
   // Look up each side's guest object from the live guests list so OctCell can

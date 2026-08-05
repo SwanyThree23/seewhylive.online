@@ -74,15 +74,6 @@ export default function WelcomeAudio(props) {
     return function() { clearTimeout(t); };
   }, []);
 
-  useEffect(function() {
-    if (!socket) return;
-    function onWelcomeAudio() {
-      try { if (!sessionStorage.getItem(STORAGE_KEY)) setVisible(true); } catch(e) {}
-    }
-    socket.on('welcome-audio', onWelcomeAudio);
-    return function() { socket.off('welcome-audio', onWelcomeAudio); };
-  }, [socket]);
-
   function getBestVoice() {
     if (!synthRef.current) return null;
     var voices = synthRef.current.getVoices();

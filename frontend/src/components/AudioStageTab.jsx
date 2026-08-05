@@ -108,11 +108,6 @@ export default function AudioStageTab(props) {
       setLoveCount(data.total || 0);
     }
 
-    function onStageSpeaking(data) {
-      if (!data || !data.speaking) return;
-      setActiveSpeaker(data.username || data.userId || '');
-    }
-
     function onStagePin(data) {
       if (!data || !data.ytId) return;
       setPinnedYtId(data.ytId);
@@ -138,7 +133,6 @@ export default function AudioStageTab(props) {
     socket.on('audio-stage-state',    onStageState);
     socket.on('audio-stage-update',   onStageUpdate);
     socket.on('love-update',          onLoveUpdate);
-    socket.on('audio-stage-speaking', onStageSpeaking);
     socket.on('watch-stage-pin',      onStagePin);
     socket.on('stage-lock-update',    onStageLock);
     socket.on('stage-remove',         onStageRemove);
@@ -148,7 +142,6 @@ export default function AudioStageTab(props) {
       socket.off('audio-stage-state',    onStageState);
       socket.off('audio-stage-update',   onStageUpdate);
       socket.off('love-update',          onLoveUpdate);
-      socket.off('audio-stage-speaking', onStageSpeaking);
       socket.off('watch-stage-pin',      onStagePin);
       socket.off('stage-lock-update',    onStageLock);
       socket.off('stage-remove',         onStageRemove);
