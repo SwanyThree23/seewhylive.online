@@ -655,6 +655,14 @@ export default function App() {
       setStreamGoal(null);
       try { localStorage.removeItem('sw_stream_goal'); } catch(e) {}
     });
+    socket.on('stream-goal-progress', function(data) {
+      if (!data || !data.currentCents) return;
+      var newTotal = Math.floor(data.currentCents);
+      if (newTotal > sessionEarningsRef.current) {
+        setSessionEarningsCents(newTotal);
+        sessionEarningsRef.current = newTotal;
+      }
+    });
 
     socket.on('broadcast-ended', function(data) {
       setIsLive(false);
@@ -1022,6 +1030,7 @@ export default function App() {
       socket.off('collab-request');
       socket.off('collab-accept');
       socket.off('chat-deleted');
+      socket.off('stream-goal-progress');
     };
   }, [userId, username, role, addToast]);
 

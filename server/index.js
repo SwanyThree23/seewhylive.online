@@ -425,6 +425,7 @@ var slowModeUserTs      = new Map();  // roomId+':'+userId → last message time
 var pinnedMessages      = new Map();  // roomId → { id, username, message, ts } | undefined
 var streamGoals         = new Map();  // roomId → { type, target, label } | undefined
 var chyrons             = new Map();  // roomId → chyron data object | undefined
+var overlays            = new Map();  // roomId → overlay config object | undefined
 var subOnlyRooms        = new Set();  // roomIds where subscriber-only mode is active
 var roomAudioOnly       = new Map();  // roomId → true when audio-only mode is active
 var roomPrivateMap      = new Map();  // roomId → true when room is private
@@ -634,6 +635,8 @@ function seedEphemeralState(socketId, roomId) {
   if (_loveTotal > 0) io.to(socketId).emit('love-update', { roomId: roomId, total: _loveTotal });
   var _ls = liveSyncState.get(roomId);
   if (_ls && _ls.enabled) io.to(socketId).emit('livesync-state', { roomId: roomId, enabled: true, delayMs: _ls.delayMs || 0, viewerCount: 0 });
+  var _ov = overlays.get(roomId);
+  if (_ov) io.to(socketId).emit('overlay-update', { overlay: _ov });
   var _rxns = chatReactions.get(roomId);
   if (_rxns && _rxns.size > 0) {
     _rxns.forEach(function(msgRxns, msgId) {
@@ -2258,6 +2261,10 @@ io.on('connection', function(socket) {
     var prevRevenue = sessionRevenue.get(roomId) || 0;
     var newRevenue  = prevRevenue + valueCents;
     sessionRevenue.set(roomId, newRevenue);
+    var _gGoal = streamGoals.get(roomId);
+    if (_gGoal && (_gGoal.type === 'revenue' || _gGoal.type === 'earnings')) {
+      io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newRevenue });
+    }
     for (var rmi = 0; rmi < REVENUE_MILESTONES_CENTS.length; rmi++) {
       var rev = REVENUE_MILESTONES_CENTS[rmi];
       if (newRevenue >= rev && prevRevenue < rev) {
@@ -2438,6 +2445,7 @@ io.on('connection', function(socket) {
       if (!_ovStr || _ovStr.length > 4096) return;
       safeOverlay = JSON.parse(_ovStr);
     } catch(e) { return; }
+    overlays.set(roomId, safeOverlay);
     io.to(roomId).emit('overlay-update', { overlay: safeOverlay });
   });
 
@@ -3060,6 +3068,10 @@ io.on('connection', function(socket) {
     var prevScRev = sessionRevenue.get(roomId) || 0;
     var newScRev  = prevScRev + amountCents;
     sessionRevenue.set(roomId, newScRev);
+    var _scGoal = streamGoals.get(roomId);
+    if (_scGoal && (_scGoal.type === 'revenue' || _scGoal.type === 'earnings')) {
+      io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newScRev });
+    }
     for (var scmi = 0; scmi < REVENUE_MILESTONES_CENTS.length; scmi++) {
       var scMil = REVENUE_MILESTONES_CENTS[scmi];
       if (newScRev >= scMil && prevScRev < scMil) {
@@ -3149,6 +3161,10 @@ io.on('connection', function(socket) {
     var prevTtsRev = sessionRevenue.get(roomId) || 0;
     var newTtsRev  = prevTtsRev + amountCents;
     sessionRevenue.set(roomId, newTtsRev);
+    var _ttsGoal = streamGoals.get(roomId);
+    if (_ttsGoal && (_ttsGoal.type === 'revenue' || _ttsGoal.type === 'earnings')) {
+      io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newTtsRev });
+    }
     for (var ttsMi = 0; ttsMi < REVENUE_MILESTONES_CENTS.length; ttsMi++) {
       var ttsMil = REVENUE_MILESTONES_CENTS[ttsMi];
       if (newTtsRev >= ttsMil && prevTtsRev < ttsMil) {
@@ -3767,7 +3783,7 @@ io.on('connection', function(socket) {
     if (isNaN(idx) || idx < 0 || idx >= trivia.options.length) return;
     var _taKey = socket.data.userId || socket.id;
     trivia.answers.set(_taKey, { idx: idx, username: socket.data.username || 'Anonymous', ts: Date.now() });
-    socket.emit('trivia-answer-ack', { answerIdx: idx });
+    socket.emit('trivia-answer-ack', { answerIdx: idx, isCorrect: idx === trivia.correctIdx });
   });
 
   socket.on('trivia-end', function(data) {
@@ -3847,6 +3863,7 @@ io.on('connection', function(socket) {
     pinnedMessages.delete(roomId);
     streamGoals.delete(roomId);
     chyrons.delete(roomId);
+    overlays.delete(roomId);
     subOnlyRooms.delete(roomId);
     roomAudioOnly.delete(roomId);
     roomPrivateMap.delete(roomId);

@@ -62,6 +62,7 @@ export default function TriviaTab(props) {
   var [scores,      setScores]      = useState([]);     // [{ username, correct, wrong }]
   var [showScores,  setShowScores]  = useState(false);
   var [popScore,    setPopScore]    = useState(false);
+  var [answerResult, setAnswerResult] = useState(null); // 'correct' | 'wrong' | null
 
   var timerRef   = useRef(null);
   var startTsRef = useRef(0);
@@ -71,6 +72,7 @@ export default function TriviaTab(props) {
     if (!socket) return;
 
     function onQuestion(data) {
+      setAnswerResult(null);
       setActiveQ(data);
       setSelectedIdx(null);
       setResults(null);
@@ -91,7 +93,7 @@ export default function TriviaTab(props) {
     }
 
     function onAck(data) {
-      // answer confirmed server-side — nothing to update visually
+      setAnswerResult(data.isCorrect ? 'correct' : 'wrong');
     }
 
     function onResults(data) {
@@ -209,6 +211,10 @@ export default function TriviaTab(props) {
               {activeQ.options.map(function(opt, idx) {
                 var chosen = selectedIdx === idx;
                 var disabled = selectedIdx !== null;
+                var animName = chosen && answerResult ? (answerResult === 'correct' ? 'triviaCorrect' : 'triviaWrong') : null;
+                var borderColor = chosen
+                  ? (answerResult === 'correct' ? GREEN : answerResult === 'wrong' ? RED : GOLD)
+                  : BORDER;
                 return (
                   <button
                     key={idx}
@@ -216,7 +222,7 @@ export default function TriviaTab(props) {
                     disabled={disabled}
                     style={{
                       background: chosen ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.04)',
-                      border: '1.5px solid ' + (chosen ? GOLD : BORDER),
+                      border: '1.5px solid ' + borderColor,
                       borderRadius: 10,
                       padding: '12px 14px',
                       display: 'flex',
@@ -224,9 +230,10 @@ export default function TriviaTab(props) {
                       gap: 10,
                       cursor: disabled ? 'default' : 'pointer',
                       textAlign: 'left',
-                      transition: 'border-color .15s, background .15s'
+                      transition: 'border-color .15s, background .15s',
+                      animation: animName ? (animName + ' .5s ease') : null
                     }}>
-                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: chosen ? GOLD : MUTED, letterSpacing: 1, flexShrink: 0, width: 18 }}>{OPTION_LABELS[idx]}</span>
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: chosen ? (answerResult === 'correct' ? GREEN : answerResult === 'wrong' ? RED : GOLD) : MUTED, letterSpacing: 1, flexShrink: 0, width: 18 }}>{OPTION_LABELS[idx]}</span>
                     <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: chosen ? TEXT : MUTED }}>{opt.text}</span>
                   </button>
                 );
