@@ -79,7 +79,7 @@ export default function PollOverlay({ socket, roomId, role, isLive, addToast }) 
   function handleVote(optionIdx) {
     if (myVote !== null || !activePoll) return;
     setMyVote(optionIdx);
-    socket.emit('poll-vote', { roomId: roomId, pollId: activePoll.id, option: optionIdx });
+    socket.emit('poll-vote', { roomId: roomId, pollId: activePoll.id, option: activePoll.options[optionIdx] });
   }
 
   function handleCreatePoll() {

@@ -664,6 +664,33 @@ export default function App() {
       }
     });
 
+    socket.on('stream-alert', function(data) {
+      if (!data) return;
+      if (data.type === 'live') {
+        addToast((data.title || 'SeeWhy LIVE is streaming!'), 'info');
+      } else if (data.type === 'ended') {
+        addToast('Stream has ended', 'info');
+      }
+    });
+
+    socket.on('battle-result', function(data) {
+      if (!data || !data.winner) return;
+      addToast('🏆 ' + data.winner + ' wins the battle!', 'success');
+    });
+
+    socket.on('gem-send', function(data) {
+      if (!data || !data.user) return;
+      addToast('💎 ' + data.user + ' sent ' + data.amount + ' gems', 'gift');
+    });
+
+    socket.on('moderation-action', function(data) {
+      if (!data || !data.user) return;
+      var msg = data.action === 'ban' ? '🚫 ' + data.user + ' was auto-banned (Guardian)'
+              : data.action === 'mute' ? '🔇 ' + data.user + ' was auto-muted (Guardian)'
+              : '⚠️ ' + data.user + ' flagged by Guardian (score ' + data.score + ')';
+      addToast(msg, data.action === 'ban' ? 'error' : data.action === 'mute' ? 'warning' : 'info');
+    });
+
     socket.on('broadcast-ended', function(data) {
       setIsLive(false);
       var durationSecs = liveStartRef.current ? Math.floor((Date.now() - liveStartRef.current) / 1000) : 0;
@@ -1031,6 +1058,10 @@ export default function App() {
       socket.off('collab-accept');
       socket.off('chat-deleted');
       socket.off('stream-goal-progress');
+      socket.off('stream-alert');
+      socket.off('battle-result');
+      socket.off('gem-send');
+      socket.off('moderation-action');
     };
   }, [userId, username, role, addToast]);
 
