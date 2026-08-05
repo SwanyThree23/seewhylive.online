@@ -164,7 +164,9 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
         return next;
       });
       if (socket) {
-        socket.emit('poll-vote', { roomId: roomId, optionIndex: idx, votes: votes });
+        var optionVal = Array.isArray(activePoll.options) ? (activePoll.options[idx] || String(idx)) : String(idx);
+        // Send both field names so either poll system accepts the vote
+        socket.emit('poll-vote', { roomId: roomId, optionIdx: idx, option: optionVal, pollId: activePoll.id || null });
       }
     }, 3000);
     return function() { clearInterval(t); };

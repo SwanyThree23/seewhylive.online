@@ -415,6 +415,7 @@ export default function App() {
   var [nextEventCountdown, setNextEventCountdown] = useState(null);
   var [tabResetKey, setTabResetKey] = useState(0);
   var [giftFloats, setGiftFloats] = useState([]);
+  var [panelReactions, setPanelReactions] = useState([]); // [{ id, guestId, emoji, ts }]
   var [gifts, setGifts] = useState([]);
 
   var socketRef = useRef(null);
@@ -873,6 +874,70 @@ export default function App() {
       }
     });
 
+    // ── Panel events ───────────────────────────────────────────────────────
+    socket.on('panel:slot_assigned', function(data) {
+      if (!data || !data.slot) return;
+      var slotUserId = data.slot.userId || data.slot.user_id;
+      if (!slotUserId) return;
+      setGuests(function(prev) {
+        var exists = false;
+        var updated = prev.map(function(g) {
+          var gid = g.guestId || g.userId;
+          if (gid !== slotUserId) return g;
+          exists = true;
+          return Object.assign({}, g, { panelSlot: data.slot.slot_number || data.slot.slotNumber });
+        });
+        if (!exists) updated = updated.concat([{ guestId: slotUserId, userId: slotUserId, username: data.slot.username || slotUserId, panelSlot: data.slot.slot_number || data.slot.slotNumber }]);
+        return updated;
+      });
+    });
+
+    socket.on('panel:slot_released', function(data) {
+      if (!data) return;
+      var slotUserId = data.userId;
+      if (!slotUserId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId || g.userId;
+          if (gid !== slotUserId) return g;
+          return Object.assign({}, g, { panelSlot: null });
+        });
+      });
+    });
+
+    socket.on('panel:hand_update', function(data) {
+      if (!data || !data.userId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId || g.userId;
+          if (gid !== data.userId) return g;
+          return Object.assign({}, g, { handRaised: Boolean(data.raised) });
+        });
+      });
+    });
+
+    socket.on('panel:layout_update', function(data) {
+      if (!data || !data.slot) return;
+      var slotUserId = data.slot.userId || data.slot.user_id;
+      if (!slotUserId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId || g.userId;
+          if (gid !== slotUserId) return g;
+          return Object.assign({}, g, { slotExpanded: Boolean(data.slot.is_expanded || data.slot.isExpanded) });
+        });
+      });
+    });
+
+    socket.on('panel:reaction', function(data) {
+      if (!data || !data.emoji || !data.guestId) return;
+      var rid = Date.now() + Math.random();
+      setPanelReactions(function(prev) { return prev.concat([{ id: rid, guestId: data.guestId, emoji: data.emoji, ts: Date.now() }]); });
+      setTimeout(function() {
+        setPanelReactions(function(prev) { return prev.filter(function(r) { return r.id !== rid; }); });
+      }, 2500);
+    });
+
     return function() {
       socket.off('connect');
       socket.off('disconnect');
@@ -907,6 +972,11 @@ export default function App() {
       socket.off('username-updated');
       socket.off('super-chat');
       socket.off('earnings-update');
+      socket.off('panel:slot_assigned');
+      socket.off('panel:slot_released');
+      socket.off('panel:hand_update');
+      socket.off('panel:layout_update');
+      socket.off('panel:reaction');
     };
   }, [userId, username, role, addToast]);
 
@@ -1778,6 +1848,19 @@ export default function App() {
         <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
       )}
       <WelcomeAudio socket={socketRef.current} />
+
+      {/* Panel emoji reactions overlay */}
+      {panelReactions.length > 0 && (
+        <div style={{ position: 'fixed', bottom: 200, right: 80, pointerEvents: 'none', zIndex: 820 }}>
+          {panelReactions.map(function(r) {
+            return (
+              <div key={r.id} style={{ position: 'absolute', bottom: 0, right: 0, fontSize: 28, animation: 'heartFloat 2.5s ease forwards', userSelect: 'none' }}>
+                {r.emoji}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* PK Battle challenge incoming */}
       {activeBattleChallenge && (

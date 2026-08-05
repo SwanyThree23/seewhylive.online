@@ -551,6 +551,13 @@ function getJoinStateForRoom(roomId) {
   } catch(e) { logger.warn('[getJoinState] chat: ' + e.message); }
   var poll = polls.get(roomId);
   if (poll && poll.active) state.activePoll = serializePoll(poll);
+  // Also seed the newer activePolls system (poll-create events)
+  var activePoll2 = activePolls.get(roomId);
+  if (activePoll2 && !state.activePoll) {
+    var _ap2Counts = {};
+    Object.keys(activePoll2.votes).forEach(function(k) { var o = activePoll2.votes[k]; _ap2Counts[o] = (_ap2Counts[o] || 0) + 1; });
+    state.activePoll = { id: activePoll2.id, question: activePoll2.question, options: activePoll2.options, votes: _ap2Counts, totalVotes: activePoll2.totalVotes, endsAt: activePoll2.endsAt, active: true };
+  }
   var vp = vsPolls.get(roomId);
   if (vp && vp.active) state.activeVsPoll = serializeVs(vp);
   state.judges = serializeJudges(roomId);
@@ -2552,8 +2559,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    if (data.enabled) roomAudioOnly.set(roomId, true); else roomAudioOnly.delete(roomId);
-    io.to(roomId).emit('room-audio-only', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
+    var _aoEnabled = data.enabled !== undefined ? Boolean(data.enabled) : Boolean(data.audioOnly);
+    if (_aoEnabled) roomAudioOnly.set(roomId, true); else roomAudioOnly.delete(roomId);
+    io.to(roomId).emit('room-audio-only', { enabled: _aoEnabled, ts: Math.floor(Date.now() / 1000) });
   });
 
   socket.on('room-private', function(data) {
@@ -2642,7 +2650,7 @@ io.on('connection', function(socket) {
     var _pvKey = socket.data.userId || socket.id;
     if (_pvNow - (pollVoteThrottle.get(_pvKey) || 0) < 500) return;
     pollVoteThrottle.set(_pvKey, _pvNow);
-    var optionIdx = Math.floor(data.optionIdx || 0);
+    var optionIdx = Math.floor(data.optionIdx !== undefined ? data.optionIdx : (data.optionIndex || 0));
     var poll      = polls.get(roomId);
     if (!poll || !poll.active) return;
     if (optionIdx < 0 || optionIdx >= poll.options.length) return;
@@ -3512,6 +3520,30 @@ io.on('connection', function(socket) {
     io.to(sRoomId).emit('watch-sync', { action: safeWsAction, position: safeWsPos, timestamp: Date.now() });
   });
 
+  // ── pk-challenge: route in-room challenge to cross-room battle system ──
+  socket.on('pk-challenge', function(data) {
+    if (!data) return;
+    var challengerId = socket.data.userId;
+    if (!challengerId || String(challengerId).startsWith('anon')) return;
+    var challengerName = socket.data.username || socket.data.userId;
+    var targetName = String(data.to || '').slice(0, 32);
+    if (!targetName) return;
+    // Find the target user's socket via their user room (joined at connection time)
+    var targetRoomKey = null;
+    io.sockets.sockets.forEach(function(s) {
+      if (!targetRoomKey && (s.data.username === targetName || s.data.userId === targetName)) {
+        targetRoomKey = 'user:' + s.data.userId;
+      }
+    });
+    var payload = { challenger_id: challengerId, challenger_username: challengerName, roomId: socket.data.roomId, from: challengerName, to: targetName };
+    if (targetRoomKey) {
+      io.to(targetRoomKey).emit('battle:challenge', payload);
+    } else {
+      // Broadcast to the room as a cross-room challenge request
+      io.to(socket.data.roomId).emit('battle:challenge', payload);
+    }
+  });
+
   // ── PK cheer handler ──────────────────────────────────────────────────
   socket.on('pk-cheer', function(data) {
     var cheerRoomId = socket.data.roomId;
@@ -3573,7 +3605,7 @@ io.on('connection', function(socket) {
     var GOAL_TYPES = ['viewers', 'revenue', 'duration', 'gifts'];
     var goalType  = GOAL_TYPES.includes(String(data.type || '')) ? String(data.type) : 'viewers';
     var goalLabel = data.label ? String(data.label).slice(0, 80) : null;
-    var _rawTarget = Number(data.target);
+    var _rawTarget = Number(data.target || data.goalCents);
     var goalTarget = (Number.isFinite(_rawTarget) && _rawTarget > 0) ? Math.min(Math.floor(_rawTarget), 10000000) : 0;
     streamGoals.set(sgRoomId, { type: goalType, target: goalTarget, label: goalLabel });
     io.to(sgRoomId).emit('stream-goal-set', {
