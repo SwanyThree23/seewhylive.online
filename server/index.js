@@ -428,6 +428,7 @@ var chyrons             = new Map();  // roomId → chyron data object | undefin
 var subOnlyRooms        = new Set();  // roomIds where subscriber-only mode is active
 var roomAudioOnly       = new Map();  // roomId → true when audio-only mode is active
 var roomPrivateMap      = new Map();  // roomId → true when room is private
+var liveSyncState       = new Map();  // roomId → { enabled, delayMs } when host has toggled livesync
 var roomPaywallMap      = new Map();  // roomId → { amountCents } when paywall is active
 var pkBattleState       = new Map();  // roomId → { challenger, defender, duration, startTs, challengerVotes, defenderVotes }
 var screenShareState    = new Map();  // roomId → { userId, username } when screen sharing is active
@@ -631,6 +632,8 @@ function seedEphemeralState(socketId, roomId) {
   }
   var _loveTotal = loveCounts.get(roomId) || 0;
   if (_loveTotal > 0) io.to(socketId).emit('love-update', { roomId: roomId, total: _loveTotal });
+  var _ls = liveSyncState.get(roomId);
+  if (_ls && _ls.enabled) io.to(socketId).emit('livesync-state', { roomId: roomId, enabled: true, delayMs: _ls.delayMs || 0, viewerCount: 0 });
 }
 
 
@@ -3811,6 +3814,7 @@ io.on('connection', function(socket) {
     pkBattleState.delete(roomId);
     screenShareState.delete(roomId);
     qaAnsweringState.delete(roomId);
+    liveSyncState.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
     viewerAlertSnapshot.delete(roomId);
 
@@ -4087,7 +4091,13 @@ io.on('connection', function(socket) {
     var lsRoomId = socket.data.roomId;
     if (!lsRoomId) return;
     var enabled = Boolean(data.enabled);
-    io.to(lsRoomId).emit('livesync-state', { roomId: lsRoomId, enabled: enabled, delayMs: 0, viewerCount: 0 });
+    var delayMs = (data && typeof data.delayMs === 'number') ? data.delayMs : 0;
+    if (enabled) {
+      liveSyncState.set(lsRoomId, { enabled: true, delayMs: delayMs });
+    } else {
+      liveSyncState.delete(lsRoomId);
+    }
+    io.to(lsRoomId).emit('livesync-state', { roomId: lsRoomId, enabled: enabled, delayMs: delayMs, viewerCount: 0 });
   });
 
   // ── platform health check ────────────────────────────────────────────────

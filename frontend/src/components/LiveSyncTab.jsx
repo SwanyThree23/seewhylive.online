@@ -88,7 +88,11 @@ export default function LiveSyncTab({ socket, roomId, isLive, addToast }) {
         <input
           type="range" min="0" max="10000" step="500"
           value={syncDelay}
-          onChange={function(e) { setSyncDelay(Number(e.target.value)); }}
+          onChange={function(e) {
+            var ms = Number(e.target.value);
+            setSyncDelay(ms);
+            if (socket && syncEnabled) socket.emit('livesync-toggle', { roomId: roomId, enabled: true, delayMs: ms });
+          }}
           style={{ width: '100%', accentColor: GOLD }}
         />
         <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 4 }}>
