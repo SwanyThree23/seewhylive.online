@@ -363,6 +363,7 @@ export default function LiveRoomPage({
   var [showPaySheet,   setShowPaySheet]   = useState(false);
   var [audioOnly,      setAudioOnly]      = useState(false);
   var [privateMode,    setPrivateMode]    = useState(false);
+  var [subscriberOnly, setSubscriberOnly] = useState(false);
   var [privatePwd,     setPrivatePwd]     = useState('');
   var [approvalMode,  setApprovalMode]  = useState(false);
   var [pendingRequests, setPendingRequests] = useState([]);
@@ -512,8 +513,9 @@ export default function LiveRoomPage({
       if (data.streamGoal && data.streamGoal.target > 0) {
         if (setStreamGoal) setStreamGoal({ label: data.streamGoal.label || 'Stream Goal', goalCents: data.streamGoal.target });
       }
-      if (data.audioOnly)   setAudioOnly(true);
-      if (data.privateMode) setPrivateMode(true);
+      if (data.audioOnly)      setAudioOnly(true);
+      if (data.privateMode)    setPrivateMode(true);
+      if (data.subscriberOnly) setSubscriberOnly(true);
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -835,6 +837,7 @@ export default function LiveRoomPage({
 
     socket.on('subscriber-only-changed', function(data) {
       if (!data) return;
+      setSubscriberOnly(Boolean(data.enabled));
       if (addToast) addToast(data.enabled ? '⭐ This room is now subscriber-only' : 'Room is now open to all viewers', 'info');
     });
 
@@ -2146,6 +2149,7 @@ export default function LiveRoomPage({
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontWeight: 700, fontSize: 18, color: TEXT, letterSpacing: .3 }}>Chat</span>
               {slowModeSec > 0 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, background: 'rgba(255,255,255,.07)', borderRadius: 4, padding: '2px 5px', letterSpacing: 1 }}>🐌 {slowModeSec}s</span>}
+              {subscriberOnly && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '2px 5px', letterSpacing: 1 }}>⭐ SUB ONLY</span>}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               {(role === 'host' || role === 'cohost') && (
