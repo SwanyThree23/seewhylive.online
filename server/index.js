@@ -422,6 +422,7 @@ var producerOwners      = new Map();  // producerId → guestId (ownership for c
 var chatMsgThrottle     = new Map();  // socketId → lastChatTs ms (500ms throttle)
 var slowModeSeconds     = new Map();  // roomId → seconds (0 = off)
 var slowModeUserTs      = new Map();  // roomId+':'+userId → last message timestamp ms
+var pinnedMessages      = new Map();  // roomId → { id, username, message, ts } | undefined
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
 var qaUpvoteThrottle    = new Map();  // socketId → lastQaUpvoteTs ms (500ms throttle)
@@ -532,7 +533,7 @@ function serializeJudges(roomId) {
 }
 
 function getJoinStateForRoom(roomId) {
-  var state = { chatHistory: [], activePoll: null, activeVsPoll: null, judges: [], sessionRevenueCents: 0, giftLeaderboard: [] };
+  var state = { chatHistory: [], activePoll: null, activeVsPoll: null, judges: [], sessionRevenueCents: 0, giftLeaderboard: [], pinnedMessage: null, slowMode: 0 };
   try {
     var rows = db.prepare(
       'SELECT id, username, message, translated, lang, ts FROM chat_history WHERE room_id = ? ORDER BY ts DESC LIMIT 50'
@@ -546,6 +547,8 @@ function getJoinStateForRoom(roomId) {
   state.judges = serializeJudges(roomId);
   state.sessionRevenueCents = sessionRevenue.get(roomId) || 0;
   state.giftLeaderboard = (giftLeaderboards.get(roomId) || []).slice(0, 10);
+  state.pinnedMessage   = pinnedMessages.get(roomId) || null;
+  state.slowMode        = slowModeSeconds.get(roomId) || 0;
   return state;
 }
 
@@ -1639,18 +1642,21 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = socket.data.roomId;
     if (!roomId || !data || !data.message) return;
-    io.to(roomId).emit('chat-pinned', {
+    var pinned = {
       id:       String(data.id || ''),
       username: String(data.username || '').slice(0, 80),
       message:  String(data.message || '').slice(0, 300),
       ts:       data.ts || 0,
-    });
+    };
+    pinnedMessages.set(roomId, pinned);
+    io.to(roomId).emit('chat-pinned', pinned);
   });
 
   socket.on('unpin-chat-message', function() {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = socket.data.roomId;
     if (!roomId) return;
+    pinnedMessages.delete(roomId);
     io.to(roomId).emit('chat-unpinned', {});
   });
 
@@ -3597,6 +3603,7 @@ io.on('connection', function(socket) {
     loveEarnings.delete(roomId);
     giftLeaderboards.delete(roomId);
     slowModeSeconds.delete(roomId);
+    pinnedMessages.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
 
     try {

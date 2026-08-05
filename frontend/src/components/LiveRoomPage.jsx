@@ -480,6 +480,12 @@ export default function LiveRoomPage({
       if (Array.isArray(data.giftLeaderboard) && data.giftLeaderboard.length > 0) {
         setTipLeader(data.giftLeaderboard.map(function(e) { return { username: e.username || '', totalCents: e.totalCents || 0 }; }));
       }
+      if (data.pinnedMessage && data.pinnedMessage.message) {
+        setPinnedMsg({ id: data.pinnedMessage.id || '', username: data.pinnedMessage.username || '', message: String(data.pinnedMessage.message).slice(0, 300), ts: data.pinnedMessage.ts || 0 });
+      }
+      if (data.slowMode && data.slowMode > 0) {
+        setSlowModeSec(data.slowMode);
+      }
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
