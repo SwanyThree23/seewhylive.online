@@ -656,6 +656,26 @@ export default function App() {
       });
     });
 
+    socket.on('producer-paused', function(data) {
+      if (!data || !data.producerId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          if (g.producerId !== data.producerId) return g;
+          return Object.assign({}, g, { remoteCamOff: true });
+        });
+      });
+    });
+
+    socket.on('producer-resumed', function(data) {
+      if (!data || !data.producerId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          if (g.producerId !== data.producerId) return g;
+          return Object.assign({}, g, { remoteCamOff: false });
+        });
+      });
+    });
+
     socket.on('guest-muted', function(data) {
       if (!data || !data.guestId) return;
       setGuests(function(prev) {
@@ -866,6 +886,8 @@ export default function App() {
       socket.off('new-producer');
       socket.off('join-room-ack');
       socket.off('producer-closed');
+      socket.off('producer-paused');
+      socket.off('producer-resumed');
       socket.off('guest-muted');
       socket.off('muted');
       socket.off('fanout-failed');

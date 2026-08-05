@@ -273,8 +273,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       setWatchPartyUrl(data.url);
       setStageLayout('watchparty');
     });
-    socket.on('watch-party-start', function(data) {
-      if (data && data.url) { setWatchPartyUrl(data.url); setStageLayout('watchparty'); }
+    socket.on('watch-party-started', function(data) {
+      setStageLayout('watchparty');
+      if (data && data.url) setWatchPartyUrl(data.url);
     });
     socket.on('join-room-ack', function(ackData) {
       if (ackData && ackData.watchParty && ackData.watchParty.url) {
@@ -349,6 +350,8 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       socket.off('pk-start');
       socket.off('pk-vote-update');
       socket.off('pk-end');
+      socket.off('watch-party-started');
+      socket.off('watch-party-url');
     };
   }, [socket, role]);
 
