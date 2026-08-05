@@ -24,6 +24,7 @@ export default function PanelTile({
   const [localMicOn, setLocalMicOn] = useState(true);
   const [localHandRaised, setLocalHandRaised] = useState(false);
   const [showControls, setShowControls] = useState(false);
+  const touchStartRef = useRef({ x: 0, y: 0 });
   const [remoteSpeaking, setRemoteSpeaking] = useState(false);
 
   // Subscribe to remote stream or wire up local producer track
@@ -285,7 +286,16 @@ export default function PanelTile({
       onClick={handleTileClick}
       onMouseEnter={function() { setShowControls(true); }}
       onMouseLeave={function() { setShowControls(false); }}
-      onTouchStart={function() { setShowControls(function(v) { return !v; }); }}
+      onTouchStart={function(e) { touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
+      onTouchEnd={function(e) {
+        var dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+        var dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+        if (Math.abs(dx) < 15 && Math.abs(dy) < 15) { setShowControls(function(v) { return !v; }); return; }
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (dx < -40 && onMuteToggle) { onMuteToggle(!is_muted); return; }
+          if (dx > 40 && onSpotlight) { onSpotlight(); return; }
+        }
+      }}
       style={{
         position: 'relative',
         background: BG,

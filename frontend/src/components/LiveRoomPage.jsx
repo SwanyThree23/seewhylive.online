@@ -55,6 +55,25 @@ var ANIM = [
   '@keyframes cellMenuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}',
 ].join('\n');
 
+// ─── Subtle reaction tone for emoji bursts ─────────────────────────────────
+var REACTION_FREQS = { '🔥': 880, '❤️': 554, '😂': 660, '👍': 523, '💎': 740, '⚡': 830, '🎉': 698 };
+function playReactionTone(emoji) {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = REACTION_FREQS[emoji] || 523;
+    gain.gain.setValueAtTime(0.07, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.12);
+    setTimeout(function() { try { ctx.close(); } catch(e) {} }, 300);
+  } catch(e) {}
+}
+
 // ─── Direct Pay platforms ───────────────────────────────────────────────────
 var DP_PLATFORMS = [
   { id: 'paypal',  emoji: '💸', name: 'PayPal',  color: '#0070BA', buildUrl: function(h) { return 'https://paypal.me/' + h.replace(/^@/,''); } },
@@ -587,6 +606,7 @@ export default function LiveRoomPage({
 
     socket.on('react-burst', function(data) {
       if (!data || !data.emoji) return;
+      playReactionTone(data.emoji);
       var fid = Date.now() + Math.random();
       setFloatReacts(function(r) { return r.concat([{ emoji: data.emoji, fid: fid }]); });
       setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200);
@@ -2242,10 +2262,17 @@ export default function LiveRoomPage({
                     {m.ts && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>
                       {new Date(m.ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>}
-                    {role === 'host' && (
-                      <button onClick={function() {
-                        if (socket) socket.emit('pin-chat-message', { id: m.id || '', username: m.username || 'Guest', message: m.message || '', ts: m.ts || 0 });
-                      }} title="Pin message" style={{ marginLeft: 'auto', background: 'none', border: 'none', color: pinnedMsg && pinnedMsg.id === m.id ? gold : MUTED, fontSize: 11, cursor: 'pointer', padding: '0 2px', lineHeight: 1, opacity: .75 }}>📌</button>
+                    {(role === 'host' || role === 'cohost') && (
+                      <span style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
+                        <button onClick={function() {
+                          if (socket) socket.emit('pin-chat-message', { id: m.id || '', username: m.username || 'Guest', message: m.message || '', ts: m.ts || 0 });
+                        }} title="Pin message" style={{ background: 'none', border: 'none', color: pinnedMsg && pinnedMsg.id === m.id ? gold : MUTED, fontSize: 11, cursor: 'pointer', padding: '0 2px', lineHeight: 1, opacity: .75 }}>📌</button>
+                        {m.id && (
+                          <button onClick={function() {
+                            if (socket) socket.emit('chat-delete', { id: m.id });
+                          }} title="Delete message" style={{ background: 'none', border: 'none', color: RED + '99', fontSize: 11, cursor: 'pointer', padding: '0 2px', lineHeight: 1, opacity: .7 }}>🗑</button>
+                        )}
+                      </span>
                     )}
                   </div>
                   <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45 }}>{m.message}</p>
