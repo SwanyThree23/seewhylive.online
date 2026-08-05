@@ -665,9 +665,12 @@ export default function App() {
 
     socket.on('stream-goal-set', function(data) {
       if (!data || String(data.roomId) !== String(APP_ID)) return;
+      setStreamGoal({ label: data.label || 'Stream Goal', goalCents: data.target || 0 });
     });
     socket.on('stream-goal-clear', function(data) {
       if (!data || String(data.roomId) !== String(APP_ID)) return;
+      setStreamGoal(null);
+      try { localStorage.removeItem('sw_stream_goal'); } catch(e) {}
     });
 
     socket.on('broadcast-ended', function(data) {
