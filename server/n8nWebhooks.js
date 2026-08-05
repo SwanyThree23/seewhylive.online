@@ -85,7 +85,7 @@ n8nRouter.post('/viewer-milestone', function(req, res) {
   var d = req.body;
   var safeCount = Math.floor(Math.min(Math.max(Number(d.count) || 0, 0), 10000000));
   var vmStreamId = N8N_UUID_RE.test(String(d.streamId || '')) ? String(d.streamId) : 'main';
-  if (global.io) global.io.to(vmStreamId).emit('milestone', { type:'viewers', count:safeCount, ts:Date.now() });
+  if (global.io) global.io.to(vmStreamId).emit('viewer-milestone', { type:'viewers', count:safeCount, ts:Date.now() });
   res.json({ ok: true, count: safeCount });
 });
 
