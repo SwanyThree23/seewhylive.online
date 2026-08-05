@@ -2171,7 +2171,7 @@ io.on('connection', function(socket) {
 
     swanybot.onGiftReceived(roomId, fromUser, name, valueCents);
 
-    // Push live earnings update to host
+    // Push live earnings update + notification to host
     try {
       var gifRoom = rooms.get(roomId);
       if (gifRoom && gifRoom.hostSocketId) {
@@ -2181,6 +2181,9 @@ io.on('connection', function(socket) {
           source:       'gift',
           username:     fromUser
         });
+      }
+      if (gifRoom && gifRoom.hostUserId) {
+        io.to('user:' + gifRoom.hostUserId).emit('notification', { type: 'gift', message: '🎁 ' + fromUser + ' sent ' + name + ' ($' + (valueCents / 100).toFixed(2) + ')', ts: Date.now() });
       }
     } catch(geu) { logger.warn('[send-gift] earnings-update: ' + geu.message); }
 
@@ -2588,7 +2591,12 @@ io.on('connection', function(socket) {
     var follower = socket.data.username || 'Viewer';
     var creator  = String((data && data.username) || '').slice(0, 80);
     if (!roomId || !creator) return;
-    io.to(roomId).emit('creator-followed', { follower: follower, creator: creator, ts: Math.floor(Date.now() / 1000) });
+    var _cfTs = Math.floor(Date.now() / 1000);
+    io.to(roomId).emit('creator-followed', { follower: follower, creator: creator, ts: _cfTs });
+    var _cfRoom = rooms.get(roomId);
+    if (_cfRoom && _cfRoom.hostUserId) {
+      io.to('user:' + _cfRoom.hostUserId).emit('notification', { type: 'follow', message: '❤️ ' + follower + ' followed you', ts: _cfTs * 1000 });
+    }
   });
 
   socket.on('subscribe', function(data) {
@@ -2605,13 +2613,18 @@ io.on('connection', function(socket) {
     if (!Number.isFinite(priceCents) || priceCents < 0 || priceCents > 50000) return;
     var creatorCents = Math.floor(priceCents * CREATOR);
     if (!roomId) return;
+    var _subTs = Math.floor(Date.now() / 1000);
     io.to(roomId).emit('new-subscription', {
       username:      fromUser,
       tier:          tier,
       price_cents:   priceCents,
       creator_cents: creatorCents,
-      ts:            Math.floor(Date.now() / 1000)
+      ts:            _subTs
     });
+    var _subRoom = rooms.get(roomId);
+    if (_subRoom && _subRoom.hostUserId) {
+      io.to('user:' + _subRoom.hostUserId).emit('notification', { type: 'subscription', message: '⭐ ' + fromUser + ' subscribed at ' + tier + ' tier!', ts: _subTs * 1000 });
+    }
 
     // Auto-trigger AURA subscription celebration
     var tierLabel = tier === 'gold' ? 'GOLD' : tier === 'silver' ? 'SILVER' : 'BRONZE';
@@ -2950,7 +2963,7 @@ io.on('connection', function(socket) {
 
     autoAura(roomId, function(cb) { aura.triggerTip(roomId, username, amountCents, message, cb); });
 
-    // Push live earnings update to host
+    // Push live earnings update + notification to host
     try {
       var scRoom = rooms.get(roomId);
       if (scRoom && scRoom.hostSocketId) {
@@ -2960,6 +2973,9 @@ io.on('connection', function(socket) {
           source:       'super-chat',
           username:     username
         });
+      }
+      if (scRoom && scRoom.hostUserId) {
+        io.to('user:' + scRoom.hostUserId).emit('notification', { type: 'super_chat', message: '💬 ' + username + ' sent a $' + (amountCents / 100).toFixed(2) + ' Super Chat', ts: ts * 1000 });
       }
     } catch(eu) { logger.warn('[super-chat] earnings-update: ' + eu.message); }
 
