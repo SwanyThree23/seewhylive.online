@@ -1067,6 +1067,11 @@ export default function App() {
       socket.off('collab-accept');
       socket.off('chat-deleted');
       socket.off('stream-goal-progress');
+      socket.off('stream-goal-set');
+      socket.off('stream-goal-clear');
+      socket.off('love-update');
+      socket.off('new-subscription');
+      socket.off('host-disconnected');
       socket.off('stream-alert');
       socket.off('battle-result');
       socket.off('gem-send');
@@ -1950,6 +1955,23 @@ export default function App() {
             return (
               <div key={r.id} style={{ position: 'absolute', bottom: 0, right: 0, fontSize: 28, animation: 'heartFloat 2.5s ease forwards', userSelect: 'none' }}>
                 {r.emoji}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Gift / subscription float overlay */}
+      {giftFloats.length > 0 && (
+        <div style={{ position: 'fixed', bottom: 120, left: 12, zIndex: 820, pointerEvents: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {giftFloats.map(function(gf) {
+            return (
+              <div key={gf.floatId} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(14,12,9,.92)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '7px 12px', animation: 'heartFloat 5s ease forwards', boxShadow: '0 4px 16px rgba(0,0,0,.5)' }}>
+                <span style={{ fontSize: 20 }}>{gf.emoji}</span>
+                <div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#C9A84C', lineHeight: 1 }}>{gf.name}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', marginTop: 2 }}>{gf.from_user}</div>
+                </div>
               </div>
             );
           })}
