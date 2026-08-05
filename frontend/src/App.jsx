@@ -814,6 +814,16 @@ export default function App() {
       }
     });
 
+    socket.on('stage-invite', function(data) {
+      if (!data || data.guestId !== userId) return;
+      addToast('🎙 You\'ve been invited to speak on stage!', 'success');
+    });
+
+    socket.on('stage-remove', function(data) {
+      if (!data || !data.guestId || data.guestId !== userId) return;
+      addToast('You have been removed from the audio stage', 'error');
+    });
+
     socket.on('overlay-update', function(data) {
       if (!data || !data.overlay) return;
       setOverlayConfig(data.overlay);
@@ -976,6 +986,8 @@ export default function App() {
       socket.off('panel:layout_update');
       socket.off('panel:reaction');
       socket.off('gift-payment-intent');
+      socket.off('stage-invite');
+      socket.off('stage-remove');
     };
   }, [userId, username, role, addToast]);
 
