@@ -444,6 +444,7 @@ var loveCounts          = new Map();  // roomId → total love count
 var loveEarnings        = new Map();  // roomId → { creator: microcents, platform: microcents }
 var giftLeaderboards    = new Map();  // roomId → [{username, totalCents}] top 10
 var triviaRooms         = new Map();  // roomId → { question, options:[{text}], answers:Map<socketId,idx>, correctIdx, timer, active }
+var viewerAlertSnapshot = new Map();  // roomId → { count, ts } — baseline for host-alert engagement checks
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -642,6 +643,29 @@ function autoAura(roomId, triggerFn) {
     });
   } catch(e) {
     logger.warn('[autoAura] ' + e.message);
+  }
+}
+
+// Emit engagement host-alerts (surge / drop) to the room host at most once per 60s.
+function checkHostAlerts(roomId, viewerCount) {
+  var room4 = rooms.get(roomId);
+  if (!room4 || !room4.hostUserId) return;
+  var snap = viewerAlertSnapshot.get(roomId);
+  var now = Date.now();
+  if (!snap) {
+    viewerAlertSnapshot.set(roomId, { count: viewerCount, ts: now });
+    return;
+  }
+  var elapsed = now - snap.ts;
+  if (elapsed < 60000) return;
+  var prev = snap.count;
+  viewerAlertSnapshot.set(roomId, { count: viewerCount, ts: now });
+  if (prev <= 0) return;
+  var pct = Math.round((viewerCount - prev) / prev * 100);
+  if (viewerCount >= prev * 1.5 && viewerCount >= 5) {
+    io.to('user:' + room4.hostUserId).emit('host-alert', { type: 'engagement_surge', pct: pct, viewers: viewerCount });
+  } else if (viewerCount <= prev * 0.6 && prev >= 10) {
+    io.to('user:' + room4.hostUserId).emit('host-alert', { type: 'viewers_drop', current: viewerCount, previous: prev });
   }
 }
 
@@ -1444,6 +1468,7 @@ io.on('connection', function(socket) {
 
           io.to(roomId).emit('roster-update', { guests: guestList });
           io.to(roomId).emit('viewer-count', { count: viewerCount });
+          checkHostAlerts(roomId, viewerCount);
 
           swanybot.onViewerJoin(roomId, username, socket.id);
           swanybot.onWelcomeVisitor(socket.id);
@@ -1475,6 +1500,7 @@ io.on('connection', function(socket) {
 
       io.to(roomId).emit('roster-update', { guests: guestList });
       io.to(roomId).emit('viewer-count', { count: viewerCount });
+      checkHostAlerts(roomId, viewerCount);
 
       swanybot.onViewerJoin(roomId, username, socket.id);
       swanybot.onWelcomeVisitor(socket.id);
@@ -3786,6 +3812,7 @@ io.on('connection', function(socket) {
     screenShareState.delete(roomId);
     qaAnsweringState.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
+    viewerAlertSnapshot.delete(roomId);
 
     try {
       analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'end', 0, 0);
@@ -4153,6 +4180,7 @@ io.on('connection', function(socket) {
 
     io.to(roomId).emit('roster-update', { guests: guestList });
     io.to(roomId).emit('viewer-count', { count: viewerCount });
+    checkHostAlerts(roomId, viewerCount);
 
     swanybot.onViewerCountChange(roomId, viewerCount);
 
@@ -4179,6 +4207,7 @@ io.on('connection', function(socket) {
     // Remove empty rooms
     if (room.viewers.size === 0 && room.guests.size === 0) {
       rooms.delete(roomId);
+      viewerAlertSnapshot.delete(roomId);
     }
 
   });
