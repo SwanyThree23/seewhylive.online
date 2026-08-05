@@ -41,6 +41,7 @@ export default function HostHUD(props) {
   var isVisible            = props.isVisible;
   var streamStats          = props.streamStats || null; // { bitratekbps, rttMs, lossPct }
   var onHypePeak           = props.onHypePeak || null;
+  var clipCount            = props.clipCount || 0;
 
   if (!isVisible) return null;
 
@@ -210,7 +211,7 @@ export default function HostHUD(props) {
             </div>
           </div>
 
-          {/* Super chats + gifts */}
+          {/* Super chats + gifts + clips */}
           <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
             <div style={{ flex: 1, background: CARD, borderRadius: 7, padding: '6px 8px', border: '1px solid rgba(201,168,76,.1)' }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED }}>SUPER CHATS</div>
@@ -219,6 +220,10 @@ export default function HostHUD(props) {
             <div style={{ flex: 1, background: CARD, borderRadius: 7, padding: '6px 8px', border: '1px solid rgba(201,168,76,.1)' }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED }}>GIFTS</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, marginTop: 2 }}>{giftCount || 0}</div>
+            </div>
+            <div style={{ flex: 1, background: CARD, borderRadius: 7, padding: '6px 8px', border: '1px solid rgba(201,168,76,.1)' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED }}>CLIPS</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: clipCount > 0 ? GOLD : MUTED, marginTop: 2 }}>{clipCount}</div>
             </div>
           </div>
 

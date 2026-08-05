@@ -409,6 +409,8 @@ export default function LiveRoomPage({
   var [slowWaitSec,        setSlowWaitSec]        = useState(0);   // viewer countdown until next message
   var slowWaitRef = useRef(null);
   var [kicked,             setKicked]             = useState(false);
+  var [clipLog,            setClipLog]            = useState([]); // [{ id, label, ts }]
+  var [showClipLog,        setShowClipLog]        = useState(false);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -633,6 +635,13 @@ export default function LiveRoomPage({
       setKicked(true);
     });
 
+    socket.on('clip-marked', function(data) {
+      if (!data || !data.label) return;
+      var entry = { id: data.id || String(Date.now()), label: String(data.label).slice(0, 120), ts: data.ts || Math.floor(Date.now() / 1000) };
+      setClipLog(function(prev) { return [entry].concat(prev).slice(0, 50); });
+      if (addToast) addToast('✂️ ' + entry.label, 'info');
+    });
+
     socket.on('stream-caption', function(data) {
       if (!data || !data.text) return;
       var line = { id: Date.now() + Math.random(), text: String(data.text).slice(0, 300) };
@@ -778,6 +787,7 @@ export default function LiveRoomPage({
       socket.off('chat-pinned');
       socket.off('chat-unpinned');
       socket.off('you-were-kicked');
+      socket.off('clip-marked');
     };
   }, [socket]);
 
@@ -1166,6 +1176,7 @@ export default function LiveRoomPage({
         viewerCount={viewerCount}
         superChatCount={superChatCount}
         giftCount={giftCount}
+        clipCount={clipLog.length}
         addToast={addToast}
         isVisible={role === 'host' || role === 'cohost'}
         streamStats={streamStats}
@@ -3372,6 +3383,63 @@ export default function LiveRoomPage({
           micLevel={micLevel}
           visible={true}
         />
+      )}
+
+      {/* ════════════════ CLIP LOG FAB (host/cohost) ════════════════ */}
+      {(role === 'host' || role === 'cohost') && (
+        <button
+          onClick={function() { setShowClipLog(function(v) { return !v; }); }}
+          title="Clip log"
+          style={{
+            position: 'fixed',
+            bottom: 'calc(env(safe-area-inset-bottom,0px) + 144px)',
+            left: 20,
+            zIndex: 9999,
+            width: 48, height: 48,
+            borderRadius: '50%',
+            background: showClipLog ? 'rgba(201,168,76,.18)' : 'rgba(255,255,255,0.07)',
+            border: '1.5px solid ' + (clipLog.length > 0 ? 'rgba(201,168,76,0.55)' : 'rgba(201,168,76,0.25)'),
+            color: '#C9A84C',
+            fontSize: 20,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            boxShadow: clipLog.length > 0 ? '0 2px 12px rgba(201,168,76,.25)' : '0 2px 8px rgba(0,0,0,0.4)',
+          }}>
+          ✂️
+          {clipLog.length > 0 && (
+            <span style={{ position: 'absolute', top: 2, right: 2, background: '#C9A84C', color: '#0E0C09', borderRadius: 999, fontSize: 8, fontWeight: 700, minWidth: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', fontFamily: "'DM Mono',monospace", lineHeight: 1 }}>{clipLog.length > 99 ? '99+' : clipLog.length}</span>
+          )}
+        </button>
+      )}
+
+      {/* ════════════════ CLIP LOG OVERLAY ════════════════ */}
+      {showClipLog && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom,0px) + 200px)', left: 12, zIndex: 9998, width: 270, maxHeight: 320, background: 'rgba(26,21,16,.97)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 14, boxShadow: '-4px 4px 24px rgba(0,0,0,.6)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(201,168,76,.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 2 }}>✂️ CLIP LOG</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{clipLog.length} clip{clipLog.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div style={{ overflowY: 'auto', flex: 1 }}>
+            {clipLog.length === 0 && (
+              <div style={{ padding: '18px 14px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', textAlign: 'center' }}>No clips yet — viewers can type !clip to mark moments</div>
+            )}
+            {clipLog.map(function(entry) {
+              var d = new Date(entry.ts * 1000);
+              var hh = d.getHours();
+              var mm = d.getMinutes();
+              var ss = d.getSeconds();
+              var timeStr = (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss;
+              return (
+                <div key={entry.id} style={{ padding: '8px 14px', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', flexShrink: 0, marginTop: 1, letterSpacing: .5 }}>{timeStr}</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', lineHeight: 1.35, wordBreak: 'break-word' }}>{entry.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* ════════════════ FLOATING SHARE BUTTON ════════════════ */}

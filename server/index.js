@@ -1934,6 +1934,21 @@ io.on('connection', function(socket) {
       return;
     }
 
+    // !help command — list available chat commands (private reply to sender only)
+    if (/^\s*!help\s*$/i.test(message)) {
+      var _helpTs  = Math.floor(Date.now() / 1000);
+      var _isHost  = socket.data.role === 'host' || socket.data.role === 'cohost';
+      var _helpMsg = _isHost
+        ? '📋 Commands: !clip · !so @user · !kick @user · !ban @user (host) · !help'
+        : '📋 Commands: !clip (request a highlight clip) · !help';
+      io.to(socket.id).emit('chat-message', {
+        id: uuidv4(), username: '🛡 SeeWhy',
+        message: _helpMsg, translated: _helpMsg,
+        lang: 'EN', hasExternalLinks: false, isSystem: true, ts: _helpTs,
+      });
+      return;
+    }
+
     // !clip / "clip that" command — any viewer can request a clip marker
     if (/^\s*(!clip|clip that)\s*$/i.test(message)) {
       var _clipId  = uuidv4();
