@@ -37,6 +37,7 @@ export default function PlatformHealthTab({ socket, addToast }) {
       setLastCheck(Date.now());
     }
     socket.on('platform-health', onHealthUpdate);
+    runCheck();
     return function() { socket.off('platform-health', onHealthUpdate); };
   }, [socket]);
 
