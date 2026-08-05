@@ -486,6 +486,9 @@ export default function LiveRoomPage({
       if (data.slowMode && data.slowMode > 0) {
         setSlowModeSec(data.slowMode);
       }
+      if (Array.isArray(data.qaQueue) && data.qaQueue.length > 0) {
+        setQaQueue(data.qaQueue.map(function(q) { return { id: q.id, username: q.username || 'Guest', text: String(q.text || '').slice(0, 300), upvotes: q.upvotes || 0 }; }));
+      }
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -1310,6 +1313,12 @@ export default function LiveRoomPage({
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>·</span>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{viewerCount || 0} total</span>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() {
+                  if (socket) socket.emit('mute-all', { roomId: roomId });
+                  if (addToast) addToast('🔇 All participants muted', 'info');
+                }} title="Mute all participants" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🔇</button>
+              )}
               <button onClick={function() { setShowTTSSheet(true); }} title="Voice SuperChat" style={{ background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: RED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🚀</button>
               <button onClick={function() { setShowSuperChatSheet(true); }} title="Super Chat" style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: GOLD, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>💬</button>
               <button onClick={function() { setShowShareSheet(true); }} title="Share" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: TEXT, cursor: 'pointer' }}>🔗</button>
