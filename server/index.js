@@ -614,7 +614,7 @@ function seedEphemeralState(socketId, roomId) {
     }
   }
   var _ss = screenShareState.get(roomId);
-  if (_ss) io.to(socketId).emit('screen-share-active', _ss);
+  if (_ss) io.to(socketId).emit('screen-share-active', Object.assign({ roomId: roomId }, _ss));
   var _qaA = qaAnsweringState.get(roomId);
   if (_qaA) io.to(socketId).emit('qa-answering', _qaA);
   var _stage = stageRooms.get(roomId);
@@ -3558,7 +3558,7 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
-    var _ssState = { userId: socket.data.userId, username: socket.data.username || 'Host' };
+    var _ssState = { roomId: sRoomId, userId: socket.data.userId, username: socket.data.username || 'Host' };
     screenShareState.set(sRoomId, _ssState);
     io.to(sRoomId).emit('screen-share-active', _ssState);
   });
