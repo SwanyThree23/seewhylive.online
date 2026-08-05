@@ -512,6 +512,8 @@ export default function LiveRoomPage({
       if (data.streamGoal && data.streamGoal.target > 0) {
         if (setStreamGoal) setStreamGoal({ label: data.streamGoal.label || 'Stream Goal', goalCents: data.streamGoal.target });
       }
+      if (data.audioOnly)   setAudioOnly(true);
+      if (data.privateMode) setPrivateMode(true);
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -820,6 +822,12 @@ export default function LiveRoomPage({
       if (addToast) addToast(data.enabled ? '🎤 Host switched to audio-only mode' : '📹 Video mode re-enabled', 'info');
     });
 
+    socket.on('room-private', function(data) {
+      if (!data) return;
+      setPrivateMode(Boolean(data.enabled));
+      if (addToast) addToast(data.enabled ? '🔒 Room is now invite-only' : '🔓 Room is now open to all', 'info');
+    });
+
     socket.on('panel:audio_only_changed', function(data) {
       if (!data || data.roomId !== roomId) return;
       setAudioOnly(Boolean(data.isAudioOnly));
@@ -867,6 +875,7 @@ export default function LiveRoomPage({
       socket.off('screen-share-ended');
       socket.off('mute-all');
       socket.off('room-audio-only');
+      socket.off('room-private');
       socket.off('subscriber-only-changed');
       socket.off('user-banned');
       socket.off('user-unbanned');

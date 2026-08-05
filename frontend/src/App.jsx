@@ -627,7 +627,7 @@ export default function App() {
 
     socket.on('room-paywall', function(data) {
       if (!data) return;
-      setPaidRoom({ enabled: !!data.enabled, priceCents: Math.floor(data.priceCents || 0) });
+      setPaidRoom({ enabled: !!data.enabled, priceCents: Math.floor(data.amountCents || data.priceCents || 0) });
       if (!data.enabled) setPaidUnlocked(false);
     });
 

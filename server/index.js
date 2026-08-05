@@ -426,6 +426,9 @@ var pinnedMessages      = new Map();  // roomId → { id, username, message, ts 
 var streamGoals         = new Map();  // roomId → { type, target, label } | undefined
 var chyrons             = new Map();  // roomId → chyron data object | undefined
 var subOnlyRooms        = new Set();  // roomIds where subscriber-only mode is active
+var roomAudioOnly       = new Map();  // roomId → true when audio-only mode is active
+var roomPrivateMap      = new Map();  // roomId → true when room is private
+var roomPaywallMap      = new Map();  // roomId → { amountCents } when paywall is active
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
 var qaUpvoteThrottle    = new Map();  // socketId → lastQaUpvoteTs ms (500ms throttle)
@@ -553,6 +556,8 @@ function getJoinStateForRoom(roomId) {
   state.pinnedMessage   = pinnedMessages.get(roomId) || null;
   state.slowMode        = slowModeSeconds.get(roomId) || 0;
   state.streamGoal      = streamGoals.get(roomId) || null;
+  state.audioOnly       = roomAudioOnly.has(roomId);
+  state.privateMode     = roomPrivateMap.has(roomId);
   var _qaMap = qaQueues.get(roomId);
   if (_qaMap && _qaMap.size > 0) {
     var _qaArr = [];
@@ -568,6 +573,10 @@ function seedEphemeralState(socketId, roomId) {
   var _chyron = chyrons.get(roomId);
   if (_chyron && _chyron.text) io.to(socketId).emit('chyron-update', _chyron);
   if (subOnlyRooms.has(roomId)) io.to(socketId).emit('subscriber-only-changed', { enabled: true, ts: Math.floor(Date.now() / 1000) });
+  if (roomAudioOnly.has(roomId))  io.to(socketId).emit('room-audio-only', { enabled: true });
+  if (roomPrivateMap.has(roomId)) io.to(socketId).emit('room-private',    { enabled: true });
+  var _pw = roomPaywallMap.get(roomId);
+  if (_pw) io.to(socketId).emit('room-paywall', { enabled: true, amountCents: _pw.amountCents });
   var _trivia = triviaRooms.get(roomId);
   if (_trivia && _trivia.active) {
     var _msRem = Math.max(0, (_trivia.durationMs || 20000) - (Date.now() - (_trivia.startTs || Date.now())));
@@ -2505,6 +2514,7 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (data.enabled) roomAudioOnly.set(roomId, true); else roomAudioOnly.delete(roomId);
     io.to(roomId).emit('room-audio-only', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
   });
 
@@ -2512,6 +2522,7 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (data.enabled) roomPrivateMap.set(roomId, true); else roomPrivateMap.delete(roomId);
     io.to(roomId).emit('room-private', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
   });
 
@@ -2520,6 +2531,7 @@ io.on('connection', function(socket) {
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var amountCents = Math.min(50000, Math.floor(data.amountCents || 0));
+    if (data.enabled) roomPaywallMap.set(roomId, { amountCents: amountCents }); else roomPaywallMap.delete(roomId);
     io.to(roomId).emit('room-paywall', { enabled: Boolean(data.enabled), amountCents: amountCents, ts: Math.floor(Date.now() / 1000) });
   });
 
@@ -3657,6 +3669,9 @@ io.on('connection', function(socket) {
     streamGoals.delete(roomId);
     chyrons.delete(roomId);
     subOnlyRooms.delete(roomId);
+    roomAudioOnly.delete(roomId);
+    roomPrivateMap.delete(roomId);
+    roomPaywallMap.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
 
     try {
