@@ -888,6 +888,7 @@ export default function App() {
       socket.off('producer-closed');
       socket.off('producer-paused');
       socket.off('producer-resumed');
+      socket.off('host-alert');
       socket.off('guest-muted');
       socket.off('muted');
       socket.off('fanout-failed');
