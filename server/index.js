@@ -549,6 +549,13 @@ function getJoinStateForRoom(roomId) {
   state.giftLeaderboard = (giftLeaderboards.get(roomId) || []).slice(0, 10);
   state.pinnedMessage   = pinnedMessages.get(roomId) || null;
   state.slowMode        = slowModeSeconds.get(roomId) || 0;
+  var _qaMap = qaQueues.get(roomId);
+  if (_qaMap && _qaMap.size > 0) {
+    var _qaArr = [];
+    _qaMap.forEach(function(item) { _qaArr.push({ id: item.id, username: item.username, text: item.text, upvotes: item.upvotes || 0 }); });
+    _qaArr.sort(function(a, b) { return b.upvotes - a.upvotes; });
+    state.qaQueue = _qaArr.slice(0, 100);
+  }
   return state;
 }
 
