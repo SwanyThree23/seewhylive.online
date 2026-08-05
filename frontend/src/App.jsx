@@ -849,6 +849,23 @@ export default function App() {
       addToast('Host lost connection — watch party paused', 'error');
     });
 
+    socket.on('notification', function(data) {
+      if (!data || !data.message) return;
+      var kind = data.type || '';
+      var toastType = (kind === 'gift' || kind === 'subscription' || kind === 'super_chat' || kind === 'merch') ? 'success' : 'info';
+      addToast(data.message, toastType);
+    });
+
+    socket.on('collab-request', function(data) {
+      if (!data || !data.from) return;
+      addToast('📩 Collab request from ' + data.from + '!', 'info');
+    });
+
+    socket.on('collab-accept', function(data) {
+      if (!data) return;
+      addToast('🤝 ' + (data.partner || data.from || 'Creator') + ' accepted collab!', 'success');
+    });
+
     socket.on('aura-message', function(data) {
       if (!data || !data.text) return;
       var msg = { text: data.text, mode: data.mode || 'hype', ts: Date.now() };
@@ -996,6 +1013,9 @@ export default function App() {
       socket.off('stage-invite');
       socket.off('stage-remove');
       socket.off('sound-fx');
+      socket.off('notification');
+      socket.off('collab-request');
+      socket.off('collab-accept');
     };
   }, [userId, username, role, addToast]);
 
