@@ -277,14 +277,23 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
           autoPlay
           playsInline
           muted={isOwnCell}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: (online && !isCamOff) ? 'block' : 'none' }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: (online && !isCamOff && !(guest && guest.remoteCamOff)) ? 'block' : 'none' }}
         />
 
-        {/* Cam off overlay */}
+        {/* Cam off overlay — own cell */}
         {online && isCamOff && isOwnCell && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0E0C09', gap: 4 }}>
             <div style={{ fontSize: 28 }}>🚫</div>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>CAM OFF</div>
+          </div>
+        )}
+        {/* Cam off overlay — remote cell whose producer was paused */}
+        {online && !isOwnCell && guest && guest.remoteCamOff && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0E0C09', gap: 4 }}>
+            <div style={{ width: avatarSz, height: avatarSz, borderRadius: '50%', background: 'linear-gradient(135deg,' + color + '22,' + color + '11)', border: '2px solid ' + color + '33', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: avatarFs, color: color + '88', lineHeight: 1 }}>{guestName ? guestName.charAt(0).toUpperCase() : '?'}</span>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>CAM OFF</div>
           </div>
         )}
 

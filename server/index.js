@@ -2289,6 +2289,24 @@ io.on('connection', function(socket) {
       ts:            ts
     });
 
+    var mRoom3 = rooms.get(roomId);
+    if (mRoom3 && mRoom3.hostSocketId) {
+      io.to(mRoom3.hostSocketId).emit('earnings-update', {
+        amount: creatorCents,
+        type:   'merch',
+        source: buyerUser,
+        item:   itemName,
+        ts:     ts
+      });
+    }
+    if (mRoom3 && mRoom3.hostUserId) {
+      io.to('user:' + mRoom3.hostUserId).emit('notification', {
+        type:    'merch',
+        message: '👕 ' + buyerUser + ' bought ' + itemName + ' ($' + (priceCents / 100).toFixed(2) + ')',
+        ts:      Date.now()
+      });
+    }
+
     if (priceCents >= 100) {
       autoAura(roomId, function(cb) { aura.triggerGift(roomId, buyerUser, itemName, priceCents, cb); });
     }
