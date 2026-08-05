@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { getSocket, setRejoinPayload, onReconnectCallback } from './socket.js';
+import { SOUNDS, playSound } from './utils/soundFx.js';
 import { creatorCents, platformCents, getPlatformHandles } from './platformConfig.js';
 import rtcManager from './webrtc.js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -824,6 +825,12 @@ export default function App() {
       addToast('You have been removed from the audio stage', 'error');
     });
 
+    socket.on('sound-fx', function(data) {
+      if (!data || !data.sfxId) return;
+      var sfx = SOUNDS.find(function(s) { return s.id === data.sfxId; });
+      if (sfx) playSound(sfx);
+    });
+
     socket.on('overlay-update', function(data) {
       if (!data || !data.overlay) return;
       setOverlayConfig(data.overlay);
@@ -988,6 +995,7 @@ export default function App() {
       socket.off('gift-payment-intent');
       socket.off('stage-invite');
       socket.off('stage-remove');
+      socket.off('sound-fx');
     };
   }, [userId, username, role, addToast]);
 
