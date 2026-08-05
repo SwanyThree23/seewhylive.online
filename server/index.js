@@ -1777,6 +1777,15 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('chat-unpinned', {});
   });
 
+  socket.on('chat-delete', function(data) {
+    var r = socket.data.role;
+    if (r !== 'host' && r !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.id) return;
+    try { db.prepare('DELETE FROM chat_history WHERE id = ? AND room_id = ?').run(String(data.id), roomId); } catch(e) {}
+    io.to(roomId).emit('chat-deleted', { id: data.id });
+  });
+
   // ── set-slow-mode ──────────────────────────────────────────────────────
   socket.on('set-slow-mode', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;

@@ -580,6 +580,11 @@ export default function App() {
       setChat(function(prev) { return [...prev.slice(-200), msg]; });
     });
 
+    socket.on('chat-deleted', function(data) {
+      if (!data || !data.id) return;
+      setChat(function(prev) { return prev.filter(function(m) { return m.id !== data.id; }); });
+    });
+
     socket.on('super-chat', function(sc) {
       if (!sc) return;
       if (role === 'host') {
@@ -1016,6 +1021,7 @@ export default function App() {
       socket.off('notification');
       socket.off('collab-request');
       socket.off('collab-accept');
+      socket.off('chat-deleted');
     };
   }, [userId, username, role, addToast]);
 
