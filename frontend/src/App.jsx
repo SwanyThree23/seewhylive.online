@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react
 import { getSocket, setRejoinPayload, onReconnectCallback } from './socket.js';
 import { creatorCents, platformCents, getPlatformHandles } from './platformConfig.js';
 import rtcManager from './webrtc.js';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 /* Always-loaded: default tab + persistent overlays */
 import LiveRoomPage from './components/LiveRoomPage.jsx';
@@ -265,6 +267,59 @@ function PlatformHealthMonitor() {
 }
 /* ===== END PLATFORM HEALTH MONITOR ===== */
 
+var stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+
+// Modal rendered inside <Elements> so useStripe/useElements hooks are in scope.
+var GiftPayConfirmModal = function(props) {
+  var stripe   = useStripe();
+  var elements = useElements();
+  var [cardError,   setCardError]   = useState('');
+  var [processing,  setProcessing]  = useState(false);
+  var [done,        setDone]        = useState(false);
+
+  function handleConfirm() {
+    if (!stripe || !elements) return;
+    setProcessing(true);
+    setCardError('');
+    var cardEl = elements.getElement(CardElement);
+    stripe.confirmCardPayment(props.clientSecret, { payment_method: { card: cardEl } }).then(function(result) {
+      setProcessing(false);
+      if (result.error) {
+        setCardError(result.error.message);
+      } else {
+        setDone(true);
+        setTimeout(props.onClose, 2000);
+      }
+    });
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.85)', zIndex: 9500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ background: '#1A1510', border: '1.5px solid rgba(201,168,76,.45)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C', letterSpacing: 2 }}>🎁 COMPLETE GIFT PAYMENT</div>
+        {done ? (
+          <div style={{ color: '#4CAF50', fontFamily: "'DM Mono',monospace", fontSize: 13, textAlign: 'center', padding: '16px 0' }}>✅ Payment confirmed! Thank you.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ background: '#0E0C09', borderRadius: 8, padding: 14, border: '1px solid rgba(201,168,76,.2)' }}>
+              <CardElement options={{ style: { base: { color: '#F0E8D4', fontFamily: 'monospace', fontSize: '14px' } } }} />
+            </div>
+            {cardError ? <div style={{ color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 11 }}>{cardError}</div> : null}
+            <button onClick={handleConfirm} disabled={processing || !stripe}
+              style={{ background: processing ? '#2E2318' : 'linear-gradient(135deg,#C9A84C,#A07830)', border: 'none', borderRadius: 10, padding: '12px 0', color: '#0E0C09', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 2, cursor: processing ? 'not-allowed' : 'pointer', opacity: processing ? 0.7 : 1 }}>
+              {processing ? 'PROCESSING...' : 'CONFIRM PAYMENT'}
+            </button>
+            <button onClick={props.onClose}
+              style={{ background: 'transparent', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '8px 0', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 11, cursor: 'pointer' }}>
+              CANCEL
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   var [splash, setSplash] = useState(true);
   var [activeTab, setActiveTab] = useState('room');
@@ -331,6 +386,7 @@ export default function App() {
   var [giftFloats, setGiftFloats] = useState([]);
   var [panelReactions, setPanelReactions] = useState([]); // [{ id, guestId, emoji, ts }]
   var [gifts, setGifts] = useState([]);
+  var [giftPayIntent, setGiftPayIntent] = useState(null); // { clientSecret, paymentIntentId } | null
 
   var socketRef = useRef(null);
   var uptimeRef = useRef(null);
@@ -558,6 +614,11 @@ export default function App() {
       setTimeout(function() { setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
       var subCents = Math.floor(data.price_cents || 0);
       setSessionEarningsCents(function(prev) { sessionEarningsRef.current = prev + subCents; return prev + subCents; });
+    });
+
+    socket.on('gift-payment-intent', function(data) {
+      if (!data || !data.clientSecret) return;
+      setGiftPayIntent({ clientSecret: data.clientSecret, paymentIntentId: data.paymentIntentId || null });
     });
 
     socket.on('bot-log', function(log) {
@@ -914,6 +975,7 @@ export default function App() {
       socket.off('panel:hand_update');
       socket.off('panel:layout_update');
       socket.off('panel:reaction');
+      socket.off('gift-payment-intent');
     };
   }, [userId, username, role, addToast]);
 
@@ -1797,6 +1859,16 @@ export default function App() {
             );
           })}
         </div>
+      )}
+
+      {/* Gift Stripe payment confirmation modal */}
+      {giftPayIntent && (
+        <Elements stripe={stripePromise}>
+          <GiftPayConfirmModal
+            clientSecret={giftPayIntent.clientSecret}
+            onClose={function() { setGiftPayIntent(null); }}
+          />
+        </Elements>
       )}
 
       {/* PK Battle challenge incoming */}
