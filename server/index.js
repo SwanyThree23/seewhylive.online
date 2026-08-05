@@ -430,6 +430,8 @@ var roomAudioOnly       = new Map();  // roomId → true when audio-only mode is
 var roomPrivateMap      = new Map();  // roomId → true when room is private
 var roomPaywallMap      = new Map();  // roomId → { amountCents } when paywall is active
 var pkBattleState       = new Map();  // roomId → { challenger, defender, duration, startTs, challengerVotes, defenderVotes }
+var screenShareState    = new Map();  // roomId → { userId, username } when screen sharing is active
+var qaAnsweringState    = new Map();  // roomId → { id, username, text } when host is answering a Q&A question
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
 var qaUpvoteThrottle    = new Map();  // socketId → lastQaUpvoteTs ms (500ms throttle)
@@ -601,6 +603,14 @@ function seedEphemeralState(socketId, roomId) {
         io.to(socketId).emit('pk-vote-update', { challengerVotes: _pk.challengerVotes, defenderVotes: _pk.defenderVotes });
       }
     }
+  }
+  var _ss = screenShareState.get(roomId);
+  if (_ss) io.to(socketId).emit('screen-share-active', _ss);
+  var _qaA = qaAnsweringState.get(roomId);
+  if (_qaA) io.to(socketId).emit('qa-answering', _qaA);
+  var _stage = stageRooms.get(roomId);
+  if (_stage && (_stage.speakers.length > 0 || _stage.listeners.length > 0)) {
+    io.to(socketId).emit('audio-stage-state', { speakers: _stage.speakers, listeners: _stage.listeners });
   }
   var _room = rooms.get(roomId);
   if (_room && (_room.streamTitle || _room.streamCategory)) {
@@ -2705,16 +2715,15 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     if (!data || !data.id || !data.text) return;
-    io.to(roomId).emit('qa-answering', {
-      id:       String(data.id).slice(0, 60),
-      username: String(data.username || '').slice(0, 80),
-      text:     String(data.text).slice(0, 300),
-    });
+    var _qaA = { id: String(data.id).slice(0, 60), username: String(data.username || '').slice(0, 80), text: String(data.text).slice(0, 300) };
+    qaAnsweringState.set(roomId, _qaA);
+    io.to(roomId).emit('qa-answering', _qaA);
   });
 
   socket.on('qa-answering-clear', function() {
     var roomId = socket.data.roomId;
     if (!roomId || socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    qaAnsweringState.delete(roomId);
     io.to(roomId).emit('qa-answering-cleared', {});
   });
 
@@ -3478,13 +3487,16 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
-    io.to(sRoomId).emit('screen-share-active', { userId: socket.data.userId, username: socket.data.username || 'Host' });
+    var _ssState = { userId: socket.data.userId, username: socket.data.username || 'Host' };
+    screenShareState.set(sRoomId, _ssState);
+    io.to(sRoomId).emit('screen-share-active', _ssState);
   });
 
   socket.on('screen-share-stop', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
+    screenShareState.delete(sRoomId);
     io.to(sRoomId).emit('screen-share-ended', {});
   });
 
@@ -3705,6 +3717,8 @@ io.on('connection', function(socket) {
     roomPrivateMap.delete(roomId);
     roomPaywallMap.delete(roomId);
     pkBattleState.delete(roomId);
+    screenShareState.delete(roomId);
+    qaAnsweringState.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
 
     try {
