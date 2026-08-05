@@ -74,10 +74,6 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   useEffect(function() {
     if (!socket) return;
 
-    socket.on('pk-update', function(data) {
-      if (data && typeof data.challengerScore === 'number') setChallengerScore(data.challengerScore);
-      if (data && typeof data.defenderScore   === 'number') setDefenderScore(data.defenderScore);
-    });
     socket.on('pk-start', function(data) {
       if (!data) return;
       setChallenger(data.challenger || '');
@@ -91,11 +87,6 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       setCheerA([]);
       setCheerB([]);
       if (addToast) addToast('⚔️ PK Battle started!', 'success');
-    });
-    socket.on('pk-score', function(data) {
-      if (!data) return;
-      if (typeof data.challengerScore === 'number') setChallengerScore(data.challengerScore);
-      if (typeof data.defenderScore   === 'number') setDefenderScore(data.defenderScore);
     });
     socket.on('pk-end', function(data) {
       if (!data) return;
@@ -138,9 +129,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     });
 
     return function() {
-      socket.off('pk-update');
       socket.off('pk-start');
-      socket.off('pk-score');
       socket.off('pk-end');
       socket.off('pk-vote-update');
       socket.off('pk-cheer-update');
@@ -512,7 +501,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
                 </div>
                 <button
                   onClick={function() {
-                    if (socket) socket.emit('pk-challenge', { roomId: roomId, to: r.name, from: username });
+                    if (socket) socket.emit('pk-challenge', { roomId: roomId, to: r.name, from: username, challenger_username: username });
                     if (addToast) addToast('Challenge sent to ' + r.name + '!', 'success');
                   }}
                   style={{

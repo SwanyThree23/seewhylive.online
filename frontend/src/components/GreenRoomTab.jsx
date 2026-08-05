@@ -240,7 +240,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
   function toggleAudioOnly() {
     var next = !audioOnly;
     setAudioOnly(next);
-    if (socket) socket.emit('room-audio-only', { roomId: roomId, audioOnly: next });
+    if (socket) socket.emit('room-audio-only', { roomId: roomId, enabled: next });
     if (addToast) addToast(next ? '🎙️ Audio-only mode ON — video feeds hidden' : '📹 Video restored', next ? 'info' : 'success');
   }
 

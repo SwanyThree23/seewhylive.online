@@ -254,17 +254,17 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       if (!data || !data.guestId) return;
       setStageGuests(function(s) { return s.filter(function(x) { return x !== data.guestId; }); });
     });
-    socket.on('pk-battle-start', function(data) {
+    socket.on('pk-start', function(data) {
       if (!data) return;
-      setActiveBattle({ challenger: data.challenger || 'CHALLENGER', defender: data.defender || 'DEFENDER', durationSec: data.durationSec || 180, startTs: Date.now() });
+      setActiveBattle({ challenger: data.challenger || 'CHALLENGER', defender: data.defender || 'DEFENDER', durationSec: data.duration || 180, startTs: Date.now() });
       setBattleScores({ a: 0, b: 0 });
       setStageLayout('battle');
     });
-    socket.on('pk-update', function(data) {
+    socket.on('pk-vote-update', function(data) {
       if (!data) return;
-      setBattleScores({ a: data.scoreA || 0, b: data.scoreB || 0 });
+      setBattleScores({ a: data.challengerVotes || 0, b: data.defenderVotes || 0 });
     });
-    socket.on('pk-battle-end', function() {
+    socket.on('pk-end', function() {
       setActiveBattle(null);
       setBattleScores({ a: 0, b: 0 });
     });
@@ -346,6 +346,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       socket.off('super-chat');
       socket.off('react-burst');
       socket.off('gift-received');
+      socket.off('pk-start');
+      socket.off('pk-vote-update');
+      socket.off('pk-end');
     };
   }, [socket, role]);
 

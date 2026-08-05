@@ -70,6 +70,16 @@ var PKBattleArena = function (props) {
       setRemainingSeconds(0);
     };
 
+    var handleStart = function (payload) {
+      if (payload && (payload.id || payload.battleId) !== battleId) return;
+      // Reload full battle state on start so late-joining viewers get all fields
+      battleService.getBattle(battleId).then(function (b) {
+        if (b) setBattle(b);
+        if (b && b.duration_minutes) setRemainingSeconds(b.duration_minutes * 60);
+      });
+    };
+
+    socket.on('battle:start',        handleStart);
     socket.on('battle:accept',       handleAccept);
     socket.on('battle:score_update', handleScoreUpdate);
     socket.on('battle:tick',         handleTick);
@@ -77,6 +87,7 @@ var PKBattleArena = function (props) {
 
     return function () {
       socket.emit('battle:unwatch', { battleId: battleId });
+      socket.off('battle:start',        handleStart);
       socket.off('battle:accept',       handleAccept);
       socket.off('battle:score_update', handleScoreUpdate);
       socket.off('battle:tick',         handleTick);
