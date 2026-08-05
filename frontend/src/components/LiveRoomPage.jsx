@@ -508,6 +508,9 @@ export default function LiveRoomPage({
       if (Array.isArray(data.qaQueue) && data.qaQueue.length > 0) {
         setQaQueue(data.qaQueue.map(function(q) { return { id: q.id, username: q.username || 'Guest', text: String(q.text || '').slice(0, 300), upvotes: q.upvotes || 0 }; }));
       }
+      if (data.streamGoal && data.streamGoal.target > 0) {
+        if (setStreamGoal) setStreamGoal({ label: data.streamGoal.label || 'Stream Goal', goalCents: data.streamGoal.target });
+      }
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -1418,7 +1421,7 @@ export default function LiveRoomPage({
             </div>
             <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: bar, letterSpacing: 1, flexShrink: 0 }}>{pct}%</span>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, flexShrink: 0 }}>${(earned / 100).toFixed(0)}/${(target / 100).toFixed(0)}</span>
-            {role === 'host' && <button onClick={function() { if (setStreamGoal) setStreamGoal(null); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 9, padding: 0, lineHeight: 1 }}>✕</button>}
+            {role === 'host' && <button onClick={function() { if (setStreamGoal) setStreamGoal(null); if (socket) socket.emit('stream-goal-clear', { roomId: roomId }); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 9, padding: 0, lineHeight: 1 }}>✕</button>}
           </div>
         );
       })()}
@@ -2346,7 +2349,9 @@ export default function LiveRoomPage({
             <button onClick={function() {
               var amt = parseFloat(goalDraft.amount);
               if (!goalDraft.label.trim() || !amt || amt <= 0) { if (addToast) addToast('Enter a label and amount', 'error'); return; }
-              if (setStreamGoal) setStreamGoal({ label: goalDraft.label.trim(), goalCents: Math.floor(amt * 100) });
+              var goalCents = Math.floor(amt * 100);
+              if (setStreamGoal) setStreamGoal({ label: goalDraft.label.trim(), goalCents: goalCents });
+              if (socket) socket.emit('stream-goal-set', { roomId: roomId, type: 'revenue', target: goalCents, label: goalDraft.label.trim() });
               setShowGoalSet(false);
               setGoalDraft({ label: '', amount: '' });
               if (addToast) addToast('Stream goal set!', 'success');

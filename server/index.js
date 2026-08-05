@@ -423,6 +423,7 @@ var chatMsgThrottle     = new Map();  // socketId → lastChatTs ms (500ms throt
 var slowModeSeconds     = new Map();  // roomId → seconds (0 = off)
 var slowModeUserTs      = new Map();  // roomId+':'+userId → last message timestamp ms
 var pinnedMessages      = new Map();  // roomId → { id, username, message, ts } | undefined
+var streamGoals         = new Map();  // roomId → { type, target, label } | undefined
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
 var qaUpvoteThrottle    = new Map();  // socketId → lastQaUpvoteTs ms (500ms throttle)
@@ -549,6 +550,7 @@ function getJoinStateForRoom(roomId) {
   state.giftLeaderboard = (giftLeaderboards.get(roomId) || []).slice(0, 10);
   state.pinnedMessage   = pinnedMessages.get(roomId) || null;
   state.slowMode        = slowModeSeconds.get(roomId) || 0;
+  state.streamGoal      = streamGoals.get(roomId) || null;
   var _qaMap = qaQueues.get(roomId);
   if (_qaMap && _qaMap.size > 0) {
     var _qaArr = [];
@@ -3489,6 +3491,7 @@ io.on('connection', function(socket) {
     var goalLabel = data.label ? String(data.label).slice(0, 80) : null;
     var _rawTarget = Number(data.target);
     var goalTarget = (Number.isFinite(_rawTarget) && _rawTarget > 0) ? Math.min(Math.floor(_rawTarget), 10000000) : 0;
+    streamGoals.set(sgRoomId, { type: goalType, target: goalTarget, label: goalLabel });
     io.to(sgRoomId).emit('stream-goal-set', {
       roomId:  sgRoomId,
       type:    goalType,
@@ -3501,6 +3504,7 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sgcRoomId = socket.data.roomId;
     if (!sgcRoomId) return;
+    streamGoals.delete(sgcRoomId);
     io.to(sgcRoomId).emit('stream-goal-clear', { roomId: sgcRoomId });
   });
 
@@ -3622,6 +3626,7 @@ io.on('connection', function(socket) {
     giftLeaderboards.delete(roomId);
     slowModeSeconds.delete(roomId);
     pinnedMessages.delete(roomId);
+    streamGoals.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
 
     try {
