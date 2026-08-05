@@ -393,6 +393,7 @@ export default function App() {
   var [fadesScores, setFadesScores] = useState({ team1: 0, team2: 0 });
   var [paidRoom,    setPaidRoom]    = useState({ enabled: false, priceCents: 0 });
   var [paidUnlocked, setPaidUnlocked] = useState(function() { return role === 'host'; });
+  var [activeBattleChallenge, setActiveBattleChallenge] = useState(null);
   var [ppvToken, setPpvToken] = useState(function() { return sessionStorage.getItem('sw_ppv_token') || null; });
   var [overlayConfig, setOverlayConfig] = useState({ banner: { text: '', position: 'bottom', color: '#C9A84C', visible: false }, countdown: { label: 'STARTING SOON', targetTs: 0, visible: false }, scoreBug: { label: 'DOMINO CLASSIC', team1: { name: 'EAST', score: 0 }, team2: { name: 'WEST', score: 0 }, visible: false }, lowerThirds: {} });
   var [streamInfo, setStreamInfo] = useState({ title: '', category: '', desc: '' });
@@ -847,6 +848,24 @@ export default function App() {
       addToast('Guardian muted a user: ' + (data.reason || 'violation'), 'info');
     });
 
+    socket.on('battle:challenge', function(data) {
+      if (!data) return;
+      var challenger = data.challenger_username || data.challenger_id || 'Someone';
+      addToast('⚔️ ' + challenger + ' challenged you to a PK Battle!', 'info');
+      setActiveBattleChallenge(data);
+    });
+
+    socket.on('battle:accept', function(data) {
+      if (!data) return;
+      var defender = data.defender_username || data.defender_id || 'Your opponent';
+      addToast('✅ ' + defender + ' accepted your PK Challenge!', 'success');
+    });
+
+    socket.on('battle:decline', function(data) {
+      if (!data) return;
+      addToast('❌ Your PK challenge was declined.', 'info');
+    });
+
     socket.on('creator-followed', function(data) {
       if (!data || !data.follower) return;
       if (role === 'host' || role === 'cohost') {
@@ -881,6 +900,9 @@ export default function App() {
       socket.off('watch-party-started');
       socket.off('aura-message');
       socket.off('user-muted');
+      socket.off('battle:challenge');
+      socket.off('battle:accept');
+      socket.off('battle:decline');
       socket.off('creator-followed');
       socket.off('username-updated');
       socket.off('super-chat');
@@ -1756,6 +1778,29 @@ export default function App() {
         <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
       )}
       <WelcomeAudio socket={socketRef.current} />
+
+      {/* PK Battle challenge incoming */}
+      {activeBattleChallenge && (
+        <div style={{ position: 'fixed', bottom: 80, left: 16, right: 16, zIndex: 8900, animation: 'tabSlideIn .2s ease-out' }}>
+          <div style={{ background: 'linear-gradient(135deg,#1A1510,#0E0C09)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 14, padding: '16px 18px', boxShadow: '0 0 40px rgba(201,168,76,.2)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#C9A84C', letterSpacing: 3 }}>⚔️ PK CHALLENGE</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4' }}>
+              <strong>{activeBattleChallenge.challenger_username || 'Someone'}</strong> challenged you to a PK Battle!
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() {
+                if (socketRef.current) socketRef.current.emit('battle:accept', { battleId: activeBattleChallenge.id || activeBattleChallenge.battleId });
+                setActiveBattleChallenge(null);
+                setActiveTab('pkbattle-arena');
+              }} style={{ flex: 1, padding: '8px', background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 8, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>ACCEPT</button>
+              <button onClick={function() {
+                if (socketRef.current) socketRef.current.emit('battle:decline', { battleId: activeBattleChallenge.id || activeBattleChallenge.battleId });
+                setActiveBattleChallenge(null);
+              }} style={{ flex: 1, padding: '8px', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: '#8A7A62', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>DECLINE</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
