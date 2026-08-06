@@ -569,6 +569,9 @@ function getJoinStateForRoom(roomId) {
   state.pinnedMessage   = pinnedMessages.get(roomId) || null;
   state.slowMode        = slowModeSeconds.get(roomId) || 0;
   state.streamGoal      = streamGoals.get(roomId) || null;
+  var _isLiveRoom = rooms.get(roomId);
+  state.isLive          = !!(_isLiveRoom && _isLiveRoom.isLive);
+  state.liveStartedAt   = (state.isLive && _isLiveRoom.liveStartedAt) ? _isLiveRoom.liveStartedAt : 0;
   state.audioOnly       = roomAudioOnly.has(roomId);
   state.privateMode     = roomPrivateMap.has(roomId);
   state.subscriberOnly  = subOnlyRooms.has(roomId);

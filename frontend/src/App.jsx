@@ -746,6 +746,10 @@ export default function App() {
           });
         });
       }
+      if (ackData.isLive) {
+        setIsLive(true);
+        if (!liveStartRef.current) liveStartRef.current = ackData.liveStartedAt || Date.now();
+      }
       if (ackData.streamGoal) {
         setStreamGoal({ label: ackData.streamGoal.label || 'Stream Goal', goalCents: ackData.streamGoal.target || 0 });
       }
