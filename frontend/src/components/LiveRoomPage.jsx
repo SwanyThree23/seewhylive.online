@@ -508,15 +508,19 @@ export default function LiveRoomPage({
       }
       if (data.activePoll) {
         var _ap = data.activePoll;
-        var _apOpts = Array.isArray(_ap.options)
-          ? _ap.options.map(function(o) {
-              return typeof o === 'string'
-                ? { text: o, votes: (_ap.votes && _ap.votes[o]) || 0 }
-                : { text: o.text || '', votes: o.votes || 0 };
-            })
-          : [];
-        setActivePoll({ q: _ap.question || _ap.q || '', opts: _apOpts });
-        setShowQa(true);
+        // New-system polls (poll-create) have endsAt; they are shown by PollOverlay
+        // via the seeded poll-start event. Skip setting LiveRoomPage's activePoll for them.
+        if (!_ap.endsAt) {
+          var _apOpts = Array.isArray(_ap.options)
+            ? _ap.options.map(function(o) {
+                return typeof o === 'string'
+                  ? { text: o, votes: (_ap.votes && _ap.votes[o]) || 0 }
+                  : { text: o.text || '', votes: o.votes || 0 };
+              })
+            : [];
+          setActivePoll({ q: _ap.question || _ap.q || '', opts: _apOpts });
+          setShowQa(true);
+        }
       }
       if (data.activeVsPoll) {
         setVsPoll(data.activeVsPoll);

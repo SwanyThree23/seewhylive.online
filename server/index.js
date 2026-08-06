@@ -665,6 +665,16 @@ function seedEphemeralState(socketId, roomId) {
   }
   // Seed stage lock state
   if (_room && _room.stageLocked) io.to(socketId).emit('stage-lock-update', { locked: true });
+  // Seed active stream goal so StreamGoalBar renders for late joiners
+  var _goal = streamGoals.get(roomId);
+  if (_goal && _goal.target > 0) {
+    io.to(socketId).emit('stream-goal-set', { roomId: roomId, type: _goal.type, target: _goal.target, label: _goal.label || '' });
+  }
+  // Seed gift leaderboard so GiftLeaderboardOverlay renders for late joiners
+  var _lb = giftLeaderboards.get(roomId);
+  if (_lb && _lb.length > 0) {
+    io.to(socketId).emit('gift-leaderboard', { roomId: roomId, leaders: _lb.slice(0, 10) });
+  }
 }
 
 
