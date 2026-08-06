@@ -352,6 +352,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       socket.off('pk-end');
       socket.off('watch-party-started');
       socket.off('watch-party-url');
+      socket.off('gift-leaderboard');
     };
   }, [socket, role]);
 

@@ -94,6 +94,8 @@ function DesktopStudioTab() {
     });
 
     return function() {
+      socket.off('connect');
+      socket.off('disconnect');
       socket.off('go-live-confirmed');
       socket.off('viewer-count');
       socket.off('broadcast-ended');

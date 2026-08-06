@@ -921,6 +921,7 @@ export default function LiveRoomPage({
       socket.off('trivia-question');
       socket.off('trivia-results');
       socket.off('chat-react-update');
+      socket.off('panel:audio_only_changed');
     };
   }, [socket]);
 
