@@ -507,7 +507,15 @@ export default function LiveRoomPage({
         setChat(function(prev) { return prev.length > 0 ? prev : data.chatHistory; });
       }
       if (data.activePoll) {
-        setActivePoll(data.activePoll);
+        var _ap = data.activePoll;
+        var _apOpts = Array.isArray(_ap.options)
+          ? _ap.options.map(function(o) {
+              return typeof o === 'string'
+                ? { text: o, votes: (_ap.votes && _ap.votes[o]) || 0 }
+                : { text: o.text || '', votes: o.votes || 0 };
+            })
+          : [];
+        setActivePoll({ q: _ap.question || _ap.q || '', opts: _apOpts });
         setShowQa(true);
       }
       if (data.activeVsPoll) {
