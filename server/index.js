@@ -2438,7 +2438,7 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('chat-message', {
       userId:   'system',
       username: 'SeeWhy LIVE',
-      text:     '🔇 ' + (socket.data.username || 'Host') + ' muted all participants',
+      message:  '🔇 ' + (socket.data.username || 'Host') + ' muted all participants',
       ts:       Math.floor(Date.now() / 1000)
     });
   });
@@ -2481,7 +2481,7 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('chat-message', {
       userId:   'system',
       username: 'SeeWhy LIVE',
-      text:     '🎉 ' + hostName + ' started a Watch Party! Sync up and enjoy together.',
+      message:  '🎉 ' + hostName + ' started a Watch Party! Sync up and enjoy together.',
       ts:       Math.floor(Date.now() / 1000)
     });
   });
@@ -2620,9 +2620,9 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var msg = String(data.message).substring(0, 300);
     io.to(roomId).emit('chat-message', {
-      userId: 'swanybot',
+      userId:  'swanybot',
       username: '🤖 SwanyBot',
-      text: msg,
+      message: msg,
       ts: Date.now(),
       isBot: true
     });
@@ -3346,9 +3346,9 @@ io.on('connection', function(socket) {
     if (!roomId) return;
     var channelName = (data.channelName || '').slice(0, 80);
     io.to(roomId).emit('chat-message', {
-      userId: 'system',
+      userId:  'system',
       username: 'SeeWhy LIVE',
-      text: '🌐 Now featuring: ' + channelName + ' — go check them out!',
+      message: '🌐 Now featuring: ' + channelName + ' — go check them out!',
       ts: Math.floor(Date.now() / 1000)
     });
   });
