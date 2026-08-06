@@ -656,6 +656,15 @@ function seedEphemeralState(socketId, roomId) {
       if (Object.keys(serialized).length > 0) io.to(socketId).emit('chat-react-update', { msgId: msgId, reactions: serialized });
     });
   }
+  // Seed new activePolls system to PollOverlay (poll-start for late joiners)
+  var _ap2 = activePolls.get(roomId);
+  if (_ap2) {
+    var _ap2Counts = {};
+    Object.keys(_ap2.votes).forEach(function(k) { var o = _ap2.votes[k]; _ap2Counts[o] = (_ap2Counts[o] || 0) + 1; });
+    io.to(socketId).emit('poll-start', { id: _ap2.id, question: _ap2.question, options: _ap2.options, votes: _ap2Counts, totalVotes: _ap2.totalVotes, endsAt: _ap2.endsAt });
+  }
+  // Seed stage lock state
+  if (_room && _room.stageLocked) io.to(socketId).emit('stage-lock-update', { locked: true });
 }
 
 
