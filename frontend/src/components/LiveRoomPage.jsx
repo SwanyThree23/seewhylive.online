@@ -497,7 +497,7 @@ export default function LiveRoomPage({
   useEffect(function() {
     if (!socket) return;
 
-    socket.on('join-room-ack', async function(data) {
+    var onJoinRoomAck = async function(data) {
       if (!data || data.error) {
         if (addToast) addToast('Room connect failed', 'error');
         return;
@@ -555,7 +555,8 @@ export default function LiveRoomPage({
       } catch(e) {
         if (addToast) addToast('WebRTC: ' + e.message, 'error');
       }
-    });
+    };
+    socket.on('join-room-ack', onJoinRoomAck);
 
     socket.on('speaking', function(data) {
       if (!data || !data.guestId) return;
@@ -566,14 +567,15 @@ export default function LiveRoomPage({
       });
     });
 
-    socket.on('super-chat', function(sc) {
+    var onSuperChat = function(sc) {
       if (!sc) return;
       var scEntry = Object.assign({ type: 'super' }, sc);
       setChat(function(prev) { return [...prev.slice(-200), scEntry]; });
       setSuperChatCount(function(c) { return c + 1; });
       if (addToast && role !== 'host') addToast('💬 ' + sc.username + ' sent a $' + (Math.floor(sc.amountCents) / 100).toFixed(2) + ' Super Chat!', 'success');
       playTone([523, 659, 784], 1.5); // C5 E5 G5 — bright chord
-    });
+    };
+    socket.on('super-chat', onSuperChat);
 
     socket.on('super-chat:tts', function(sc) {
       if (!sc) return;
@@ -640,7 +642,7 @@ export default function LiveRoomPage({
       if (addToast) addToast('🔇 Host muted all participants', 'info');
     });
 
-    socket.on('stage-invite', function(data) {
+    var onStageInvite = function(data) {
       if (!data || !data.guestId) return;
       setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[data.guestId]; return n; });
       setStageGuests(function(s) {
@@ -648,7 +650,8 @@ export default function LiveRoomPage({
         if (s.length >= MAX_STAGE) return s;
         return s.concat([data.guestId]);
       });
-    });
+    };
+    socket.on('stage-invite', onStageInvite);
 
     socket.on('stage-invite-pending', function(data) {
       if (!data) return;
@@ -711,14 +714,15 @@ export default function LiveRoomPage({
       }));
     });
 
-    socket.on('creator-followed', function(data) {
+    var onCreatorFollowed = function(data) {
       if (!data || !data.follower) return;
       var alert = { id: Date.now() + Math.random(), follower: String(data.follower).slice(0, 60) };
       setFollowAlert(alert);
       setTimeout(function() {
         setFollowAlert(function(cur) { return (cur && cur.id === alert.id) ? null : cur; });
       }, 4000);
-    });
+    };
+    socket.on('creator-followed', onCreatorFollowed);
 
     socket.on('chat-pinned', function(data) {
       if (!data || !data.message) return;
@@ -729,9 +733,10 @@ export default function LiveRoomPage({
       setPinnedMsg(null);
     });
 
-    socket.on('you-were-kicked', function() {
+    var onYouWereKicked = function() {
       setKicked(true);
-    });
+    };
+    socket.on('you-were-kicked', onYouWereKicked);
 
     socket.on('clip-marked', function(data) {
       if (!data || !data.label) return;
@@ -888,11 +893,11 @@ export default function LiveRoomPage({
     });
 
     return function() {
-      socket.off('join-room-ack');
+      socket.off('join-room-ack', onJoinRoomAck);
       socket.off('speaking');
       socket.off('hand-raise');
       socket.off('hand-lower');
-      socket.off('stage-invite');
+      socket.off('stage-invite', onStageInvite);
       socket.off('poll-update');
       socket.off('qa-question');
       socket.off('qa-upvote');
@@ -901,7 +906,7 @@ export default function LiveRoomPage({
       socket.off('vs-update');
       socket.off('judges-update');
       socket.off('judge-scored');
-      socket.off('super-chat');
+      socket.off('super-chat', onSuperChat);
       socket.off('super-chat:tts');
       socket.off('react-burst');
       socket.off('gift-received');
@@ -925,10 +930,10 @@ export default function LiveRoomPage({
       socket.off('qa-answering-cleared');
       socket.off('viewer-milestone');
       socket.off('gift-leaderboard');
-      socket.off('creator-followed');
+      socket.off('creator-followed', onCreatorFollowed);
       socket.off('chat-pinned');
       socket.off('chat-unpinned');
-      socket.off('you-were-kicked');
+      socket.off('you-were-kicked', onYouWereKicked);
       socket.off('clip-marked');
       socket.off('trivia-question');
       socket.off('trivia-results');
