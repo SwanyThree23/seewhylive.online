@@ -760,14 +760,18 @@ router.post('/ppv/verify', requireAuth, function(req, res) {
 router.post('/n8n/test', requireAuth, async function(req, res) {
   if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: 'forbidden' });
   try {
-    var webhookUrl = req.body.webhookUrl || '';
-    var _rawPayload = req.body.payload || { test: true, source: 'seewhy-live', ts: Date.now() };
+    var webhookUrl  = req.body.webhookUrl || '';
+    var workflowId  = req.body.workflowId || '';
+    var _rawPayload = req.body.payload || { test: true, source: 'seewhy-live', event: req.body.event || 'test', ts: req.body.ts || Date.now() };
     var _payloadStr = JSON.stringify(_rawPayload);
     if (_payloadStr.length > 10240) {
       return res.status(400).json({ success: false, error: 'payload exceeds 10 KB limit' });
     }
     var payload = JSON.parse(_payloadStr);
     if (!webhookUrl) {
+      if (workflowId) {
+        return res.json({ success: true, simulated: true, workflowId: workflowId, message: 'Simulated test — configure a real webhookUrl to test live delivery.' });
+      }
       return res.json({ success: false, error: 'webhookUrl is required' });
     }
     var https = require('https');
