@@ -2002,12 +2002,12 @@ export default function App() {
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={function() {
-                if (socketRef.current) socketRef.current.emit('battle:accept', { battleId: activeBattleChallenge.id });
+                if (socketRef.current) socketRef.current.emit('battle:accept', { battleId: activeBattleChallenge.id, challengerId: activeBattleChallenge.challenger_id });
                 setActiveBattleChallenge(null);
                 setActiveTab('pkbattle-arena');
               }} style={{ flex: 1, padding: '8px', background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 8, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>ACCEPT</button>
               <button onClick={function() {
-                if (socketRef.current) socketRef.current.emit('battle:decline', { battleId: activeBattleChallenge.id });
+                if (socketRef.current) socketRef.current.emit('battle:decline', { battleId: activeBattleChallenge.id, challengerId: activeBattleChallenge.challenger_id });
                 setActiveBattleChallenge(null);
               }} style={{ flex: 1, padding: '8px', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: '#8A7A62', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>DECLINE</button>
             </div>
