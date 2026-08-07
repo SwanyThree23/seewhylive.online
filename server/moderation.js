@@ -89,6 +89,10 @@ var stmtDeleteWord = db.prepare(
   'DELETE FROM word_filters WHERE creator_id = ? AND word = ?'
 );
 
+var stmtDeleteWordById = db.prepare(
+  'DELETE FROM word_filters WHERE creator_id = ? AND id = ?'
+);
+
 var stmtGetWords = db.prepare(
   'SELECT id, word FROM word_filters WHERE creator_id = ?'
 );
@@ -163,6 +167,10 @@ function removeWordFilter(creatorId, word) {
   stmtDeleteWord.run(creatorId, word.toLowerCase());
 }
 
+function removeWordFilterById(creatorId, id) {
+  stmtDeleteWordById.run(creatorId, id);
+}
+
 function getWordFilters(creatorId) {
   return stmtGetWords.all(creatorId);
 }
@@ -227,6 +235,7 @@ module.exports = {
   getBannedUsers: getBannedUsers,
   addWordFilter: addWordFilter,
   removeWordFilter: removeWordFilter,
+  removeWordFilterById: removeWordFilterById,
   getWordFilters: getWordFilters,
   containsBannedWord: containsBannedWord,
   setSubscriberOnly: setSubscriberOnly,

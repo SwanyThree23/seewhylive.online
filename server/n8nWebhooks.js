@@ -28,7 +28,8 @@ n8nRouter.get('/ping', function(req, res) {
 });
 
 n8nRouter.get('/health', function(req, res) {
-  res.json({ ok: true, server: 'seewhy-live', ts: Date.now() });
+  var clientCount = (global.io && global.io.sockets) ? global.io.sockets.sockets.size : 0;
+  res.json({ ok: true, server: 'seewhy-live', socket_clients: clientCount, ts: Date.now() });
 });
 
 n8nRouter.post('/stream-live', function(req, res) {

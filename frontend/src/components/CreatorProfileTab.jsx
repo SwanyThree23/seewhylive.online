@@ -25,6 +25,7 @@ var MOCK_PROFILE = {
 };
 
 function formatJoinDate(dateStr) {
+  if (!dateStr) return '';
   var parts = dateStr.split('-');
   var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var y = parts[0];
@@ -68,7 +69,7 @@ export default function CreatorProfileTab(props) {
       .then(function(r) { return r.json(); })
       .then(function(d) {
         if (d && d.username) {
-          setProfile(d);
+          setProfile(Object.assign({}, MOCK_PROFILE, d));
         }
       })
       .catch(function() {

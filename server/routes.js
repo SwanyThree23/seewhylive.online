@@ -278,11 +278,11 @@ router.post('/moderation/word-filters', requireAuth, function(req, res) {
   }
 });
 
-router.delete('/moderation/word-filters/:word', requireAuth, function(req, res) {
+router.delete('/moderation/word-filters/:id', requireAuth, function(req, res) {
   try {
     var creatorId = req.user.id;
     if (moderation) {
-      moderation.removeWordFilter(creatorId, String(req.params.word || '').slice(0, 200));
+      moderation.removeWordFilterById(creatorId, String(req.params.id || '').slice(0, 200));
     }
     return res.json({ success: true });
   } catch (err) {
@@ -372,7 +372,8 @@ router.get('/creator/onboard/status', requireAuth, function(req, res) {
   try {
     return res.json({
       connected: !!(process.env.STRIPE_SECRET_KEY),
-      accountId: null
+      accountId: null,
+      availableCents: 0
     });
   } catch (err) {
     return res.json({ success: false, error: 'Internal server error' });
@@ -564,7 +565,7 @@ router.put('/users/me', requireAuth, function(req, res) {
 router.delete('/users/me', requireAuth, function(req, res) {
   try {
     delete _userProfiles[req.user.id];
-    return res.json({ deleted: true });
+    return res.json({ success: true });
   } catch (err) {
     return res.json({ success: false, error: 'Internal server error' });
   }
