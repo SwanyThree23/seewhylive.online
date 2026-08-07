@@ -1998,16 +1998,16 @@ export default function App() {
           <div style={{ background: 'linear-gradient(135deg,#1A1510,#0E0C09)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 14, padding: '16px 18px', boxShadow: '0 0 40px rgba(201,168,76,.2)', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#C9A84C', letterSpacing: 3 }}>⚔️ PK CHALLENGE</div>
             <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4' }}>
-              <strong>{activeBattleChallenge.challenger_username || 'Someone'}</strong> challenged you to a PK Battle!
+              <strong>{activeBattleChallenge.challenger_name || activeBattleChallenge.challenger_username || 'Someone'}</strong> challenged you to a PK Battle!
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={function() {
-                if (socketRef.current) socketRef.current.emit('battle:accept', { challengerId: activeBattleChallenge.challenger_id });
+                if (socketRef.current) socketRef.current.emit('battle:accept', { battleId: activeBattleChallenge.id });
                 setActiveBattleChallenge(null);
                 setActiveTab('pkbattle-arena');
               }} style={{ flex: 1, padding: '8px', background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 8, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>ACCEPT</button>
               <button onClick={function() {
-                if (socketRef.current) socketRef.current.emit('battle:decline', { challengerId: activeBattleChallenge.challenger_id });
+                if (socketRef.current) socketRef.current.emit('battle:decline', { battleId: activeBattleChallenge.id });
                 setActiveBattleChallenge(null);
               }} style={{ flex: 1, padding: '8px', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: '#8A7A62', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>DECLINE</button>
             </div>
