@@ -67,33 +67,33 @@ function DesktopStudioTab() {
     var socket = getSocket(token);
     socketRef.current = socket;
 
-    socket.on('connect', function() {
+    function onConnect() {
       socket.emit('join-room', { roomId: roomId, userId: userId, username: username, role: 'host', token: token });
       setStatus('connected');
-    });
+    }
 
-    socket.on('disconnect', function() {
+    function onDisconnect() {
       setStatus('idle');
-    });
+    }
 
-    socket.on('go-live-confirmed', function() {
+    function onGoLiveConfirmed() {
       setIsLive(true);
       setStatus('live');
       var start = Date.now();
       uptimeRef.current = setInterval(function() {
         setUptime(Math.floor((Date.now() - start) / 1000));
       }, 1000);
-    });
+    }
 
-    socket.on('viewer-count', function(data) {
+    function onViewerCount(data) {
       if (data && typeof data.count === 'number') setViewerCount(data.count);
-    });
+    }
 
-    socket.on('broadcast-ended', function() {
+    function onBroadcastEnded() {
       stopLive();
-    });
+    }
 
-    socket.on('join-room-ack', function(ackData) {
+    function onJoinRoomAck(ackData) {
       if (!ackData || !ackData.isLive) return;
       setIsLive(true);
       setStatus('live');
@@ -103,15 +103,22 @@ function DesktopStudioTab() {
           setUptime(Math.floor((Date.now() - _start) / 1000));
         }, 1000);
       }
-    });
+    }
+
+    socket.on('connect',           onConnect);
+    socket.on('disconnect',        onDisconnect);
+    socket.on('go-live-confirmed', onGoLiveConfirmed);
+    socket.on('viewer-count',      onViewerCount);
+    socket.on('broadcast-ended',   onBroadcastEnded);
+    socket.on('join-room-ack',     onJoinRoomAck);
 
     return function() {
-      socket.off('connect');
-      socket.off('disconnect');
-      socket.off('go-live-confirmed');
-      socket.off('viewer-count');
-      socket.off('broadcast-ended');
-      socket.off('join-room-ack');
+      socket.off('connect',           onConnect);
+      socket.off('disconnect',        onDisconnect);
+      socket.off('go-live-confirmed', onGoLiveConfirmed);
+      socket.off('viewer-count',      onViewerCount);
+      socket.off('broadcast-ended',   onBroadcastEnded);
+      socket.off('join-room-ack',     onJoinRoomAck);
     };
   }, []);
 

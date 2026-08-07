@@ -464,6 +464,8 @@ export default function WatchPartyTab(props) {
       }
     }
 
+    function onWatchPartyStarted() { setWatchPartyActive(true); }
+
     socket.on('watch-party-url',     onWatchUrl);
     socket.on('watch-party-play',    onWatchPlay);
     socket.on('watch-party-pause',   onWatchPause);
@@ -473,7 +475,7 @@ export default function WatchPartyTab(props) {
     socket.on('screen-share-active', onScreenShareActive);
     socket.on('screen-share-ended',  onScreenShareEnded);
     socket.on('watch-sync',          onSyncAction);
-    socket.on('watch-party-started', function() { setWatchPartyActive(true); });
+    socket.on('watch-party-started', onWatchPartyStarted);
 
     if (!isHost && socket && roomId) {
       socket.emit('watch-party-sync-request', { roomId: roomId });
@@ -489,7 +491,7 @@ export default function WatchPartyTab(props) {
       socket.off('screen-share-active', onScreenShareActive);
       socket.off('screen-share-ended',  onScreenShareEnded);
       socket.off('watch-sync',          onSyncAction);
-      socket.off('watch-party-started');
+      socket.off('watch-party-started', onWatchPartyStarted);
     };
   }, [socket, isHost, sourceType]);
 
