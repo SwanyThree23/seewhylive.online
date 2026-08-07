@@ -198,7 +198,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     for (var i = 0; i < banned.length; i++) { if (banned[i] === u) return; }
     setBanned(function(p) { return p.concat([u]); });
     setNewBan('');
-    if (socket) socket.emit('ban-user', { roomId: roomId, username: u });
+    if (socket) socket.emit('ban-user', { roomId: roomId, targetUser: u });
     if (addToast) addToast('Banned: ' + u, 'info');
   }
 

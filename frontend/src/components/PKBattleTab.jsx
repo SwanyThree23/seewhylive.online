@@ -69,7 +69,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   useEffect(function() {
     if (!socket) return;
 
-    socket.on('pk-start', function(data) {
+    function onPkStart(data) {
       if (!data) return;
       setChallenger(data.challenger || '');
       setDefender(data.defender || '');
@@ -82,21 +82,20 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       setCheerA([]);
       setCheerB([]);
       if (addToast) addToast('⚔️ PK Battle started!', 'success');
-    });
-    socket.on('pk-end', function(data) {
+    }
+    function onPkEnd(data) {
       if (!data) return;
       setWinner(data.winner || null);
       setBattleState('ended');
       clearAllIntervals();
       if (addToast) addToast('🏆 ' + (data.winner || 'Battle') + ' wins the PK!', 'success');
-    });
-    socket.on('pk-vote-update', function(data) {
+    }
+    function onPkVoteUpdate(data) {
       if (!data) return;
       if (typeof data.challengerVotes === 'number') setChallengerScore(data.challengerVotes);
       if (typeof data.defenderVotes   === 'number') setDefenderScore(data.defenderVotes);
-    });
-
-    socket.on('pk-gift-boost', function(data) {
+    }
+    function onPkGiftBoost(data) {
       if (!data) return;
       var pts = data.points || 5;
       if (data.side === 'challenger') {
@@ -111,25 +110,31 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         return [{ time: fmtTime(), text: boostMsg, ts: Date.now() }].concat(prev).slice(0, 50);
       });
       if (addToast) addToast('🎁 Gift boost! +' + pts, 'success');
-    });
-    socket.on('pk-cheer-update', function(data) {
+    }
+    function onPkCheerUpdate(data) {
       if (!data) return;
       if (data.cheerA) setCheerA(data.cheerA.slice(0, 20));
       if (data.cheerB) setCheerB(data.cheerB.slice(0, 20));
-    });
-
-    socket.on('pk-sudden-death', function() {
+    }
+    function onPkSuddenDeath() {
       setBattleLog(function(prev) { return [{ text: '⚡ SUDDEN DEATH — next point wins!', ts: Date.now() }].concat(prev).slice(0, 20); });
       if (addToast) addToast('⚡ SUDDEN DEATH round!', 'error');
-    });
+    }
+
+    socket.on('pk-start',        onPkStart);
+    socket.on('pk-end',          onPkEnd);
+    socket.on('pk-vote-update',  onPkVoteUpdate);
+    socket.on('pk-gift-boost',   onPkGiftBoost);
+    socket.on('pk-cheer-update', onPkCheerUpdate);
+    socket.on('pk-sudden-death', onPkSuddenDeath);
 
     return function() {
-      socket.off('pk-start');
-      socket.off('pk-end');
-      socket.off('pk-vote-update');
-      socket.off('pk-cheer-update');
-      socket.off('pk-gift-boost');
-      socket.off('pk-sudden-death');
+      socket.off('pk-start',        onPkStart);
+      socket.off('pk-end',          onPkEnd);
+      socket.off('pk-vote-update',  onPkVoteUpdate);
+      socket.off('pk-gift-boost',   onPkGiftBoost);
+      socket.off('pk-cheer-update', onPkCheerUpdate);
+      socket.off('pk-sudden-death', onPkSuddenDeath);
     };
   }, [socket, addToast]);
 
