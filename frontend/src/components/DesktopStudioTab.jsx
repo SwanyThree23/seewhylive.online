@@ -93,12 +93,25 @@ function DesktopStudioTab() {
       stopLive();
     });
 
+    socket.on('join-room-ack', function(ackData) {
+      if (!ackData || !ackData.isLive) return;
+      setIsLive(true);
+      setStatus('live');
+      if (!uptimeRef.current) {
+        var _start = ackData.liveStartedAt || Date.now();
+        uptimeRef.current = setInterval(function() {
+          setUptime(Math.floor((Date.now() - _start) / 1000));
+        }, 1000);
+      }
+    });
+
     return function() {
       socket.off('connect');
       socket.off('disconnect');
       socket.off('go-live-confirmed');
       socket.off('viewer-count');
       socket.off('broadcast-ended');
+      socket.off('join-room-ack');
     };
   }, []);
 

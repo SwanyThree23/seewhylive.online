@@ -569,6 +569,9 @@ function getJoinStateForRoom(roomId) {
   state.pinnedMessage   = pinnedMessages.get(roomId) || null;
   state.slowMode        = slowModeSeconds.get(roomId) || 0;
   state.streamGoal      = streamGoals.get(roomId) || null;
+  var _isLiveRoom = rooms.get(roomId);
+  state.isLive          = !!(_isLiveRoom && _isLiveRoom.isLive);
+  state.liveStartedAt   = (state.isLive && _isLiveRoom.liveStartedAt) ? _isLiveRoom.liveStartedAt : 0;
   state.audioOnly       = roomAudioOnly.has(roomId);
   state.privateMode     = roomPrivateMap.has(roomId);
   state.subscriberOnly  = subOnlyRooms.has(roomId);
@@ -665,6 +668,16 @@ function seedEphemeralState(socketId, roomId) {
   }
   // Seed stage lock state
   if (_room && _room.stageLocked) io.to(socketId).emit('stage-lock-update', { locked: true });
+  // Seed active stream goal so StreamGoalBar renders for late joiners
+  var _goal = streamGoals.get(roomId);
+  if (_goal && _goal.target > 0) {
+    io.to(socketId).emit('stream-goal-set', { roomId: roomId, type: _goal.type, target: _goal.target, label: _goal.label || '' });
+  }
+  // Seed gift leaderboard so GiftLeaderboardOverlay renders for late joiners
+  var _lb = giftLeaderboards.get(roomId);
+  if (_lb && _lb.length > 0) {
+    io.to(socketId).emit('gift-leaderboard', { roomId: roomId, leaders: _lb.slice(0, 10) });
+  }
 }
 
 
@@ -3376,19 +3389,21 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = socket.data.roomId;
     if (!roomId) return;
-    var fadesEvent = /^[a-z0-9-]{1,32}$/i.test(String(data.event || '')) ? String(data.event) : '';
-    if (!fadesEvent) return;
+    // Client sends `type`; legacy path also accepts `event`
+    var fadesType = String(data.type || data.event || '');
+    if (!/^[a-z0-9-]{1,32}$/i.test(fadesType)) return;
     var fadesScores;
     try {
       var _fStr = JSON.stringify(data.scores);
       if (_fStr && _fStr.length > 4096) return;
       fadesScores = JSON.parse(_fStr);
     } catch(e) { fadesScores = null; }
-    io.to(roomId).emit('fades-event', {
-      event:  fadesEvent,
-      scores: fadesScores,
-      ts:     Math.floor(Date.now() / 1000)
-    });
+    var _fadesEmit = { type: fadesType, scores: fadesScores, ts: Math.floor(Date.now() / 1000) };
+    if (Array.isArray(data.team1)) _fadesEmit.team1 = data.team1.slice(0, 20);
+    if (Array.isArray(data.team2)) _fadesEmit.team2 = data.team2.slice(0, 20);
+    if (data.roundWinner) _fadesEmit.roundWinner = String(data.roundWinner).slice(0, 20);
+    if (data.matchWinner) _fadesEmit.matchWinner = String(data.matchWinner).slice(0, 20);
+    io.to(roomId).emit('fades-event', _fadesEmit);
   });
 
   // ── go-live ────────────────────────────────────────────────────────────
