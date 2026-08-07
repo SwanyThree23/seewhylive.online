@@ -3706,7 +3706,25 @@ io.on('connection', function(socket) {
     var cheerRoomId = socket.data.roomId;
     if (!cheerRoomId) return;
     var battle = vsPolls.get(cheerRoomId);
-    if (!battle || !battle.active) return;
+    // Also handle battles started via pk-start (which uses pkBattleState, not vsPolls)
+    if (!battle || !battle.active) {
+      var pkState = pkBattleState.get(cheerRoomId);
+      if (!pkState) return;
+      if (!pkState.cheerA) pkState.cheerA = [];
+      if (!pkState.cheerB) pkState.cheerB = [];
+      if (!pkState.cheerSids) pkState.cheerSids = new Set();
+      var pkSide = data && data.side === 'B' ? 'B' : 'A';
+      var pkKey = socket.data.userId || socket.id;
+      if (pkState.cheerSids.has(pkKey)) return;
+      pkState.cheerSids.add(pkKey);
+      var pkUser = socket.data.username || 'Viewer';
+      (pkSide === 'A' ? pkState.cheerA : pkState.cheerB).push(pkUser);
+      if (pkState.cheerA.length > 20) pkState.cheerA = pkState.cheerA.slice(-20);
+      if (pkState.cheerB.length > 20) pkState.cheerB = pkState.cheerB.slice(-20);
+      io.to(cheerRoomId).emit('pk-cheer-update', { cheerA: pkState.cheerA, cheerB: pkState.cheerB });
+      return;
+    }
+    if (!battle.active) return;
     var cheerSide = data.side === 'B' ? 'B' : 'A';
     if (!battle.cheerA) battle.cheerA = [];
     if (!battle.cheerB) battle.cheerB = [];
