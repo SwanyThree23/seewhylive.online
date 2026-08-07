@@ -3759,7 +3759,7 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sgRoomId = socket.data.roomId;
     if (!sgRoomId) return;
-    var GOAL_TYPES = ['viewers', 'revenue', 'duration', 'gifts'];
+    var GOAL_TYPES = ['viewers', 'revenue', 'duration', 'gifts', 'loves'];
     var goalType  = GOAL_TYPES.includes(String(data.type || '')) ? String(data.type) : 'viewers';
     var goalLabel = data.label ? String(data.label).slice(0, 80) : null;
     var _rawTarget = Number(data.target || data.goalCents);

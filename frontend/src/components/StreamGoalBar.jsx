@@ -32,9 +32,9 @@ var STYLE_TAG =
   '}';
 
 var GOAL_TYPES = [
-  { id: 'viewers',  label: 'Viewers',  icon: '👁', unit: '' },
-  { id: 'earnings', label: 'Earnings', icon: '💰', unit: '$' },
-  { id: 'loves',    label: 'Loves',    icon: '♥',  unit: '' },
+  { id: 'viewers', label: 'Viewers',  icon: '👁', unit: '' },
+  { id: 'revenue', label: 'Revenue',  icon: '💰', unit: '$' },
+  { id: 'loves',   label: 'Loves',    icon: '♥',  unit: '' },
 ];
 
 var BURST_OFFSETS = [
@@ -96,7 +96,7 @@ export default function StreamGoalBar(props) {
   function getCurrentValue() {
     if (!goal) return 0;
     if (goal.type === 'viewers')  return viewerCount;
-    if (goal.type === 'earnings') return Math.floor(earningsCents / 100);
+    if (goal.type === 'revenue') return Math.floor(earningsCents / 100);
     if (goal.type === 'loves')    return loveTotal;
     return 0;
   }
