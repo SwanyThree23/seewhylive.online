@@ -86,7 +86,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
 
   function sendSub(tier) {
     if (!socket) return;
-    socket.emit('subscribe', { roomId: roomId, username: username, tier: tier.id, priceCents: tier.cents });
+    socket.emit('subscribe', { roomId: roomId, username: username, tier: tier.id, price_cents: tier.cents });
     setSubTier(tier.id);
     if (addToast) addToast('⭐ Subscribed at ' + tier.label + '!', 'success');
   }
@@ -98,7 +98,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
     var goal = { label: goalLabel, goalCents: cents };
     localStorage.setItem('sw_stream_goal', JSON.stringify(goal));
     if (setStreamGoal) setStreamGoal(goal);
-    if (socket) socket.emit('stream-goal-set', { roomId: roomId, label: goalLabel, goalCents: cents });
+    if (socket) socket.emit('stream-goal-set', { roomId: roomId, type: 'revenue', label: goalLabel, target: cents });
     if (addToast) addToast('Stream goal set: ' + goalLabel, 'success');
   }
 
