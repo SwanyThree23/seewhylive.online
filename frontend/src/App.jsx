@@ -933,14 +933,14 @@ export default function App() {
 
     socket.on('battle:challenge', function(data) {
       if (!data) return;
-      var challenger = data.challenger_username || data.challenger_id || 'Someone';
+      var challenger = data.challenger_name || data.challenger_username || data.challenger_id || 'Someone';
       addToast('⚔️ ' + challenger + ' challenged you to a PK Battle!', 'info');
       setActiveBattleChallenge(data);
     });
 
     socket.on('battle:accept', function(data) {
       if (!data) return;
-      var defender = data.defender_username || data.defender_id || 'Your opponent';
+      var defender = data.defender_name || data.defender_username || data.defender_id || 'Your opponent';
       addToast('✅ ' + defender + ' accepted your PK Challenge!', 'success');
     });
 
