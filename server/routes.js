@@ -372,7 +372,8 @@ router.get('/creator/onboard/status', requireAuth, function(req, res) {
   try {
     return res.json({
       connected: !!(process.env.STRIPE_SECRET_KEY),
-      accountId: null
+      accountId: null,
+      availableCents: 0
     });
   } catch (err) {
     return res.json({ success: false, error: 'Internal server error' });
@@ -564,7 +565,7 @@ router.put('/users/me', requireAuth, function(req, res) {
 router.delete('/users/me', requireAuth, function(req, res) {
   try {
     delete _userProfiles[req.user.id];
-    return res.json({ deleted: true });
+    return res.json({ success: true });
   } catch (err) {
     return res.json({ success: false, error: 'Internal server error' });
   }
