@@ -1154,11 +1154,12 @@ app.post('/api/ai/chat', requireAuth, function(req, res) {
   var body    = req.body;
   var message = typeof body.message === 'string' ? body.message.slice(0, 1000) : '';
   if (!message) { res.status(400).json({ error: 'message required' }); return; }
+  var system  = typeof body.system === 'string' && body.system.trim() ? body.system.slice(0, 2000) : 'You are a helpful assistant for SeeWhy LIVE.';
   var client = require('./llm').getClient();
   client.messages.create({
     model: 'anthropic/claude-sonnet-5',
     max_tokens: 512,
-    system: 'You are a helpful assistant for SeeWhy LIVE.',
+    system: system,
     messages: [{ role: 'user', content: message }]
   }).then(function(r) {
     var text = r.content && r.content[0] && r.content[0].text ? r.content[0].text : '';

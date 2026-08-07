@@ -117,7 +117,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
   function saveProfile() {
     setProfileSaving(true);
     fetch('/api/users/me', {
-      method: 'POST',
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ displayName: displayName, bio: bio, avatarEmoji: avatarEmoji })
     })
