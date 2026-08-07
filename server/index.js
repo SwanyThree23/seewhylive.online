@@ -2766,14 +2766,17 @@ io.on('connection', function(socket) {
   socket.on('poll-vote', function(data) {
     var roomId    = socket.data.roomId;
     if (!roomId) return;
+    // New-system votes carry `option` (string) + `pollId` — handled by the poll-create
+    // handler registered below. Skip here so we don't consume the throttle slot.
+    if (data.optionIdx === undefined && data.optionIndex === undefined) return;
     var _pvNow = Date.now();
     var _pvKey = socket.data.userId || socket.id;
     if (_pvNow - (pollVoteThrottle.get(_pvKey) || 0) < 500) return;
-    pollVoteThrottle.set(_pvKey, _pvNow);
-    var optionIdx = Math.floor(data.optionIdx !== undefined ? data.optionIdx : (data.optionIndex || 0));
+    var optionIdx = Math.floor(data.optionIdx !== undefined ? data.optionIdx : Math.floor(data.optionIndex || 0));
     var poll      = polls.get(roomId);
     if (!poll || !poll.active) return;
     if (optionIdx < 0 || optionIdx >= poll.options.length) return;
+    pollVoteThrottle.set(_pvKey, _pvNow);
     poll.options.forEach(function(o) { o.votes.delete(_pvKey); });
     poll.options[optionIdx].votes.add(_pvKey);
     io.to(roomId).emit('poll-update', serializePoll(poll));
