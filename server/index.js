@@ -4002,8 +4002,18 @@ io.on('connection', function(socket) {
     var sId = socket.data.roomId;
     if (!sId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var _muteId = String(data.targetUser || data.userId || '');
-    if (!_muteId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_muteId)) return;
+    var _muteTarget = String(data.targetUser || data.userId || '');
+    if (!_muteTarget) return;
+    var _muteUuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    var _muteId = _muteTarget;
+    // GuardianTab sends usernames; resolve username → userId via room sockets
+    if (!_muteUuidRe.test(_muteId)) {
+      io.sockets.sockets.forEach(function(s) {
+        if (_muteUuidRe.test(_muteId)) return;
+        if (s.data.roomId === sId && s.data.username === _muteTarget && _muteUuidRe.test(s.data.userId)) _muteId = s.data.userId;
+      });
+      if (!_muteUuidRe.test(_muteId)) return;
+    }
     var _muteReason = String(data.reason || '').slice(0, 200);
     var _muteProducers = mediasoup.getProducerIdsByGuest(_muteId);
     _muteProducers.forEach(function(pid) { mediasoup.pauseProducer(pid); });
@@ -4015,8 +4025,18 @@ io.on('connection', function(socket) {
     var sId = socket.data.roomId;
     if (!sId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var bannedId = String(data.userId || data.targetUser || '');
-    if (!bannedId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(bannedId)) return;
+    var _banTarget = String(data.userId || data.targetUser || '');
+    if (!_banTarget) return;
+    var _banUuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    var bannedId = _banTarget;
+    // GuardianTab sends usernames; resolve username → userId via room sockets
+    if (!_banUuidRe.test(bannedId)) {
+      io.sockets.sockets.forEach(function(s) {
+        if (_banUuidRe.test(bannedId)) return;
+        if (s.data.roomId === sId && s.data.username === _banTarget && _banUuidRe.test(s.data.userId)) bannedId = s.data.userId;
+      });
+      if (!_banUuidRe.test(bannedId)) return;
+    }
     io.to(sId).emit('user-banned', { userId: bannedId, ts: Math.floor(Date.now() / 1000) });
     // Disconnect every socket in this room whose userId matches the ban target
     var room = rooms.get(sId);
