@@ -278,11 +278,11 @@ router.post('/moderation/word-filters', requireAuth, function(req, res) {
   }
 });
 
-router.delete('/moderation/word-filters/:word', requireAuth, function(req, res) {
+router.delete('/moderation/word-filters/:id', requireAuth, function(req, res) {
   try {
     var creatorId = req.user.id;
     if (moderation) {
-      moderation.removeWordFilter(creatorId, String(req.params.word || '').slice(0, 200));
+      moderation.removeWordFilterById(creatorId, String(req.params.id || '').slice(0, 200));
     }
     return res.json({ success: true });
   } catch (err) {
