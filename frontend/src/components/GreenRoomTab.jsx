@@ -247,7 +247,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
   function togglePrivateRoom() {
     var next = !privateRoom;
     setPrivateRoom(next);
-    if (socket) socket.emit('room-private', { roomId: roomId, privateRoom: next });
+    if (socket) socket.emit('room-private', { roomId: roomId, enabled: next });
     if (addToast) addToast(next ? '🔒 Room locked — invite only' : '🔓 Room unlocked — public access', next ? 'info' : 'success');
   }
 
