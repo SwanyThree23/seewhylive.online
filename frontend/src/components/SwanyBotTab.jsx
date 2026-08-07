@@ -104,9 +104,13 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
       setTriggers(function(prev) { return prev.filter(function(t) { return t.id !== data.triggerId; }); });
     }
     function onPollUpdate(data) {
-      if (!data || !data.votes) return;
-      setPollVotes(data.votes);
-      if (data.ended) { setPollRunning(false); setPollEnded(true); }
+      if (!data || !Array.isArray(data.options)) return;
+      // Old-system options are objects {text, votes}; new-system are strings (handled by PollOverlay)
+      if (typeof data.options[0] !== 'object') return;
+      var counts = {};
+      data.options.forEach(function(o, i) { counts[i] = o.votes || 0; });
+      setPollVotes(counts);
+      if (data.active === false) { setPollRunning(false); setPollEnded(true); }
     }
     socket.on('bot-rule-changed',    onRuleChanged);
     socket.on('bot-trigger-added',   onTriggerAdded);
