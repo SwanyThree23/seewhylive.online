@@ -155,7 +155,12 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
       body: JSON.stringify({ amountCents: availableCents })
     })
     .then(function(r) { return r.json(); })
-    .then(function() {
+    .then(function(data) {
+      if (!data || data.success === false) {
+        addToast((data && data.error) || 'Payout failed. Try again.', 'error');
+        setPayoutLoading(false);
+        return;
+      }
       addToast('Payout of $' + (Math.floor(availableCents) / 100).toFixed(2) + ' initiated!', 'success');
       setAvailableCents(0);
       setPayoutLoading(false);
