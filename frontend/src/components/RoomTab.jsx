@@ -405,7 +405,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: src, targetLang: targetLang })
     })
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
       .then(function(d) {
         setTxTexts(function(p) { return Object.assign({}, p, {[txKey]: d.translated || src}); });
         setShowTx(function(p) { return Object.assign({}, p, {[txKey]: true}); });
