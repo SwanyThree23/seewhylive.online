@@ -2170,7 +2170,7 @@ function StreamKeysTab(props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ guestId: userId, destId: platform, plainKey: streamKey })
     })
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Save failed ' + r.status); }); return r.json(); })
       .then(function(data) {
         setSaving(false);
         if (data && data.saved) {
@@ -2193,7 +2193,7 @@ function StreamKeysTab(props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ guestId: userId, destId: destId })
     })
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Delete failed ' + r.status); }); return r.json(); })
       .then(function(data) {
         if (data && data.deleted) {
           setSavedKeys(function(prev) { return prev.filter(function(k) { return k.destId !== destId; }); });
