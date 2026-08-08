@@ -167,7 +167,10 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
         data: Object.assign({}, trigger.data, { viewerCount: viewerCount || 0, streamTitle: 'SeeWhy LIVE' })
       })
     })
-    .then(function(r) { return r.json(); })
+    .then(function(r) {
+      if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Trigger failed'); });
+      return r.json();
+    })
     .then(function(d) {
       setTriggerLoading('');
       var text = d.text || 'AURA response received';

@@ -238,6 +238,14 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
   }
 
   function banUserFromFlag(f) {
+    setBannedUsers(function(prev) {
+      return prev.concat([{ username: f.user, userId: f.userId || f.user, reason: f.reason || f.rule || 'Banned by creator', ts: f.ts }]);
+    });
+    setFlags(function(prev) { return prev.filter(function(x) { return x.id !== f.id; }); });
+    if (addToast) addToast('User ' + f.user + ' banned', 'error');
+    if (socket && roomId) {
+      socket.emit('ban-user', { roomId: roomId, userId: f.userId || f.user });
+    }
     fetch('/api/moderation/ban', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -247,15 +255,11 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
         bannedUsername: f.user,
         reason: f.reason || f.rule || 'Banned by creator'
       })
-    }).catch(function() {});
-    setBannedUsers(function(prev) {
-      return prev.concat([{ username: f.user, userId: f.userId || f.user, reason: f.reason || f.rule || 'Banned by creator', ts: f.ts }]);
+    }).then(function(r) {
+      if (!r.ok && addToast) addToast('Ban not saved to server — will not persist after reconnect', 'error');
+    }).catch(function() {
+      if (addToast) addToast('Ban not saved to server — will not persist after reconnect', 'error');
     });
-    setFlags(function(prev) { return prev.filter(function(x) { return x.id !== f.id; }); });
-    if (addToast) addToast('User ' + f.user + ' banned', 'error');
-    if (socket && roomId) {
-      socket.emit('ban-user', { roomId: roomId, userId: f.userId || f.user });
-    }
   }
 
   function banUser(user) {
@@ -264,17 +268,21 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
   }
 
   function shadowBanUser(userId, username) {
-    fetch('/api/moderation/shadow-ban', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: userId, reason: 'Shadow banned by creator' })
-    }).catch(function() {});
     setShadowBanned(function(prev) {
       var next = Object.assign({}, prev);
       next[userId] = true;
       return next;
     });
     if (addToast) addToast(username + ' shadow banned', 'success');
+    fetch('/api/moderation/shadow-ban', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: userId, reason: 'Shadow banned by creator' })
+    }).then(function(r) {
+      if (!r.ok && addToast) addToast('Shadow ban not saved to server — will not persist after reconnect', 'error');
+    }).catch(function() {
+      if (addToast) addToast('Shadow ban not saved to server — will not persist after reconnect', 'error');
+    });
   }
 
   function addWord() {
@@ -282,14 +290,16 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     if (!w || banned.indexOf(w) !== -1) return;
     setBanned(function(prev) { return prev.concat([w]); });
     setNewWord('');
-    addToast('"' + w + '" added to ban list', 'success');
     if (roomId) {
       fetch('/api/moderation/word-filters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word: w, creatorId: roomId })
       })
-        .then(function(r) { return r.json(); })
+        .then(function(r) {
+          if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Save failed'); });
+          return r.json();
+        })
         .then(function(data) {
           if (data && data.filter && data.filter.id) {
             setWordMeta(function(prev) {
@@ -298,8 +308,14 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
               return next;
             });
           }
+          if (addToast) addToast('"' + w + '" added to ban list', 'success');
         })
-        .catch(function() {});
+        .catch(function(err) {
+          setBanned(function(prev) { return prev.filter(function(x) { return x !== w; }); });
+          if (addToast) addToast((err && err.message) ? err.message : 'Failed to add word filter', 'error');
+        });
+    } else {
+      if (addToast) addToast('"' + w + '" added to ban list', 'success');
     }
   }
 

@@ -2305,12 +2305,17 @@ io.on('connection', function(socket) {
 
     swanybot.onGiftReceived(roomId, fromUser, name, valueCents);
 
+    // Update session revenue first so earnings-update carries the new total
+    var prevRevenue = sessionRevenue.get(roomId) || 0;
+    var newRevenue  = prevRevenue + valueCents;
+    sessionRevenue.set(roomId, newRevenue);
+
     // Push live earnings update + notification to host
     try {
       var gifRoom = rooms.get(roomId);
       if (gifRoom && gifRoom.hostSocketId) {
         io.to(gifRoom.hostSocketId).emit('earnings-update', {
-          sessionCents: sessionRevenue.get(roomId) || 0,
+          sessionCents: newRevenue,
           lastCents:    valueCents,
           source:       'gift',
           username:     fromUser
@@ -2342,10 +2347,7 @@ io.on('connection', function(socket) {
       io.to(roomId).emit('pk-gift-boost', { from: fromUser, emoji: emoji, name: name, valueCents: valueCents, ts: ts });
     }
 
-    // Session revenue milestone tracking
-    var prevRevenue = sessionRevenue.get(roomId) || 0;
-    var newRevenue  = prevRevenue + valueCents;
-    sessionRevenue.set(roomId, newRevenue);
+    // Session revenue milestone tracking (prevRevenue and newRevenue already set above)
     var _gGoal = streamGoals.get(roomId);
     if (_gGoal && (_gGoal.type === 'revenue' || _gGoal.type === 'earnings')) {
       io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newRevenue });
@@ -3125,12 +3127,17 @@ io.on('connection', function(socket) {
 
     autoAura(roomId, function(cb) { aura.triggerTip(roomId, username, amountCents, message, cb); });
 
+    // Update session revenue first so earnings-update carries the new total
+    var prevScRev = sessionRevenue.get(roomId) || 0;
+    var newScRev  = prevScRev + amountCents;
+    sessionRevenue.set(roomId, newScRev);
+
     // Push live earnings update + notification to host
     try {
       var scRoom = rooms.get(roomId);
       if (scRoom && scRoom.hostSocketId) {
         io.to(scRoom.hostSocketId).emit('earnings-update', {
-          sessionCents: sessionRevenue.get(roomId) || 0,
+          sessionCents: newScRev,
           lastCents:    amountCents,
           source:       'super-chat',
           username:     username
@@ -3152,10 +3159,6 @@ io.on('connection', function(socket) {
       giftLeaderboards.set(roomId, scLb);
       io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: scLb.slice(0, 10) });
     } catch(scLbErr) { logger.warn('[gift-lb-sc] ' + scLbErr.message); }
-
-    var prevScRev = sessionRevenue.get(roomId) || 0;
-    var newScRev  = prevScRev + amountCents;
-    sessionRevenue.set(roomId, newScRev);
     var _scGoal = streamGoals.get(roomId);
     if (_scGoal && (_scGoal.type === 'revenue' || _scGoal.type === 'earnings')) {
       io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newScRev });
@@ -3223,11 +3226,16 @@ io.on('connection', function(socket) {
 
     autoAura(roomId, function(cb) { aura.triggerTip(roomId, username, amountCents, message, cb); });
 
+    // Update session revenue first so earnings-update carries the new total
+    var prevTtsRev = sessionRevenue.get(roomId) || 0;
+    var newTtsRev  = prevTtsRev + amountCents;
+    sessionRevenue.set(roomId, newTtsRev);
+
     try {
       var ttsRoom = rooms.get(roomId);
       if (ttsRoom && ttsRoom.hostSocketId) {
         io.to(ttsRoom.hostSocketId).emit('earnings-update', {
-          sessionCents: sessionRevenue.get(roomId) || 0,
+          sessionCents: newTtsRev,
           lastCents:    amountCents,
           source:       'super-chat',
           username:     username,
@@ -3245,10 +3253,6 @@ io.on('connection', function(socket) {
       giftLeaderboards.set(roomId, ttsLb);
       io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: ttsLb.slice(0, 10) });
     } catch(ttsLbErr) { logger.warn('[gift-lb-tts] ' + ttsLbErr.message); }
-
-    var prevTtsRev = sessionRevenue.get(roomId) || 0;
-    var newTtsRev  = prevTtsRev + amountCents;
-    sessionRevenue.set(roomId, newTtsRev);
     var _ttsGoal = streamGoals.get(roomId);
     if (_ttsGoal && (_ttsGoal.type === 'revenue' || _ttsGoal.type === 'earnings')) {
       io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newTtsRev });
