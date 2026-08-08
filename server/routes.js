@@ -721,6 +721,10 @@ router.post('/ppv/create', requireAuth, ppvCreateRateLimit, async function(req, 
     var ownerResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(streamId) + '&select=host_user_id&limit=1', {
       headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
     });
+    if (!ownerResp.ok) {
+      var _ppvOwnerErr = await ownerResp.json().catch(function() { return {}; });
+      return res.status(502).json({ success: false, error: (_ppvOwnerErr && _ppvOwnerErr.message) || 'Supabase error' });
+    }
     var ownerData = await ownerResp.json();
     if (!Array.isArray(ownerData) || !ownerData[0] || ownerData[0].host_user_id !== req.user.id) {
       return res.status(403).json({ success: false, error: 'forbidden' });
@@ -870,15 +874,23 @@ router.post('/stream-end', requireAuth, async function(req, res) {
     var ownerResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(stream_id) + '&select=host_user_id&limit=1', {
       headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
     });
+    if (!ownerResp.ok) {
+      var _ownerErr = await ownerResp.json().catch(function() { return {}; });
+      return res.status(502).json({ ok: false, error: (_ownerErr && _ownerErr.message) || 'Supabase error' });
+    }
     var ownerData = await ownerResp.json();
     if (!Array.isArray(ownerData) || !ownerData[0] || ownerData[0].host_user_id !== req.user.id) {
       return res.status(403).json({ ok: false, error: 'forbidden' });
     }
-    await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(stream_id), {
+    var endResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(stream_id), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY },
       body: JSON.stringify({ status: 'ended', ended_at: new Date().toISOString() })
     });
+    if (!endResp.ok) {
+      var _endErr = await endResp.json().catch(function() { return {}; });
+      return res.status(502).json({ ok: false, error: (_endErr && _endErr.message) || 'Supabase error ending stream' });
+    }
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
