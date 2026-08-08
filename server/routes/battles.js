@@ -113,7 +113,7 @@ router.get('/leaderboard', async (req, res) => {
       'GROUP BY winner_id ' +
       'ORDER BY wins DESC, total_points DESC ' +
       'LIMIT $2',
-      ['completed', limit]
+      ['ended', limit]
     );
     res.json(result.rows.map(function(r, i) {
       return {

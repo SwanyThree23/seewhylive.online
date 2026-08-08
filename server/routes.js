@@ -447,7 +447,7 @@ router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
           });
         })
         .catch(function(err) {
-          res.json({ success: false, error: 'Internal server error' });
+          res.status(500).json({ success: false, error: 'Payment processing failed' });
         });
       return;
     }
@@ -852,6 +852,10 @@ router.post('/stream-sync', requireAuth, async function(req, res) {
       headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Prefer': 'return=representation' },
       body: JSON.stringify(payload)
     });
+    if (!resp.ok) {
+      var errBody = await resp.json().catch(function() { return {}; });
+      return res.status(502).json({ ok: false, error: (errBody && errBody.message) || 'Supabase error' });
+    }
     var data = await resp.json();
     res.json({ ok: true, stream: data });
   } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
