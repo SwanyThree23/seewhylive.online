@@ -96,7 +96,7 @@ export default function MusicVideoTab({ addToast, userId, username }) {
     form.append('audio', audioFile);
     form.append('style', selectedStyle);
     fetch('/api/music-video/submit', { method: 'POST', body: form, credentials: 'include' })
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Submit failed ' + r.status); }); return r.json(); })
       .then(function(data) {
         if (data.error) throw new Error(data.error);
         if (addToast) addToast('🎬 Music video queued! Check status below.', 'success');
