@@ -29,21 +29,28 @@ export function getSocket(token) {
   socket.on('connect_error', function(err) {
     console.error('[Socket] Connection error:', err.message);
   });
+  // On reconnect, notify App UI. Do NOT re-emit join-room here —
+  // Socket.IO fires 'connect' on every connection (initial + reconnect),
+  // and App.jsx's 'connect' handler emits join-room there. Emitting here
+  // too causes duplicate join-room → 4 mediasoup transports per reconnect.
   socket.on('reconnect', function() {
-    // Re-join room automatically after reconnection
-    if (_rejoinPayload) {
-      socket.emit('join-room', _rejoinPayload);
-    }
     if (_onReconnect) _onReconnect();
   });
-  // Presence heartbeat — keeps server aware the client is alive
-  var heartbeatInterval = setInterval(function() {
-    if (socket && socket.connected) {
-      socket.emit('ping-presence');
-    }
-  }, 30000);
+  // Presence heartbeat — restart on every connect so it survives reconnects.
+  // A plain setInterval at getSocket() time is killed by the first disconnect
+  // and never restarted, so the server evicts the socket from the presence map.
+  var heartbeatInterval = null;
+  socket.on('connect', function() {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = setInterval(function() {
+      if (socket && socket.connected) {
+        socket.emit('ping-presence');
+      }
+    }, 30000);
+  });
   socket.on('disconnect', function() {
     clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
   });
   return socket;
 }
