@@ -114,13 +114,14 @@ export default function MusicVideoTab({ addToast, userId, username }) {
 
   function handleDelete(jobId) {
     fetch('/api/music-video/jobs/' + jobId, { method: 'DELETE', credentials: 'include' })
-      .then(function() {
+      .then(function(r) {
+        if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Delete failed'); });
         setJobs(function(prev) { return prev.filter(function(j) { return j.id !== jobId; }); });
         if (playingJob === jobId) setPlayingJob(null);
         if (addToast) addToast('Job deleted', 'info');
       })
-      .catch(function() {
-        if (addToast) addToast('Delete failed', 'error');
+      .catch(function(e) {
+        if (addToast) addToast((e && e.message) ? e.message : 'Delete failed', 'error');
       });
   }
 

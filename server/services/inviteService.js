@@ -16,7 +16,7 @@ async function sendInvitation({ fromUserId, toUserId, roomId, message, expiryHou
   if (!target.rows[0]) { const e = new Error('user not found'); e.status = 404; throw e; }
   const result = await db.query(
     `INSERT INTO guest_invitations (from_user_id, to_user_id, room_id, message, status, expires_at)
-     VALUES ($1, $2, $3, $4, 'pending', now() + ($5 || ' hours')::interval) RETURNING *`,
+     VALUES ($1, $2, $3, $4, 'pending', now() + ($5 * interval '1 hour')) RETURNING *`,
     [fromUserId, toUserId, roomId, message || null, hours]
   );
   return result.rows[0];

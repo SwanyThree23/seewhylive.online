@@ -43,6 +43,7 @@ export default function AdminDashboard({ addToast }) {
     fetch('/api/admin/financial-summary')
       .then(function(r) {
         if (r.status === 403) throw new Error('Admin access required');
+        if (!r.ok) throw new Error('Server error (' + r.status + ')');
         return r.json();
       })
       .then(function(d) {

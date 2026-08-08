@@ -33,6 +33,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId, viewerId: 'viewer-' + Date.now(), priceUsd: PPV_PRICE_USD })
       });
+      if (!res.ok) { var errD = await res.json(); throw new Error((errD && errD.error) || 'Payment initiation failed'); }
       var data = await res.json();
       if (!data || !data.clientSecret) throw new Error('No client secret returned');
 
@@ -48,6 +49,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentIntentId: data.paymentIntentId, roomId, viewerId: 'viewer-' + Date.now() })
       });
+      if (!verifyRes.ok) { var errV = await verifyRes.json(); throw new Error((errV && errV.error) || 'Payment verification failed'); }
       var verifyData = await verifyRes.json();
       if (!verifyData || !verifyData.token) throw new Error('Payment verification failed');
 

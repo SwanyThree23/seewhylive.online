@@ -22,7 +22,7 @@ class SwanyBot extends EventEmitter {
     this.chatRateMap = new Map();
     this.mutedSockets = new Map();
     this.commandCooldown = new Map(); // userId/socketId → last command timestamp
-    this.lastViewerCount = 0;
+    this.lastViewerCount = new Map(); // roomId → last viewer count
     this.logPath = '/var/log/seewhy/swanybot.log';
 
     // Engagement surge: roomId → [{count, ts}] (last 5 minutes of samples)
@@ -178,6 +178,7 @@ class SwanyBot extends EventEmitter {
     this.giftTotals.delete(roomId);
     this.lastRaceAlert.delete(roomId);
     this.viewerHistory.delete(roomId);
+    this.lastViewerCount.delete(roomId);
   }
 
   cleanupRoom(roomId) {
@@ -358,28 +359,30 @@ class SwanyBot extends EventEmitter {
       }
     }
 
+    var prevCount = this.lastViewerCount.get(roomId) || 0;
+
     if (!this.rules.viewers_drop_20pct) {
-      this.lastViewerCount = newCount;
+      this.lastViewerCount.set(roomId, newCount);
       return;
     }
 
-    if (newCount < this.lastViewerCount * 0.80 && this.lastViewerCount > 10) {
+    if (newCount < prevCount * 0.80 && prevCount > 10) {
       this.io.to(roomId).emit('host-alert', {
         type: 'viewers_drop',
         message: 'Viewer count dropped 20%+',
-        previous: this.lastViewerCount,
+        previous: prevCount,
         current: newCount,
         ts: Date.now()
       });
       this.log(
         'warn',
         'viewers_drop_20pct',
-        'Count dropped from ' + this.lastViewerCount + ' to ' + newCount,
+        'Count dropped from ' + prevCount + ' to ' + newCount,
         null
       );
     }
 
-    if (newCount >= 1000 && this.lastViewerCount < 1000) {
+    if (newCount >= 1000 && prevCount < 1000) {
       this.io.to(roomId).emit('bot-log', {
         event: 'milestone_1000',
         message: '1000 viewers! Consider initiating FADES!',
@@ -387,7 +390,7 @@ class SwanyBot extends EventEmitter {
       });
     }
 
-    this.lastViewerCount = newCount;
+    this.lastViewerCount.set(roomId, newCount);
   }
 
   _onEngagementSurge(roomId, pct, currentViewers) {

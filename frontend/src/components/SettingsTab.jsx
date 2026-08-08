@@ -121,9 +121,11 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ displayName: displayName, bio: bio, avatarEmoji: avatarEmoji })
     })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (!data || data.success === false) throw new Error((data && data.error) || 'Save failed');
+    .then(function(r) {
+      if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Save failed'); });
+      return r.json();
+    })
+    .then(function() {
       addToast('Profile saved', 'success');
       setProfileSaving(false);
     })
@@ -135,12 +137,15 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
 
   function connectStripe() {
     fetch('/api/creator/onboard/link')
-      .then(function(r) { return r.json(); })
+      .then(function(r) {
+        if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Failed to get Stripe link'); });
+        return r.json();
+      })
       .then(function(data) {
         if (data && data.url) window.open(data.url, '_blank', 'noopener');
       })
-      .catch(function() {
-        addToast('Failed to get Stripe link', 'error');
+      .catch(function(err) {
+        addToast((err && err.message) ? err.message : 'Failed to get Stripe link', 'error');
       });
   }
 
@@ -155,19 +160,17 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amountCents: availableCents })
     })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (!data || data.success === false) {
-        addToast((data && data.error) || 'Payout failed. Try again.', 'error');
-        setPayoutLoading(false);
-        return;
-      }
+    .then(function(r) {
+      if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Payout failed. Try again.'); });
+      return r.json();
+    })
+    .then(function() {
       addToast('Payout of $' + (Math.floor(availableCents) / 100).toFixed(2) + ' initiated!', 'success');
       setAvailableCents(0);
       setPayoutLoading(false);
     })
-    .catch(function() {
-      addToast('Payout failed. Try again.', 'error');
+    .catch(function(err) {
+      addToast((err && err.message) ? err.message : 'Payout failed. Try again.', 'error');
       setPayoutLoading(false);
     });
   }
@@ -183,12 +186,15 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
         notifyEmailDigest: notifyEmailDigest
       })
     })
-    .then(function(r) { return r.json(); })
+    .then(function(r) {
+      if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Save failed'); });
+      return r.json();
+    })
     .then(function() {
       addToast('Notification preferences saved', 'success');
     })
-    .catch(function() {
-      addToast('Failed to save notification preferences', 'error');
+    .catch(function(err) {
+      addToast((err && err.message) ? err.message : 'Failed to save notification preferences', 'error');
     });
   }
 
