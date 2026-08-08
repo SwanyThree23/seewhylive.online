@@ -151,7 +151,7 @@ export default function SwanAITab(props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system: SYSTEM_PROMPT, message: ctx + prompt }),
     })
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
       .then(function(d) {
         var reply = d.text || '🎯 Director processing…';
         setMsgs(function(p) { return p.concat([{ role: 'dir', text: reply, time: fmtTime(), pinnable: true }]); });

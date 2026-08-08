@@ -1430,7 +1430,7 @@ export default function WatchPartyTab(props) {
                         setAiLoading(true);
                         var msgs = (chat || []).slice(-50).map(function(m) { return (m.username || 'Guest') + ': ' + (m.message || m.text || ''); }).join('\n');
                         fetch('/api/summarize-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: msgs }) })
-                          .then(function(r) { return r.json(); })
+                          .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
                           .then(function(d) { setAiSummary(d.summary || 'No summary available.'); setAiLoading(false); })
                           .catch(function() { setAiSummary('Could not generate summary.'); setAiLoading(false); });
                       }}

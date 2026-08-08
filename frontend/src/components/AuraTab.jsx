@@ -105,7 +105,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system: customPrompt, message: context })
     })
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
       .then(function(data) {
         var reply = data.text || '🤖 AURA reconnecting...';
         setMsgs(function(p) { return p.concat([{ role: 'aura', text: reply, time: fmtTime() }]); });

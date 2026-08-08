@@ -559,7 +559,7 @@ export default function CreatorTipsTab({ addToast, username }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system: AI_SYSTEM, message: userMsg })
     })
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
       .then(function(data) {
         var reply = (data && data.text) ? data.text : 'Sorry, I couldn\'t get a response. Try again.';
         setAiMsgs(function(prev) { return prev.concat([{ role: 'guide', text: reply, time: fmtTime() }]); });
