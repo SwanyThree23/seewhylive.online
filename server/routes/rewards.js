@@ -7,7 +7,7 @@ router.get('/leaderboard', requireAuth, async (req, res) => {
   try {
     const period = req.query.period === 'weekly' ? 'weekly' : 'alltime';
     const rows = await rewardsService.getLeaderboard(period);
-    const data = rows.map(function(r) { return { points: r.points || r.total_points, level: r.level }; });
+    const data = rows.map(function(r) { return { user_id: r.user_id, points: r.points || r.total_points, level: r.level }; });
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
@@ -53,7 +53,9 @@ router.post('/challenges/:id/complete', requireAuth, async (req, res) => {
     const result = await rewardsService.completeChallenge(req.user.id, req.params.id);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
+    var USER_ERRS = ['challenge is not active', 'challenge has expired', 'already voted in this battle'];
+    var isUserErr = USER_ERRS.includes(err.message) || (err.code === '23505');
+    res.status(isUserErr ? 400 : 500).json({ error: err.message || 'Internal server error' });
   }
 });
 
