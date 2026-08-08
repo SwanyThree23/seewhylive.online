@@ -4,36 +4,28 @@ import AvatarPortrait from './AvatarPortrait.jsx';
 var CREATOR = 0.90;
 var PLATFORM = 0.10;
 
-var BASE_TXN = [
-  { id: 'tx1', type: 'tip',          amount: 2500, creator: 'SwanyThree',   stream: 'Friday Night Dominos' },
-  { id: 'tx2', type: 'subscription', amount: 1500, creator: 'CaliBonesOG',  tier: 'gold' },
-  { id: 'tx3', type: 'tip',          amount: 5000, creator: 'SwanyThree',   stream: 'Washington Classic' },
-  { id: 'tx4', type: 'subscription', amount: 500,  creator: 'SwanyThree',   tier: 'silver' },
-  { id: 'tx5', type: 'fades_boost',  amount: 1000, creator: 'CaliBonesOG',  stream: 'Fades Session' },
-  { id: 'tx6', type: 'direct_pay',   amount: 10000,creator: 'SwanyThree',   stream: 'Special Event' },
-];
-
 var ENG_DATA = [72, 68, 81, 76, 85, 79, 88, 83, 91, 87, 94, 89];
 var REV_DATA = [45, 52, 38, 71, 83, 67, 94, 88, 102, 95, 118, 134];
-var TOP_COUNTRIES = [['🇺🇸', 'USA', 38], ['🇳🇬', 'Nigeria', 14], ['🇬🇧', 'UK', 11], ['🇧🇷', 'Brazil', 9], ['🇯🇵', 'Japan', 7]];
-
-var RETENTION = [100, 96, 91, 88, 85, 79, 74, 68, 63, 57, 52, 49, 44, 41, 38, 35, 33, 31, 30, 29];
-var HOURLY    = [142, 287, 612, 934, 1408, 2102, 2847, 2694, 2211, 1837, 1402, 987, 623, 401, 244, 178, 134, 97, 72, 54, 42, 31, 24, 18];
 
 function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 
-var TYPE_COLORS = { tip: '#C9A84C', subscription: '#C0C0C0', fades_boost: '#FF1A3C', direct_pay: '#800020' };
+var TYPE_COLORS = { tip: '#C9A84C', subscription: '#C0C0C0', fades_boost: '#FF1A3C', direct_pay: '#800020', gift: '#D4854A', paywall: '#800020' };
+
+var VALID_PERIODS = ['today', 'week', 'month'];
 
 export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addToast }) {
   var [engData, setEngData] = useState(ENG_DATA.slice());
   var [revData, setRevData] = useState(REV_DATA.slice());
-  var [txns, setTxns] = useState(BASE_TXN.slice());
   var [typeFilter, setTypeFilter] = useState('all');
   var [leaderboard, setLeaderboard] = useState([]);
+  var [period, setPeriod] = useState('month');
+  var [apiData, setApiData] = useState(null);
+  var [apiLoading, setApiLoading] = useState(false);
+  var [liveTxns, setLiveTxns] = useState([]);
 
   useEffect(function() {
     fetch('/api/leaderboard')
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
       .then(function(data) {
         if (data && data.leaderboard && data.leaderboard.length > 0) {
           setLeaderboard(data.leaderboard);
@@ -41,6 +33,21 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
       })
       .catch(function() {});
   }, []);
+
+  useEffect(function() {
+    var token = localStorage.getItem('sw_token') || '';
+    if (!token) return;
+    setApiLoading(true);
+    fetch('/api/creator/analytics?period=' + period, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+      .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
+      .then(function(data) {
+        setApiData(data);
+        setApiLoading(false);
+      })
+      .catch(function() { setApiLoading(false); });
+  }, [period]);
 
   useEffect(function() {
     if (!gifts || gifts.length === 0) return;
@@ -53,7 +60,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
         stream:  g.name || 'Gift'
       };
     });
-    setTxns(function(prev) {
+    setLiveTxns(function(prev) {
       var ids = {};
       prev.forEach(function(t) { ids[t.id] = true; });
       var newOnes = liveGiftTxns.filter(function(t) { return !ids[t.id]; });
@@ -61,19 +68,6 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
       return prev.concat(newOnes).slice(-30);
     });
   }, [gifts]);
-
-  function exportCSV() {
-    var rows = ['id,type,creator,amount_cents,creator_payout_cents,stream'].concat(txns.map(function(tx) {
-      return [tx.id, tx.type, tx.creator, tx.amount, Math.floor(tx.amount * CREATOR), (tx.stream || tx.tier || '')].join(',');
-    }));
-    var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'seewhy-transactions.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  }
 
   useEffect(function() {
     if (!isLive) { return; }
@@ -92,55 +86,73 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
     return function() { clearInterval(interval); };
   }, [isLive]);
 
-  useEffect(function() {
-    if (!isLive) { return; }
-    var interval = setInterval(function() {
-      var types = ['tip', 'subscription', 'fades_boost'];
-      var creators = ['SwanyThree', 'CaliBonesOG'];
-      var newType = types[Math.floor(Math.random() * types.length)];
-      var newCreator = creators[Math.floor(Math.random() * creators.length)];
-      var newAmount = Math.floor(200 + Math.random() * 2000);
-      var newTx = {
-        id: 'live_' + Date.now(),
-        type: newType,
-        amount: newAmount,
-        creator: newCreator,
-        stream: 'Live Stream'
-      };
-      setTxns(function(prev) {
-        return prev.concat([newTx]).slice(-10);
-      });
-    }, 7000);
-    return function() { clearInterval(interval); };
-  }, [isLive]);
+  // Build txn list: prefer real API recentEarnings, append live gifts not already in it
+  var dbTxns = (apiData && apiData.recentEarnings) ? apiData.recentEarnings.map(function(e) {
+    return {
+      id:      e.id,
+      type:    e.payment_type,
+      amount:  Math.floor(e.amount_cents || 0),
+      creator: e.note || e.stream_id || '—',
+      stream:  e.payment_type,
+    };
+  }) : [];
 
-  var TX_TYPES = ['all', 'tip', 'subscription', 'fades_boost', 'direct_pay'];
+  var dbIds = {};
+  dbTxns.forEach(function(t) { dbIds[t.id] = true; });
+  var freshLive = liveTxns.filter(function(t) { return !dbIds[t.id]; });
+  var txns = dbTxns.concat(freshLive).slice(-50);
+
+  var TX_TYPES = ['all', 'tip', 'subscription', 'gift', 'paywall', 'fades_boost', 'direct_pay'];
   var visibleTxns = typeFilter === 'all' ? txns : txns.filter(function(t) { return t.type === typeFilter; });
 
   var totalGross   = txns.reduce(function(s, t) { return s + t.amount; }, 0);
-  var totalCreator = Math.floor(totalGross * CREATOR);
-  var totalPlatform = Math.floor(totalGross * PLATFORM);
+  var totalCreator = apiData ? Math.floor(apiData.creatorCents || 0) : Math.floor(totalGross * CREATOR);
+  var totalPlatform = apiData ? Math.floor(apiData.platformCents || 0) : Math.floor(totalGross * PLATFORM);
   var peakEng      = Math.max.apply(null, engData);
   var peakRev      = Math.max.apply(null, revData);
-  var viewers      = viewerCount || 2847;
+  var viewers      = viewerCount || 0;
   var topTxn       = txns.reduce(function(m, t) { return t.amount > m ? t.amount : m; }, 0);
+  var streamCount  = (apiData && apiData.streamCount) || 0;
+  var avgViewers   = (apiData && apiData.avgViewersPerStream) || 0;
 
-  var creatorMap = {};
-  txns.forEach(function(tx) {
-    if (!creatorMap[tx.creator]) creatorMap[tx.creator] = { total: 0, count: 0 };
-    creatorMap[tx.creator].total += tx.amount;
-    creatorMap[tx.creator].count += 1;
-  });
-  var topCreators = Object.keys(creatorMap).map(function(name) {
-    return [name, creatorMap[name].total, creatorMap[name].count];
-  }).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
+  var byType = (apiData && apiData.byType) || { tip: 0, subscription: 0, paywall: 0, gift: 0 };
+  var topSupporters = (apiData && apiData.topSupporters) || [];
+
+  function exportCSV() {
+    var rows = ['id,type,note,amount_cents,creator_payout_cents'].concat(txns.map(function(tx) {
+      return [tx.id, tx.type, (tx.creator || tx.stream || ''), tx.amount, Math.floor(tx.amount * CREATOR)].join(',');
+    }));
+    var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'seewhy-transactions.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430, overflowY: 'auto' }}>
+
+      {/* Period picker */}
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1.5 }}>PERIOD:</span>
+        {VALID_PERIODS.map(function(p) {
+          var active = period === p;
+          return (
+            <button key={p} onClick={function() { setPeriod(p); }}
+              style={{ background: active ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (active ? 'rgba(201,168,76,.5)' : '#3D3020'), borderRadius: 999, padding: '2px 10px', color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 1 }}>
+              {p}
+            </button>
+          );
+        })}
+        {apiLoading && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>loading…</span>}
+      </div>
+
       {/* Session summary */}
       <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>SESSION SUMMARY</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>PERIOD SUMMARY</span>
           <button
             onClick={exportCSV}
             style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '3px 10px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
@@ -166,12 +178,12 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
       {/* KPI grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
         {[
-          [viewers.toLocaleString(), 'VIEWERS',  '#C9A84C'],
-          [fmtC(totalCreator),       'EARNED',   '#C9A84C'],
-          [(gifts || []).length + '🎁','GIFTS',   '#C9A84C'],
-          ['48',                     'COUNTRIES','#C9A84C'],
-          ['94/100',                 'ENG SCORE','#C9A84C'],
-          ['12.4m',                  'AVG WATCH','#C9A84C'],
+          [viewers.toLocaleString(),             'LIVE NOW',    '#C9A84C'],
+          [fmtC(totalCreator),                   'EARNED',      '#C9A84C'],
+          [(gifts || []).length + '🎁', 'GIFTS',       '#C9A84C'],
+          [streamCount,                          'STREAMS',     '#C9A84C'],
+          [avgViewers,                           'AVG VIEWERS', '#C9A84C'],
+          [fmtC(byType.tip || 0),               'TIPS',        '#C9A84C'],
         ].map(function(row) {
           return (
             <div key={row[1]} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px', textAlign: 'center' }}>
@@ -181,6 +193,30 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
           );
         })}
       </div>
+
+      {/* Revenue breakdown by type */}
+      {apiData && (
+        <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 10 }}>REVENUE BY TYPE</div>
+          {['tip', 'subscription', 'gift', 'paywall'].map(function(t) {
+            var val = byType[t] || 0;
+            var total = apiData.totalEarningsCents || 1;
+            var pct = Math.min(100, Math.floor((val / total) * 100));
+            var color = TYPE_COLORS[t] || '#8A7A62';
+            return (
+              <div key={t} style={{ marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', textTransform: 'uppercase' }}>{t}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: color }}>{fmtC(val)}</span>
+                </div>
+                <div style={{ height: 4, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: pct + '%', background: color, borderRadius: 2 }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Engagement chart */}
       <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
@@ -214,69 +250,12 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
             );
           })}
         </div>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', marginTop: 4, textAlign: 'right' }}>↑ Session high: +47%</div>
-      </div>
-
-      {/* Countries */}
-      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>TOP VIEWER COUNTRIES</div>
-        {TOP_COUNTRIES.map(function(row) {
-          return (
-            <div key={row[1]} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 14, flexShrink: 0 }}>{row[0]}</span>
-              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', width: 56, flexShrink: 0 }}>{row[1]}</span>
-              <div style={{ flex: 1, height: 5, background: '#3D3020', borderRadius: 3, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: row[2] + '%', background: 'linear-gradient(90deg,#800020,#C9A84C)', borderRadius: 3 }} />
-              </div>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', flexShrink: 0 }}>{row[2]}%</span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Retention curve */}
-      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>VIEWER RETENTION CURVE</div>
-        <div style={{ position: 'relative', height: 50, display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-          {RETENTION.map(function(v, i) {
-            var h = (v / 100) * 100;
-            var hue = Math.floor((v / 100) * 120);
-            var color = 'hsl(' + hue + ',90%,55%)';
-            return (
-              <div key={i} style={{ flex: 1, height: h + '%', background: color, borderRadius: '2px 2px 0 0', opacity: 0.8, minHeight: 3 }} />
-            );
-          })}
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>0:00</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>AVG HOLD: {RETENTION[Math.floor(RETENTION.length / 2)]}%</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>+20m</span>
-        </div>
-      </div>
-
-      {/* Hourly viewers */}
-      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>HOURLY VIEWERS — TODAY</div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 50 }}>
-          {HOURLY.map(function(v, i) {
-            var peak = Math.max.apply(null, HOURLY);
-            var h = Math.floor((v / peak) * 100);
-            var isPeak = v === peak;
-            return (
-              <div key={i} style={{ flex: 1, height: h + '%', background: isPeak ? 'linear-gradient(180deg,#C9A84C,#C9A84C)' : 'linear-gradient(180deg,#C9A84C55,#C9A84C22)', borderRadius: '2px 2px 0 0', minHeight: 3 }} />
-            );
-          })}
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>12AM</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>PEAK: {Math.max.apply(null, HOURLY).toLocaleString()} @ 6PM</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>11PM</span>
-        </div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', marginTop: 4, textAlign: 'right' }}>live session trend</div>
       </div>
 
       {/* 90/10 split */}
       <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>90/10 SPLIT HEALTH</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>90/10 SPLIT</div>
         <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 6 }}>
           <div style={{ width: '90%', background: 'linear-gradient(90deg,#800020,#C9A84C)' }} />
           <div style={{ flex: 1, background: '#3D3020' }} />
@@ -287,14 +266,34 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
         </div>
       </div>
 
-      {/* Top Creators leaderboard */}
+      {/* Top Supporters (real DB) / Top Creators (leaderboard fallback) */}
       <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>TOP CREATORS BY REVENUE</div>
-          {leaderboard.length > 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>● LIVE DB</div>}
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>
+            {topSupporters.length > 0 ? 'TOP SUPPORTERS' : (leaderboard.length > 0 ? 'TOP CREATORS' : 'TOP SUPPORTERS')}
+          </div>
+          {apiData && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>● LIVE DB</div>}
         </div>
-        {(leaderboard.length > 0 ? leaderboard.map(function(row, i) {
-          var topTotal = leaderboard[0].total_cents || 1;
+        {topSupporters.length > 0 ? topSupporters.map(function(row, i) {
+          var topTotal = (topSupporters[0] && topSupporters[0].totalCents) || 1;
+          var pct = Math.floor((row.totalCents / topTotal) * 100);
+          return (
+            <div key={row.userId + i} style={{ marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                <div style={{ flexShrink: 0 }}>
+                  <AvatarPortrait username={row.userId} size={28} rank={i < 3 ? i + 1 : undefined} />
+                </div>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', flex: 1 }}>{row.userId}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>{fmtC(row.totalCents)}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{row.count} TXN</span>
+              </div>
+              <div style={{ height: 3, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : '#C9A84C', borderRadius: 2 }} />
+              </div>
+            </div>
+          );
+        }) : leaderboard.length > 0 ? leaderboard.map(function(row, i) {
+          var topTotal = (leaderboard[0] && leaderboard[0].total_cents) || 1;
           var pct = Math.floor((row.total_cents / topTotal) * 100);
           return (
             <div key={row.from_user + i} style={{ marginBottom: 8 }}>
@@ -307,31 +306,18 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{row.gift_count} TXN</span>
               </div>
               <div style={{ height: 3, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : 'linear-gradient(90deg,#C9A84C,#C9A84C)', borderRadius: 2 }} />
+                <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : '#C9A84C', borderRadius: 2 }} />
               </div>
             </div>
           );
-        }) : topCreators.map(function(item, i) {
-          var pct = totalGross > 0 ? Math.floor((item[1] / totalGross) * 100) : 0;
-          return (
-            <div key={item[0]} style={{ marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                <div style={{ flexShrink: 0 }}>
-                  <AvatarPortrait username={item[0]} size={28} rank={i < 3 ? i + 1 : undefined} />
-                </div>
-                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', flex: 1 }}>{item[0]}</span>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>{fmtC(Math.floor(item[1] * CREATOR))}</span>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{item[2]} TXN</span>
-              </div>
-              <div style={{ height: 3, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : 'linear-gradient(90deg,#C9A84C,#C9A84C)', borderRadius: 2 }} />
-              </div>
-            </div>
-          );
-        }))}
+        }) : (
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', textAlign: 'center', padding: '12px 0' }}>
+            No data yet — log in as host to see supporter stats
+          </div>
+        )}
       </div>
 
-      {/* Ledger */}
+      {/* Transaction Ledger */}
       <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2 }}>TRANSACTION LEDGER</div>
@@ -349,6 +335,11 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
             );
           })}
         </div>
+        {visibleTxns.length === 0 && (
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', textAlign: 'center', padding: '16px 0' }}>
+            {apiData ? 'No transactions in this period' : 'Log in as host to see transactions'}
+          </div>
+        )}
         {visibleTxns.map(function(tx) {
           var c = TYPE_COLORS[tx.type] || '#8A7A62';
           var creatorAmt = Math.floor(tx.amount * CREATOR);
@@ -358,17 +349,18 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
                 <span style={{ background: c + '18', border: '1px solid ' + c + '44', borderRadius: 999, padding: '1px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: c }}>
                   {tx.type.replace('_', ' ').toUpperCase()}
                 </span>
-                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', flex: 1 }}>{tx.creator}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', flex: 1 }}>{tx.creator || '—'}</span>
                 <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C' }}>{fmtC(tx.amount)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{tx.stream || tx.tier || '—'}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{tx.stream || '—'}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>→ {fmtC(creatorAmt)} creator</span>
               </div>
             </div>
           );
         })}
       </div>
+
     </div>
   );
 }
