@@ -1428,6 +1428,10 @@ io.on('connection', function(socket) {
     var roomId   = data.roomId;
     var guestId  = socket.data.userId;
     var username = String(data.username || 'Guest').slice(0, 32);
+    // Strip reserved system-message prefixes to prevent impersonating server chat
+    if (/^[🛡✂🎤📡]/u.test(username)) {
+      username = username.replace(/^[🛡✂🎤📡\s]+/u, '').trim() || 'Guest';
+    }
     var role     = socket.data.role || 'viewer';
 
     if (!roomId || typeof roomId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roomId)) {
@@ -1960,6 +1964,9 @@ io.on('connection', function(socket) {
   socket.on('update-username', function(data) {
     var roomId   = socket.data.roomId;
     var newName  = String(data.username || '').trim().slice(0, 32);
+    if (/^[🛡✂🎤📡]/u.test(newName)) {
+      newName = newName.replace(/^[🛡✂🎤📡\s]+/u, '').trim();
+    }
     if (!roomId || !newName) return;
     var _unNow = Date.now();
     if (_unNow - (updateUsernameThrottle.get(socket.data.userId) || 0) < 2000) return;
