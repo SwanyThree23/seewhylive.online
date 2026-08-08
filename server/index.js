@@ -1667,6 +1667,10 @@ io.on('connection', function(socket) {
       if (ack) ack({ error: 'Not a guest — cannot produce' });
       return;
     }
+    if (!socket.data.ownedTransportIds || !socket.data.ownedTransportIds.includes(transportId)) {
+      if (ack) ack({ error: 'forbidden' });
+      return;
+    }
 
     mediasoup.createProducer(transportId, rtpParameters, kind, guestId)
       .then(function(result) {

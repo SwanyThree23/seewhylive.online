@@ -122,12 +122,13 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
       body: JSON.stringify({ displayName: displayName, bio: bio, avatarEmoji: avatarEmoji })
     })
     .then(function(r) { return r.json(); })
-    .then(function() {
+    .then(function(data) {
+      if (!data || data.success === false) throw new Error((data && data.error) || 'Save failed');
       addToast('Profile saved', 'success');
       setProfileSaving(false);
     })
-    .catch(function() {
-      addToast('Failed to save profile', 'error');
+    .catch(function(err) {
+      addToast((err && err.message) ? err.message : 'Failed to save profile', 'error');
       setProfileSaving(false);
     });
   }
@@ -187,7 +188,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
       addToast('Notification preferences saved', 'success');
     })
     .catch(function() {
-      addToast('Notification preferences saved', 'success');
+      addToast('Failed to save notification preferences', 'error');
     });
   }
 
