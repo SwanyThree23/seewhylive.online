@@ -66,6 +66,7 @@ try { stripe = require('./stripe'); } catch (e) { console.warn('[routes] stripe 
 
 // ─── In-memory session state ──────────────────────────────────────────────────
 var _userProfiles = {};
+var _usernameIndex = {}; // displayName → userId — lets GET /users/:username find profiles by name
 var _notificationPrefs = {};
 var _pushSubscriptions = {};
 
@@ -526,9 +527,10 @@ router.get('/users/me', requireAuth, function(req, res) {
 router.get('/users/:username', function(req, res) {
   try {
     var username = String(req.params.username || '').slice(0, 80);
-    var profile = _userProfiles[username] || null;
+    var _profileUserId = _usernameIndex[username];
+    var profile = (_profileUserId && _userProfiles[_profileUserId]) || null;
     if (profile) {
-      return res.json(profile);
+      return res.json(Object.assign({}, profile, { username: username }));
     }
     return res.json({
       username: username,
@@ -551,11 +553,16 @@ router.put('/users/me', requireAuth, function(req, res) {
     if (!_userProfiles[req.user.id] && Object.keys(_userProfiles).length >= 50000) {
       return res.status(503).json({ success: false, error: 'Server at capacity' });
     }
+    var _oldProfile = _userProfiles[req.user.id];
+    if (_oldProfile && _oldProfile.displayName && _oldProfile.displayName !== displayName) {
+      delete _usernameIndex[_oldProfile.displayName];
+    }
     _userProfiles[req.user.id] = {
       displayName: displayName,
       bio: bio,
       avatarEmoji: avatarEmoji
     };
+    if (displayName) _usernameIndex[displayName] = req.user.id;
     return res.json({ success: true });
   } catch (err) {
     return res.json({ success: false, error: 'Internal server error' });
@@ -564,6 +571,8 @@ router.put('/users/me', requireAuth, function(req, res) {
 
 router.delete('/users/me', requireAuth, function(req, res) {
   try {
+    var _delProfile = _userProfiles[req.user.id];
+    if (_delProfile && _delProfile.displayName) delete _usernameIndex[_delProfile.displayName];
     delete _userProfiles[req.user.id];
     return res.json({ success: true });
   } catch (err) {
