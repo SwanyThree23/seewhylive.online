@@ -499,7 +499,7 @@ export default function LiveRoomPage({
 
     var onJoinRoomAck = async function(data) {
       if (!data || data.error) {
-        if (addToast) addToast('Room connect failed', 'error');
+        if (addToast) addToast((data && data.error) || 'Room connect failed', 'error');
         return;
       }
       // Pre-load chat history and room state

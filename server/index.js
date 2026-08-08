@@ -1465,6 +1465,16 @@ io.on('connection', function(socket) {
       }
     }
 
+    // Reject banned users before they enter — only when the room already has a known host
+    if (role !== 'host' && moderation && guestId) {
+      var _bjRoom   = rooms.get(roomId);
+      var _bjHostId = _bjRoom && _bjRoom.hostUserId;
+      if (_bjHostId && moderation.isUserBanned(_bjHostId, guestId)) {
+        if (ack) ack({ error: 'You have been removed from this room' });
+        return;
+      }
+    }
+
     socket.join(roomId);
     socket.data.roomId   = roomId;
     socket.data.guestId  = guestId;
