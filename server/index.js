@@ -53,6 +53,8 @@ var rtmp         = require('./rtmp');
 var vault        = require('./vault');
 var stripeModule = require('./stripe');
 var SwanyBot     = require('./swanybot');
+var moderation   = null;
+try { moderation = require('./moderation'); } catch (e) { console.warn('[index] moderation module unavailable: ' + e.message); }
 var ttsRouter    = require('./tts');
 var translation  = require('./translation');
 var aura         = require('./aura');
@@ -2009,6 +2011,41 @@ io.on('connection', function(socket) {
         return;
       }
       slowModeUserTs.set(_smKey, Date.now());
+    }
+
+    // Moderation enforcement (hard ban, word filter, shadow ban)
+    if (moderation && userId) {
+      var _modRoom = rooms.get(roomId);
+      var _hostId  = _modRoom && _modRoom.hostUserId;
+      if (_hostId) {
+        if (moderation.isUserBanned(_hostId, userId)) {
+          io.to(socket.id).emit('chat-message', {
+            id: uuidv4(), username: '🛡 SeeWhy',
+            message: '🚫 You have been removed from this room.',
+            translated: '🚫 You have been removed from this room.',
+            lang: 'EN', hasExternalLinks: false, isSystem: true, ts: Math.floor(Date.now() / 1000)
+          });
+          return;
+        }
+        var _wfResult = moderation.containsBannedWord(_hostId, message);
+        if (_wfResult.blocked) {
+          io.to(socket.id).emit('chat-message', {
+            id: uuidv4(), username: '🛡 SeeWhy',
+            message: '🚫 Your message was blocked.',
+            translated: '🚫 Your message was blocked.',
+            lang: 'EN', hasExternalLinks: false, isSystem: true, ts: Math.floor(Date.now() / 1000)
+          });
+          return;
+        }
+      }
+      if (moderation.isShadowBanned(userId)) {
+        var _sbTs = Math.floor(Date.now() / 1000);
+        io.to(socket.id).emit('chat-message', {
+          id: uuidv4(), username: username, message: message, translated: message,
+          lang: 'EN', hasExternalLinks: _hasExternalLinks, ts: _sbTs
+        });
+        return;
+      }
     }
 
     swanybot.onChatMessage(roomId, _swKey, message, { username: username, userId: _swKey, room: rooms.get(roomId) });
