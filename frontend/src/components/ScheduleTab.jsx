@@ -198,7 +198,10 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
           scheduled_at: Math.floor(occ.date.getTime() / 1000),
           recurring:    newRecur,
         })
-      }).then(function(r) { return r.json(); });
+      }).then(function(r) {
+        if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Save failed'); });
+        return r.json();
+      });
     });
     Promise.all(promises).then(function(results) {
       var newEvents = results.map(function(data, i) {
