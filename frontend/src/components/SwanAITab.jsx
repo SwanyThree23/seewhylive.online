@@ -203,7 +203,7 @@ export default function SwanAITab(props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system: SYSTEM_PROMPT, message: prompt }),
     })
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
       .then(function(d) {
         setRundown(d.text || 'Unable to generate rundown.');
         setRundownLoad(false);
