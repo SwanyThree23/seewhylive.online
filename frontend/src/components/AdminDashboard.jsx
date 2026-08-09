@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 var BG   = '#0E0C09';
 var SURF = '#1A1510';
 var CARD = '#1E1810';
@@ -40,8 +46,9 @@ export default function AdminDashboard({ addToast }) {
 
   function load() {
     setLoading(true);
-    fetch('/api/admin/financial-summary')
+    fetch('/api/admin/financial-summary', { headers: _authHeaders() })
       .then(function(r) {
+        if (r.status === 401) throw new Error('Admin access required');
         if (r.status === 403) throw new Error('Admin access required');
         if (!r.ok) throw new Error('Server error (' + r.status + ')');
         return r.json();

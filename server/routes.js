@@ -258,7 +258,7 @@ router.get('/moderation/word-filters', requireAuth, function(req, res) {
     }
     return res.json({ filters: [] });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -267,15 +267,15 @@ router.post('/moderation/word-filters', requireAuth, function(req, res) {
     var word = String(req.body.word || '').slice(0, 200);
     var creatorId = req.user.id;
     if (!word) {
-      return res.json({ success: false, error: 'word is required' });
+      return res.status(400).json({ error: 'word is required' });
     }
     if (moderation) {
       var filter = moderation.addWordFilter(creatorId, word);
       return res.json({ filter: filter, success: true });
     }
-    return res.json({ success: false, error: 'moderation module unavailable' });
+    return res.status(503).json({ error: 'moderation module unavailable' });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -287,7 +287,7 @@ router.delete('/moderation/word-filters/:id', requireAuth, function(req, res) {
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -303,7 +303,7 @@ router.post('/moderation/subscriber-only', requireAuth, function(req, res) {
     }
     return res.json({ success: true, enabled: enabled });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -319,9 +319,9 @@ router.post('/moderation/ban', requireAuth, moderationRateLimit, function(req, r
       var ban = moderation.banUser(creatorId, bannedUserId, bannedUsername, reason);
       return res.json({ success: true, ban: ban });
     }
-    return res.json({ success: false, error: 'moderation module unavailable' });
+    return res.status(503).json({ error: 'moderation module unavailable' });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -335,7 +335,7 @@ router.delete('/moderation/ban/:userId', requireAuth, moderationRateLimit, funct
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -347,7 +347,7 @@ router.get('/moderation/bans', requireAuth, function(req, res) {
     }
     return res.json({ bans: [] });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -363,7 +363,7 @@ router.post('/moderation/shadow-ban', requireAuth, moderationRateLimit, function
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -377,7 +377,7 @@ router.get('/creator/onboard/status', requireAuth, function(req, res) {
       availableCents: 0
     });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -400,7 +400,7 @@ router.get('/creator/onboard/link', requireAuth, function(req, res) {
     }
     return res.json({ url: 'https://stripe.com/connect' });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -454,7 +454,7 @@ router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
 
     return res.status(503).json({ success: false, error: 'Payment processing unavailable' });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -476,7 +476,7 @@ router.post('/payments/payout', requireAuth, function(req, res) {
       message: 'Payout of $' + (flooredCents / 100).toFixed(2) + ' initiated'
     });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -502,7 +502,7 @@ router.post('/payments/subscribe', requireAuth, function(req, res) {
 
     return res.json({ success: true, tier: tier, id: id });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -520,7 +520,7 @@ router.get('/users/me', requireAuth, function(req, res) {
       isLive: false
     });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -541,7 +541,7 @@ router.get('/users/:username', function(req, res) {
       tier: 'free'
     });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -565,7 +565,7 @@ router.put('/users/me', requireAuth, function(req, res) {
     if (displayName) _usernameIndex[displayName] = req.user.id;
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -576,7 +576,7 @@ router.delete('/users/me', requireAuth, function(req, res) {
     delete _userProfiles[req.user.id];
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -584,7 +584,7 @@ router.get('/users/me/earnings', requireAuth, function(req, res) {
   try {
     return res.json({ availableCents: 0, totalEarnedCents: 0, pendingCents: 0 });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -623,7 +623,7 @@ router.post('/push/subscribe', requireAuth, function(req, res) {
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -641,7 +641,7 @@ router.post('/users/me/notifications', requireAuth, function(req, res) {
     };
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -678,7 +678,7 @@ router.get('/metrics', requireAuth, function(req, res) {
       recentEarnings: []
     });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -691,7 +691,7 @@ router.get('/leaderboard', function(req, res) {
     }
     return res.json({ leaderboard: [], updatedAt: Date.now() });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -737,7 +737,7 @@ router.post('/ppv/create', requireAuth, ppvCreateRateLimit, async function(req, 
     _ppvTokens[token] = { streamId: streamId, priceCents: priceCents, expiresAt: expiresAt };
     return res.json({ token: token, priceCents: priceCents, expiresAt: expiresAt });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -765,7 +765,7 @@ router.post('/ppv/verify', requireAuth, function(req, res) {
     delete _ppvTokens[token];
     return res.json({ valid: true, streamId: entry.streamId, priceCents: entry.priceCents });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -786,7 +786,7 @@ router.post('/n8n/test', requireAuth, async function(req, res) {
       if (workflowId) {
         return res.json({ success: true, simulated: true, workflowId: workflowId, message: 'Simulated test — configure a real webhookUrl to test live delivery.' });
       }
-      return res.json({ success: false, error: 'webhookUrl is required' });
+      return res.status(400).json({ error: 'webhookUrl is required' });
     }
     var https = require('https');
     var url = require('url');
@@ -824,12 +824,12 @@ router.post('/n8n/test', requireAuth, async function(req, res) {
       return res.json({ success: true, statusCode: outRes.statusCode, webhookUrl: webhookUrl });
     });
     outReq.on('error', function(e) {
-      return res.json({ success: false, error: 'Webhook request failed' });
+      return res.status(502).json({ error: 'Webhook request failed' });
     });
     outReq.write(bodyStr);
     outReq.end();
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
