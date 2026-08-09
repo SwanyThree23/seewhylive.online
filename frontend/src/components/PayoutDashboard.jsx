@@ -1,6 +1,12 @@
 'use strict';
 import React, { useState, useEffect } from 'react';
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 var BG    = '#0E0C09';
 var SURF  = '#1A1510';
 var CARD  = '#241C12';
@@ -28,15 +34,15 @@ var MOCK_SESSIONS = [
 ];
 
 export default function PayoutDashboard({ addToast, roomId }) {
-  var [sessions, setSessions] = useState(MOCK_SESSIONS);
-  var [loading, setLoading]   = useState(false);
+  var [sessions, setSessions] = useState([]);
+  var [loading, setLoading]   = useState(true);
 
   useEffect(function() {
     setLoading(true);
-    fetch('/api/payout-history' + (roomId ? '?roomId=' + roomId : ''))
-      .then(function(r) { return r.json(); })
+    fetch('/api/payout-history' + (roomId ? '?roomId=' + roomId : ''), { headers: _authHeaders() })
+      .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(data) {
-        if (data && data.sessions && data.sessions.length > 0) setSessions(data.sessions);
+        if (data && data.sessions) setSessions(data.sessions);
       })
       .catch(function() {})
       .finally(function() { setLoading(false); });
@@ -118,6 +124,11 @@ export default function PayoutDashboard({ addToast, roomId }) {
       {/* Session history */}
       <div style={{ fontFamily: fM, fontSize: 8, color: GOLD, letterSpacing: 2, marginTop: 4 }}>SESSION HISTORY</div>
       {loading && <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, textAlign: 'center', padding: 20 }}>Loading...</div>}
+      {!loading && sessions.length === 0 && (
+        <div style={{ background: SURF, border: '1px dashed rgba(201,168,76,.15)', borderRadius: 10, padding: '24px 16px', textAlign: 'center' }}>
+          <div style={{ fontFamily: fM, fontSize: 9, color: MUTED }}>No sessions yet — earnings will appear here after your first stream</div>
+        </div>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {sessions.map(function(sess) {
           var cr = Math.floor((sess.totalCents || 0) * 0.9);

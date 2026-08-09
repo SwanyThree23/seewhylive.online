@@ -3,6 +3,12 @@ import AvatarPortrait from './AvatarPortrait.jsx';
 import { getPlatformHandles, setPlatformHandle } from '../platformConfig.js';
 import { usePushNotifications } from '../usePushNotifications.js';
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 var PLATFORM_TIERS = [
   { id: 'free',    label: 'FREE',    priceCents: 0,     color: '#8A7A62', perks: ['Basic streaming', 'Chat', '1 guest panel', 'Standard quality'] },
   { id: 'creator', label: 'CREATOR', priceCents: 1900,  color: '#C9A84C', perks: ['All Free', 'Up to 4 panels', 'Analytics', 'Gift receipts', '$19/mo'] },
@@ -87,7 +93,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
 
   useEffect(function() {
     try {
-      fetch('/api/creator/onboard/status')
+      fetch('/api/creator/onboard/status', { headers: _authHeaders() })
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data && data.connected) setStripeConnected(true);
@@ -118,7 +124,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     setProfileSaving(true);
     fetch('/api/users/me', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ displayName: displayName, bio: bio, avatarEmoji: avatarEmoji })
     })
     .then(function(r) {
@@ -136,7 +142,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
   }
 
   function connectStripe() {
-    fetch('/api/creator/onboard/link')
+    fetch('/api/creator/onboard/link', { headers: _authHeaders() })
       .then(function(r) {
         if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Failed to get Stripe link'); });
         return r.json();
@@ -157,7 +163,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     setPayoutLoading(true);
     fetch('/api/payments/payout', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ amountCents: availableCents })
     })
     .then(function(r) {
@@ -178,7 +184,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
   function saveNotifications() {
     fetch('/api/users/me/notifications', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         notifyNewStream: notifyNewStream,
         notifyTip: notifyTip,
@@ -565,7 +571,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
 
   function handleDeleteAccount() {
     setDeleteInFlight(true);
-    fetch('/api/users/me', { method: 'DELETE' })
+    fetch('/api/users/me', { method: 'DELETE', headers: _authHeaders() })
       .then(function(r) {
         if (!r.ok) throw new Error('Delete failed with status ' + r.status);
         return r.json();

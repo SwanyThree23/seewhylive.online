@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 var DEFAULT_BANNED = ['spam', 'scam', 'hate', 'slur', 'flood', 'bot', 'phishing'];
 
 var RULE_PRESETS = [
@@ -102,7 +108,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
 
   useEffect(function() {
     if (!roomId) return;
-    fetch('/api/moderation/word-filters?creatorId=' + roomId)
+    fetch('/api/moderation/word-filters?creatorId=' + roomId, { headers: _authHeaders() })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data && Array.isArray(data.filters)) {
@@ -226,7 +232,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     }
     fetch('/api/moderation/ban', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         creatorId: roomId,
         bannedUserId: f.userId || f.user,
@@ -254,7 +260,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     if (addToast) addToast(username + ' shadow banned', 'success');
     fetch('/api/moderation/shadow-ban', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ userId: userId, reason: 'Shadow banned by creator' })
     }).then(function(r) {
       if (!r.ok && addToast) addToast('Shadow ban not saved to server — will not persist after reconnect', 'error');
@@ -271,7 +277,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     if (roomId) {
       fetch('/api/moderation/word-filters', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: _authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ word: w, creatorId: roomId })
       })
         .then(function(r) {
@@ -302,7 +308,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     setBanned(function(prev) { return prev.filter(function(x) { return x !== w; }); });
     addToast('"' + w + '" removed', 'success');
     if (wordId) {
-      fetch('/api/moderation/word-filters/' + wordId, { method: 'DELETE' }).catch(function() {});
+      fetch('/api/moderation/word-filters/' + wordId, { method: 'DELETE', headers: _authHeaders() }).catch(function() {});
     }
   }
 
@@ -311,7 +317,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     setSubscriberOnly(next);
     fetch('/api/moderation/subscriber-only', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ roomId: roomId, enabled: next })
     }).catch(function() {});
     if (socket && roomId) {
