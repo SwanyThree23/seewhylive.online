@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 var BG   = '#0E0C09';
 var GOLD = '#C9A84C';
 var RED  = '#FF1A3C';
@@ -50,7 +56,7 @@ export default function MusicVideoTab({ addToast, userId, username }) {
 
   // Fetch job list
   function fetchJobs() {
-    fetch('/api/music-video/jobs', { credentials: 'include' })
+    fetch('/api/music-video/jobs', { headers: _authHeaders() })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (Array.isArray(data.jobs)) setJobs(data.jobs);
@@ -95,7 +101,7 @@ export default function MusicVideoTab({ addToast, userId, username }) {
     var form = new FormData();
     form.append('audio', audioFile);
     form.append('style', selectedStyle);
-    fetch('/api/music-video/submit', { method: 'POST', body: form, credentials: 'include' })
+    fetch('/api/music-video/submit', { method: 'POST', body: form, headers: _authHeaders() })
       .then(function(r) { if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Submit failed ' + r.status); }); return r.json(); })
       .then(function(data) {
         if (data.error) throw new Error(data.error);
@@ -113,7 +119,7 @@ export default function MusicVideoTab({ addToast, userId, username }) {
   }
 
   function handleDelete(jobId) {
-    fetch('/api/music-video/jobs/' + jobId, { method: 'DELETE', credentials: 'include' })
+    fetch('/api/music-video/jobs/' + jobId, { method: 'DELETE', headers: _authHeaders() })
       .then(function(r) {
         if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Delete failed'); });
         setJobs(function(prev) { return prev.filter(function(j) { return j.id !== jobId; }); });

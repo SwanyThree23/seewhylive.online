@@ -4,13 +4,18 @@
 
 var API_BASE = '/api/battles';
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 var battleService = {
   // POST /api/battles — create a pending challenge
   createChallenge: function (opts) {
     return fetch(API_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         defenderId:      opts.defenderId,
         challengerName:  opts.challengerName || null,
@@ -25,8 +30,7 @@ var battleService = {
   acceptChallenge: function (battleId, roomId) {
     return fetch(API_BASE + '/' + battleId + '/accept', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ roomId: roomId || null }),
     }).then(function (r) { return r.json(); });
   },
@@ -35,8 +39,7 @@ var battleService = {
   startBattle: function (battleId) {
     return fetch(API_BASE + '/' + battleId + '/start', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({}),
     }).then(function (r) { return r.json(); });
   },
@@ -45,20 +48,19 @@ var battleService = {
   vote: function (battleId, side, giftValueCents) {
     return fetch(API_BASE + '/' + battleId + '/vote', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ side: side, giftValueCents: giftValueCents }),
     }).then(function (r) { return r.json(); });
   },
 
   // GET /api/battles/active — all currently active battles
   getActive: function () {
-    return fetch(API_BASE + '/active', { credentials: 'include' }).then(function (r) { return r.json(); });
+    return fetch(API_BASE + '/active', { headers: _authHeaders() }).then(function (r) { return r.json(); });
   },
 
   // GET /api/battles/:id
   getBattle: function (battleId) {
-    return fetch(API_BASE + '/' + battleId, { credentials: 'include' }).then(function (r) { return r.json(); });
+    return fetch(API_BASE + '/' + battleId, { headers: _authHeaders() }).then(function (r) { return r.json(); });
   },
 };
 
