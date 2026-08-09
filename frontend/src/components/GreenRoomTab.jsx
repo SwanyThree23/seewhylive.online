@@ -32,18 +32,12 @@ function RoleBadge({ role }) {
 
 export default function GreenRoomTab({ guests, addToast, socket, roomId, userId, role, isLive }) {
   var [section,        setSection]        = useState('roster');
-  var [banned,         setBanned]         = useState(['TrollUser99', 'SpamBot_001']);
+  var [banned,         setBanned]         = useState([]);
   var [newBan,         setNewBan]         = useState('');
   var [handQueue,      setHandQueue]      = useState([]);
   var [stageList,      setStageList]      = useState([userId || '']);
-  var [showNotes,      setShowNotes]      = useState('WELCOME VIEWERS!\n\n---\n[0:00] Intro + housekeeping\n[5:00] Domino match begins\n[45:00] Halftime break + gifts\n[60:00] Final match\n[90:00] Prize + wrap-up\n');
-  var [segments,       setSegments]       = useState([
-    { id: 'sg1', time: '0:00',  title: 'Intro + housekeeping',      done: true  },
-    { id: 'sg2', time: '5:00',  title: 'Match 1 begins',            done: true  },
-    { id: 'sg3', time: '45:00', title: 'Halftime break',            done: false },
-    { id: 'sg4', time: '60:00', title: 'Finals match',              done: false },
-    { id: 'sg5', time: '90:00', title: 'Prize ceremony + wrap-up',  done: false },
-  ]);
+  var [showNotes,      setShowNotes]      = useState('');
+  var [segments,       setSegments]       = useState([]);
   var [newSegTime,     setNewSegTime]     = useState('');
   var [newSegTitle,    setNewSegTitle]    = useState('');
   var [audioOnly,      setAudioOnly]      = useState(false);
@@ -51,7 +45,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
   var [paywallOn,      setPaywallOn]      = useState(false);
   var [paywallCents,   setPaywallCents]   = useState(500);
   var [paywallInput,   setPaywallInput]   = useState('5.00');
-  var [streamTitle,    setStreamTitle]    = useState('Washington Classic LIVE 🎲');
+  var [streamTitle,    setStreamTitle]    = useState('');
   var [streamCategory, setStreamCategory] = useState('Domino');
   var [streamDesc,     setStreamDesc]     = useState('');
   var [cohostToken,    setCohostToken]    = useState('');

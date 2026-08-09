@@ -109,7 +109,6 @@ export default function WatchPartyTab(props) {
 
   // --- party meta ---
   var [watchPartyActive, setWatchPartyActive] = useState(false);
-  var [partyViewers,     setPartyViewers]     = useState(0);
   var [partyName,        setPartyName]        = useState('');
   var [sourceType,       setSourceType]       = useState('youtube');
   var [ytDetected,       setYtDetected]       = useState(false);
@@ -159,7 +158,6 @@ export default function WatchPartyTab(props) {
   var posRef           = useRef(0);
   var tickRef          = useRef(null);
   var ytDivRef         = useRef(null);
-  var partyViewerRef   = useRef(null);
   var sourceTypeRef    = useRef(sourceType);
 
   var isHost     = role === 'host' || role === 'cohost';
@@ -182,29 +180,6 @@ export default function WatchPartyTab(props) {
     if (id) setVideoId(id);
   }, [urlInput, sourceType]);
 
-  // ─────────────────────────────────────────────
-  // Party viewer drift simulation
-  // ─────────────────────────────────────────────
-  useEffect(function() {
-    if (partyViewerRef.current) {
-      clearInterval(partyViewerRef.current);
-      partyViewerRef.current = null;
-    }
-    if (!watchPartyActive || !isLive) { return; }
-    setPartyViewers(3);
-    partyViewerRef.current = setInterval(function() {
-      setPartyViewers(function(prev) {
-        var next = prev + rnd(1, 4);
-        return next > 25 ? 25 : next;
-      });
-    }, 5000);
-    return function() {
-      if (partyViewerRef.current) {
-        clearInterval(partyViewerRef.current);
-        partyViewerRef.current = null;
-      }
-    };
-  }, [watchPartyActive, isLive]);
 
   // ─────────────────────────────────────────────
   // Load YouTube IFrame API once
@@ -526,8 +501,6 @@ export default function WatchPartyTab(props) {
 
   function handleEndWatchParty() {
     setWatchPartyActive(false);
-    setPartyViewers(0);
-    if (partyViewerRef.current) { clearInterval(partyViewerRef.current); partyViewerRef.current = null; }
     if (addToast) addToast('Watch party ended', 'info');
   }
 

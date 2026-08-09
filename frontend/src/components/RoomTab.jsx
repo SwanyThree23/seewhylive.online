@@ -423,20 +423,6 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       });
   }
 
-  // Simulate stream goal progress when live
-  useEffect(function() {
-    if (!isLive || !streamGoal.enabled) return;
-    var t = setInterval(function() {
-      setStreamGoal(function(prev) {
-        if (!prev.enabled) return prev;
-        var add = Math.floor(Math.random() * 150 + 25);
-        var next = Math.min(prev.currentCents + add, prev.targetCents);
-        return Object.assign({}, prev, { currentCents: next });
-      });
-    }, 9000);
-    return function() { clearInterval(t); };
-  }, [isLive, streamGoal.enabled]);
-
   function openGoLive() {
     setShowGoLiveModal(true);
   }
