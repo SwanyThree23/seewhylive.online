@@ -129,52 +129,8 @@ export default function InsForgeTab({ addToast, isLive }) {
       setUptimeSec(function(prev) { return prev + 1; });
     }, 1000);
 
-    // Service metric updates — 8-second tick
-    var metricsId = setInterval(function() {
-      rtmpIdx.current = (rtmpIdx.current + 1) % RTMP_BITRATES.length;
-      var nextBitrate = RTMP_BITRATES[rtmpIdx.current];
-      var nextWorkers = WEBRTC_WORKERS[Math.floor(Math.random() * WEBRTC_WORKERS.length)];
-
-      // Occasionally jitter one non-stable service to warn then back
-      var jitterTarget = null;
-      if (Math.random() < 0.25) {
-        var jitterPool = ['rtmp', 'webrtc', 'turn', 'nginx'];
-        jitterTarget = jitterPool[Math.floor(Math.random() * jitterPool.length)];
-      }
-
-      setServices(function(prev) {
-        return prev.map(function(s) {
-          // DB and Vault always stay stable
-          if (s.id === 'db' || s.id === 'vault') return s;
-
-          if (s.id === 'rtmp') {
-            return Object.assign({}, s, {
-              val: nextBitrate,
-              status: jitterTarget === 'rtmp' ? 'warn' : 'healthy',
-            });
-          }
-          if (s.id === 'webrtc') {
-            return Object.assign({}, s, {
-              val: nextWorkers,
-              status: jitterTarget === 'webrtc' ? 'warn' : 'healthy',
-            });
-          }
-          if (jitterTarget === s.id) {
-            return Object.assign({}, s, { status: 'warn' });
-          }
-          // Restore any previously-jittered service back to healthy
-          if (s.status === 'warn') {
-            return Object.assign({}, s, { status: 'healthy' });
-          }
-          return s;
-        });
-      });
-    }, 8000);
-
     return function() {
       clearInterval(uptimeId);
-      clearInterval(metricsId);
-      // Restore services to healthy on live end
       setServices(INITIAL_SERVICES.map(function(s) { return Object.assign({}, s); }));
     };
   }, [isLive]);
