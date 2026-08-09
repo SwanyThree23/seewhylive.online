@@ -6,6 +6,12 @@
 
 var ROOMS_BASE = '/api/rooms';
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 function joinPanel(socket, roomId, inviteCode) {
   return new Promise(function (resolve, reject) {
     socket.emit('panel:join', { roomId: roomId, inviteCode: inviteCode }, function (res) {
@@ -62,20 +68,19 @@ function onJoinRequestReceived(socket, cb) { socket.on('panel:join_request_recei
 function onJoinRequestResolved(socket, cb) { socket.on('panel:join_request_resolved', cb); return function () { socket.off('panel:join_request_resolved', cb); }; }
 
 function fetchPanelState(roomId) {
-  return fetch(ROOMS_BASE + '/' + roomId + '/panel', { credentials: 'include' })
+  return fetch(ROOMS_BASE + '/' + roomId + '/panel', { headers: _authHeaders() })
     .then(function (r) { return r.json(); });
 }
 
 function fetchJoinRequests(roomId) {
-  return fetch(ROOMS_BASE + '/' + roomId + '/join-requests', { credentials: 'include' })
+  return fetch(ROOMS_BASE + '/' + roomId + '/join-requests', { headers: _authHeaders() })
     .then(function (r) { return r.json(); });
 }
 
 function setRoomPrivacy(roomId, isPrivate, gatingMode) {
   return fetch(ROOMS_BASE + '/' + roomId + '/privacy', {
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: _authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ isPrivate: isPrivate, gatingMode: gatingMode })
   }).then(function (r) { return r.json(); });
 }

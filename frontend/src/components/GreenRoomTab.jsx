@@ -65,11 +65,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
 
   var isHost = role === 'host' || role === 'cohost';
 
-  var roster = guests && guests.length > 0 ? guests : [
-    { userId: 'demo1', username: 'SwanyThree',  role: 'host'  },
-    { userId: 'demo2', username: 'DJ_Cipher',   role: 'cohost'},
-    { userId: 'demo3', username: 'CaliBonesOG', role: 'guest' },
-  ];
+  var roster = (guests && guests.length > 0) ? guests : [];
 
   useEffect(function() {
     if (!socket) return;
