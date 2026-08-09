@@ -25,6 +25,12 @@ var ANIM = [
 // ─── System prompt ─────────────────────────────────────────────────────────────
 var SYSTEM_PROMPT = 'You are SwanAI Director for SeeWhy LIVE v33. Calm, strategic, decisive. Washington Classic Domino Tournament context. 90% creator payout platform. RTMP: rtmp://2.24.194.112:1935/live. Be concise — 2-4 sentences unless building a rundown or plan.';
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 function fmtTime() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
@@ -148,7 +154,7 @@ export default function SwanAITab(props) {
     var ctx = (viewerCount || 0).toLocaleString() + ' viewers live. Stream ' + (isLive ? 'LIVE (' + fmtDuration(liveSeconds) + ')' : 'OFFLINE') + '. Session earnings: ' + fmtEarnings(sessionEarningsCents) + '. ';
     fetch('/api/ai/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ system: SYSTEM_PROMPT, message: ctx + prompt }),
     })
       .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
@@ -200,7 +206,7 @@ export default function SwanAITab(props) {
       ' Format each block as: [TIME] SEGMENT — brief description. Keep it practical and actionable.';
     fetch('/api/ai/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ system: SYSTEM_PROMPT, message: prompt }),
     })
       .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })

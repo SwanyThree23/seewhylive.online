@@ -4,8 +4,6 @@ import AvatarPortrait from './AvatarPortrait.jsx';
 var CREATOR = 0.90;
 var PLATFORM = 0.10;
 
-var ENG_DATA = [72, 68, 81, 76, 85, 79, 88, 83, 91, 87, 94, 89];
-var REV_DATA = [45, 52, 38, 71, 83, 67, 94, 88, 102, 95, 118, 134];
 
 function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 
@@ -14,8 +12,8 @@ var TYPE_COLORS = { tip: '#C9A84C', subscription: '#C0C0C0', fades_boost: '#FF1A
 var VALID_PERIODS = ['today', 'week', 'month'];
 
 export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addToast }) {
-  var [engData, setEngData] = useState(ENG_DATA.slice());
-  var [revData, setRevData] = useState(REV_DATA.slice());
+  var [engData, setEngData] = useState([]);
+  var [revData, setRevData] = useState([]);
   var [typeFilter, setTypeFilter] = useState('all');
   var [leaderboard, setLeaderboard] = useState([]);
   var [period, setPeriod] = useState('month');
@@ -69,22 +67,6 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
     });
   }, [gifts]);
 
-  useEffect(function() {
-    if (!isLive) { return; }
-    var interval = setInterval(function() {
-      var newEng = Math.floor(60 + Math.random() * 40);
-      setEngData(function(prev) {
-        return prev.slice(1).concat([newEng]);
-      });
-      setRevData(function(prev) {
-        var last = prev[prev.length - 1];
-        var newRev = Math.floor(last + Math.random() * 20 - 5);
-        if (newRev < 10) { newRev = 10; }
-        return prev.slice(1).concat([newRev]);
-      });
-    }, 4500);
-    return function() { clearInterval(interval); };
-  }, [isLive]);
 
   // Build txn list: prefer real API recentEarnings, append live gifts not already in it
   var dbTxns = (apiData && apiData.recentEarnings) ? apiData.recentEarnings.map(function(e) {
@@ -108,8 +90,8 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
   var totalGross   = txns.reduce(function(s, t) { return s + t.amount; }, 0);
   var totalCreator = apiData ? Math.floor(apiData.creatorCents || 0) : Math.floor(totalGross * CREATOR);
   var totalPlatform = apiData ? Math.floor(apiData.platformCents || 0) : Math.floor(totalGross * PLATFORM);
-  var peakEng      = Math.max.apply(null, engData);
-  var peakRev      = Math.max.apply(null, revData);
+  var peakEng      = engData.length > 0 ? Math.max.apply(null, engData) : 0;
+  var peakRev      = revData.length > 0 ? Math.max.apply(null, revData) : 0;
   var viewers      = viewerCount || 0;
   var topTxn       = txns.reduce(function(m, t) { return t.amount > m ? t.amount : m; }, 0);
   var streamCount  = (apiData && apiData.streamCount) || 0;

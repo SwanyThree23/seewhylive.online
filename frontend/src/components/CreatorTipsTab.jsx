@@ -526,6 +526,12 @@ var CREATOR_CHECKLIST = [
   { id: 'c10', text: 'App installed as PWA on phone', tab: 'Header' },
 ];
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 function fmtTime() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
@@ -556,7 +562,7 @@ export default function CreatorTipsTab({ addToast, username }) {
     setAiLoading(true);
     fetch('/api/ai/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ system: AI_SYSTEM, message: userMsg })
     })
       .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
