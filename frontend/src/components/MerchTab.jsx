@@ -39,7 +39,7 @@ var MERCH_ITEMS = [
 ];
 
 export default function MerchTab({ addToast, isLive, socket, roomId, username }) {
-  var [items, setItems] = useState(MERCH_ITEMS.map(function(m) { return Object.assign({}, m); }));
+  var [items, setItems] = useState([]);
   var [dropped, setDropped] = useState(null);
   var [cart, setCart] = useState([]);
   var [section, setSection] = useState('shop');
@@ -236,6 +236,14 @@ export default function MerchTab({ addToast, isLive, socket, roomId, username })
                     onClick: function() { setFilterCat(c); }
                   }, c);
                 })
+              ),
+
+              /* Empty state */
+              filteredItems.length === 0 && React.createElement('div', {
+                style: { background: 'rgba(26,21,16,.7)', border: '1px dashed rgba(201,168,76,.15)', borderRadius: 10, padding: '28px 16px', textAlign: 'center' }
+              },
+                React.createElement('div', { style: { fontSize: 28, marginBottom: 6 } }, '👕'),
+                React.createElement('div', { style: { fontFamily: fM, fontSize: 9, color: MUTED } }, 'No merch items yet')
               ),
 
               /* Item cards */
