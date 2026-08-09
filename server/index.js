@@ -1898,7 +1898,7 @@ io.on('connection', function(socket) {
   socket.on('kick-guest', function(data) {
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
-    if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
+    if (!roomId || !guestId || !/^[A-Za-z0-9_\-]{3,64}$/.test(guestId)) return;
     if (socket.data.role !== 'host') return;
 
     var producerIds = mediasoup.getProducerIdsByGuest(guestId);
@@ -1935,7 +1935,7 @@ io.on('connection', function(socket) {
     var guestId = String(data.guestId || '');
     var newRole = data.role;
     if (!roomId || !guestId || !newRole) return;
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
+    if (!/^[A-Za-z0-9_\-]{3,64}$/.test(guestId)) return;
     if (socket.data.role !== 'host') return;
     var validRoles = ['cohost', 'guest', 'viewer'];
     if (validRoles.indexOf(newRole) === -1) return;
