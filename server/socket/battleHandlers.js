@@ -69,6 +69,7 @@ function registerBattleHandlers(io, socket) {
   });
 
   socket.on('battle:accept', async (payload, cb) => {
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
     if (payload.roomId && !BATTLE_UUID_RE.test(payload.roomId)) { if (cb) cb({ ok: false, error: 'invalid roomId' }); return; }
     try {
@@ -88,6 +89,7 @@ function registerBattleHandlers(io, socket) {
   });
 
   socket.on('battle:decline', async (payload, cb) => {
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
     try {
       const battle = await battleService.getBattle(payload.battleId);
