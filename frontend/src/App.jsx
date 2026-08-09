@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react
 import { getSocket, setRejoinPayload, onReconnectCallback } from './socket.js';
 import { SOUNDS, playSound } from './utils/soundFx.js';
 import { creatorCents, platformCents, getPlatformHandles } from './platformConfig.js';
+import { usePushNotifications } from './usePushNotifications.js';
 import rtcManager from './webrtc.js';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -378,6 +379,8 @@ export default function App() {
   });
   var [installPrompt, setInstallPrompt] = useState(null);
   var [showInstallBanner, setShowInstallBanner] = useState(false);
+  var [showPushBanner, setShowPushBanner] = useState(false);
+  var pushNotif = usePushNotifications();
   var [editingTitle, setEditingTitle] = useState(false);
   var [titleDraft, setTitleDraft] = useState('');
   var [showMoreDrawer, setShowMoreDrawer] = useState(false);
@@ -407,6 +410,15 @@ export default function App() {
 
   useEffect(function() {
     var t = setTimeout(function() { setSplash(false); }, 2200);
+    return function() { clearTimeout(t); };
+  }, []);
+
+  // Show push notification opt-in banner once if permission not yet decided and not dismissed
+  useEffect(function() {
+    if (!pushNotif.supported) return;
+    if (localStorage.getItem('sw_push_dismissed')) return;
+    if (Notification.permission !== 'default') return;
+    var t = setTimeout(function() { setShowPushBanner(true); }, 5000);
     return function() { clearTimeout(t); };
   }, []);
 
@@ -1368,6 +1380,33 @@ export default function App() {
               ⬇ INSTALL
             </button>
           )}
+          {showPushBanner && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '3px 8px' }}>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#C9A84C', whiteSpace: 'nowrap' }}>🔔 ALERTS</span>
+              <button
+                onClick={function() {
+                  var _name = localStorage.getItem('sw_username') || 'viewer';
+                  pushNotif.subscribe(_name, function() {
+                    setShowPushBanner(false);
+                    addToast('Notifications enabled', 'success');
+                  }, function() {
+                    setShowPushBanner(false);
+                    localStorage.setItem('sw_push_dismissed', '1');
+                  });
+                }}
+                style={{ background: 'linear-gradient(135deg,#C9A84C,#E8C46A)', border: 'none', borderRadius: 4, padding: '2px 7px', color: '#07050A', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 0.5 }}>
+                ON
+              </button>
+              <button
+                onClick={function() {
+                  setShowPushBanner(false);
+                  localStorage.setItem('sw_push_dismissed', '1');
+                }}
+                style={{ background: 'none', border: 'none', color: '#8A7A62', fontSize: 12, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>
+                ✕
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -1530,6 +1569,7 @@ export default function App() {
             streamId={APP_ID}
             creatorId={userId}
             socket={socketRef.current}
+            roomId={APP_ID}
           />
         )}
         {activeTab === 'watch' && (

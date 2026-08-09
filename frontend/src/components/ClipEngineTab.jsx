@@ -2,12 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useVODRecording } from '../hooks/useVODRecording.js';
 import { saveClip as storePin, deleteClip as storeDelete, listClips as storeList } from '../clipStore.js';
 
-var SEED_CLIPS = [
-  { id: 'c1', title: 'Washington Classic Opener',   duration: 47,  size: '12.4 MB', ts: Date.now() - 3600000, thumbnail: '🎲' },
-  { id: 'c2', title: 'Domino Stack Challenge',      duration: 28,  size: '7.2 MB',  ts: Date.now() - 2100000, thumbnail: '🁡' },
-  { id: 'c3', title: 'Crowd Hype Moment',           duration: 15,  size: '3.9 MB',  ts: Date.now() - 900000,  thumbnail: '🔥' },
-  { id: 'c4', title: 'Double-Six Play Highlight',   duration: 62,  size: '16.1 MB', ts: Date.now() - 300000,  thumbnail: '🏆' },
-];
+var SEED_CLIPS = [];
 
 var EXPORT_FORMATS = [
   { id: 'mp4-1080', label: '1080p MP4',  size: '~18 MB', icon: '📹' },
@@ -33,9 +28,9 @@ function fmtAgo(ts) {
   return Math.floor(d / 3600) + 'h ago';
 }
 
-export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, socket }) {
+export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, socket, roomId }) {
   var [tab, setTab]               = useState('clips');
-  var [clips, setClips]           = useState(SEED_CLIPS.map(function(c) { return Object.assign({}, c); }));
+  var [clips, setClips]           = useState(SEED_CLIPS);
   var [recording, setRecording]   = useState(false);
   var [recSecs, setRecSecs]       = useState(0);
 
@@ -74,6 +69,29 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
   useEffect(function() {
     setGallery(storeList());
   }, []);
+
+  useEffect(function() {
+    if (!roomId) return;
+    var tok = localStorage.getItem('sw_token') || '';
+    fetch('/api/clips/' + encodeURIComponent(roomId), {
+      headers: { 'Authorization': 'Bearer ' + tok }
+    }).then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (!data || !data.clips) return;
+        setClips(data.clips.map(function(c) {
+          return {
+            id: c.id,
+            title: c.label || ('Clip at ' + new Date(c.ts).toLocaleTimeString()),
+            duration: 0,
+            size: '—',
+            ts: c.ts,
+            thumbnail: '📍',
+            isMarker: true,
+            markedBy: c.marked_by || '',
+          };
+        }));
+      }).catch(function() {});
+  }, [roomId]);
 
   useEffect(function() {
     if (tab === 'gallery') {
