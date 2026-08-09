@@ -116,21 +116,16 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
   var [simNextEvent, setSimNextEvent] = useState(0);
   var [reminders,    setReminders]    = useState(function() { try { return JSON.parse(localStorage.getItem('sw_reminders') || '[]'); } catch(e) { return []; } });
 
-  // Load from API on mount; fall back to INIT_SCHEDULE seed if empty
+  // Load from API on mount
   useEffect(function() {
     fetch('/api/schedule')
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var rows = data && Array.isArray(data.events) ? data.events : [];
-        if (rows.length > 0) {
-          setSchedule(rows.map(rowToEvent));
-        } else {
-          setSchedule(INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); }));
-        }
+        setSchedule(rows.map(rowToEvent));
         setApiLoaded(true);
       })
       .catch(function() {
-        setSchedule(INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); }));
         setApiLoaded(true);
       });
   }, []);
@@ -346,6 +341,11 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
 
       {/* Event list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {apiLoaded && visibleSchedule.length === 0 && (
+          <div style={{ background: 'rgba(26,21,16,.7)', border: '1px dashed rgba(201,168,76,.15)', borderRadius: 10, padding: '24px 16px', textAlign: 'center' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>No events scheduled — add one below</div>
+          </div>
+        )}
         {visibleSchedule.map(function(ev) {
           var sc = STATUS_COLORS[ev.status] || '#8A7A62';
           var cc = CAT_COLORS[ev.category] || '#C9A84C';

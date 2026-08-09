@@ -1871,7 +1871,12 @@ io.on('connection', function(socket) {
     if (r !== 'host' && r !== 'cohost') return;
     var roomId = socket.data.roomId;
     if (!roomId || !data || !data.id) return;
-    try { db.prepare('DELETE FROM chat_history WHERE id = ? AND room_id = ?').run(String(data.id), roomId); } catch(e) {}
+    try {
+      db.prepare('DELETE FROM chat_history WHERE id = ? AND room_id = ?').run(String(data.id), roomId);
+    } catch(e) {
+      logger.warn('[chat-delete] DB error: ' + e.message);
+      return; // don't broadcast deletion if DB write failed
+    }
     io.to(roomId).emit('chat-deleted', { id: data.id });
   });
 
