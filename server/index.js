@@ -89,6 +89,7 @@ var logger = winston.createLogger({
 var DB_PATH = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
 var db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
+db.pragma('wal_autocheckpoint = 200');
 db.pragma('foreign_keys = ON');
 
 db.exec(`
@@ -460,7 +461,7 @@ setInterval(function() {
    audioChunkThrottle, collabThrottle, superChatThrottle, subscribeThrottle,
    merchOrderThrottle, updateUsernameThrottle, handRaiseThrottle, speakingThrottle,
    chatMsgThrottle, pollVoteThrottle, vsVoteThrottle, qaUpvoteThrottle,
-   judgeScoreThrottle].forEach(function(m) {
+   judgeScoreThrottle, slowModeUserTs].forEach(function(m) {
     m.forEach(function(ts, k) { if (ts < _cut) m.delete(k); });
   });
 }, 5 * 60 * 1000).unref();
@@ -3981,6 +3982,7 @@ io.on('connection', function(socket) {
     loveEarnings.delete(roomId);
     giftLeaderboards.delete(roomId);
     slowModeSeconds.delete(roomId);
+    slowModeUserTs.forEach(function(_, k) { if (k.startsWith(roomId + ':')) slowModeUserTs.delete(k); });
     pinnedMessages.delete(roomId);
     streamGoals.delete(roomId);
     chyrons.delete(roomId);
@@ -4477,6 +4479,14 @@ app.post('/api/webhooks/deploy', function(req, res) {
 // ─── Server startup ────────────────────────────────────────────────────────
 var PORT = parseInt(process.env.PORT || '3001', 10);
 
+// Validate required environment variables before binding the port.
+var REQUIRED_ENVS = ['JWT_SECRET', 'SUPABASE_URL', 'SUPABASE_KEY'];
+var _missingEnvs = REQUIRED_ENVS.filter(function(k) { return !process.env[k]; });
+if (_missingEnvs.length) {
+  _missingEnvs.forEach(function(k) { logger.error('Missing required env var: ' + k); });
+  process.exit(1);
+}
+
 mediasoup.createWorkers()
   .then(function() {
     logger.info('mediasoup workers ready');
@@ -4510,9 +4520,12 @@ process.on('SIGTERM', function() {
     logger.error('[shutdown] DB close error: ' + err.message);
   }
 
-  server.close(function() {
-    logger.info('HTTP server closed');
-    process.exit(0);
+  io.close(function() {
+    logger.info('Socket.IO server closed');
+    server.close(function() {
+      logger.info('HTTP server closed');
+      process.exit(0);
+    });
   });
 
   // Force exit after 10s if clean shutdown stalls

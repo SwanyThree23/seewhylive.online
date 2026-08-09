@@ -17,6 +17,7 @@ module.exports = {
     log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
     restart_delay: 2000,
     max_restarts: 10,
-    autorestart: true
+    autorestart: true,
+    merge_logs: true
   }]
 };

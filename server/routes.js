@@ -86,7 +86,7 @@ router.get('/aura/usage', requireAuth, function(req, res) {
     }
     return res.json({ callsThisHour: 0, limit: 20, streamId: streamId });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -102,7 +102,7 @@ router.post('/aura/mode', requireAuth, function(req, res) {
     }
     return res.json({ mode: mode, success: true });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -155,14 +155,14 @@ router.post('/aura/trigger', requireAuth, function(req, res) {
     }
 
     if (!triggerFn) {
-      return res.json({ success: false, error: 'Unknown trigger type: ' + type });
+      return res.status(400).json({ success: false, error: 'Unknown trigger type: ' + type });
     }
 
     triggerFn(function(err, text) {
       res.json({ success: true, text: text || 'AURA response', mode: mode });
     });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -179,7 +179,7 @@ router.get('/search', function(req, res) {
     }
     return res.json({ results: [], total: 0 });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -195,7 +195,7 @@ router.get('/streams/count', function(req, res) {
     }
     return res.json({ liveCount: 0 });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -226,7 +226,7 @@ router.get('/creator/analytics', requireAuth, function(req, res) {
       peakViewers: 0
     });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -244,7 +244,7 @@ router.get('/admin/metrics', requireAuth, function(req, res) {
       platformCutCents: 0
     });
   } catch (err) {
-    return res.json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

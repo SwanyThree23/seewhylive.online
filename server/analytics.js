@@ -11,6 +11,7 @@ var DB_PATH = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
 var db = new Database(DB_PATH);
 
 db.pragma('journal_mode = WAL');
+db.pragma('wal_autocheckpoint = 200');
 
 db.exec(
   'CREATE TABLE IF NOT EXISTS stream_analytics (' +
@@ -23,6 +24,8 @@ db.exec(
   '  recorded_at INTEGER NOT NULL' +
   ');'
 );
+db.exec('CREATE INDEX IF NOT EXISTS idx_sa_stream_id ON stream_analytics(stream_id);');
+db.exec('CREATE INDEX IF NOT EXISTS idx_sa_host_id ON stream_analytics(host_id);');
 
 db.exec(
   'CREATE TABLE IF NOT EXISTS creator_earnings (' +
@@ -37,6 +40,7 @@ db.exec(
   '  created_at INTEGER NOT NULL' +
   ');'
 );
+db.exec('CREATE INDEX IF NOT EXISTS idx_ce_creator_id ON creator_earnings(creator_id);');
 
 db.exec(
   'CREATE TABLE IF NOT EXISTS viewer_sessions (' +
@@ -48,6 +52,7 @@ db.exec(
   '  duration_seconds INTEGER DEFAULT 0' +
   ');'
 );
+db.exec('CREATE INDEX IF NOT EXISTS idx_vs_stream_user ON viewer_sessions(stream_id, user_id);');
 
 var stmtInsertStreamEvent = db.prepare(
   'INSERT INTO stream_analytics (id, stream_id, host_id, event_type, viewer_count, earnings_cents, recorded_at)' +
