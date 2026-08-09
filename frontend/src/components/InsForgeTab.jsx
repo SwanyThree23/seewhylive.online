@@ -91,7 +91,7 @@ export default function InsForgeTab({ addToast, isLive }) {
   var [lastRefresh, setLastRefresh] = useState(null);
   var [tab,         setTab]         = useState('status');
   var [countdown,   setCountdown]   = useState(AUTO_REFRESH_SEC);
-  var [liveLogs,    setLiveLogs]    = useState(MOCK_LOGS.map(function(l) { return Object.assign({}, l); }));
+  var [liveLogs,    setLiveLogs]    = useState([]);
   var [actionLog,   setActionLog]   = useState([]);
   var [running,     setRunning]     = useState(null);
   var [uptimeSec,   setUptimeSec]   = useState(0);
@@ -115,16 +115,7 @@ export default function InsForgeTab({ addToast, isLive }) {
     prevStatusRef.current = next;
   }, [services]);
 
-  // Live log ticker (always running)
-  useEffect(function() {
-    var id = setInterval(function() {
-      var pick = LIVE_LOG_POOL[Math.floor(Math.random() * LIVE_LOG_POOL.length)];
-      setLiveLogs(function(prev) {
-        return [Object.assign({}, pick, { ts: Date.now() })].concat(prev.slice(0, 49));
-      });
-    }, 4000);
-    return function() { clearInterval(id); };
-  }, []);
+  // Log pane populated by real refresh calls only (no synthetic ticker)
 
   // Live service metric simulation
   useEffect(function() {
@@ -377,6 +368,9 @@ export default function InsForgeTab({ addToast, isLive }) {
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3020' }}>LIVE · {liveLogs.length} entries</span>
             </div>
           </div>
+          {liveLogs.length === 0 && (
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', textAlign: 'center', padding: '16px 0' }}>No log entries yet — hit Refresh to populate</div>
+          )}
           {liveLogs.map(function(log, i) {
             var lc = levelColors[log.level] || '#8A7A62';
             return (

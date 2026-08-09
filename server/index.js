@@ -463,7 +463,8 @@ setInterval(function() {
    audioChunkThrottle, collabThrottle, superChatThrottle, subscribeThrottle,
    merchOrderThrottle, updateUsernameThrottle, handRaiseThrottle, speakingThrottle,
    chatMsgThrottle, pollVoteThrottle, vsVoteThrottle, qaUpvoteThrottle,
-   judgeScoreThrottle, slowModeUserTs].forEach(function(m) {
+   judgeScoreThrottle, slowModeUserTs,
+   _aiChatThrottle, _translateThrottle, _summarizeThrottle].forEach(function(m) {
     m.forEach(function(ts, k) { if (ts < _cut) m.delete(k); });
   });
 }, 5 * 60 * 1000).unref();
@@ -2780,6 +2781,9 @@ io.on('connection', function(socket) {
   // ── subscribe ──────────────────────────────────────────────────────────
   socket.on('follow-creator', function(data) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
+    var _fcNow = Date.now();
+    if (_fcNow - (viewerReactThrottle.get('fc:' + socket.data.userId) || 0) < 30000) return;
+    viewerReactThrottle.set('fc:' + socket.data.userId, _fcNow);
     var roomId   = socket.data.roomId;
     var follower = socket.data.username || 'Viewer';
     var creator  = String((data && data.username) || '').slice(0, 80);

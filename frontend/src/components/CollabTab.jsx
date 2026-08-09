@@ -55,12 +55,12 @@ var SEED_CHATS = {
 };
 
 export default function CollabTab({ addToast, isLive, userId, username, socket, roomId }) {
-  var [requests,    setRequests]    = useState(COLLAB_REQUESTS.map(function(r) { return Object.assign({}, r); }));
+  var [requests,    setRequests]    = useState([]);
   var [section,     setSection]     = useState('requests');
   var [inviteMsg,   setInviteMsg]   = useState('');
   var [inviteType,  setInviteType]  = useState('LIVE COLLAB');
   var [inviteSplit, setInviteSplit] = useState('50/50');
-  var [chatMsgs,    setChatMsgs]    = useState(Object.assign({}, SEED_CHATS));
+  var [chatMsgs,    setChatMsgs]    = useState({});
   var [chatInputs,  setChatInputs]  = useState({});
 
   var chatBoxRefs = useRef({});
