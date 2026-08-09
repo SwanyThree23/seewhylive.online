@@ -291,6 +291,12 @@ function TrackCard(props) {
   );
 }
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function MusicStudioTab(props) {
   var addToast = props.addToast;
@@ -425,7 +431,7 @@ export default function MusicStudioTab(props) {
   function callAI(systemPrompt, userMsg, onSuccess, onError) {
     fetch('/api/ai/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ system: systemPrompt, message: userMsg }),
     }).then(function(r) {
       if (!r.ok) throw new Error('AI error ' + r.status);

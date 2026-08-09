@@ -3605,21 +3605,32 @@ io.on('connection', function(socket) {
     // Send push notifications to all subscribers (once per go-live, not on replay)
     if (wasAlreadyLive) return;
     try {
-      var pushSubs = db.prepare('SELECT endpoint, p256dh, auth FROM push_subscriptions').all();
+      var pushSubs = db.prepare('SELECT endpoint, p256dh, auth FROM push_subscriptions LIMIT 5000').all();
       if (pushSubs && pushSubs.length > 0) {
         var pushTitle = room.streamTitle || 'SeeWhy LIVE';
         var pushPayload = JSON.stringify({ title: pushTitle + ' is LIVE!', body: 'Tap to watch now on SeeWhy LIVE', url: '/' });
-        pushSubs.forEach(function(s) {
-          if (!s.endpoint) return;
+        var _notifyPromises = pushSubs.map(function(s) {
+          if (!s.endpoint) return Promise.resolve(null);
           if (webpush) {
             var sub = { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } };
-            webpush.sendNotification(sub, pushPayload).catch(function(err) {
-              if (err.statusCode === 410 || err.statusCode === 404) {
-                db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').run(s.endpoint);
-              }
-            });
-          } else {
-            logger.info('[push] would notify: ' + s.endpoint.slice(-20));
+            return webpush.sendNotification(sub, pushPayload).then(
+              function() { return null; },
+              function(err) { return (err.statusCode === 410 || err.statusCode === 404) ? s.endpoint : null; }
+            );
+          }
+          logger.info('[push] would notify: ' + s.endpoint.slice(-20));
+          return Promise.resolve(null);
+        });
+        Promise.allSettled(_notifyPromises).then(function(results) {
+          var expired = results
+            .filter(function(r) { return r.status === 'fulfilled' && r.value; })
+            .map(function(r) { return r.value; });
+          if (expired.length === 0) return;
+          try {
+            var ph = expired.map(function() { return '?'; }).join(',');
+            db.prepare('DELETE FROM push_subscriptions WHERE endpoint IN (' + ph + ')').run(expired);
+          } catch(e) {
+            logger.warn('[push] batch delete failed: ' + e.message);
           }
         });
       }

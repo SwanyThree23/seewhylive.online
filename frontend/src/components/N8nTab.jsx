@@ -128,6 +128,12 @@ function ToggleSwitch(props) {
   );
 }
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 export default function N8nTab({ addToast, isLive }) {
   var [workflows, setWorkflows] = useState(N8N_WORKFLOWS.map(function(w) { return Object.assign({}, w, { enabled: true }); }));
   var [selected, setSelected] = useState(null);
@@ -211,7 +217,7 @@ export default function N8nTab({ addToast, isLive }) {
     setWebhookTesting(function(prev) { return Object.assign({}, prev, { [wf.id]: true }); });
     fetch('/api/n8n/test', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ workflowId: wf.id, event: 'test', ts: Date.now() })
     }).then(function(res) {
       setWebhookTesting(function(prev) { return Object.assign({}, prev, { [wf.id]: false }); });

@@ -147,6 +147,12 @@ var GO_LIVE_PLATFORMS = [
   { id: 'rumble',   name: 'Rumble',      color: '#85C742', icon: 'R',  locked: false },
 ];
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userId, username, role, roomId, branding, addToast, overlayConfig, viewerCount }) {
   var [stageLayout,    setStageLayout]    = useState('panel');
   var [expandedId,     setExpandedId]     = useState(null);
@@ -402,7 +408,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     var src = text;
     fetch('/api/translate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ text: src, targetLang: targetLang })
     })
       .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
