@@ -2199,6 +2199,12 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
   );
 }
 
+function _streamKeysAuthHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 // StreamKeysTab inline (7th tab)
 function StreamKeysTab(props) {
   var socket = props.socket;
@@ -2221,7 +2227,7 @@ function StreamKeysTab(props) {
   ];
 
   useEffect(function() {
-    fetch('/api/keys/meta/' + userId)
+    fetch('/api/keys/meta/' + userId, { headers: _streamKeysAuthHeaders() })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data && Array.isArray(data)) setSavedKeys(data);
@@ -2234,7 +2240,7 @@ function StreamKeysTab(props) {
     setSaving(true);
     fetch('/api/keys/save', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _streamKeysAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ guestId: userId, destId: platform, plainKey: streamKey })
     })
       .then(function(r) { if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Save failed ' + r.status); }); return r.json(); })
@@ -2257,7 +2263,7 @@ function StreamKeysTab(props) {
   function handleDelete(destId) {
     fetch('/api/keys/delete', {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _streamKeysAuthHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ guestId: userId, destId: destId })
     })
       .then(function(r) { if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Delete failed ' + r.status); }); return r.json(); })

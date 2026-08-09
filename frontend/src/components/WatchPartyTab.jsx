@@ -81,6 +81,12 @@ var PARTNER_CHANNELS = [
   { name: 'Domino Entertainment', handle: '@dominoentertainment5513', url: 'https://youtube.com/@dominoentertainment5513' },
 ];
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 export default function WatchPartyTab(props) {
   var guests   = props.guests;
   var socket   = props.socket;
@@ -1429,7 +1435,7 @@ export default function WatchPartyTab(props) {
                         if (aiLoading) return;
                         setAiLoading(true);
                         var msgs = (chat || []).slice(-50).map(function(m) { return (m.username || 'Guest') + ': ' + (m.message || m.text || ''); }).join('\n');
-                        fetch('/api/summarize-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: msgs }) })
+                        fetch('/api/summarize-chat', { method: 'POST', headers: _authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ messages: msgs }) })
                           .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
                           .then(function(d) { setAiSummary(d.summary || 'No summary available.'); setAiLoading(false); })
                           .catch(function() { setAiSummary('Could not generate summary.'); setAiLoading(false); });
