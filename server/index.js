@@ -1049,6 +1049,26 @@ app.get('/api/leaderboard', function(req, res) {
   }
 });
 
+// GET /api/clips/:roomId — clip markers for a room (host/cohost/admin only)
+app.get('/api/clips/:roomId', requireAuth, function(req, res) {
+  var roomId = String(req.params.roomId || '');
+  if (!roomId || roomId.length > 128 || !/^[\w\-.]+$/.test(roomId)) {
+    return res.status(400).json({ error: 'invalid roomId' });
+  }
+  if (req.user.role !== 'host' && req.user.role !== 'cohost' && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'forbidden' });
+  }
+  try {
+    var rows = db.prepare(
+      'SELECT id, room_id, ts, label, marked_by FROM clip_markers WHERE room_id = ? ORDER BY ts DESC LIMIT 200'
+    ).all(roomId);
+    res.json({ clips: rows });
+  } catch (err) {
+    logger.error('[clips] ' + err.message);
+    res.status(500).json({ error: 'Failed to load clips' });
+  }
+});
+
 // POST /api/connect/onboard
 app.post('/api/connect/onboard', requireAuth, stripeOnboardRateLimit, function(req, res) {
   var body = req.body;
