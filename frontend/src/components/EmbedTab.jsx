@@ -9,6 +9,12 @@ var PPV_PRICE_USD = 4.99;
 var CREATOR_SHARE = 0.90;
 var PREVIEW_SECONDS = 120;
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 function PaywallForm({ onUnlock, roomId, addToast }) {
   var stripe = useStripe();
   var elements = useElements();
@@ -30,7 +36,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
     try {
       var res = await fetch('/api/ppv/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: _authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ roomId, viewerId: 'viewer-' + Date.now(), priceUsd: PPV_PRICE_USD })
       });
       if (!res.ok) { var errD = await res.json(); throw new Error((errD && errD.error) || 'Payment initiation failed'); }
@@ -46,7 +52,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
 
       var verifyRes = await fetch('/api/ppv/verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: _authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ paymentIntentId: data.paymentIntentId, roomId, viewerId: 'viewer-' + Date.now() })
       });
       if (!verifyRes.ok) { var errV = await verifyRes.json(); throw new Error((errV && errV.error) || 'Payment verification failed'); }

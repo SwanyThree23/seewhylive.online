@@ -19,21 +19,6 @@ function fmtN(n) {
   return n >= 1000 ? (n / 1000).toFixed(1) + 'k' : '' + n;
 }
 
-var COLLAB_REQUESTS = [
-  { id: 'cr1', from: 'CaliBonesOG',    flag: '🇺🇸', color: '#C01838', type: 'LIVE COLLAB',       msg: "Let's do a Friday Night Dominos collab stream! 🎲",           time: '8:12 PM', status: 'pending',  split: '50/50' },
-  { id: 'cr2', from: 'AIverse_Pod',    flag: '🇺🇸', color: '#800020', type: 'PODCAST GUEST',     msg: 'Want to be on AIverse Ep.49? Topic: SeeWhy LIVE v33',         time: '7:55 PM', status: 'pending',  split: 'guest' },
-  { id: 'cr3', from: 'JoyceMoore',     flag: '🇺🇸', color: '#C9A84C', type: 'LIVE COLLAB',       msg: 'Memoirs × SeeWhy — storytelling + creator economy episode',   time: '7:30 PM', status: 'accepted', split: '60/40' },
-  { id: 'cr4', from: 'DrMuk_HH',       flag: '🇺🇸', color: '#F59E0B', type: 'WATCH PARTY',       msg: 'DrMuk STEAMulater watch party on SeeWhy!',                    time: '6:45 PM', status: 'pending',  split: 'host'  }
-];
-
-var COLLAB_CREATORS = [
-  { id: 'cc1', n: 'CaliBonesOG',    f: '🇺🇸', c: '#C01838', cat: 'Gaming',  followers: '48.2K', live: true,  v: 2847 },
-  { id: 'cc2', n: 'DJ_Cipher',      f: '🇯🇲', c: '#C9A84C', cat: 'Music',   followers: '24.1K', live: true,  v: 924  },
-  { id: 'cc3', n: 'JoyceMoore',     f: '🇺🇸', c: '#C9A84C', cat: 'Talk',    followers: '31.5K', live: false, v: 0    },
-  { id: 'cc4', n: 'AIverse_Pod',    f: '🇺🇸', c: '#800020', cat: 'Tech',    followers: '19.3K', live: false, v: 0    },
-  { id: 'cc5', n: 'DrMuk_HH',       f: '🇺🇸', c: '#F59E0B', cat: 'STEM',    followers: '8.9K',  live: false, v: 0    },
-  { id: 'cc6', n: 'IsaacHayes_III', f: '🇺🇸', c: '#E8C46A', cat: 'Culture', followers: '62.1K', live: false, v: 0    }
-];
 
 var INVITE_TYPES  = ['LIVE COLLAB', 'PODCAST GUEST', 'WATCH PARTY', 'MUSIC SESSION', 'TOURNAMENT MATCH'];
 var SPLIT_OPTIONS = ['50/50', '60/40', '70/30', 'host', 'guest'];
@@ -46,13 +31,6 @@ var CANNED_LINES = [
   'This is going viral 📈'
 ];
 
-var SEED_CHATS = {
-  cr3: [
-    { from: 'JoyceMoore', text: 'Hey! Ready to go live together? 💜', ts: '19:30' },
-    { from: 'you', text: 'Absolutely! Let me get the stream set up 🎙', ts: '19:31' },
-    { from: 'JoyceMoore', text: 'My audience is pumped — should we start with your intro or mine?', ts: '19:32' },
-  ]
-};
 
 export default function CollabTab({ addToast, isLive, userId, username, socket, roomId }) {
   var [requests,    setRequests]    = useState([]);
@@ -136,32 +114,6 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
     }
   }, [chatMsgs]);
 
-  /* ── Auto-append partner messages when isLive ── */
-  useEffect(function() {
-    if (!isLive) return;
-    var timer = setInterval(function() {
-      var activeCollabs = [];
-      for (var i = 0; i < COLLAB_REQUESTS.length; i++) {
-        if (COLLAB_REQUESTS[i].status === 'accepted') {
-          activeCollabs.push(COLLAB_REQUESTS[i]);
-        }
-      }
-      if (activeCollabs.length === 0) return;
-      var randIdx = Math.floor(Math.random() * activeCollabs.length);
-      var collab = activeCollabs[randIdx];
-      var lineIdx = Math.floor(Math.random() * CANNED_LINES.length);
-      var line = CANNED_LINES[lineIdx];
-      var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      var msg = { from: collab.from, text: line, ts: ts };
-      setChatMsgs(function(prev) {
-        var arr = (prev[collab.id] || []).concat([msg]);
-        var next = Object.assign({}, prev);
-        next[collab.id] = arr;
-        return next;
-      });
-    }, 6000);
-    return function() { clearInterval(timer); };
-  }, [isLive]);
 
   function sendChat(collabId, fromName) {
     var inputText = chatInputs[collabId] || '';
@@ -401,8 +353,9 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
 
             {/* Creator list */}
             <div style={{ fontFamily: fD, fontSize: 13, color: MUTED, letterSpacing: 3, marginBottom: 6 }}>SUGGESTED CREATORS</div>
+            <div style={{ textAlign: 'center', padding: '20px 12px', color: MUTED, fontFamily: fM, fontSize: 10 }}>Creator suggestions coming soon</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {COLLAB_CREATORS.map(function(creator) {
+              {[].map(function(creator) {
                 return (
                   <div
                     key={creator.id}

@@ -72,10 +72,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
   var [pollTimer,    setPollTimer]    = useState(60);
   var [pollRunning,  setPollRunning]  = useState(false);
   var pollTimerRef = useRef(null);
-  var [pastPolls,    setPastPolls]    = useState([
-    { question: 'Should we run FADES next?', options: ['Yes 🔥', 'No 🚫'], votes: { 0: 47, 1: 12 }, ended: true },
-    { question: 'Best Washington Classic round?', options: ['Round 1', 'Round 2', 'Sudden Death'], votes: { 0: 23, 1: 31, 2: 18 }, ended: true },
-  ]);
+  var [pastPolls,    setPastPolls]    = useState([]);
 
   useEffect(function() {
     if (logEndRef.current) {
