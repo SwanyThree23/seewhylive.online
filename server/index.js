@@ -2226,6 +2226,7 @@ io.on('connection', function(socket) {
         io.to(roomId).emit('chat-message', {
           id:              msgId,
           username:        username,
+          role:            socket.data.role || 'viewer',
           message:         message,
           translated:      result.translated,
           lang:            result.detectedLang,
@@ -2241,6 +2242,7 @@ io.on('connection', function(socket) {
         io.to(roomId).emit('chat-message', {
           id:              msgId,
           username:        username,
+          role:            socket.data.role || 'viewer',
           message:         message,
           translated:      message,
           lang:            'UNK',

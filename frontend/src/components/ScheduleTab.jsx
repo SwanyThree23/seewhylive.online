@@ -188,10 +188,11 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
       occurrences.push({ date: bt, suffix: ' (Wk 3)' });
     }
     setSaving(true);
+    var _tok = localStorage.getItem('sw_token') || '';
     var promises = occurrences.map(function(occ) {
       return fetch('/api/schedule', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _tok },
         body: JSON.stringify({
           title:        newTitle + occ.suffix,
           category:     newCat,
@@ -231,7 +232,8 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
   function removeEvent(id) {
     var ev = schedule.find(function(s) { return s.id === id; });
     if (ev && ev.fromApi) {
-      fetch('/api/schedule/' + id, { method: 'DELETE' }).catch(function() {});
+      var _delTok = localStorage.getItem('sw_token') || '';
+      fetch('/api/schedule/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + _delTok } }).catch(function() {});
     }
     setSchedule(function(p) { return p.filter(function(s) { return s.id !== id; }); });
   }
