@@ -14,6 +14,7 @@ const musicVideoRoutes = require('./routes/musicVideo');
 const { registerBattleHandlers } = require('./socket/battleHandlers');
 const { registerPanelHandlers } = require('./socket/panelHandlers');
 const requireAuth = require('./middleware/auth');
+const loyaltyService = require('./services/loyaltyService');
 
 /**
  * index.js - SeeWhy LIVE v33.0 main server entry point
@@ -421,6 +422,7 @@ var merchOrderThrottle      = new Map();  // socketId → lastMerchOrderTs ms (2
 var updateUsernameThrottle  = new Map();  // userId → lastUpdateTs ms (2s throttle)
 var handRaiseThrottle       = new Map();  // userId → lastHandRaiseTs ms (500ms throttle)
 var speakingThrottle        = new Map();  // userId → lastSpeakingTs ms (250ms throttle)
+var watchHeartbeatThrottle  = new Map();  // userId → lastAwardTs ms (25s throttle for watch-time points)
 var producerOwners      = new Map();  // producerId → guestId (ownership for close/pause/resume)
 var chatMsgThrottle     = new Map();  // socketId → lastChatTs ms (500ms throttle)
 var slowModeSeconds     = new Map();  // roomId → seconds (0 = off)
@@ -4328,6 +4330,21 @@ io.on('connection', function(socket) {
     socket.emit('platform-health', status);
   });
 
+  // ── watch-heartbeat ────────────────────────────────────────────────────
+  socket.on('watch-heartbeat', function() {
+    var uid = socket.data.userId;
+    var roomId = socket.data.roomId;
+    if (!uid || uid.startsWith('anon') || !roomId) return;
+    var room = rooms.get(roomId);
+    if (room && room.hostUserId === uid) return; // hosts don't earn watch-time points for their own room
+    var _whNow = Date.now();
+    if (_whNow - (watchHeartbeatThrottle.get(uid) || 0) < 25000) return;
+    watchHeartbeatThrottle.set(uid, _whNow);
+    loyaltyService.awardPoints({ userId: uid, points: 1, source: 'watch_time' }).catch(function(e) {
+      logger.warn('[watch-heartbeat] awardPoints: ' + e.message);
+    });
+  });
+
   // ── disconnect ─────────────────────────────────────────────────────────
   socket.on('disconnect', function(reason) {
     logger.info('[socket] Disconnected: ' + socket.id + ' reason=' + reason);
@@ -4338,7 +4355,7 @@ io.on('connection', function(socket) {
     sendGiftThrottle.delete(_tKey);
     qaQuestionThrottle.delete(_tKey); qaQuestionThrottle.delete(socket.id);
     loveThrottle.delete(_tKey); audioChunkThrottle.delete(_tKey);
-    collabThrottle.delete(_tKey);
+    collabThrottle.delete(_tKey); watchHeartbeatThrottle.delete(_tKey);
     // superChatThrottle and subscribeThrottle are intentionally NOT cleared on disconnect:
     // clearing them allows rapid-reconnect bypass of the per-user cooldown windows (2s / 60s).
     merchOrderThrottle.delete(_tKey); updateUsernameThrottle.delete(_tKey);

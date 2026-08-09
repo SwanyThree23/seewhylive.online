@@ -381,6 +381,7 @@ export default function App() {
   var [showInstallBanner, setShowInstallBanner] = useState(false);
   var [showPushBanner, setShowPushBanner] = useState(false);
   var pushNotif = usePushNotifications();
+  var [myLoyalty, setMyLoyalty] = useState(null);
   var [editingTitle, setEditingTitle] = useState(false);
   var [titleDraft, setTitleDraft] = useState('');
   var [showMoreDrawer, setShowMoreDrawer] = useState(false);
@@ -421,6 +422,25 @@ export default function App() {
     var t = setTimeout(function() { setShowPushBanner(true); }, 5000);
     return function() { clearTimeout(t); };
   }, []);
+
+  // Fetch viewer's loyalty points/level when logged in
+  useEffect(function() {
+    var tok = localStorage.getItem('sw_token') || '';
+    if (!tok) return;
+    fetch('/api/leaderboard/me', { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) { if (d && d.level) setMyLoyalty(d); })
+      .catch(function() {});
+  }, []);
+
+  // Emit watch-heartbeat every 30s while the room is live (awards 1 loyalty point per tick server-side)
+  useEffect(function() {
+    if (!isLive) return;
+    var id = setInterval(function() {
+      if (socketRef.current) socketRef.current.emit('watch-heartbeat');
+    }, 30000);
+    return function() { clearInterval(id); };
+  }, [isLive]);
 
   // Keep streamRecapRef in sync for the popstate handler
   useEffect(function() { streamRecapRef.current = streamRecap; }, [streamRecap]);
@@ -1326,6 +1346,13 @@ export default function App() {
           )}
           {!isLive && (
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62' }}>👁 {viewerCount}</span>
+          )}
+          {myLoyalty && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 999, padding: '3px 7px' }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C' }}>
+                ⭐ Lvl {myLoyalty.level} · {myLoyalty.total_points}pts
+              </span>
+            </div>
           )}
           {isLive && sessionEarningsCents > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '3px 7px' }}>

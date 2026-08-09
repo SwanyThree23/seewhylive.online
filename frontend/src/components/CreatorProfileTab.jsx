@@ -48,7 +48,7 @@ export default function CreatorProfileTab(props) {
   var streamTitle = props.streamTitle;
   var socket = props.socket;
 
-  var profileState = useState(MOCK_PROFILE);
+  var profileState = useState(null);
   var profile = profileState[0];
   var setProfile = profileState[1];
 
@@ -65,15 +65,18 @@ export default function CreatorProfileTab(props) {
   var setCopiedProfile = copiedProfileState[1];
 
   useEffect(function() {
+    setProfile(null);
     fetch('/api/users/' + creatorUsername)
       .then(function(r) { return r.json(); })
       .then(function(d) {
         if (d && d.username) {
-          setProfile(Object.assign({}, MOCK_PROFILE, d));
+          setProfile(d);
+        } else {
+          setProfile(null);
         }
       })
       .catch(function() {
-        setProfile(MOCK_PROFILE);
+        setProfile(null);
       });
   }, [creatorUsername]);
 
@@ -432,6 +435,14 @@ export default function CreatorProfileTab(props) {
           )
         );
       })
+    );
+  }
+
+  if (!profile) {
+    return React.createElement(
+      'div',
+      { style: { background: '#0E0C09', minHeight: '100vh', padding: '12px 10px 50px', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+      React.createElement('div', { style: { fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', textAlign: 'center' } }, 'Loading profile…')
     );
   }
 
