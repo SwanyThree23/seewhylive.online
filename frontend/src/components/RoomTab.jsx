@@ -482,6 +482,17 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     setHandQueue(function(q) { return q.filter(function(x) { return x.guestId !== gid; }); });
   }
 
+  function promoteGuest(gid, newRole) {
+    if (!socket) return;
+    socket.emit('promote-guest', { roomId: roomId, guestId: gid, role: newRole });
+    addToast(newRole === 'cohost' ? 'Co-host assigned' : 'Role updated', 'success');
+  }
+
+  function kickGuest(gid) {
+    if (!socket) return;
+    socket.emit('kick-guest', { roomId: roomId, guestId: gid });
+  }
+
   function toggleMute() {
     var next = !isMuted;
     setIsMuted(next);
@@ -675,14 +686,33 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                   {role === 'host' && !onStage && (
                     <button onClick={function() { inviteToStage({ guestId: gid, username: g.username || gid }); }}
                       style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.28)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
-                      + INVITE
+                      + STAGE
                     </button>
                   )}
                   {role === 'host' && onStage && gid !== userId && (
                     <button onClick={function() { removeFromStage(gid); }}
                       style={{ background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 6, padding: '4px 8px', color: '#FF6B81', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
-                      REMOVE
+                      – STAGE
                     </button>
+                  )}
+                  {role === 'host' && gid !== userId && g.role !== 'host' && (
+                    <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+                      {g.role !== 'cohost' ? (
+                        <button onClick={function() { promoteGuest(gid, 'cohost'); }}
+                          style={{ background: 'rgba(212,133,74,.1)', border: '1px solid rgba(212,133,74,.35)', borderRadius: 6, padding: '4px 7px', color: '#D4854A', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 0.5 }}>
+                          MOD
+                        </button>
+                      ) : (
+                        <button onClick={function() { promoteGuest(gid, 'viewer'); }}
+                          style={{ background: 'rgba(138,122,98,.1)', border: '1px solid rgba(138,122,98,.3)', borderRadius: 6, padding: '4px 7px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 0.5 }}>
+                          UNMOD
+                        </button>
+                      )}
+                      <button onClick={function() { kickGuest(gid); }}
+                        style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 6, padding: '4px 7px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 0.5 }}>
+                        KICK
+                      </button>
+                    </div>
                   )}
                 </div>
               );
