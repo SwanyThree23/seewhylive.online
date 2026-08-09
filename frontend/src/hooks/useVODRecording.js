@@ -1,5 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 export function formatDuration(sec) {
   var s  = Math.floor(sec || 0);
   var h  = Math.floor(s / 3600);
@@ -48,7 +54,7 @@ export function useVODRecording(opts) {
     setError(null);
     fetch('/api/vod/start', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body:    JSON.stringify({ stream_id: streamId, creator_id: creatorId, title: title }),
     })
       .then(function(r) { return r.json(); })
@@ -72,7 +78,7 @@ export function useVODRecording(opts) {
     setRecording(false);
     fetch('/api/vod/stop', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body:    JSON.stringify({ vod_id: idRef.current, duration_seconds: elapsed }),
     })
       .then(function(r) { return r.json(); })

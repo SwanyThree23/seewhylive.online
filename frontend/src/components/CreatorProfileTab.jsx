@@ -3,26 +3,6 @@ import React, { useState, useEffect } from 'react';
 import SignalBars from './SignalBars';
 import AvatarPortrait from './AvatarPortrait.jsx';
 
-var MOCK_PROFILE = {
-  username: 'SwanyThree',
-  displayName: 'SwanyThree 🎲',
-  bio: 'Creator of the Washington Classic domino series. Culture. Community. SeeWhy LIVE.',
-  followerCount: 12840,
-  totalEarnings: 0,
-  isLive: true,
-  tier: 'pro',
-  joinedDate: '2024-01-15',
-  subscriberTiers: [
-    { name: 'Fan', amountCents: 500, perks: ['Ad-free chat', 'Fan badge'] },
-    { name: 'Supporter', amountCents: 1000, perks: ['All Fan perks', 'Exclusive streams', 'Supporter badge'] },
-    { name: 'Ride or Die', amountCents: 2000, perks: ['All perks', 'Direct DMs', 'Monthly shoutout', 'RoD badge'] },
-  ],
-  recentStreams: [
-    { id: 'r1', title: 'Washington Classic Round 2', viewerPeak: 2847, date: '2026-05-24' },
-    { id: 'r2', title: 'Washington Classic Round 1', viewerPeak: 2100, date: '2026-05-17' },
-    { id: 'r3', title: 'Friday Night Dominos', viewerPeak: 1800, date: '2026-05-10' },
-  ]
-};
 
 function formatJoinDate(dateStr) {
   if (!dateStr) return '';

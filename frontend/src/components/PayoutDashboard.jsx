@@ -25,14 +25,6 @@ function fmtDate(ts) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-var MOCK_SESSIONS = [
-  { id: 1, date: Math.floor(Date.now()/1000) - 86400,     label: 'Washington Classic QF Night',  totalCents: 8450,  superChats: 6, gifts: 14, tips: 4, viewers: 234 },
-  { id: 2, date: Math.floor(Date.now()/1000) - 86400*3,   label: 'Friday Night Dominos',         totalCents: 5200,  superChats: 3, gifts: 8,  tips: 2, viewers: 156 },
-  { id: 3, date: Math.floor(Date.now()/1000) - 86400*7,   label: 'Community Conversation',       totalCents: 3100,  superChats: 2, gifts: 5,  tips: 7, viewers: 89  },
-  { id: 4, date: Math.floor(Date.now()/1000) - 86400*10,  label: 'Beat Production LIVE',         totalCents: 12300, superChats: 9, gifts: 22, tips: 3, viewers: 412 },
-  { id: 5, date: Math.floor(Date.now()/1000) - 86400*14,  label: 'Washington Classic Preview',   totalCents: 6700,  superChats: 5, gifts: 11, tips: 6, viewers: 198 },
-];
-
 export default function PayoutDashboard({ addToast, roomId }) {
   var [sessions, setSessions] = useState([]);
   var [loading, setLoading]   = useState(true);

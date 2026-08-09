@@ -20,23 +20,6 @@ var RULE_PRESETS = [
 
 var SEV_COLORS = { HIGH: '#FF1A3C', MED: '#C9A84C', LOW: '#8A7A62' };
 
-var MOCK_FLAGS = [
-  { id: 1, user: 'xX_troll99',  msg: 'SPAMSPAMSPAMSPAM BUY CRYPTO NOW!!!',  rule: 'CAPS+REPEAT', ts: '14:02:11', action: 'blocked', userId: 'uid_1' },
-  { id: 2, user: 'viewer_4412', msg: 'Check this out: http://malware.xyz',   rule: 'LINKS',       ts: '14:08:33', action: 'stripped', userId: 'uid_2' },
-  { id: 3, user: 'bot_wave_01', msg: '🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥',      rule: 'EMOJI SPAM',  ts: '14:15:49', action: 'blocked', userId: 'uid_3' },
-  { id: 4, user: 'new_user_9',  msg: 'First time watcher hello everyone!',   rule: 'NEW ACCT',    ts: '14:21:02', action: 'held', userId: 'uid_4'    },
-];
-
-var GUARDIAN_LOG = [
-  '14:02:11  BLOCKED  xX_troll99 — CAPS FLOOD',
-  '14:08:33  STRIPPED  viewer_4412 — EXT LINK',
-  '14:09:01  PASSED  regular_fan — clean message',
-  '14:15:49  BLOCKED  bot_wave_01 — EMOJI SPAM (15)',
-  '14:21:02  HELD  new_user_9 — new account (<7d)',
-  '14:22:18  PASSED  loyal_viewer — clean message',
-  '14:23:44  PASSED  domino_fan3 — clean message',
-];
-
 var ACTION_COLORS = { blocked: '#FF1A3C', stripped: '#C9A84C', held: '#C9A84C', passed: '#C9A84C' };
 
 var VIEWS = [

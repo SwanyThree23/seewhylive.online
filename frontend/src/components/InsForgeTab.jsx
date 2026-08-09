@@ -17,19 +17,6 @@ var VPS_IP  = '2.24.194.112';
 var APP_ID  = '6990f5f24823b53e21fcdc9d';
 var AUTO_REFRESH_SEC = 30;
 
-var MOCK_LOGS = [
-  { ts: Date.now() - 4000,   level: 'INFO',  msg: 'Room seewhy-001 created — 3 guests joined' },
-  { ts: Date.now() - 12000,  level: 'INFO',  msg: 'RTMP stream connected: 720p@30fps 6420 kbps' },
-  { ts: Date.now() - 28000,  level: 'INFO',  msg: 'Gift received: Rose ×3 ($3.00) from CaliBonesOG' },
-  { ts: Date.now() - 45000,  level: 'WARN',  msg: 'mediasoup worker CPU >80%, spawning backup' },
-  { ts: Date.now() - 72000,  level: 'INFO',  msg: "SwanyBot triggered: !hype → 🔥 LET'S GO!" },
-  { ts: Date.now() - 90000,  level: 'INFO',  msg: 'WebRTC ICE established via TURN relay' },
-  { ts: Date.now() - 130000, level: 'INFO',  msg: 'Analytics snapshot saved (60-min window)' },
-  { ts: Date.now() - 180000, level: 'ERROR', msg: 'Stripe webhook retry 1/3 for evt_1234abc' },
-  { ts: Date.now() - 240000, level: 'INFO',  msg: 'SSL certificate checked: 79 days remaining' },
-  { ts: Date.now() - 360000, level: 'INFO',  msg: 'PM2 heartbeat OK — uptime 7d 14h 22m' },
-];
-
 var SYSTEM_STATS = [
   { label: 'CPU USAGE',  val: '18%',     bar: 18,  color: '#C9A84C' },
   { label: 'MEMORY',     val: '19.4 MB', bar: 22,  color: '#C9A84C' },

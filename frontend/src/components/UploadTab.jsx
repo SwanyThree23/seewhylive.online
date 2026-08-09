@@ -9,11 +9,6 @@ var YT_CATEGORIES = [
 
 var YT_PRIVACY = ['public', 'unlisted', 'private'];
 
-var SEED_HISTORY = [
-  { id: 'h1', title: 'Washington Classic Domino Night', duration: '1:42:18', views: 2841, date: '2026-05-10', privacy: 'public', thumb: '🎲' },
-  { id: 'h2', title: 'SeeWhy LIVE - Domino Fades Highlights', duration: '18:04', views: 934, date: '2026-05-08', privacy: 'unlisted', thumb: '⚡' },
-  { id: 'h3', title: 'VibeNBones Live Set - Full Stream', duration: '2:14:37', views: 1203, date: '2026-05-02', privacy: 'public', thumb: '🎵' },
-];
 
 function fmtBytes(n) {
   if (n >= 1073741824) return (Math.floor(n / 10737418.24) / 100) + ' GB';
@@ -32,7 +27,7 @@ export default function UploadTab({ addToast, isLive }) {
   var [progress,      setProgress]      = useState(0);
   var [ytApiKey,      setYtApiKey]      = useState('');
   var [showApiCfg,    setShowApiCfg]    = useState(false);
-  var [history,       setHistory]       = useState(SEED_HISTORY);
+  var [history,       setHistory]       = useState([]);
   var [duration,      setDuration]      = useState(null);
   var [durationError, setDurationError] = useState('');
   var [uploadProgress, setUploadProgress] = useState(0);

@@ -423,6 +423,7 @@ var updateUsernameThrottle  = new Map();  // userId → lastUpdateTs ms (2s thro
 var handRaiseThrottle       = new Map();  // userId → lastHandRaiseTs ms (500ms throttle)
 var speakingThrottle        = new Map();  // userId → lastSpeakingTs ms (250ms throttle)
 var watchHeartbeatThrottle  = new Map();  // userId → lastAwardTs ms (25s throttle for watch-time points)
+var pinChatThrottle         = new Map();  // socketId → lastPinTs ms (3s throttle)
 var producerOwners      = new Map();  // producerId → guestId (ownership for close/pause/resume)
 var chatMsgThrottle     = new Map();  // socketId → lastChatTs ms (500ms throttle)
 var slowModeSeconds     = new Map();  // roomId → seconds (0 = off)
@@ -463,7 +464,7 @@ setInterval(function() {
    audioChunkThrottle, collabThrottle, superChatThrottle, subscribeThrottle,
    merchOrderThrottle, updateUsernameThrottle, handRaiseThrottle, speakingThrottle,
    chatMsgThrottle, pollVoteThrottle, vsVoteThrottle, qaUpvoteThrottle,
-   judgeScoreThrottle, slowModeUserTs,
+   judgeScoreThrottle, slowModeUserTs, pinChatThrottle,
    _aiChatThrottle, _translateThrottle, _summarizeThrottle].forEach(function(m) {
     m.forEach(function(ts, k) { if (ts < _cut) m.delete(k); });
   });
@@ -874,7 +875,7 @@ app.post('/api/ppv/verify', requireAuth, function(req, res) {
 // GET /api/schedule
 app.get('/api/schedule', function(req, res) {
   try {
-    var rows = db.prepare('SELECT id, title, category, desc, scheduled_at, created_at, recurring FROM schedules ORDER BY scheduled_at ASC').all();
+    var rows = db.prepare('SELECT id, title, category, desc, scheduled_at, created_at, recurring FROM schedules ORDER BY scheduled_at ASC LIMIT 200').all();
     res.json({ events: rows });
   } catch (err) {
     res.json({ events: [] });
@@ -1848,6 +1849,9 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = socket.data.roomId;
     if (!roomId || !data || !data.message) return;
+    var _pcNow = Date.now();
+    if (_pcNow - (pinChatThrottle.get(socket.id) || 0) < 3000) return;
+    pinChatThrottle.set(socket.id, _pcNow);
     var pinned = {
       id:       String(data.id || ''),
       username: String(data.username || '').slice(0, 80),
@@ -1871,13 +1875,15 @@ io.on('connection', function(socket) {
     if (r !== 'host' && r !== 'cohost') return;
     var roomId = socket.data.roomId;
     if (!roomId || !data || !data.id) return;
+    var _cdId = String(data.id);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_cdId)) return;
     try {
-      db.prepare('DELETE FROM chat_history WHERE id = ? AND room_id = ?').run(String(data.id), roomId);
+      db.prepare('DELETE FROM chat_history WHERE id = ? AND room_id = ?').run(_cdId, roomId);
     } catch(e) {
       logger.warn('[chat-delete] DB error: ' + e.message);
       return; // don't broadcast deletion if DB write failed
     }
-    io.to(roomId).emit('chat-deleted', { id: data.id });
+    io.to(roomId).emit('chat-deleted', { id: _cdId });
   });
 
   // ── set-slow-mode ──────────────────────────────────────────────────────
@@ -4376,6 +4382,7 @@ io.on('connection', function(socket) {
     vsVoteThrottle.delete(_tKey);     vsVoteThrottle.delete(socket.id);
     qaUpvoteThrottle.delete(_tKey);   qaUpvoteThrottle.delete(socket.id);
     judgeScoreThrottle.delete(_tKey);
+    pinChatThrottle.delete(socket.id);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
     }

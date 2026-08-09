@@ -24,6 +24,12 @@ var AURA_MODES = [
   { id: 'kind',  label: 'KIND',  emoji: '💛', desc: 'Warm. Inclusive. Community-first.', color: '#C9A84C' },
 ];
 
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
 export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId, userTier, incomingMessages }) {
   var resolvedTier = userTier || 'pro';
 
@@ -73,7 +79,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
 
   function fetchUsage() {
     if (!roomId) return;
-    fetch('/api/aura/usage?streamId=' + roomId)
+    fetch('/api/aura/usage?streamId=' + roomId, { headers: _authHeaders() })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data && typeof data.callsThisHour === 'number') setUsageCount(data.callsThisHour);
@@ -102,7 +108,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
     var context = 'Context: ' + ((viewerCount || 0).toLocaleString()) + ' viewers. Stream ' + (isLive ? 'LIVE' : 'OFFLINE') + '. Mode: ' + auraMode.toUpperCase() + '. ' + prompt;
     fetch('/api/ai/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ system: customPrompt, message: context })
     })
       .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
@@ -141,7 +147,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
     try { localStorage.setItem('sw_aura_mode', modeObj.id); } catch(e) {}
     fetch('/api/aura/mode', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ mode: modeObj.id })
     }).catch(function() {});
     if (addToast) addToast('AURA: ' + modeObj.label + ' mode activated', 'success');
@@ -159,7 +165,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
     setTriggerLoading(trigger.type);
     fetch('/api/aura/trigger', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         type: trigger.type,
         streamId: roomId || 'preview',

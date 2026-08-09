@@ -4,24 +4,6 @@ import SignalBars from './SignalBars';
 import AvatarPortrait from './AvatarPortrait.jsx';
 import PullToRefresh from './PullToRefresh.jsx';
 
-var MOCK_STREAMS = [
-  { id: 's1', title: 'Washington Classic Round 2', hostName: 'SwanyThree', viewerCount: 2847, genre: 'Tournament', isLive: true, durationMins: 94, tier: 'free', category: 'SPORTS' },
-  { id: 's2', title: 'Friday Night Dominos', hostName: 'CaliBonesOG', viewerCount: 1203, genre: 'Domino', isLive: true, durationMins: 47, tier: 'fan', category: 'SPORTS' },
-  { id: 's3', title: 'Beat Production 101', hostName: 'BeatKing_X', viewerCount: 891, genre: 'Music', isLive: true, durationMins: 120, tier: 'free', category: 'MUSIC' },
-  { id: 's4', title: 'AIverse Podcast Ep. 48', hostName: 'VibeNBones', viewerCount: 412, genre: 'Podcast', isLive: false, durationMins: 0, tier: 'free', category: 'TECH' },
-  { id: 's5', title: 'Lifestyle Talk', hostName: 'LyricQueen', viewerCount: 288, genre: 'Lifestyle', isLive: true, durationMins: 33, tier: 'supporter', category: 'LIFESTYLE' },
-  { id: 's6', title: 'Tech Deep Dive', hostName: 'NeonBeats', viewerCount: 155, genre: 'Tech', isLive: false, durationMins: 0, tier: 'free', category: 'TECH' },
-  { id: 's7', title: 'Community Conversation', hostName: 'DJ_Phantom', viewerCount: 3102, genre: 'Talk', isLive: true, durationMins: 210, tier: 'free', category: 'LIFESTYLE' },
-  { id: 's8', title: 'Vocal Session LIVE', hostName: 'VibeStar', viewerCount: 94, genre: 'Music', isLive: true, durationMins: 12, tier: 'free', category: 'MUSIC' },
-];
-
-var MOCK_CREATORS = [
-  { id: 'c1', username: 'SwanyThree', displayName: 'SwanyThree 🎲', bio: 'Domino culture creator. Washington Classic host.', followerCount: 12840, isLive: true, tier: 'pro' },
-  { id: 'c2', username: 'CaliBonesOG', displayName: 'CaliBonesOG', bio: 'West coast domino legend.', followerCount: 8920, isLive: true, tier: 'creator' },
-  { id: 'c3', username: 'BeatKing_X', displayName: 'BeatKing_X 🎵', bio: 'Producer. Streamer. Culture.', followerCount: 5440, isLive: false, tier: 'pro' },
-  { id: 'c4', username: 'VibeNBones', displayName: "VibeN'Bones", bio: 'Culture conversations, music, and more.', followerCount: 3210, isLive: false, tier: 'creator' },
-];
-
 var GENRE_COLORS = {
   Tournament: '#C0392B',
   Domino: '#C9A84C',
