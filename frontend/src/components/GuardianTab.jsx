@@ -47,14 +47,14 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     try { var s = localStorage.getItem('sw_guardian_rules'); if (s) return JSON.parse(s); } catch(e) {}
     return RULE_PRESETS;
   });
-  var [flags, setFlags]         = useState(MOCK_FLAGS);
+  var [flags, setFlags]         = useState([]);
   var [banned, setBanned]       = useState(function() {
     try { var s = localStorage.getItem('sw_guardian_banned'); if (s) return JSON.parse(s); } catch(e) {}
     return DEFAULT_BANNED;
   });
   var [wordMeta, setWordMeta]   = useState({});
   var [newWord, setNewWord]     = useState('');
-  var [guardLog, setGuardLog]   = useState(GUARDIAN_LOG);
+  var [guardLog, setGuardLog]   = useState([]);
   var [guardOn, setGuardOn]     = useState(true);
   var [blocked, setBlocked]     = useState(0);
   var [allowed, setAllowed]     = useState(0);
@@ -122,28 +122,6 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
       .catch(function() {});
   }, [roomId]);
 
-  useEffect(function() {
-    if (!guardOn || !isLive) return;
-    var interval = setInterval(function() {
-      var actions = ['PASSED', 'PASSED', 'PASSED', 'BLOCKED', 'STRIPPED'];
-      var users = ['viewer_' + Math.floor(Math.random() * 9999), 'fan_' + Math.floor(Math.random() * 999), 'chat_' + Math.floor(Math.random() * 5555)];
-      var reasons = ['clean message', 'CAPS FLOOD', 'EXT LINK', 'clean message', 'clean message'];
-      var idx = Math.floor(Math.random() * actions.length);
-      var action = actions[idx];
-      var user = users[Math.floor(Math.random() * users.length)];
-      var reason = reasons[idx];
-      var now = new Date();
-      var ts = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
-      var entry = ts + '  ' + action + '  ' + user + ' — ' + reason;
-      setGuardLog(function(prev) { return [entry].concat(prev.slice(0, 29)); });
-      if (action === 'PASSED') {
-        setAllowed(function(n) { return n + 1; });
-      } else {
-        setBlocked(function(n) { return n + 1; });
-      }
-    }, 3200);
-    return function() { clearInterval(interval); };
-  }, [guardOn, isLive]);
 
   useEffect(function() {
     if (!guardOn || !isLive) { lockdownFiredRef.current = false; return; }

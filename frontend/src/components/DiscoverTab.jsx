@@ -63,11 +63,11 @@ export default function DiscoverTab(props) {
   var query = queryState[0];
   var setQuery = queryState[1];
 
-  var streamsState = useState(MOCK_STREAMS);
+  var streamsState = useState([]);
   var streams = streamsState[0];
   var setStreams = streamsState[1];
 
-  var creatorsState = useState(MOCK_CREATORS);
+  var creatorsState = useState([]);
   var creators = creatorsState[0];
   var setCreators = creatorsState[1];
 
@@ -254,8 +254,8 @@ export default function DiscoverTab(props) {
     }
     debounceRef.current = setTimeout(function() {
       if (!val.trim()) {
-        setStreams(MOCK_STREAMS);
-        setCreators(MOCK_CREATORS);
+        setStreams([]);
+        setCreators([]);
         return;
       }
       setLoading(true);
@@ -265,8 +265,8 @@ export default function DiscoverTab(props) {
         fetch(streamsUrl).then(function(r) { return r.json(); }).catch(function() { return { results: [] }; }),
         fetch(creatorsUrl).then(function(r) { return r.json(); }).catch(function() { return { results: [] }; }),
       ]).then(function(results) {
-        setStreams(results[0].results || MOCK_STREAMS);
-        setCreators(results[1].results || MOCK_CREATORS);
+        setStreams(results[0].results || []);
+        setCreators(results[1].results || []);
         setLoading(false);
       });
     }, 300);
