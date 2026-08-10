@@ -48,28 +48,8 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
     return init;
   });
   var [livePulse, setLivePulse] = useState(false);
-  var driftRef = useRef(null);
   var pulseRef = useRef(null);
 
-  useEffect(function() {
-    if (!isLive) return;
-    driftRef.current = setInterval(function() {
-      setLiveViewerCounts(function(prev) {
-        var next = Object.assign({}, prev);
-        for (var i = 0; i < CREATORS.length; i++) {
-          var c = CREATORS[i];
-          if (c.live) {
-            var delta = Math.floor(Math.random() * 20) - 8;
-            var newVal = (prev[c.id] || 0) + delta;
-            if (newVal < 0) newVal = 0;
-            next[c.id] = newVal;
-          }
-        }
-        return next;
-      });
-    }, 5000);
-    return function() { clearInterval(driftRef.current); };
-  }, [isLive]);
 
   useEffect(function() {
     pulseRef.current = setInterval(function() {

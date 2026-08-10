@@ -78,34 +78,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
   }, [isLive]);
 
   useEffect(function() {
-    if (!isLive) {
-      setLiveViewerAvatars([]);
-      return;
-    }
-    var id = setInterval(function() {
-      var nameIdx = Math.floor(Math.random() * VIEWER_NAMES.length);
-      var colorIdx = Math.floor(Math.random() * VIEWER_COLORS.length);
-      var viewer = {
-        id: Date.now() + Math.random(),
-        name: VIEWER_NAMES[nameIdx],
-        color: VIEWER_COLORS[colorIdx],
-        initials: VIEWER_NAMES[nameIdx].split(' ').map(function(w) { return w[0]; }).join(''),
-      };
-      setLiveViewerAvatars(function(prev) {
-        var updated = prev.concat([viewer]);
-        return updated.slice(-5);
-      });
-    }, 4000);
-    return function() { clearInterval(id); };
-  }, [isLive]);
-
-  // Gem earning — +1 every 30s while live
-  useEffect(function() {
-    if (!isLive) return;
-    var id = setInterval(function() {
-      setGemBal(function(b) { return Math.floor(b + 1); });
-    }, 30000);
-    return function() { clearInterval(id); };
+    if (!isLive) setLiveViewerAvatars([]);
   }, [isLive]);
 
   useEffect(function() {
