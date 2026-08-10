@@ -81,6 +81,16 @@ var fanoutStartRateLimit = rateLimit({
   message: { error: 'Too many fanout start requests — maximum 10 per hour.' },
 });
 
+var streamWriteRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many stream write requests — please wait.' },
+});
+
 // ─── Optional module loading (graceful fallback) ──────────────────────────────
 var analytics = null;
 try { analytics = require('./analytics'); } catch (e) { console.warn('[routes] analytics module unavailable'); }
@@ -302,7 +312,7 @@ router.get('/moderation/word-filters', requireAuth, function(req, res) {
   }
 });
 
-router.post('/moderation/word-filters', requireAuth, function(req, res) {
+router.post('/moderation/word-filters', requireAuth, moderationRateLimit, function(req, res) {
   try {
     var word = String(req.body.word || '').slice(0, 200);
     var creatorId = req.user.id;
@@ -319,7 +329,7 @@ router.post('/moderation/word-filters', requireAuth, function(req, res) {
   }
 });
 
-router.delete('/moderation/word-filters/:id', requireAuth, function(req, res) {
+router.delete('/moderation/word-filters/:id', requireAuth, moderationRateLimit, function(req, res) {
   try {
     var creatorId = req.user.id;
     if (moderation) {
@@ -878,7 +888,7 @@ router.post('/n8n/test', requireAuth, async function(req, res) {
 var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
 var SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
-router.post('/stream-sync', requireAuth, async function(req, res) {
+router.post('/stream-sync', requireAuth, streamWriteRateLimit, async function(req, res) {
   try {
     if (req.user.role !== 'host' && req.user.role !== 'admin') {
       return res.status(403).json({ ok: false, error: 'forbidden' });
@@ -905,7 +915,7 @@ router.post('/stream-sync', requireAuth, async function(req, res) {
   } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
-router.post('/stream-end', requireAuth, async function(req, res) {
+router.post('/stream-end', requireAuth, streamWriteRateLimit, async function(req, res) {
   try {
     var stream_id = String(req.body.stream_id || '');
     if (!stream_id || !ROUTES_UUID_RE.test(stream_id)) {
