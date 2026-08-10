@@ -91,6 +91,16 @@ var streamWriteRateLimit = rateLimit({
   message: { error: 'Too many stream write requests — please wait.' },
 });
 
+var webhookTestRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many webhook test requests — please wait.' },
+});
+
 // ─── Optional module loading (graceful fallback) ──────────────────────────────
 var analytics = null;
 try { analytics = require('./analytics'); } catch (e) { console.warn('[routes] analytics module unavailable'); }
@@ -821,7 +831,7 @@ router.post('/ppv/verify', requireAuth, function(req, res) {
 
 // ─── N8N / AUTOMATION routes ──────────────────────────────────────────────────
 
-router.post('/n8n/test', requireAuth, async function(req, res) {
+router.post('/n8n/test', requireAuth, webhookTestRateLimit, async function(req, res) {
   if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: 'forbidden' });
   try {
     var webhookUrl  = req.body.webhookUrl || '';
@@ -871,10 +881,12 @@ router.post('/n8n/test', requireAuth, async function(req, res) {
     };
     var reqLib = https;
     var outReq = reqLib.request(options, function(outRes) {
-      return res.json({ success: true, statusCode: outRes.statusCode, webhookUrl: webhookUrl });
+      outRes.resume(); // drain response body to free the TCP connection
+      if (!res.headersSent) return res.json({ success: true, statusCode: outRes.statusCode, webhookUrl: webhookUrl });
     });
+    outReq.setTimeout(10000, function() { outReq.destroy(); });
     outReq.on('error', function(e) {
-      return res.status(502).json({ error: 'Webhook request failed' });
+      if (!res.headersSent) return res.status(502).json({ error: 'Webhook request failed' });
     });
     outReq.write(bodyStr);
     outReq.end();
