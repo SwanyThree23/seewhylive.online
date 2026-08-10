@@ -92,54 +92,6 @@ export default function StateRankingsTab({ isLive, addToast }) {
     };
   }));
 
-  useEffect(function() {
-    if (!isLive) { return; }
-    var timer = setInterval(function() {
-      setRankings(function(prev) {
-        var updated = prev.map(function(r) {
-          return {
-            rank:        r.rank,
-            rank_prev:   r.rank_prev,
-            change:      r.change,
-            state_name:  r.state_name,
-            state_abbr:  r.state_abbr,
-            state_emoji: r.state_emoji,
-            region:      r.region,
-            points:      r.points,
-            losses:      r.losses,
-            streak:      r.streak,
-            tiles_diff:  r.tiles_diff,
-          };
-        });
-
-        // Pick a random entry from indices 2–7 (never #1 WA at index 0)
-        var targetIdx = 2 + Math.floor(Math.random() * 6);
-        var delta     = 1 + Math.floor(Math.random() * 3);
-        var direction = Math.random() < 0.5 ? 1 : -1;
-        updated[targetIdx].points = updated[targetIdx].points + direction * delta;
-
-        // Re-sort by points descending, keep index 0 (WA) locked at rank 1
-        var locked  = updated[0];
-        var rest    = updated.slice(1);
-        rest.sort(function(a, b) { return b.points - a.points; });
-        var sorted  = [locked].concat(rest);
-
-        // Recompute rank and change fields
-        var i;
-        for (i = 0; i < sorted.length; i++) {
-          var oldRank  = sorted[i].rank;
-          var newRank  = i + 1;
-          sorted[i].rank_prev = oldRank;
-          sorted[i].change    = oldRank - newRank;
-          sorted[i].rank      = newRank;
-        }
-
-        return sorted;
-      });
-    }, 2800);
-
-    return function() { clearInterval(timer); };
-  }, [isLive]);
 
   // --- RANKINGS view helpers ---
   var visible = rankings.filter(function(r) {

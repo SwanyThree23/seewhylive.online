@@ -47,7 +47,6 @@ var BATTLE_GIFTS = [
 
 var SUBS = [['ranks','🏆 RANKS'],['bracket','⚔️ BRACKET'],['results','📋 RESULTS'],['predict','🗳️ PREDICT'],['battle','⚡ BATTLE'],['expand','🌎 EXPAND']];
 
-function rnd(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
 
 function ftm(s) {
   var m = Math.floor(s / 60);
@@ -84,8 +83,6 @@ export default function ShowcaseTab(p) {
   var [scores,   setScores]   = useState({ m1:{a:0,b:0}, m2:{a:0,b:0}, m3:{a:0,b:0}, m4:{a:0,b:0} });
   var [liveM,    setLiveM]    = useState(null);
   var [unlocked, setUnlocked] = useState({});
-  var simRef = useRef(null);
-
   // predictions
   var [votes,   setVotes]   = useState({ m1:{a:62,b:38}, m2:{a:55,b:45}, m3:{a:48,b:52}, m4:{a:71,b:29} });
   var [myVotes, setMyVotes] = useState({});
@@ -105,9 +102,7 @@ export default function ShowcaseTab(p) {
   var captureRef = useRef(null);
   var flashRef   = useRef(null);
 
-  // live viewer counts per state (simulated when isLive)
   var [viewerCounts, setViewerCounts] = useState({});
-  var viewerRef = useRef(null);
 
   function getState(id) {
     for (var i = 0; i < STATES.length; i++) {
@@ -135,67 +130,11 @@ export default function ShowcaseTab(p) {
     };
   }, [isLive]);
 
-  // Live viewer count simulation — only when isLive
   useEffect(function() {
-    if (!isLive) {
-      setViewerCounts({});
-      return;
-    }
-    // Initialize with random viewer counts for streaming states
-    var init = {};
-    for (var i = 0; i < STATES.length; i++) {
-      // Only WA (rank 1) is currently "streaming" by default; others have smaller counts
-      if (STATES[i].rank === 1) {
-        init[STATES[i].id] = Math.floor(Math.random() * 2000) + 1800;
-      } else if (STATES[i].rank <= 3) {
-        init[STATES[i].id] = Math.floor(Math.random() * 800) + 200;
-      }
-    }
-    setViewerCounts(init);
-    viewerRef.current = setInterval(function() {
-      setViewerCounts(function(prev) {
-        var next = {};
-        var keys = Object.keys(prev);
-        for (var k = 0; k < keys.length; k++) {
-          var key = keys[k];
-          var delta = Math.floor(Math.random() * 30) - 10;
-          next[key] = Math.max(10, prev[key] + delta);
-        }
-        return next;
-      });
-    }, 4000);
-    return function() { clearInterval(viewerRef.current); };
+    if (!isLive) { setViewerCounts({}); }
   }, [isLive]);
 
-  // Match simulation
-  useEffect(function() {
-    if (!liveM) { clearInterval(simRef.current); return; }
-    simRef.current = setInterval(function() {
-      setScores(function(prev) {
-        var n = Object.assign({}, prev);
-        var cur = Object.assign({}, n[liveM]);
-        if (Math.random() > 0.5) cur.a = Math.min(cur.a + 1, 7);
-        else cur.b = Math.min(cur.b + 1, 7);
-        if (cur.a >= 7 || cur.b >= 7) {
-          clearInterval(simRef.current);
-          var match = null;
-          for (var j = 0; j < QF.length; j++) {
-            if (QF[j].id === liveM) { match = QF[j]; break; }
-          }
-          if (match) {
-            var winner = cur.a >= 7 ? getState(match.a) : getState(match.b);
-            if (addToast && winner) addToast(winner.name + ' advances! 🏆', 'success');
-          }
-          setLiveM(null);
-        }
-        n[liveM] = cur;
-        return n;
-      });
-    }, 600);
-    return function() { clearInterval(simRef.current); };
-  }, [liveM]);
-
-  // Battle timer
+  // Battle timer (counts down only — scores updated via real gift events)
   useEffect(function() {
     if (!battleOn) { clearInterval(battleRef.current); return; }
     battleRef.current = setInterval(function() {
@@ -206,8 +145,6 @@ export default function ShowcaseTab(p) {
           if (addToast) addToast('State Battle complete! 🏆', 'success');
           return 0;
         }
-        if (Math.random() > 0.5) setBlue(function(v) { return v + rnd(5, 55); });
-        if (Math.random() > 0.5) setRed(function(v) { return v + rnd(5, 55); });
         return t - 1;
       });
     }, 1000);
@@ -216,11 +153,9 @@ export default function ShowcaseTab(p) {
 
   useEffect(function() {
     return function() {
-      clearInterval(simRef.current);
       clearInterval(battleRef.current);
       clearInterval(captureRef.current);
       clearTimeout(flashRef.current);
-      clearInterval(viewerRef.current);
     };
   }, []);
 

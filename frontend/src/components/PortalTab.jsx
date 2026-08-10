@@ -97,26 +97,6 @@ export default function PortalTab({ addToast, isLive, socket, roomId }) {
   var [layout, setLayout] = useState('grid');
   var [channels, setChannels] = useState(PORTAL_CHANNELS.map(function(ch) { return Object.assign({}, ch); }));
 
-  useEffect(function() {
-    if (!isLive) return;
-    var interval = setInterval(function() {
-      var liveIdxs = [];
-      channels.forEach(function(ch, i) {
-        if (ch.live) liveIdxs.push(i);
-      });
-      if (liveIdxs.length === 0) return;
-      var idx = liveIdxs[Math.floor(Math.random() * liveIdxs.length)];
-      var delta = Math.floor(Math.random() * 40) - 15;
-      setChannels(function(prev) {
-        return prev.map(function(ch, i) {
-          if (i !== idx) return ch;
-          var next = ch.viewers + delta;
-          return Object.assign({}, ch, { viewers: next < 0 ? 0 : next });
-        });
-      });
-    }, 3500);
-    return function() { clearInterval(interval); };
-  }, [isLive, channels]);
 
   function openChannel(ch) {
     setActive(ch);

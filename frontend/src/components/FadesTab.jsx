@@ -71,19 +71,6 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
     }
   }, [matchWinner]);
 
-  useEffect(function() {
-    if (!fadesActive) return;
-    var t = setInterval(function() {
-      var addGems = Math.floor(Math.random() * 70 + 10);
-      var toTeam = Math.random() > 0.5 ? 'team1Gems' : 'team2Gems';
-      setAllWagers(function(prev) {
-        var next = Object.assign({}, prev);
-        next[toTeam] = prev[toTeam] + addGems;
-        return next;
-      });
-    }, 8000);
-    return function() { clearInterval(t); };
-  }, [fadesActive]);
 
   function startFades() {
     if (!socket) return;
