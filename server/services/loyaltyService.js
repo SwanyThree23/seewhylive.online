@@ -9,19 +9,28 @@ const db = require('../db'); // <-- verify this matches your actual db module
 async function awardPoints({ userId, points, source, sourceId }) {
   if (!userId || !points || points <= 0 || !Number.isFinite(points)) return null;
 
-  await db.query(
-    `INSERT INTO loyalty_point_events (user_id, points, source, source_id)
-     VALUES ($1, $2, $3, $4)`,
-    [userId, points, source, sourceId || null]
-  );
-
-  await db.query(
-    `INSERT INTO user_loyalty (user_id, total_points, level, updated_at)
-     VALUES ($1, $2, 1, now())
-     ON CONFLICT (user_id) DO UPDATE
-       SET total_points = user_loyalty.total_points + $2, updated_at = now()`,
-    [userId, points]
-  );
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(
+      `INSERT INTO loyalty_point_events (user_id, points, source, source_id)
+       VALUES ($1, $2, $3, $4)`,
+      [userId, points, source, sourceId || null]
+    );
+    await client.query(
+      `INSERT INTO user_loyalty (user_id, total_points, level, updated_at)
+       VALUES ($1, $2, 1, now())
+       ON CONFLICT (user_id) DO UPDATE
+         SET total_points = user_loyalty.total_points + $2, updated_at = now()`,
+      [userId, points]
+    );
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 
   return recomputeLevel(userId);
 }

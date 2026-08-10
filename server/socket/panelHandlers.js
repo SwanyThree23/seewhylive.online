@@ -130,6 +130,7 @@ function registerPanelHandlers(io, socket) {
     try {
       const userId = socket.data.userId;
       const roomId = socket.data.roomId;
+      if (!userId || userId.startsWith('anon')) { ack?.({ ok: false, error: 'auth required' }); return; }
       if (!roomId) { ack?.({ ok: false, error: 'not in a room' }); return; }
       await panelService.releaseSlot({ roomId, userId });
       socket.leave(roomId);
@@ -137,6 +138,18 @@ function registerPanelHandlers(io, socket) {
       ack?.({ ok: true });
     } catch (err) {
       ack?.({ ok: false, error: 'Panel error' });
+    }
+  });
+
+  socket.on('disconnect', async function() {
+    try {
+      var userId = socket.data.userId;
+      var roomId = socket.data.roomId;
+      if (!userId || userId.startsWith('anon') || !roomId) return;
+      await panelService.releaseSlot({ roomId, userId });
+      io.to(roomId).emit('panel:slot_released', { roomId, userId });
+    } catch (err) {
+      console.error('[panelHandlers] disconnect release error:', err);
     }
   });
 
