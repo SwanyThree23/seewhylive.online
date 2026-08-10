@@ -1,7 +1,18 @@
 const express = require('express');
 const router = express.Router();
+const { rateLimit } = require('express-rate-limit');
 const rewardsService = require('../services/rewardsService');
 const requireAuth    = require('../middleware/auth');
+
+var challengeCompleteRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many completion attempts — please slow down.' },
+});
 
 router.get('/leaderboard', requireAuth, async (req, res) => {
   try {
@@ -47,7 +58,7 @@ router.get('/challenges', async (req, res) => {
   }
 });
 
-router.post('/challenges/:id/complete', requireAuth, async (req, res) => {
+router.post('/challenges/:id/complete', requireAuth, challengeCompleteRateLimit, async (req, res) => {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.id)) return res.status(400).json({ error: 'invalid challenge id' });
   try {
     const result = await rewardsService.completeChallenge(req.user.id, req.params.id);
