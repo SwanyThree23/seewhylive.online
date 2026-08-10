@@ -1581,6 +1581,7 @@ export default function App() {
             isLive={isLive}
             addToast={addToast}
             socket={socketRef.current}
+            roomId={APP_ID}
           />
         )}
         {activeTab === 'push' && (

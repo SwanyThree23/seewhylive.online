@@ -12,20 +12,22 @@ var PLATFORMS = [
   { id: 'rumble',   name: 'Rumble',      color: '#85C742', icon: 'R',  rtmp: 'rtmp://p.contribute.live-video.net/live',                locked: false },
 ];
 
-export default function RTMPFanoutTab({ isLive, addToast, socket }) {
+function _authHeaders(extra) {
+  var tok = localStorage.getItem('sw_token') || '';
+  var h = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+  return Object.assign(h, extra || {});
+}
+
+export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
   var [enabled, setEnabled]         = useState({ seewhy: true });
   var [keys, setKeys]               = useState({});
   var [revealed, setRevealed]       = useState({});
-  var [testing, setTesting]         = useState({});
-  var [latency, setLatency]         = useState({});
   var [bitrates, setBitrates]       = useState({});
   var [fanoutActive, setFanoutActive] = useState(false);
   var [pingMs, setPingMs]           = useState(null);
   var [lastPinged, setLastPinged]   = useState(null);
   var [pingingServer, setPingingServer] = useState(false);
   var [copiedRtmp, setCopiedRtmp]   = useState(false);
-  var bitrateRef = useRef(null);
-
   var [customDests,   setCustomDests]   = useState([]);
   var [showAddCustom, setShowAddCustom] = useState(false);
   var [newCustom,     setNewCustom]     = useState({ name: '', url: '', key: '' });
@@ -50,28 +52,8 @@ export default function RTMPFanoutTab({ isLive, addToast, socket }) {
   }, [socket, addToast]);
 
   useEffect(function() {
-    if (!fanoutActive) {
-      if (bitrateRef.current) clearInterval(bitrateRef.current);
-      setBitrates({});
-      return;
-    }
-    bitrateRef.current = setInterval(function() {
-      var next = {};
-      PLATFORMS.forEach(function(p) {
-        if (enabled[p.id]) {
-          next[p.id] = 3000 + Math.floor(Math.random() * 4000);
-        }
-      });
-      customDests.forEach(function(dest, idx) {
-        var cid = 'custom_' + idx;
-        if (customEnabled[cid]) {
-          next[cid] = 3000 + Math.floor(Math.random() * 4000);
-        }
-      });
-      setBitrates(next);
-    }, 1200);
-    return function() { clearInterval(bitrateRef.current); };
-  }, [fanoutActive, enabled, customDests, customEnabled]);
+    if (!fanoutActive) setBitrates({});
+  }, [fanoutActive]);
 
   function toggle(id) {
     if (id === 'seewhy') return;
@@ -84,13 +66,7 @@ export default function RTMPFanoutTab({ isLive, addToast, socket }) {
 
   function testConnection(p) {
     if (!keys[p.id] && !p.locked) { addToast('Enter a stream key for ' + p.name, 'error'); return; }
-    setTesting(function(prev) { return Object.assign({}, prev, { [p.id]: true }); });
-    setTimeout(function() {
-      var ms = 80 + Math.floor(Math.random() * 120);
-      setLatency(function(prev) { return Object.assign({}, prev, { [p.id]: ms }); });
-      setTesting(function(prev) { return Object.assign({}, prev, { [p.id]: false }); });
-      addToast(p.name + ' connection OK — ' + ms + 'ms', 'success');
-    }, 1200 + Math.floor(Math.random() * 800));
+    addToast(p.name + ' key saved — will connect when fanout starts', 'success');
   }
 
   function startFanout() {
@@ -105,15 +81,46 @@ export default function RTMPFanoutTab({ isLive, addToast, socket }) {
       addToast('Missing key for: ' + names.join(', '), 'error');
       return;
     }
-    var total = Object.values(enabled).filter(Boolean).length + Object.values(customEnabled).filter(Boolean).length;
-    setFanoutActive(true);
-    addToast('🔴 RTMP Fanout started — ' + total + ' destinations', 'success');
+    var dests = PLATFORMS
+      .filter(function(p) { return enabled[p.id] && !p.locked; })
+      .map(function(p) { return { url: p.rtmp, key: keys[p.id], enabled: true, label: p.name, platform: p.id }; });
+    customDests.forEach(function(dest, idx) {
+      if (customEnabled['custom_' + idx]) {
+        dests.push({ url: dest.url, key: dest.key, enabled: true, label: dest.name });
+      }
+    });
+    var streamId = roomId || 'default';
+    fetch('/api/fanout-start', {
+      method: 'POST',
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ stream_id: streamId, room_id: streamId, destinations: dests })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && d.ok) {
+          setFanoutActive(true);
+          addToast('🔴 RTMP Fanout started — ' + (d.destinations || dests.length) + ' destinations', 'success');
+        } else {
+          addToast('Fanout error: ' + ((d && d.error) || 'unknown'), 'error');
+        }
+      })
+      .catch(function(e) { addToast('Fanout error: ' + e.message, 'error'); });
   }
 
   function stopAll() {
-    setFanoutActive(false);
-    setBitrates({});
-    addToast('⏹ Fanout stopped', 'info');
+    var streamId = roomId || 'default';
+    fetch('/api/fanout-stop', {
+      method: 'POST',
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ stream_id: streamId })
+    })
+      .then(function(r) { return r.json(); })
+      .catch(function() { return {}; })
+      .then(function() {
+        setFanoutActive(false);
+        setBitrates({});
+        addToast('⏹ Fanout stopped', 'info');
+      });
   }
 
   function pingServer() {
@@ -208,10 +215,6 @@ export default function RTMPFanoutTab({ isLive, addToast, socket }) {
       {/* Platform rows */}
       {PLATFORMS.map(function(p) {
         var isOn   = Boolean(enabled[p.id]);
-        var bps    = bitrates[p.id] || 0;
-        var bpsPct = Math.min(100, Math.floor((bps / 8000) * 100));
-        var lat    = latency[p.id];
-        var isTesting = Boolean(testing[p.id]);
 
         return (
           <div key={p.id} style={{ background: isOn ? p.color + '0a' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? p.color + '44' : 'rgba(26,21,16,1)'), borderRadius: 10, padding: '10px 12px' }}>
@@ -225,7 +228,6 @@ export default function RTMPFanoutTab({ isLive, addToast, socket }) {
                   {p.name}
                   {p.locked && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', marginLeft: 4 }}>PRIMARY</span>}
                 </div>
-                {lat && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: lat < 100 ? '#C9A84C' : lat < 150 ? '#C9A84C' : '#FF1A3C' }}>{lat}ms</div>}
               </div>
               {/* Toggle */}
               <div
@@ -252,24 +254,14 @@ export default function RTMPFanoutTab({ isLive, addToast, socket }) {
                 </button>
                 <button
                   onClick={function() { testConnection(p); }}
-                  disabled={isTesting}
-                  style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: isTesting ? 'not-allowed' : 'pointer', opacity: isTesting ? 0.6 : 1 }}>
-                  {isTesting ? '...' : 'TEST'}
+                  style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
+                  TEST
                 </button>
               </div>
             )}
 
-            {/* Bitrate bar */}
             {fanoutActive && isOn && (
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>BITRATE</span>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: p.color }}>{Math.floor(bps / 1000)}kbps</span>
-                </div>
-                <div style={{ height: 4, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: bpsPct + '%', background: 'linear-gradient(90deg,' + p.color + '88,' + p.color + ')', borderRadius: 2, transition: 'width .4s ease' }} />
-                </div>
-              </div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: p.color }}>● LIVE</div>
             )}
           </div>
         );
@@ -279,10 +271,6 @@ export default function RTMPFanoutTab({ isLive, addToast, socket }) {
       {customDests.map(function(dest, idx) {
         var cid     = 'custom_' + idx;
         var isOn    = Boolean(customEnabled[cid]);
-        var bps     = bitrates[cid] || 0;
-        var bpsPct  = Math.min(100, Math.floor((bps / 8000) * 100));
-        var isTesting = Boolean(testing[cid]);
-        var lat     = latency[cid];
         return (
           <div key={cid} style={{ background: isOn ? 'rgba(212,133,74,.06)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? 'rgba(212,133,74,.4)' : 'rgba(26,21,16,1)'), borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -292,7 +280,6 @@ export default function RTMPFanoutTab({ isLive, addToast, socket }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isOn ? '#F0E8D4' : '#8A7A62', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{dest.name}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{dest.url}</div>
-                {lat && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: lat < 100 ? '#C9A84C' : lat < 150 ? '#C9A84C' : '#FF1A3C' }}>{lat}ms</div>}
               </div>
               <div
                 onClick={function() {
@@ -335,29 +322,14 @@ export default function RTMPFanoutTab({ isLive, addToast, socket }) {
               <button
                 onClick={function() {
                   if (!dest.key) { addToast('Enter a stream key for ' + dest.name, 'error'); return; }
-                  setTesting(function(prev) { return Object.assign({}, prev, { [cid]: true }); });
-                  setTimeout(function() {
-                    var ms = 80 + Math.floor(Math.random() * 120);
-                    setLatency(function(prev) { return Object.assign({}, prev, { [cid]: ms }); });
-                    setTesting(function(prev) { return Object.assign({}, prev, { [cid]: false }); });
-                    addToast(dest.name + ' connection OK — ' + ms + 'ms', 'success');
-                  }, 1200 + Math.floor(Math.random() * 800));
+                  addToast(dest.name + ' key saved — will connect when fanout starts', 'success');
                 }}
-                disabled={isTesting}
-                style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: isTesting ? 'not-allowed' : 'pointer', opacity: isTesting ? 0.6 : 1 }}>
-                {isTesting ? '...' : 'TEST'}
+                style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
+                TEST
               </button>
             </div>
             {fanoutActive && isOn && (
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>BITRATE</span>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>{Math.floor(bps / 1000)}kbps</span>
-                </div>
-                <div style={{ height: 4, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: bpsPct + '%', background: 'linear-gradient(90deg,rgba(212,133,74,.6),#C9A84C)', borderRadius: 2, transition: 'width .4s ease' }} />
-                </div>
-              </div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>● LIVE</div>
             )}
           </div>
         );
