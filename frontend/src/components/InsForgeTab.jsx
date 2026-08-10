@@ -18,11 +18,11 @@ var APP_ID  = '6990f5f24823b53e21fcdc9d';
 var AUTO_REFRESH_SEC = 30;
 
 var SYSTEM_STATS = [
-  { label: 'CPU USAGE',  val: '18%',     bar: 18,  color: '#C9A84C' },
-  { label: 'MEMORY',     val: '19.4 MB', bar: 22,  color: '#C9A84C' },
-  { label: 'DISK USED',  val: '12%',     bar: 12,  color: '#C9A84C' },
-  { label: 'NETWORK RX', val: '1.2 MB/s',bar: 35,  color: '#C9A84C' },
-  { label: 'UPTIME',     val: '7d 14h',  bar: 100, color: '#C9A84C' },
+  { label: 'CPU USAGE',  val: '—', bar: 0, color: '#C9A84C' },
+  { label: 'MEMORY',     val: '—', bar: 0, color: '#C9A84C' },
+  { label: 'DISK USED',  val: '—', bar: 0, color: '#C9A84C' },
+  { label: 'NETWORK RX', val: '—', bar: 0, color: '#C9A84C' },
+  { label: 'UPTIME',     val: '—', bar: 0, color: '#C9A84C' },
 ];
 
 var PORT_MAP = [
@@ -54,23 +54,6 @@ function fmtUptime(sec) {
   return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
 }
 
-var LIVE_LOG_POOL = [
-  { level: 'INFO',  msg: 'WebRTC ICE candidate pair selected via TURN relay' },
-  { level: 'INFO',  msg: 'Gift event: Crown ×1 ($10.00) from SwanyFan99' },
-  { level: 'INFO',  msg: 'RTMP keyframe received — stream healthy' },
-  { level: 'WARN',  msg: 'mediasoup worker CPU 78% — monitoring' },
-  { level: 'INFO',  msg: 'Chat message flood detected — SwanyBot throttled' },
-  { level: 'INFO',  msg: 'New viewer joined room 6990f5f2 (total: 314)' },
-  { level: 'INFO',  msg: 'Schedule event "Friday Night Dominos" started' },
-  { level: 'INFO',  msg: 'PM2 heartbeat OK' },
-  { level: 'ERROR', msg: 'Stripe webhook signature mismatch on retry 2/3' },
-  { level: 'INFO',  msg: 'DB WAL checkpoint completed — 1,204 pages flushed' },
-  { level: 'INFO',  msg: 'SSL cert check: 79 days remaining' },
-  { level: 'WARN',  msg: 'coturn session limit 80% — 16/20 slots used' },
-];
-
-var RTMP_BITRATES = ['6140 kbps', '6380 kbps', '6520 kbps', '6290 kbps'];
-var WEBRTC_WORKERS = ['2 workers', '3 workers'];
 
 export default function InsForgeTab({ addToast, isLive }) {
   var [services,    setServices]    = useState(INITIAL_SERVICES.map(function(s) { return Object.assign({}, s); }));
@@ -80,11 +63,9 @@ export default function InsForgeTab({ addToast, isLive }) {
   var [countdown,   setCountdown]   = useState(AUTO_REFRESH_SEC);
   var [liveLogs,    setLiveLogs]    = useState([]);
   var [actionLog,   setActionLog]   = useState([]);
-  var [running,     setRunning]     = useState(null);
   var [uptimeSec,   setUptimeSec]   = useState(0);
 
   var refreshRef   = useRef(null);
-  var rtmpIdx      = useRef(0);
   var prevStatusRef = useRef({});
 
   // Service health transition alerts
@@ -123,33 +104,9 @@ export default function InsForgeTab({ addToast, isLive }) {
   }, [isLive]);
 
   function runAction(action) {
-    if (running) return;
-    setRunning(action.id);
-    var entry = { ts: Date.now(), label: action.label, status: 'running', output: '' };
+    var entry = { ts: Date.now(), label: action.label, status: 'done', output: 'VPS action execution requires a secure backend endpoint — not yet available.' };
     setActionLog(function(prev) { return [entry].concat(prev.slice(0, 19)); });
-    setTimeout(function() {
-      var outputs = {
-        pm2restart:  '✓ seewhylive-backend restarted (pid 0) [online]',
-        pm2logs:     '✓ Fetched 50 lines from PM2 log buffer',
-        nginxtest:   '✓ nginx: the configuration file syntax is ok',
-        nginxreload:  '✓ nginx -s reload sent (workers gracefully cycled)',
-        diskcheck:   '✓ /opt/seewhy: 12% used (2.1G / 18G)',
-        memcheck:    '✓ Mem: 19.4MB / 1.5GB used',
-        dbbackup:    '✓ seewhy.db → seewhy.db.bak (2.1 MB copied)',
-        sslcheck:    '✓ seewhylive.online — valid 79 days remaining',
-      };
-      var out = outputs[action.id] || '✓ Done';
-      setActionLog(function(prev) {
-        if (prev.length === 0) return prev;
-        var updated = prev.map(function(e, i) {
-          if (i === 0) return Object.assign({}, e, { status: 'done', output: out });
-          return e;
-        });
-        return updated;
-      });
-      setRunning(null);
-      if (addToast) addToast(action.label + ' complete', 'success');
-    }, 1200 + Math.floor(Math.random() * 800));
+    if (addToast) addToast(action.label + ' — VPS actions require server-side integration', 'error');
   }
 
   function doRefresh() {
@@ -383,12 +340,11 @@ export default function InsForgeTab({ addToast, isLive }) {
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2, padding: '0 2px' }}>VPS QUICK ACTIONS</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
             {VPS_ACTIONS.map(function(a) {
-              var isRunning = running === a.id;
               return (
-                <button key={a.id} onClick={function() { runAction(a); }} disabled={running !== null}
-                  style={{ background: isRunning ? a.color + '18' : 'rgba(26,21,16,.8)', border: '1px solid ' + (isRunning ? a.color + '55' : '#3D3020'), borderRadius: 10, padding: '10px 8px', cursor: running !== null ? 'not-allowed' : 'pointer', opacity: running && !isRunning ? 0.5 : 1, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <button key={a.id} onClick={function() { runAction(a); }}
+                  style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 8px', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <div style={{ fontSize: 18 }}>{a.icon}</div>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: isRunning ? a.color : '#F0E8D4', letterSpacing: 1 }}>{isRunning ? '...' : a.label}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4', letterSpacing: 1 }}>{a.label}</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020', wordBreak: 'break-all' }}>{a.cmd}</div>
                 </button>
               );
