@@ -3281,6 +3281,10 @@ io.on('connection', function(socket) {
     var VALID_SC    = [100, 200, 500, 1000, 2000, 5000];
     if (!roomId || !message || VALID_SC.indexOf(amountCents) === -1) return;
 
+    var _rawTtsSAId = String(data.creatorStripeAccountId || '');
+    var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawTtsSAId) ? _rawTtsSAId : '';
+    if (!creatorStripeAccountId) return;
+
     var rawVoice = data.voice || {};
     var voice = {
       id:    String(rawVoice.id    || 'anchor').slice(0, 20),
@@ -3297,68 +3301,84 @@ io.on('connection', function(socket) {
     var TIER_COLORS   = { 100: '#C9A84C', 200: '#D4854A', 500: '#C9A84C', 1000: '#FF8C42', 2000: '#FF1A3C', 5000: '#800020' };
     var tierColor     = TIER_COLORS[amountCents] || '#C9A84C';
 
-    try {
-      db.prepare(
-        'INSERT INTO super_chats (id, room_id, user_id, username, message, amount_cents, creator_cents, platform_cents, tier_color, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).run(ttsId, roomId, userId, username, message, amountCents, creatorCents, platformCents, tierColor, ts);
-    } catch(e) {
-      logger.error('[super-chat:tts] DB insert: ' + e.message);
+    function _commitTtsSuperChat() {
+      try {
+        db.prepare(
+          'INSERT INTO super_chats (id, room_id, user_id, username, message, amount_cents, creator_cents, platform_cents, tier_color, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        ).run(ttsId, roomId, userId, username, message, amountCents, creatorCents, platformCents, tierColor, ts);
+      } catch(e) {
+        logger.error('[super-chat:tts] DB insert: ' + e.message);
+      }
+
+      var ttsAnalytics = getAnalytics(roomId);
+      ttsAnalytics.sessionEarnings += amountCents;
+
+      io.to(roomId).emit('super-chat:tts', {
+        id:           ttsId,
+        username:     username,
+        message:      message,
+        amountCents:  amountCents,
+        creatorCents: creatorCents,
+        tierColor:    tierColor,
+        ts:           ts,
+        voice:        voice,
+      });
+
+      autoAura(roomId, function(cb) { aura.triggerTip(roomId, username, amountCents, message, cb); });
+
+      // Update session revenue first so earnings-update carries the new total
+      var prevTtsRev = sessionRevenue.get(roomId) || 0;
+      var newTtsRev  = prevTtsRev + amountCents;
+      sessionRevenue.set(roomId, newTtsRev);
+
+      try {
+        var ttsRoom = rooms.get(roomId);
+        if (ttsRoom && ttsRoom.hostSocketId) {
+          io.to(ttsRoom.hostSocketId).emit('earnings-update', {
+            sessionCents: newTtsRev,
+            lastCents:    amountCents,
+            source:       'super-chat',
+            username:     username,
+          });
+        }
+      } catch(eu) { logger.warn('[super-chat:tts] earnings-update: ' + eu.message); }
+
+      try {
+        var ttsLb = giftLeaderboards.get(roomId) || [];
+        var ttsIdx = ttsLb.findIndex(function(e) { return e.userId === userId; });
+        if (ttsIdx >= 0) { ttsLb[ttsIdx].totalCents += amountCents; ttsLb[ttsIdx].username = username; }
+        else { ttsLb.push({ userId: userId, username: username, totalCents: amountCents }); }
+        ttsLb.sort(function(a, b) { return b.totalCents - a.totalCents; });
+        if (ttsLb.length > 500) ttsLb = ttsLb.slice(0, 500);
+        giftLeaderboards.set(roomId, ttsLb);
+        io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: ttsLb.slice(0, 10) });
+      } catch(ttsLbErr) { logger.warn('[gift-lb-tts] ' + ttsLbErr.message); }
+
+      var _ttsGoal = streamGoals.get(roomId);
+      if (_ttsGoal && (_ttsGoal.type === 'revenue' || _ttsGoal.type === 'earnings')) {
+        io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newTtsRev });
+      }
+      for (var ttsMi = 0; ttsMi < REVENUE_MILESTONES_CENTS.length; ttsMi++) {
+        var ttsMil = REVENUE_MILESTONES_CENTS[ttsMi];
+        if (newTtsRev >= ttsMil && prevTtsRev < ttsMil) {
+          swanybot.onRevenueMilestone(roomId, ttsMil);
+          break;
+        }
+      }
     }
 
-    var ttsAnalytics = getAnalytics(roomId);
-    ttsAnalytics.sessionEarnings += amountCents;
-
-    io.to(roomId).emit('super-chat:tts', {
-      id:           ttsId,
-      username:     username,
-      message:      message,
-      amountCents:  amountCents,
-      creatorCents: creatorCents,
-      tierColor:    tierColor,
-      ts:           ts,
-      voice:        voice,
-    });
-
-    autoAura(roomId, function(cb) { aura.triggerTip(roomId, username, amountCents, message, cb); });
-
-    // Update session revenue first so earnings-update carries the new total
-    var prevTtsRev = sessionRevenue.get(roomId) || 0;
-    var newTtsRev  = prevTtsRev + amountCents;
-    sessionRevenue.set(roomId, newTtsRev);
-
-    try {
-      var ttsRoom = rooms.get(roomId);
-      if (ttsRoom && ttsRoom.hostSocketId) {
-        io.to(ttsRoom.hostSocketId).emit('earnings-update', {
-          sessionCents: newTtsRev,
-          lastCents:    amountCents,
-          source:       'super-chat',
-          username:     username,
+    stripeModule.createGiftCharge(userId, roomId, amountCents, creatorStripeAccountId)
+      .then(function(piResult) {
+        io.to(socket.id).emit('super-chat-tts-payment-intent', {
+          clientSecret:    piResult.clientSecret,
+          paymentIntentId: piResult.paymentIntentId,
         });
-      }
-    } catch(eu) { logger.warn('[super-chat:tts] earnings-update: ' + eu.message); }
-
-    try {
-      var ttsLb = giftLeaderboards.get(roomId) || [];
-      var ttsIdx = ttsLb.findIndex(function(e) { return e.userId === userId; });
-      if (ttsIdx >= 0) { ttsLb[ttsIdx].totalCents += amountCents; ttsLb[ttsIdx].username = username; }
-      else { ttsLb.push({ userId: userId, username: username, totalCents: amountCents }); }
-      ttsLb.sort(function(a, b) { return b.totalCents - a.totalCents; });
-      if (ttsLb.length > 500) ttsLb = ttsLb.slice(0, 500);
-      giftLeaderboards.set(roomId, ttsLb);
-      io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: ttsLb.slice(0, 10) });
-    } catch(ttsLbErr) { logger.warn('[gift-lb-tts] ' + ttsLbErr.message); }
-    var _ttsGoal = streamGoals.get(roomId);
-    if (_ttsGoal && (_ttsGoal.type === 'revenue' || _ttsGoal.type === 'earnings')) {
-      io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newTtsRev });
-    }
-    for (var ttsMi = 0; ttsMi < REVENUE_MILESTONES_CENTS.length; ttsMi++) {
-      var ttsMil = REVENUE_MILESTONES_CENTS[ttsMi];
-      if (newTtsRev >= ttsMil && prevTtsRev < ttsMil) {
-        swanybot.onRevenueMilestone(roomId, ttsMil);
-        break;
-      }
-    }
+        _commitTtsSuperChat();
+      })
+      .catch(function(err) {
+        logger.error('[super-chat:tts] createGiftCharge failed: ' + err.message);
+        io.to(socket.id).emit('super-chat-tts-error', { message: 'Payment setup failed — super chat not recorded' });
+      });
   });
 
   // ── bracket-update ─────────────────────────────────────────────────────

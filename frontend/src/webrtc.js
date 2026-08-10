@@ -25,6 +25,14 @@ class SeeWhyRTC {
   }
 
   async connect(socket, roomId, userId, role) {
+    // Tear down any prior session so reconnect doesn't leak intervals/transports
+    if (this.statsInterval) { clearInterval(this.statsInterval); this.statsInterval = null; }
+    Object.values(this.producers).forEach(function(p) { p.close(); });
+    Object.values(this.consumers).forEach(function(c) { c.close(); });
+    if (this.sendTransport) { this.sendTransport.close(); this.sendTransport = null; }
+    if (this.recvTransport) { this.recvTransport.close(); this.recvTransport = null; }
+    this.producers = {};
+    this.consumers = {};
     this.socket = socket;
     this.roomId = roomId;
     this.userId = userId;
