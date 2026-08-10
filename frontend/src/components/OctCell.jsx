@@ -202,6 +202,9 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   }, [isOwnCell, rtcManager, guest && guest.producerId, guest && guest.audioProducerId]);
 
   function initAnalyser(stream) {
+    if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null; }
+    if (audioCtxRef.current) { audioCtxRef.current.close().catch(function(){}); audioCtxRef.current = null; }
+    analyserRef.current = null;
     try {
       var AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
