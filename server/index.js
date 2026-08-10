@@ -4397,13 +4397,13 @@ io.on('connection', function(socket) {
     var _pv2Now = Date.now();
     var _pv2Key = socket.data.userId || socket.id;
     if (_pv2Now - (pollVoteThrottle.get(_pv2Key) || 0) < 500) return;
-    pollVoteThrottle.set(_pv2Key, _pv2Now);
     var pollToVote = activePolls.get(voteRoomId);
     if (!pollToVote || pollToVote.id !== data.pollId) return;
     var voteKey = _pv2Key;
     if (pollToVote.votes[voteKey] !== undefined) return;
     var option = String(data.option || '');
     if (!pollToVote.options || !pollToVote.options.includes(option)) return;
+    pollVoteThrottle.set(_pv2Key, _pv2Now);
     pollToVote.votes[voteKey] = option;
     pollToVote.totalVotes = (pollToVote.totalVotes || 0) + 1;
     var voteCounts = {};

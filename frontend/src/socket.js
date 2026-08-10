@@ -17,7 +17,11 @@ export function onReconnectCallback(fn) {
 }
 
 export function getSocket(token) {
-  if (socket && socket.connected) return socket;
+  // Return the existing socket regardless of connection state. Socket.IO's
+  // built-in reconnection loop handles recovery — creating a second socket
+  // while the first is mid-reconnect causes both to connect simultaneously,
+  // producing duplicate events and mediasoup transport leaks.
+  if (socket) return socket;
   socket = io(SOCKET_URL, {
     auth: { token: token || '' },
     transports: ['websocket', 'polling'],
