@@ -228,7 +228,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
     var ev = schedule.find(function(s) { return s.id === id; });
     if (ev && ev.fromApi) {
       var _delTok = localStorage.getItem('sw_token') || '';
-      fetch('/api/schedule/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + _delTok } }).catch(function() {});
+      fetch('/api/schedule/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + _delTok } }).catch(function() { if (addToast) addToast('Failed to delete event from server', 'error'); });
     }
     setSchedule(function(p) { return p.filter(function(s) { return s.id !== id; }); });
   }

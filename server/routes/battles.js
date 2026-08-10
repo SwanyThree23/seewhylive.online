@@ -9,6 +9,17 @@ const router = express.Router();
 const battleService = require('../services/battleService');
 const requireAuth   = require('../middleware/auth');
 const pool          = require('../db');
+const { rateLimit } = require('express-rate-limit');
+
+const battleVoteRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many vote requests — please slow down.' },
+});
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function validateId(req, res, next) {
@@ -70,7 +81,7 @@ router.post('/:id/start', requireAuth, validateId, async (req, res) => {
   }
 });
 
-router.post('/:id/vote', requireAuth, validateId, async (req, res) => {
+router.post('/:id/vote', requireAuth, battleVoteRateLimit, validateId, async (req, res) => {
   try {
     const { side } = req.body;
     if (side !== 'challenger' && side !== 'defender') {
