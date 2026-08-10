@@ -431,6 +431,9 @@ function areOctCellPropsEqual(prev, next) {
     pg.speaking        === ng.speaking        &&
     pg.role             === ng.role            &&
     pg.teamColor        === ng.teamColor       &&
+    pg.remoteMuted     === ng.remoteMuted     &&
+    pg.remoteCamOff    === ng.remoteCamOff    &&
+    pg.username        === ng.username        &&
     prev.rtcManager     === next.rtcManager    &&
     prev.isMuted        === next.isMuted       &&
     prev.isCamOff       === next.isCamOff      &&
