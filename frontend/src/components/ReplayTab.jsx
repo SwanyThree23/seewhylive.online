@@ -22,7 +22,6 @@ var fD = "'Bebas Neue',sans-serif";
 var fU = "'Barlow Condensed',sans-serif";
 var fM = "'DM Mono',monospace";
 
-var rnd = function(a, b) { return Math.floor(Math.random() * (b - a + 1) + a); };
 var fmtN = function(n) { n = n || 0; if (n >= 1000000) return (n/1000000).toFixed(1)+'M'; if (n >= 1000) return (n/1000).toFixed(1)+'k'; return ''+n; };
 var fmtS = function(s) { s = s || 0; var m = Math.floor(s / 60); var sec = s % 60; return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec; };
 
