@@ -92,7 +92,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
   useEffect(function() {
     if (!roomId) return;
     fetch('/api/moderation/word-filters?creatorId=' + roomId, { headers: _authHeaders() })
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function(data) {
         if (data && Array.isArray(data.filters)) {
           var apiWords = data.filters.map(function(f) { return f.word; });
@@ -108,7 +108,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
           });
         }
       })
-      .catch(function() {});
+      .catch(function() { if (addToast) addToast('Failed to load word filters', 'error'); });
   }, [roomId]);
 
 
@@ -291,7 +291,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     setBanned(function(prev) { return prev.filter(function(x) { return x !== w; }); });
     addToast('"' + w + '" removed', 'success');
     if (wordId) {
-      fetch('/api/moderation/word-filters/' + wordId, { method: 'DELETE', headers: _authHeaders() }).catch(function() {});
+      fetch('/api/moderation/word-filters/' + wordId, { method: 'DELETE', headers: _authHeaders() }).catch(function() { if (addToast) addToast('Failed to remove word filter', 'error'); });
     }
   }
 
@@ -302,7 +302,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
       method: 'POST',
       headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ roomId: roomId, enabled: next })
-    }).catch(function() {});
+    }).catch(function() { if (addToast) addToast('Failed to update subscriber-only mode', 'error'); });
     if (socket && roomId) {
       socket.emit('subscriber-only-changed', { roomId: roomId, enabled: next });
     }
