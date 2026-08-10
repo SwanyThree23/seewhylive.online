@@ -348,7 +348,7 @@ export default function App() {
   var [nameInput,     setNameInput]     = useState('');
   var [editingName,   setEditingName]   = useState(false);
   var [nameEditVal,   setNameEditVal]   = useState('');
-  var [role] = useState(function() { return localStorage.getItem('sw_role') || 'viewer'; });
+  var [role, setRole] = useState(function() { return localStorage.getItem('sw_role') || 'viewer'; });
   var [showAgeGate, setShowAgeGate] = useState(function() {
     var key = (localStorage.getItem('sw_role') === 'host' || localStorage.getItem('sw_role') === 'cohost') ? 'sw_age_ok_host' : 'sw_age_ok_viewer';
     return !localStorage.getItem(key);

@@ -394,9 +394,10 @@ export default function LiveRoomPage({
   var [recState,       setRecState]       = useState('idle');
   var [recSeconds,     setRecSeconds]     = useState(0);
   var [recUrl,         setRecUrl]         = useState(null);
-  var recTimerRef   = useRef(null);
-  var mediaRecRef   = useRef(null);
-  var recChunksRef  = useRef([]);
+  var recTimerRef    = useRef(null);
+  var mediaRecRef    = useRef(null);
+  var recChunksRef   = useRef([]);
+  var recSecondsRef  = useRef(0);
   var [scoreReveal,    setScoreReveal]    = useState(null); // { username, score, label } | null
   var [showSuperChatSheet, setShowSuperChatSheet] = useState(false);
   var [showTTSSheet,       setShowTTSSheet]       = useState(false);
@@ -497,6 +498,7 @@ export default function LiveRoomPage({
   useEffect(function() {
     if (!socket) return;
 
+    var mounted = true;
     var onStatsUpdate = function(s) { setStreamStats(s); };
 
     var onJoinRoomAck = async function(data) {
@@ -551,10 +553,12 @@ export default function LiveRoomPage({
       if (data.subscriberOnly) setSubscriberOnly(true);
       try {
         await rtcManager.connect(socket, roomId, userId, role);
+        if (!mounted) return;
         setRtcReady(true);
         // Wire up stream health stats (only meaningful for hosts/cohosts sending media)
         rtcManager.on('stats', onStatsUpdate);
       } catch(e) {
+        if (!mounted) return;
         if (addToast) addToast('WebRTC: ' + e.message, 'error');
       }
     };
@@ -895,6 +899,8 @@ export default function LiveRoomPage({
     });
 
     return function() {
+      mounted = false;
+      clearInterval(slowWaitRef.current);
       rtcManager.off('stats', onStatsUpdate);
       socket.off('join-room-ack', onJoinRoomAck);
       socket.off('speaking');
@@ -1207,7 +1213,7 @@ export default function LiveRoomPage({
         clearInterval(recTimerRef.current);
         // Persist to IndexedDB so VOD Library can access it
         var clipId = 'clip-' + Date.now();
-        var dur    = recSeconds;
+        var dur    = recSecondsRef.current;
         saveClip(clipId, blob, {
           title:    'Clip ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
           duration: dur,
@@ -1218,10 +1224,12 @@ export default function LiveRoomPage({
       mr.start(1000);
       mediaRecRef.current = mr;
       setRecState('recording');
+      recSecondsRef.current = 0;
       setRecSeconds(0);
       recTimerRef.current = setInterval(function() {
         setRecSeconds(function(s) {
           var next = s + 1;
+          recSecondsRef.current = next;
           if (next >= 600) { mr.stop(); }
           return next;
         });
