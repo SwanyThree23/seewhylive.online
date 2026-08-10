@@ -902,6 +902,7 @@ export default function LiveRoomPage({
       mounted = false;
       clearInterval(slowWaitRef.current);
       rtcManager.off('stats', onStatsUpdate);
+      rtcManager.destroy();
       socket.off('join-room-ack', onJoinRoomAck);
       socket.off('speaking');
       socket.off('hand-raise');

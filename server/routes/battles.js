@@ -21,13 +21,23 @@ const battleVoteRateLimit = rateLimit({
   message: { error: 'Too many vote requests — please slow down.' },
 });
 
+const battleCreateRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many challenge requests — please slow down.' },
+});
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function validateId(req, res, next) {
   if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid battle id' });
   next();
 }
 
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuth, battleCreateRateLimit, async (req, res) => {
   try {
     const { defenderId, roomId } = req.body;
     if (!UUID_RE.test(defenderId)) return res.status(400).json({ error: 'invalid defenderId' });
