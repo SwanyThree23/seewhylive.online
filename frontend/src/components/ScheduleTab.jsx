@@ -253,7 +253,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
         if (ev.id !== id) return ev;
         var next = Object.assign({}, ev, { status: status });
         if (status === 'LIVE') {
-          next.viewers = next.viewers || Math.floor(Math.random() * 3000) + 200;
+          next.viewers = next.viewers || null;
         }
         if (status === 'SCHED' || status === 'ENDED') {
           if (status === 'SCHED') next.viewers = null;

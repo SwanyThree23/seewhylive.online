@@ -169,13 +169,13 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
     return function() { if (autoRef.current) clearInterval(autoRef.current); };
   }, [autoScore, addToast]);
 
-  // Live score simulation — updates every 8 seconds when isLive
+  // Seed liveScores from current LIVE match state (no auto-increment)
   useEffect(function() {
     if (!isLive) {
       setLiveScores(null);
+      setPossession(0);
       return;
     }
-    // Initialize liveScores from current LIVE match in qf
     setLiveScores(function(prev) {
       if (prev) return prev;
       var liveMatch = null;
@@ -186,30 +186,6 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
       var parts = (liveMatch.score === '—' ? '0-0' : liveMatch.score).split('-');
       return { p1score: parseInt(parts[0]) || 0, p2score: parseInt(parts[1]) || 0, matchId: liveMatch.id };
     });
-    var id = setInterval(function() {
-      setLiveScores(function(prev) {
-        if (!prev) return prev;
-        var increment = Math.floor(Math.random() * 3) + 1;
-        var team = Math.random() > 0.5 ? 'p1' : 'p2';
-        if (team === 'p1') {
-          return Object.assign({}, prev, { p1score: prev.p1score + increment });
-        }
-        return Object.assign({}, prev, { p2score: prev.p2score + increment });
-      });
-    }, 8000);
-    return function() { clearInterval(id); };
-  }, [isLive]);
-
-  // Possession flip — every 12 seconds when isLive
-  useEffect(function() {
-    if (!isLive) {
-      setPossession(0);
-      return;
-    }
-    var id = setInterval(function() {
-      setPossession(function() { return Math.random() > 0.5 ? 1 : 0; });
-    }, 12000);
-    return function() { clearInterval(id); };
   }, [isLive]);
 
   function getRound(r) { return r === 'qf' ? qf : r === 'sf' ? sf : finals; }
