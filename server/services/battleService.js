@@ -97,9 +97,10 @@ async function castVote({ battleId, voterId, side, giftValueCents }) {
   if (insert.rowCount === 0) throw new Error('already voted in this battle');
   const column = side === 'challenger' ? 'challenger_points' : 'defender_points';
   const result = await db.query(
-    `UPDATE pk_battles SET ${column} = ${column} + $1 WHERE id = $2 RETURNING *`,
+    `UPDATE pk_battles SET ${column} = ${column} + $1 WHERE id = $2 AND status = 'active' RETURNING *`,
     [giftValueCents, battleId]
   );
+  if (!result.rows[0]) throw new Error('battle no longer active');
   return result.rows[0];
 }
 
