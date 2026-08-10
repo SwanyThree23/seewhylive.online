@@ -7,7 +7,6 @@ function fmtCountdown(s) {
   s = Math.floor(s) || 0;
   return pad2(Math.floor(s / 60)) + ':' + pad2(s % 60);
 }
-function rndInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
 function fmtTime() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }

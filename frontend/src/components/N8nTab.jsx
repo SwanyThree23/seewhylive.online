@@ -22,7 +22,6 @@ var fD = "'Bebas Neue',sans-serif";
 var fU = "'Barlow Condensed',sans-serif";
 var fM = "'DM Mono',monospace";
 
-var rnd = function(a, b) { return Math.floor(Math.random() * (b - a + 1) + a); };
 var fmtN = function(n) { n = n || 0; if (n >= 1000000) return (n/1000000).toFixed(1)+'M'; if (n >= 1000) return (n/1000).toFixed(1)+'k'; return ''+n; };
 
 var N8N_WORKFLOWS = [
@@ -31,27 +30,6 @@ var N8N_WORKFLOWS = [
   {id:'w3', name:'Guardian AI Moderation Pipeline', desc:'Routes flagged chat messages to Claude Haiku. Scores ≥0.95 → auto-ban. Logs to Supabase.', status:'running', lastRun:'45s ago', runs24h:1847, successRate:98.7, color:TEAL_H, icon:'🛡', vps:'srv1587098', trigger:'On chat message'},
   {id:'w4', name:'RTMP Fanout State Sync', desc:'Syncs MediaMTX fanout status to DB. Verifies all 8 destinations. Alerts on stream drop.', status:'idle', lastRun:'12m ago', runs24h:124, successRate:97.2, color:ORANGE, icon:'📡', vps:'srv1581658', trigger:'On stream start/stop'},
   {id:'w5', name:'Creator Onboarding Automation', desc:'Welcome email, Stripe Connect setup, sub tier activation, DB seed, Discord invite — all auto.', status:'running', lastRun:'3h ago', runs24h:8, successRate:100, color:PURP_H, icon:'🎉', vps:'srv1587098', trigger:'On creator signup'},
-];
-
-var LOG_WORKFLOW_NAMES = [
-  'VPS Health Monitor',
-  'Stripe 90/10 Payment Router',
-  'Guardian AI Moderation Pipeline',
-  'RTMP Fanout State Sync',
-  'Creator Onboarding Automation'
-];
-
-var LOG_MESSAGES = [
-  'all systems nominal',
-  '$12.50 processed (creator $11.25)',
-  '3 messages flagged, 1 auto-banned',
-  'stream health verified, all 8 destinations active',
-  '1 new creator onboarded',
-  'CPU nominal across both VPS',
-  'payment split verified 90/10',
-  'no violations detected',
-  'fanout synced successfully',
-  'welcome email delivered'
 ];
 
 function statusColor(s) {
@@ -64,17 +42,6 @@ function statusColor(s) {
 
 function padTwo(n) {
   return n < 10 ? '0' + n : '' + n;
-}
-
-function makeLogLine() {
-  var now = new Date();
-  var h = padTwo(now.getHours());
-  var m = padTwo(now.getMinutes());
-  var s = padTwo(now.getSeconds());
-  var ts = h + ':' + m + ':' + s;
-  var name = LOG_WORKFLOW_NAMES[rnd(0, LOG_WORKFLOW_NAMES.length - 1)];
-  var msg = LOG_MESSAGES[rnd(0, LOG_MESSAGES.length - 1)];
-  return ts + '  ✓  ' + name + ' — ' + msg;
 }
 
 function logLineColor(line) {
@@ -137,24 +104,10 @@ function _authHeaders(extra) {
 export default function N8nTab({ addToast, isLive }) {
   var [workflows, setWorkflows] = useState(N8N_WORKFLOWS.map(function(w) { return Object.assign({}, w, { enabled: true }); }));
   var [selected, setSelected] = useState(null);
-  var [liveMetrics, setLiveMetrics] = useState({cpu1:34, cpu2:28, mem1:62, mem2:45});
+  var liveMetrics = {cpu1:0, cpu2:0, mem1:0, mem2:0};
   var [activeView, setActiveView] = useState('workflows');
   var [execLog, setExecLog] = useState([]);
   var [webhookTesting, setWebhookTesting] = useState({});
-
-  useEffect(function() {
-    var iv = setInterval(function() {
-      setLiveMetrics(function(p) {
-        return {
-          cpu1: Math.max(5, Math.min(90, p.cpu1 + rnd(-5,8))),
-          cpu2: Math.max(5, Math.min(90, p.cpu2 + rnd(-5,8))),
-          mem1: Math.max(30, Math.min(85, p.mem1 + rnd(-3,5))),
-          mem2: Math.max(20, Math.min(80, p.mem2 + rnd(-3,5))),
-        };
-      });
-    }, 3000);
-    return function() { clearInterval(iv); };
-  }, []);
 
   useEffect(function() {
     var seeds = [
@@ -168,18 +121,6 @@ export default function N8nTab({ addToast, isLive }) {
       '14:12:00  ✓  VPS Health Monitor — srv1587098 CPU: 23%, Disk: 41%',
     ];
     setExecLog(seeds.slice().reverse());
-
-    var iv = setInterval(function() {
-      var line = makeLogLine();
-      setExecLog(function(prev) {
-        var next = [line].concat(prev);
-        if (next.length > 30) {
-          next = next.slice(0, 30);
-        }
-        return next;
-      });
-    }, 4000);
-    return function() { clearInterval(iv); };
   }, []);
 
   function triggerRun(id) {

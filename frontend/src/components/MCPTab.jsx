@@ -21,7 +21,6 @@ var fD = "'Bebas Neue',sans-serif";
 var fU = "'Barlow Condensed',sans-serif";
 var fM = "'DM Mono',monospace";
 
-var rnd = function(a, b) { return Math.floor(Math.random() * (b - a + 1) + a); };
 var fmtN = function(n) { n = n || 0; if (n >= 1000000) return (n/1000000).toFixed(1)+'M'; if (n >= 1000) return (n/1000).toFixed(1)+'k'; return ''+n; };
 var fmtS = function(s) { s = s || 0; var m = Math.floor(s / 60); var sec = s % 60; return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec; };
 
@@ -65,43 +64,6 @@ export default function MCPTab({ addToast, isLive }) {
     ]);
   }, []);
 
-  // Live call count drift
-  useEffect(function() {
-    if (!isLive) return;
-    var id = setInterval(function() {
-      setTools(function(prev) {
-        var idx = Math.floor(Math.random() * prev.length);
-        var delta = Math.floor(Math.random() * 3) + 1;
-        return prev.map(function(t, i) {
-          if (i !== idx) return t;
-          var newLatency = Math.floor(parseInt(t.latency) + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 2));
-          if (newLatency < 1) newLatency = 1;
-          return Object.assign({}, t, {
-            calls: t.calls + delta,
-            latency: newLatency + 'ms'
-          });
-        });
-      });
-    }, 2800);
-    return function() { clearInterval(id); };
-  }, [isLive]);
-
-  // Live call log appender
-  useEffect(function() {
-    if (!isLive) return;
-    var toolNames = MCP_TOOLS.map(function(t) { return t.name; });
-    var id = setInterval(function() {
-      var name = toolNames[Math.floor(Math.random() * toolNames.length)];
-      var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      var entry = ts + '  ' + name + '  → 200 OK (' + rnd(2, 20) + 'ms)';
-      setCallLog(function(prev) {
-        var next = prev.concat([entry]);
-        if (next.length > 20) next = next.slice(next.length - 20);
-        return next;
-      });
-    }, 5500);
-    return function() { clearInterval(id); };
-  }, [isLive]);
 
   // Health polling every 30s
   useEffect(function() {
@@ -128,21 +90,7 @@ export default function MCPTab({ addToast, isLive }) {
   }
 
   function pingAll() {
-    setPinging(true);
-    addToast('📡 Pinging all 12 MCP tools...', 'info');
-    setTimeout(function() {
-      setTools(function(prev) {
-        return prev.map(function(t) {
-          return Object.assign({}, t, {
-            latency: rnd(2, 25) + 'ms',
-            calls: t.calls + rnd(0, 5),
-          });
-        });
-      });
-      setPinging(false);
-      setLastPing(fmtT());
-      addToast('✅ All 12 MCP tools healthy!', 'success');
-    }, 1200);
+    addToast('MCP ping requires a server-side health endpoint — not yet available', 'error');
   }
 
   var totalCalls = 0;
