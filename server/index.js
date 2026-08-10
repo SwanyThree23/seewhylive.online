@@ -2457,58 +2457,77 @@ io.on('connection', function(socket) {
 
     if (!roomId || priceCents <= 0 || priceCents > 50000) return;
 
+    var _rawMoSAId = String(data.creatorStripeAccountId || '');
+    var _moCreatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawMoSAId) ? _rawMoSAId : '';
+    if (!_moCreatorStripeAccountId) return;
+
     var creatorCents  = Math.floor(priceCents * CREATOR);
     var platformCents = priceCents - creatorCents;
     var orderId       = uuidv4();
     var ts            = Math.floor(Date.now() / 1000);
 
-    try {
-      db.prepare(
-        'INSERT INTO gifts (id, room_id, from_user, emoji, name, value_cents, creator_cents, platform_cents, ts, to_guest_id)' +
-        ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).run(orderId, roomId, buyerUser, '👕', itemName, priceCents, creatorCents, platformCents, ts, toGuestId);
-    } catch (dbErr) {
-      logger.error('[merch-order] DB insert failed: ' + dbErr.message);
-    }
+    function _commitMerchOrder() {
+      try {
+        db.prepare(
+          'INSERT INTO gifts (id, room_id, from_user, emoji, name, value_cents, creator_cents, platform_cents, ts, to_guest_id)' +
+          ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        ).run(orderId, roomId, buyerUser, '👕', itemName, priceCents, creatorCents, platformCents, ts, toGuestId);
+      } catch (dbErr) {
+        logger.error('[merch-order] DB insert failed: ' + dbErr.message);
+      }
 
-    try {
-      var mRoom = rooms.get(roomId);
-      var hostId = mRoom ? (mRoom.hostUserId || mRoom.hostSocketId) : roomId;
-      analytics.recordEarning(hostId, roomId, 'merch', priceCents, itemName + ' by ' + buyerUser);
-    } catch(ae) { logger.warn('[merch-order] analytics: ' + ae.message); }
+      try {
+        var mRoom = rooms.get(roomId);
+        var hostId = mRoom ? (mRoom.hostUserId || mRoom.hostSocketId) : roomId;
+        analytics.recordEarning(hostId, roomId, 'merch', priceCents, itemName + ' by ' + buyerUser);
+      } catch(ae) { logger.warn('[merch-order] analytics: ' + ae.message); }
 
-    io.to(roomId).emit('merch-order-received', {
-      id:            orderId,
-      buyerUser:     buyerUser,
-      itemName:      itemName,
-      priceCents:    priceCents,
-      creatorCents:  creatorCents,
-      platformCents: platformCents,
-      toGuestId:     toGuestId,
-      ts:            ts
-    });
-
-    var mRoom3 = rooms.get(roomId);
-    if (mRoom3 && mRoom3.hostSocketId) {
-      io.to(mRoom3.hostSocketId).emit('earnings-update', {
-        amount: creatorCents,
-        type:   'merch',
-        source: buyerUser,
-        item:   itemName,
-        ts:     ts
+      io.to(roomId).emit('merch-order-received', {
+        id:            orderId,
+        buyerUser:     buyerUser,
+        itemName:      itemName,
+        priceCents:    priceCents,
+        creatorCents:  creatorCents,
+        platformCents: platformCents,
+        toGuestId:     toGuestId,
+        ts:            ts
       });
-    }
-    if (mRoom3 && mRoom3.hostUserId) {
-      io.to('user:' + mRoom3.hostUserId).emit('notification', {
-        type:    'merch',
-        message: '👕 ' + buyerUser + ' bought ' + itemName + ' ($' + (priceCents / 100).toFixed(2) + ')',
-        ts:      Date.now()
-      });
+
+      var mRoom3 = rooms.get(roomId);
+      if (mRoom3 && mRoom3.hostSocketId) {
+        io.to(mRoom3.hostSocketId).emit('earnings-update', {
+          amount: creatorCents,
+          type:   'merch',
+          source: buyerUser,
+          item:   itemName,
+          ts:     ts
+        });
+      }
+      if (mRoom3 && mRoom3.hostUserId) {
+        io.to('user:' + mRoom3.hostUserId).emit('notification', {
+          type:    'merch',
+          message: '👕 ' + buyerUser + ' bought ' + itemName + ' ($' + (priceCents / 100).toFixed(2) + ')',
+          ts:      Date.now()
+        });
+      }
+
+      if (priceCents >= 100) {
+        autoAura(roomId, function(cb) { aura.triggerGift(roomId, buyerUser, itemName, priceCents, cb); });
+      }
     }
 
-    if (priceCents >= 100) {
-      autoAura(roomId, function(cb) { aura.triggerGift(roomId, buyerUser, itemName, priceCents, cb); });
-    }
+    stripeModule.createGiftCharge(socket.data.userId, roomId, priceCents, _moCreatorStripeAccountId)
+      .then(function(piResult) {
+        io.to(socket.id).emit('merch-order-payment-intent', {
+          clientSecret:    piResult.clientSecret,
+          paymentIntentId: piResult.paymentIntentId,
+        });
+        _commitMerchOrder();
+      })
+      .catch(function(err) {
+        logger.error('[merch-order] createGiftCharge failed: ' + err.message);
+        io.to(socket.id).emit('merch-order-error', { message: 'Payment setup failed — order not recorded' });
+      });
   });
 
   // ── speaking ───────────────────────────────────────────────────────────
