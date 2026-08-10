@@ -7,6 +7,17 @@ var os          = require('os');
 var path        = require('path');
 var router      = express.Router();
 var requireAuth = require('../middleware/auth');
+var { rateLimit } = require('express-rate-limit');
+
+var vodUploadRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Upload limit reached — maximum 5 uploads per hour.' },
+});
 
 var ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 var ALLOWED_VIDEO_EXTS  = ['.mp4', '.webm', '.mov'];
@@ -140,7 +151,7 @@ function checkVodOwner(req, res, next) {
     }
   );
 }
-router.post('/:id/upload', requireAuth, checkVodOwner, upload.single('video'), function(req, res) {
+router.post('/:id/upload', requireAuth, vodUploadRateLimit, checkVodOwner, upload.single('video'), function(req, res) {
   if (!req.file) return res.status(400).json({ error: 'video file is required' });
   doUpload(req, res, req.params.id);
 });
