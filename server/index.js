@@ -2317,7 +2317,11 @@ io.on('connection', function(socket) {
     var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawSAId) ? _rawSAId : '';
 
     if (!roomId || valueCents < 0) return;
-    // Monetary gifts require a Stripe account — prevents analytics inflation from unverified amounts
+    // Monetary gifts require a Stripe account — fall back to the host's stored account
+    if (valueCents > 0 && !creatorStripeAccountId) {
+      var _giftSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
+      creatorStripeAccountId = (_giftSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_giftSaRow.stripe_account_id || '')) ? _giftSaRow.stripe_account_id : '';
+    }
     if (valueCents > 0 && !creatorStripeAccountId) return;
 
     var creatorCents  = Math.floor(valueCents * CREATOR);
@@ -2459,6 +2463,10 @@ io.on('connection', function(socket) {
 
     var _rawMoSAId = String(data.creatorStripeAccountId || '');
     var _moCreatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawMoSAId) ? _rawMoSAId : '';
+    if (!_moCreatorStripeAccountId) {
+      var _moSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
+      _moCreatorStripeAccountId = (_moSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_moSaRow.stripe_account_id || '')) ? _moSaRow.stripe_account_id : '';
+    }
     if (!_moCreatorStripeAccountId) return;
 
     var creatorCents  = Math.floor(priceCents * CREATOR);
@@ -3193,6 +3201,10 @@ io.on('connection', function(socket) {
 
     var _rawScSAId = String(data.creatorStripeAccountId || '');
     var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawScSAId) ? _rawScSAId : '';
+    if (!creatorStripeAccountId) {
+      var _scSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
+      creatorStripeAccountId = (_scSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_scSaRow.stripe_account_id || '')) ? _scSaRow.stripe_account_id : '';
+    }
     if (!creatorStripeAccountId) return;
 
     var creatorCents  = Math.floor(amountCents * CREATOR);
@@ -3302,6 +3314,10 @@ io.on('connection', function(socket) {
 
     var _rawTtsSAId = String(data.creatorStripeAccountId || '');
     var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawTtsSAId) ? _rawTtsSAId : '';
+    if (!creatorStripeAccountId) {
+      var _ttsSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
+      creatorStripeAccountId = (_ttsSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_ttsSaRow.stripe_account_id || '')) ? _ttsSaRow.stripe_account_id : '';
+    }
     if (!creatorStripeAccountId) return;
 
     var rawVoice = data.voice || {};
