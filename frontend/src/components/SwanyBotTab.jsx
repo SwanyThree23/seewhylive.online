@@ -9,23 +9,11 @@ var DEFAULT_RULES = [
 ];
 
 var DEFAULT_TRIGGERS = [
-  { id: 'trig_1', keyword: '!hype',    response: '🔥 THE DOMINO CROWD IS ALIVE! SeeWhy LIVE v33 is in the building!' },
-  { id: 'trig_2', keyword: '!score',   response: '🎲 Check the LIVE scoreboard for Washington Classic standings!' },
-  { id: 'trig_3', keyword: '!discord', response: '💬 Join the SwanyThree EntTech community!' },
+  { id: 'trig_1', keyword: '!hype',    response: '🔥 Let\'s go! SeeWhy LIVE is in the building!' },
+  { id: 'trig_2', keyword: '!score',   response: '🎲 Check the live scoreboard for current standings!' },
+  { id: 'trig_3', keyword: '!discord', response: '💬 Join the community!' },
 ];
 
-var SIM_EVENTS = [
-  { event: 'viewer_join',        message: 'SeeWhyFan42 joined the stream' },
-  { event: 'viewer_join',        message: 'DominoKing99 joined the stream' },
-  { event: 'gift_received',      message: 'CaliBonesOG sent a Crown gift worth $10.00' },
-  { event: 'gift_received',      message: 'LyricQueen sent a Fire gift worth $0.50' },
-  { event: 'spam_detected',      message: 'Socket muted for 60s (flood detected)' },
-  { event: 'new_subscription',   message: 'WashingtonFan subscribed at gold tier' },
-  { event: 'trigger',            message: '!hype fired → AURA responded' },
-  { event: 'trigger',            message: '!score fired → standings displayed' },
-  { event: 'viewer_join',        message: 'TechNerd42 joined the stream' },
-  { event: 'milestone_1000',     message: '1000 viewers — consider FADES!' },
-];
 
 function getLogIcon(event) {
   if (event === 'viewer_join')       return '👋';
@@ -60,7 +48,6 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
   var [showAddTrig,  setShowAddTrig]  = useState(false);
   var [newKw,        setNewKw]        = useState('');
   var [newResp,      setNewResp]      = useState('');
-  var [simLog,       setSimLog]       = useState([]);
   var [eventsPerMin, setEventsPerMin] = useState(0);
   var logEndRef = useRef(null);
 
@@ -120,17 +107,6 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
       socket.off('poll-update',         onPollUpdate);
     };
   }, [socket]);
-
-  useEffect(function() {
-    if (!isLive) return;
-    var id = setInterval(function() {
-      var pick = SIM_EVENTS[Math.floor(Math.random() * SIM_EVENTS.length)];
-      setSimLog(function(prev) {
-        return [Object.assign({}, pick, { id: 'sim_' + Date.now(), ts: Date.now() })].concat(prev.slice(0, 29));
-      });
-    }, 3500);
-    return function() { clearInterval(id); };
-  }, [isLive]);
 
   useEffect(function() {
     if (!isLive) return;
@@ -251,7 +227,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
 
   var activeCount = rules.filter(function(r) { return r.enabled; }).length;
   var SECTIONS = [['rules', '⚙ RULES'], ['triggers', '⚡ TRIGGERS'], ['polls', '📊 POLLS'], ['cmds', '💬 CMDS'], ['log', '📜 LOG']];
-  var displayLogs = botLogs.length > 0 ? botLogs : simLog;
+  var displayLogs = botLogs;
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: 430 }}>
@@ -585,19 +561,9 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
             )}
           </div>
           <div style={{ background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '8px', height: 300, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {isLive && botLogs.length === 0 && simLog.length === 0 && (
+            {botLogs.length === 0 && (
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3020' }}>
                 Waiting for events...
-              </div>
-            )}
-            {!isLive && botLogs.length === 0 && (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3020' }}>
-                Waiting for events...
-              </div>
-            )}
-            {isLive && botLogs.length === 0 && simLog.length > 0 && (
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', letterSpacing: 1, padding: '3px 7px', marginBottom: 2 }}>
-                ● SIM MODE — no live socket events
               </div>
             )}
             {displayLogs.map(function(log) {
