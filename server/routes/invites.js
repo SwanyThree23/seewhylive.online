@@ -31,6 +31,7 @@ const inviteRateLimit = rateLimit({
   keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'Too many invitations — please wait before sending more.' },
 });
 

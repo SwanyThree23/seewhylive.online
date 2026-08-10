@@ -53,6 +53,8 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   var countdownRef  = useRef(null);
   var challengerScoreRef = useRef(0);
   var defenderScoreRef   = useRef(0);
+  var challengerRef      = useRef('');
+  var defenderRef        = useRef('');
   var suddenDeathRef     = useRef(false);
   function clearAllIntervals() {
     if (countdownRef.current)  { clearInterval(countdownRef.current);  countdownRef.current  = null; }
@@ -64,6 +66,8 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
 
   useEffect(function() { challengerScoreRef.current = challengerScore; }, [challengerScore]);
   useEffect(function() { defenderScoreRef.current = defenderScore; }, [defenderScore]);
+  useEffect(function() { challengerRef.current = challenger; }, [challenger]);
+  useEffect(function() { defenderRef.current = defender; }, [defender]);
 
   useEffect(function() {
     if (!socket) return;
@@ -103,7 +107,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         setDefenderScore(function(prev) { return prev + pts; });
       }
       var boostMsg = data.side
-        ? '🎁 ' + (data.username || 'Someone') + ' boosted ' + (data.side === 'challenger' ? challenger : defender) + ' +' + pts
+        ? '🎁 ' + (data.username || 'Someone') + ' boosted ' + (data.side === 'challenger' ? challengerRef.current : defenderRef.current) + ' +' + pts
         : (data.from || 'Viewer') + ' gifted ' + (data.name || data.emoji || 'a gift') + ' — BOOST! 🚀';
       setBattleLog(function(prev) {
         return [{ time: fmtTime(), text: boostMsg, ts: Date.now() }].concat(prev).slice(0, 50);
@@ -195,7 +199,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
 
     setChallengerScore(function(cScore) {
       setDefenderScore(function(dScore) {
-        var w = cScore >= dScore ? challenger : defender;
+        var w = cScore >= dScore ? challengerRef.current : defenderRef.current;
         setWinner(w);
         setBattleLog(function(prev) {
           return prev.concat([{ time: fmtTime(), text: '🏆 ' + w + ' wins the PK Battle!' }]);
