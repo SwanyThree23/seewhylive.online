@@ -41,6 +41,16 @@ var ppvCreateRateLimit = rateLimit({
   message: { error: 'too many PPV token requests' },
 });
 
+var profileUpdateRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many profile updates — please wait.' },
+});
+
 // ─── Optional module loading (graceful fallback) ──────────────────────────────
 var analytics = null;
 try { analytics = require('./analytics'); } catch (e) { console.warn('[routes] analytics module unavailable'); }
@@ -545,7 +555,7 @@ router.get('/users/:username', function(req, res) {
   }
 });
 
-router.put('/users/me', requireAuth, function(req, res) {
+router.put('/users/me', requireAuth, profileUpdateRateLimit, function(req, res) {
   try {
     var displayName = String(req.body.displayName || '').slice(0, 80);
     var bio         = String(req.body.bio         || '').slice(0, 500);

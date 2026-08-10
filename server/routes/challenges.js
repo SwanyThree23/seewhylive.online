@@ -5,8 +5,19 @@
 
 const express = require('express');
 const router = express.Router();
+const { rateLimit } = require('express-rate-limit');
 const challengeService = require('../services/challengeService');
 const requireAuth      = require('../middleware/auth');
+
+var challengeCompleteRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many completion attempts — please slow down.' },
+});
 
 function requireAdmin(req, res, next) {
   if (!req.user || req.user.role !== 'admin') return res.status(403).json({ error: 'admin only' });
@@ -54,7 +65,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-router.post('/:id/complete', requireAuth, async (req, res) => {
+router.post('/:id/complete', requireAuth, challengeCompleteRateLimit, async (req, res) => {
   try {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.id)) {
       return res.status(400).json({ error: 'invalid challenge id' });
