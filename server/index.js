@@ -1835,7 +1835,7 @@ io.on('connection', function(socket) {
   socket.on('stage-invite-accept', function(data) {
     var roomId  = socket.data.roomId;
     var guestId = socket.data.userId;
-    if (!roomId || !guestId) return;
+    if (!roomId || !guestId || guestId.startsWith('anon')) return;
     io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: data.hostSocketId || '' });
     io.to(roomId).emit('hand-lower',   { guestId: guestId });
     // Notify the host
@@ -1847,6 +1847,7 @@ io.on('connection', function(socket) {
 
   socket.on('stage-invite-decline', function(data) {
     var guestId = socket.data.userId;
+    if (!guestId || guestId.startsWith('anon')) return;
     if (data.hostSocketId) {
       var hostSock = io.sockets.sockets.get(data.hostSocketId);
       if (hostSock) hostSock.emit('stage-invite-declined', { username: socket.data.username || guestId });
@@ -2041,6 +2042,7 @@ io.on('connection', function(socket) {
     var username = socket.data.username || 'Guest';
     var message  = String(data.message || '').slice(0, 500);
     var userId   = socket.data.userId;
+    if (!userId || userId.startsWith('anon')) return;
 
     if (!roomId || !message.trim()) return;
 
@@ -2511,6 +2513,8 @@ io.on('connection', function(socket) {
 
   // ── speaking ───────────────────────────────────────────────────────────
   socket.on('speaking', function(data) {
+    var userId  = socket.data.userId;
+    if (!userId || userId.startsWith('anon')) return;
     var roomId  = socket.data.roomId;
     var guestId = socket.data.guestId;
     if (!roomId || !guestId) return;
@@ -2525,6 +2529,8 @@ io.on('connection', function(socket) {
 
   // ── hand-raise ─────────────────────────────────────────────────────────
   socket.on('hand-raise', function(data) {
+    var userId   = socket.data.userId;
+    if (!userId || userId.startsWith('anon')) return;
     var roomId   = socket.data.roomId;
     var guestId  = socket.data.guestId;
     var username = socket.data.username || guestId;
@@ -2880,6 +2886,8 @@ io.on('connection', function(socket) {
   socket.on('poll-vote', function(data) {
     var roomId    = socket.data.roomId;
     if (!roomId) return;
+    var _pvUserId = socket.data.userId;
+    if (!_pvUserId || _pvUserId.startsWith('anon')) return;
     // New-system votes carry `option` (string) + `pollId` — handled by the poll-create
     // handler registered below. Skip here so we don't consume the throttle slot.
     if (data.optionIdx === undefined && data.optionIndex === undefined) return;
@@ -2911,6 +2919,8 @@ io.on('connection', function(socket) {
   socket.on('qa-question', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.text) return;
+    var _qaUserId = socket.data.userId;
+    if (!_qaUserId || _qaUserId.startsWith('anon')) return;
     var _qaNow = Date.now();
     var _qaKey = socket.data.userId || socket.id;
     if (_qaNow - (qaQuestionThrottle.get(_qaKey) || 0) < 3000) return;
@@ -2928,6 +2938,8 @@ io.on('connection', function(socket) {
   socket.on('qa-upvote', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.id) return;
+    var _quUserId = socket.data.userId;
+    if (!_quUserId || _quUserId.startsWith('anon')) return;
     var _quId = String(data.id);
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_quId)) return;
     var _quNow = Date.now();
@@ -3020,6 +3032,8 @@ io.on('connection', function(socket) {
   socket.on('vs-vote', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
+    var _vvUserId = socket.data.userId;
+    if (!_vvUserId || _vvUserId.startsWith('anon')) return;
     var _vvNow = Date.now();
     var _vvKey = socket.data.userId || socket.id;
     if (_vvNow - (vsVoteThrottle.get(_vvKey) || 0) < 500) return;
@@ -3110,6 +3124,8 @@ io.on('connection', function(socket) {
   socket.on('chat-react', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.msgId || !data.emoji) return;
+    var _crUserId = socket.data.userId;
+    if (!_crUserId || _crUserId.startsWith('anon')) return;
     var _crNow = Date.now();
     var _crKey = socket.data.userId || socket.id;
     if (_crNow - (viewerReactThrottle.get(_crKey) || 0) < 500) return;
@@ -3656,6 +3672,8 @@ io.on('connection', function(socket) {
   socket.on('audio-stage-join', function(data) {
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
+    var _asjUserId = socket.data.userId;
+    if (!_asjUserId || _asjUserId.startsWith('anon')) return;
     var _asjNow = Date.now();
     if (_asjNow - (socket.data._lastAudioJoin || 0) < 2000) return;
     socket.data._lastAudioJoin = _asjNow;
@@ -3683,6 +3701,8 @@ io.on('connection', function(socket) {
   socket.on('audio-stage-leave', function(data) {
     var sRoomId = socket.data.stageRoomId || socket.data.roomId;
     if (!sRoomId) return;
+    var _aslUserId = socket.data.userId;
+    if (!_aslUserId || _aslUserId.startsWith('anon')) return;
     var _aslNow = Date.now();
     if (_aslNow - (socket.data._lastAudioLeave || 0) < 1000) return;
     socket.data._lastAudioLeave = _aslNow;
@@ -3697,6 +3717,8 @@ io.on('connection', function(socket) {
   socket.on('audio-stage-hand-raise', function(data) {
     var sRoomId = socket.data.stageRoomId || socket.data.roomId;
     if (!sRoomId) return;
+    var _ashrUserId = socket.data.userId;
+    if (!_ashrUserId || _ashrUserId.startsWith('anon')) return;
     var _ashrNow = Date.now();
     if (_ashrNow - (socket.data._lastAudioHandRaise || 0) < 1000) return;
     socket.data._lastAudioHandRaise = _ashrNow;
@@ -3711,6 +3733,8 @@ io.on('connection', function(socket) {
   socket.on('audio-stage-speaking', function(data) {
     var sRoomId = socket.data.stageRoomId || socket.data.roomId;
     if (!sRoomId) return;
+    var _asUserId = socket.data.userId;
+    if (!_asUserId || _asUserId.startsWith('anon')) return;
     var _asNow = Date.now();
     if (_asNow - (speakingThrottle.get(socket.data.userId) || 0) < 250) return;
     speakingThrottle.set(socket.data.userId, _asNow);
@@ -3810,17 +3834,21 @@ io.on('connection', function(socket) {
   // ── battle:accept / battle:decline — route response back to challenger ──
   socket.on('battle:accept', function(data) {
     if (!data || !data.challengerId) return;
-    var defenderName = socket.data.username || socket.data.userId;
+    var _baUserId = socket.data.userId;
+    if (!_baUserId || _baUserId.startsWith('anon')) return;
+    var defenderName = socket.data.username || _baUserId;
     io.sockets.sockets.forEach(function(s) {
       if (String(s.data.userId) === String(data.challengerId)) {
-        s.emit('battle:accept', { defender_id: socket.data.userId, defender_username: defenderName, roomId: socket.data.roomId });
+        s.emit('battle:accept', { defender_id: _baUserId, defender_username: defenderName, roomId: socket.data.roomId });
       }
     });
   });
 
   socket.on('battle:decline', function(data) {
     if (!data || !data.challengerId) return;
-    var defenderName = socket.data.username || socket.data.userId;
+    var _bdUserId = socket.data.userId;
+    if (!_bdUserId || _bdUserId.startsWith('anon')) return;
+    var defenderName = socket.data.username || _bdUserId;
     io.sockets.sockets.forEach(function(s) {
       if (String(s.data.userId) === String(data.challengerId)) {
         s.emit('battle:decline', { defender_username: defenderName });
@@ -3832,6 +3860,8 @@ io.on('connection', function(socket) {
   socket.on('pk-cheer', function(data) {
     var cheerRoomId = socket.data.roomId;
     if (!cheerRoomId) return;
+    var _pcUserId = socket.data.userId;
+    if (!_pcUserId || _pcUserId.startsWith('anon')) return;
     var battle = vsPolls.get(cheerRoomId);
     // Also handle battles started via pk-start (which uses pkBattleState, not vsPolls)
     if (!battle || !battle.active) {
@@ -3960,6 +3990,8 @@ io.on('connection', function(socket) {
   socket.on('trivia-answer', function(data) {
     var tRoomId = socket.data.roomId;
     if (!tRoomId) return;
+    var _taUserId = socket.data.userId;
+    if (!_taUserId || _taUserId.startsWith('anon')) return;
     var trivia = triviaRooms.get(tRoomId);
     if (!trivia || !trivia.active) return;
     var idx = parseInt(data.answerIdx, 10);
@@ -4302,6 +4334,8 @@ io.on('connection', function(socket) {
   socket.on('poll-vote', function(data) {
     var voteRoomId = socket.data.roomId;
     if (!voteRoomId) return;
+    var _pv2UserId = socket.data.userId;
+    if (!_pv2UserId || _pv2UserId.startsWith('anon')) return;
     var _pv2Now = Date.now();
     var _pv2Key = socket.data.userId || socket.id;
     if (_pv2Now - (pollVoteThrottle.get(_pv2Key) || 0) < 500) return;
