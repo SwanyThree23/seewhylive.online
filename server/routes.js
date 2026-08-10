@@ -41,6 +41,46 @@ var ppvCreateRateLimit = rateLimit({
   message: { error: 'too many PPV token requests' },
 });
 
+var profileUpdateRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many profile updates — please wait.' },
+});
+
+var auraTriggerRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many aura trigger requests — please wait.' },
+});
+
+var vaultWriteRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many vault write requests — please wait.' },
+});
+
+var fanoutStartRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many fanout start requests — maximum 10 per hour.' },
+});
+
 // ─── Optional module loading (graceful fallback) ──────────────────────────────
 var analytics = null;
 try { analytics = require('./analytics'); } catch (e) { console.warn('[routes] analytics module unavailable'); }
@@ -106,7 +146,7 @@ router.post('/aura/mode', requireAuth, function(req, res) {
   }
 });
 
-router.post('/aura/trigger', requireAuth, function(req, res) {
+router.post('/aura/trigger', requireAuth, auraTriggerRateLimit, function(req, res) {
   if (req.user.role !== 'host' && req.user.role !== 'admin') {
     return res.status(403).json({ success: false, error: 'forbidden' });
   }
@@ -545,7 +585,7 @@ router.get('/users/:username', function(req, res) {
   }
 });
 
-router.put('/users/me', requireAuth, function(req, res) {
+router.put('/users/me', requireAuth, profileUpdateRateLimit, function(req, res) {
   try {
     var displayName = String(req.body.displayName || '').slice(0, 80);
     var bio         = String(req.body.bio         || '').slice(0, 500);
@@ -901,7 +941,7 @@ router.post('/stream-end', requireAuth, async function(req, res) {
 // /vault/key-exists — client can check presence without getting the raw key
 // /vault/delete-key — remove stored key when destination is deleted
 
-router.post('/vault/save-key', requireAuth, function(req, res) {
+router.post('/vault/save-key', requireAuth, vaultWriteRateLimit, function(req, res) {
   if (!vault) return res.status(501).json({ ok: false, error: 'Vault not available on this server' });
   try {
     var destId   = String(req.body.dest_id  || '').slice(0, 200);
@@ -1023,7 +1063,7 @@ function spawnFanout(streamId, ingestUrl, resolvedDests, restartCount) {
   return ffmpeg;
 }
 
-router.post('/fanout-start', requireAuth, async function(req, res) {
+router.post('/fanout-start', requireAuth, fanoutStartRateLimit, async function(req, res) {
   if (req.user.role !== 'host' && req.user.role !== 'admin') {
     return res.status(403).json({ ok: false, error: 'only hosts may start a fanout' });
   }
