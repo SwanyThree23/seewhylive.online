@@ -148,6 +148,11 @@ class SeeWhyRTC {
     this.listeners[event].push(cb);
   }
 
+  off(event, cb) {
+    if (!this.listeners[event]) return;
+    this.listeners[event] = this.listeners[event].filter(function(fn) { return fn !== cb; });
+  }
+
   _emit(event, data) {
     if (!this.listeners[event]) return;
     this.listeners[event].forEach(function(cb) { return cb(data); });

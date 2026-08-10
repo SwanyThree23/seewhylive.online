@@ -497,6 +497,8 @@ export default function LiveRoomPage({
   useEffect(function() {
     if (!socket) return;
 
+    var onStatsUpdate = function(s) { setStreamStats(s); };
+
     var onJoinRoomAck = async function(data) {
       if (!data || data.error) {
         if (addToast) addToast((data && data.error) || 'Room connect failed', 'error');
@@ -551,7 +553,7 @@ export default function LiveRoomPage({
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
         // Wire up stream health stats (only meaningful for hosts/cohosts sending media)
-        rtcManager.on('stats', function(s) { setStreamStats(s); });
+        rtcManager.on('stats', onStatsUpdate);
       } catch(e) {
         if (addToast) addToast('WebRTC: ' + e.message, 'error');
       }
@@ -893,6 +895,7 @@ export default function LiveRoomPage({
     });
 
     return function() {
+      rtcManager.off('stats', onStatsUpdate);
       socket.off('join-room-ack', onJoinRoomAck);
       socket.off('speaking');
       socket.off('hand-raise');
