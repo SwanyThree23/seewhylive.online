@@ -20,6 +20,7 @@ var moderationRateLimit = rateLimit({
   keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'too many requests' },
 });
 
@@ -29,6 +30,7 @@ var tipRateLimit = rateLimit({
   keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'too many tip requests' },
 });
 
@@ -38,6 +40,7 @@ var ppvCreateRateLimit = rateLimit({
   keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'too many PPV token requests' },
 });
 
@@ -471,7 +474,8 @@ router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
     var amountCents = req.body.amountCents || 0;
     var note = String(req.body.note || '').slice(0, 200);
     var fromUserId = req.user.id;
-    var creatorStripeAccountId = req.body.creatorStripeAccountId || '';
+    var _rawTipSAId = String(req.body.creatorStripeAccountId || '');
+    var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawTipSAId) ? _rawTipSAId : '';
 
     if (!amountCents || Math.floor(amountCents) < 50) {
       return res.status(400).json({ success: false, error: 'Minimum tip amount is 50 cents' });
@@ -484,7 +488,7 @@ router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
     var creatorCents = Math.floor(amtCents * CREATOR);
     var platformCents = amtCents - creatorCents;
 
-    // A Stripe account is required — without one there is no actual charge,
+    // A valid Stripe account is required — without one there is no actual charge,
     // so we must not record earnings (prevents fake analytics injection).
     if (!creatorStripeAccountId) {
       return res.status(400).json({ success: false, error: 'creatorStripeAccountId is required to process a tip' });
