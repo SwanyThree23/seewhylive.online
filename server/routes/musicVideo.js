@@ -8,6 +8,17 @@ var fs          = require('fs');
 var router      = express.Router();
 var db          = require('../db');
 var requireAuth = require('../middleware/auth');
+var { rateLimit } = require('express-rate-limit');
+
+var mvSubmitRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Submission limit reached — maximum 10 music video jobs per hour.' },
+});
 
 var MEDIA_DIR      = process.env.MEDIA_DIR || '/opt/seewhy/media/mv';
 var MAX_AUDIO_SIZE = 50 * 1024 * 1024; // 50 MB
@@ -55,7 +66,7 @@ db.query([
 });
 
 // ── POST /api/music-video/submit ────────────────────────────────────────────
-router.post('/submit', requireAuth, upload.single('audio'), async function(req, res) {
+router.post('/submit', requireAuth, mvSubmitRateLimit, upload.single('audio'), async function(req, res) {
   if (!req.file) return res.status(400).json({ error: 'No audio file provided' });
 
   var style = (req.body && req.body.style) || '';
