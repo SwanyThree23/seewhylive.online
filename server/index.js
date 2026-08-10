@@ -323,6 +323,15 @@ var stripeOnboardRateLimit = rateLimit({
   validate: { xForwardedForHeader: false },
   message: { error: 'Too many onboard requests — please try again later.' }
 });
+var ppvRateLimit = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 10,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many payment requests — please wait before trying again.' }
+});
 // NOTE: stripeOnboardRateLimit is applied on the route itself (after requireAuth)
 // so req.user.id is available for per-user keying.
 app.use(express.json({ limit: '2mb' }));
@@ -811,7 +820,7 @@ app.get('/api/metrics', requireAuth, function(req, res) {
 });
 
 // POST /api/ppv/create
-app.post('/api/ppv/create', requireAuth, function(req, res) {
+app.post('/api/ppv/create', requireAuth, ppvRateLimit, function(req, res) {
   var body = req.body;
   if (!body.roomId || !body.priceUsd || !body.creatorStripeAccountId) {
     res.status(400).json({ error: 'Missing required fields: roomId, priceUsd, creatorStripeAccountId' });
@@ -850,7 +859,7 @@ app.post('/api/ppv/create', requireAuth, function(req, res) {
 });
 
 // POST /api/ppv/verify
-app.post('/api/ppv/verify', requireAuth, function(req, res) {
+app.post('/api/ppv/verify', requireAuth, ppvRateLimit, function(req, res) {
   var body = req.body;
   if (!body.paymentIntentId || !body.roomId) {
     res.status(400).json({ error: 'Missing required fields: paymentIntentId, roomId' });
@@ -2314,103 +2323,102 @@ io.on('connection', function(socket) {
     var giftId        = uuidv4();
     var ts            = Math.floor(Date.now() / 1000);
 
-    try {
-      db.prepare(
-        'INSERT INTO gifts (id, room_id, from_user, emoji, name, value_cents, creator_cents, platform_cents, ts, to_guest_id)' +
-        ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).run(giftId, roomId, fromUser, emoji, name, valueCents, creatorCents, platformCents, ts, toGuestId);
-    } catch (dbErr) {
-      logger.error('[send-gift] DB insert failed: ' + dbErr.message);
-    }
-
-    // Analytics: track session earnings
-    var giftAnalytics = getAnalytics(roomId);
-    giftAnalytics.sessionEarnings += valueCents;
-
-    io.to(roomId).emit('gift-received', {
-      id:            giftId,
-      fromUser:      fromUser,
-      emoji:         emoji,
-      name:          name,
-      valueCents:    valueCents,
-      creatorCents:  creatorCents,
-      platformCents: platformCents,
-      toGuestId:     toGuestId,
-      ts:            ts
-    });
-
-    try {
-      var giftRoom = rooms.get(roomId);
-      var hostId = giftRoom ? (giftRoom.hostUserId || giftRoom.hostSocketId) : roomId;
-      analytics.recordEarning(hostId, roomId, 'gift', valueCents, name + ' from ' + fromUser);
-    } catch (aErr) {
-      logger.warn('[send-gift] analytics record failed: ' + aErr.message);
-    }
-
-    swanybot.onGiftReceived(roomId, fromUser, name, valueCents);
-
-    // Update session revenue first so earnings-update carries the new total
-    var prevRevenue = sessionRevenue.get(roomId) || 0;
-    var newRevenue  = prevRevenue + valueCents;
-    sessionRevenue.set(roomId, newRevenue);
-
-    // Push live earnings update + notification to host
-    try {
-      var gifRoom = rooms.get(roomId);
-      if (gifRoom && gifRoom.hostSocketId) {
-        io.to(gifRoom.hostSocketId).emit('earnings-update', {
-          sessionCents: newRevenue,
-          lastCents:    valueCents,
-          source:       'gift',
-          username:     fromUser
-        });
+    // All DB writes, analytics, and broadcasts are deferred until after Stripe
+    // confirms PI creation for paid gifts. Free gifts (valueCents === 0) skip
+    // Stripe entirely and record immediately.
+    function _commitGift() {
+      try {
+        db.prepare(
+          'INSERT INTO gifts (id, room_id, from_user, emoji, name, value_cents, creator_cents, platform_cents, ts, to_guest_id)' +
+          ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        ).run(giftId, roomId, fromUser, emoji, name, valueCents, creatorCents, platformCents, ts, toGuestId);
+      } catch (dbErr) {
+        logger.error('[send-gift] DB insert failed: ' + dbErr.message);
       }
-      if (gifRoom && gifRoom.hostUserId) {
-        io.to('user:' + gifRoom.hostUserId).emit('notification', { type: 'gift', message: '🎁 ' + fromUser + ' sent ' + name + ' ($' + (valueCents / 100).toFixed(2) + ')', ts: Date.now() });
+
+      // Analytics: track session earnings
+      var giftAnalytics = getAnalytics(roomId);
+      giftAnalytics.sessionEarnings += valueCents;
+
+      io.to(roomId).emit('gift-received', {
+        id:            giftId,
+        fromUser:      fromUser,
+        emoji:         emoji,
+        name:          name,
+        valueCents:    valueCents,
+        creatorCents:  creatorCents,
+        platformCents: platformCents,
+        toGuestId:     toGuestId,
+        ts:            ts
+      });
+
+      try {
+        var giftRoom = rooms.get(roomId);
+        var hostId = giftRoom ? (giftRoom.hostUserId || giftRoom.hostSocketId) : roomId;
+        analytics.recordEarning(hostId, roomId, 'gift', valueCents, name + ' from ' + fromUser);
+      } catch (aErr) {
+        logger.warn('[send-gift] analytics record failed: ' + aErr.message);
       }
-    } catch(geu) { logger.warn('[send-gift] earnings-update: ' + geu.message); }
 
-    // Gift leaderboard update
-    try {
-      var lb = giftLeaderboards.get(roomId) || [];
-      var existingIdx = lb.findIndex(function(e) { return e.userId === fromUserId; });
-      if (existingIdx >= 0) {
-        lb[existingIdx].totalCents += valueCents;
-        lb[existingIdx].username = fromUser;
-      } else {
-        lb.push({ userId: fromUserId, username: fromUser, totalCents: valueCents });
+      swanybot.onGiftReceived(roomId, fromUser, name, valueCents);
+
+      var prevRevenue = sessionRevenue.get(roomId) || 0;
+      var newRevenue  = prevRevenue + valueCents;
+      sessionRevenue.set(roomId, newRevenue);
+
+      try {
+        var gifRoom = rooms.get(roomId);
+        if (gifRoom && gifRoom.hostSocketId) {
+          io.to(gifRoom.hostSocketId).emit('earnings-update', {
+            sessionCents: newRevenue,
+            lastCents:    valueCents,
+            source:       'gift',
+            username:     fromUser
+          });
+        }
+        if (gifRoom && gifRoom.hostUserId) {
+          io.to('user:' + gifRoom.hostUserId).emit('notification', { type: 'gift', message: '🎁 ' + fromUser + ' sent ' + name + ' ($' + (valueCents / 100).toFixed(2) + ')', ts: Date.now() });
+        }
+      } catch(geu) { logger.warn('[send-gift] earnings-update: ' + geu.message); }
+
+      try {
+        var lb = giftLeaderboards.get(roomId) || [];
+        var existingIdx = lb.findIndex(function(e) { return e.userId === fromUserId; });
+        if (existingIdx >= 0) {
+          lb[existingIdx].totalCents += valueCents;
+          lb[existingIdx].username = fromUser;
+        } else {
+          lb.push({ userId: fromUserId, username: fromUser, totalCents: valueCents });
+        }
+        lb.sort(function(a, b) { return b.totalCents - a.totalCents; });
+        if (lb.length > 500) lb = lb.slice(0, 500);
+        giftLeaderboards.set(roomId, lb);
+        io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: lb.slice(0, 10) });
+      } catch(lbErr) { logger.warn('[gift-lb] ' + lbErr.message); }
+
+      if (pkVotes.has(roomId)) {
+        io.to(roomId).emit('pk-gift-boost', { from: fromUser, emoji: emoji, name: name, valueCents: valueCents, ts: ts });
       }
-      lb.sort(function(a, b) { return b.totalCents - a.totalCents; });
-      if (lb.length > 500) lb = lb.slice(0, 500);
-      giftLeaderboards.set(roomId, lb);
-      io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: lb.slice(0, 10) });
-    } catch(lbErr) { logger.warn('[gift-lb] ' + lbErr.message); }
 
-    // If a PK battle is active, emit gift boost notification to room
-    if (pkVotes.has(roomId)) {
-      io.to(roomId).emit('pk-gift-boost', { from: fromUser, emoji: emoji, name: name, valueCents: valueCents, ts: ts });
-    }
+      var _gGoal = streamGoals.get(roomId);
+      if (_gGoal && (_gGoal.type === 'revenue' || _gGoal.type === 'earnings')) {
+        io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newRevenue });
+      }
+      for (var rmi = 0; rmi < REVENUE_MILESTONES_CENTS.length; rmi++) {
+        var rev = REVENUE_MILESTONES_CENTS[rmi];
+        if (newRevenue >= rev && prevRevenue < rev) {
+          swanybot.onRevenueMilestone(roomId, rev);
+          break;
+        }
+      }
 
-    // Session revenue milestone tracking (prevRevenue and newRevenue already set above)
-    var _gGoal = streamGoals.get(roomId);
-    if (_gGoal && (_gGoal.type === 'revenue' || _gGoal.type === 'earnings')) {
-      io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newRevenue });
-    }
-    for (var rmi = 0; rmi < REVENUE_MILESTONES_CENTS.length; rmi++) {
-      var rev = REVENUE_MILESTONES_CENTS[rmi];
-      if (newRevenue >= rev && prevRevenue < rev) {
-        swanybot.onRevenueMilestone(roomId, rev);
-        break;
+      if (valueCents >= 100) {
+        autoAura(roomId, function(cb) { aura.triggerGift(roomId, fromUser, name, valueCents, cb); });
       }
     }
 
-    // Auto-trigger AURA gift hype (threshold: $1+)
-    if (valueCents >= 100) {
-      autoAura(roomId, function(cb) { aura.triggerGift(roomId, fromUser, name, valueCents, cb); });
-    }
-
-    // Optionally create a gift PaymentIntent if a Stripe account is provided
-    if (creatorStripeAccountId) {
+    if (valueCents > 0 && creatorStripeAccountId) {
+      // Monetary gift: create PaymentIntent first; only commit on success
       stripeModule.createGiftCharge(
         socket.data.userId || fromUser,
         roomId,
@@ -2418,12 +2426,17 @@ io.on('connection', function(socket) {
         creatorStripeAccountId
       ).then(function(piResult) {
         io.to(socket.id).emit('gift-payment-intent', {
-          clientSecret:   piResult.clientSecret,
+          clientSecret:    piResult.clientSecret,
           paymentIntentId: piResult.paymentIntentId
         });
+        _commitGift();
       }).catch(function(err) {
         logger.error('[send-gift] createGiftCharge failed: ' + err.message);
+        io.to(socket.id).emit('gift-error', { message: 'Payment setup failed — gift not recorded' });
       });
+    } else {
+      // Free gift (valueCents === 0): no payment required, commit immediately
+      _commitGift();
     }
   });
 
