@@ -17,6 +17,7 @@ const loginRateLimit = rateLimit({
   keyGenerator: function(req) { return req.ip; },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'Too many login attempts — please wait 15 minutes.' },
 });
 
