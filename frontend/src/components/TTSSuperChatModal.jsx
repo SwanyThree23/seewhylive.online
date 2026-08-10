@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 
 var BG    = '#0E0C09';
 var GOLD  = '#C9A84C';

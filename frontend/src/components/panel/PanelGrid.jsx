@@ -34,7 +34,7 @@ const RED = '#dc2626';
  * and the rest collapse into a scrollable strip. Works for any count up to
  * the platform's MAX_PANEL_GUESTS=20 ceiling.
  */
-export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, guests }) {
+export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, guests, addToast }) {
   const [slots, setSlots] = useState([]);
   const [gatingMode, setGatingMode] = useState(null);
   const [isAudioOnlyRoom, setIsAudioOnlyRoom] = useState(false);
@@ -61,7 +61,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         localStreamRef.current = stream;
         setLocalStream(stream);
       })
-      .catch(function() {});
+      .catch(function() { if (addToast) addToast('Microphone access denied — audio panel unavailable', 'error'); });
     return function() {
       active = false;
       if (localStreamRef.current) {
@@ -84,7 +84,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
           setSlots(slotArr);
           if (!Array.isArray(initial) && initial.gatingMode) setGatingMode(initial.gatingMode);
         })
-        .catch(function() {});
+        .catch(function() { if (addToast) addToast('Failed to load panel state', 'error'); });
 
       unsubs.push(panelService.onSlotAssigned(socket, function(payload) {
         var rid = payload.roomId, slot = payload.slot;
@@ -308,7 +308,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
                 videoProducer={videoProducer || null}
               />
             )}
-            {isHost && <PanelPrivacySettings roomId={roomId} />}
+            {isHost && <PanelPrivacySettings roomId={roomId} addToast={addToast} />}
             {!hasSlot && userId && (
               <button
                 onClick={function() { setShowJoinModal(true); }}

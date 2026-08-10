@@ -11,7 +11,7 @@ const SURFACE = '#1a1a1a';
 const BORDER = '#2a2a2a';
 const RED = '#dc2626';
 
-export default function PanelPrivacySettings({ roomId }) {
+export default function PanelPrivacySettings({ roomId, addToast }) {
   const [open, setOpen] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [gatingMode, setGatingMode] = useState('invite_code');
@@ -26,7 +26,7 @@ export default function PanelPrivacySettings({ roomId }) {
       if (result && result.invite_code) setInviteCode(result.invite_code);
       else setInviteCode(null);
     } catch (err) {
-      console.error('[PanelPrivacySettings]', err);
+      if (addToast) addToast('Failed to save privacy settings', 'error');
     } finally {
       setSaving(false);
     }

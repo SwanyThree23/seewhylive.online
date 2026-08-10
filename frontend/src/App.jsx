@@ -1866,6 +1866,7 @@ export default function App() {
             isHost={role === 'host' || role === 'cohost'}
             rtcManager={rtcManager}
             guests={guests}
+            addToast={addToast}
           />
         )}
         {activeTab === 'watchparty' && (

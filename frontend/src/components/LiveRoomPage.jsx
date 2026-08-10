@@ -3,7 +3,7 @@ import OctCell from './OctCell.jsx';
 import rtcManager from '../webrtc.js';
 import MediaConfigPanel from './MediaConfigPanel.jsx';
 import { saveClip } from '../clipStore.js';
-import { creatorCents, platformCents, getPlatformHandles } from '../platformConfig.js';
+import { getPlatformHandles } from '../platformConfig.js';
 import HostHUD from './HostHUD.jsx';
 import ChyronOverlay from './ChyronOverlay.jsx';
 import PollOverlay from './PollOverlay.jsx';

@@ -216,13 +216,15 @@ function registerPanelHandlers(io, socket) {
 
   socket.on('panel:raise_hand', function(payload) {
     try {
+      var userId = socket.data.userId;
+      if (!userId || userId.startsWith('anon')) return;
       var roomId = socket.data.roomId;
       var raised  = !!(payload && payload.raised);
       if (!roomId) return;
       var _prNow = Date.now();
-      if (_prNow - (panelHandThrottle.get(socket.data.userId) || 0) < 1000) return;
-      panelHandThrottle.set(socket.data.userId, _prNow);
-      io.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: socket.data.userId, raised: raised });
+      if (_prNow - (panelHandThrottle.get(userId) || 0) < 1000) return;
+      panelHandThrottle.set(userId, _prNow);
+      io.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: userId, raised: raised });
     } catch (err) {
       console.error('[panelHandlers] panel:raise_hand error:', err);
     }
@@ -230,13 +232,15 @@ function registerPanelHandlers(io, socket) {
 
   socket.on('panel:react', function(payload) {
     try {
+      var userId = socket.data.userId;
+      if (!userId || userId.startsWith('anon')) return;
       var roomId = socket.data.roomId;
       var emoji  = payload && String(payload.emoji || '').slice(0, 4);
       if (!roomId || !emoji) return;
       var _preNow = Date.now();
-      if (_preNow - (panelReactThrottle.get(socket.data.userId) || 0) < 1000) return;
-      panelReactThrottle.set(socket.data.userId, _preNow);
-      io.to(roomId).emit('panel:reaction', { roomId: roomId, guestId: socket.data.userId, emoji: emoji });
+      if (_preNow - (panelReactThrottle.get(userId) || 0) < 1000) return;
+      panelReactThrottle.set(userId, _preNow);
+      io.to(roomId).emit('panel:reaction', { roomId: roomId, guestId: userId, emoji: emoji });
     } catch (err) {
       console.error('[panelHandlers] panel:react error:', err);
     }
