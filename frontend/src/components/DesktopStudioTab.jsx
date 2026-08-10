@@ -119,6 +119,10 @@ function DesktopStudioTab() {
       socket.off('viewer-count',      onViewerCount);
       socket.off('broadcast-ended',   onBroadcastEnded);
       socket.off('join-room-ack',     onJoinRoomAck);
+      if (uptimeRef.current) {
+        clearInterval(uptimeRef.current);
+        uptimeRef.current = null;
+      }
     };
   }, []);
 
