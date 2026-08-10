@@ -3172,6 +3172,10 @@ io.on('connection', function(socket) {
     var VALID_SC    = [100, 200, 500, 1000, 2000, 5000];
     if (!roomId || !message || VALID_SC.indexOf(amountCents) === -1) return;
 
+    var _rawScSAId = String(data.creatorStripeAccountId || '');
+    var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawScSAId) ? _rawScSAId : '';
+    if (!creatorStripeAccountId) return;
+
     var creatorCents  = Math.floor(amountCents * CREATOR);
     var platformCents = amountCents - creatorCents;
     var scId          = uuidv4();
@@ -3179,73 +3183,88 @@ io.on('connection', function(socket) {
     var TIER_COLORS   = { 100: '#C9A84C', 200: '#D4854A', 500: '#C9A84C', 1000: '#FF8C42', 2000: '#FF1A3C', 5000: '#800020' };
     var tierColor     = TIER_COLORS[amountCents] || '#C9A84C';
 
-    try {
-      db.prepare(
-        'INSERT INTO super_chats (id, room_id, user_id, username, message, amount_cents, creator_cents, platform_cents, tier_color, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).run(scId, roomId, userId, username, message, amountCents, creatorCents, platformCents, tierColor, ts);
-    } catch(e) {
-      logger.error('[super-chat] DB insert: ' + e.message);
+    function _commitSuperChat() {
+      try {
+        db.prepare(
+          'INSERT INTO super_chats (id, room_id, user_id, username, message, amount_cents, creator_cents, platform_cents, tier_color, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        ).run(scId, roomId, userId, username, message, amountCents, creatorCents, platformCents, tierColor, ts);
+      } catch(e) {
+        logger.error('[super-chat] DB insert: ' + e.message);
+      }
+
+      // Analytics: track super-chat earnings
+      var scAnalytics = getAnalytics(roomId);
+      scAnalytics.sessionEarnings += amountCents;
+
+      io.to(roomId).emit('super-chat', {
+        id:           scId,
+        username:     username,
+        message:      message,
+        amountCents:  amountCents,
+        creatorCents: creatorCents,
+        tierColor:    tierColor,
+        ts:           ts
+      });
+
+      autoAura(roomId, function(cb) { aura.triggerTip(roomId, username, amountCents, message, cb); });
+
+      // Update session revenue first so earnings-update carries the new total
+      var prevScRev = sessionRevenue.get(roomId) || 0;
+      var newScRev  = prevScRev + amountCents;
+      sessionRevenue.set(roomId, newScRev);
+
+      // Push live earnings update + notification to host
+      try {
+        var scRoom = rooms.get(roomId);
+        if (scRoom && scRoom.hostSocketId) {
+          io.to(scRoom.hostSocketId).emit('earnings-update', {
+            sessionCents: newScRev,
+            lastCents:    amountCents,
+            source:       'super-chat',
+            username:     username
+          });
+        }
+        if (scRoom && scRoom.hostUserId) {
+          io.to('user:' + scRoom.hostUserId).emit('notification', { type: 'super_chat', message: '💬 ' + username + ' sent a $' + (amountCents / 100).toFixed(2) + ' Super Chat', ts: ts * 1000 });
+        }
+      } catch(eu) { logger.warn('[super-chat] earnings-update: ' + eu.message); }
+
+      // Gift leaderboard — super-chat counts too
+      try {
+        var scLb = giftLeaderboards.get(roomId) || [];
+        var scLbIdx = scLb.findIndex(function(e) { return e.userId === userId; });
+        if (scLbIdx >= 0) { scLb[scLbIdx].totalCents += amountCents; scLb[scLbIdx].username = username; }
+        else { scLb.push({ userId: userId, username: username, totalCents: amountCents }); }
+        scLb.sort(function(a, b) { return b.totalCents - a.totalCents; });
+        if (scLb.length > 500) scLb = scLb.slice(0, 500);
+        giftLeaderboards.set(roomId, scLb);
+        io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: scLb.slice(0, 10) });
+      } catch(scLbErr) { logger.warn('[gift-lb-sc] ' + scLbErr.message); }
+      var _scGoal = streamGoals.get(roomId);
+      if (_scGoal && (_scGoal.type === 'revenue' || _scGoal.type === 'earnings')) {
+        io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newScRev });
+      }
+      for (var scmi = 0; scmi < REVENUE_MILESTONES_CENTS.length; scmi++) {
+        var scMil = REVENUE_MILESTONES_CENTS[scmi];
+        if (newScRev >= scMil && prevScRev < scMil) {
+          swanybot.onRevenueMilestone(roomId, scMil);
+          break;
+        }
+      }
     }
 
-    // Analytics: track super-chat earnings
-    var scAnalytics = getAnalytics(roomId);
-    scAnalytics.sessionEarnings += amountCents;
-
-    io.to(roomId).emit('super-chat', {
-      id:           scId,
-      username:     username,
-      message:      message,
-      amountCents:  amountCents,
-      creatorCents: creatorCents,
-      tierColor:    tierColor,
-      ts:           ts
-    });
-
-    autoAura(roomId, function(cb) { aura.triggerTip(roomId, username, amountCents, message, cb); });
-
-    // Update session revenue first so earnings-update carries the new total
-    var prevScRev = sessionRevenue.get(roomId) || 0;
-    var newScRev  = prevScRev + amountCents;
-    sessionRevenue.set(roomId, newScRev);
-
-    // Push live earnings update + notification to host
-    try {
-      var scRoom = rooms.get(roomId);
-      if (scRoom && scRoom.hostSocketId) {
-        io.to(scRoom.hostSocketId).emit('earnings-update', {
-          sessionCents: newScRev,
-          lastCents:    amountCents,
-          source:       'super-chat',
-          username:     username
+    stripeModule.createGiftCharge(userId, roomId, amountCents, creatorStripeAccountId)
+      .then(function(piResult) {
+        io.to(socket.id).emit('super-chat-payment-intent', {
+          clientSecret:    piResult.clientSecret,
+          paymentIntentId: piResult.paymentIntentId,
         });
-      }
-      if (scRoom && scRoom.hostUserId) {
-        io.to('user:' + scRoom.hostUserId).emit('notification', { type: 'super_chat', message: '💬 ' + username + ' sent a $' + (amountCents / 100).toFixed(2) + ' Super Chat', ts: ts * 1000 });
-      }
-    } catch(eu) { logger.warn('[super-chat] earnings-update: ' + eu.message); }
-
-    // Gift leaderboard — super-chat counts too
-    try {
-      var scLb = giftLeaderboards.get(roomId) || [];
-      var scLbIdx = scLb.findIndex(function(e) { return e.userId === userId; });
-      if (scLbIdx >= 0) { scLb[scLbIdx].totalCents += amountCents; scLb[scLbIdx].username = username; }
-      else { scLb.push({ userId: userId, username: username, totalCents: amountCents }); }
-      scLb.sort(function(a, b) { return b.totalCents - a.totalCents; });
-      if (scLb.length > 500) scLb = scLb.slice(0, 500);
-      giftLeaderboards.set(roomId, scLb);
-      io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: scLb.slice(0, 10) });
-    } catch(scLbErr) { logger.warn('[gift-lb-sc] ' + scLbErr.message); }
-    var _scGoal = streamGoals.get(roomId);
-    if (_scGoal && (_scGoal.type === 'revenue' || _scGoal.type === 'earnings')) {
-      io.to(roomId).emit('stream-goal-progress', { roomId: roomId, currentCents: newScRev });
-    }
-    for (var scmi = 0; scmi < REVENUE_MILESTONES_CENTS.length; scmi++) {
-      var scMil = REVENUE_MILESTONES_CENTS[scmi];
-      if (newScRev >= scMil && prevScRev < scMil) {
-        swanybot.onRevenueMilestone(roomId, scMil);
-        break;
-      }
-    }
+        _commitSuperChat();
+      })
+      .catch(function(err) {
+        logger.error('[super-chat] createGiftCharge failed: ' + err.message);
+        io.to(socket.id).emit('super-chat-error', { message: 'Payment setup failed — super chat not recorded' });
+      });
   });
 
   // ── super-chat:tts (Voice SuperChat) ──────────────────────────────────────
