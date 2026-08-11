@@ -3,11 +3,12 @@ import React, { useEffect, useRef, useState } from 'react';
 var OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
 function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal }) {
-  var videoRef    = useRef(null);
-  var analyserRef = useRef(null);
-  var animRef     = useRef(null);
-  var audioCtxRef = useRef(null);
-  var streamRef   = useRef(null);
+  var videoRef       = useRef(null);
+  var analyserRef    = useRef(null);
+  var animRef        = useRef(null);
+  var audioCtxRef    = useRef(null);
+  var streamRef      = useRef(null);
+  var flyTimersRef   = useRef(new Set());
   var [speaking,     setSpeaking]     = useState(false);
   var [online,       setOnline]       = useState(false);
   var [loading,      setLoading]      = useState(false);
@@ -152,12 +153,16 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
       if (payload.guestId !== guestId) return;
       var id = Date.now() + Math.random();
       setFlyReactions(function(prev) { return prev.concat([{ id: id, emoji: payload.emoji, offset: Math.round(Math.random() * 40 - 20) }]); });
-      setTimeout(function() {
+      flyTimersRef.current.add(setTimeout(function() {
         setFlyReactions(function(prev) { return prev.filter(function(r) { return r.id !== id; }); });
-      }, 1500);
+      }, 1500));
     }
     socket.on('panel:reaction', onReaction);
-    return function() { socket.off('panel:reaction', onReaction); };
+    return function() {
+      socket.off('panel:reaction', onReaction);
+      flyTimersRef.current.forEach(function(tid) { clearTimeout(tid); });
+      flyTimersRef.current.clear();
+    };
   }, [socket, guestId]);
 
   // Remote cell: subscribe to video + audio producers
