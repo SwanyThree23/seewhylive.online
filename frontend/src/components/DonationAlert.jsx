@@ -65,8 +65,9 @@ export default function DonationAlert(props) {
   var [current,   setCurrent]   = useState(null);
   var [exiting,   setExiting]   = useState(false);
   var [confetti,  setConfetti]  = useState([]);
-  var timerRef   = useRef(null);
-  var confIdRef  = useRef(0);
+  var timerRef     = useRef(null);
+  var fadeTimerRef = useRef(null);
+  var confIdRef    = useRef(0);
 
   // ── Receive gift and super-chat events ─────────────────────────────────
   useEffect(function() {
@@ -142,14 +143,17 @@ export default function DonationAlert(props) {
 
     timerRef.current = setTimeout(function() {
       setExiting(true);
-      setTimeout(function() {
+      fadeTimerRef.current = setTimeout(function() {
         setCurrent(null);
         setExiting(false);
         setConfetti([]);
       }, 400);
     }, ALERT_DURATION);
 
-    return function() { if (timerRef.current) clearTimeout(timerRef.current); };
+    return function() {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+    };
   }, [current, queue]);
 
   if (!current) return (

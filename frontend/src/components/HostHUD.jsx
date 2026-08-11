@@ -44,8 +44,6 @@ export default function HostHUD(props) {
   var clipCount            = props.clipCount || 0;
   var socket               = props.socket  || null;
 
-  if (!isVisible) return null;
-
   var openState  = useState(false);
   var open       = openState[0];
   var setOpen    = openState[1];
@@ -237,6 +235,8 @@ export default function HostHUD(props) {
     var y = Math.round((1 - v / sparkMax) * 20);
     return (i === 0 ? 'M' : 'L') + x + ',' + y;
   }).join(' ') : '';
+
+  if (!isVisible) return null;
 
   return (
     <div style={{ position: 'fixed', top: 50, right: 0, zIndex: 8000, display: 'flex', alignItems: 'flex-start', pointerEvents: 'none' }}>
