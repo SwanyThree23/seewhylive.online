@@ -362,6 +362,15 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     };
   }, [socket, role]);
 
+  useEffect(function() {
+    return function() {
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
+        screenStreamRef.current = null;
+      }
+    };
+  }, []);
+
   function fmtUptime(s) {
     var h = Math.floor(s / 3600);
     var m = Math.floor((s % 3600) / 60);

@@ -953,6 +953,14 @@ export default function LiveRoomPage({
         try { mediaRecRef.current.stop(); } catch(e) {}
       }
       clearInterval(recTimerRef.current);
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
+        screenStreamRef.current = null;
+      }
+      if (audioCtxRef.current) {
+        try { audioCtxRef.current.close(); } catch(e) {}
+        audioCtxRef.current = null;
+      }
     };
   }, [socket]);
 

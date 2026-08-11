@@ -25,11 +25,12 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
   var [loading,       setLoading]       = useState(false);
   var [tab,           setTab]           = useState('camera');
 
-  var videoRef      = useRef(null);
-  var analyserRef   = useRef(null);
-  var animRef       = useRef(null);
-  var audioCtxRef   = useRef(null);
-  var levelInterval = useRef(null);
+  var videoRef         = useRef(null);
+  var analyserRef      = useRef(null);
+  var animRef          = useRef(null);
+  var audioCtxRef      = useRef(null);
+  var levelInterval    = useRef(null);
+  var previewStreamRef = useRef(null);
 
   // Enumerate devices
   useEffect(function() {
@@ -71,8 +72,9 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
     if (animRef.current) cancelAnimationFrame(animRef.current);
     if (levelInterval.current) clearInterval(levelInterval.current);
     if (audioCtxRef.current) { audioCtxRef.current.close().catch(function(){}); audioCtxRef.current = null; }
-    if (previewStream) {
-      previewStream.getTracks().forEach(function(t) { t.stop(); });
+    if (previewStreamRef.current) {
+      previewStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
+      previewStreamRef.current = null;
       setPreviewStream(null);
     }
   }
@@ -104,6 +106,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
         video: videoConstraints,
         audio: audioConstraints,
       });
+      previewStreamRef.current = stream;
       setPreviewStream(stream);
       setLoading(false);
       if (videoRef.current) {

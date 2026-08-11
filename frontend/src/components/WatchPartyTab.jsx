@@ -476,6 +476,16 @@ export default function WatchPartyTab(props) {
     };
   }, [socket, isHost, sourceType]);
 
+  // Stop screen share stream when the tab unmounts
+  useEffect(function() {
+    return function() {
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
+        screenStreamRef.current = null;
+      }
+    };
+  }, []);
+
   // ─────────────────────────────────────────────
   // 4K constraint when toggled
   // ─────────────────────────────────────────────

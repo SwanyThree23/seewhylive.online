@@ -15,6 +15,7 @@ var DIM   = '#2E2318';
 var BORD  = 'rgba(255,255,255,.06)';
 var BLUE  = '#C9A84C';
 var PURP  = '#C9A84C';
+var AMBER = '#D4854A';
 
 // ─── Animations ────────────────────────────────────────────────────────────
 var ANIM = [
