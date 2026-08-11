@@ -22,34 +22,38 @@ const loginRateLimit = rateLimit({
 });
 
 router.post('/login', loginRateLimit, async (req, res) => {
-  const email    = String(req.body.email    || '').slice(0, 254).trim();
-  const password = String(req.body.password || '').slice(0, 1000);
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password required' });
+  try {
+    const email    = String(req.body.email    || '').slice(0, 254).trim();
+    const password = String(req.body.password || '').slice(0, 1000);
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
+    }
+
+    const { data, error } = await supabaseAuth.auth.signInWithPassword({ email, password });
+    if (error) {
+      return res.status(401).json({ error: error.message });
+    }
+
+    const { user } = data;
+
+    const { data: profile, error: profileErr } = await supabaseAuth
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profileErr) {
+      return res.status(500).json({ error: 'Failed to load profile role' });
+    }
+
+    return res.json({
+      token: jwt.sign({ userId: user.id, role: profile.role }, process.env.JWT_SECRET, { expiresIn: '7d' }),
+      role: profile.role,
+      userId: user.id,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Login failed' });
   }
-
-  const { data, error } = await supabaseAuth.auth.signInWithPassword({ email, password });
-  if (error) {
-    return res.status(401).json({ error: error.message });
-  }
-
-  const { user, session } = data;
-
-  const { data: profile, error: profileErr } = await supabaseAuth
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (profileErr) {
-    return res.status(500).json({ error: 'Failed to load profile role' });
-  }
-
-  return res.json({
-    token: jwt.sign({ userId: user.id, role: profile.role }, process.env.JWT_SECRET, { expiresIn: '7d' }),
-    role: profile.role,
-    userId: user.id,
-  });
 });
 
 module.exports = router;
