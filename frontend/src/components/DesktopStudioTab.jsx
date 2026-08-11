@@ -51,6 +51,7 @@ function DesktopStudioTab() {
   var localStreamRef   = useRef(null);
   var screenStreamRef  = useRef(null);
   var uptimeRef        = useRef(null);
+  var isLiveRef        = useRef(false);
   var uptimeState      = useState(0);
   var uptime           = uptimeState[0];
   var setUptime        = uptimeState[1];
@@ -122,6 +123,24 @@ function DesktopStudioTab() {
       if (uptimeRef.current) {
         clearInterval(uptimeRef.current);
         uptimeRef.current = null;
+      }
+    };
+  }, []);
+
+  // Keep isLiveRef in sync so the unmount cleanup below can read the live value
+  useEffect(function() { isLiveRef.current = isLive; }, [isLive]);
+
+  // Stop camera/screen streams when the tab is left, unless a broadcast is active
+  useEffect(function() {
+    return function() {
+      if (isLiveRef.current) return;
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
+        localStreamRef.current = null;
+      }
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
+        screenStreamRef.current = null;
       }
     };
   }, []);
