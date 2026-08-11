@@ -446,8 +446,9 @@ export default function LiveRoomPage({
   var [triviaStartId,   setTriviaStartId]   = useState(null); // startTs used to key the countdown useEffect
 
   // ── Web Audio sound alerts ──────────────────────────────────────────────
-  var audioCtxRef  = useRef(null);
-  var soundOnRef   = useRef(true);
+  var audioCtxRef     = useRef(null);
+  var soundOnRef      = useRef(true);
+  var floatTimersRef  = useRef(new Set());
   var [soundOn, setSoundOn] = useState(true);
   var [chatReactions, setChatReactions] = useState({}); // msgId → { emoji: count }
 
@@ -492,6 +493,13 @@ export default function LiveRoomPage({
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then(function(s) { s.getTracks().forEach(function(t) { t.stop(); }); })
       .catch(function() {});
+  }, []);
+
+  useEffect(function() {
+    return function() {
+      floatTimersRef.current.forEach(function(tid) { clearTimeout(tid); });
+      floatTimersRef.current.clear();
+    };
   }, []);
 
   // ── RTC + socket events ──
@@ -629,7 +637,7 @@ export default function LiveRoomPage({
       playReactionTone(data.emoji);
       var fid = Date.now() + Math.random();
       setFloatReacts(function(r) { return r.concat([{ emoji: data.emoji, fid: fid }]); });
-      setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200);
+      floatTimersRef.current.add(setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200));
     });
 
     socket.on('hand-raise', function(data) {
@@ -1082,7 +1090,7 @@ export default function LiveRoomPage({
   function sendReact(emoji) {
     var fid = Date.now() + Math.random();
     setFloatReacts(function(r) { return r.concat([{ emoji: emoji, fid: fid }]); });
-    setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200);
+    floatTimersRef.current.add(setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200));
     if (socket) socket.emit('viewer-react', { roomId: roomId, userId: userId, emoji: emoji });
     setReactsOpen(false);
   }

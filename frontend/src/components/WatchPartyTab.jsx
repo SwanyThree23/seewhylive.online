@@ -159,6 +159,7 @@ export default function WatchPartyTab(props) {
   var tickRef          = useRef(null);
   var ytDivRef         = useRef(null);
   var sourceTypeRef    = useRef(sourceType);
+  var floatTimersRef   = useRef(new Set());
 
   var isHost     = role === 'host' || role === 'cohost';
   var liveGuests = (guests || []).filter(function(g) { return g.live !== false; });
@@ -412,9 +413,9 @@ export default function WatchPartyTab(props) {
       setFloatReacts(function(p) {
         return p.slice(-9).concat([{ id: id, emoji: data.emoji, x: rnd(10, 80) }]);
       });
-      setTimeout(function() {
+      floatTimersRef.current.add(setTimeout(function() {
         setFloatReacts(function(p) { return p.filter(function(r) { return r.id !== id; }); });
-      }, 2100);
+      }, 2100));
     }
 
     // Screen share events
@@ -483,6 +484,8 @@ export default function WatchPartyTab(props) {
         screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
         screenStreamRef.current = null;
       }
+      floatTimersRef.current.forEach(function(tid) { clearTimeout(tid); });
+      floatTimersRef.current.clear();
     };
   }, []);
 
@@ -835,9 +838,9 @@ export default function WatchPartyTab(props) {
     setFloatReacts(function(p) {
       return p.slice(-9).concat([{ id: id, emoji: emoji, x: rnd(10, 80) }]);
     });
-    setTimeout(function() {
+    floatTimersRef.current.add(setTimeout(function() {
       setFloatReacts(function(p) { return p.filter(function(r) { return r.id !== id; }); });
-    }, 2100);
+    }, 2100));
     if (socket && roomId) {
       socket.emit('watch-react', { roomId: roomId, emoji: emoji });
     }
