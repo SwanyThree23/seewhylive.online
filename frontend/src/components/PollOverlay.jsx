@@ -73,6 +73,10 @@ export default function PollOverlay({ socket, roomId, role, isLive, addToast }) 
       socket.off('poll-start',  onPollStart);
       socket.off('poll-update', onPollUpdate);
       socket.off('poll-end',    onPollEnd);
+      if (clearEndTimer.current) {
+        clearTimeout(clearEndTimer.current);
+        clearEndTimer.current = null;
+      }
     };
   }, [socket]);
 

@@ -1043,6 +1043,7 @@ export default function LiveRoomPage({
   }
 
   function sendChat() {
+    if (slowWaitSec > 0) return;
     var msg = chatInput.trim();
     if (!msg || !socket) return;
     socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg });
@@ -1050,6 +1051,7 @@ export default function LiveRoomPage({
   }
 
   function sendGif() {
+    if (slowWaitSec > 0) return;
     var url = gifInput.trim();
     if (!url || !socket) return;
     socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: url, type: 'gif' });
