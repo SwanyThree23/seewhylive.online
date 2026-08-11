@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
 
 var CREATOR = 0.90;
@@ -67,6 +67,30 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
     });
   }, [gifts]);
 
+  // Sample viewerCount every 60 s while live → engagement bar chart
+  var viewerRef = useRef(viewerCount || 0);
+  viewerRef.current = viewerCount || 0;
+  useEffect(function() {
+    if (!isLive) return;
+    var id = setInterval(function() {
+      setEngData(function(prev) { return prev.concat([viewerRef.current]).slice(-12); });
+    }, 60000);
+    return function() { clearInterval(id); };
+  }, [isLive]);
+
+  // Append each new live transaction amount to revenue trend chart
+  var revSeenRef = useRef({});
+  useEffect(function() {
+    var newAmounts = [];
+    liveTxns.forEach(function(t) {
+      if (!revSeenRef.current[t.id]) {
+        revSeenRef.current[t.id] = true;
+        newAmounts.push(t.amount);
+      }
+    });
+    if (newAmounts.length === 0) return;
+    setRevData(function(prev) { return prev.concat(newAmounts).slice(-12); });
+  }, [liveTxns]);
 
   // Build txn list: prefer real API recentEarnings, append live gifts not already in it
   var dbTxns = (apiData && apiData.recentEarnings) ? apiData.recentEarnings.map(function(e) {

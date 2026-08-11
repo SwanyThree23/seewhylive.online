@@ -22,9 +22,10 @@ export default function ChyronOverlay({ socket, roomId, role, isLive }) {
       if (data && data.text) setChyron(data);
       else setChyron(null);
     }
+    function onChyronClear() { setChyron(null); }
     socket.on('chyron-update', onChyron);
-    socket.on('chyron-clear',  function() { setChyron(null); });
-    return function() { socket.off('chyron-update', onChyron); socket.off('chyron-clear'); };
+    socket.on('chyron-clear',  onChyronClear);
+    return function() { socket.off('chyron-update', onChyron); socket.off('chyron-clear', onChyronClear); };
   }, [socket]);
 
   function sendChyron() {

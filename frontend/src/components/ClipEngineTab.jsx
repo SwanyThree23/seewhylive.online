@@ -71,6 +71,10 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
   }, []);
 
   useEffect(function() {
+    return function() { if (liveClipRef.current) clearTimeout(liveClipRef.current); };
+  }, []);
+
+  useEffect(function() {
     if (!roomId) return;
     var tok = localStorage.getItem('sw_token') || '';
     fetch('/api/clips/' + encodeURIComponent(roomId), {

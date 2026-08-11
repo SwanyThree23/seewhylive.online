@@ -48,6 +48,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   const exitTimersRef = useRef({});
   const localStreamRef = useRef(null);
   const prevSlotKeysRef = useRef(new Set());
+  const pkTimerRef = useRef(null);
 
   useEffect(function() { injectPanelGridStyles(); }, []);
 
@@ -201,7 +202,8 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
           if (!prev) return null;
           return Object.assign({}, prev, { active: false, winner: data.winner || null });
         });
-        setTimeout(function() { setPkBattle(null); }, 8000);
+        if (pkTimerRef.current) clearTimeout(pkTimerRef.current);
+        pkTimerRef.current = setTimeout(function() { setPkBattle(null); }, 8000);
       }
       if (socket) {
         socket.on('pk-start', onPkStart);
@@ -217,6 +219,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         socket.off('pk-end', onPkEnd);
       }
       Object.keys(exitTimersRef.current).forEach(function(id) { clearTimeout(exitTimersRef.current[id]); });
+      if (pkTimerRef.current) clearTimeout(pkTimerRef.current);
     };
   }, [socket, roomId]);
 

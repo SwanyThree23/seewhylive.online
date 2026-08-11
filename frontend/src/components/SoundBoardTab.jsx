@@ -38,7 +38,8 @@ export default function SoundBoardTab(props) {
   var [popLabels,   setPopLabels]   = useState([]);
   var [vol,         setVol]         = useState(80);
   var [filterCat,   setFilterCat]   = useState('all');
-  var popIdRef = useRef(0);
+  var popIdRef   = useRef(0);
+  var sfxTimerRef = useRef(null);
 
   var isHost = role === 'host' || role === 'cohost';
 
@@ -50,17 +51,22 @@ export default function SoundBoardTab(props) {
       if (sfx) {
         playSound(sfx);
         setActiveFx(data.sfxId);
-        setTimeout(function() { setActiveFx(null); }, 600);
+        if (sfxTimerRef.current) clearTimeout(sfxTimerRef.current);
+        sfxTimerRef.current = setTimeout(function() { setActiveFx(null); }, 600);
       }
     }
     socket.on('sound-fx', onSfx);
-    return function() { socket.off('sound-fx', onSfx); };
+    return function() {
+      socket.off('sound-fx', onSfx);
+      if (sfxTimerRef.current) clearTimeout(sfxTimerRef.current);
+    };
   }, [socket]);
 
   function triggerFx(sfx) {
     playSound(sfx);
     setActiveFx(sfx.id);
-    setTimeout(function() { setActiveFx(null); }, 600);
+    if (sfxTimerRef.current) clearTimeout(sfxTimerRef.current);
+    sfxTimerRef.current = setTimeout(function() { setActiveFx(null); }, 600);
 
     var pid = ++popIdRef.current;
     setPopLabels(function(p) { return p.concat([{ id: pid, label: sfx.emoji + ' ' + sfx.label }]); });

@@ -198,6 +198,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   var liveStartRef   = useRef(null);
   var chatEndRef     = useRef(null);
   var screenStreamRef = useRef(null);
+  var pollTimerRef   = useRef(null);
 
   useEffect(function() {
     if (isLive && !liveStartRef.current) liveStartRef.current = Date.now();
@@ -292,7 +293,8 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       if (!poll) return;
       setActivePoll(poll);
       if (!poll.active) {
-        setTimeout(function() { setActivePoll(null); setMyVote(-1); }, 4000);
+        if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
+        pollTimerRef.current = setTimeout(function() { setActivePoll(null); setMyVote(-1); }, 4000);
       }
     });
     socket.on('clip-marked', function(data) {
@@ -368,6 +370,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
         screenStreamRef.current = null;
       }
+      if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
     };
   }, []);
 
