@@ -60,7 +60,8 @@ export default function StreamGoalBar(props) {
   var [goalLabel,   setGoalLabel]   = useState('');
   var [completed,   setCompleted]   = useState(false);
   var [burst,       setBurst]       = useState(false);
-  var prevPct = useRef(0);
+  var prevPct     = useRef(0);
+  var burstTimerRef = useRef(null);
 
   var isHost = role === 'host' || role === 'cohost';
 
@@ -110,9 +111,11 @@ export default function StreamGoalBar(props) {
     if (pct >= 100 && prevPct.current < 100) {
       setCompleted(true);
       setBurst(true);
-      setTimeout(function() { setBurst(false); }, 1500);
+      if (burstTimerRef.current) clearTimeout(burstTimerRef.current);
+      burstTimerRef.current = setTimeout(function() { setBurst(false); }, 1500);
     }
     prevPct.current = pct;
+    return function() { if (burstTimerRef.current) clearTimeout(burstTimerRef.current); };
   }, [pct, goal, completed]);
 
   function handleSetGoal() {
