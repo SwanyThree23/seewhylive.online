@@ -20,7 +20,7 @@ router.get('/leaderboard', requireAuth, async (req, res) => {
     const rows = await rewardsService.getLeaderboard(period);
     const data = rows.map(function(r) { return { user_id: r.user_id, points: r.points || r.total_points, level: r.level }; });
     res.json(data);
-  } catch (err) {
+  } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -35,7 +35,7 @@ router.get('/me/:userId', requireAuth, async (req, res) => {
     }
     const data = await rewardsService.getUserPoints(req.params.userId);
     res.json(data);
-  } catch (err) {
+  } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -44,7 +44,7 @@ router.get('/tiers', async (req, res) => {
   try {
     const data = await rewardsService.getTiers();
     res.json(data);
-  } catch (err) {
+  } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -53,7 +53,7 @@ router.get('/challenges', async (req, res) => {
   try {
     const data = await rewardsService.getActiveChallenges();
     res.json(data);
-  } catch (err) {
+  } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -64,6 +64,7 @@ router.post('/challenges/:id/complete', requireAuth, challengeCompleteRateLimit,
     const result = await rewardsService.completeChallenge(req.user.id, req.params.id);
     res.json(result);
   } catch (err) {
+    console.error('[ROUTE ERROR]', err);
     var USER_ERRS = ['challenge is not active', 'challenge has expired', 'already voted in this battle'];
     var isUserErr = USER_ERRS.includes(err.message) || (err.code === '23505');
     res.status(isUserErr ? 400 : 500).json({ error: err.message || 'Internal server error' });

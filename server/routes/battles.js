@@ -56,7 +56,7 @@ router.post('/', requireAuth, battleCreateRateLimit, async (req, res) => {
       durationMinutes,
     });
     res.status(201).json(battle);
-  } catch (err) {
+  } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(400).json({ error: err.message });
   }
 });
@@ -71,7 +71,7 @@ router.post('/:id/accept', requireAuth, validateId, async (req, res) => {
     const battle = await battleService.acceptChallenge(req.params.id, roomId);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
-  } catch (err) {
+  } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(400).json({ error: err.message });
   }
 });
@@ -86,7 +86,7 @@ router.post('/:id/start', requireAuth, validateId, async (req, res) => {
     const battle = await battleService.startBattle(req.params.id);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
-  } catch (err) {
+  } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(400).json({ error: err.message });
   }
 });
@@ -108,7 +108,7 @@ router.post('/:id/vote', requireAuth, battleVoteRateLimit, validateId, async (re
       giftValueCents,
     });
     res.json(battle);
-  } catch (err) {
+  } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(400).json({ error: err.message });
   }
 });
@@ -117,7 +117,7 @@ router.get('/active', async (req, res) => {
   try {
     const battles = await battleService.getActiveBattles();
     res.json(battles);
-  } catch (err) {
+  } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -145,7 +145,7 @@ router.get('/leaderboard', async (req, res) => {
         totalPoints: parseInt(r.total_points) || 0,
       };
     }));
-  } catch (err) {
+  } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -155,7 +155,7 @@ router.get('/:id', validateId, async (req, res) => {
     const battle = await battleService.getBattle(req.params.id);
     if (!battle) return res.status(404).json({ error: 'battle not found' });
     res.json(battle);
-  } catch (err) {
+  } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

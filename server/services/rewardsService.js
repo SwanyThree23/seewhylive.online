@@ -67,7 +67,7 @@ async function getLeaderboard(period) {
 }
 
 async function getTiers() {
-  const { data, error } = await supabase.from('reward_tiers').select('*').order('level', { ascending: true });
+  const { data, error } = await supabase.from('pricing_tiers').select('*').order('price', { ascending: true });
   if (error) throw error;
   return data;
 }
