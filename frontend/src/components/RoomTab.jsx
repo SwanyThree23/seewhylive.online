@@ -199,6 +199,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   var chatEndRef     = useRef(null);
   var screenStreamRef = useRef(null);
   var pollTimerRef   = useRef(null);
+  var floatTimersRef = useRef(new Set());
 
   useEffect(function() {
     if (isLive && !liveStartRef.current) liveStartRef.current = Date.now();
@@ -228,17 +229,14 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
   useEffect(function() {
     if (!socket) return;
-    socket.on('join-room-ack', async function(data) {
+    function onJoinRoomAck(data) {
       if (!data) return;
-      try {
-        await rtcManager.connect(socket, roomId, userId, role);
-        setRtcReady(true);
-        addToast('WebRTC ready', 'success');
-      } catch(e) {
-        addToast('WebRTC: ' + e.message, 'error');
-      }
-    });
-    socket.on('hand-raise', function(data) {
+      if (data.watchParty && data.watchParty.url) setWatchPartyUrl(data.watchParty.url);
+      rtcManager.connect(socket, roomId, userId, role)
+        .then(function() { setRtcReady(true); addToast('WebRTC ready', 'success'); })
+        .catch(function(e) { addToast('WebRTC: ' + e.message, 'error'); });
+    }
+    function onHandRaise(data) {
       if (!data || role !== 'host') return;
       var gid   = data.guestId;
       var gname = data.username || gid;
@@ -248,86 +246,81 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         return q.concat([{ guestId: gid, username: gname, raisedAt: Date.now() }]);
       });
       addToast('✋ ' + gname + ' wants to join the stage', 'info');
-    });
-    socket.on('stage-invite', function(data) {
+    }
+    function onStageInvite(data) {
       if (!data || !data.guestId) return;
       setStageGuests(function(s) {
         if (s.indexOf(data.guestId) >= 0) return s;
         if (s.length >= MAX_STAGE) return s;
         return s.concat([data.guestId]);
       });
-    });
-    socket.on('stage-remove', function(data) {
+    }
+    function onStageRemove(data) {
       if (!data || !data.guestId) return;
       setStageGuests(function(s) { return s.filter(function(x) { return x !== data.guestId; }); });
-    });
-    socket.on('pk-start', function(data) {
+    }
+    function onPkStart(data) {
       if (!data) return;
       setActiveBattle({ challenger: data.challenger || 'CHALLENGER', defender: data.defender || 'DEFENDER', durationSec: data.duration || 180, startTs: Date.now() });
       setBattleScores({ a: 0, b: 0 });
       setStageLayout('battle');
-    });
-    socket.on('pk-vote-update', function(data) {
+    }
+    function onPkVoteUpdate(data) {
       if (!data) return;
       setBattleScores({ a: data.challengerVotes || 0, b: data.defenderVotes || 0 });
-    });
-    socket.on('pk-end', function() {
+    }
+    function onPkEnd() {
       setActiveBattle(null);
       setBattleScores({ a: 0, b: 0 });
-    });
-    socket.on('watch-party-url', function(data) {
+    }
+    function onWatchPartyUrl(data) {
       if (!data || !data.url) return;
       setWatchPartyUrl(data.url);
       setStageLayout('watchparty');
-    });
-    socket.on('watch-party-started', function(data) {
+    }
+    function onWatchPartyStarted(data) {
       setStageLayout('watchparty');
       if (data && data.url) setWatchPartyUrl(data.url);
-    });
-    socket.on('join-room-ack', function(ackData) {
-      if (ackData && ackData.watchParty && ackData.watchParty.url) {
-        setWatchPartyUrl(ackData.watchParty.url);
-      }
-    });
-    socket.on('poll-update', function(poll) {
+    }
+    function onPollUpdate(poll) {
       if (!poll) return;
       setActivePoll(poll);
       if (!poll.active) {
         if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
         pollTimerRef.current = setTimeout(function() { setActivePoll(null); setMyVote(-1); }, 4000);
       }
-    });
-    socket.on('clip-marked', function(data) {
+    }
+    function onClipMarked(data) {
       if (data && data.label) addToast('📎 Clip: ' + data.label, 'success');
-    });
-    socket.on('chat-react-update', function(data) {
+    }
+    function onChatReactUpdate(data) {
       if (!data || !data.msgId) return;
       setReactions(function(prev) {
         var next = Object.assign({}, prev);
         next[data.msgId] = data.reactions || {};
         return next;
       });
-    });
-    socket.on('super-chat', function(sc) {
+    }
+    function onSuperChat(sc) {
       if (!sc) return;
       setSuperChats(function(prev) { return prev.concat([sc]).slice(-20); });
-    });
-    socket.on('react-burst', function(data) {
+    }
+    function onReactBurst(data) {
       if (!data || !data.emoji) return;
       var rid = Date.now() + Math.random();
       var leftPct = 60 + Math.floor(Math.random() * 30);
       setFloatReacts(function(prev) { return prev.concat([{ id: rid, emoji: data.emoji, left: leftPct }]); });
-      setTimeout(function() {
+      floatTimersRef.current.add(setTimeout(function() {
         setFloatReacts(function(prev) { return prev.filter(function(r) { return r.id !== rid; }); });
-      }, 3600);
-    });
-    socket.on('gift-leaderboard', function(data) {
+      }, 3600));
+    }
+    function onGiftLeaderboard(data) {
       if (!data || !data.leaders) return;
       setGiftLeaderboard(data.leaders.map(function(e) {
         return { username: e.username, total: e.totalCents, count: 1 };
       }));
-    });
-    socket.on('gift-received', function(gift) {
+    }
+    function onGiftReceived(gift) {
       if (!gift || !gift.fromUser) return;
       setGiftLeaderboard(function(prev) {
         var next = prev.slice();
@@ -343,24 +336,42 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         next.sort(function(a, b) { return b.total - a.total; });
         return next.slice(0, 10);
       });
-    });
+    }
+    socket.on('join-room-ack',     onJoinRoomAck);
+    socket.on('hand-raise',        onHandRaise);
+    socket.on('stage-invite',      onStageInvite);
+    socket.on('stage-remove',      onStageRemove);
+    socket.on('pk-start',          onPkStart);
+    socket.on('pk-vote-update',    onPkVoteUpdate);
+    socket.on('pk-end',            onPkEnd);
+    socket.on('watch-party-url',   onWatchPartyUrl);
+    socket.on('watch-party-started', onWatchPartyStarted);
+    socket.on('poll-update',       onPollUpdate);
+    socket.on('clip-marked',       onClipMarked);
+    socket.on('chat-react-update', onChatReactUpdate);
+    socket.on('super-chat',        onSuperChat);
+    socket.on('react-burst',       onReactBurst);
+    socket.on('gift-leaderboard',  onGiftLeaderboard);
+    socket.on('gift-received',     onGiftReceived);
     return function() {
-      socket.off('join-room-ack');
-      socket.off('hand-raise');
-      socket.off('stage-invite');
-      socket.off('stage-remove');
-      socket.off('poll-update');
-      socket.off('clip-marked');
-      socket.off('chat-react-update');
-      socket.off('super-chat');
-      socket.off('react-burst');
-      socket.off('gift-received');
-      socket.off('pk-start');
-      socket.off('pk-vote-update');
-      socket.off('pk-end');
-      socket.off('watch-party-started');
-      socket.off('watch-party-url');
-      socket.off('gift-leaderboard');
+      socket.off('join-room-ack',     onJoinRoomAck);
+      socket.off('hand-raise',        onHandRaise);
+      socket.off('stage-invite',      onStageInvite);
+      socket.off('stage-remove',      onStageRemove);
+      socket.off('pk-start',          onPkStart);
+      socket.off('pk-vote-update',    onPkVoteUpdate);
+      socket.off('pk-end',            onPkEnd);
+      socket.off('watch-party-url',   onWatchPartyUrl);
+      socket.off('watch-party-started', onWatchPartyStarted);
+      socket.off('poll-update',       onPollUpdate);
+      socket.off('clip-marked',       onClipMarked);
+      socket.off('chat-react-update', onChatReactUpdate);
+      socket.off('super-chat',        onSuperChat);
+      socket.off('react-burst',       onReactBurst);
+      socket.off('gift-leaderboard',  onGiftLeaderboard);
+      socket.off('gift-received',     onGiftReceived);
+      floatTimersRef.current.forEach(function(tid) { clearTimeout(tid); });
+      floatTimersRef.current.clear();
     };
   }, [socket, role]);
 
