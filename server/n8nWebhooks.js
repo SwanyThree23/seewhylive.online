@@ -68,8 +68,7 @@ n8nRouter.post('/guardian-flag', function(req, res) {
   var action = score >= 95 ? 'ban' : score >= 75 ? 'mute' : 'flag';
   var safeUser = String(d.user || '').slice(0, 80);
   var gfRoomId = N8N_UUID_RE.test(String(d.roomId || '')) ? String(d.roomId) : null;
-  var target = gfRoomId ? global.io.to(gfRoomId) : null;
-  if (global.io && target) target.emit('moderation-action', { user:safeUser, score:score, action:action, ts:Date.now() });
+  if (global.io && gfRoomId) global.io.to(gfRoomId).emit('moderation-action', { user:safeUser, score:score, action:action, ts:Date.now() });
   res.json({ ok: true, action: action });
 });
 
