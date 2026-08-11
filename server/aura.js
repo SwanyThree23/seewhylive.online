@@ -395,11 +395,25 @@ function generateGreeting(username) {
 function generateHype(giftName, giftValue, username) {
   var key = 'legacy_hype';
   if (isHourlyCapped(key)) {
-    return Promise.resolve(username + ' just blessed the stream!');
+    return Promise.resolve((username || 'Someone') + ' just blessed the stream!');
   }
   incrementHourlyCount(key);
-  var dollarAmount = (Math.floor(giftValue) / 100).toFixed(2);
   var systemPrompt = MODES[_currentMode] || MODES['hype'];
+  var content;
+  if (giftName == null || giftValue == null) {
+    content = 'The SeeWhy LIVE domino stream is absolutely on fire right now — hype up the crowd and keep the energy soaring!';
+  } else {
+    var dollarAmount = (Math.floor(giftValue) / 100).toFixed(2);
+    content = (
+      'Generate hype for ' +
+      String(username).slice(0, 80) +
+      ' who just sent a ' +
+      String(giftName).slice(0, 40) +
+      ' worth $' +
+      dollarAmount +
+      ' on the SeeWhy LIVE domino stream!'
+    );
+  }
   return getClient().messages.create({
     model: MODEL,
     max_tokens: 128,
@@ -407,22 +421,14 @@ function generateHype(giftName, giftValue, username) {
     messages: [
       {
         role: 'user',
-        content: (
-          'Generate hype for ' +
-          String(username).slice(0, 80) +
-          ' who just sent a ' +
-          String(giftName).slice(0, 40) +
-          ' worth $' +
-          dollarAmount +
-          ' on the SeeWhy LIVE domino stream!'
-        )
+        content: content
       }
     ]
   }).then(function(response) {
     return capResponse(response.content[0].text);
   }, function(err) {
     console.error('[AURA] generateHype error:', err.message);
-    return username + ' just blessed the stream!';
+    return (username || 'Someone') + ' just blessed the stream!';
   });
 }
 
