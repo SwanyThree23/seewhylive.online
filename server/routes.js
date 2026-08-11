@@ -471,6 +471,8 @@ router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
   try {
     var streamId = String(req.body.streamId || '');
     if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
+    var creatorId = String(req.body.creatorId || '');
+    if (!ROUTES_UUID_RE.test(creatorId)) return res.status(400).json({ success: false, error: 'invalid creatorId' });
     var amountCents = req.body.amountCents || 0;
     var note = String(req.body.note || '').slice(0, 200);
     var fromUserId = req.user.id;
@@ -499,7 +501,7 @@ router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
         .then(function(result) {
           if (analytics) {
             try {
-              analytics.recordEarning(streamId, fromUserId, 'tip', amtCents, creatorCents, platformCents, note);
+              analytics.recordEarning(creatorId, streamId, 'tip', amtCents, note);
             } catch (e) { /* ignore analytics error */ }
           }
           res.json({
