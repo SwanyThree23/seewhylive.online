@@ -949,6 +949,10 @@ export default function LiveRoomPage({
       socket.off('trivia-results');
       socket.off('chat-react-update');
       socket.off('panel:audio_only_changed');
+      if (mediaRecRef.current && mediaRecRef.current.state !== 'inactive') {
+        try { mediaRecRef.current.stop(); } catch(e) {}
+      }
+      clearInterval(recTimerRef.current);
     };
   }, [socket]);
 
