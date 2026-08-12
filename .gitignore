@@ -64,3 +64,4 @@ ecosystem.config.cjs
 # Grep/search output files — previously caused accidental secret commits
 *.envgrep
 .envgrep
+mediamtx.yml
