@@ -113,7 +113,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
         videoRef.current.srcObject = stream;
         videoRef.current.muted = true;
       }
-      startMicMeter(stream);
+      startMicMeter(stream); alert('DEBUG SUCCESS: stream acquired, tracks=' + stream.getTracks().length);
     } catch(e) {
       setLoading(false);
       setPreviewError(e.name + ': ' + e.message);
