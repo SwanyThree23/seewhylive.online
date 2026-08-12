@@ -1603,6 +1603,7 @@ export default function App() {
         {activeTab === 'watch' && (
           <WatchPartyTab
             guests={guests}
+            rtcManager={rtcManager}
             socket={socketRef.current}
             roomId={APP_ID}
             role={role}
@@ -1876,6 +1877,7 @@ export default function App() {
             roomId={APP_ID}
             role={role}
             guests={guests}
+            rtcManager={rtcManager}
           />
         )}
         {activeTab === 'vsbattle' && (

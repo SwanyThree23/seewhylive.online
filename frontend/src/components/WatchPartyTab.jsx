@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import WatchGuestVideo from './WatchGuestVideo.jsx';
 import AvatarPortrait from './AvatarPortrait.jsx';
 import VideoPlayerControls from './video/VideoPlayerControls.jsx';
 import VideoSourcePicker, { detectVideoType } from './video/VideoSourcePicker.jsx';
@@ -95,6 +96,7 @@ export default function WatchPartyTab(props) {
   var addToast = props.addToast;
   var isLive   = props.isLive;
   var chat     = props.chat;
+  var rtcManager = props.rtcManager;
 
   // --- video / player state ---
   var [urlInput,     setUrlInput]     = useState('');
@@ -1392,7 +1394,7 @@ export default function WatchPartyTab(props) {
                         boxShadow: '0 0 0 1px ' + BORDER,
                         userSelect: 'none',
                       }}>
-                        {initials}
+                    {g.producerId ? <WatchGuestVideo guest={g} rtcManager={rtcManager} size={30} /> : initials}
                       </div>
                       <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, maxWidth: 32, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {name.length > 6 ? name.slice(0, 5) + '…' : name}
