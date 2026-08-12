@@ -117,7 +117,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
     } catch(e) {
       setLoading(false);
       setPreviewError(e.name + ': ' + e.message);
-      if (addToast) addToast('Camera/mic error: ' + e.message, 'error');
+      if (addToast) addToast('Camera/mic error: ' + e.message, 'error'); alert('DEBUG getUserMedia error: ' + e.name + ': ' + e.message);
     }
   }
 
