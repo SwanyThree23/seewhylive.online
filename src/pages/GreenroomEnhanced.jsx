@@ -145,6 +145,12 @@ export default function GreenroomEnhanced() {
     } catch {}
   }
 
+  // Auto-start camera on mount so preview isn't stuck black
+  useEffect(() => {
+    acquireCamera();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function handleVideoChange(id) { setSelectedCam(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} acquireCamera({ camId: id }); }
   function handleAudioChange(id) { setSelectedMic(id); try { if (id) localStorage.setItem('swl_pref_mic', id); } catch {} }
   function handleResolutionChange(r) { setCamResolution(r); try { if (r) localStorage.setItem('swl_pref_resolution', r); } catch {} if (cameraStream) acquireCamera({ resolution: r }); }
