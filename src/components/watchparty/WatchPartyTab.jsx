@@ -295,7 +295,7 @@ function ScreenShareMode({ user, party }) {
   );
 }
 
-function WatchTogetherMode({ user, party, members, onSyncEvent, syncEvent }) {
+function WatchTogetherMode({ user, party, members, onSyncEvent, syncEvent, remoteStreams }) {
   var isHost = party && user && party.host_id === user.id;
   var [videoUrl, setVideoUrl] = useState(party?.video_url || '');
   var [inputUrl, setInputUrl] = useState('');
@@ -454,6 +454,14 @@ function WatchTogetherMode({ user, party, members, onSyncEvent, syncEvent }) {
         )}
       </div>
 
+      {remoteStreams && remoteStreams.size > 0 && (
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '4px 0' }}>
+          {Array.from(remoteStreams.entries()).map(function(entry) {
+            var peerId = entry[0], stream = entry[1];
+            return <RemoteTile key={peerId} peerId={peerId} stream={stream} members={members} />;
+          })}
+        </div>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: 6 }}>
           {!isYouTubeUrl(videoUrl) && videoUrl && isHost && (
@@ -771,6 +779,7 @@ export default function WatchPartyTab({ roomId, user, party, members, onSyncEven
             members={members}
             onSyncEvent={onSyncEvent}
             syncEvent={syncEvent}
+              remoteStreams={remoteStreams}
           />
         )}
         {activeTab === '4k' && (
