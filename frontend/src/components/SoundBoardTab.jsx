@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SOUNDS, playSound } from '../utils/soundFx.js';
+import { SOUNDS, playSound, playCustomSound } from '../utils/soundFx.js';
 
 var GOLD   = '#C9A84C';
 var BURG   = '#800020';
@@ -26,7 +26,7 @@ var STYLE_TAG =
   '  100% { transform: translateY(-24px) scale(.7);  opacity: 0; }' +
   '}';
 
-var CAT_COLORS = { hype: BURG, money: GOLD, crowd: AMBER, event: GOLD, react: MUTED, fun: AMBER };
+var CAT_COLORS = { hype: BURG, money: GOLD, crowd: AMBER, event: GOLD, react: MUTED, fun: AMBER, custom: GOLD };
 
 export default function SoundBoardTab(props) {
   var socket   = props.socket;
@@ -40,6 +40,7 @@ export default function SoundBoardTab(props) {
   var [filterCat,   setFilterCat]   = useState('all');
   var popIdRef   = useRef(0);
   var sfxTimerRef = useRef(null);
+  var [customSounds, setCustomSounds] = useState([]);
 
   var isHost = role === 'host' || role === 'cohost';
 
@@ -61,9 +62,10 @@ export default function SoundBoardTab(props) {
       if (sfxTimerRef.current) clearTimeout(sfxTimerRef.current);
     };
   }, [socket]);
+  useEffect(function() { fetch('/api/sounds', { headers: { Authorization: 'Bearer ' + (localStorage.getItem('sw_token') || '') } }).then(function(r) { return r.json(); }).then(function(list) { if (Array.isArray(list)) { setCustomSounds(list.map(function(s) { return { id: s.id, label: s.label || 'CUSTOM', emoji: '🎵', cat: 'custom', url: s.playback_url }; })); } }).catch(function(e) {}); }, []);
 
   function triggerFx(sfx) {
-    playSound(sfx);
+    if (sfx.url) { playCustomSound(sfx, vol); } else { playSound(sfx); }
     setActiveFx(sfx.id);
     if (sfxTimerRef.current) clearTimeout(sfxTimerRef.current);
     sfxTimerRef.current = setTimeout(function() { setActiveFx(null); }, 600);
@@ -77,8 +79,8 @@ export default function SoundBoardTab(props) {
     if (socket) socket.emit('sound-fx', { roomId: roomId, sfxId: sfx.id, sfxLabel: sfx.label });
   }
 
-  var cats = ['all', 'hype', 'money', 'event', 'react', 'crowd', 'fun'];
-  var filtered = filterCat === 'all' ? SOUNDS : SOUNDS.filter(function(s) { return s.cat === filterCat; });
+  var cats = ['all', 'hype', 'money', 'event', 'react', 'crowd', 'fun', 'custom'];
+  var filtered = filterCat === 'all' ? SOUNDS.concat(customSounds) : SOUNDS.concat(customSounds).filter(function(s) { return s.cat === filterCat; });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, fontFamily: "'Barlow Condensed',sans-serif", overflow: 'hidden', position: 'relative' }}>

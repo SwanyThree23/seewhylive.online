@@ -84,3 +84,11 @@ export function playSound(sfx) {
     // Audio not available — silently fail
   }
 }
+
+export function playCustomSound(sfx, volPct) {
+  try {
+    var audio = new Audio(sfx.url);
+    audio.volume = (typeof volPct === 'number' ? volPct / 100 : 0.8);
+    audio.play().catch(function(e) {});
+  } catch (e) {}
+}
