@@ -37,7 +37,7 @@ var upload = multer({
 });
 
 
-var SB_HOST = 'rxlgywvfclyjdfyvfvyc.supabase.co';
+var SB_HOST = 'xlrcibziouffgxciecvc.supabase.co';
 
 function sbReq(method, path, body, cb) {
   var key     = process.env.SUPABASE_SERVICE_ROLE_KEY;
