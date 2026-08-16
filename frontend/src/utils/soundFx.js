@@ -13,6 +13,9 @@ export var SOUNDS = [
   { id: 'shock',   label: 'GASP',      emoji: '😮', cat: 'react', freq: [800,200],          dur: 0.5,  type: 'sine',    fall: true },
   { id: 'sub',     label: 'NEW SUB',   emoji: '⭐', cat: 'event', freq: [392,494,587,740],  dur: 1.0,  type: 'sine',    arp: true },
   { id: 'goat',    label: 'GOAT',      emoji: '🐐', cat: 'fun',   freq: [300,600,300,600],  dur: 0.9,  type: 'sawtooth', alt: true },
+  { id: 'boo', label: 'BOO', emoji: '👎', cat: 'crowd', freq: [200,150], dur: 0.9, type: 'sawtooth', fall: true },
+  { id: 'gong', label: 'GONG', emoji: '🔔', cat: 'event', freq: [110], dur: 1.5, type: 'sine' },
+  { id: 'heartbeat', label: 'HEARTBEAT', emoji: '💓', cat: 'react', freq: [60,50,60,50], dur: 1.0, type: 'sine', bounce: true },
 ];
 
 export function playSound(sfx) {
