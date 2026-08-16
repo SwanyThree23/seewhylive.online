@@ -37,18 +37,16 @@ router.post('/login', loginRateLimit, async (req, res) => {
     const { user } = data;
 
     const { data: profile, error: profileErr } = await supabaseAuth
-      .from('profiles')
-      .select('role')
+      .from('users')
+      .select('account_type')
       .eq('id', user.id)
       .single();
 
-    if (profileErr) {
-      return res.status(500).json({ error: 'Failed to load profile role' });
-    }
+    var role = (profile && profile.account_type) || 'standard';
 
     return res.json({
-      token: jwt.sign({ userId: user.id, role: profile.role }, process.env.JWT_SECRET, { expiresIn: '7d' }),
-      role: profile.role,
+      token: jwt.sign({ userId: user.id, role: role }, process.env.JWT_SECRET, { expiresIn: '7d' }),
+      role: role,
       userId: user.id,
     });
   } catch (err) {
