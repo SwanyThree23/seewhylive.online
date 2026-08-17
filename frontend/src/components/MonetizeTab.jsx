@@ -72,6 +72,43 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
   var [projV,       setProjV]     = useState('500');
   var wheelRef = useRef(null);
 
+  var [rewardTiers, setRewardTiers] = useState([]);
+  var [myTier, setMyTier] = useState(null);
+
+  useEffect(function() {
+    if (tab !== 'rewards') return;
+    var token = localStorage.getItem('sw_token');
+    if (!token) return;
+    fetch('/api/rewards/tiers', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) { if (Array.isArray(d)) setRewardTiers(d); })
+      .catch(function() {});
+    fetch('/api/rewards/my-tier', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) { if (d && d.tier) setMyTier(d.tier); })
+      .catch(function() {});
+  }, [tab]);
+
+  function selectRewardTier(tierId) {
+    var token = localStorage.getItem('sw_token');
+    if (!token) { if (addToast) addToast('Please log in first', 'error'); return; }
+    fetch('/api/rewards/my-tier', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tierId: tierId })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && d.tier) {
+          setMyTier(d.tier);
+          if (addToast) addToast('Reward tier updated!', 'success');
+        } else if (addToast) {
+          addToast('Could not update tier', 'error');
+        }
+      })
+      .catch(function() { if (addToast) addToast('Network error', 'error'); });
+  }
+
   var sessionCents = Math.floor(sessionEarningsCents || 0);
   var creatorCents = Math.floor(sessionCents * CREATOR_SHARE);
   var platformCents = sessionCents - creatorCents;
@@ -110,6 +147,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
     { id: 'earn',        label: '💸 EARN' },
     { id: 'subs',        label: '⭐ SUBS' },
     { id: 'tiers',       label: '📈 TIERS' },
+    { id: 'rewards', label: '🎁REWARDS' },
     { id: 'leaderboard', label: '🏆 TOP' },
   ];
 
@@ -370,6 +408,35 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
                     }}
                     style={{ width: '100%', padding: '9px', background: isCurrent ? 'rgba(201,168,76,.1)' : 'linear-gradient(135deg,#800020,#C01838)', border: '1px solid ' + (isCurrent ? 'rgba(201,168,76,.3)' : 'transparent'), borderRadius: 8, color: isCurrent ? plan.color : '#C9A84C', fontFamily: fD, fontSize: 13, letterSpacing: 2, cursor: isCurrent ? 'default' : 'pointer' }}>
                     {isCurrent ? '✓ CURRENT PLAN' : 'UPGRADE TO ' + plan.label}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ════════════════ REWARDS TAB ════════════════ */}
+        {tab === 'rewards' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontFamily: fD, fontSize: 20, color: TEXT, letterSpacing: 2, marginBottom: 4 }}>REWARDS TIER</div>
+            <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, marginBottom: 8 }}>Pick your loyalty tier for perks and badges.</div>
+            {rewardTiers.map(function(rt) {
+              var isCurrent = myTier && myTier.tierId === rt.tierId;
+              return (
+                <div key={rt.tierId} style={{ background: isCurrent ? 'rgba(201,168,76,.08)' : SURF, border: '1.5px solid ' + (isCurrent ? GOLD : BORDER), borderRadius: 12, padding: '14px 16px', position: 'relative' }}>
+                  {isCurrent && (
+                    <div style={{ position: 'absolute', top: -10, right: 14, background: GOLD, borderRadius: 4, padding: '2px 10px', fontFamily: fM, fontSize: 7, color: '#0E0C09', letterSpacing: 1.5, fontWeight: 700 }}>CURRENT TIER</div>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <div style={{ fontFamily: fD, fontSize: 18, color: GOLD, letterSpacing: 2 }}>{rt.name}</div>
+                    <div style={{ fontFamily: fD, fontSize: 16, color: GOLD }}>{rt.price === 0 ? 'FREE' : '$' + Math.floor(rt.price / 100)}</div>
+                  </div>
+                  <button
+                    onClick={function() { selectRewardTier(rt.tierId); }}
+                    disabled={isCurrent}
+                    style={{ width: '100%', padding: '9px', background: isCurrent ? 'rgba(201,168,76,.1)' : 'linear-gradient(135deg,#800020,#C01838)', border: '1px solid ' + (isCurrent ? 'rgba(201,168,76,.3)' : 'transparent'), borderRadius: 8, color: isCurrent ? GOLD : '#C9A84C', fontFamily: fD, fontSize: 13, letterSpacing: 2, cursor: isCurrent ? 'default' : 'pointer' }}
+                  >
+                    {isCurrent ? '✓ CURRENT TIER' : 'SELECT ' + rt.name}
                   </button>
                 </div>
               );
