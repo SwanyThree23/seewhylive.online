@@ -71,4 +71,27 @@ router.post('/challenges/:id/complete', requireAuth, challengeCompleteRateLimit,
   }
 });
 
+router.get('/my-tier', requireAuth, async (req, res) => {
+  try {
+    const data = await rewardsService.getSelectedTier(req.user.id);
+    res.json({ tier: data });
+  } catch (err) {
+    console.error('[ROUTE ERROR]', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/my-tier', requireAuth, async (req, res) => {
+  try {
+    var tierId = req.body && req.body.tierId;
+    const data = await rewardsService.setSelectedTier(req.user.id, tierId);
+    res.json({ tier: data });
+  } catch (err) {
+    console.error('[ROUTE ERROR]', err);
+    var msg = err && err.message;
+    var isUserErr = msg === 'invalid tier id' || msg === 'tierId is required';
+    res.status(isUserErr ? 400 : 500).json({ error: msg || 'Internal server error' });
+  }
+});
+
 module.exports = router;

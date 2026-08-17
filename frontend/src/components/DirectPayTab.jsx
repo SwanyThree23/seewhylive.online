@@ -120,6 +120,19 @@ export default function DirectPayTab({ addToast, username }) {
   var [qrPlatform, setQrPlatform] = useState(null);
 
   React.useEffect(function() {
+    var tok = localStorage.getItem('sw_token') || '';
+    if (!tok) return;
+    fetch('/api/creator/direct-pay', { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.handles && Object.keys(data.handles).length) {
+          setHandles(Object.assign({ paypal: '', cashapp: '', venmo: '', zelle: '', chime: '' }, data.handles));
+        }
+      })
+      .catch(function() {});
+  }, []);
+
+  React.useEffect(function() {
     try { localStorage.setItem('sw_directpay_handles', JSON.stringify(handles)); } catch(e) {}
   }, [handles]);
 
@@ -129,6 +142,14 @@ export default function DirectPayTab({ addToast, username }) {
     setHandles(function(prev) {
       var next = Object.assign({}, prev);
       next[id] = draftHandle.trim();
+      var tok = localStorage.getItem('sw_token') || '';
+      if (tok) {
+        fetch('/api/creator/direct-pay', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ handles: next })
+        }).catch(function() {});
+      }
       return next;
     });
     setEditing(null);

@@ -72,6 +72,45 @@ async function getTiers() {
   return data;
 }
 
+async function getSelectedTier(userId) {
+  const { data, error } = await supabase
+    .from('user_settings')
+    .select('setting_value')
+    .eq('user_id', userId)
+    .eq('setting_key', 'selected_tier')
+    .limit(1);
+  if (error) throw error;
+  var row = Array.isArray(data) && data[0];
+  return (row && row.setting_value) || null;
+}
+
+async function setSelectedTier(userId, tierId) {
+  if (!tierId || typeof tierId !== 'string' || tierId.length > 100) throw new Error('tierId is required');
+  var payload = { tierId: tierId.trim() };
+
+  const { data: existing, error: selErr } = await supabase
+    .from('user_settings')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('setting_key', 'selected_tier')
+    .limit(1);
+  if (selErr) throw selErr;
+
+  if (existing && existing.length) {
+    const { error: updErr } = await supabase
+      .from('user_settings')
+      .update({ setting_value: payload, updated_at: new Date().toISOString() })
+      .eq('id', existing[0].id);
+    if (updErr) throw updErr;
+  } else {
+    const { error: insErr } = await supabase
+      .from('user_settings')
+      .insert({ user_id: userId, setting_key: 'selected_tier', setting_value: payload });
+    if (insErr) throw insErr;
+  }
+  return payload;
+}
+
 async function getActiveChallenges() {
   const { data, error } = await supabase
     .from('challenges')
@@ -117,4 +156,6 @@ module.exports = {
   getTiers,
   getActiveChallenges,
   completeChallenge,
+  getSelectedTier,
+  setSelectedTier,
 };
