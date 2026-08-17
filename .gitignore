@@ -65,3 +65,4 @@ ecosystem.config.cjs
 *.envgrep
 .envgrep
 mediamtx.yml
+data/seewhy.db
