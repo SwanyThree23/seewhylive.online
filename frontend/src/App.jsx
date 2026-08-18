@@ -11,6 +11,7 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import LiveRoomPage from './components/LiveRoomPage.jsx';
 import Toasts from './components/Toasts.jsx';
 import SelectSheet from './components/SelectSheet.jsx';
+import PullToRefresh from './components/PullToRefresh.jsx';
 import Ticker from './components/Ticker.jsx';
 import BrandChyron from './components/BrandChyron.jsx';
 import MobileNavBar from './components/MobileNavBar.jsx';
@@ -328,6 +329,17 @@ export default function App() {
   var [activeTab, setActiveTab] = useState('room');
   var [isLive, setIsLive] = useState(false);
   var [viewerCount, setViewerCount] = useState(0);
+
+  function refreshLiveRoomData() {
+    fetch('/api/active-rooms')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d || !d.rooms) return;
+        var match = d.rooms.filter(function(r) { return r.roomId === APP_ID; })[0];
+        if (match) setViewerCount(match.viewers || 0);
+      })
+      .catch(function() {});
+  }
   var [loveTotal, setLoveTotal] = useState(0);
   var [guests, setGuests] = useState([]);
   var [chat, setChat] = useState([]);
@@ -1495,6 +1507,7 @@ export default function App() {
           />
         )}
         {activeTab === 'room' && (!paidRoom.enabled || paidUnlocked) && (
+          <PullToRefresh onRefresh={refreshLiveRoomData}>
           <LiveRoomPage
             socket={socketRef.current}
             guests={guests}
@@ -1516,6 +1529,7 @@ export default function App() {
             sessionEarningsCents={sessionEarningsCents}
             onLeave={function() { setActiveTab('discover'); addToast('Left the room', 'info'); }}
           />
+          </PullToRefresh>
         )}
         {activeTab === 'fades' && (
           <FadesTab

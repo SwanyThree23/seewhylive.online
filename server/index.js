@@ -342,6 +342,8 @@ app.use('/api/battles', battleRoutes);
 app.use('/api/rewards', rewardsRoutes);
 const usersRoutes = require('./routes/users');
 app.use('/api/users', usersRoutes);
+const activeRoomsRoutes = require('./routes/activeRooms');
+app.use('/api/active-rooms', activeRoomsRoutes);
 app.use('/api/guests', guestRoutes);
 app.use('/api/invites', inviteRoutes);
 app.use('/api/rooms', panelRoomRoutes);
@@ -4730,7 +4732,7 @@ process.on('SIGINT', function() {
   process.emit('SIGTERM');
 });
 
-module.exports = { app, server, io };
+module.exports = { app, server, io, rooms };
 
 // ─── ZEGO Token 04 generation ────────────────────────────────────────────────
 // Format: "04" + base64( uint32LE(payloadLen) + payloadUTF8 + hmac32bytes )
