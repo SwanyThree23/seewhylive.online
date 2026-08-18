@@ -340,6 +340,8 @@ app.use(express.json({ limit: '2mb' }));
 app.use(xssClean());
 app.use('/api/battles', battleRoutes);
 app.use('/api/rewards', rewardsRoutes);
+const usersRoutes = require('./routes/users');
+app.use('/api/users', usersRoutes);
 app.use('/api/guests', guestRoutes);
 app.use('/api/invites', inviteRoutes);
 app.use('/api/rooms', panelRoomRoutes);

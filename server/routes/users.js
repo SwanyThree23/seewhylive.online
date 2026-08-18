@@ -1,0 +1,64 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../db');
+const requireAuth = require('../middleware/auth');
+const { createClient } = require('@supabase/supabase-js');
+
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { autoRefreshToken: false, persistSession: false }, realtime: { transport: 'ws' } }
+);
+
+// Tables that reference a user, cleaned up before the user row itself is removed.
+// Each is attempted independently so a missing/renamed table never blocks the rest.
+const CLEANUP_STEPS = [
+  { table: 'room_join_requests', column: 'user_id' },
+  { table: 'battles',            column: 'creator_id' },
+  { table: 'streams',            column: 'creator_id' },
+  { table: 'direct_pay_handles', column: 'user_id' },
+  { table: 'rewards_selected_tier', column: 'user_id' },
+  { table: 'reward_points',      column: 'user_id' },
+  { table: 'guest_requests',     column: 'user_id' },
+];
+
+router.delete('/me', requireAuth, async (req, res) => {
+  const userId = req.user && req.user.id;
+  if (!userId) return res.status(401).json({ success: false, error: 'Not authenticated' });
+
+  const results = [];
+
+  for (const step of CLEANUP_STEPS) {
+    try {
+      await db.query('DELETE FROM ' + step.table + ' WHERE ' + step.column + ' = $1', [userId]);
+      results.push(step.table + ': ok');
+    } catch (e) {
+      // Table may not exist or column may differ - log and continue, never block deletion.
+      console.error('[delete-account] cleanup skip for', step.table, e.message);
+      results.push(step.table + ': skipped (' + e.message + ')');
+    }
+  }
+
+  // Remove the row from the app's own users table.
+  try {
+    await db.query('DELETE FROM users WHERE id = $1', [userId]);
+    results.push('users: ok');
+  } catch (e) {
+    console.error('[delete-account] failed to delete users row', e.message);
+    results.push('users: failed (' + e.message + ')');
+  }
+
+  // Finally, remove the Supabase Auth login itself. This is the step that actually
+  // prevents the person from signing back in, so it happens last but is required.
+  try {
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    if (error) throw error;
+  } catch (e) {
+    console.error('[delete-account] supabase auth delete failed', e.message);
+    return res.status(500).json({ success: false, error: 'Could not fully delete account', details: results });
+  }
+
+  return res.json({ success: true, cleanup: results });
+});
+
+module.exports = router;
