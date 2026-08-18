@@ -10,6 +10,7 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 /* Always-loaded: default tab + persistent overlays */
 import LiveRoomPage from './components/LiveRoomPage.jsx';
 import Toasts from './components/Toasts.jsx';
+import SelectSheet from './components/SelectSheet.jsx';
 import Ticker from './components/Ticker.jsx';
 import BrandChyron from './components/BrandChyron.jsx';
 import MobileNavBar from './components/MobileNavBar.jsx';
@@ -2299,9 +2300,13 @@ function StreamKeysTab(props) {
         <h2 style={panelTitle}>🔑 STREAM KEYS VAULT</h2>
         <p style={panelSub}>Keys are encrypted with AES-256-GCM. They cannot be retrieved after saving.</p>
         <div style={formRow}>
-          <select style={inputStyle} value={platform} onChange={function(e) { setPlatform(e.target.value); }}>
-            {PLATFORMS.map(function(p) { return <option key={p.id} value={p.id}>{p.label}</option>; })}
-          </select>
+          <SelectSheet
+            label="Platform"
+            value={platform}
+            onChange={setPlatform}
+            options={PLATFORMS.map(function(p) { return { value: p.id, label: p.label }; })}
+            style={inputStyle}
+          />
         </div>
         <div style={formRow}>
           <input
