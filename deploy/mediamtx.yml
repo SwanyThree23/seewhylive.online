@@ -24,7 +24,7 @@ apiAddress: 127.0.0.1:9997
 ###############################################################################
 rtmp: yes
 rtmpAddress: :1935
-rtmpEncryption: no
+rtmpEncryption: "no"
 
 # Validate stream key against backend before allowing publish
 rtmpServerKey: ""
@@ -36,11 +36,8 @@ rtmpServerCert: ""
 hls: yes
 hlsAddress: :8888
 hlsAlwaysRemux: yes
-hlsVariant: lowLatency
 hlsSegmentCount: 7
 hlsSegmentDuration: 1s
-hlsPartDuration: 200ms
-hlsSegmentMaxSize: 50MB
 hlsAllowOrigin: "*"
 hlsDirectory: /var/www/html/hls
 
@@ -57,28 +54,22 @@ paths:
     publishPass: ""
 
     # Notify backend when publisher connects
-    runOnPublish: >
+    runOnReady: >
       curl -sf -X POST http://127.0.0.1:3001/api/rtmp/auth
       -H "Content-Type: application/json"
       -d '{"name":"$MTX_PATH","addr":"$MTX_QUERY"}'
-    runOnPublishRestart: no
+    runOnReadyRestart: no
 
     # Notify backend when publisher disconnects
-    runOnUnpublish: >
+    runOnNotReady: >
       curl -sf -X POST http://127.0.0.1:3001/api/rtmp/done
       -H "Content-Type: application/json"
       -d '{"name":"$MTX_PATH"}'
 
     # HLS output per stream
-    hlsSegmentCount: 6
-    hlsSegmentDuration: 2s
-    hlsPartDuration: 500ms
 
   # Well-known SeeWhy default stream key — always allowed
   "live/sw_6991033b_n8gf2vyf":
     source: publisher
 
   # BRB / slate placeholder (looped MP4 on disk)
-  "brb":
-    source: file:///opt/seewhy/media/brb_slate.mp4
-    sourceOnDemand: yes

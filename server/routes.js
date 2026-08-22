@@ -1091,6 +1091,43 @@ function spawnFanout(streamId, ingestUrl, resolvedDests, restartCount) {
   return ffmpeg;
 }
 
+router.post('/rtmp/auth', async function(req, res) {
+  try {
+    var mtxPath = req.body.name || '';
+    var m = mtxPath.match(/^live\/([0-9a-f-]{36})$/i);
+    if (!m) return res.status(200).json({ ok: true, note: 'path not a room, ignored' });
+    var streamId = m[1];
+    var result = await db.query(
+      "UPDATE streams SET is_live = true, status = 'live', start_time = now() WHERE id = $1 RETURNING id",
+      [streamId]
+    );
+    if (result.rowCount === 0) {
+      console.warn('[rtmp/auth] unknown stream_id: ' + streamId);
+    }
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error('[rtmp/auth] error:', e.message);
+    return res.status(200).json({ ok: true });
+  }
+});
+
+router.post('/rtmp/done', async function(req, res) {
+  try {
+    var mtxPath = req.body.name || '';
+    var m = mtxPath.match(/^live\/([0-9a-f-]{36})$/i);
+    if (!m) return res.status(200).json({ ok: true });
+    var streamId = m[1];
+    await db.query(
+      "UPDATE streams SET is_live = false, status = 'ended', end_time = now() WHERE id = $1",
+      [streamId]
+    );
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error('[rtmp/done] error:', e.message);
+    return res.status(200).json({ ok: true });
+  }
+});
+
 router.post('/fanout-start', requireAuth, fanoutStartRateLimit, async function(req, res) {
   if (req.user.role !== 'host' && req.user.role !== 'admin') {
     return res.status(403).json({ ok: false, error: 'only hosts may start a fanout' });
