@@ -285,6 +285,8 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       isScreenSharing: !!(screenSharingIds[slot.user_id]),
       isSpotlighted: !!(spotlightUserId && slot.user_id === spotlightUserId),
       onSpotlight: function() { setSpotlightUserId(function(cur) { return cur === slot.user_id ? null : slot.user_id; }); },
+      isExpanded: !!slot.is_expanded,
+      onExpand: spotlightUserId ? null : function() { panelService.expandTile(socket, roomId, slot.slot_index, !slot.is_expanded); },
     };
   }
 

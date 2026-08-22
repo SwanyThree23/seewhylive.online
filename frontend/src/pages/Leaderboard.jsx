@@ -3,6 +3,7 @@ import LeaderboardRow from '../components/rewards/LeaderboardRow';
 import ChallengeCard from '../components/rewards/ChallengeCard';
 import LevelBadge from '../components/rewards/LevelBadge';
 import rewardsService from '../services/rewardsService';
+import PullToRefresh from '../components/PullToRefresh.jsx';
 
 // Base44 ruleset: function expressions only, var only, no optional chaining/??.
 var Leaderboard = function (props) {
@@ -40,6 +41,16 @@ var Leaderboard = function (props) {
     rewardsService.getActiveChallenges().then(function (data) { setChallenges(data); });
     rewardsService.getMyCompletions().then(function (data) { setCompletions(data); }).catch(function () {});
   }, []);
+
+  function refreshLeaderboard() {
+    var loader = activeTab === 'weekly'
+      ? rewardsService.getWeeklyLeaderboard(50)
+      : rewardsService.getGlobalLeaderboard(50);
+    loader.then(function (data) { setRows(data); });
+    rewardsService.getMyStanding().then(function (data) { setMyStanding(data); }).catch(function () {});
+    rewardsService.getActiveChallenges().then(function (data) { setChallenges(data); });
+    rewardsService.getMyCompletions().then(function (data) { setCompletions(data); }).catch(function () {});
+  }
 
   var isCompleted = function (challengeId) {
     var i;
@@ -109,6 +120,7 @@ var Leaderboard = function (props) {
   };
 
   return (
+    <PullToRefresh onRefresh={refreshLeaderboard}>
     <div style={containerStyle}>
       <div style={headerStyle}>
         <div style={titleStyle}>Leaderboard</div>
@@ -160,6 +172,7 @@ var Leaderboard = function (props) {
         })}
       </div>
     </div>
+    </PullToRefresh>
   );
 };
 

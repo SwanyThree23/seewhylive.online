@@ -15,6 +15,7 @@ export default function PanelTile({
   onKick, onMuteToggle,
   role, isScreenSharing,
   isSpotlighted, onSpotlight,
+  onExpand,
 }) {
   const { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
   const videoRef = useRef(null);
@@ -252,6 +253,18 @@ export default function PanelTile({
             title={isSpotlighted ? 'Remove spotlight' : 'Spotlight this guest'}
           >
             ✦
+          </button>
+        )}
+        {onExpand && (
+          <button
+            onClick={onExpand}
+            style={{
+              background: is_expanded ? GOLD : 'rgba(0,0,0,0.75)', border: 'none', borderRadius: 4,
+              padding: '3px 6px', fontSize: 10, color: is_expanded ? '#111' : CREAM, cursor: 'pointer',
+            }}
+            title={is_expanded ? 'Collapse tile' : 'Expand tile'}
+          >
+            {is_expanded ? '⤤' : '⤢'}
           </button>
         )}
         {onMuteToggle && (
