@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
+import SelectSheet from './SelectSheet.jsx';
 
 // ─── Earth Tone Palette ───────────────────────────────────────────────────────
 var BG     = '#0E0C09';
@@ -499,14 +500,12 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
                           placeholder="e.g. 3-2"
                           style={{ background: '#241C12', border: '1px solid rgba(212,133,74,.35)', borderRadius: 5, padding: '4px 7px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, width: 60, outline: 'none' }}
                         />
-                        <select
-                          value={getEditVal(b.id, 'status', b.status)}
-                          onChange={function(e) { setEditVal(b.id, 'status', e.target.value); }}
-                          style={{ background: '#241C12', border: '1px solid rgba(212,133,74,.35)', borderRadius: 5, padding: '4px 7px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, outline: 'none' }}>
-                          <option value="NEXT">NEXT</option>
-                          <option value="LIVE">LIVE</option>
-                          <option value="DONE">DONE</option>
-                        </select>
+                        <SelectSheet
+                    value={getEditVal(b.id, 'status', b.status)}
+                    options={[{ value: 'NEXT', label: 'NEXT' }, { value: 'LIVE', label: 'LIVE' }, { value: 'DONE', label: 'DONE' }]}
+                    onChange={function(v) { setEditVal(b.id, 'status', v); }}
+                    style={{ background: '#241C12', border: '1px solid rgba(212,133,74,.35)', borderRadius: 5, minHeight: 32 }}
+                  />
                         <input
                           value={getEditVal(b.id, 'winner', b.winner || '')}
                           onChange={function(e) { setEditVal(b.id, 'winner', e.target.value); }}

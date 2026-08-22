@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import SelectSheet from './SelectSheet.jsx';
 
 var QUALITY_PRESETS = [
   { id: '4k',    label: '4K',    width: 3840, height: 2160, frameRate: 30,  bitrate: 20000000 },
@@ -12,6 +13,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
   var [cameras,       setCameras]       = useState([]);
   var [microphones,   setMicrophones]   = useState([]);
   var [speakers,      setSpeakers]      = useState([]);
+  var [speakerId,      setSpeakerId]     = useState('');
   var [camId,         setCamId]         = useState('');
   var [micId,         setMicId]         = useState('');
   var [quality,       setQuality]       = useState('720p');
@@ -236,12 +238,12 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                 {cameras.length === 0 ? (
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81' }}>No cameras detected</div>
                 ) : (
-                  <select value={camId} onChange={function(e) { setCamId(e.target.value); }}
-                    style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
-                    {cameras.map(function(c, i) {
-                      return <option key={c.deviceId} value={c.deviceId}>{c.label || 'Camera ' + (i + 1)}</option>;
-                    })}
-                  </select>
+                  <SelectSheet
+                value={camId}
+                options={cameras.map(function(c, i) { return { value: c.deviceId, label: c.label || 'Camera ' + (i + 1) }; })}
+                onChange={function(v) { setCamId(v); }}
+                style={{ width: '100%' }}
+              />
                 )}
               </div>
 
@@ -269,12 +271,12 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                 {microphones.length === 0 ? (
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81' }}>No microphones detected</div>
                 ) : (
-                  <select value={micId} onChange={function(e) { setMicId(e.target.value); }}
-                    style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
-                    {microphones.map(function(m, i) {
-                      return <option key={m.deviceId} value={m.deviceId}>{m.label || 'Microphone ' + (i + 1)}</option>;
-                    })}
-                  </select>
+                  <SelectSheet
+                value={micId}
+                options={microphones.map(function(m, i) { return { value: m.deviceId, label: m.label || 'Microphone ' + (i + 1) }; })}
+                onChange={function(v) { setMicId(v); }}
+                style={{ width: '100%' }}
+              />
                 )}
               </div>
 
@@ -292,11 +294,12 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
               {speakers.length > 0 && (
                 <div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 4 }}>SPEAKER OUTPUT</div>
-                  <select style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
-                    {speakers.map(function(s, i) {
-                      return <option key={s.deviceId} value={s.deviceId}>{s.label || 'Speaker ' + (i + 1)}</option>;
-                    })}
-                  </select>
+                  <SelectSheet
+                value={speakerId}
+                options={speakers.map(function(s, i) { return { value: s.deviceId, label: s.label || 'Speaker ' + (i + 1) }; })}
+                onChange={function(v) { setSpeakerId(v); }}
+                style={{ width: '100%' }}
+              />
                 </div>
               )}
 

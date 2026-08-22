@@ -1,5 +1,6 @@
 'use strict';
 import React, { useState, useEffect, useRef } from 'react';
+import SelectSheet from './SelectSheet.jsx';
 
 var CARD   = '#241C12';
 var GOLD   = '#C9A84C';
@@ -408,13 +409,12 @@ export default function HostHUD(props) {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, whiteSpace: 'nowrap' }}>DURATION</div>
-                  <select value={triviaDur} onChange={function(e) { setTriviaDur(Number(e.target.value)); }}
-                    style={{ flex: 1, background: CARD, border: '1px solid rgba(201,168,76,.15)', borderRadius: 5, color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 8, padding: '3px 4px', outline: 'none' }}>
-                    <option value={10}>10s</option>
-                    <option value={20}>20s</option>
-                    <option value={30}>30s</option>
-                    <option value={60}>60s</option>
-                  </select>
+                  <SelectSheet
+                value={triviaDur}
+                options={[{ value: 10, label: '10s' }, { value: 20, label: '20s' }, { value: 30, label: '30s' }, { value: 60, label: '60s' }]}
+                onChange={function(v) { setTriviaDur(Number(v)); }}
+                style={{ flex: 1 }}
+              />
                 </div>
 
                 <button onClick={launchTrivia}
