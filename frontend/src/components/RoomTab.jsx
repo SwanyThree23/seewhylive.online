@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
 import OctCell from './OctCell.jsx';
 import MediaConfigPanel from './MediaConfigPanel.jsx';
+import { applyVirtualBackground, stopVirtualBackground } from '../virtualBackground';
 import rtcManager from '../webrtc.js';
 
 var MAX_STAGE = 20;
@@ -580,6 +581,11 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
           audio: false
         });
         var track = stream.getVideoTracks()[0];
+        if (config.bgMode && config.bgMode !== 'none') {
+          track = await applyVirtualBackground(track, config.bgMode, config.bgImageUrl);
+        } else {
+          stopVirtualBackground();
+        }
         if (rtcManager && rtcReady) await rtcManager.replaceTrack('video', track);
       } catch (e) {
         addToast('Camera switch failed: ' + e.message, 'error');
