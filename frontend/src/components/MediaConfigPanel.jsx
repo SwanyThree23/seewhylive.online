@@ -24,6 +24,8 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
   var [previewError,  setPreviewError]  = useState('');
   var [loading,       setLoading]       = useState(false);
   var [tab,           setTab]           = useState('camera');
+  var [bgMode,      setBgMode]      = useState('none');
+  var [bgImageUrl,  setBgImageUrl]  = useState('');
 
   var videoRef         = useRef(null);
   var analyserRef      = useRef(null);
@@ -160,6 +162,8 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
       echoCan:     echoCan,
       autoGain:    autoGain,
       facingFront: facingFront,
+      bgMode:       bgMode,
+      bgImageUrl:   bgImageUrl,
     };
     if (onApply) onApply(config);
     if (addToast) addToast('Media config applied ✓', 'success');
@@ -183,7 +187,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
 
         {/* Sub-tabs */}
         <div style={{ display: 'flex', borderBottom: '1px solid #3D3020', flexShrink: 0 }}>
-          {[['camera','📷 CAMERA'],['audio','🎙 AUDIO'],['quality','📶 QUALITY']].map(function(t) {
+          {[['camera','📷 CAMERA'],['audio','🎙 AUDIO'],['quality','📶 QUALITY'],['background','🖼️ BACKGROUND']].map(function(t) {
             var active = tab === t[0];
             return (
               <button key={t[0]} onClick={function() { setTab(t[0]); }}
@@ -353,6 +357,37 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                   4K → 25 Mbps upload
                 </div>
               </div>
+            </>
+          )}
+
+          {/* BACKGROUND TAB */}
+          {tab === 'background' && (
+            <>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>VIRTUAL BACKGROUND</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[['none','None'],['blur','Blur']].map(function(o) {
+                  var active = bgMode === o[0];
+                  return (
+                    <button key={o[0]} onClick={function() { setBgMode(o[0]); }}
+                      style={{ flex: 1, padding: '10px 14px', background: active ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (active ? 'rgba(201,168,76,.5)' : '#3D3020'), borderRadius: 8, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                      {o[1]}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 4 }}>CUSTOM IMAGE URL</div>
+              <input
+                type="text"
+                value={bgImageUrl}
+                onChange={function(e) { setBgImageUrl(e.target.value); }}
+                placeholder="https://..."
+                style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9 }}
+              />
+              <button
+                onClick={function() { if (bgImageUrl) setBgMode('image'); }}
+                style={{ padding: '8px 12px', background: bgMode === 'image' ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (bgMode === 'image' ? 'rgba(201,168,76,.5)' : '#3D3020'), borderRadius: 8, color: bgMode === 'image' ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+                Use Image
+              </button>
             </>
           )}
         </div>

@@ -353,8 +353,6 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     socket.on('react-burst',       onReactBurst);
     socket.on('gift-leaderboard',  onGiftLeaderboard);
     socket.on('gift-received',     onGiftReceived);
-    socket.on('panel:camera_command',     onPanelCameraCommand);
-    socket.on('panel:background_command', onPanelBackgroundCommand);
     return function() {
       socket.off('join-room-ack',     onJoinRoomAck);
       socket.off('hand-raise',        onHandRaise);
@@ -372,8 +370,6 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       socket.off('react-burst',       onReactBurst);
       socket.off('gift-leaderboard',  onGiftLeaderboard);
       socket.off('gift-received',     onGiftReceived);
-      socket.off('panel:camera_command',     onPanelCameraCommand);
-      socket.off('panel:background_command', onPanelBackgroundCommand);
       floatTimersRef.current.forEach(function(tid) { clearTimeout(tid); });
       floatTimersRef.current.clear();
     };
@@ -524,26 +520,6 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     addToast(next ? '📵 Camera off' : '📷 Camera on', 'info');
   }
 
-  async function onPanelCameraCommand(payload) {
-    if (!payload || payload.userId !== userId) return;
-    try {
-      var stream = await navigator.mediaDevices.getUserMedia({
-        video: payload.deviceId ? { deviceId: { exact: payload.deviceId } } : true,
-        audio: false
-      });
-      var track = stream.getVideoTracks()[0];
-      if (rtcManager && rtcReady) await rtcManager.replaceTrack('video', track);
-      addToast('Camera switched by host', 'info');
-    } catch (e) {
-      addToast('Remote camera switch failed: ' + e.message, 'error');
-    }
-  }
-
-  async function onPanelBackgroundCommand(payload) {
-    if (!payload || payload.userId !== userId) return;
-    addToast('Background updated by host', 'info');
-  }
-
   async function toggleScreenShare() {
     if (isScreenShare) { stopScreenShare(); return; }
     try {
@@ -569,22 +545,10 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     if (stageLayout === 'screen') setStageLayout('panel');
   }
 
-  async function handleMediaApply(config) {
+  function handleMediaApply(config) {
     setMediaConfig(config);
     setIsMuted(false);
     setIsCamOff(false);
-    if (config && config.camId) {
-      try {
-        var stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: { exact: config.camId } },
-          audio: false
-        });
-        var track = stream.getVideoTracks()[0];
-        if (rtcManager && rtcReady) await rtcManager.replaceTrack('video', track);
-      } catch (e) {
-        addToast('Camera switch failed: ' + e.message, 'error');
-      }
-    }
   }
 
   // Build stage guest objects

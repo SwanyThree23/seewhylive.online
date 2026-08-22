@@ -227,6 +227,37 @@ function registerPanelHandlers(io, socket) {
     }
   });
 
+  socket.on('panel:remote_camera', async function(payload, ack) {
+    try {
+      var roomId = payload && payload.roomId;
+      var targetUserId = payload && payload.targetUserId;
+      var deviceId = payload && payload.deviceId;
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) return;
+      if (!targetUserId || !PANEL_UUID_RE.test(String(targetUserId))) return;
+      io.to(roomId).emit('panel:camera_command', { roomId: roomId, userId: targetUserId, deviceId: deviceId || null });
+      if (ack) ack({ ok: true });
+    } catch (err) {
+      console.error('[panelHandlers] panel:remote_camera error:', err);
+      if (ack) ack({ ok: false });
+    }
+  });
+
+  socket.on('panel:remote_background', async function(payload, ack) {
+    try {
+      var roomId = payload && payload.roomId;
+      var targetUserId = payload && payload.targetUserId;
+      var background = payload && payload.background;
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) return;
+      if (!targetUserId || !PANEL_UUID_RE.test(String(targetUserId))) return;
+      if (typeof background !== 'string' || background.length > 200) return;
+      io.to(roomId).emit('panel:background_command', { roomId: roomId, userId: targetUserId, background: background });
+      if (ack) ack({ ok: true });
+    } catch (err) {
+      console.error('[panelHandlers] panel:remote_background error:', err);
+      if (ack) ack({ ok: false });
+    }
+  });
+
   socket.on('panel:raise_hand', function(payload) {
     try {
       var userId = socket.data.userId;
