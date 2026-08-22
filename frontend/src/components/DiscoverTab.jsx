@@ -503,6 +503,7 @@ export default function DiscoverTab(props) {
         React.createElement(
           'div',
           {
+            className: 'selectable-text',
             style: {
               fontFamily: "'Barlow Condensed',sans-serif",
               fontSize: 12,

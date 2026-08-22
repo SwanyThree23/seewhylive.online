@@ -166,7 +166,7 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
             </div>
             <button onClick={function() { setProfile(null); }} style={{ background: 'none', border: '1px solid #3D3020', borderRadius: 6, padding: '3px 8px', color: '#8A7A62', fontSize: 10, cursor: 'pointer' }}>✕</button>
           </div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: '#B0A0C0', lineHeight: 1.6, marginBottom: 10 }}>{(CREATOR_BIO[profile.id] || {bio:''}).bio}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: '#B0A0C0', lineHeight: 1.6, marginBottom: 10 }} className="selectable-text">{(CREATOR_BIO[profile.id] || {bio:''}).bio}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
             {[
               ['FOLLOWERS', fmtFollowers(profile.followers), profile.color],

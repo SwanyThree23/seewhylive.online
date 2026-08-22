@@ -384,7 +384,7 @@ export default function ShowcaseTab(p) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: '#EDE8F4', letterSpacing: 2, lineHeight: 1, marginBottom: 2 }}>{detail.name}</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', letterSpacing: 2, marginBottom: 6 }}>2026 SEASON · RANK #{detail.rank}</div>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A90AA', lineHeight: 1.4 }}>{detail.bio}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A90AA', lineHeight: 1.4 }} className="selectable-text">{detail.bio}</div>
                 </div>
               </div>
             </div>

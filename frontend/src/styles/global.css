@@ -2770,3 +2770,14 @@ html {
   from { opacity: 0; transform: translateX(20px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+/* ============================================================
+   TEXT SELECTION — disable on UI chrome, preserve on content
+   ============================================================ */
+body * {
+  user-select: none;
+  -webkit-user-select: none;
+}
+p, textarea, input, .selectable-text, .selectable-text * {
+  user-select: text;
+  -webkit-user-select: text;
+}

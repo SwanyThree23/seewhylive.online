@@ -237,6 +237,7 @@ export default function CreatorProfileTab(props) {
       React.createElement(
         'div',
         {
+          className: 'selectable-text',
           style: {
             fontFamily: "'Barlow Condensed',sans-serif",
             fontSize: 14,
@@ -513,6 +514,7 @@ export default function CreatorProfileTab(props) {
           React.createElement(
             'div',
             {
+              className: 'selectable-text',
               style: {
                 fontFamily: "'Barlow Condensed',sans-serif",
                 fontSize: 13,
