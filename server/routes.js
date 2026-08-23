@@ -1091,6 +1091,26 @@ function spawnFanout(streamId, ingestUrl, resolvedDests, restartCount) {
   return ffmpeg;
 }
 
+router.post('/rtmp/authorize', async function(req, res) {
+  try {
+    var mtxPath = req.body.name || '';
+    var query = req.body.query || '';
+    var m = mtxPath.match(/^live\/([0-9a-f-]{36})$/i);
+    if (!m) return res.status(401).json({ ok: false, error: 'invalid path' });
+    var streamId = m[1];
+    var params = new URLSearchParams(query);
+    var key = params.get('key') || '';
+    if (!key) return res.status(401).json({ ok: false, error: 'missing key' });
+    var result = await db.query('SELECT stream_key FROM streams WHERE id = $1', [streamId]);
+    if (result.rowCount === 0) return res.status(401).json({ ok: false, error: 'unknown room' });
+    if (result.rows[0].stream_key !== key) return res.status(401).json({ ok: false, error: 'invalid key' });
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error('[rtmp/authorize] error:', e.message);
+    return res.status(401).json({ ok: false, error: 'server error' });
+  }
+});
+
 router.post('/rtmp/auth', async function(req, res) {
   try {
     var mtxPath = req.body.name || '';
