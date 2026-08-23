@@ -1111,6 +1111,24 @@ router.post('/rtmp/authorize', async function(req, res) {
   }
 });
 
+router.get('/streams/:id/ingest', requireAuth, async function(req, res) {
+  try {
+    var result = await db.query('SELECT id, creator_id, stream_key FROM streams WHERE id = $1', [req.params.id]);
+    if (result.rowCount === 0) return res.status(404).json({ ok: false, error: 'not found' });
+    var row = result.rows[0];
+    if (row.creator_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
+    }
+    var rtmpHost = process.env.RTMP_INGEST_HOST || 'localhost';
+    var rtmpPort = process.env.RTMP_INGEST_PORT || '1935';
+    var ingestUrl = 'rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + row.id + '?key=' + row.stream_key;
+    return res.status(200).json({ ok: true, ingest_url: ingestUrl, stream_key: row.stream_key });
+  } catch (e) {
+    console.error('[streams/ingest] error:', e.message);
+    return res.status(500).json({ ok: false, error: 'server error' });
+  }
+});
+
 router.post('/rtmp/auth', async function(req, res) {
   try {
     var mtxPath = req.body.name || '';
