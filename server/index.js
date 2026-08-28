@@ -53,6 +53,7 @@ try {
 
 var mediasoup    = require('./mediasoup');
 var rtmp         = require('./rtmp');
+var bridge       = require('./mediasoup-rtmp-bridge');
 var vault        = require('./vault');
 var stripeModule = require('./stripe');
 var SwanyBot     = require('./swanybot');
@@ -3649,6 +3650,22 @@ io.on('connection', function(socket) {
       logger.error('[go-live] DB update failed: ' + dbErr.message);
     }
 
+    try {
+      var _hostProducers = mediasoup.getRoomProducers(roomId).filter(function(p) {
+        return p.guestId === socket.data.guestId;
+      });
+      var _audioProducer = _hostProducers.find ? _hostProducers.find(function(p) { return p.kind === 'audio'; }) : null;
+      var _videoProducer = _hostProducers.find ? _hostProducers.find(function(p) { return p.kind === 'video'; }) : null;
+      if (_audioProducer || _videoProducer) {
+        await bridge.startBridge(roomId, {
+          audio: _audioProducer ? _audioProducer.producerId : null,
+          video: _videoProducer ? _videoProducer.producerId : null
+        });
+      }
+    } catch (bridgeErr) {
+      logger.error('[go-live] mediasoup->RTMP bridge failed: ' + bridgeErr.message);
+    }
+
     if (destinations && destinations.length > 0) {
       var _PRIV_GL = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
       var _validDests = [];
@@ -4110,6 +4127,10 @@ io.on('connection', function(socket) {
     } catch (err) {
       logger.error('[end-broadcast] stopFanout error: ' + err.message);
     }
+
+    bridge.stopBridge(roomId).catch(function(err) {
+      logger.error('[end-broadcast] stopBridge error: ' + err.message);
+    });
 
     mediasoup.cleanupRoom(roomId);
     whisper.cleanup(roomId);
@@ -4703,6 +4724,9 @@ process.on('SIGTERM', function() {
     } catch (err) {
       logger.error('[shutdown] stopFanout error for ' + roomId + ': ' + err.message);
     }
+    bridge.stopBridge(roomId).catch(function(err) {
+      logger.error('[shutdown] stopBridge error for ' + roomId + ': ' + err.message);
+    });
     mediasoup.cleanupRoom(roomId);
   });
 
