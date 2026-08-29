@@ -17,6 +17,9 @@ const { registerBattleHandlers } = require('./socket/battleHandlers');
 const { registerPanelHandlers } = require('./socket/panelHandlers');
 const requireAuth = require('./middleware/auth');
 const loyaltyService = require('./services/loyaltyService');
+const resolveTenant = require('./middleware/resolveTenant');
+const resolveTenantForSocket = resolveTenant.forSocket;
+const tenantSignupRoutes = require('./routes/tenantSignup');
 
 /**
  * index.js - SeeWhy LIVE v33.0 main server entry point
@@ -284,6 +287,7 @@ app.use(helmet());
 var _corsOrigins = (process.env.FRONTEND_ORIGIN || 'https://seewhylive.online').split(',').map(function(s) { return s.trim(); });
 var _corsOrigin  = _corsOrigins.length === 1 ? _corsOrigins[0] : _corsOrigins;
 app.use(cors({ origin: _corsOrigin }));
+app.use(resolveTenant);
 
 /* Global rate limit — generous for a live streaming app */
 app.use(rateLimit({
@@ -354,6 +358,7 @@ app.use('/api/sounds', soundsRoutes);
 app.use('/api/creator/direct-pay', directPayRoutes);
 app.use('/api/music-video', musicVideoRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/tenant-signup', tenantSignupRoutes);
 app.use('/api', loginRoutes);
 app.use('/', publicPreviewRoutes);
 
@@ -1424,7 +1429,16 @@ app.get('*', function(req, res) {
 
 // ─── Socket.io Auth Middleware ────────────────────────────────────────────
 
-io.use(function(socket, next) {
+io.use(async function(socket, next) {
+  var tenant;
+  try {
+    tenant = await resolveTenantForSocket(socket.handshake.headers.host);
+  } catch (err) {
+    return next(new Error('unknown tenant'));
+  }
+  socket.data.tenantId = tenant.id;
+  socket.data.tenant   = tenant;
+
   var token = socket.handshake.auth.token;
   if (!token) {
     // Unauthenticated viewers are allowed

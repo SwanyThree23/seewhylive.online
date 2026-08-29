@@ -186,6 +186,15 @@ async function handleStripeWebhook(rawBody, signature) {
     }
   }
 
+  if (event.type === 'checkout.session.completed') {
+    var tenantBilling = require('./tenantBilling');
+    try {
+      await tenantBilling.handleTenantCheckoutCompleted(event.data.object);
+    } catch (err) {
+      console.error('[stripe] tenant provisioning failed for session ' + event.data.object.id + ':', err.message);
+    }
+  }
+
   return { received: true };
 }
 
@@ -268,8 +277,10 @@ async function createGiftCharge(fromViewerId, roomId, giftValueCents, creatorStr
 
 module.exports = {
   createPPVPaymentIntent: createPPVPaymentIntent,
+  getStripe: getStripe,
   verifyPPVPayment: verifyPPVPayment,
   handleStripeWebhook: handleStripeWebhook,
   createConnectAccount: createConnectAccount,
-  createGiftCharge: createGiftCharge
+  createGiftCharge: createGiftCharge,
+  getStripe: getStripe
 };
