@@ -6,6 +6,7 @@ var uuidv4 = require('uuid').v4;
 var Database = require('better-sqlite3');
 var jwt = require('jsonwebtoken');
 var requireAuth = require('./middleware/auth');
+var db = require('./db');
 var { rateLimit } = require('express-rate-limit');
 
 // ─── Revenue split constants (immutable) ──────────────────────────────────────
