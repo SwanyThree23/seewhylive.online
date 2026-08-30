@@ -81,6 +81,13 @@ router.post('/submit', requireAuth, mvSubmitRateLimit, upload.single('audio'), a
       'INSERT INTO music_video_jobs (tenant_id, user_id, username, audio_path, style) VALUES ($1,$2,$3,$4,$5) RETURNING id',
       [req.tenantId, userId, username, req.file.path, style]
     );
+    var musicVideoQueue = require('../queue/musicVideoQueue').musicVideoQueue;
+    
+    await musicVideoQueue.add('render', { jobId: result.rows[0].id }).then(function(job) {
+      console.log('[DEBUG2] enqueued bull job id:', job && job.id);
+    }).catch(function(e) {
+      console.error('[musicVideo] queue enqueue failed (worker orphan-sweep will catch it):', e && e.stack || e);
+    });
     res.json({ jobId: result.rows[0].id, status: 'pending' });
   } catch (e) {
     fs.unlink(req.file.path, function() {});

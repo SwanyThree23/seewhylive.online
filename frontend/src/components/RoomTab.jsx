@@ -199,6 +199,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   var liveStartRef   = useRef(null);
   var chatEndRef     = useRef(null);
   var screenStreamRef = useRef(null);
+  var cameraTrackRef = useRef(null);
   var pollTimerRef   = useRef(null);
   var floatTimersRef = useRef(new Set());
 
@@ -534,6 +535,10 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       });
       var track = stream.getVideoTracks()[0];
       if (rtcManager && rtcReady) await rtcManager.replaceTrack('video', track);
+      if (cameraTrackRef.current && cameraTrackRef.current !== track) {
+        try { cameraTrackRef.current.stop(); } catch (e) {}
+      }
+      cameraTrackRef.current = track;
       addToast('Camera switched by host', 'info');
     } catch (e) {
       addToast('Remote camera switch failed: ' + e.message, 'error');
@@ -587,6 +592,10 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
           stopVirtualBackground();
         }
         if (rtcManager && rtcReady) await rtcManager.replaceTrack('video', track);
+      if (cameraTrackRef.current && cameraTrackRef.current !== track) {
+        try { cameraTrackRef.current.stop(); } catch (e) {}
+      }
+      cameraTrackRef.current = track;
       } catch (e) {
         addToast('Camera switch failed: ' + e.message, 'error');
       }
