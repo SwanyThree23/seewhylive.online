@@ -3931,7 +3931,7 @@ io.on('connection', function(socket) {
     // Find the target user's socket via their user room (joined at connection time)
     var targetRoomKey = null;
     io.sockets.sockets.forEach(function(s) {
-      if (!targetRoomKey && (s.data.username === targetName || s.data.userId === targetName)) {
+      if (!targetRoomKey && s.data.tenantId === socket.data.tenantId && (s.data.username === targetName || s.data.userId === targetName)) {
         targetRoomKey = 'user:' + s.data.userId;
       }
     });
@@ -3951,7 +3951,7 @@ io.on('connection', function(socket) {
     if (!_baUserId || _baUserId.startsWith('anon')) return;
     var defenderName = socket.data.username || _baUserId;
     io.sockets.sockets.forEach(function(s) {
-      if (String(s.data.userId) === String(data.challengerId)) {
+      if (s.data.tenantId === socket.data.tenantId && String(s.data.userId) === String(data.challengerId)) {
         s.emit('battle:accept', { defender_id: _baUserId, defender_username: defenderName, roomId: socket.data.roomId });
       }
     });
@@ -3963,7 +3963,7 @@ io.on('connection', function(socket) {
     if (!_bdUserId || _bdUserId.startsWith('anon')) return;
     var defenderName = socket.data.username || _bdUserId;
     io.sockets.sockets.forEach(function(s) {
-      if (String(s.data.userId) === String(data.challengerId)) {
+      if (s.data.tenantId === socket.data.tenantId && String(s.data.userId) === String(data.challengerId)) {
         s.emit('battle:decline', { defender_username: defenderName });
       }
     });
