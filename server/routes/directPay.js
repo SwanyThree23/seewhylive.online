@@ -1,5 +1,6 @@
 var express     = require('express');
 var https       = require('https');
+var db          = require('../db');
 var router      = express.Router();
 var requireAuth = require('../middleware/auth');
 var { rateLimit } = require('express-rate-limit');
@@ -60,66 +61,95 @@ function sanitizeHandles(input) {
   return out;
 }
 
-router.post('/', requireAuth, directPayLimit, function(req, res) {
-  var handles = sanitizeHandles(req.body && req.body.handles);
+async function storeSecretInVault(secret, name, description) {
+  var result = await db.query(
+    'SELECT vault.create_secret($1, $2, $3) AS id',
+    [secret, name, description || null]
+  );
+  return result.rows[0].id;
+}
+
+async function getSecretFromVault(vaultId) {
+  var result = await db.query(
+    'SELECT decrypted_secret FROM vault.decrypted_secrets WHERE id = $1',
+    [vaultId]
+  );
+  return result.rows[0] ? result.rows[0].decrypted_secret : null;
+}
+
+function extractVaultId(ref) {
+  return typeof ref === 'string' && ref.indexOf('vault:') === 0
+    ? ref.slice(6)
+    : null;
+}
+
+router.post('/', requireAuth, directPayLimit, async function(req, res) {
+  var rawHandles = sanitizeHandles(req.body && req.body.handles);
   var userId = req.user.id;
   var tenantId = req.tenantId;
 
-  var selectPath = '/rest/v1/user_settings?user_id=eq.' + encodeURIComponent(userId) +
-    '&tenant_id=eq.' + encodeURIComponent(tenantId) +
-    '&setting_key=eq.direct_pay_handles&select=id';
-
-  sbReq('GET', selectPath, null, function(err, status, existing) {
-    if (err) return res.status(500).json({ error: 'Failed to check existing settings' });
-
-    if (Array.isArray(existing) && existing.length > 0) {
-      var updatePath = '/rest/v1/user_settings?id=eq.' + encodeURIComponent(existing[0].id) +
-        '&tenant_id=eq.' + encodeURIComponent(tenantId);
-      sbReq('PATCH', updatePath, {
-        setting_value: handles,
-        updated_at: new Date().toISOString(),
-      }, function(err2, status2, result2) {
-        if (err2 || status2 >= 400) return res.status(500).json({ error: 'Failed to update direct pay handles' });
-        res.json({ handles: handles });
-      });
-    } else {
-      sbReq('POST', '/rest/v1/user_settings', {
-        tenant_id: tenantId,
-        user_id: userId,
-        setting_key: 'direct_pay_handles',
-        setting_value: handles,
-      }, function(err2, status2, result2) {
-        if (err2 || status2 >= 400) return res.status(500).json({ error: 'Failed to save direct pay handles' });
-        res.json({ handles: handles });
-      });
+  try {
+    var vaultRefs = {};
+    for (var platform in rawHandles) {
+      var vaultId = await storeSecretInVault(
+        rawHandles[platform],
+        tenantId + '_' + userId + '_' + platform + '_' + Date.now(),
+        'Direct pay handle: ' + platform
+      );
+      vaultRefs[platform] = 'vault:' + vaultId;
     }
-  });
+
+    var selectPath = '/rest/v1/user_settings?user_id=eq.' + encodeURIComponent(userId) +
+      '&tenant_id=eq.' + encodeURIComponent(tenantId) +
+      '&setting_key=eq.direct_pay_handles&select=id';
+
+    sbReq('GET', selectPath, null, function(err, status, existing) {
+      if (err) return res.status(500).json({ error: 'Failed to check existing settings' });
+
+      var op = (Array.isArray(existing) && existing.length > 0)
+        ? { method: 'PATCH', path: '/rest/v1/user_settings?id=eq.' + encodeURIComponent(existing[0].id) + '&tenant_id=eq.' + encodeURIComponent(tenantId), body: { setting_value: vaultRefs, updated_at: new Date().toISOString() } }
+        : { method: 'POST', path: '/rest/v1/user_settings', body: { tenant_id: tenantId, user_id: userId, setting_key: 'direct_pay_handles', setting_value: vaultRefs } };
+
+      sbReq(op.method, op.path, op.body, function(err2, status2) {
+        if (err2 || status2 >= 400) return res.status(500).json({ error: 'Failed to save direct pay handles' });
+        res.json({ handles: rawHandles });
+      });
+    });
+  } catch (e) {
+    console.error('[directPay] vault store error:', e.message);
+    res.status(500).json({ error: 'Failed to save direct pay handles' });
+  }
 });
 
-router.get('/', requireAuth, function(req, res) {
-  var userId = req.user.id;
+async function loadAndDecryptHandles(userId, tenantId, res) {
   var path = '/rest/v1/user_settings?user_id=eq.' + encodeURIComponent(userId) +
-    '&tenant_id=eq.' + encodeURIComponent(req.tenantId) +
+    '&tenant_id=eq.' + encodeURIComponent(tenantId) +
     '&setting_key=eq.direct_pay_handles&select=setting_value';
 
-  sbReq('GET', path, null, function(err, status, rows) {
+  sbReq('GET', path, null, async function(err, status, rows) {
     if (err) return res.status(500).json({ error: 'Failed to load direct pay handles' });
-    var handles = (Array.isArray(rows) && rows[0] && rows[0].setting_value) || {};
-    res.json({ handles: handles });
+    var vaultRefs = (Array.isArray(rows) && rows[0] && rows[0].setting_value) || {};
+
+    try {
+      var decrypted = {};
+      for (var platform in vaultRefs) {
+        var vaultId = extractVaultId(vaultRefs[platform]);
+        if (vaultId) decrypted[platform] = await getSecretFromVault(vaultId);
+      }
+      res.json({ handles: decrypted });
+    } catch (e) {
+      console.error('[directPay] vault decrypt error:', e.message);
+      res.status(500).json({ error: 'Failed to decrypt direct pay handles' });
+    }
   });
+}
+
+router.get('/', requireAuth, function(req, res) {
+  loadAndDecryptHandles(req.user.id, req.tenantId, res);
 });
 
 router.get('/:userId', function(req, res) {
-  var userId = req.params.userId;
-  var path = '/rest/v1/user_settings?user_id=eq.' + encodeURIComponent(userId) +
-    '&tenant_id=eq.' + encodeURIComponent(req.tenantId) +
-    '&setting_key=eq.direct_pay_handles&select=setting_value';
-
-  sbReq('GET', path, null, function(err, status, rows) {
-    if (err) return res.status(500).json({ error: 'Failed to load direct pay handles' });
-    var handles = (Array.isArray(rows) && rows[0] && rows[0].setting_value) || {};
-    res.json({ handles: handles });
-  });
+  loadAndDecryptHandles(req.params.userId, req.tenantId, res);
 });
 
 module.exports = router;
