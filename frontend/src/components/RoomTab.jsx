@@ -547,7 +547,25 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
   async function onPanelBackgroundCommand(payload) {
     if (!payload || payload.userId !== userId) return;
-    addToast('Background updated by host', 'info');
+    try {
+      var bgMode = payload.background && payload.background !== 'none' ? payload.background : null;
+      var baseTrack = cameraTrackRef.current;
+      if (!baseTrack) return;
+      var track = baseTrack;
+      if (bgMode) {
+        track = await applyVirtualBackground(baseTrack, bgMode, payload.bgImageUrl || null);
+      } else {
+        stopVirtualBackground();
+      }
+      if (rtcManager && rtcReady) await rtcManager.replaceTrack('video', track);
+      if (cameraTrackRef.current && cameraTrackRef.current !== track) {
+        try { cameraTrackRef.current.stop(); } catch (e) {}
+      }
+      cameraTrackRef.current = track;
+      addToast('Background updated by host', 'info');
+    } catch (e) {
+      addToast('Remote background update failed: ' + e.message, 'error');
+    }
   }
 
   async function toggleScreenShare() {
