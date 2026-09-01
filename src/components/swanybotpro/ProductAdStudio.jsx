@@ -5,6 +5,8 @@ import {
   Upload, Loader2, Film, Check, Copy,
   Wand2, Megaphone, User, Save, Link2,
 } from 'lucide-react';
+import AssetDropZone from './AssetDropZone';
+import CinematicEffectsPanel, { effectsToPromptSuffix } from './CinematicEffectsPanel';
 
 const G = '#D4AF37';
 const ORANGE = '#D4854A';
@@ -52,6 +54,7 @@ export default function ProductAdStudio() {
   const [enhancedPrompt, setEnhancedPrompt] = useState('');
   const [copied, setCopied] = useState(false);
   const [vodId, setVodId] = useState(null);
+  const [effects, setEffects] = useState(null);
   const fileRef = useRef(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -90,9 +93,10 @@ export default function ProductAdStudio() {
   // Generate video ad clip(s)
   const generateMut = useMutation({
     mutationFn: async () => {
+      const fx = effectsToPromptSuffix(effects);
       const base = style.id === 'ugc'
-        ? `${style.prompt}. The person is holding and talking enthusiastically about ${productName || 'this product'}.`
-        : `${style.prompt}. Product: ${productName || 'a premium product'}. ${productDesc || ''}`.trim();
+        ? `${style.prompt}. The person is holding and talking enthusiastically about ${productName || 'this product'}.${fx}`
+        : `${style.prompt}. Product: ${productName || 'a premium product'}. ${productDesc || ''}${fx}`.trim();
       const prompts = [base];
       if (shotCount > 1 && enhancedPrompt) {
         // continue-shot sequence: first clip uses base, subsequent use continue_shot logic
@@ -160,28 +164,13 @@ export default function ProductAdStudio() {
       {/* ── PRODUCT INPUT ───────────────────────────────────────────────── */}
       <Section title="1 · Product" accent={G}>
         <div className="grid md:grid-cols-2 gap-3">
-          {/* Upload */}
-          <div>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e.target.files?.[0])} />
-            {!productImage ? (
-              <button onClick={() => fileRef.current?.click()}
-                className="w-full rounded-2xl border-2 border-dashed py-8 px-4 flex flex-col items-center gap-2"
-                style={{ borderColor: 'rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.02)' }}>
-                {uploadMut.isPending ? <Loader2 className="w-6 h-6 animate-spin" style={{ color: G }} /> : <Upload className="w-6 h-6" style={{ color: G }} />}
-                <span className="text-[12px] font-black uppercase tracking-wider" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>Drop product PNG</span>
-                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Background-free PNG works best</span>
-              </button>
-            ) : (
-              <div className="rounded-2xl overflow-hidden relative" style={{ border: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.03)' }}>
-                <img src={productImage} alt="product" className="w-full aspect-square object-contain" style={{ background: 'rgba(0,0,0,0.3)' }} />
-                <button onClick={() => setProductImage(null)}
-                  className="absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ background: 'rgba(0,0,0,0.6)' }}>
-                  <Upload className="w-3.5 h-3.5" style={{ color: '#fff' }} onClick={() => fileRef.current?.click()} />
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Upload — drag & drop */}
+          <AssetDropZone
+            imageUrl={productImage}
+            onUpload={handleFile}
+            onClear={() => setProductImage(null)}
+            uploading={uploadMut.isPending}
+          />
           {/* Details */}
           <div className="space-y-2.5">
             <input value={productName} onChange={(e) => setProductName(e.target.value)}
@@ -255,6 +244,11 @@ export default function ProductAdStudio() {
           </p>
         </Section>
       </div>
+
+      {/* ── CINEMATIC VISUAL EFFECTS ────────────────────────────────────── */}
+      <Section title="Cinematic Effects" accent={PURPLE}>
+        <CinematicEffectsPanel value={effects} onChange={setEffects} />
+      </Section>
 
       {/* ── ENHANCED PROMPT PREVIEW ─────────────────────────────────────── */}
       {enhancedPrompt && (

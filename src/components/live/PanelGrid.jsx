@@ -69,23 +69,15 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking,
     <motion.div
       layout
       initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
+      animate={{ scale: isSpeaking ? 1.05 : 1, opacity: 1 }}
       exit={{ scale: 0, opacity: 0 }}
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
       style={{ position: 'relative', width: size, height: size, cursor: 'pointer', flexShrink: 0 }}
     >
-      {/* Speaking pulse ring */}
-      {isSpeaking && (
-        <motion.div
-          style={{ position: 'absolute', inset: -3, clipPath: OCT, background: GOLD, zIndex: 0 }}
-          animate={{ opacity: [0.35, 0.75, 0.35] }}
-          transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      )}
-      {/* Spotlight ring */}
-      <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isSpotlight ? GOLD + '70' : role.color + '50', transition: 'background 0.2s' }} />
+      {/* Spotlight ring — brightens + glows when speaking (contained, no overlap) */}
+      <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isSpeaking ? GOLD : (isSpotlight ? GOLD + '70' : role.color + '50'), transition: 'background 0.2s', filter: isSpeaking ? 'drop-shadow(0 0 10px rgba(212,175,55,0.85))' : 'none' }} />
       {/* Inner content */}
       <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {hasLiveCam ? (
@@ -361,7 +353,7 @@ export default function PanelGrid({
         /* Auto-scaling grid */
         <motion.div
           layout
-          style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`, gap: compact ? 6 : 10, justifyContent: 'center' }}
+          style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`, gap: compact ? 8 : 12, justifyContent: 'center' }}
         >
           <AnimatePresence>
             {guests.map(guest => (

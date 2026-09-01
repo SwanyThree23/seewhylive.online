@@ -280,7 +280,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* ── HEADER ── */}
       <header className="sticky z-50 w-full"
-        style={{ top: 0, paddingTop: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+        style={{ top: 0, paddingTop: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
 
         <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
@@ -475,7 +475,7 @@ export default function Layout({ children, currentPageName }) {
       {/* ── MOBILE BOTTOM NAV (5 tabs) ── */}
       {!isFullscreen && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-40"
-          style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)', paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
+          style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
           <nav className="flex items-end justify-around px-2 pt-2" style={{ height: 60 }}>
             {BOTTOM_NAV.map(function(item) {
               var Icon = item.icon;

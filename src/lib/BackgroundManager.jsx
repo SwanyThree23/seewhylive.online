@@ -39,7 +39,6 @@ export function BackgroundProvider({ children }) {
         rgba(10, 7, 16, 0.98) 0%,
         rgba(20, 15, 30, 0.92) 50%,
         rgba(10, 7, 16, 0.98) 100%)`,
-      backdropFilter: 'blur(20px)',
     },
     faded_earth: {
       background: '#080B18',
