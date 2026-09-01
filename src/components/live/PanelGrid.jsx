@@ -2,10 +2,14 @@ import React, { useReducer, useRef, useEffect, useCallback, useState } from 'rea
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, Mic, MicOff, Video, VideoOff, X, Maximize2, Star } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import SpeakerHighlightSettings from './SpeakerHighlightSettings';
 
 const MAX_PANEL_GUESTS = 20;
 const OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 const GOLD = '#D4AF37';
+const SPEAKER_SCALE = { glow: 1.05, zoom: 1.06, pulse: 1, dim: 1, off: 1 };
+const SPEAKER_RING_SHOW = { glow: true, zoom: false, pulse: true, dim: false, off: false };
+const SPEAKER_LABEL_SHOW = { glow: true, zoom: false, pulse: true, dim: true, off: false };
 
 const ROLE_CONFIG = {
   HOST:     { label: 'HOST',     color: '#d4af37', icon: '👑', textColor: '#000' },
@@ -60,7 +64,7 @@ function VideoOctInner({ stream }) {
 }
 
 // ── Single octagonal guest cell ───────────────────────────────────────────
-function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking, stream }) {
+function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking, stream, highlightStyle = 'glow', anySpeaking = false }) {
   const role = ROLE_CONFIG[guest.role] || ROLE_CONFIG.GUEST;
   const initials = (guest.name || 'G').slice(0, 2).toUpperCase();
   const hasLiveCam = !!stream && !guest.camOff;
@@ -69,15 +73,23 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking,
     <motion.div
       layout
       initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: isSpeaking ? 1.05 : 1, opacity: 1 }}
+      animate={{ scale: isSpeaking ? (SPEAKER_SCALE[highlightStyle] || 1) : 1, opacity: (highlightStyle === 'dim' && anySpeaking && !isSpeaking) ? 0.55 : 1 }}
       exit={{ scale: 0, opacity: 0 }}
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
       style={{ position: 'relative', width: size, height: size, cursor: 'pointer', flexShrink: 0 }}
     >
-      {/* Spotlight ring — brightens + glows when speaking (contained, no overlap) */}
-      <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isSpeaking ? GOLD : (isSpotlight ? GOLD + '70' : role.color + '50'), transition: 'background 0.2s', filter: isSpeaking ? 'drop-shadow(0 0 10px rgba(212,175,55,0.85))' : 'none' }} />
+      {/* Speaker highlight ring — style-dependent (contained, no overlap) */}
+      {highlightStyle === 'pulse' && isSpeaking ? (
+        <motion.div
+          animate={{ opacity: [0.45, 1, 0.45] }}
+          transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ position: 'absolute', inset: 0, clipPath: OCT, background: GOLD, filter: 'drop-shadow(0 0 10px rgba(212,175,55,0.85))' }}
+        />
+      ) : (
+        <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: (SPEAKER_RING_SHOW[highlightStyle] && isSpeaking) ? GOLD : (isSpotlight ? GOLD + '70' : role.color + '50'), transition: 'background 0.2s', filter: (SPEAKER_RING_SHOW[highlightStyle] && isSpeaking) ? 'drop-shadow(0 0 10px rgba(212,175,55,0.85))' : 'none' }} />
+      )}
       {/* Inner content */}
       <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {hasLiveCam ? (
@@ -103,7 +115,7 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking,
         {guest.name}
       </div>
       {/* Speaking label */}
-      {isSpeaking && (
+      {isSpeaking && SPEAKER_LABEL_SHOW[highlightStyle] && (
         <motion.div
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 0.9, repeat: Infinity }}
@@ -130,7 +142,7 @@ function GhostCell({ size }) {
 }
 
 // ── Bigo-style spotlight: full stage + thumbnail strip ────────────────────
-function SpotlightView({ spotlightGuest, allGuests, streams, isSpeaking, dispatch, isHost, speakingIds }) {
+function SpotlightView({ spotlightGuest, allGuests, streams, isSpeaking, dispatch, isHost, speakingIds, highlightStyle = 'glow', anySpeaking = false }) {
   const videoRef = useRef(null);
   const stream = streams[spotlightGuest.id] || null;
   useEffect(() => {
@@ -204,6 +216,8 @@ function SpotlightView({ spotlightGuest, allGuests, streams, isSpeaking, dispatc
               stream={streams[g.id] || null}
               isSpeaking={speakingIds ? speakingIds.has(g.user_id || g.id) : false}
               isSpotlight={false}
+              highlightStyle={highlightStyle}
+              anySpeaking={anySpeaking}
               onClick={() => dispatch({ type: 'SET_SPOTLIGHT', id: g.id })}
               onDoubleClick={() => dispatch({ type: 'SET_EXPANDED', id: g.id })}
             />
@@ -267,6 +281,13 @@ export default function PanelGrid({
   const [state, dispatch] = useReducer(reducer, { ...initState, guests: propGuests || [] });
   const lastTap = useRef({});
   const autoSpotlightTimer = useRef(null);
+  const [highlightStyle, setHighlightStyle] = useState(() => {
+    try { return localStorage.getItem('seewhy_speaker_highlight') || 'glow'; } catch { return 'glow'; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('seewhy_speaker_highlight', highlightStyle); } catch {}
+  }, [highlightStyle]);
+  const anySpeaking = !!(speakingIds && speakingIds.size > 0);
 
   // Auto-spotlight: when a new speaker appears and no spotlight is active, promote them
   useEffect(() => {
@@ -348,6 +369,8 @@ export default function PanelGrid({
           dispatch={dispatch}
           isHost={isHost}
           speakingIds={speakingIds}
+          highlightStyle={highlightStyle}
+          anySpeaking={anySpeaking}
         />
       ) : (
         /* Auto-scaling grid */
@@ -364,6 +387,8 @@ export default function PanelGrid({
                 stream={streams[guest.id] || null}
                 isSpeaking={isSpeaking(guest)}
                 isSpotlight={false}
+                highlightStyle={highlightStyle}
+                anySpeaking={anySpeaking}
                 onClick={() => handleTap(guest.id)}
                 onDoubleClick={() => dispatch({ type: 'SET_EXPANDED', id: guest.id })}
               />
@@ -376,8 +401,11 @@ export default function PanelGrid({
       )}
 
       {!compact && (
-        <div style={{ textAlign: 'center', marginTop: 10, fontSize: 9, color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
-          {guests.length}/{MAX_PANEL_GUESTS} · Tap = Spotlight · Double-tap = Director controls
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, gap: 8 }}>
+          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+            {guests.length}/{MAX_PANEL_GUESTS} · Tap = Spotlight · Double-tap = Director controls
+          </div>
+          {isHost && <SpeakerHighlightSettings value={highlightStyle} onChange={setHighlightStyle} />}
         </div>
       )}
     </div>

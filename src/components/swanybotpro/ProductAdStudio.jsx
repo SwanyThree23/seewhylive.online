@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
@@ -6,7 +6,7 @@ import {
   Wand2, Megaphone, User, Save, Link2,
 } from 'lucide-react';
 import AssetDropZone from './AssetDropZone';
-import CinematicEffectsPanel, { effectsToPromptSuffix } from './CinematicEffectsPanel';
+import CinematicEffectsPanel, { effectsToPromptSuffix, DEFAULT_EFFECTS } from './CinematicEffectsPanel';
 
 const G = '#D4AF37';
 const ORANGE = '#D4854A';
@@ -54,7 +54,8 @@ export default function ProductAdStudio() {
   const [enhancedPrompt, setEnhancedPrompt] = useState('');
   const [copied, setCopied] = useState(false);
   const [vodId, setVodId] = useState(null);
-  const [effects, setEffects] = useState(null);
+  const [effects, setEffects] = useState(DEFAULT_EFFECTS);
+  const [enhanced, setEnhanced] = useState(null);
   const fileRef = useRef(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -87,23 +88,29 @@ export default function ProductAdStudio() {
         },
       });
     },
-    onSuccess: (res) => setEnhancedPrompt(res.video_prompt || res.image_prompt || ''),
+    onSuccess: (res) => { setEnhanced(res); setEnhancedPrompt(res.video_prompt || res.image_prompt || ''); },
   });
+
+  // Compose the final cinematic prompt(s) sent to the video model.
+  // Uses the LLM-enhanced prompt when available, otherwise the style-preset base.
+  // Cinematic effects (color grade, lighting, camera, grain, finishing) layer onto every shot.
+  const finalPrompts = useMemo(() => {
+    const fx = effectsToPromptSuffix(effects);
+    const base = style.id === 'ugc'
+      ? `${style.prompt}. The person is holding and talking enthusiastically about ${productName || 'this product'}.${fx}`
+      : `${style.prompt}. Product: ${productName || 'a premium product'}. ${productDesc || ''}${fx}`.trim();
+    const first = enhanced?.video_prompt ? `${enhanced.video_prompt}${fx}` : base;
+    const second = (shotCount > 1)
+      ? (enhanced?.continue_shot ? `${enhanced.continue_shot}${fx}` : `${style.prompt}. Continued story beat for ${productName || 'the product'}, seamless transition from previous shot, new angle.${fx}`)
+      : null;
+    return second ? [first, second] : [first];
+  }, [style, productName, productDesc, effects, enhanced, shotCount]);
 
   // Generate video ad clip(s)
   const generateMut = useMutation({
     mutationFn: async () => {
-      const fx = effectsToPromptSuffix(effects);
-      const base = style.id === 'ugc'
-        ? `${style.prompt}. The person is holding and talking enthusiastically about ${productName || 'this product'}.${fx}`
-        : `${style.prompt}. Product: ${productName || 'a premium product'}. ${productDesc || ''}${fx}`.trim();
-      const prompts = [base];
-      if (shotCount > 1 && enhancedPrompt) {
-        // continue-shot sequence: first clip uses base, subsequent use continue_shot logic
-        prompts.push(`${style.prompt}. Continued story beat for ${productName || 'the product'}, seamless transition from previous shot, new angle.`);
-      }
       const results = [];
-      for (const p of prompts) {
+      for (const p of finalPrompts) {
         const res = await base44.integrations.Core.GenerateVideo({
           prompt: p,
           duration: 8,
@@ -149,6 +156,7 @@ export default function ProductAdStudio() {
       `Shots:      ${shotCount}`,
       '',
       '── Image prompt ──', enhancedPrompt || '(enhance first)',
+      '', '── Final cinematic prompts ──', ...finalPrompts,
       '', '── Ad clips ──', adClips.join('\n') || '(not generated yet)',
       vodId ? '' : '', vodId ? `Saved to VOD Library: ${vodId}` : '',
       '═══════════════════════════════════════════════════════',
@@ -256,6 +264,23 @@ export default function ProductAdStudio() {
           <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Share Tech Mono, monospace' }}>{enhancedPrompt}</p>
         </Section>
       )}
+
+      {/* ── FINAL CINEMATIC PROMPT (live preview) ──────────────────────── */}
+      <Section title="Final Cinematic Prompt" accent={G}>
+        <p className="text-[9px] mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          {enhanced ? 'Using LLM-enhanced prompt' : 'Using style preset'} · {finalPrompts.length} shot{finalPrompts.length > 1 ? 's' : ''} · cinematic effects layered in
+        </p>
+        <div className="space-y-2">
+          {finalPrompts.map((p, i) => (
+            <div key={i} className="rounded-lg p-2.5" style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }}>
+              <p className="text-[9px] font-black uppercase tracking-wider mb-1" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {finalPrompts.length > 1 ? `Shot ${i + 1}` : 'Prompt'} (8s · {aspect.id})
+              </p>
+              <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.65)', fontFamily: 'Share Tech Mono, monospace' }}>{p}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
 
       {/* ── GENERATE ────────────────────────────────────────────────────── */}
       <Section title="4 · Generate Ad" accent={G} right={

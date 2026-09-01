@@ -61,7 +61,7 @@ export function effectsToPromptSuffix(effects) {
   return parts.length ? `. ${parts.join(', ')}` : '';
 }
 
-const DEFAULTS = {
+export const DEFAULT_EFFECTS = {
   colorGrade: 'none', lighting: 'studio', camera: 'push-in',
   speed: 'normal', grain: 'none', letterbox: false, vignette: false, bokeh: false,
 };
@@ -118,7 +118,7 @@ function Toggle({ label, icon: Icon, checked, onChange }) {
 }
 
 export default function CinematicEffectsPanel({ value, onChange }) {
-  const v = value || DEFAULTS;
+  const v = value || DEFAULT_EFFECTS;
   const set = (k, val) => onChange({ ...v, [k]: val });
 
   return (
