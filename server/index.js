@@ -350,6 +350,8 @@ app.use('/api/users', usersRoutes);
 const activeRoomsRoutes = require('./routes/activeRooms');
 app.use('/api/active-rooms', activeRoomsRoutes);
 app.use('/api/guests', guestRoutes);
+app.use('/api/guest-auth', require('./routes/guestAuth'));
+app.use('/api/rtmp', require('./rtmpFanoutRoutes'));
 app.use('/api/invites', inviteRoutes);
 app.use('/api/rooms', panelRoomRoutes);
 app.use('/api/challenges', challengeRoutes);

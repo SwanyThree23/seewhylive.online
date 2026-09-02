@@ -592,7 +592,10 @@ export default function DiscoverTab(props) {
           'button',
           {
             key: item.id,
-            onClick: function() { if (addToast) addToast(item.label + ' - coming soon!', 'info'); },
+            onClick: function() {
+              if (item.id === 'golive' && props.onGoLive) { props.onGoLive(); return; }
+              if (addToast) addToast(item.label + ' - coming soon!', 'info');
+            },
             style: {
               display: 'inline-flex',
               alignItems: 'center',

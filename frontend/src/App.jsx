@@ -362,6 +362,16 @@ export default function App() {
   var [editingName,   setEditingName]   = useState(false);
   var [nameEditVal,   setNameEditVal]   = useState('');
   var [role, setRole] = useState(function() { return localStorage.getItem('sw_role') || 'viewer'; });
+
+  function handleGoLive() {
+    var newRole = 'host';
+    try { localStorage.setItem('sw_role', newRole); } catch (e) {}
+    setRole(newRole);
+    var token = localStorage.getItem('sw_token') || '';
+    var hostPayload = { roomId: APP_ID, userId: userId, username: username, role: newRole, token: token };
+    if (socketRef.current) socketRef.current.emit('join-room', hostPayload);
+    setActiveTab('room');
+  }
   var [showAgeGate, setShowAgeGate] = useState(function() {
     var key = (localStorage.getItem('sw_role') === 'host' || localStorage.getItem('sw_role') === 'cohost') ? 'sw_age_ok_host' : 'sw_age_ok_viewer';
     return !localStorage.getItem(key);
@@ -1758,6 +1768,7 @@ export default function App() {
         )}
         {activeTab === 'discover' && (
           <DiscoverTab
+            onGoLive={handleGoLive}
             addToast={addToast}
             isLive={isLive}
             socket={socketRef.current}
