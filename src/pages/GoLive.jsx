@@ -555,6 +555,7 @@ export default function GoLive() {
   const [launching,   setLaunching]   = useState(false);
   const [countdown,   setCountdown]   = useState(false);
   const [partyId,     setPartyId]     = useState(null);
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { token: zegoToken } = useZegoToken({ roomId: partyId, userId: user?.id, enabled: !!partyId && !!user?.id });
   const [titleSuggestions, setTitleSuggestions] = useState([]);
   const [suggestingTitles, setSuggestingTitles] = useState(false);
@@ -575,7 +576,6 @@ export default function GoLive() {
     try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {}
     cameraRetryRef.current?.({ videoId: id });
   }, []);
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const speakingIds = isSpeaking && user?.id ? { [user.id]: true } : {};
   const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: '', stream: localStream });
