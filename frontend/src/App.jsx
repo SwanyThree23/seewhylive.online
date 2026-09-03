@@ -786,6 +786,11 @@ export default function App() {
 
     socket.on('join-room-ack', function(ackData) {
       if (!ackData) return;
+      if (ackData.error) {
+        addToast('Failed to go live: ' + ackData.error, 'error');
+        setActiveTab('discover');
+        return;
+      }
       if (Array.isArray(ackData.existingProducers)) {
         setGuests(function(prev) {
           return prev.map(function(g) {
