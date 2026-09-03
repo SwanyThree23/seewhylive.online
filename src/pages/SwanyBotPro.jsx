@@ -7,6 +7,7 @@ import VoiceLipSyncStudio from '@/components/swanybotpro/VoiceLipSyncStudio';
 import StoryMusicVideoStudio from '@/components/swanybotpro/StoryMusicVideoStudio';
 import ProductAdStudio from '@/components/swanybotpro/ProductAdStudio';
 import PromptForge from '@/components/swanybotpro/PromptForge';
+import AssetLibrary from '@/components/swanybotpro/AssetLibrary';
 
 const MODULE_COMPONENTS = {
   'video-transform': VideoTransformStudio,
@@ -14,6 +15,7 @@ const MODULE_COMPONENTS = {
   'story-music-video': StoryMusicVideoStudio,
   'product-ad': ProductAdStudio,
   'prompt-forge': PromptForge,
+  'asset-library': AssetLibrary,
 };
 
 const G = '#D4AF37';
@@ -54,7 +56,7 @@ export default function SwanyBotPro() {
 
       {/* MODULE RAIL */}
       <div className="max-w-6xl mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-5">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-5">
           {SWANYBOT_PRO_MODULES.map((m) => {
             const Icon = m.icon;
             const isActive = m.id === activeId;

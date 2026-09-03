@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin, Volume2 } from 'lucide-react';
+import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin, Volume2, X } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import PanelMusicPlayer from '../live/PanelMusicPlayer';
 import { useAudioLevel } from '../../hooks/useAudioLevel';
 
@@ -26,8 +27,37 @@ function SignalBars({ bars }) {
 
 function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal, raisedHands, quality }) {
   var [menuOpen, setMenuOpen] = useState(false);
+  var [quickOpen, setQuickOpen] = useState(false);
   var [volume, setVolume] = useState(1);
   var [showVolume, setShowVolume] = useState(false);
+  var pressTimer = useRef(null);
+  var canQuick = canManage && !isCurrentUser && member.user_id !== hostId;
+  var isMuted = member.is_audio_enabled === false;
+
+  // Long-press (480ms) opens the quick-action overlay — nothing visible until pressed
+  function startPress() {
+    if (!canQuick) return;
+    clearTimeout(pressTimer.current);
+    pressTimer.current = setTimeout(function() { setQuickOpen(true); }, 480);
+  }
+  function cancelPress() { clearTimeout(pressTimer.current); }
+
+  // Real quick actions (host)
+  function toggleMute() {
+    base44.entities.WatchPartyMember.update(member.id, { is_audio_enabled: !isMuted }).catch(function() {});
+    setQuickOpen(false);
+    setMenuOpen(false);
+  }
+  function quickPin() {
+    if (onSpotlight) onSpotlight(member.user_id);
+    setQuickOpen(false);
+    setMenuOpen(false);
+  }
+  function quickRemove() {
+    base44.entities.WatchPartyMember.update(member.id, { is_active: false, left_at: new Date().toISOString() }).catch(function() {});
+    setQuickOpen(false);
+    setMenuOpen(false);
+  }
   var { isSpeaking: audioSpeaking } = useAudioLevel(stream);
   var speaking = stream ? audioSpeaking : (member.is_audio_enabled !== false);
   var color = getColor(member.user_name);
@@ -75,6 +105,10 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
       }}
       transition={{ layout: { type: 'spring', stiffness: 350, damping: 30 }, default: { type: 'spring', stiffness: 420, damping: 26 }, ...(speaking ? { boxShadow: { duration: 1, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' } } : {}) }}
       exit={{ opacity: 0, scale: 0.6, y: -10 }}
+      onPointerDown={startPress}
+      onPointerUp={cancelPress}
+      onPointerLeave={cancelPress}
+      onPointerMove={cancelPress}
       className="relative group aspect-square"
     >
       <div
@@ -160,36 +194,40 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
         <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5" style={{ top: isRaised ? 18 : 4 }}>
           <button
             onClick={function() { onSpotlight(member.user_id); }}
-            className="w-4 h-4 rounded flex items-center justify-center"
+            className="w-7 h-7 rounded flex items-center justify-center"
             style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
           >
-            <Maximize2 className="w-2 h-2 text-white" />
+            <Maximize2 className="w-3 h-3 text-white" />
           </button>
           {!isLocal && stream && (
             <button
               onClick={() => setShowVolume(v => !v)}
-              className="w-4 h-4 rounded flex items-center justify-center"
+              className="w-7 h-7 rounded flex items-center justify-center"
               style={{ background: showVolume ? 'rgba(212,175,55,0.4)' : 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
               title="Adjust volume"
             >
-              <Volume2 className="w-2 h-2" style={{ color: showVolume ? '#D4AF37' : 'rgba(255,255,255,0.7)' }} />
+              <Volume2 className="w-3 h-3" style={{ color: showVolume ? '#D4AF37' : 'rgba(255,255,255,0.7)' }} />
             </button>
           )}
           {canManage && member.user_id !== hostId && (
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setMenuOpen(v => !v)}
-                className="w-4 h-4 rounded flex items-center justify-center"
+                className="w-7 h-7 rounded flex items-center justify-center"
                 style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
               >
-                <MoreHorizontal className="w-2 h-2 text-white" />
+                <MoreHorizontal className="w-3 h-3 text-white" />
               </button>
               {menuOpen && (
                 <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 50, background: '#1A0F0A', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, minWidth: 100, overflow: 'hidden' }}
                   onMouseLeave={() => setMenuOpen(false)}>
-                  {[{ icon: Pin, label: 'Pin', color: '#fff' }, { icon: MicOff, label: 'Mute', color: '#fff' }, { label: 'Remove', color: '#FF4444' }].map(item => (
-                    <button key={item.label} onClick={() => setMenuOpen(false)}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: 'transparent', border: 'none', color: item.color, fontSize: 11, cursor: 'pointer' }}
+                  {[
+                    { icon: Pin, label: 'Pin', color: '#fff', act: quickPin },
+                    { icon: isMuted ? Mic : MicOff, label: isMuted ? 'Unmute' : 'Mute', color: '#fff', act: toggleMute },
+                    { icon: X, label: 'Remove', color: '#FF4444', act: quickRemove },
+                  ].map(item => (
+                    <button key={item.label} onClick={item.act}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'transparent', border: 'none', color: item.color, fontSize: 11, cursor: 'pointer' }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                       {item.icon && <item.icon className="w-3 h-3" />} {item.label}
@@ -215,6 +253,31 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
               style={{ width: '100%', accentColor: '#D4AF37', cursor: 'pointer' }}
               title={`Volume: ${Math.round(volume * 100)}%`}
             />
+          </div>
+        )}
+
+        {/* Host quick actions — long-press the tile to open, tap backdrop to close */}
+        {quickOpen && (
+          <div
+            className="absolute inset-0 z-20 flex items-center justify-center gap-1.5 px-1.5"
+            style={{ clipPath: OCT, background: 'rgba(5,3,16,0.92)' }}
+            onClick={() => setQuickOpen(false)}
+          >
+            {[
+              { Icon: isMuted ? Mic : MicOff, label: isMuted ? 'UNMUTE' : 'MUTE', color: isMuted ? '#ef4444' : '#6DBF7E', act: toggleMute },
+              { Icon: Pin, label: 'PIN', color: '#d4af37', act: quickPin },
+              { Icon: X, label: 'REMOVE', color: '#ef4444', act: quickRemove },
+            ].map(function(btn) {
+              return (
+                <button key={btn.label}
+                  onClick={function(e) { e.stopPropagation(); btn.act(); }}
+                  className="flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-transform"
+                  style={{ width: 42, height: 42, borderRadius: 10, border: '1px solid ' + btn.color + '66', background: btn.color + '20', color: btn.color, WebkitTapHighlightColor: 'transparent' }}>
+                  <btn.Icon className="w-3.5 h-3.5" />
+                  <span style={{ fontSize: 7, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>{btn.label}</span>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

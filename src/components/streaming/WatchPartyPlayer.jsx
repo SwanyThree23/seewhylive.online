@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Play, Pause, Volume2, VolumeX, Maximize, Radio } from 'lucide-react';
+import AdPollPopup from '@/components/swanybotpro/AdPollPopup';
 
 export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
   const videoRef = useRef(null);
@@ -143,6 +144,9 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
           onLoadedMetadata={handleLoadedMetadata}
           onClick={handlePlayPause}
         />
+
+        {/* Ad poll — pops automatically when the video has an attached poll */}
+        <AdPollPopup videoUrl={videoUrl} playing={isPlaying} />
 
         {/* Control Overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity">

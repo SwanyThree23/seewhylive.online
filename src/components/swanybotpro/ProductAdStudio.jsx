@@ -4,8 +4,10 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Upload, Loader2, Film, Check, Copy,
   Wand2, Megaphone, User, Save, Link2,
+  Library, Zap, Plus, X,
 } from 'lucide-react';
 import AssetDropZone from './AssetDropZone';
+import AssetLibrary from './AssetLibrary';
 import CinematicEffectsPanel, { effectsToPromptSuffix, DEFAULT_EFFECTS } from './CinematicEffectsPanel';
 
 const G = '#D4AF37';
@@ -57,6 +59,10 @@ export default function ProductAdStudio() {
   const [effects, setEffects] = useState(DEFAULT_EFFECTS);
   const [enhanced, setEnhanced] = useState(null);
   const fileRef = useRef(null);
+  const [libOpen, setLibOpen] = useState(false);
+  const [pollOn, setPollOn] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState(['', '']);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -65,7 +71,19 @@ export default function ProductAdStudio() {
       const res = await base44.integrations.Core.UploadFile({ file });
       return res.file_url;
     },
-    onSuccess: setProductImage,
+    onSuccess: (url) => {
+      setProductImage(url);
+      // Auto-save to the creator's asset library for re-use
+      if (user) {
+        base44.entities.CreativeAsset.create({
+          name: productName.trim() || 'Product image',
+          file_url: url,
+          media_type: 'image',
+          category: 'product',
+          tags: ['product-ad-studio'],
+        }).catch(() => {});
+      }
+    },
   });
 
   // LLM → cinematic image+video prompt enhancement
@@ -128,6 +146,8 @@ export default function ProductAdStudio() {
   const saveVodMut = useMutation({
     mutationFn: async () => {
       if (!adClips.length || !user) return;
+      const pollOpts = pollOptions.map((o) => o.trim()).filter(Boolean);
+      const withPoll = pollOn && !!pollQuestion.trim() && pollOpts.length >= 2;
       const rec = await base44.entities.VODVideo.create({
         creator_id: user.id,
         title: `${productName || 'Product'} — ${style.name} Ad`,
@@ -135,10 +155,21 @@ export default function ProductAdStudio() {
         video_url: adClips[0],
         thumbnail_url: productImage || undefined,
         duration_seconds: 8 * adClips.length,
-        tags: ['swanybot-pro', 'product-ad', style.id, 'commercial'],
+        tags: ['swanybot-pro', 'product-ad', style.id, 'commercial', ...(withPoll ? ['ad-poll'] : [])],
         category: 'product_ad',
         status: 'draft',
       });
+      if (withPoll) {
+        // Key the poll to the ad's video URL so it auto-pops wherever the ad plays
+        await base44.entities.Poll.create({
+          room_id: 'ad:' + adClips[0],
+          host_id: user.id,
+          question: pollQuestion.trim(),
+          options: pollOpts,
+          status: 'active',
+          created_at: new Date().toISOString(),
+        });
+      }
       return rec.id;
     },
     onSuccess: setVodId,
@@ -172,13 +203,20 @@ export default function ProductAdStudio() {
       {/* ── PRODUCT INPUT ───────────────────────────────────────────────── */}
       <Section title="1 · Product" accent={G}>
         <div className="grid md:grid-cols-2 gap-3">
-          {/* Upload — drag & drop */}
-          <AssetDropZone
-            imageUrl={productImage}
-            onUpload={handleFile}
-            onClear={() => setProductImage(null)}
-            uploading={uploadMut.isPending}
-          />
+          {/* Upload — drag & drop, or pick from the asset library */}
+          <div className="space-y-2">
+            <AssetDropZone
+              imageUrl={productImage}
+              onUpload={handleFile}
+              onClear={() => setProductImage(null)}
+              uploading={uploadMut.isPending}
+            />
+            <button onClick={() => setLibOpen(true)}
+              className="w-full rounded-xl py-2 text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
+              style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${BORDER}`, color: G }}>
+              <Library className="w-3.5 h-3.5" /> From Asset Library
+            </button>
+          </div>
           {/* Details */}
           <div className="space-y-2.5">
             <input value={productName} onChange={(e) => setProductName(e.target.value)}
@@ -258,6 +296,55 @@ export default function ProductAdStudio() {
         <CinematicEffectsPanel value={effects} onChange={setEffects} />
       </Section>
 
+      {/* ── QUICK POLL (optional) ───────────────────────────────────────── */}
+      <Section title="Quick Poll (optional)" accent={EMERALD} right={
+        <button onClick={() => setPollOn((v) => !v)} aria-label="Toggle quick poll"
+          className="rounded-full flex items-center px-0.5 transition-all"
+          style={{ width: 40, height: 22, background: pollOn ? 'rgba(109,191,126,0.35)' : 'rgba(255,255,255,0.08)', justifyContent: pollOn ? 'flex-end' : 'flex-start' }}>
+          <div className="rounded-full" style={{ width: 18, height: 18, background: pollOn ? EMERALD : 'rgba(255,255,255,0.3)' }} />
+        </button>
+      }>
+        {pollOn ? (
+          <div className="space-y-2.5">
+            <input value={pollQuestion} onChange={(e) => setPollQuestion(e.target.value)}
+              placeholder="Poll question (e.g. Would you rock this?)"
+              className="w-full rounded-xl px-3 py-2.5 text-[12px]"
+              style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`, color: '#fff' }} />
+            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Answers (2–4)</p>
+            {pollOptions.map((opt, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <input value={opt}
+                  onChange={(e) => setPollOptions((prev) => prev.map((o, idx) => idx === i ? e.target.value : o))}
+                  placeholder={`Option ${i + 1}`}
+                  className="flex-1 rounded-xl px-3 py-2 text-[12px]"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`, color: '#fff' }} />
+                {pollOptions.length > 2 && (
+                  <button onClick={() => setPollOptions((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)' }}>
+                    <X className="w-3.5 h-3.5" style={{ color: '#ef4444' }} />
+                  </button>
+                )}
+              </div>
+            ))}
+            {pollOptions.length < 4 && (
+              <button onClick={() => setPollOptions((prev) => [...prev, ''])}
+                className="w-full rounded-xl py-1.5 text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1"
+                style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.3)', color: EMERALD }}>
+                <Plus className="w-3 h-3" /> Add option
+              </button>
+            )}
+            <p className="text-[9px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <Zap className="w-3 h-3 inline" style={{ color: EMERALD }} /> When this ad plays for viewers, the poll pops up automatically — one tap to vote, live results.
+            </p>
+          </div>
+        ) : (
+          <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            Attach a one-tap poll that pops up when the ad plays — great for "Which colorway?" or "Would you cop?" engagement.
+          </p>
+        )}
+      </Section>
+
       {/* ── ENHANCED PROMPT PREVIEW ─────────────────────────────────────── */}
       {enhancedPrompt && (
         <Section title="Enhanced Prompt" accent={PURPLE}>
@@ -333,6 +420,32 @@ export default function ProductAdStudio() {
           </button>
         </div>
       </Section>
+
+      {/* ── ASSET LIBRARY PICKER ───────────────────────────────────────── */}
+      {libOpen && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.85)' }}
+          onClick={() => setLibOpen(false)}>
+          <div className="w-full max-w-3xl rounded-2xl overflow-hidden max-h-[82vh] overflow-y-auto"
+            style={{ background: '#080B18', border: `1px solid ${BORDER}` }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 sticky top-0 z-10" style={{ background: PANEL, borderBottom: `1px solid ${BORDER}` }}>
+              <p className="text-xs font-black uppercase tracking-widest" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <Library className="w-3.5 h-3.5 inline mr-1.5" /> Asset Library — pick an image
+              </p>
+              <button onClick={() => setLibOpen(false)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <X className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.4)' }} />
+              </button>
+            </div>
+            <div className="p-4">
+              <AssetLibrary selectMode filterMediaType="image"
+                onSelect={(asset) => { setProductImage(asset.file_url); setLibOpen(false); }} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

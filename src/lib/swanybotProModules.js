@@ -1,4 +1,4 @@
-import { Wand2, Mic2, Music, ShoppingBag, FileText } from 'lucide-react';
+import { Wand2, Mic2, Music, ShoppingBag, FileText, FolderOpen } from 'lucide-react';
 
 // SwanyBot Pro module registry — SwanyThree ecosystem.
 // status: 'live' = fully wired this turn; 'next' = scheduled, rendered as a preview card.
@@ -86,6 +86,23 @@ export const SWANYBOT_PRO_MODULES = [
       'Veo 3.1 commercial ad prompts',
       'Runway Gen-2 image+video pipeline prompts',
       'Nano Banana driving-image prompts',
+    ],
+  },
+  {
+    id: 'asset-library',
+    name: 'Asset Library',
+    tagline: 'Upload · tag · re-use your media',
+    icon: FolderOpen,
+    status: 'live',
+    accent: '#4A8A7A',
+    description:
+      'Your uploaded images and videos in one place — tag them by category, filter and search, then drop them straight into any SwanyBot Pro studio.',
+    bullets: [
+      'Upload images + videos once, use everywhere',
+      'Category tags with one-tap filtering',
+      'Search by name, tag, or category',
+      'Re-use assets inside Product Ad Studio',
+      'Re-tag or delete straight from the grid',
     ],
   },
 ];

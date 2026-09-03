@@ -64,9 +64,24 @@ function VideoOctInner({ stream }) {
 }
 
 // ── Single octagonal guest cell ───────────────────────────────────────────
-function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking, stream, highlightStyle = 'glow', anySpeaking = false }) {
+function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking, stream, highlightStyle = 'glow', anySpeaking = false, quickOpen = false, onLongPress, onQuickMute, onQuickPin, onQuickRemove }) {
   const role = ROLE_CONFIG[guest.role] || ROLE_CONFIG.GUEST;
   const initials = (guest.name || 'G').slice(0, 2).toUpperCase();
+  const pressTimer = useRef(null);
+  const longFired = useRef(false);
+
+  // Long-press (480ms) opens the host quick-action overlay; the follow-up click is suppressed
+  function startPress() {
+    longFired.current = false;
+    if (!onLongPress) return;
+    pressTimer.current = setTimeout(() => { longFired.current = true; onLongPress(); }, 480);
+  }
+  function cancelPress() { clearTimeout(pressTimer.current); }
+  function handleCellClick() {
+    cancelPress();
+    if (longFired.current) { longFired.current = false; return; }
+    onClick && onClick();
+  }
   const hasLiveCam = !!stream && !guest.camOff;
 
   return (
@@ -76,8 +91,11 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking,
       animate={{ scale: isSpeaking ? (SPEAKER_SCALE[highlightStyle] || 1) : 1, opacity: (highlightStyle === 'dim' && anySpeaking && !isSpeaking) ? 0.55 : 1 }}
       exit={{ scale: 0, opacity: 0 }}
       whileTap={{ scale: 0.9 }}
-      onClick={onClick}
+      onClick={handleCellClick}
       onDoubleClick={onDoubleClick}
+      onPointerDown={startPress}
+      onPointerUp={cancelPress}
+      onPointerLeave={cancelPress}
       style={{ position: 'relative', width: size, height: size, cursor: 'pointer', flexShrink: 0 }}
     >
       {/* Speaker highlight ring — style-dependent (contained, no overlap) */}
@@ -123,6 +141,26 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking,
         >
           ● SPEAKING
         </motion.div>
+      )}
+      {/* Host quick actions — long-press to open, tap a cell to close */}
+      {quickOpen && (
+        <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: 'rgba(5,3,16,0.94)', zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: Math.max(6, size * 0.06) }}>
+          {[
+            { key: 'mute', Icon: guest.micMuted ? Mic : MicOff, label: guest.micMuted ? 'UNMUTE' : 'MUTE', color: guest.micMuted ? '#ef4444' : '#6DBF7E', onClick: onQuickMute },
+            { key: 'pin', Icon: Star, label: 'PIN', color: GOLD, onClick: onQuickPin },
+            { key: 'remove', Icon: X, label: 'REMOVE', color: '#ef4444', onClick: onQuickRemove },
+          ].map((btn) => {
+            const btnSize = Math.max(42, size * 0.3);
+            return (
+              <button key={btn.key}
+                onClick={(e) => { e.stopPropagation(); cancelPress(); if (btn.onClick) btn.onClick(); }}
+                style={{ width: btnSize, height: btnSize, borderRadius: 12, border: `1px solid ${btn.color}66`, background: btn.color + '20', color: btn.color, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
+                <btn.Icon size={Math.max(14, size * 0.1)} />
+                <span style={{ fontSize: Math.max(7, size * 0.055), fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>{btn.label}</span>
+              </button>
+            );
+          })}
+        </div>
       )}
     </motion.div>
   );
@@ -281,6 +319,7 @@ export default function PanelGrid({
   const [state, dispatch] = useReducer(reducer, { ...initState, guests: propGuests || [] });
   const lastTap = useRef({});
   const autoSpotlightTimer = useRef(null);
+  const [quickId, setQuickId] = useState(null);
   const [highlightStyle, setHighlightStyle] = useState(() => {
     try { return localStorage.getItem('seewhy_speaker_highlight') || 'glow'; } catch { return 'glow'; }
   });
@@ -316,6 +355,7 @@ export default function PanelGrid({
   const expandedGuest  = guests.find(g => g.id === state.expanded);
 
   function handleTap(id) {
+    if (quickId === id) { setQuickId(null); return; }
     const now = Date.now();
     const last = lastTap.current[id] || 0;
     if (now - last < 320) {
@@ -391,6 +431,20 @@ export default function PanelGrid({
                 anySpeaking={anySpeaking}
                 onClick={() => handleTap(guest.id)}
                 onDoubleClick={() => dispatch({ type: 'SET_EXPANDED', id: guest.id })}
+                quickOpen={isHost && quickId === guest.id}
+                onLongPress={isHost ? () => setQuickId(guest.id) : null}
+                onQuickMute={() => {
+                  dispatch({ type: 'TOGGLE_MIC', id: guest.id });
+                  base44.entities.Participant.update(guest.id, { is_audio_enabled: !guest.micMuted }).catch(() => {});
+                  setQuickId(null);
+                }}
+                onQuickPin={() => { dispatch({ type: 'SET_SPOTLIGHT', id: guest.id }); setQuickId(null); }}
+                onQuickRemove={() => {
+                  dispatch({ type: 'REMOVE_GUEST', id: guest.id });
+                  base44.entities.Participant.update(guest.id, { role: 'viewer', is_streaming: false }).catch(() => {});
+                  if (onRemoveGuest) onRemoveGuest(guest.id);
+                  setQuickId(null);
+                }}
               />
             ))}
             {Array.from({ length: ghostCount }).map((_, i) => (
@@ -403,7 +457,7 @@ export default function PanelGrid({
       {!compact && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, gap: 8 }}>
           <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
-            {guests.length}/{MAX_PANEL_GUESTS} · Tap = Spotlight · Double-tap = Director controls
+            {guests.length}/{MAX_PANEL_GUESTS} · Tap = Spotlight · Double-tap = Director{isHost ? ' · Hold = Quick Actions' : ''}
           </div>
           {isHost && <SpeakerHighlightSettings value={highlightStyle} onChange={setHighlightStyle} />}
         </div>
