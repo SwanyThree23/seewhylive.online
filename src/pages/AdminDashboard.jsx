@@ -8,6 +8,7 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
 import ReferralConfig from '../components/admin/ReferralConfig';
 import PayoutSummary from '../components/admin/PayoutSummary';
+import GuestModerationLog from '../components/admin/GuestModerationLog';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
@@ -564,10 +565,11 @@ export default function AdminDashboard() {
                 <span className="text-[11px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0" style={{ background: `${entry.color}18`, color: entry.color, border: `1px solid ${entry.color}33`, ...T }}>{entry.severity}</span>
               </div>
             ))}
-          </div>
-        )}
+            <GuestModerationLog />
+            </div>
+            )}
 
-        {/* REVENUE */}
+            {/* REVENUE */}
         {activeTab === 'revenue' && (
           <div className="space-y-6">
           <PayoutSummary />

@@ -1,0 +1,61 @@
+{
+  "name": "GuestModerationLog",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "mute",
+        "unmute",
+        "pin",
+        "remove"
+      ],
+      "description": "Quick-action performed on the guest"
+    },
+    "guest_user_id": {
+      "type": "string",
+      "description": "User ID of the guest acted upon"
+    },
+    "guest_name": {
+      "type": "string",
+      "description": "Display name of the guest (snapshot)"
+    },
+    "party_id": {
+      "type": "string",
+      "description": "Watch party / room context"
+    },
+    "performed_by": {
+      "type": "string",
+      "description": "Creator/host who performed the action"
+    },
+    "performed_by_name": {
+      "type": "string",
+      "description": "Display name of the creator (snapshot)"
+    }
+  },
+  "required": [
+    "action",
+    "guest_user_id",
+    "performed_by"
+  ],
+  "rls": {
+    "create": {
+      "data.performed_by": "{{user.id}}"
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

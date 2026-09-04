@@ -42,19 +42,33 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
   }
   function cancelPress() { clearTimeout(pressTimer.current); }
 
+  // Record each quick action to the admin moderation log
+  function logAction(action) {
+    base44.entities.GuestModerationLog.create({
+      action: action,
+      guest_user_id: member.user_id,
+      guest_name: member.user_name || '',
+      party_id: member.party_id || '',
+      performed_by: hostId,
+    }).catch(function() {});
+  }
+
   // Real quick actions (host)
   function toggleMute() {
     base44.entities.WatchPartyMember.update(member.id, { is_audio_enabled: !isMuted }).catch(function() {});
+    logAction(isMuted ? 'unmute' : 'mute');
     setQuickOpen(false);
     setMenuOpen(false);
   }
   function quickPin() {
     if (onSpotlight) onSpotlight(member.user_id);
+    logAction('pin');
     setQuickOpen(false);
     setMenuOpen(false);
   }
   function quickRemove() {
     base44.entities.WatchPartyMember.update(member.id, { is_active: false, left_at: new Date().toISOString() }).catch(function() {});
+    logAction('remove');
     setQuickOpen(false);
     setMenuOpen(false);
   }
