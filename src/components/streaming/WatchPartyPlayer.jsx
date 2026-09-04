@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Play, Pause, Volume2, VolumeX, Maximize, Radio } from 'lucide-react';
 import AdPollPopup from '@/components/swanybotpro/AdPollPopup';
+import { useAdTemplateTriggers } from '@/hooks/useAdTemplateTriggers';
 
 export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
   const videoRef = useRef(null);
@@ -11,6 +12,9 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const driftThreshold = 1.5; // Seconds allowable drift
+
+  // Fire armed ad templates (poll + host alert) when the broadcast clock crosses their offset
+  useAdTemplateTriggers(roomId, currentTime, isHost);
 
   useEffect(() => {
     if (!roomId) return;

@@ -4,10 +4,11 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Upload, Loader2, Film, Check, Copy,
   Wand2, Megaphone, User, Save, Link2,
-  Library, Zap, Plus, X,
+  Library, Zap, Plus, X, Calendar,
 } from 'lucide-react';
 import AssetDropZone from './AssetDropZone';
 import AssetLibrary from './AssetLibrary';
+import AdTemplateManager from './AdTemplateManager';
 import CinematicEffectsPanel, { effectsToPromptSuffix, DEFAULT_EFFECTS } from './CinematicEffectsPanel';
 
 const G = '#D4AF37';
@@ -197,6 +198,33 @@ export default function ProductAdStudio() {
 
   const busy = uploadMut.isPending || enhanceMut.isPending || generateMut.isPending;
   const canGenerate = !!style && (productName.trim() || productImage);
+
+  // Snapshot of the current ad setup — saved into a reusable AdTemplate
+  const currentSetup = {
+    product_name: productName,
+    product_desc: productDesc,
+    style_id: style.id,
+    aspect_id: aspect.id,
+    shot_count: shotCount,
+    effects,
+    product_image: productImage,
+    poll_question: pollOn ? pollQuestion.trim() : '',
+    poll_options: pollOn ? pollOptions.map((o) => o.trim()).filter(Boolean) : [],
+    ad_clip_url: adClips[0] || '',
+  };
+
+  // Reload a saved template back into the studio
+  const loadTemplate = (t) => {
+    setProductName(t.product_name || '');
+    setProductDesc(t.product_desc || '');
+    const s = STYLE_PRESETS.find((p) => p.id === t.style_id); if (s) setStyle(s);
+    const a = ASPECTS.find((p) => p.id === t.aspect_id); if (a) setAspect(a);
+    setShotCount(t.shot_count || 1);
+    if (t.effects) setEffects(t.effects);
+    if (t.product_image) setProductImage(t.product_image);
+    if (t.poll_question) { setPollOn(true); setPollQuestion(t.poll_question); setPollOptions(t.poll_options && t.poll_options.length >= 2 ? t.poll_options : ['', '']); }
+    if (t.ad_clip_url) setAdClips([t.ad_clip_url]);
+  };
 
   return (
     <div className="space-y-4">
@@ -419,6 +447,18 @@ export default function ProductAdStudio() {
             {vodId ? <><Check className="w-4 h-4" /> Saved to VOD Library</> : <><Save className="w-4 h-4" /> Save to VOD Library</>}
           </button>
         </div>
+      </Section>
+
+      {/* ── TEMPLATES & SCHEDULE ────────────────────────────────────────── */}
+      <Section title="6 · Templates & Schedule" accent={EMERALD} right={
+        <span className="text-[9px] font-black uppercase tracking-wider flex items-center gap-1" style={{ color: EMERALD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <Calendar className="w-3 h-3" /> reuse
+        </span>
+      }>
+        <p className="text-[11px] mb-3" style={{ color: 'rgba(255,255,255,0.55)' }}>
+          Save this setup (product, style, effects, poll) as a template and arm it to auto-fire at a specific timestamp during your live broadcast — no more rebuilding from scratch every stream.
+        </p>
+        <AdTemplateManager currentSetup={currentSetup} onLoad={loadTemplate} />
       </Section>
 
       {/* ── ASSET LIBRARY PICKER ───────────────────────────────────────── */}

@@ -1,0 +1,114 @@
+{
+  "name": "AdTemplate",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Creator who owns the template"
+    },
+    "template_name": {
+      "type": "string",
+      "description": "Display name for the saved ad setup"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "product_desc": {
+      "type": "string"
+    },
+    "style_id": {
+      "type": "string"
+    },
+    "aspect_id": {
+      "type": "string"
+    },
+    "shot_count": {
+      "type": "number",
+      "default": 1
+    },
+    "effects": {
+      "type": "object",
+      "description": "Cinematic effects snapshot"
+    },
+    "product_image": {
+      "type": "string",
+      "description": "Saved product image URL"
+    },
+    "poll_question": {
+      "type": "string"
+    },
+    "poll_options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ad_clip_url": {
+      "type": "string",
+      "description": "Generated ad clip to play when fired"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Room binding for scheduled auto-fire"
+    },
+    "trigger_offset_seconds": {
+      "type": "number",
+      "default": 0,
+      "description": "Seconds into the broadcast when the ad fires"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "fired"
+      ],
+      "default": "draft"
+    }
+  },
+  "required": [
+    "creator_id",
+    "template_name"
+  ],
+  "rls": {
+    "create": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
