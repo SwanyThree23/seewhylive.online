@@ -110,8 +110,12 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
   // Own cell: publish stream once both stream and rtcManager are ready
   useEffect(function() {
+    console.log('[OctCell publish-check]', { isOwnCell: isOwnCell, streamReady: streamReady, hasRtcManager: !!rtcManager, hasSendTransport: !!(rtcManager && rtcManager.sendTransport) });
     if (!isOwnCell || !streamReady || !rtcManager || !rtcManager.sendTransport) return;
-    rtcManager.publishStream(streamRef.current).catch(function(e) {
+    console.log('[OctCell] calling publishStream now');
+    rtcManager.publishStream(streamRef.current).then(function() {
+      console.log('[OctCell] publishStream SUCCEEDED');
+    }).catch(function(e) {
       console.error('[OctCell] publishStream error:', e);
     });
   }, [isOwnCell, streamReady, rtcManager]);

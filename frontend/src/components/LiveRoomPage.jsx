@@ -560,14 +560,14 @@ export default function LiveRoomPage({
       if (data.privateMode)    setPrivateMode(true);
       if (data.subscriberOnly) setSubscriberOnly(true);
       try {
-        await rtcManager.connect(socket, roomId, userId, role);
+        console.log('[LiveRoomPage] calling rtcManager.connect', { roomId: roomId, userId: userId, role: role }); await rtcManager.connect(socket, roomId, userId, role); console.log('[LiveRoomPage] connect() RESOLVED');
         if (!mounted) return;
         setRtcReady(true);
         // Wire up stream health stats (only meaningful for hosts/cohosts sending media)
         rtcManager.on('stats', onStatsUpdate);
       } catch(e) {
         if (!mounted) return;
-        if (addToast) addToast('WebRTC: ' + e.message, 'error');
+        console.error('[LiveRoomPage] connect() REJECTED', e); if (addToast) addToast('WebRTC: ' + e.message, 'error');
       }
     };
     socket.on('join-room-ack', onJoinRoomAck);
