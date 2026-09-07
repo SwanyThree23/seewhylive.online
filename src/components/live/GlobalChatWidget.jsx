@@ -124,6 +124,7 @@ export default function GlobalChatWidget() {
         initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1, type: 'spring' }}
         whileTap={{ scale: 0.9 }}
         onClick={() => { setOpen(true); setMinimized(false); }}
+        aria-label="Open global chat"
         className="fixed bottom-32 left-4 z-40 w-13 h-13 flex items-center justify-center rounded-2xl shadow-xl md:bottom-10"
         style={{ width: 52, height: 52, background: 'linear-gradient(135deg, #2C1810, #6B4423)', border: '1px solid rgba(212,175,55,0.35)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
         <MessageSquare className="w-5 h-5" style={{ color: '#d4af37' }} />
@@ -169,6 +170,7 @@ export default function GlobalChatWidget() {
                 {/* Language picker */}
                 <div className="relative">
                   <button onClick={() => setShowLangPicker(!showLangPicker)}
+                    aria-label="Select language"
                     className="flex items-center gap-1 px-2 py-1 rounded-xl text-xs font-bold transition-all"
                     style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#d4af37' }}>
                     <span>{selectedLang.flag}</span>
@@ -194,12 +196,14 @@ export default function GlobalChatWidget() {
                 </div>
 
                 <button onClick={() => setMinimized(!minimized)}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  aria-label="Minimize chat"
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
                   style={{ background: 'rgba(255,255,255,0.05)' }}>
                   <Minimize2 className="w-3.5 h-3.5 text-white/50" />
                 </button>
                 <button onClick={() => setOpen(false)}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  aria-label="Close chat"
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
                   style={{ background: 'rgba(255,255,255,0.05)' }}>
                   <X className="w-3.5 h-3.5 text-white/50" />
                 </button>
@@ -279,6 +283,7 @@ export default function GlobalChatWidget() {
                 <div className="shrink-0 px-3 pb-3 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                   <div className="flex gap-2 items-end">
                     <button onClick={() => setShowEmoji(!showEmoji)}
+                      aria-label="Emoji picker"
                       className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                       style={{ background: showEmoji ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                       <Smile className="w-4 h-4" style={{ color: showEmoji ? '#d4af37' : 'rgba(255,255,255,0.4)' }} />
@@ -295,6 +300,7 @@ export default function GlobalChatWidget() {
                       />
                     </div>
                     <button onClick={sendMessage} disabled={!input.trim() || translating}
+                      aria-label="Send message"
                       className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90 disabled:opacity-30"
                       style={{ background: input.trim() ? '#d4af37' : 'rgba(212,175,55,0.12)' }}>
                       <Send className="w-4 h-4" style={{ color: input.trim() ? '#000' : '#d4af37' }} />

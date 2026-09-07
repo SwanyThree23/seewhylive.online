@@ -368,6 +368,7 @@ export default function SwanyBotWidget({ pageName }) {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ delay: 0.5, type: 'spring', bounce: 0.5 }}
             onClick={openAndGreet}
+            aria-label="Open SwanyBot chat"
             className="fixed bottom-36 left-4 z-40 w-14 h-14 rounded-2xl flex items-center justify-center md:bottom-20 md:left-6"
             style={{
               background: 'linear-gradient(135deg, #080B18 0%, #0D1022 50%, #080B18 100%)',
@@ -433,8 +434,9 @@ export default function SwanyBotWidget({ pageName }) {
                     setAudioEnabled(!audioEnabled);
                     if (audioEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
                   }}
-                  className="w-6 h-6 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
                   title={audioEnabled ? 'Mute SwanyBot' : 'Unmute SwanyBot'}
+                  aria-label={audioEnabled ? 'Mute SwanyBot' : 'Unmute SwanyBot'}
                 >
                   <Volume2 className="w-3.5 h-3.5" style={{ color: audioEnabled ? G : 'rgba(255,255,255,0.2)' }} />
                 </button>
@@ -444,7 +446,8 @@ export default function SwanyBotWidget({ pageName }) {
                 />
                 <button
                   onClick={e => { e.stopPropagation(); setOpen(false); setMinimized(false); if (window.speechSynthesis) window.speechSynthesis.cancel(); }}
-                  className="w-6 h-6 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
+                  aria-label="Close chat"
                 >
                   <X className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.35)' }} />
                 </button>
@@ -597,6 +600,7 @@ export default function SwanyBotWidget({ pageName }) {
                         boxShadow: listening ? '0 0 12px rgba(192,57,43,0.4)' : 'none'
                       }}
                       title={listening ? 'Stop listening' : 'Speak your question'}
+                      aria-label={listening ? 'Stop listening' : 'Speak your question'}
                     >
                       {listening
                         ? <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.7 }}>
@@ -621,6 +625,7 @@ export default function SwanyBotWidget({ pageName }) {
                       disabled={!input.trim() || loading}
                       className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90 disabled:opacity-30"
                       style={{ background: input.trim() ? G : 'rgba(212,175,55,0.15)', border: `1px solid ${G}30` }}
+                      aria-label="Send message"
                     >
                       <Send className="w-3.5 h-3.5" style={{ color: input.trim() ? '#000' : G }} />
                     </button>

@@ -320,7 +320,7 @@ export default function Layout({ children, currentPageName }) {
           {/* Right actions */}
           <div className="flex items-center gap-1.5 md:gap-2">
             {/* Search */}
-            <button onClick={function() { setShowSearch(true); }}
+            <button onClick={function() { setShowSearch(true); }} aria-label="Search"
               className="flex items-center justify-center rounded-xl transition-all active:scale-95"
               style={{ width: 44, height: 44, minWidth: 44, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', userSelect: 'none', WebkitUserSelect: 'none' }}>
               <SearchIcon className="w-4.5 h-4.5 text-white/50" style={{ width: 18, height: 18 }} />
@@ -333,6 +333,7 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Hamburger — animated bars morph to × */}
             <button
+              aria-label="Open menu"
               className="flex items-center justify-center rounded-xl transition-all active:scale-95"
               style={{ width: 44, height: 44, minWidth: 44, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', userSelect: 'none', WebkitUserSelect: 'none' }}
               onClick={function() { setShowMobileMenu(function(v) { return !v; }); }}>
@@ -394,7 +395,7 @@ export default function Layout({ children, currentPageName }) {
                     <span className="text-[11px] text-white/30 leading-none mt-0.5" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.2em' }}>LIVE</span>
                   </div>
                 </div>
-                <button onClick={function() { setShowMobileMenu(false); }}
+                <button onClick={function() { setShowMobileMenu(false); }} aria-label="Close menu"
                   className="flex items-center justify-center rounded-xl"
                   style={{ width: 44, height: 44, minWidth: 44, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', WebkitUserSelect: 'none' }}>
                   <X className="w-4 h-4" />

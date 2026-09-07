@@ -83,6 +83,7 @@ export default function UserMenu({ user, isAdmin }) {
     <div style={{ position:'relative' }}>
       <button
         onClick={() => setOpen(v => !v)}
+        aria-label="Open account menu"
         style={{
           width:40, height:40, borderRadius:'50%', overflow:'hidden',
           background:'linear-gradient(135deg,#800020,#D4854A)', border:'none', cursor:'pointer',

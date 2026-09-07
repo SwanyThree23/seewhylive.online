@@ -122,7 +122,8 @@ export default function NotificationHub() {
       {/* Bell Icon */}
       <motion.button
         onClick={() => setOpen(!open)}
-        className="relative w-9 h-9 rounded-lg flex items-center justify-center transition-all"
+        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+        className="relative w-11 h-11 rounded-lg flex items-center justify-center transition-all"
         style={{
           background: open ? `${G}15` : 'rgba(255,255,255,0.05)',
           border: `1px solid ${open ? G + '30' : 'rgba(255,255,255,0.08)'}`,
@@ -170,7 +171,7 @@ export default function NotificationHub() {
                     <Check className="w-3 h-3" /> All
                   </button>
                 )}
-                <button onClick={() => setOpen(false)} className="w-6 h-6 flex items-center justify-center rounded hover:bg-white/10">
+                <button onClick={() => setOpen(false)} aria-label="Close notifications" className="w-9 h-9 flex items-center justify-center rounded hover:bg-white/10">
                   <X className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.5)' }} />
                 </button>
               </div>
@@ -231,7 +232,8 @@ export default function NotificationHub() {
                           e.stopPropagation();
                           deleteMutation.mutate(notif.id);
                         }}
-                        className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 shrink-0"
+                        aria-label="Delete notification"
+                        className="w-8 h-8 flex items-center justify-center rounded hover:bg-white/10 shrink-0"
                       >
                         <X className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.4)' }} />
                       </button>
