@@ -15,6 +15,7 @@ import {
 // DollarSign, Heart, Sparkles already imported above
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
+import ThemeToggle from '@/components/shared/ThemeToggle';
 import GlobalSearch from '@/components/shared/GlobalSearch';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -325,6 +326,8 @@ export default function Layout({ children, currentPageName }) {
               style={{ width: 44, height: 44, minWidth: 44, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', userSelect: 'none', WebkitUserSelect: 'none' }}>
               <SearchIcon className="w-4.5 h-4.5 text-white/50" style={{ width: 18, height: 18 }} />
             </button>
+
+            <ThemeToggle />
 
             <div className="relative">
               <NotificationHub />

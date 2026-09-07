@@ -115,6 +115,33 @@
   }
 }
 
+/* Light theme — opt-in via .theme-light on <html>.
+   Only affects shadcn-token surfaces; inline dark styles are untouched. */
+.theme-light {
+  color-scheme: light;
+  --background: 0 0% 100%;
+  --foreground: 240 10% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 10%;
+  --secondary: 240 5% 96%;
+  --secondary-foreground: 240 6% 20%;
+  --muted: 240 5% 96%;
+  --muted-foreground: 240 4% 40%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --sidebar-background: 0 0% 98%;
+  --sidebar-foreground: 240 6% 20%;
+  --sidebar-accent: 240 5% 94%;
+  --sidebar-accent-foreground: 240 6% 20%;
+  --sidebar-border: 240 6% 90%;
+}
+.theme-light body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
 /* SeeWhy LIVE utility classes */
 @layer utilities {
   .font-display { font-family: var(--font-display); }
