@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { DollarSign, Heart, Sparkles, Gift } from 'lucide-react';
+import { DollarSign, Heart, Sparkles, Gift, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
 export default function QuickTip({ recipientId, recipientName, onTipSent }) {
   const [selectedAmount, setSelectedAmount] = useState(null);
+  const [pendingAmount, setPendingAmount] = useState(null);
   const queryClient = useQueryClient();
 
   const quickAmounts = [1, 5, 10, 25, 50, 100];
@@ -80,7 +81,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
 
       return { transaction, pointsEarned, amount };
     },
-    onError: () => toast.error('Tip failed. Please try again.'),
+    onError: () => { setPendingAmount(null); setSelectedAmount(null); toast.error('Tip failed. Please try again.'); },
     onSuccess: ({ transaction, pointsEarned, amount }) => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['loyalty'] });
@@ -93,6 +94,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
       });
 
       toast.success(`Tipped $${amount}! +${pointsEarned} loyalty points 🎉`);
+      setPendingAmount(null);
       setSelectedAmount(null);
       onTipSent?.();
     },
@@ -107,12 +109,13 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
           variant={selectedAmount === amount ? "default" : "outline"}
           onClick={() => {
             setSelectedAmount(amount);
+            setPendingAmount(amount);
             tipMutation.mutate(amount);
           }}
           disabled={tipMutation.isPending}
           className="flex items-center gap-1"
         >
-          <DollarSign className="w-3 h-3" />
+          {pendingAmount === amount ? <Loader2 className="w-3 h-3 animate-spin" /> : <DollarSign className="w-3 h-3" />}
           {amount}
         </Button>
       ))}

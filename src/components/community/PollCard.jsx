@@ -11,6 +11,7 @@ import moment from 'moment';
 
 export default function PollCard({ poll }) {
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -51,8 +52,9 @@ export default function PollCard({ poll }) {
         total_votes: poll.total_votes + 1,
       });
     },
-    onError: () => toast.error('Failed to submit vote. Please try again.'),
+    onError: () => { setSubmitting(false); toast.error('Failed to submit vote. Please try again.'); },
     onSuccess: () => {
+      setSubmitting(false);
       queryClient.invalidateQueries({ queryKey: ['polls'] });
       queryClient.invalidateQueries({ queryKey: ['poll-vote'] });
       toast.success('Vote submitted!');
@@ -68,11 +70,19 @@ export default function PollCard({ poll }) {
 
   const handleVote = () => {
     if (selectedOptions.length === 0) return;
+    setSubmitting(true);
     voteMutation.mutate();
   };
 
   const hasVoted = !!userVote;
   const isEnded = poll.status === 'ended' || (poll.ends_at && new Date(poll.ends_at) < new Date());
+
+  // Optimistic: reflect the user's selection instantly before the server confirms
+  const optimisticVoted = submitting || hasVoted;
+  const displayOptions = submitting
+    ? poll.options.map(opt => ({ ...opt, votes: selectedOptions.includes(opt.id) ? opt.votes + 1 : opt.votes }))
+    : poll.options;
+  const displayTotal = submitting ? poll.total_votes + 1 : poll.total_votes;
 
   const toggleOption = (optionId) => {
     if (hasVoted || isEnded) return;
@@ -102,12 +112,12 @@ export default function PollCard({ poll }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {poll.options.map((option) => {
-          const percentage = poll.total_votes > 0 
-            ? Math.round((option.votes / poll.total_votes) * 100) 
+        {displayOptions.map((option) => {
+          const percentage = displayTotal > 0
+            ? Math.round((option.votes / displayTotal) * 100)
             : 0;
           const isSelected = selectedOptions.includes(option.id);
-          const hasUserVoted = userVote?.option_ids?.includes(option.id);
+          const hasUserVoted = (userVote?.option_ids?.includes(option.id)) || (submitting && isSelected);
 
           return (
             <motion.div
@@ -119,10 +129,10 @@ export default function PollCard({ poll }) {
                 variant={isSelected ? "default" : "outline"}
                 className="w-full justify-start relative overflow-hidden"
                 onClick={() => toggleOption(option.id)}
-                disabled={hasVoted || isEnded}
+                disabled={optimisticVoted || isEnded}
               >
                 {/* Progress bar background */}
-                {hasVoted && (
+                {optimisticVoted && (
                   <div
                     className="absolute inset-0 bg-primary/10"
                     style={{ width: `${percentage}%` }}
@@ -134,7 +144,7 @@ export default function PollCard({ poll }) {
                     {hasUserVoted && <CheckCircle2 className="w-4 h-4" />}
                     <span>{option.text}</span>
                   </div>
-                  {hasVoted && (
+                  {optimisticVoted && (
                     <span className="font-semibold">{percentage}%</span>
                   )}
                 </div>
@@ -143,13 +153,13 @@ export default function PollCard({ poll }) {
           );
         })}
 
-        {!hasVoted && !isEnded && (
+        {!optimisticVoted && !isEnded && (
           <Button
             onClick={handleVote}
-            disabled={selectedOptions.length === 0}
+            disabled={selectedOptions.length === 0 || submitting}
             className="w-full"
           >
-            Submit Vote
+            {submitting ? 'Submitting…' : 'Submit Vote'}
           </Button>
         )}
 

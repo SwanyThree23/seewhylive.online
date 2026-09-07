@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Upload, Play, Edit, Trash2, Eye, Sparkles, Video, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import AIHighlightGenerator from './AIHighlightGenerator';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 export default function RecordingManager({ userId }) {
   const [selectedRecording, setSelectedRecording] = useState(null);
@@ -369,16 +370,13 @@ export default function RecordingManager({ userId }) {
             </div>
             <div>
               <label className="text-sm font-medium">Category</label>
-              <select
-                className="w-full border rounded-md p-2"
+              <NativeSelect
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              >
-                <option value="">Select category</option>
-                {categories.filter(c => c !== 'all').map(cat => (
-                  <option key={cat} value={cat} className="capitalize">{cat}</option>
-                ))}
-              </select>
+                onChange={(v) => setFormData({ ...formData, category: v })}
+                placeholder="Select category"
+                options={categories.filter(c => c !== 'all').map(cat => ({ value: cat, label: cat.charAt(0).toUpperCase() + cat.slice(1) }))}
+                style={{ width: '100%' }}
+              />
             </div>
             <Button 
               onClick={handleUpload} 

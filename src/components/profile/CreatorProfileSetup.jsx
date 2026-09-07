@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Sparkles } from 'lucide-react';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 const CATEGORIES = ['gaming', 'music', 'education', 'talk', 'fitness', 'cooking', 'art', 'tech', 'other'];
 
@@ -99,15 +100,12 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
 
           <div>
             <label style={{ fontSize: 14, fontWeight: 500, color: '#fff', display: 'block', marginBottom: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>Primary Category</label>
-            <select
+            <NativeSelect
               value={category}
-              onChange={e => setCategory(e.target.value)}
-              style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
-            >
-              {CATEGORIES.map(c => (
-                <option key={c} value={c} style={{ textTransform: 'capitalize' }}>{c}</option>
-              ))}
-            </select>
+              onChange={(v) => setCategory(v)}
+              options={CATEGORIES.map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) }))}
+              style={{ width: '100%' }}
+            />
           </div>
 
           <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, padding: 12, fontSize: 14, color: '#C9A84C' }}>

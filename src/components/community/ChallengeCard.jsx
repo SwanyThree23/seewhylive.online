@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Trophy, Target, Calendar, Users, Award } from 'lucide-react';
+import { Trophy, Target, Calendar, Users, Award, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -10,6 +10,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function ChallengeCard({ challenge, userParticipation, userId }) {
   const queryClient = useQueryClient();
+  const [joining, setJoining] = useState(false);
 
   const joinChallengeMutation = useMutation({
     mutationFn: async () => {
@@ -21,6 +22,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
       });
     },
     onSuccess: () => {
+      setJoining(false);
       queryClient.invalidateQueries({ queryKey: ['challenges'] });
       queryClient.invalidateQueries({ queryKey: ['challengeParticipation'] });
       toast.success('Joined challenge successfully!');
@@ -32,7 +34,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
         }).catch(() => {});
       }
     },
-    onError: () => toast.error('Action failed.'),
+    onError: () => { setJoining(false); toast.error('Action failed.'); },
   });
 
   const isParticipating = !!userParticipation;
@@ -140,8 +142,8 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
         {challenge.status === 'active' && (
           <>
             {!isParticipating ? (
-              <button onClick={() => joinChallengeMutation.mutate()} style={{ ...btnBase, background: '#800020', color: '#fff' }}>
-                Join Challenge
+              <button onClick={() => { setJoining(true); joinChallengeMutation.mutate(); }} disabled={joining} style={{ ...btnBase, background: '#800020', color: '#fff', opacity: joining ? 0.7 : 1 }}>
+                {joining ? <><Loader2 className="w-4 h-4 animate-spin" /> Joining…</> : 'Join Challenge'}
               </button>
             ) : isCompleted ? (
               <button disabled style={{ ...btnBase, background: '#4A9B5E', color: '#fff', cursor: 'default' }}>
