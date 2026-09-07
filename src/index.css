@@ -207,11 +207,19 @@
     background: linear-gradient(135deg, #800020 0%, #A0522D 40%, #d4af37 100%);
   }
 
-  /* Mobile: boost sub-12px text to readable minimums */
+  /* Mobile: boost sub-12px text to readable minimums (accessibility floor) */
   @media (max-width: 640px) {
-    .text-\[10px\] { font-size: 12px; }
-    .text-\[11px\] { font-size: 12px; }
-    .text-\[12px\] { font-size: 13px; }
-    .text-\[9px\]  { font-size: 11px; }
+    .text-\[9px\]  { font-size: 12px; }
+    .text-\[10px\] { font-size: 13px; }
+    .text-\[11px\] { font-size: 13px; }
+    .text-\[12px\] { font-size: 14px; }
+  }
+
+  /* Visible focus outline for keyboard / accessibility on interactive elements */
+  a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
+  input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 2px solid rgba(212,175,55,0.7);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 }

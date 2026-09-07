@@ -5,6 +5,7 @@ import { Bell, Check, Trash2, Gift, Users, Radio, Trophy, Megaphone } from 'luci
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
+import PullToRefresh from '../components/shared/PullToRefresh';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -102,6 +103,7 @@ export default function NotificationsPage() {
   };
 
   return (
+    <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ queryKey: ['notifications'] }); }}>
     <div className="min-h-screen pb-8" style={{ background: '#080B18', ...T }}>
 
       {/* ── sticky header ── */}
@@ -248,5 +250,6 @@ export default function NotificationsPage() {
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
     </div>
+    </PullToRefresh>
   );
 }
