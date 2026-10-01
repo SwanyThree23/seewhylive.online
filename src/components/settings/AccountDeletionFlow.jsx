@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Drawer } from 'vaul';
 import { toast } from 'sonner';
-import { Trash2 } from 'lucide-react';
+import { Trash2, X } from 'lucide-react';
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const DANGER = '#EF4444';
@@ -90,7 +90,14 @@ export default function AccountDeletionFlow({ user }) {
             style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(192,57,43,0.3)', paddingBottom: 40 }}>
             <Drawer.Handle className="mx-auto mt-3 mb-5 w-10 h-1 rounded-full bg-white/15" />
 
-            <div className="px-5 text-center pb-3" style={{ borderBottom: '1px solid rgba(192,57,43,0.1)' }}>
+            <div className="relative px-5 text-center pb-3" style={{ borderBottom: '1px solid rgba(192,57,43,0.1)' }}>
+              <button
+                onClick={close}
+                aria-label="Close"
+                className="absolute top-0 right-3 flex items-center justify-center rounded-xl"
+                style={{ width: 44, height: 44, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', userSelect: 'none' }}>
+                <X className="w-4 h-4" />
+              </button>
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
                 style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)' }}>
                 <Trash2 className="w-5 h-5" style={{ color: DANGER }} />
