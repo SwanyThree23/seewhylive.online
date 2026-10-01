@@ -84,6 +84,10 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
     onError: () => toast.error('Action failed.'),
   });
 
+  // Callers with no tier to offer (the Settings page renders this with a null
+  // tier) get nothing instead of a crash on tier.id.
+  if (!tier) return null;
+
   const activeFeatures = FEATURE_LABELS.filter(f => tier[f.key]);
   const allBenefits = [...activeFeatures.map(f => ({ label: f.label })), ...(tier.benefits || []).map(b => ({ label: b }))];
 
