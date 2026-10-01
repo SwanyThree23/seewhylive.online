@@ -6,6 +6,10 @@
 
 @layer base {
   :root {
+    /* SeeWhy LIVE is dark-only, app-wide. Forcing color-scheme keeps native UI
+       (scrollbars, form controls, date pickers, autofill) dark no matter what
+       the visitor's OS preference is. */
+    color-scheme: dark;
     /* SeeWhy LIVE v16 Broadcast Maximalism Design Tokens */
     --ab: #0B0B18;          /* abyss - deepest bg */
     --bu: #0D1022;          /* bunker - card bg */
@@ -99,48 +103,10 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --background: 0 0% 4%;
-    --foreground: 0 0% 96%;
-    --card: 240 20% 8%;
-    --card-foreground: 0 0% 96%;
-    --popover: 240 20% 6%;
-    --popover-foreground: 0 0% 96%;
-    --border: 240 10% 14%;
-    --input: 240 10% 12%;
-    --muted: 240 10% 12%;
-    --muted-foreground: 0 0% 50%;
-  }
-}
-
-/* Light theme — opt-in via .theme-light on <html>.
-   Only affects shadcn-token surfaces; inline dark styles are untouched. */
-.theme-light {
-  color-scheme: light;
-  --background: 0 0% 100%;
-  --foreground: 240 10% 10%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 10%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 10%;
-  --secondary: 240 5% 96%;
-  --secondary-foreground: 240 6% 20%;
-  --muted: 240 5% 96%;
-  --muted-foreground: 240 4% 40%;
-  --border: 240 6% 90%;
-  --input: 240 6% 90%;
-  --sidebar-background: 0 0% 98%;
-  --sidebar-foreground: 240 6% 20%;
-  --sidebar-accent: 240 5% 94%;
-  --sidebar-accent-foreground: 240 6% 20%;
-  --sidebar-border: 240 6% 90%;
-}
-.theme-light body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-}
+/* SeeWhy LIVE is dark-only, app-wide — there is no light theme.
+   The single dark token set above is the only theme, so token-based surfaces
+   (bg-background, bg-card, text-foreground, border-border, …) can never flip
+   light on top of the app's dark design. */
 
 /* SeeWhy LIVE utility classes */
 @layer utilities {
