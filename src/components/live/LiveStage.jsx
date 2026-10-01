@@ -434,9 +434,12 @@ function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal,
       {onPin && (
         <button
           onClick={onPin}
-          className={`absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center transition-all
+          aria-label={isPinned ? 'Unpin video' : 'Pin video'}
+          aria-pressed={!!isPinned}
+          className={`absolute top-2 right-2 rounded-lg flex items-center justify-center transition-all
             ${isPinned ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
           style={{
+            width: 44, height: 44, minWidth: 44, minHeight: 44,
             background: isPinned ? 'rgba(212,175,55,0.2)' : 'rgba(0,0,0,0.5)',
             border: `1px solid ${isPinned ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)'}`,
           }}
@@ -506,7 +509,9 @@ function ChatPanel({ messages, onSend, onClose }) {
         <span className="text-[11px] font-black uppercase tracking-widest" style={{ fontFamily: FONT, color: GOLD }}>
           Live Chat
         </span>
-        <button onClick={onClose} className="transition-colors" style={{ color: 'rgba(255,255,255,0.3)' }}>
+        <button onClick={onClose} aria-label="Close chat"
+          className="flex items-center justify-center rounded-lg transition-colors"
+          style={{ color: 'rgba(255,255,255,0.3)', width: 44, height: 44, minWidth: 44, minHeight: 44 }}>
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -552,8 +557,9 @@ function ChatPanel({ messages, onSend, onClose }) {
         />
         <button
           onClick={handleSend}
-          className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all"
-          style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.28)' }}
+          aria-label="Send message"
+          className="rounded-lg flex items-center justify-center shrink-0 transition-all"
+          style={{ width: 44, height: 44, minWidth: 44, minHeight: 44, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.28)' }}
         >
           <Send className="w-3 h-3" style={{ color: GOLD }} />
         </button>
@@ -699,6 +705,10 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
             {otherTiles.map(tile => (
               <div
                 key={tile.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Pin ${tile.label}`}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePin(tile.id); } }}
                 className="shrink-0 rounded-xl overflow-hidden cursor-pointer transition-all"
                 style={{
                   width:  120,
@@ -783,8 +793,8 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
             {!isPublishing && (
               <button
                 onClick={upgradeToParticipant}
-                className="mt-4 flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-xs transition-all"
-                style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD, fontFamily: FONT }}
+                className="mt-4 flex items-center gap-1.5 px-4 rounded-xl font-black uppercase text-xs transition-all"
+                style={{ minHeight: 44, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD, fontFamily: FONT }}
               >
                 <Zap className="w-3.5 h-3.5" /> Go on Stage
               </button>
@@ -852,8 +862,11 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
           {/* Chat toggle */}
           <button
             onClick={() => setShowChat(v => !v)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all"
+            aria-label={showChat ? 'Hide live chat' : 'Show live chat'}
+            aria-pressed={showChat}
+            className="flex items-center gap-1.5 px-2.5 rounded-lg transition-all"
             style={{
+              minHeight: 44,
               background: showChat ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
               border:     `1px solid ${showChat ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.08)'}`,
             }}
@@ -893,8 +906,8 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
           {!isPublishing && (
             <button
               onClick={upgradeToParticipant}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-xs transition-all"
-              style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD }}
+              className="flex items-center gap-1.5 px-3 rounded-xl font-black uppercase text-xs transition-all"
+              style={{ minHeight: 44, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD }}
             >
               <Zap className="w-3.5 h-3.5" />
               Go on Stage
@@ -907,7 +920,9 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               <button
                 key={emoji}
                 onClick={() => sendReaction(emoji)}
-                className="text-base leading-none px-1 py-0.5 rounded-lg transition-all hover:scale-125 active:scale-110"
+                aria-label={`React with ${emoji}`}
+                className="text-base leading-none rounded-lg transition-all hover:scale-125 active:scale-110"
+                style={{ minWidth: 44, minHeight: 44 }}
                 title={`React with ${emoji}`}
               >
                 {emoji}
@@ -919,8 +934,9 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
           {onLeave && (
             <button
               onClick={onLeave}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-xs transition-all"
-              style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)', color: '#C0392B' }}
+              aria-label="Leave stage"
+              className="flex items-center gap-1.5 px-3 rounded-xl font-black uppercase text-xs transition-all"
+              style={{ minHeight: 44, background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)', color: '#C0392B' }}
             >
               Leave
             </button>
@@ -1009,9 +1025,11 @@ function StageBtn({ icon, label, onClick, active = true, danger = false }) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl border transition-all text-[10px] font-bold"
+      aria-label={label}
+      className="flex flex-col items-center justify-center gap-0.5 px-3 rounded-xl border transition-all text-[10px] font-bold"
       style={{
         fontFamily: FONT,
+        minHeight: 44, minWidth: 44,
         background: danger ? 'rgba(192,57,43,0.14)' : 'rgba(255,255,255,0.05)',
         border:     `1px solid ${danger ? 'rgba(192,57,43,0.3)' : 'rgba(255,255,255,0.1)'}`,
         color:      danger ? RED : 'rgba(255,255,255,0.6)',

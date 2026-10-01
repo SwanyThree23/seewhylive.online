@@ -149,7 +149,9 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, isHo
           <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
             <button
               onClick={() => onSpotlight?.(participant.id)}
-              className="w-6 h-6 rounded bg-black/60 hover:bg-[#d4af37]/20 flex items-center justify-center"
+              aria-label={isSpotlight ? 'Remove from spotlight' : 'Spotlight guest'}
+              className="rounded bg-black/60 hover:bg-[#d4af37]/20 flex items-center justify-center"
+              style={{ minWidth: 44, minHeight: 44 }}
             >
               {isSpotlight ? <Minimize2 className="w-3 h-3 text-white" /> : <Maximize2 className="w-3 h-3 text-white" />}
             </button>
@@ -185,8 +187,9 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, isHo
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
             <button
               onClick={e => { e.stopPropagation(); onSpotlight?.(participant.id); }}
-              className="w-5 h-5 rounded flex items-center justify-center"
-              style={{ background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer' }}>
+              aria-label={isSpotlight ? 'Remove from spotlight' : 'Spotlight guest'}
+              className="rounded flex items-center justify-center"
+              style={{ minWidth: 44, minHeight: 44, background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer' }}>
               {isSpotlight ? <Minimize2 className="w-3 h-3 text-white" /> : <Maximize2 className="w-3 h-3 text-white" />}
             </button>
           </div>
@@ -236,8 +239,12 @@ function EmptySlot({ onInvite, isHost }) {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 0.4 }}
+      role="button"
+      tabIndex={0}
+      aria-label="Invite a guest to the stage"
       className="flex flex-col items-center gap-1 cursor-pointer group"
       onClick={onInvite}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onInvite?.(); } }}
     >
       <div style={{
         clipPath: OCT, width: 80, height: 80,
@@ -338,11 +345,14 @@ export default React.memo(function GuestGrid({
             · {viewers.length} viewing
           </span>
         )}
-        <div className="flex gap-1 ml-auto">
+        <div className="flex gap-1 ml-auto shrink-0 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {LAYOUTS.map(n => (
             <button key={n} onClick={() => setLayoutSlots(n)}
-              className="text-[9px] w-5 h-5 rounded border transition-all flex items-center justify-center"
+              aria-label={`Show ${n} stage slots`}
+              aria-pressed={layoutSlots === n}
+              className="text-[9px] rounded border transition-all flex items-center justify-center shrink-0"
               style={{
+                minWidth: 44, minHeight: 44,
                 border: `1px solid ${layoutSlots === n ? GOLD : 'rgba(255,255,255,0.1)'}`,
                 color: layoutSlots === n ? GOLD : 'rgba(255,255,255,0.35)',
                 background: layoutSlots === n ? 'rgba(212,175,55,0.1)' : 'transparent',

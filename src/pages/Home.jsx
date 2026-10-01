@@ -31,36 +31,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import CreatorBridge from '../components/social/CreatorBridge';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import OnlinePresence from '../components/shared/OnlinePresence';
-// ── Pull-to-refresh hook ───────────────────────────────────────────────────
-function usePullToRefresh(onRefresh) {
-  var [pullY, setPullY] = useState(0);
-  var [refreshing, setRefreshing] = useState(false);
-  var startY = React.useRef(0);
-  var THRESHOLD = 65;
-
-  function onTouchStart(e) {
-    if (window.scrollY > 0) return;
-    startY.current = e.touches[0].clientY;
-  }
-  function onTouchMove(e) {
-    if (window.scrollY > 0) return;
-    var dy = e.touches[0].clientY - startY.current;
-    if (dy > 0) {
-      e.preventDefault();
-      setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
-    }
-  }
-  async function onTouchEnd() {
-    if (pullY >= THRESHOLD && !refreshing) {
-      setRefreshing(true);
-      setPullY(THRESHOLD);
-      try { await onRefresh(); } catch {}
-      setRefreshing(false);
-    }
-    setPullY(0);
-  }
-  return { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd };
-}
+import PullToRefresh from '../components/shared/PullToRefresh';
 
 // ── OCT clip-path constant ─────────────────────────────────────────────────
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -765,9 +736,6 @@ export default function Home() {
   var [quickActionsOpen, setQuickActionsOpen] = useState(false);
   var [showOnboarding, setShowOnboarding] = useState(false);
   var qc = useQueryClient();
-  var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() {
-    await qc.invalidateQueries();
-  });
 
   var { data: liveRooms = [], isLoading: loadingLive } = useQuery({
     queryKey: ['rooms', 'live'],
@@ -808,10 +776,8 @@ export default function Home() {
     <div
       className="min-h-screen relative"
       style={{ background: '#080B18', overscrollBehavior: 'contain' }}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
     >
+      <PullToRefresh onRefresh={async function() { await qc.invalidateQueries(); }}>
       <StarField />
       <NebulaBg />
       <GridLines />
@@ -819,19 +785,6 @@ export default function Home() {
       <NotificationBell />
       <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
       <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
-      {/* Pull-to-refresh indicator */}
-      <motion.div
-        style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-        {pullY > 10 && (
-          <motion.div
-            animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
-            transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
-            style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: '#D4AF37' }}
-          />
-        )}
-      </motion.div>
-
       {/* ── NEW USER ONBOARDING BANNER ── */}
       {showOnboardingBanner && (
         <motion.div
@@ -1081,6 +1034,7 @@ export default function Home() {
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
       <OnlinePresence userId={user?.id || null} />
+      </PullToRefresh>
     </div>
   );
 }

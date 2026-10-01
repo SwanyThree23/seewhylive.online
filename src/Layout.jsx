@@ -283,7 +283,7 @@ export default function Layout({ children, currentPageName }) {
       <header className="sticky z-50 w-full"
         style={{ top: 0, paddingTop: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
 
-        <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
+        <div className="flex h-14 items-center justify-between px-2 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
           {isMainPage || !canGoBack ? (
             <Link to={createPageUrl('Home')} className="flex items-center gap-2 shrink-0 active:opacity-70 transition-opacity" style={{ userSelect: 'none' }}>
@@ -298,7 +298,7 @@ export default function Layout({ children, currentPageName }) {
                   style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.2em' }}>LIVE</span>
               </div>
               {liveCount > 0 && (
-                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full"
+                <div className="hidden sm:flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full"
                   style={{ background: 'rgba(139,26,47,0.33)', border: '1px solid #8B1A2F' }}>
                   <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#E74C3C' }} />
                   <span className="text-[10px] font-bold" style={{ color: '#E74C3C', fontFamily: 'Space Mono, monospace' }}>LIVE</span>
@@ -319,7 +319,7 @@ export default function Layout({ children, currentPageName }) {
           )}
 
           {/* Right actions */}
-          <div className="flex items-center gap-1.5 md:gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             {/* Search */}
             <button onClick={function() { setShowSearch(true); }} aria-label="Search"
               className="flex items-center justify-center rounded-xl transition-all active:scale-95"

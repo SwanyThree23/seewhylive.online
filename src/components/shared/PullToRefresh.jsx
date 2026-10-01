@@ -12,7 +12,7 @@ const GOLD = '#D4AF37';
  *
  * onRefresh may return a Promise; the spinner spins until it resolves.
  */
-export default function PullToRefresh({ onRefresh, children, threshold = 65 }) {
+export default function PullToRefresh({ onRefresh, children, threshold = 80, maxPull = 120 }) {
   const [pullY, setPullY] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const startY = useRef(0);
@@ -28,7 +28,7 @@ export default function PullToRefresh({ onRefresh, children, threshold = 65 }) {
     const dy = e.touches[0].clientY - startY.current;
     if (dy > 0) {
       e.preventDefault();
-      setPullY(Math.min(dy * 0.45, threshold + 20));
+      setPullY(Math.min(dy * 0.45, maxPull));
     }
   }
   async function onTouchEnd() {

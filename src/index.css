@@ -234,11 +234,11 @@
     background: linear-gradient(135deg, #800020 0%, #A0522D 40%, #d4af37 100%);
   }
 
-  /* Mobile: boost sub-12px text to readable minimums (accessibility floor) */
+  /* Mobile: enforce a 14px readable floor for every sub-14px text class */
   @media (max-width: 640px) {
-    .text-\[9px\]  { font-size: 12px; }
-    .text-\[10px\] { font-size: 13px; }
-    .text-\[11px\] { font-size: 13px; }
+    .text-\[9px\]  { font-size: 14px; }
+    .text-\[10px\] { font-size: 14px; }
+    .text-\[11px\] { font-size: 14px; }
     .text-\[12px\] { font-size: 14px; }
   }
 

@@ -35,35 +35,7 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 import MomentsFeed from '../components/live/MomentsFeed';
-function usePullToRefresh(onRefresh) {
-  var [pullY, setPullY] = useState(0);
-  var [refreshing, setRefreshing] = useState(false);
-  var startY = React.useRef(0);
-  var THRESHOLD = 65;
-
-  function onTouchStart(e) {
-    if (window.scrollY > 0) return;
-    startY.current = e.touches[0].clientY;
-  }
-  function onTouchMove(e) {
-    if (window.scrollY > 0) return;
-    var dy = e.touches[0].clientY - startY.current;
-    if (dy > 0) {
-      e.preventDefault();
-      setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
-    }
-  }
-  async function onTouchEnd() {
-    if (pullY >= THRESHOLD && !refreshing) {
-      setRefreshing(true);
-      setPullY(THRESHOLD);
-      try { await onRefresh(); } catch {}
-      setRefreshing(false);
-    }
-    setPullY(0);
-  }
-  return { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd };
-}
+import PullToRefresh from '../components/shared/PullToRefresh';
 
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
@@ -128,7 +100,6 @@ export default function DiscoverPage() {
     enabled: !!user?.id,
   });
   const userCommunityId = userCommunity?.id || null;
-  var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() { await queryClient.invalidateQueries(); });
 
   // 300ms debounce
   useEffect(() => {
@@ -191,19 +162,8 @@ export default function DiscoverPage() {
   const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
 
   return (
-    <div className="min-h-screen bg-[#080B18] text-white" style={{ overscrollBehavior: 'contain' }} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-      {/* Pull-to-refresh indicator */}
-      <motion.div
-        style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-        {pullY > 10 && (
-          <motion.div
-            animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
-            transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
-            style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          </motion.div>
-        )}
-      </motion.div>
+    <div className="min-h-screen bg-[#080B18] text-white" style={{ overscrollBehavior: 'contain' }}>
+      <PullToRefresh onRefresh={async function() { await queryClient.invalidateQueries(); }}>
       {/* Dark header */}
       <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #080B18 0%, #080B18 60%, #080B18 100%)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
         {/* Subtle grid overlay */}
@@ -448,6 +408,7 @@ export default function DiscoverPage() {
           <ChallengeLeaderboard challengeId={null} />
         </div>
       </div>
+      </PullToRefresh>
     </div>
   );
 }
