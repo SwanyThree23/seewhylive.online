@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   User, Mail, Award, Star, Gift, TrendingUp, Camera, Radio, BarChart2,
   Settings, DollarSign, Activity, Clock, Share2, Scissors, Sparkles, Layout,
+  Download, LogOut,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -26,6 +27,7 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import AccountDeletionFlow from '../components/settings/AccountDeletionFlow';
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
@@ -101,7 +103,7 @@ function StatTile({ label, value, icon: Icon, color = GOLD }) {
   );
 }
 
-const TABS = ['Overview', 'Streams', 'Clips', 'About'];
+const TABS = ['Overview', 'Streams', 'Clips', 'About', 'Settings'];
 
 /* ── main page ──────────────────────────────────────────────────────── */
 
@@ -618,6 +620,38 @@ export default function ProfilePage() {
                   </div>
                 </div>
               )}
+            </div>
+          </DarkCard>
+        )}
+
+        {activeTab === 'Settings' && (
+          <DarkCard>
+            <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex items-center gap-2">
+                <Settings className="w-4 h-4" style={{ color: GOLD }} />
+                <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Account</p>
+              </div>
+              <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>
+                Leaving SeeWhy LIVE? Download a copy of your data, then remove your account and personal data.
+              </p>
+            </div>
+            <div className="p-4 space-y-3">
+              <Link to={createPageUrl('DataExport')}>
+                <button
+                  className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.15)', color: 'rgba(255,255,255,0.6)', userSelect: 'none', ...T }}>
+                  <Download className="w-3.5 h-3.5" />
+                  Download My Data
+                </button>
+              </Link>
+              <button
+                onClick={() => base44.auth.logout()}
+                className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', userSelect: 'none', ...T }}>
+                <LogOut className="w-3.5 h-3.5" />
+                Log Out
+              </button>
+              <AccountDeletionFlow user={user} />
             </div>
           </DarkCard>
         )}
