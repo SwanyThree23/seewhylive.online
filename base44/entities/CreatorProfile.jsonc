@@ -60,6 +60,22 @@
         "type": "object"
       },
       "description": "Array of {day, time, title}"
+    },
+    "payout_method": {
+      "type": "string",
+      "enum": [
+        "paypal",
+        "cashapp",
+        "venmo",
+        "zelle",
+        "chime",
+        "bank_transfer"
+      ],
+      "description": "Preferred tip destination, shown to viewers who want to support"
+    },
+    "payout_handle": {
+      "type": "string",
+      "description": "Public handle / link viewers send tips to (e.g. $cashtag, paypal.me link)"
     }
   },
   "required": [
