@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, X, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
+import { Shield, X, ChevronDown, ChevronUp, Plus, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const TIMEOUT_OPTIONS = [
   { label: '1 min', value: 1 },
@@ -9,23 +12,68 @@ const TIMEOUT_OPTIONS = [
   { label: '1 hr', value: 60 },
 ];
 
+const ACTIONS = {
+  hide: { label: 'Hide', icon: EyeOff, color: '#C0392B', bg: 'rgba(192,57,43,0.25)', border: 'rgba(192,57,43,0.4)' },
+  flag: { label: 'Flag', icon: Eye,    color: '#D4854A', bg: 'rgba(212,133,74,0.2)', border: 'rgba(212,133,74,0.4)' },
+};
+
 export default function ChatModeration({ collapsed: initCollapsed = true }) {
   const [collapsed, setCollapsed] = useState(initCollapsed);
-  const [blockedWords, setBlockedWords] = useState(['spam', 'hate', 'scam']);
   const [wordInput, setWordInput] = useState('');
+  const [newAction, setNewAction] = useState('hide');
   const [blockLinks, setBlockLinks] = useState(true);
   const [blockCaps, setBlockCaps] = useState(true);
   const [blockSpam, setBlockSpam] = useState(true);
   const [newAccountGate, setNewAccountGate] = useState(false);
   const [accountAge, setAccountAge] = useState(7);
   const [timeoutDuration, setTimeoutDuration] = useState(5);
-  const [stats] = useState({ blocks: 3, timeouts: 1, deletes: 7 });
 
-  const addWord = () => {
+  const queryClient = useQueryClient();
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const wordsKey = ['blocked-words-own', user?.id];
+  const { data: words = [], isLoading } = useQuery({
+    queryKey: wordsKey,
+    queryFn: () => base44.entities.BlockedWord.filter({ creator_id: user.id }, '-created_date', 200),
+    enabled: !!user?.id,
+  });
+
+  const addWord = useMutation({
+    mutationFn: (word) => base44.entities.BlockedWord.create({ creator_id: user.id, word, action: newAction }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: wordsKey }),
+    onError: () => toast.error('Could not save that word'),
+  });
+
+  const removeWord = useMutation({
+    mutationFn: (id) => base44.entities.BlockedWord.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: wordsKey }),
+    onError: () => toast.error('Could not remove that word'),
+  });
+
+  const setWordAction = useMutation({
+    mutationFn: ({ id, action }) => base44.entities.BlockedWord.update(id, { action }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: wordsKey }),
+    onError: () => toast.error('Could not update that word'),
+  });
+
+  const handleAdd = () => {
     const w = wordInput.trim().toLowerCase();
-    if (w && !blockedWords.includes(w)) setBlockedWords(prev => [...prev, w]);
+    if (!w) return;
+    if (words.some(x => (x.word || '').toLowerCase() === w)) {
+      toast.error('Already watching that word');
+      setWordInput('');
+      return;
+    }
+    addWord.mutate(w);
     setWordInput('');
   };
+
+  const hideCount = words.filter(w => w.action === 'hide').length;
+  const flagCount = words.filter(w => w.action !== 'hide').length;
 
   return (
     <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
@@ -37,7 +85,7 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
           <Shield className="w-3 h-3 text-[#4A8A7A]" />
           <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Auto-Moderation</span>
           <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(74,138,122,0.1)', color: '#4A8A7A', border: '1px solid rgba(74,138,122,0.3)' }}>
-            {stats.blocks + stats.timeouts + stats.deletes} today
+            {words.length} watching
           </span>
         </div>
         {collapsed ? <ChevronDown className="w-3 h-3 text-white/40" /> : <ChevronUp className="w-3 h-3 text-white/40" />}
@@ -45,46 +93,101 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
 
       {!collapsed && (
         <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="overflow-hidden px-3 pb-3 space-y-3">
-          {/* Stats */}
+          {/* Live tally of the word filter */}
           <div className="grid grid-cols-3 gap-1">
             <div className="bg-white/5 rounded p-1.5 text-center">
-              <p className="text-[10px] text-white/40">Blocked</p>
-              <p className="text-sm font-bold text-[#d4af37]">{stats.blocks}</p>
+              <p className="text-[10px] text-white/40">Watching</p>
+              <p className="text-sm font-bold text-[#d4af37]">{words.length}</p>
             </div>
             <div className="bg-white/5 rounded p-1.5 text-center">
-              <p className="text-[10px] text-white/40">Timeouts</p>
-              <p className="text-sm font-bold text-[#D4854A]">{stats.timeouts}</p>
+              <p className="text-[10px] text-white/40">Hidden</p>
+              <p className="text-sm font-bold text-[#C0392B]">{hideCount}</p>
             </div>
             <div className="bg-white/5 rounded p-1.5 text-center">
-              <p className="text-[10px] text-white/40">Deleted</p>
-              <p className="text-sm font-bold text-[#C0392B]">{stats.deletes}</p>
+              <p className="text-[10px] text-white/40">Flagged</p>
+              <p className="text-sm font-bold text-[#D4854A]">{flagCount}</p>
             </div>
           </div>
 
           {/* Word filter */}
           <div className="space-y-1.5">
-            <p className="text-[10px] text-white/40 uppercase">Banned Words</p>
+            <p className="text-[10px] text-white/40 uppercase">Watch List</p>
+            <p className="text-[10px] leading-snug" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              These words are checked on every chat message in your live streams.
+            </p>
             <div className="flex gap-1">
               <input
                 value={wordInput} onChange={(e) => setWordInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addWord()}
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                 placeholder="Add word..."
+                aria-label="Add a word to watch for"
                 style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 10, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 24, flex: 1 }}
               />
-              <button onClick={addWord} className="w-6 h-6 rounded bg-[#d4af37]/10 border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/20">
+              <button
+                onClick={handleAdd}
+                disabled={addWord.isPending}
+                aria-label="Add word"
+                className="w-6 h-6 rounded bg-[#d4af37]/10 border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/20 disabled:opacity-40">
                 <Plus className="w-3 h-3 text-[#d4af37]" />
               </button>
             </div>
-            <div className="flex flex-wrap gap-1">
-              {blockedWords.map(w => (
-                <span key={w} style={{ fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, background: 'rgba(127,29,29,0.3)', border: '1px solid rgba(185,28,28,0.3)', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  {w}
-                  <button onClick={() => setBlockedWords(prev => prev.filter(x => x !== w))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'inherit', display: 'flex', alignItems: 'center' }}>
-                    <X className="w-2 h-2" />
+
+            {/* What a new word should do */}
+            <div className="flex gap-1">
+              {Object.entries(ACTIONS).map(([id, cfg]) => {
+                const Icon = cfg.icon;
+                const active = newAction === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setNewAction(id)}
+                    className="flex-1 flex items-center justify-center gap-1 py-1 rounded border text-[10px] font-bold transition-all"
+                    style={{
+                      background: active ? cfg.bg : 'transparent',
+                      borderColor: active ? cfg.border : 'rgba(255,255,255,0.1)',
+                      color: active ? cfg.color : 'rgba(255,255,255,0.4)',
+                    }}>
+                    <Icon className="w-3 h-3" /> {cfg.label} new words
                   </button>
-                </span>
-              ))}
+                );
+              })}
             </div>
+
+            {isLoading ? (
+              <div className="flex items-center gap-2 py-2 text-[10px] text-white/30">
+                <Loader2 className="w-3 h-3 animate-spin" /> Loading your list…
+              </div>
+            ) : words.length === 0 ? (
+              <p className="text-[10px] py-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                No words yet — add one above and it applies to your next live stream.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1">
+                {words.map(w => {
+                  const cfg = ACTIONS[w.action] || ACTIONS.hide;
+                  const Icon = cfg.icon;
+                  const nextAction = w.action === 'hide' ? 'flag' : 'hide';
+                  return (
+                    <span key={w.id} style={{ fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <button
+                        onClick={() => setWordAction.mutate({ id: w.id, action: nextAction })}
+                        title={`Switch to ${ACTIONS[nextAction].label.toLowerCase()}`}
+                        aria-label={`${w.word} — currently ${cfg.label.toLowerCase()}, tap to ${ACTIONS[nextAction].label.toLowerCase()}`}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'inherit', display: 'flex', alignItems: 'center' }}>
+                        <Icon className="w-2.5 h-2.5" />
+                      </button>
+                      {w.word}
+                      <button
+                        onClick={() => removeWord.mutate(w.id)}
+                        aria-label={`Remove ${w.word}`}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'inherit', display: 'flex', alignItems: 'center' }}>
+                        <X className="w-2 h-2" />
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Toggles */}

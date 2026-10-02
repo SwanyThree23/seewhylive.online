@@ -50,6 +50,18 @@
     "is_featured": {
       "type": "boolean",
       "default": false
+    },
+    "is_vault": {
+      "type": "boolean",
+      "default": false,
+      "description": "Saved with the one-tap Clip This button \u2014 sits in the creator's vault"
+    },
+    "social_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Platforms this clip is tagged for (instagram, tiktok, x, youtube)"
     }
   },
   "required": [

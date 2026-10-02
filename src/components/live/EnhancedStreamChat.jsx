@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { scanMessage } from '@/lib/wordFilter';
 import { Send, AlertCircle, Shield, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import EmojiReactionBar from './EmojiReactionBar';
@@ -74,7 +75,7 @@ const processEmotes = (text) => {
   return result;
 };
 
-const ChatMessage = ({ message, isOwn }) => {
+const ChatMessage = ({ message, isOwn, flagged }) => {
   const badges = message.user_badges || [];
   const processedText = processEmotes(message.content);
 
@@ -94,6 +95,15 @@ const ChatMessage = ({ message, isOwn }) => {
       <div className={`flex flex-col gap-1 ${isOwn ? 'items-end' : 'items-start'}`}>
         <div className="flex items-center gap-1.5">
           <span className="text-[11px] font-bold text-white/70">{message.user_name}</span>
+          {flagged && (
+            <span
+              className="px-1.5 py-0.5 rounded text-[11px] font-bold"
+              style={{ background: 'rgba(212,133,74,0.2)', border: '1px solid rgba(212,133,74,0.45)', color: '#D4854A' }}
+              title="Flagged by the word filter"
+            >
+              ⚠️
+            </span>
+          )}
           {badges.map(badge => {
             const badgeInfo = BADGE_TYPES[badge];
             return badgeInfo ? (
@@ -122,6 +132,16 @@ const ChatMessage = ({ message, isOwn }) => {
     </motion.div>
   );
 };
+
+const HiddenMessage = () => (
+  <div
+    className="mx-3 my-1 px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-[10px]"
+    style={{ background: 'rgba(192,57,43,0.1)', border: '1px dashed rgba(192,57,43,0.35)' }}
+  >
+    <Shield className="w-3 h-3 flex-shrink-0" style={{ color: '#C0392B' }} />
+    <span style={{ color: 'rgba(255,255,255,0.35)' }}>Message hidden by the word filter</span>
+  </div>
+);
 
 const ModerationAlert = ({ message, onDismiss }) => (
   <motion.div
@@ -168,6 +188,19 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
     enabled: !!roomId,
   });
 
+  // The host's watched-word list drives live moderation for this room
+  const { data: hostWords = [] } = useQuery({
+    queryKey: ['blocked-words-room', roomId],
+    queryFn: async () => {
+      const room = await base44.entities.Room.get(roomId);
+      const hostId = room?.host_id || room?.created_by_id;
+      if (!hostId) return [];
+      return base44.entities.BlockedWord.filter({ creator_id: hostId }, '-created_date', 200);
+    },
+    enabled: !!roomId,
+    refetchInterval: 15000,
+  });
+
   // Subscribe to real-time messages
   useEffect(() => {
     const unsubscribe = base44.entities.Message.subscribe((event) => {
@@ -187,6 +220,17 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content) => {
+      const scan = scanMessage(content, hostWords);
+
+      // A watched word set to "hide" — the message never reaches chat
+      if (scan.shouldHide) {
+        setModAlerts(prev => [...prev, `Blocked — "${scan.matched[0]}" is on the watch list`]);
+        setTimeout(() => {
+          setModAlerts(prev => prev.slice(1));
+        }, 3000);
+        return null;
+      }
+
       const filtered = filterMessage(content);
 
       // Check if moderation filtered the message significantly
@@ -267,13 +311,18 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
         }}
       >
         <AnimatePresence>
-          {messages.map((msg, i) => (
-            <ChatMessage
-              key={i}
-              message={msg}
-              isOwn={msg.user_id === userId}
-            />
-          ))}
+          {messages.map((msg, i) => {
+            const scan = scanMessage(msg.content, hostWords);
+            if (scan.shouldHide) return <HiddenMessage key={i} />;
+            return (
+              <ChatMessage
+                key={i}
+                message={msg}
+                isOwn={msg.user_id === userId}
+                flagged={scan.matched.length > 0}
+              />
+            );
+          })}
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>

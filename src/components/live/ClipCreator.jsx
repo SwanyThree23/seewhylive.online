@@ -13,10 +13,12 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
   const draggingRef = useRef(null);
   const trackRef = useRef(null);
 
-  const maxWindow = Math.min(elapsedSeconds, 60);
-  const startSec = Math.round((1 - endPct + startPct) * maxWindow);
-  const endSec = maxWindow;
-  const duration = Math.round((endPct - startPct) * maxWindow);
+  const maxWindow = Math.max(1, Math.min(elapsedSeconds, 60));
+  const trimStartSec = Math.round(startPct * maxWindow);
+  const trimEndSec = Math.round(endPct * maxWindow);
+  const duration = Math.max(1, trimEndSec - trimStartSec);
+  const absStartSec = elapsedSeconds - maxWindow + trimStartSec;
+  const absEndSec = elapsedSeconds - maxWindow + trimEndSec;
 
   const createClipMutation = useMutation({
     mutationFn: (data) => base44.entities.StreamClip.create(data),
@@ -65,8 +67,8 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
       clipped_by_id: currentUser?.id,
       clipped_by_username: currentUser?.full_name || currentUser?.email,
       title: clipTitle,
-      start_timestamp_seconds: elapsedSeconds - maxWindow + startSec,
-      end_timestamp_seconds: elapsedSeconds - maxWindow + endSec,
+      start_timestamp_seconds: absStartSec,
+      end_timestamp_seconds: absEndSec,
       duration_seconds: duration,
     });
   };
@@ -148,8 +150,41 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
                   </div>
                 </div>
                 <div className="flex justify-between text-[10px]">
-                  <span className="text-[#7B5DA6]">{formatSec(elapsedSeconds - maxWindow + startSec)}</span>
-                  <span className="text-[#7B5DA6]">{formatSec(elapsedSeconds)}</span>
+                  <span className="text-[#7B5DA6]">{formatSec(absStartSec)}</span>
+                  <span className="text-[#7B5DA6]">{formatSec(absEndSec)}</span>
+                </div>
+
+                {/* Precise trim sliders */}
+                <div className="space-y-1 pt-1">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-white/40 uppercase">Start</span>
+                    <span className="text-[#7B5DA6] font-semibold">{formatSec(absStartSec)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={Math.max(0, maxWindow - 3)}
+                    step={1}
+                    value={trimStartSec}
+                    onChange={e => setStartPct(Math.min(Number(e.target.value) / maxWindow, endPct - 0.05))}
+                    aria-label="Clip start time"
+                    style={{ width: '100%', height: 20, accentColor: '#7B5DA6', cursor: 'pointer' }}
+                  />
+
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-white/40 uppercase">End</span>
+                    <span className="text-[#7B5DA6] font-semibold">{formatSec(absEndSec)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={3}
+                    max={maxWindow}
+                    step={1}
+                    value={trimEndSec}
+                    onChange={e => setEndPct(Math.max(Number(e.target.value) / maxWindow, startPct + 0.05))}
+                    aria-label="Clip end time"
+                    style={{ width: '100%', height: 20, accentColor: '#7B5DA6', cursor: 'pointer' }}
+                  />
                 </div>
               </div>
 

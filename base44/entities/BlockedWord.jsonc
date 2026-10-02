@@ -1,0 +1,66 @@
+{
+  "name": "BlockedWord",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Creator whose live streams this word is watched for"
+    },
+    "word": {
+      "type": "string",
+      "description": "Lowercase word or phrase to watch for in chat"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "hide",
+        "flag"
+      ],
+      "default": "hide",
+      "description": "hide = message is hidden from chat, flag = message stays but is marked for the host"
+    }
+  },
+  "required": [
+    "creator_id",
+    "word"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

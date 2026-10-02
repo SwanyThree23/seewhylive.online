@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Scissors, Flame, Star, Zap, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import ClipThisButton from './ClipThisButton';
 
 const MOMENTS = [
   { id: 'fire',    icon: '🔥', label: 'Fire Moment',  color: '#D4854A' },
@@ -46,7 +47,14 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
   if (!isHost) return null;
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center gap-1.5">
+      <ClipThisButton
+        roomId={roomId}
+        sessionId={sessionId}
+        creatorId={creatorId}
+        elapsedSeconds={elapsedSeconds}
+      />
+
       <button
         onClick={() => setOpen(v => !v)}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all active:scale-95"
