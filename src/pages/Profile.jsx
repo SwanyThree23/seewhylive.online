@@ -28,6 +28,7 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import AccountDeletionFlow from '../components/settings/AccountDeletionFlow';
+import PayoutMethodSettings from '../components/settings/PayoutMethodSettings';
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
@@ -622,6 +623,12 @@ export default function ProfilePage() {
               )}
             </div>
           </DarkCard>
+        )}
+
+        {activeTab === 'Settings' && user?.id && (
+          <div className="mb-3">
+            <PayoutMethodSettings user={user} />
+          </div>
         )}
 
         {activeTab === 'Settings' && (

@@ -96,6 +96,7 @@ var DRAWER_CREATE = [
 
 var DRAWER_MONETIZE_AI = [];
 var DRAWER_ACCOUNT = [
+  { name: 'My Dashboard', icon: LayoutDashboard, href: createPageUrl('MyDashboard') },
   { name: 'Profile',  icon: User,       href: createPageUrl('Profile') },
   { name: 'Settings', icon: SearchIcon, href: createPageUrl('Settings') },
   { name: 'VaultPro', icon: Lock,       href: createPageUrl('VaultPro') },

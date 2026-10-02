@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { X, Zap, Heart, Star, Crown, Diamond } from 'lucide-react';
 import { toast } from 'sonner';
@@ -21,6 +21,11 @@ const TIERS = [
 ];
 
 const QUICK_EMOJIS = ['🔥', '💯', '❤️', '🚀', '👑', '💎', '🎉', '🤑'];
+
+const METHOD_LABEL = {
+  paypal: 'PayPal', cashapp: 'CashApp', venmo: 'Venmo',
+  zelle: 'Zelle', chime: 'Chime', bank_transfer: 'Bank transfer',
+};
 
 const CONFETTI_COLORS = [G, CRIMSON, PINK, '#4A8A7A', '#7B5DA6', '#6DBF7E'];
 
@@ -157,6 +162,15 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
 
   const activeTier = TIERS.slice().reverse().find(t => t.amount <= rawAmount) || TIERS[0];
 
+  const { data: hostProfiles = [] } = useQuery({
+    queryKey: ['tip-destination', resolvedHostId],
+    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: resolvedHostId }),
+    enabled: !!resolvedHostId && open,
+  });
+  const destination = hostProfiles[0];
+  const tipMethod = destination?.payout_method;
+  const tipHandle = destination?.payout_handle;
+
   const sendTip = useMutation({
     mutationFn: async () => {
       if (!currentUser?.id) throw new Error('Not authenticated');
@@ -172,6 +186,8 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
         status: 'completed',
         message: message,
         emoji: selectedEmoji,
+        payment_method: tipMethod,
+        payment_handle: tipHandle,
       });
     },
     onSuccess: () => {
@@ -281,6 +297,26 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
 
               <div className="px-5 py-4 space-y-5 relative">
                 <ConfettiBurst active={confetti} />
+
+                {/* Creator's preferred tip destination */}
+                {tipMethod && tipHandle && (
+                  <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
+                    style={{ background: `${G}0d`, border: `1px solid ${G}30` }}>
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase font-black tracking-widest"
+                        style={{ ...T, color: 'rgba(255,255,255,0.35)' }}>Preferred method</p>
+                      <p className="text-sm font-black truncate" style={{ ...T, color: G }}>
+                        {METHOD_LABEL[tipMethod] || tipMethod} · {tipHandle}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => { navigator.clipboard?.writeText(tipHandle); toast.success('Handle copied'); }}
+                      className="shrink-0 px-3 py-2 rounded-xl text-[10px] font-black uppercase"
+                      style={{ ...T, background: `${G}1a`, color: G, border: `1px solid ${G}40` }}>
+                      Copy
+                    </button>
+                  </div>
+                )}
 
                 {/* Tier chips */}
                 <div>
