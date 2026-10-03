@@ -216,3 +216,37 @@
     border-radius: 4px;
   }
 }
+
+/* ── Mobile readability + touch targets ───────────────────────────────────
+   Deliberately OUTSIDE @layer utilities: Tailwind tree-shakes custom rules
+   written in that layer, so attribute selectors (which never appear verbatim
+   in source content) get dropped from the build. Unlayered rules always ship. */
+
+@media (max-width: 640px) {
+  /* 14px readable floor. Covers text-xs (12px) plus the inline fontSize
+     styles the studio and dashboard pages use — inline styles beat class
+     rules, so they need this selector to stay readable on a phone. */
+  .text-xs,
+  [style*="font-size: 8px"],
+  [style*="font-size: 9px"],
+  [style*="font-size: 10px"],
+  [style*="font-size: 11px"],
+  [style*="font-size: 12px"],
+  [style*="font-size: 13px"] {
+    font-size: 14px !important;
+  }
+}
+
+/* 44x44 minimum touch target for compact controls (toggle switches, small
+   icon buttons) — expands the tappable area around a control without
+   changing its visual size or shifting any layout. */
+.tap-44 { position: relative; }
+.tap-44::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+}

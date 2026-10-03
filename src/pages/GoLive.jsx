@@ -380,13 +380,13 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
           </div>
         </div>
 
-        <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
-          <button onClick={toggleMic} style={{ width: 32, height: 32, borderRadius: '50%', background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)', border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
-            {micOn ? <Mic style={{ width: 14, height: 14, color: GOLD }} /> : <MicOff style={{ width: 14, height: 14, color: '#C0392B' }} />}
+        <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 8 }}>
+          <button onClick={toggleMic} aria-label={micOn ? 'Mute microphone' : 'Unmute microphone'} style={{ width: 44, height: 44, borderRadius: '50%', background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)', border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
+            {micOn ? <Mic style={{ width: 18, height: 18, color: GOLD }} /> : <MicOff style={{ width: 18, height: 18, color: '#C0392B' }} />}
           </button>
           {cameras.length > 1 && (
-            <button onClick={handleSwitchCamera} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
-              <Camera style={{ width: 14, height: 14, color: GOLD }} />
+            <button onClick={handleSwitchCamera} aria-label="Switch camera" style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
+              <Camera style={{ width: 18, height: 18, color: GOLD }} />
             </button>
           )}
         </div>

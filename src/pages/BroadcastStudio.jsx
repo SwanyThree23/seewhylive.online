@@ -1553,17 +1553,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   base44.entities.WatchParty.update(partyId, { is_exclusive: false });
                 }
               }}
-              style={{
-                position: 'relative',
-                width: 36,
-                height: 20,
-                borderRadius: 10,
-                background: isExclusive ? GOLD : 'rgba(255,255,255,0.2)',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'background 0.2s',
-                flexShrink: 0,
-              }}
+              className="tap-44"
+              aria-label="Toggle exclusive live"
+              style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, background: isExclusive ? GOLD : 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
             >
               <div style={{
                 position: 'absolute',
@@ -1597,8 +1589,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   ))}
                 </div>
               )}
-              <button
-                onClick={() => setSlowMode(v => !v)}
+              <button className="tap-44" aria-label="Toggle slow mode" onClick={() => setSlowMode(v => !v)}
                 style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, background: slowMode ? '#C9A84C' : 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
               >
                 <div style={{ position: 'absolute', top: 2, left: slowMode ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />

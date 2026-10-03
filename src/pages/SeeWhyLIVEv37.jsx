@@ -728,6 +728,8 @@ function PlatformsPanel() {
                 <span style={{ color: C.text, fontWeight: 700, fontSize: 14 }}>{p.name}</span>
               </div>
               <button
+                className="tap-44"
+                aria-label={`Toggle ${p.name}`}
                 onClick={() => toggle(p.name)}
                 style={{
                   background: active[p.name] ? C.green : C.slate,
@@ -984,6 +986,8 @@ function GuardianPanel() {
               <span style={{ color: C.textD, fontSize: 12 }}>{r.text}</span>
             </div>
             <button
+              className="tap-44"
+              aria-label={`Toggle rule: ${r.text}`}
               onClick={() => toggleRule(r.id)}
               style={{ background: r.active ? C.green : C.slate, border: 'none', borderRadius: 99, width: 36, height: 20, cursor: 'pointer', position: 'relative' }}
             >
@@ -1245,6 +1249,8 @@ function SettingsPanel() {
           <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${C.slate2}` }}>
             <span style={{ color: C.textD, fontSize: 13 }}>{label}</span>
             <button
+              className="tap-44"
+              aria-label={`Toggle ${label}`}
               onClick={() => setNotifs(prev => ({ ...prev, [k]: !prev[k] }))}
               style={{ background: notifs[k] ? C.green : C.slate, border: 'none', borderRadius: 99, width: 36, height: 20, cursor: 'pointer', position: 'relative' }}
             >
