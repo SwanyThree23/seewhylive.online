@@ -56,6 +56,8 @@ import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
+import LiveViewersPanel from '../components/live/LiveViewersPanel';
+import { useHostControls } from '../hooks/useHostControls';
 import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
@@ -342,7 +344,7 @@ function AudienceTile({ p }) {
 }
 
 // ── Slide-up chat panel ────────────────────────────────────────────────────────
-function ChatPanel({ messages, onClose, onSend }) {
+function ChatPanel({ messages, onClose, onSend, chatEnabled = true }) {
   const [text, setText] = useState('');
   const bottomRef = useRef(null);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
@@ -397,22 +399,31 @@ function ChatPanel({ messages, onClose, onSend }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
+      {/* Input — paused when the host switches room chat off */}
       <div className="shrink-0 flex gap-2 px-3 py-2.5"
         style={{ borderTop: '1px solid rgba(255,255,255,0.05)', background: BG2 }}>
-        <input
-          value={text}
-          onChange={e => setText(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && submit()}
-          placeholder="Say something…"
-          className="flex-1 h-9 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-        />
-        <button onClick={submit}
-          className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ background: `linear-gradient(135deg, ${CRIMSON}, #A0003A)`, border: `1px solid ${GOLD}44` }}>
-          <Send className="w-3.5 h-3.5" style={{ color: GOLD }} />
-        </button>
+        {chatEnabled ? (
+          <>
+            <input
+              value={text}
+              onChange={e => setText(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && submit()}
+              placeholder="Say something…"
+              className="flex-1 h-9 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+            />
+            <button onClick={submit}
+              className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: `linear-gradient(135deg, ${CRIMSON}, #A0003A)`, border: `1px solid ${GOLD}44` }}>
+              <Send className="w-3.5 h-3.5" style={{ color: GOLD }} />
+            </button>
+          </>
+        ) : (
+          <p className="flex-1 text-center text-[11px] font-black uppercase py-2.5"
+            style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            Chat is paused by the host
+          </p>
+        )}
       </div>
     </motion.div>
   );
@@ -480,6 +491,9 @@ export default function LiveRoom() {
 
   const isExclusiveStream = party?.is_exclusive === true;
   const isHost = user?.id && party?.host_id && user.id === party.host_id;
+
+  // Host switches the whole room follows — chat, slow mode, gift alerts
+  const { controls: roomControls } = useHostControls(roomId, user);
 
   // Moderation toasts for audience (show when someone gets muted/banned)
   const { toasts: modToasts, push: pushModToast } = useModerationToasts();
@@ -880,6 +894,11 @@ export default function LiveRoom() {
           </div>
         </div>
 
+        {/* ── Who is watching right now (realtime) ─────────────────────────── */}
+        <div className="px-4 mb-3">
+          <LiveViewersPanel roomId={roomId} user={user} isHost={isHost} />
+        </div>
+
         {/* ── Stage header ─────────────────────────────────────────────────── */}
         <div className="px-4 mb-3 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
@@ -1139,7 +1158,7 @@ export default function LiveRoom() {
               style={{ background: 'rgba(0,0,0,0.55)' }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setChatOpen(false)} />
-            <ChatPanel messages={chatMsgs} onClose={() => setChatOpen(false)} onSend={sendChat} />
+            <ChatPanel messages={chatMsgs} onClose={() => setChatOpen(false)} onSend={sendChat} chatEnabled={roomControls.chat_enabled} />
           </>
         )}
       </AnimatePresence>
