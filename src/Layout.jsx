@@ -450,7 +450,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Main — with slide-in route transitions */}
       <main className={isFullscreen ? '' : 'pb-main-mobile md:pb-10'}>
-        <ErrorBoundary>
+        <ErrorBoundary resetKey={location.key}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.key}

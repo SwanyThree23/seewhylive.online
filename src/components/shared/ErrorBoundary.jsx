@@ -15,6 +15,15 @@ export default class ErrorBoundary extends React.Component {
     console.error('ErrorBoundary caught:', error, info);
   }
 
+  // A crash on one page must not follow the user to the next one. When the
+  // caller changes resetKey (the route), clear the error so navigation keeps
+  // working instead of showing this panel until "Try Again" is tapped.
+  componentDidUpdate(prevProps) {
+    if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false, error: null });
+    }
+  }
+
   render() {
     if (this.state.hasError) {
       return (

@@ -18,6 +18,7 @@ import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ShareToSocial from '../components/social/ShareToSocial';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import LiveAdTemplates from '../components/dashboard/LiveAdTemplates';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
@@ -271,6 +272,10 @@ export default function CreatorDashboardPage() {
           <>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <AnalyticsOverview creatorId={user.id} timeRange={timeRange} />
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <LiveAdTemplates user={user} />
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

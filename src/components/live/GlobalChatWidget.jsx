@@ -42,13 +42,15 @@ export default function GlobalChatWidget() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: rawMessages = [] } = useQuery({
+  // No `= []` default on rawMessages: a fresh array each render would re-trigger
+  // the sync effect below on every render (React's "maximum update depth exceeded").
+  const { data: rawMessages } = useQuery({
     queryKey: ['global-chat'],
     queryFn: () => base44.entities.Message.filter({ room_id: GLOBAL_ROOM }, 'created_date', 50),
     refetchInterval: open ? 8000 : false,
   });
 
-  useEffect(() => { setMessages(rawMessages.slice(-100)); }, [rawMessages]);
+  useEffect(() => { setMessages((rawMessages || []).slice(-100)); }, [rawMessages]);
 
   useEffect(() => {
     const unsub = base44.entities.Message.subscribe((event) => {

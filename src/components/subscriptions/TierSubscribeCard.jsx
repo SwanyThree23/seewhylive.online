@@ -17,8 +17,11 @@ const FEATURE_LABELS = [
 
 export default function TierSubscribeCard({ tier, currentSub, userId, creatorId, isHighlighted }) {
   const qc = useQueryClient();
-  const isCurrentTier = currentSub?.tier_id === tier.id && currentSub?.status === 'active';
-  const isFull = tier.max_subscribers && tier.subscriber_count >= tier.max_subscribers;
+  // `tier` can be null (callers with no tier to offer render this card), so every
+  // read of it is guarded — not just the early return further down, which runs
+  // too late to protect these two lines.
+  const isCurrentTier = !!tier && currentSub?.tier_id === tier.id && currentSub?.status === 'active';
+  const isFull = !!tier && tier.max_subscribers && tier.subscriber_count >= tier.max_subscribers;
 
   const subscribeMutation = useMutation({
     mutationFn: async () => {

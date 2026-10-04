@@ -1,0 +1,65 @@
+{
+  "name": "LiveSyncSetting",
+  "type": "object",
+  "properties": {
+    "sync_key": {
+      "type": "string",
+      "description": "Setting identifier, e.g. ad_armed_template"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Broadcast this setting belongs to (blank = account-wide)"
+    },
+    "value": {
+      "type": "string",
+      "description": "JSON-encoded setting value"
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "User who last changed the setting"
+    },
+    "updated_by_name": {
+      "type": "string",
+      "description": "Display name of the last changer"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the setting last changed"
+    }
+  },
+  "required": [
+    "sync_key",
+    "value"
+  ],
+  "rls": {
+    "create": {
+      "data.updated_by": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.updated_by": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.updated_by": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
