@@ -37,7 +37,7 @@ var upload = multer({
   limits: { fileSize: MAX_AUDIO_SIZE },
   fileFilter: function(req, file, cb) {
     var ext = path.extname(file.originalname).toLowerCase();
-    if (!ALLOWED_AUDIO_EXTS.includes(ext) && !ALLOWED_AUDIO_MIME.includes(file.mimetype)) {
+    if (!ALLOWED_AUDIO_EXTS.includes(ext) || !ALLOWED_AUDIO_MIME.includes(file.mimetype)) {
       return cb(new Error('unsupported audio format'));
     }
     cb(null, true);
