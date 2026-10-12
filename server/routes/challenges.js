@@ -66,7 +66,7 @@ router.post('/:id/complete', requireAuth, challengeCompleteRateLimit, async (req
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.id)) {
       return res.status(400).json({ error: 'invalid challenge id' });
     }
-    const completion = await challengeService.completeChallenge(req.tenantId, req.params.id, req.user.id);
+    const completion = await challengeService.completeChallenge(req.params.id, req.user.id);
     res.json(completion);
   } catch (err) {
     const USER_MSGS = ['challenge is not active', 'challenge has expired'];
@@ -77,7 +77,7 @@ router.post('/:id/complete', requireAuth, challengeCompleteRateLimit, async (req
 
 router.get('/me/completions', requireAuth, async (req, res) => {
   try {
-    const completions = await challengeService.getUserCompletions(req.tenantId, req.user.id);
+    const completions = await challengeService.getUserCompletions(req.user.id);
     res.json(completions);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
