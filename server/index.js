@@ -532,6 +532,10 @@ var chatWordMsgCount   = new Map();  // roomId → int (messages since last broa
 var viewerStatusMap    = new Map();  // userId → { emoji, text, ts }
 var momentLogMap       = new Map();  // roomId → [{ id, label, ts, by }]
 var roomCapacityMap    = new Map();  // roomId → { max, warn } (max viewer cap, warn % threshold)
+// Batch 49: Viewer-to-Host DM / Stream Recap / Sticker Bomb / Follower Goal
+var viewerDmMap      = new Map();  // roomId → [{ id, userId, username, text, ts }] max 50
+var viewerDmThrottle = new Map();  // userId → lastDmTs ms (60s throttle)
+var followerGoalMap  = new Map();  // roomId → { target, label, count, followers: Set<userId> }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -753,6 +757,9 @@ function getJoinStateForRoom(roomId) {
   state.wordCloud = wcMap ? Array.from(wcMap.entries()).sort(function(a,b){return b[1]-a[1];}).slice(0,20).map(function(e){return{word:e[0],count:e[1]};}) : [];
   state.momentLog = (momentLogMap.get(roomId) || []).slice(-20);
   state.roomCapacity = roomCapacityMap.get(roomId) || null;
+  // Batch 49
+  var _fg49 = followerGoalMap.get(roomId);
+  state.followerGoal = _fg49 ? { target: _fg49.target, label: _fg49.label, count: _fg49.count } : null;
   return state;
 }
 
@@ -6329,9 +6336,84 @@ io.on('connection', function(socket) {
     if (hvEnd && hvEnd.timerId) clearTimeout(hvEnd.timerId);
     highlightVoteMap.delete(roomId);
     donationMatchMap.delete(roomId);
+    // Batch 49 cleanup
+    viewerDmMap.delete(roomId);
+    followerGoalMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
+  });
+
+  // ── viewer-dm (Batch 49) ──────────────────────────────────────────────────
+  socket.on('viewer-dm', function(data, ack) {
+    var roomId  = socket.data.roomId;
+    var userId  = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId || !userId || userId.startsWith('anon')) { if (ack) ack({ error: 'auth required' }); return; }
+    var _dmNow = Date.now();
+    if (_dmNow - (viewerDmThrottle.get(userId) || 0) < 60000) { if (ack) ack({ error: 'rate limited' }); return; }
+    viewerDmThrottle.set(userId, _dmNow);
+    var text = String((data && data.text) || '').trim().slice(0, 200);
+    if (!text) { if (ack) ack({ error: 'empty' }); return; }
+    var room = rooms.get(roomId);
+    if (!room) { if (ack) ack({ error: 'no room' }); return; }
+    var dm = { id: uuidv4(), userId: userId, username: username, text: text, ts: _dmNow };
+    if (!viewerDmMap.has(roomId)) viewerDmMap.set(roomId, []);
+    var dms = viewerDmMap.get(roomId);
+    dms.push(dm);
+    if (dms.length > 50) viewerDmMap.set(roomId, dms.slice(-50));
+    if (room.hostSocketId) io.to(room.hostSocketId).emit('dm-received', dm);
+    if (ack) ack({ ok: true });
+  });
+
+  socket.on('dm-list', function(data, ack) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') { if (ack) ack({ dms: [] }); return; }
+    var roomId = socket.data.roomId;
+    if (!roomId) { if (ack) ack({ dms: [] }); return; }
+    if (ack) ack({ dms: (viewerDmMap.get(roomId) || []).slice(-50) });
+  });
+
+  // ── sticker-bomb (Batch 49) ────────────────────────────────────────────────
+  socket.on('sticker-bomb', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var room = rooms.get(roomId);
+    if (!room) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var emoji = String((data && data.emoji) || '🎉').slice(0, 10);
+    var count = Math.min(30, Math.max(5, parseInt((data && data.count) || 20, 10)));
+    io.to(roomId).emit('sticker-bomb', { emoji: emoji, count: count, ts: Date.now() });
+    addHype(roomId, 5);
+  });
+
+  // ── follower-goal-set (Batch 49) ───────────────────────────────────────────
+  socket.on('follower-goal-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data) { followerGoalMap.delete(roomId); io.to(roomId).emit('follower-goal-update', null); return; }
+    var target = Math.min(100000, Math.max(1, parseInt(data.target || 100, 10)));
+    var label  = String(data.label || 'Follower Goal').slice(0, 40);
+    var existing = followerGoalMap.get(roomId);
+    followerGoalMap.set(roomId, { target: target, label: label, count: existing ? existing.count : 0, followers: existing ? existing.followers : new Set() });
+    io.to(roomId).emit('follower-goal-update', { target: target, label: label, count: followerGoalMap.get(roomId).count });
+  });
+
+  socket.on('follower-goal-tap', function(data, ack) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) { if (ack) ack({ ok: false }); return; }
+    var goal = followerGoalMap.get(roomId);
+    if (!goal) { if (ack) ack({ ok: false }); return; }
+    if (goal.followers.has(userId)) { if (ack) ack({ ok: false, already: true }); return; }
+    goal.followers.add(userId);
+    goal.count++;
+    followerGoalMap.set(roomId, goal);
+    io.to(roomId).emit('follower-goal-update', { target: goal.target, label: goal.label, count: goal.count });
+    if (goal.count >= goal.target) {
+      io.to(roomId).emit('follower-goal-complete', { target: goal.target, label: goal.label });
+    }
+    if (ack) ack({ ok: true, count: goal.count });
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────

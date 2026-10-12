@@ -80,6 +80,7 @@ var ANIM = [
   '@keyframes spotlightGlow{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}50%{box-shadow:0 0 0 8px rgba(201,168,76,.3)}}',
   '@keyframes entranceSlide{0%{transform:translateY(40px);opacity:0}30%{transform:translateY(-4px);opacity:1}85%{opacity:1}100%{opacity:0;transform:translateY(-20px)}}',
   '@keyframes marqueeScroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}',
+  '@keyframes stickerFall{0%{transform:translateY(-60px) rotate(0deg) scale(0);opacity:1}60%{opacity:1}100%{transform:translateY(110vh) rotate(540deg) scale(1);opacity:0}}',
 ].join('\n');
 
 // ─── Room ambiance themes ─────────────────────────────────────────────────────
@@ -854,6 +855,20 @@ export default function LiveRoomPage({
   var [applauseCount,      setApplauseCount]      = useState(0);
   var [applauseBurst,      setApplauseBurst]      = useState(null);   // { count } for flash
   var [vips,               setVips]               = useState([]);     // [userId]
+  // ─── Batch 49: Viewer DM / Stream Recap / Sticker Bomb / Follower Goal ───
+  var [viewerDms,          setViewerDms]          = useState([]);
+  var [unreadDms,          setUnreadDms]          = useState(0);
+  var [showDmInbox,        setShowDmInbox]        = useState(false);
+  var [dmDraft,            setDmDraft]            = useState('');
+  var [dmSent,             setDmSent]             = useState(false);
+  var [showRecap,          setShowRecap]          = useState(false);
+  var [recapData,          setRecapData]          = useState(null);
+  var [stickerItems,       setStickerItems]       = useState([]);
+  var [followerGoal,       setFollowerGoal]       = useState(null);
+  var [showFollowGoalSet,  setShowFollowGoalSet]  = useState(false);
+  var [followGoalDraft,    setFollowGoalDraft]    = useState({ target: '100', label: 'Follower Goal' });
+  var [hasFollowedGoal,    setHasFollowedGoal]    = useState(false);
+  var [showStickerBombPick,setShowStickerBombPick]= useState(false);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -989,6 +1004,7 @@ export default function LiveRoomPage({
       if (Array.isArray(data.locationShoutouts) && data.locationShoutouts.length > 0) setLocationShoutouts(data.locationShoutouts);
       if (data.highlightVote && data.highlightVote.endsAt > Date.now()) setHighlightVote(data.highlightVote);
       if (data.donationMatch) setDonationMatch(data.donationMatch);
+      if (data.followerGoal) setFollowerGoal(data.followerGoal);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -1997,6 +2013,42 @@ export default function LiveRoomPage({
       setTimeout(function() { setMatchCompleteFlash(null); }, 6000);
     });
 
+    // ── Batch 49 listeners ─────────────────────────────────────────────────
+    socket.on('dm-received', function(d) {
+      if (!d) return;
+      setViewerDms(function(prev) { return prev.concat([d]).slice(-50); });
+      setUnreadDms(function(n) { return n + 1; });
+    });
+
+    socket.on('sticker-bomb', function(d) {
+      if (!d) return;
+      var items = [];
+      var count = Math.min(d.count || 20, 30);
+      for (var _si = 0; _si < count; _si++) {
+        items.push({ id: _si, emoji: d.emoji, x: Math.random() * 90 + 5, delay: Math.random() * 1.5, dur: Math.random() * 1.2 + 1 });
+      }
+      setStickerItems(items);
+      setTimeout(function() { setStickerItems([]); }, 3500);
+    });
+
+    socket.on('follower-goal-update', function(d) {
+      if (!d) { setFollowerGoal(null); return; }
+      setFollowerGoal(d);
+    });
+
+    socket.on('follower-goal-complete', function(d) {
+      if (!d) return;
+      if (addToast) addToast('🎉 ' + (d.label || 'Follower Goal') + ' reached!', 'success');
+    });
+
+    socket.on('broadcast-ended', function(d) {
+      if (!d) return;
+      if (role === 'host' || role === 'cohost') {
+        setRecapData(d);
+        setShowRecap(true);
+      }
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2400,6 +2452,11 @@ export default function LiveRoomPage({
       socket.off('top-fans');
       socket.off('redeem-ack');
       socket.off('next-stream');
+      socket.off('dm-received');
+      socket.off('sticker-bomb');
+      socket.off('follower-goal-update');
+      socket.off('follower-goal-complete');
+      socket.off('broadcast-ended');
     };
   }, [socket]);
 
@@ -4171,6 +4228,12 @@ export default function LiveRoomPage({
                 });
                 setShowWatchLeaders(function(s) { return !s; });
               }},
+              { emoji: unreadDms > 0 ? '💌' : '📬', label: unreadDms > 0 ? 'DMs (' + unreadDms + ')' : 'DM Inbox', active: showDmInbox || unreadDms > 0, onTap: function() { setShowDmInbox(function(s) { return !s; }); setUnreadDms(0); } },
+              { emoji: '💥', label: 'Sticker Bomb', active: false, onTap: function() { setShowStickerBombPick(function(s) { return !s; }); } },
+              { emoji: '🎯', label: followerGoal ? 'Goal (' + (followerGoal.count || 0) + ')' : 'Follow Goal', active: !!followerGoal || showFollowGoalSet, onTap: function() {
+                if (followerGoal) { if (socket) socket.emit('follower-goal-set', null); }
+                else { setShowFollowGoalSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Check In', active: false, onTap: function() {
@@ -4214,6 +4277,14 @@ export default function LiveRoomPage({
                   setMyHighlightVote('yes');
                   if (socket) socket.emit('highlight-cast', { roomId: roomId, choice: 'yes' });
                 }
+              }},
+              { emoji: dmSent ? '💌' : '✉️', label: dmSent ? 'DM Sent' : 'DM Host', active: dmSent, onTap: function() { setDmDraft(''); setDmSent(false); setShowDmInbox(function(s) { return !s; }); } },
+              { emoji: hasFollowedGoal ? '🎯' : '➕', label: hasFollowedGoal ? 'Following' : 'Follow Goal', active: hasFollowedGoal || !!followerGoal, onTap: function() {
+                if (!followerGoal || hasFollowedGoal) return;
+                if (socket) socket.emit('follower-goal-tap', { roomId: roomId }, function(res) {
+                  if (res && res.ok) { setHasFollowedGoal(true); if (addToast) addToast('➕ Following! Total: ' + res.count, 'success'); }
+                  else if (res && res.already) { setHasFollowedGoal(true); if (addToast) addToast('Already counted!', 'info'); }
+                });
               }},
             ] : [])),
           ].map(function(tool) {
@@ -10650,6 +10721,191 @@ export default function LiveRoomPage({
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 49: Sticker Bomb animation overlay ══ */}
+      {stickerItems.length > 0 && (
+        <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 999, overflow: 'hidden' }}>
+          {stickerItems.map(function(s) {
+            return (
+              <div key={s.id} style={{
+                position: 'absolute',
+                left: s.x + '%',
+                top: '-60px',
+                fontSize: 32,
+                animation: 'stickerFall ' + s.dur + 's ' + s.delay + 's ease-in both',
+              }}>
+                {s.emoji}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ══ Batch 49: Sticker Bomb Picker (host/cohost) ══ */}
+      {showStickerBombPick && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 18px', width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>💥 STICKER BOMB</span>
+            <button onClick={function() { setShowStickerBombPick(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+            {['🎉', '💰', '🔥', '❤️', '⭐', '💎', '🏆', '🎊', '🥳', '💸'].map(function(em) {
+              return (
+                <button key={em} onClick={function() {
+                  if (socket) socket.emit('sticker-bomb', { roomId: roomId, emoji: em, count: 20 });
+                  setShowStickerBombPick(false);
+                }} style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, width: 44, height: 44, fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {em}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 49: DM Inbox (host/cohost) ══ */}
+      {showDmInbox && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, right: 12, zIndex: 700, width: 310, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px', maxHeight: 400, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>💌 VIEWER DMs</span>
+              <button onClick={function() { setShowDmInbox(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {viewerDms.length === 0 && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center', padding: '20px 0' }}>NO DMs YET</div>
+              )}
+              {viewerDms.map(function(dm) {
+                return (
+                  <div key={dm.id} style={{ background: CARD2, borderRadius: 10, padding: '8px 10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: TEAL }}>{dm.username}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{new Date(dm.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT }}>{dm.text}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 49: DM Host sheet (viewer) ══ */}
+      {showDmInbox && role === 'viewer' && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 300, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>✉️ DM THE HOST</span>
+              <button onClick={function() { setShowDmInbox(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            {dmSent ? (
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEAL, textAlign: 'center', padding: '10px 0' }}>💌 Message sent to host!</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <textarea value={dmDraft} onChange={function(e) { setDmDraft(e.target.value.slice(0, 200)); }}
+                  placeholder="Message the host (max 200 chars)..."
+                  style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '8px 10px', resize: 'none', minHeight: 70, outline: 'none', width: '100%', boxSizing: 'border-box' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{dmDraft.length}/200</span>
+                  <button onClick={function() {
+                    var txt = dmDraft.trim();
+                    if (!txt) return;
+                    if (socket) socket.emit('viewer-dm', { roomId: roomId, text: txt }, function(res) {
+                      if (res && res.ok) { setDmSent(true); setDmDraft(''); }
+                      else if (res && res.error) { if (addToast) addToast(res.error === 'rate limited' ? 'You can DM once per minute' : res.error, 'error'); }
+                    });
+                  }} disabled={!dmDraft.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '7px 16px', fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: BG, cursor: dmDraft.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: dmDraft.trim() ? 1 : 0.5 }}>
+                    SEND
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 49: Follower Goal Set (host/cohost) ══ */}
+      {showFollowGoalSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 300, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🎯 FOLLOWER GOAL</span>
+              <button onClick={function() { setShowFollowGoalSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <input value={followGoalDraft.label}
+                onChange={function(e) { setFollowGoalDraft(function(d) { return Object.assign({}, d, { label: e.target.value.slice(0, 40) }); }); }}
+                placeholder="Goal label"
+                style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box' }} />
+              <input value={followGoalDraft.target}
+                onChange={function(e) { setFollowGoalDraft(function(d) { return Object.assign({}, d, { target: e.target.value.replace(/[^0-9]/g, '').slice(0, 6) }); }); }}
+                placeholder="Target (e.g. 100)"
+                style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box' }} />
+              <button onClick={function() {
+                var target = parseInt(followGoalDraft.target || '100', 10);
+                if (!target || target < 1) { if (addToast) addToast('Enter a valid target', 'error'); return; }
+                if (socket) socket.emit('follower-goal-set', { roomId: roomId, target: target, label: followGoalDraft.label.trim() || 'Follower Goal' });
+                setShowFollowGoalSet(false);
+              }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                START GOAL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 49: Follower Goal Bar (in header area, always visible when active) ══ */}
+      {followerGoal && (
+        <div style={{ position: 'fixed', top: 54, left: 0, right: 0, zIndex: 60, padding: '0 12px' }}>
+          <div style={{ background: 'rgba(14,12,9,.92)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1.5, flexShrink: 0 }}>🎯 {(followerGoal.label || 'FOLLOW GOAL').toUpperCase()}</span>
+            <div style={{ flex: 1, height: 6, background: CARD2, borderRadius: 999, overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 999, background: GOLD, width: Math.min(100, Math.floor((followerGoal.count / followerGoal.target) * 100)) + '%', transition: 'width .6s ease', '--goal-pct': Math.min(100, Math.floor((followerGoal.count / followerGoal.target) * 100)) + '%', animation: 'goalFill .6s ease' }} />
+            </div>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, flexShrink: 0 }}>{followerGoal.count}/{followerGoal.target}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 49: Stream Recap Card (host after broadcast ends) ══ */}
+      {showRecap && recapData && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(14,12,9,.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: CARD, border: '1px solid rgba(201,168,76,.4)', borderRadius: 20, padding: '28px 24px', width: '100%', maxWidth: 340, textAlign: 'center', animation: 'fadeSlideIn .4s ease', boxShadow: '0 0 40px rgba(201,168,76,.2)' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, letterSpacing: 2, marginBottom: 6 }}>STREAM RECAP</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 32, color: TEXT, marginBottom: 16, letterSpacing: 2 }}>THAT'S A WRAP 🎬</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+              {recapData.durationMs && (
+                <div style={{ background: CARD2, borderRadius: 12, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: MUTED }}>Duration</span>
+                  <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 1 }}>{Math.floor(recapData.durationMs / 60000)}m {Math.floor((recapData.durationMs % 60000) / 1000)}s</span>
+                </div>
+              )}
+              {typeof recapData.peakViewers === 'number' && (
+                <div style={{ background: CARD2, borderRadius: 12, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: MUTED }}>Peak Viewers</span>
+                  <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEAL, letterSpacing: 1 }}>{recapData.peakViewers}</span>
+                </div>
+              )}
+              {typeof recapData.totalTips === 'number' && (
+                <div style={{ background: CARD2, borderRadius: 12, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: MUTED }}>Total Tips</span>
+                  <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 1 }}>${Math.floor(recapData.totalTips / 100)}</span>
+                </div>
+              )}
+              {typeof recapData.messageCount === 'number' && (
+                <div style={{ background: CARD2, borderRadius: 12, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: MUTED }}>Chat Messages</span>
+                  <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1 }}>{recapData.messageCount}</span>
+                </div>
+              )}
+            </div>
+            <button onClick={function() { setShowRecap(false); setRecapData(null); }} style={{ background: GOLD, border: 'none', borderRadius: 12, padding: '10px 28px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: BG, cursor: 'pointer', letterSpacing: 1.5, width: '100%' }}>
+              CLOSE RECAP
+            </button>
           </div>
         </div>
       )}
