@@ -52,7 +52,7 @@ router.get('/:id/join-requests', requireAuth, validateId, async (req, res) => {
 router.get('/:id/panel', requireAuth, validateId, async (req, res) => {
   try {
     const [slots, privacyResult] = await Promise.all([
-      panelService.getPanelState(req.tenantId, req.params.id),
+      panelService.getPanelState(req.params.id),
       db.query('SELECT privacy, private_gating_mode, creator_id FROM streams WHERE id = $1 AND tenant_id = $2', [req.params.id, req.tenantId]),
     ]);
     const row = privacyResult.rows[0] || {};
