@@ -903,6 +903,19 @@ export default function LiveRoomPage({
   var [moodDraft,        setMoodDraft]        = useState({ emoji: '🔥', label: 'Hyped' });
   var [showMoodSet,      setShowMoodSet]      = useState(false);
 
+  // ─── Batch 52: Clip Marker / Viewer Follow / Speed Donate / Trivia ────────
+  var [clipCount,        setClipCount]        = useState(0);
+  var [clipFlash,        setClipFlash]        = useState(null);
+  var [followBanner,     setFollowBanner]     = useState(null);
+  var [hasFollowed,      setHasFollowed]      = useState(false);
+  var [speedDonateFlash, setSpeedDonateFlash] = useState(null);
+  var [trivia,           setTrivia]           = useState(null);
+  var [triviaAnswerCount,setTriviaAnswerCount]= useState(0);
+  var [triviaReveal,     setTriviaReveal]     = useState(null);
+  var [myTriviaAnswer,   setMyTriviaAnswer]   = useState(null);
+  var [triviaDraft,      setTriviaDraft]      = useState({ question: '', options: ['', '', '', ''], correctIdx: 0, secs: '20' });
+  var [showTriviaSet,    setShowTriviaSet]    = useState(false);
+
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
   var screenStreamRef = useRef(null);
@@ -1045,6 +1058,8 @@ export default function LiveRoomPage({
       if (data.poll && !data.poll.ended) setPoll(data.poll);
       if (data.countdown && data.countdown.endsAt > Date.now()) setCountdown(data.countdown);
       if (data.hostMood) setHostMood(data.hostMood);
+      if (data.clipCount) setClipCount(data.clipCount);
+      if (data.trivia && data.trivia.endsAt > Date.now()) setTrivia(data.trivia);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2167,6 +2182,45 @@ export default function LiveRoomPage({
       setHostMood(d || null);
     });
 
+    // ── Batch 52 listeners ─────────────────────────────────────────────────
+    socket.on('clip-count-update', function(d) {
+      if (!d) return;
+      setClipCount(d.count || 0);
+      setClipFlash(d.username || 'Viewer');
+      setTimeout(function() { setClipFlash(null); }, 2000);
+    });
+
+    socket.on('follow-notification', function(d) {
+      if (!d) return;
+      setFollowBanner(d.username || 'Someone');
+      setTimeout(function() { setFollowBanner(null); }, 4000);
+    });
+
+    socket.on('speed-donate-burst', function(d) {
+      if (!d) return;
+      setSpeedDonateFlash(d);
+      setTimeout(function() { setSpeedDonateFlash(null); }, 2500);
+    });
+
+    socket.on('trivia-update', function(d) {
+      if (!d) return;
+      setTrivia(d);
+      setMyTriviaAnswer(null);
+      setTriviaReveal(null);
+      setTriviaAnswerCount(0);
+    });
+
+    socket.on('trivia-answer-count', function(d) {
+      if (d && d.total !== undefined) setTriviaAnswerCount(d.total);
+    });
+
+    socket.on('trivia-reveal', function(d) {
+      if (!d) return;
+      setTriviaReveal(d);
+      setTrivia(null);
+      setTimeout(function() { setTriviaReveal(null); setTriviaAnswerCount(0); }, 7000);
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2588,6 +2642,12 @@ export default function LiveRoomPage({
       socket.off('countdown-update');
       socket.off('countdown-ended');
       socket.off('host-mood-update');
+      socket.off('clip-count-update');
+      socket.off('follow-notification');
+      socket.off('speed-donate-burst');
+      socket.off('trivia-update');
+      socket.off('trivia-answer-count');
+      socket.off('trivia-reveal');
     };
   }, [socket]);
 
@@ -4396,7 +4456,29 @@ export default function LiveRoomPage({
                 if (hostMood) { if (socket) socket.emit('host-mood-clear', { roomId: roomId }); }
                 else { setMoodDraft({ emoji: '🔥', label: 'Hyped' }); setShowMoodSet(function(s) { return !s; }); }
               }},
+              { emoji: '🧩', label: trivia ? 'End Trivia' : 'Trivia', active: !!trivia || showTriviaSet, onTap: function() {
+                if (trivia) { if (socket) socket.emit('trivia-end', { roomId: roomId }); }
+                else { setTriviaDraft({ question: '', options: ['', '', '', ''], correctIdx: 0, secs: '20' }); setShowTriviaSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
+              { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
+                if (socket) socket.emit('clip-marker', { roomId: roomId }, function(res) {
+                  if (res && res.ok && addToast) addToast('📌 Clip marked! (' + res.count + ' total)', 'success');
+                });
+              }},
+              { emoji: hasFollowed ? '🩷' : '🤍', label: hasFollowed ? 'Following' : 'Follow', active: hasFollowed, onTap: function() {
+                if (hasFollowed) return;
+                setHasFollowed(true);
+                if (socket) socket.emit('viewer-follow', { roomId: roomId }, function(res) {
+                  if (!res || res.err) setHasFollowed(false);
+                  else if (addToast) addToast('🩷 You followed the host!', 'success');
+                });
+              }},
+              { emoji: '💨', label: 'Speed Coin', active: false, onTap: function() {
+                if (socket) socket.emit('speed-donate', { roomId: roomId }, function(res) {
+                  if (res && res.ok && addToast) addToast('💨 Coin sent!', 'success');
+                });
+              }},
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Check In', active: false, onTap: function() {
                 if (socket) socket.emit('viewer-checkin', { roomId: roomId, username: username }, function(res) {
@@ -11480,6 +11562,129 @@ export default function LiveRoomPage({
             }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
               SET MOOD
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 52: Clip flash (host view) ══ */}
+      {clipFlash && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 130, right: 16, zIndex: 600, pointerEvents: 'none', animation: 'slideUp .25s ease' }}>
+          <div style={{ background: 'rgba(26,21,16,.92)', border: '1px solid ' + GOLD, borderRadius: 12, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 14 }}>📌</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT }}>{clipFlash} clipped!</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: GOLD }}>{clipCount}x</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 52: Follow notification banner ══ */}
+      {followBanner && (
+        <div style={{ position: 'fixed', top: 100, left: '50%', transform: 'translateX(-50%)', zIndex: 650, pointerEvents: 'none', animation: 'slideUp .3s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.92)', border: '1px solid #FF69B4', borderRadius: 24, padding: '8px 18px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 16 }}>🩷</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, fontWeight: 600 }}>{followBanner}</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: MUTED }}>just followed!</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 52: Speed donate burst ══ */}
+      {speedDonateFlash && (
+        <div style={{ position: 'fixed', bottom: '30%', left: (Math.floor((speedDonateFlash.x || 0.5) * 70) + 15) + '%', zIndex: 600, pointerEvents: 'none', animation: 'stickerFall 2.5s ease forwards', fontSize: 22, textAlign: 'center' }}>
+          <div>💨</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, marginTop: 2 }}>{speedDonateFlash.username}</div>
+        </div>
+      )}
+
+      {/* ══ Batch 52: Trivia overlay ══ */}
+      {trivia && (
+        <div style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 110, zIndex: 610, width: 310, animation: 'slideUp .3s ease' }}>
+          <div style={{ background: 'rgba(26,21,16,.96)', border: '1px solid ' + TEAL, borderRadius: 14, padding: '14px 16px', backdropFilter: 'blur(8px)' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: TEAL, letterSpacing: 2, marginBottom: 6 }}>🧩 TRIVIA · {triviaAnswerCount} answered</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15, color: TEXT, fontWeight: 600, marginBottom: 10, lineHeight: 1.3 }}>{trivia.question}</div>
+            {trivia.options && trivia.options.map(function(opt, i) {
+              var voted = myTriviaAnswer === i;
+              var canAnswer = myTriviaAnswer === null;
+              return (
+                <button key={i} onClick={function() {
+                  if (!canAnswer) return;
+                  setMyTriviaAnswer(i);
+                  if (socket) socket.emit('trivia-answer', { roomId: roomId, idx: i }, function(res) {
+                    if (res && res.err) setMyTriviaAnswer(null);
+                  });
+                }} disabled={!canAnswer} style={{ display: 'block', width: '100%', marginBottom: 6, background: voted ? TEAL : CARD2, border: '1px solid ' + (voted ? TEAL : BORDER), borderRadius: 10, padding: '8px 12px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: voted ? BG : TEXT, cursor: canAnswer ? 'pointer' : 'default', textAlign: 'left', fontWeight: voted ? 700 : 400 }}>
+                  {String.fromCharCode(65 + i)}. {opt}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 52: Trivia reveal ══ */}
+      {triviaReveal && (
+        <div style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 110, zIndex: 620, width: 310, animation: 'slideUp .3s ease' }}>
+          <div style={{ background: 'rgba(26,21,16,.96)', border: '2px solid ' + GOLD, borderRadius: 14, padding: '14px 16px', backdropFilter: 'blur(8px)' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: GOLD, letterSpacing: 2, marginBottom: 6 }}>🏆 TRIVIA RESULTS</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, fontWeight: 600, marginBottom: 10 }}>{triviaReveal.question}</div>
+            {triviaReveal.options && triviaReveal.options.map(function(opt, i) {
+              var correct = i === triviaReveal.correctIdx;
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, padding: '7px 10px', background: correct ? 'rgba(212,133,74,.18)' : CARD2, border: '1px solid ' + (correct ? TEAL : BORDER), borderRadius: 10 }}>
+                  <span style={{ fontSize: 14 }}>{correct ? '✅' : '⬜'}</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: correct ? TEAL : MUTED, fontWeight: correct ? 700 : 400 }}>{String.fromCharCode(65 + i)}. {opt}</span>
+                </div>
+              );
+            })}
+            <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 11, color: MUTED, marginTop: 6 }}>{triviaReveal.winnerCount} / {triviaReveal.totalAnswers} got it right</div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 52: Trivia Set panel (host/cohost) ══ */}
+      {showTriviaSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 310, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🧩 LIVE TRIVIA</span>
+              <button onClick={function() { setShowTriviaSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={triviaDraft.question}
+              onChange={function(e) { setTriviaDraft(function(d) { return Object.assign({}, d, { question: e.target.value.slice(0, 120) }); }); }}
+              placeholder="Trivia question"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            {[0, 1, 2, 3].map(function(i) {
+              var isCorrect = triviaDraft.correctIdx === i;
+              return (
+                <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
+                  <button onClick={function() { setTriviaDraft(function(d) { return Object.assign({}, d, { correctIdx: i }); }); }}
+                    style={{ width: 28, height: 28, flexShrink: 0, border: '2px solid ' + (isCorrect ? TEAL : BORDER), borderRadius: 8, background: isCorrect ? TEAL : CARD2, color: isCorrect ? BG : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", fontSize: 11, fontWeight: 700 }}>
+                    {String.fromCharCode(65 + i)}
+                  </button>
+                  <input value={triviaDraft.options[i] || ''}
+                    onChange={function(e) { var v = e.target.value.slice(0, 60); setTriviaDraft(function(d) { var newOpts = d.options.slice(); newOpts[i] = v; return Object.assign({}, d, { options: newOpts }); }); }}
+                    placeholder={i < 2 ? 'Answer ' + (i + 1) + ' (required)' : 'Answer ' + (i + 1) + ' (optional)'}
+                    style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '6px 10px', outline: 'none', flex: 1, boxSizing: 'border-box' }} />
+                </div>
+              );
+            })}
+            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+              <select style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '6px 8px', flex: 1 }}
+                onChange={function(e) { setTriviaDraft(function(d) { return Object.assign({}, d, { secs: e.target.value }); }); }}>
+                <option value="20">20s</option>
+                <option value="30">30s</option>
+                <option value="60">1 min</option>
+              </select>
+              <button onClick={function() {
+                var q = triviaDraft.question.trim();
+                var opts = (triviaDraft.options || []).filter(function(o) { return o && o.trim(); });
+                if (!q || opts.length < 2) return;
+                if (socket) socket.emit('trivia-start', { roomId: roomId, question: q, options: opts, correctIdx: triviaDraft.correctIdx, secs: parseInt(triviaDraft.secs, 10) || 20 });
+                setShowTriviaSet(false);
+              }} disabled={!triviaDraft.question.trim() || (triviaDraft.options || []).filter(function(o) { return o && o.trim(); }).length < 2} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '7px 14px', fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: BG, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                START
+              </button>
+            </div>
           </div>
         </div>
       )}

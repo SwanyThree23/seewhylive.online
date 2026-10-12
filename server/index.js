@@ -546,6 +546,11 @@ var pollMap          = new Map();  // roomId → { question, options:[{text,vote
 var shoutoutThrottle = new Map();  // roomId → lastSentAt (ms)
 var countdownMap     = new Map();  // roomId → { label, endsAt, timerId }
 var hostMoodMap      = new Map();  // roomId → { emoji, label }
+// Batch 52: Clip Marker / Viewer Follow / Speed Donate / Trivia
+var clipMarkerMap    = new Map();  // roomId → { count, clips: [{username, ts}] }
+var followBannerThrottle = new Map();  // roomId+userId → lastFollowAt
+var speedDonateThrottle  = new Map();  // userId → lastDonateAt
+var triviaMap        = new Map();  // roomId → { question, options, correctIdx, endsAt, timerId, answers: Map<userId,idx>, revealed }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -782,6 +787,11 @@ function getJoinStateForRoom(roomId) {
   var _cd51 = countdownMap.get(roomId);
   state.countdown = (_cd51 && _cd51.endsAt > Date.now()) ? { label: _cd51.label, endsAt: _cd51.endsAt } : null;
   state.hostMood = hostMoodMap.get(roomId) || null;
+  // Batch 52
+  var _cm52 = clipMarkerMap.get(roomId);
+  state.clipCount = _cm52 ? _cm52.count : 0;
+  var _tr52 = triviaMap.get(roomId);
+  state.trivia = (_tr52 && !_tr52.revealed && _tr52.endsAt > Date.now()) ? { question: _tr52.question, options: _tr52.options, endsAt: _tr52.endsAt } : null;
   return state;
 }
 
@@ -6382,6 +6392,11 @@ io.on('connection', function(socket) {
     if (_cdC51 && _cdC51.timerId) clearTimeout(_cdC51.timerId);
     countdownMap.delete(roomId);
     hostMoodMap.delete(roomId);
+    // Batch 52 cleanup
+    clipMarkerMap.delete(roomId);
+    var _trC52 = triviaMap.get(roomId);
+    if (_trC52 && _trC52.timerId) clearTimeout(_trC52.timerId);
+    triviaMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -6700,6 +6715,108 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     hostMoodMap.delete(roomId);
     io.to(roomId).emit('host-mood-update', null);
+  });
+
+  // ── clip-marker (Batch 52) ──────────────────────────────────────────────
+  socket.on('clip-marker', function(data, ack) {
+    var roomId   = socket.data.roomId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId) return;
+    var entry = clipMarkerMap.get(roomId) || { count: 0, clips: [] };
+    entry.count++;
+    entry.clips = entry.clips.slice(-49).concat([{ username: username, ts: Date.now() }]);
+    clipMarkerMap.set(roomId, entry);
+    // Notify host only
+    io.to(roomId).emit('clip-count-update', { count: entry.count, username: username });
+    if (ack) ack({ ok: true, count: entry.count });
+  });
+
+  // ── viewer-follow (Batch 52) ────────────────────────────────────────────
+  socket.on('viewer-follow', function(data, ack) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Someone';
+    if (!roomId || !userId) return;
+    var key = roomId + ':' + userId;
+    var now = Date.now();
+    var last = followBannerThrottle.get(key) || 0;
+    if (now - last < 30000) { if (ack) ack({ err: 'cooldown' }); return; }
+    followBannerThrottle.set(key, now);
+    io.to(roomId).emit('follow-notification', { username: username });
+    if (ack) ack({ ok: true });
+  });
+
+  // ── speed-donate (Batch 52) ─────────────────────────────────────────────
+  socket.on('speed-donate', function(data, ack) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId || !userId) return;
+    var now = Date.now();
+    var last = speedDonateThrottle.get(userId) || 0;
+    if (now - last < 2000) { if (ack) ack({ err: 'throttled' }); return; }
+    speedDonateThrottle.set(userId, now);
+    io.to(roomId).emit('speed-donate-burst', { username: username, x: Math.random() });
+    if (ack) ack({ ok: true });
+  });
+
+  // ── trivia (Batch 52) ──────────────────────────────────────────────────
+  socket.on('trivia-start', function(data, ack) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.question) return;
+    var question = String(data.question).slice(0, 120);
+    var rawOpts  = Array.isArray(data.options) ? data.options : [];
+    var opts = rawOpts.filter(function(o) { return o && String(o).trim(); }).slice(0, 4).map(function(o) { return String(o).slice(0, 60); });
+    if (opts.length < 2) return;
+    var correctIdx = parseInt(data.correctIdx, 10) || 0;
+    if (correctIdx >= opts.length) correctIdx = 0;
+    var secs = Math.min(60, Math.max(10, parseInt(data.secs, 10) || 20));
+    var existing = triviaMap.get(roomId);
+    if (existing && existing.timerId) clearTimeout(existing.timerId);
+    var endsAt = Date.now() + secs * 1000;
+    var timerId = setTimeout(function() {
+      var t = triviaMap.get(roomId);
+      if (!t || t.revealed) return;
+      t.revealed = true;
+      triviaMap.set(roomId, t);
+      var winners = [];
+      t.answers.forEach(function(idx, uid) { if (idx === t.correctIdx) winners.push(uid); });
+      io.to(roomId).emit('trivia-reveal', { question: t.question, options: t.options, correctIdx: t.correctIdx, totalAnswers: t.answers.size, winnerCount: winners.length });
+    }, secs * 1000);
+    triviaMap.set(roomId, { question: question, options: opts, correctIdx: correctIdx, endsAt: endsAt, timerId: timerId, answers: new Map(), revealed: false });
+    io.to(roomId).emit('trivia-update', { question: question, options: opts, endsAt: endsAt });
+    if (ack) ack({ ok: true });
+  });
+
+  socket.on('trivia-answer', function(data, ack) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) return;
+    var t = triviaMap.get(roomId);
+    if (!t || t.revealed || t.endsAt <= Date.now()) { if (ack) ack({ err: 'no_trivia' }); return; }
+    if (t.answers.has(userId)) { if (ack) ack({ err: 'already_answered' }); return; }
+    var idx = parseInt(data && data.idx, 10);
+    if (isNaN(idx) || idx < 0 || idx >= t.options.length) return;
+    t.answers.set(userId, idx);
+    triviaMap.set(roomId, t);
+    io.to(roomId).emit('trivia-answer-count', { total: t.answers.size });
+    if (ack) ack({ ok: true });
+  });
+
+  socket.on('trivia-end', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var t = triviaMap.get(roomId);
+    if (!t) return;
+    if (t.timerId) clearTimeout(t.timerId);
+    t.revealed = true;
+    triviaMap.set(roomId, t);
+    var winners = [];
+    t.answers.forEach(function(idx, uid) { if (idx === t.correctIdx) winners.push(uid); });
+    io.to(roomId).emit('trivia-reveal', { question: t.question, options: t.options, correctIdx: t.correctIdx, totalAnswers: t.answers.size, winnerCount: winners.length });
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
