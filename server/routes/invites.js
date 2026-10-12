@@ -57,7 +57,7 @@ router.post('/:id/respond', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'status must be accepted or declined' });
   }
   try {
-    const invite = await inviteService.respondToInvitation(req.tenantId, req.params.id, status, req.user.id);
+    const invite = await inviteService.respondToInvitation(req.params.id, status, req.user.id);
     if (!invite) return res.status(404).json({ error: 'invite not found, expired, or already responded' });
     res.json(invite);
   } catch (err) {
@@ -67,7 +67,7 @@ router.post('/:id/respond', requireAuth, async (req, res) => {
 
 router.get('/me', requireAuth, async (req, res) => {
   try {
-    const invites = await inviteService.getPendingInvitations(req.tenantId, req.user.id);
+    const invites = await inviteService.getPendingInvitations(req.user.id);
     res.json(invites);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
@@ -113,7 +113,7 @@ router.post('/links/:token/redeem', requireAuth, async (req, res) => {
   }
   _redeemLog.set(_rlKey, _rlNow);
   try {
-    const link = await inviteService.redeemInviteLink(req.tenantId, token);
+    const link = await inviteService.redeemInviteLink(token);
     res.json(link);
   } catch (err) {
     _redeemLog.delete(_rlKey);
@@ -124,7 +124,7 @@ router.post('/links/:token/redeem', requireAuth, async (req, res) => {
 router.post('/links/:id/revoke', requireAuth, async (req, res) => {
   if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid invite link id' });
   try {
-    const link = await inviteService.revokeInviteLink(req.tenantId, req.params.id, req.user.id);
+    const link = await inviteService.revokeInviteLink(req.params.id, req.user.id);
     if (!link) return res.status(404).json({ error: 'not found, not yours, or already revoked' });
     res.json(link);
   } catch (err) {
@@ -142,7 +142,7 @@ router.get('/streams/:streamId/links', requireAuth, async (req, res) => {
     if (!ownerCheck.rows[0] || ownerCheck.rows[0].creator_id !== req.user.id) {
       return res.status(403).json({ error: 'forbidden' });
     }
-    const links = await inviteService.getStreamInviteLinks(req.tenantId, req.params.streamId);
+    const links = await inviteService.getStreamInviteLinks(req.params.streamId);
     res.json(links);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
