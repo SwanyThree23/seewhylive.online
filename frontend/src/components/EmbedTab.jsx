@@ -1,9 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-
-var stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 var PPV_PRICE_USD = 4.99;
 var CREATOR_SHARE = 0.90;
@@ -16,8 +12,6 @@ function _authHeaders(extra) {
 }
 
 function PaywallForm({ onUnlock, roomId, addToast }) {
-  var stripe = useStripe();
-  var elements = useElements();
   var processingState = useState(false);
   var processing = processingState[0];
   var setProcessing = processingState[1];
@@ -29,7 +23,6 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!stripe || !elements) return;
     setProcessing(true);
     setError(null);
 
@@ -37,29 +30,22 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
       var res = await fetch('/api/ppv/create', {
         method: 'POST',
         headers: _authHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ roomId, viewerId: 'viewer-' + Date.now(), priceUsd: PPV_PRICE_USD })
+        body: JSON.stringify({ streamId: roomId, viewerId: 'viewer-' + Date.now(), priceCents: 499 })
       });
       if (!res.ok) { var errD = await res.json(); throw new Error((errD && errD.error) || 'Payment initiation failed'); }
       var data = await res.json();
-      if (!data || !data.clientSecret) throw new Error('No client secret returned');
-
-      var cardEl = elements.getElement(CardElement);
-      var result = await stripe.confirmCardPayment(data.clientSecret, {
-        payment_method: { card: cardEl }
-      });
-
-      if (result.error) throw new Error(result.error.message);
+      if (!data || !data.token) throw new Error('Access token not returned');
 
       var verifyRes = await fetch('/api/ppv/verify', {
         method: 'POST',
         headers: _authHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ paymentIntentId: data.paymentIntentId, roomId, viewerId: 'viewer-' + Date.now() })
+        body: JSON.stringify({ token: data.token, streamId: roomId })
       });
       if (!verifyRes.ok) { var errV = await verifyRes.json(); throw new Error((errV && errV.error) || 'Payment verification failed'); }
       var verifyData = await verifyRes.json();
-      if (!verifyData || !verifyData.token) throw new Error('Payment verification failed');
+      if (!verifyData || !verifyData.valid) throw new Error('Payment verification failed');
 
-      onUnlock(verifyData.token);
+      onUnlock(data.token);
     } catch (err) {
       setError(err.message);
       setProcessing(false);
@@ -115,16 +101,6 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
       >
         Creator receives: ${creatorAmt} (90%)
       </div>
-      <div
-        style={{
-          background: 'rgba(255,255,255,.04)',
-          border: '1px solid rgba(255,255,255,.12)',
-          borderRadius: '6px',
-          padding: '12px 14px'
-        }}
-      >
-        <CardElement options={{ style: { base: { color: '#E8C46A', fontFamily: 'DM Mono, monospace', fontSize: '16px' } } }} />
-      </div>
       {error && (
         <div
           style={{
@@ -143,17 +119,17 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
       )}
       <button
         type="submit"
-        disabled={processing || !stripe}
+        disabled={processing}
         style={{
           fontFamily: "'Bebas Neue',sans-serif",
           fontSize: '17px',
           letterSpacing: '2px',
           color: '#0E0C09',
-          background: processing || !stripe ? '#8A7A62' : '#E8C46A',
+          background: processing ? '#8A7A62' : '#E8C46A',
           border: 'none',
           borderRadius: '6px',
           padding: '12px 0',
-          cursor: processing || !stripe ? 'not-allowed' : 'pointer',
+          cursor: processing ? 'not-allowed' : 'pointer',
           width: '100%',
           transition: 'background .2s'
         }}
@@ -387,9 +363,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
                     boxSizing: 'border-box'
                   }}
                 >
-                  <Elements stripe={stripePromise}>
-                    <PaywallForm onUnlock={handleUnlock} roomId={roomId} />
-                  </Elements>
+                  <PaywallForm onUnlock={handleUnlock} roomId={roomId} />
                 </div>
               )}
             </div>
