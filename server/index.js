@@ -541,6 +541,11 @@ var captionMap       = new Map();  // roomId → { text, color }
 var luckyDropMap     = new Map();  // roomId → { label, prize, maxWinners, endsAt, winners: Set<userId>, timerId }
 var hypeWordMap      = new Map();  // roomId → string (trigger word, lowercase)
 var sceneLabelMap    = new Map();  // roomId → { text, emoji }
+// Batch 51: Live Poll / Shoutout Banner / Countdown Timer / Host Mood
+var pollMap          = new Map();  // roomId → { question, options:[{text,votes}], endsAt, timerId, voterSet, ended }
+var shoutoutThrottle = new Map();  // roomId → lastSentAt (ms)
+var countdownMap     = new Map();  // roomId → { label, endsAt, timerId }
+var hostMoodMap      = new Map();  // roomId → { emoji, label }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -771,6 +776,12 @@ function getJoinStateForRoom(roomId) {
   var _ld50 = luckyDropMap.get(roomId);
   state.luckyDrop = (_ld50 && _ld50.endsAt > Date.now()) ? { label: _ld50.label, prize: _ld50.prize, maxWinners: _ld50.maxWinners, endsAt: _ld50.endsAt, winnerCount: _ld50.winners.size } : null;
   state.hypeWord  = hypeWordMap.get(roomId) || null;
+  // Batch 51
+  var _poll51 = pollMap.get(roomId);
+  state.poll = (_poll51 && !_poll51.ended && _poll51.endsAt > Date.now()) ? { question: _poll51.question, options: _poll51.options.map(function(o) { return { text: o.text, votes: o.votes }; }), endsAt: _poll51.endsAt } : null;
+  var _cd51 = countdownMap.get(roomId);
+  state.countdown = (_cd51 && _cd51.endsAt > Date.now()) ? { label: _cd51.label, endsAt: _cd51.endsAt } : null;
+  state.hostMood = hostMoodMap.get(roomId) || null;
   return state;
 }
 
@@ -6362,6 +6373,15 @@ io.on('connection', function(socket) {
     luckyDropMap.delete(roomId);
     hypeWordMap.delete(roomId);
     sceneLabelMap.delete(roomId);
+    // Batch 51 cleanup
+    var _pollC51 = pollMap.get(roomId);
+    if (_pollC51 && _pollC51.timerId) clearTimeout(_pollC51.timerId);
+    pollMap.delete(roomId);
+    shoutoutThrottle.delete(roomId);
+    var _cdC51 = countdownMap.get(roomId);
+    if (_cdC51 && _cdC51.timerId) clearTimeout(_cdC51.timerId);
+    countdownMap.delete(roomId);
+    hostMoodMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -6559,6 +6579,127 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     sceneLabelMap.delete(roomId);
     io.to(roomId).emit('scene-label-update', null);
+  });
+
+  // ── poll (Batch 51) ────────────────────────────────────────────────────
+  socket.on('poll-start', function(data, ack) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.question) return;
+    var question = String(data.question).slice(0, 120);
+    var rawOpts = Array.isArray(data.options) ? data.options : [];
+    var opts = rawOpts.filter(function(o) { return o && String(o).trim(); }).slice(0, 4).map(function(o) { return { text: String(o).slice(0, 50), votes: 0 }; });
+    if (opts.length < 2) return;
+    var secs = Math.min(120, Math.max(10, parseInt(data.secs, 10) || 60));
+    var existing = pollMap.get(roomId);
+    if (existing && existing.timerId) clearTimeout(existing.timerId);
+    var endsAt = Date.now() + secs * 1000;
+    var timerId = setTimeout(function() {
+      var p = pollMap.get(roomId);
+      if (!p) return;
+      p.ended = true;
+      pollMap.set(roomId, p);
+      io.to(roomId).emit('poll-ended', { question: p.question, options: p.options.map(function(o) { return { text: o.text, votes: o.votes }; }), totalVotes: p.voterSet.size });
+    }, secs * 1000);
+    pollMap.set(roomId, { question: question, options: opts, endsAt: endsAt, timerId: timerId, voterSet: new Set(), ended: false });
+    io.to(roomId).emit('poll-update', { question: question, options: opts.map(function(o) { return { text: o.text, votes: 0 }; }), endsAt: endsAt, totalVotes: 0 });
+    if (ack) ack({ ok: true });
+  });
+
+  socket.on('poll-vote', function(data, ack) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) return;
+    var p = pollMap.get(roomId);
+    if (!p || p.ended || p.endsAt <= Date.now()) return;
+    if (p.voterSet.has(userId)) { if (ack) ack({ err: 'already_voted' }); return; }
+    var idx = parseInt(data && data.idx, 10);
+    if (isNaN(idx) || idx < 0 || idx >= p.options.length) return;
+    p.options[idx].votes++;
+    p.voterSet.add(userId);
+    pollMap.set(roomId, p);
+    io.to(roomId).emit('poll-update', { question: p.question, options: p.options.map(function(o) { return { text: o.text, votes: o.votes }; }), endsAt: p.endsAt, totalVotes: p.voterSet.size });
+    if (ack) ack({ ok: true });
+  });
+
+  socket.on('poll-end', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var p = pollMap.get(roomId);
+    if (!p) return;
+    if (p.timerId) clearTimeout(p.timerId);
+    p.ended = true;
+    pollMap.set(roomId, p);
+    io.to(roomId).emit('poll-ended', { question: p.question, options: p.options.map(function(o) { return { text: o.text, votes: o.votes }; }), totalVotes: p.voterSet.size });
+  });
+
+  // ── shoutout (Batch 51) ─────────────────────────────────────────────────
+  socket.on('shoutout-send', function(data) {
+    var roomId = socket.data.roomId;
+    var username = socket.data.username || 'Host';
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.target) return;
+    var now = Date.now();
+    var last = shoutoutThrottle.get(roomId) || 0;
+    if (now - last < 5000) return;
+    shoutoutThrottle.set(roomId, now);
+    var target = String(data.target).replace(/[^a-zA-Z0-9_\-. ]/g, '').slice(0, 30);
+    var message = data.message ? String(data.message).slice(0, 80) : '';
+    io.to(roomId).emit('shoutout', { target: target, message: message, from: username });
+  });
+
+  // ── countdown (Batch 51) ────────────────────────────────────────────────
+  socket.on('countdown-set', function(data, ack) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.label) return;
+    var label = String(data.label).slice(0, 40);
+    var secs = Math.min(600, Math.max(10, parseInt(data.secs, 10) || 60));
+    var existing = countdownMap.get(roomId);
+    if (existing && existing.timerId) clearTimeout(existing.timerId);
+    var endsAt = Date.now() + secs * 1000;
+    var timerId = setTimeout(function() {
+      countdownMap.delete(roomId);
+      io.to(roomId).emit('countdown-update', null);
+      io.to(roomId).emit('countdown-ended', { label: label });
+    }, secs * 1000);
+    countdownMap.set(roomId, { label: label, endsAt: endsAt, timerId: timerId });
+    io.to(roomId).emit('countdown-update', { label: label, endsAt: endsAt });
+    if (ack) ack({ ok: true });
+  });
+
+  socket.on('countdown-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var existing = countdownMap.get(roomId);
+    if (existing && existing.timerId) clearTimeout(existing.timerId);
+    countdownMap.delete(roomId);
+    io.to(roomId).emit('countdown-update', null);
+  });
+
+  // ── host-mood (Batch 51) ────────────────────────────────────────────────
+  socket.on('host-mood-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.emoji || !data.label) return;
+    var emoji = String(data.emoji).slice(0, 4);
+    var label = String(data.label).slice(0, 24);
+    hostMoodMap.set(roomId, { emoji: emoji, label: label });
+    io.to(roomId).emit('host-mood-update', { emoji: emoji, label: label });
+  });
+
+  socket.on('host-mood-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    hostMoodMap.delete(roomId);
+    io.to(roomId).emit('host-mood-update', null);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────

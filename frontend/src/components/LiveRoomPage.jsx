@@ -887,6 +887,22 @@ export default function LiveRoomPage({
   var [sceneDraft,       setSceneDraft]       = useState({ text: '', emoji: '🎬' });
   var [showSceneSet,     setShowSceneSet]     = useState(false);
 
+  // ─── Batch 51: Live Poll / Shoutout Banner / Countdown Timer / Host Mood ───
+  var [poll,             setPoll]             = useState(null);
+  var [pollDraft,        setPollDraft]        = useState({ question: '', options: ['Yes', 'No', '', ''] });
+  var [showPollSet,      setShowPollSet]      = useState(false);
+  var [myPollVote,       setMyPollVote]       = useState(null);
+  var [shoutout,         setShoutout]         = useState(null);
+  var [shoutoutDraft,    setShoutoutDraft]    = useState({ target: '', message: '' });
+  var [showShoutoutSet,  setShowShoutoutSet]  = useState(false);
+  var [countdown,        setCountdown]        = useState(null);
+  var [countdownDraft,   setCountdownDraft]   = useState({ label: 'Giveaway starts', secs: '60' });
+  var [showCountdownSet, setShowCountdownSet] = useState(false);
+  var [countdownFlash,   setCountdownFlash]   = useState(null);
+  var [hostMood,         setHostMood]         = useState(null);
+  var [moodDraft,        setMoodDraft]        = useState({ emoji: '🔥', label: 'Hyped' });
+  var [showMoodSet,      setShowMoodSet]      = useState(false);
+
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
   var screenStreamRef = useRef(null);
@@ -1026,6 +1042,9 @@ export default function LiveRoomPage({
       if (data.sceneLabel) setSceneLabel(data.sceneLabel);
       if (data.luckyDrop && data.luckyDrop.endsAt > Date.now()) setLuckyDrop(data.luckyDrop);
       if (data.hypeWord) setHypeWord(data.hypeWord);
+      if (data.poll && !data.poll.ended) setPoll(data.poll);
+      if (data.countdown && data.countdown.endsAt > Date.now()) setCountdown(data.countdown);
+      if (data.hostMood) setHostMood(data.hostMood);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2115,6 +2134,39 @@ export default function LiveRoomPage({
       setSceneLabel(d || null);
     });
 
+    // ── Batch 51 listeners ─────────────────────────────────────────────────
+    socket.on('poll-update', function(d) {
+      if (!d) return;
+      setPoll(d);
+    });
+
+    socket.on('poll-ended', function(d) {
+      if (d) setPoll(Object.assign({}, d, { ended: true }));
+      setTimeout(function() { setPoll(null); setMyPollVote(null); }, 5000);
+    });
+
+    socket.on('shoutout', function(d) {
+      if (!d) return;
+      setShoutout(d);
+      setTimeout(function() { setShoutout(null); }, 5000);
+    });
+
+    socket.on('countdown-update', function(d) {
+      setCountdown(d || null);
+    });
+
+    socket.on('countdown-ended', function(d) {
+      setCountdown(null);
+      if (d && d.label) {
+        setCountdownFlash(d.label);
+        setTimeout(function() { setCountdownFlash(null); }, 3500);
+      }
+    });
+
+    socket.on('host-mood-update', function(d) {
+      setHostMood(d || null);
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2530,6 +2582,12 @@ export default function LiveRoomPage({
       socket.off('hype-word-update');
       socket.off('hype-word-triggered');
       socket.off('scene-label-update');
+      socket.off('poll-update');
+      socket.off('poll-ended');
+      socket.off('shoutout');
+      socket.off('countdown-update');
+      socket.off('countdown-ended');
+      socket.off('host-mood-update');
     };
   }, [socket]);
 
@@ -4322,6 +4380,21 @@ export default function LiveRoomPage({
               { emoji: sceneLabel ? sceneLabel.emoji : '🎬', label: sceneLabel ? sceneLabel.text.slice(0, 8) : 'Scene', active: !!sceneLabel || showSceneSet, onTap: function() {
                 if (sceneLabel) { if (socket) socket.emit('scene-label-clear', { roomId: roomId }); }
                 else { setSceneDraft({ text: '', emoji: '🎬' }); setShowSceneSet(function(s) { return !s; }); }
+              }},
+              { emoji: '📊', label: poll ? 'End Poll' : 'Poll', active: !!poll || showPollSet, onTap: function() {
+                if (poll && !poll.ended) { if (socket) socket.emit('poll-end', { roomId: roomId }); }
+                else { setPollDraft({ question: '', options: ['Yes', 'No', '', ''] }); setMyPollVote(null); setShowPollSet(function(s) { return !s; }); }
+              }},
+              { emoji: '📣', label: 'Shoutout', active: showShoutoutSet, onTap: function() {
+                setShoutoutDraft({ target: '', message: '' }); setShowShoutoutSet(function(s) { return !s; });
+              }},
+              { emoji: countdown ? '⏱' : '⏰', label: countdown ? 'Clear Timer' : 'Countdown', active: !!countdown || showCountdownSet, onTap: function() {
+                if (countdown) { if (socket) socket.emit('countdown-clear', { roomId: roomId }); }
+                else { setCountdownDraft({ label: 'Giveaway starts', secs: '60' }); setShowCountdownSet(function(s) { return !s; }); }
+              }},
+              { emoji: hostMood ? hostMood.emoji : '😊', label: hostMood ? hostMood.label.slice(0, 8) : 'My Mood', active: !!hostMood || showMoodSet, onTap: function() {
+                if (hostMood) { if (socket) socket.emit('host-mood-clear', { roomId: roomId }); }
+                else { setMoodDraft({ emoji: '🔥', label: 'Hyped' }); setShowMoodSet(function(s) { return !s; }); }
               }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
@@ -11194,6 +11267,219 @@ export default function LiveRoomPage({
                 SET
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 51: Host Mood badge ══ */}
+      {hostMood && (
+        <div style={{ position: 'fixed', top: 60, left: 12, zIndex: 500, pointerEvents: 'none', animation: 'slideUp .3s ease' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(14,12,9,.88)', border: '1px solid ' + GOLD, borderRadius: 20, padding: '5px 12px', backdropFilter: 'blur(6px)' }}>
+            <span style={{ fontSize: 16 }}>{hostMood.emoji}</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: GOLD, fontWeight: 600, letterSpacing: .5 }}>{hostMood.label}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 51: Live Poll overlay ══ */}
+      {poll && (
+        <div style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 110, zIndex: 600, width: 300, animation: 'slideUp .3s ease' }}>
+          <div style={{ background: 'rgba(26,21,16,.96)', border: '1px solid ' + GOLD, borderRadius: 14, padding: '14px 16px', backdropFilter: 'blur(8px)' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 15, color: GOLD, letterSpacing: 1.5, marginBottom: 10 }}>📊 {poll.question}</div>
+            {poll.options && poll.options.map(function(opt, i) {
+              var total = poll.totalVotes || 1;
+              var pct = Math.round((opt.votes / total) * 100) || 0;
+              var voted = myPollVote === i;
+              var canVote = !poll.ended && myPollVote === null;
+              return (
+                <div key={i} style={{ marginBottom: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <button onClick={function() {
+                      if (!canVote) return;
+                      setMyPollVote(i);
+                      if (socket) socket.emit('poll-vote', { roomId: roomId, idx: i });
+                    }} disabled={!canVote} style={{ background: 'none', border: 'none', padding: 0, cursor: canVote ? 'pointer' : 'default', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: voted ? GOLD : TEXT, fontWeight: voted ? 700 : 400 }}>{voted ? '✓ ' : ''}{opt.text}</span>
+                    </button>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: MUTED }}>{pct}%</span>
+                  </div>
+                  <div style={{ height: 5, background: CARD2, borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: pct + '%', background: voted ? GOLD : TEAL, borderRadius: 4, transition: 'width .4s ease' }} />
+                  </div>
+                </div>
+              );
+            })}
+            {poll.ended && <div style={{ textAlign: 'center', fontFamily: "'Bebas Neue',cursive", fontSize: 12, color: MUTED, marginTop: 6, letterSpacing: 1 }}>POLL ENDED · {poll.totalVotes || 0} VOTES</div>}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 51: Shoutout banner ══ */}
+      {shoutout && (
+        <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 750, textAlign: 'center', pointerEvents: 'none', animation: 'fadeIn .3s ease' }}>
+          <div style={{ background: 'linear-gradient(135deg,#1A1510,#2E2318)', border: '2px solid ' + GOLD, borderRadius: 18, padding: '18px 28px', backdropFilter: 'blur(12px)', boxShadow: '0 0 40px rgba(201,168,76,.35)' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: MUTED, letterSpacing: 3, marginBottom: 4 }}>SHOUTOUT</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 26, color: GOLD, letterSpacing: 2, marginBottom: shoutout.message ? 6 : 0 }}>@{shoutout.target}</div>
+            {shoutout.message && <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, fontStyle: 'italic' }}>"{shoutout.message}"</div>}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 51: Countdown timer overlay ══ */}
+      {countdown && (function() {
+        var remaining = Math.max(0, Math.ceil((countdown.endsAt - Date.now()) / 1000));
+        var mm = Math.floor(remaining / 60);
+        var ss = remaining % 60;
+        var display = mm > 0 ? mm + ':' + (ss < 10 ? '0' : '') + ss : ss + 's';
+        return (
+          <div style={{ position: 'fixed', top: 60, right: 12, zIndex: 500, pointerEvents: 'none', animation: 'slideUp .3s ease' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(14,12,9,.92)', border: '1px solid ' + TEAL, borderRadius: 14, padding: '8px 14px', backdropFilter: 'blur(6px)', minWidth: 64 }}>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: MUTED, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>{countdown.label}</span>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 22, color: TEAL, letterSpacing: 2, lineHeight: 1 }}>{display}</span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ══ Batch 51: Countdown ended flash ══ */}
+      {countdownFlash && (
+        <div style={{ position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 750, textAlign: 'center', pointerEvents: 'none', animation: 'fadeIn .3s ease' }}>
+          <div style={{ background: 'rgba(26,21,16,.96)', border: '2px solid ' + TEAL, borderRadius: 16, padding: '16px 32px', backdropFilter: 'blur(10px)' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 11, color: MUTED, letterSpacing: 3, marginBottom: 4 }}>⏰ TIME'S UP</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 24, color: TEAL, letterSpacing: 2 }}>{countdownFlash}</div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 51: Poll Set panel (host/cohost) ══ */}
+      {showPollSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 300, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>📊 LIVE POLL</span>
+              <button onClick={function() { setShowPollSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={pollDraft.question}
+              onChange={function(e) { setPollDraft(function(d) { return Object.assign({}, d, { question: e.target.value.slice(0, 120) }); }); }}
+              placeholder="Poll question"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            {[0, 1, 2, 3].map(function(i) {
+              return (
+                <input key={i} value={pollDraft.options[i] || ''}
+                  onChange={function(e) { var v = e.target.value.slice(0, 50); setPollDraft(function(d) { var newOpts = d.options.slice(); newOpts[i] = v; return Object.assign({}, d, { options: newOpts }); }); }}
+                  placeholder={i < 2 ? 'Option ' + (i + 1) + ' (required)' : 'Option ' + (i + 1) + ' (optional)'}
+                  style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '6px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 6 }} />
+              );
+            })}
+            <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+              <select value="60" style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '6px 8px', flex: 1 }}
+                onChange={function(e) { setPollDraft(function(d) { return Object.assign({}, d, { secs: e.target.value }); }); }}>
+                <option value="30">30s</option>
+                <option value="60">1 min</option>
+                <option value="120">2 min</option>
+              </select>
+              <button onClick={function() {
+                var q = pollDraft.question.trim();
+                var opts = (pollDraft.options || []).filter(function(o) { return o && o.trim(); });
+                if (!q || opts.length < 2) return;
+                if (socket) socket.emit('poll-start', { roomId: roomId, question: q, options: opts, secs: parseInt(pollDraft.secs, 10) || 60 });
+                setShowPollSet(false);
+              }} disabled={!pollDraft.question.trim() || (pollDraft.options || []).filter(function(o) { return o && o.trim(); }).length < 2} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '7px 14px', fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: BG, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                START
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 51: Shoutout Set panel (host/cohost) ══ */}
+      {showShoutoutSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>📣 SHOUTOUT</span>
+              <button onClick={function() { setShowShoutoutSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={shoutoutDraft.target}
+              onChange={function(e) { setShoutoutDraft(function(d) { return Object.assign({}, d, { target: e.target.value.slice(0, 30) }); }); }}
+              placeholder="@username to shoutout"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <input value={shoutoutDraft.message}
+              onChange={function(e) { setShoutoutDraft(function(d) { return Object.assign({}, d, { message: e.target.value.slice(0, 80) }); }); }}
+              placeholder="Message (optional)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 10 }} />
+            <button onClick={function() {
+              var t = shoutoutDraft.target.trim();
+              if (!t) return;
+              if (socket) socket.emit('shoutout-send', { roomId: roomId, target: t, message: shoutoutDraft.message.trim() });
+              setShowShoutoutSet(false);
+            }} disabled={!shoutoutDraft.target.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: shoutoutDraft.target.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: shoutoutDraft.target.trim() ? 1 : 0.5 }}>
+              SEND SHOUTOUT
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 51: Countdown Set panel (host/cohost) ══ */}
+      {showCountdownSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>⏰ COUNTDOWN</span>
+              <button onClick={function() { setShowCountdownSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={countdownDraft.label}
+              onChange={function(e) { setCountdownDraft(function(d) { return Object.assign({}, d, { label: e.target.value.slice(0, 40) }); }); }}
+              placeholder="Label (e.g. Giveaway starts)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+              {[['30s', '30'], ['1 min', '60'], ['2 min', '120'], ['5 min', '300'], ['10 min', '600']].map(function(p) {
+                var active = countdownDraft.secs === p[1];
+                return (
+                  <button key={p[1]} onClick={function() { setCountdownDraft(function(d) { return Object.assign({}, d, { secs: p[1] }); }); }}
+                    style={{ background: active ? GOLD : CARD2, border: '1px solid ' + (active ? GOLD : BORDER), borderRadius: 8, padding: '5px 10px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: active ? BG : TEXT, cursor: 'pointer' }}>
+                    {p[0]}
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={function() {
+              var lbl = countdownDraft.label.trim();
+              if (!lbl) return;
+              if (socket) socket.emit('countdown-set', { roomId: roomId, label: lbl, secs: parseInt(countdownDraft.secs, 10) || 60 });
+              setShowCountdownSet(false);
+            }} disabled={!countdownDraft.label.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: countdownDraft.label.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: countdownDraft.label.trim() ? 1 : 0.5 }}>
+              START COUNTDOWN
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 51: Host Mood Set panel (host/cohost) ══ */}
+      {showMoodSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>😊 HOST MOOD</span>
+              <button onClick={function() { setShowMoodSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+              {[['🔥', 'Hyped'], ['😤', 'Competitive'], ['💬', 'Q&A Mode'], ['🎁', 'Gifting'], ['😂', 'Fun Vibes'], ['💪', 'Grinding'], ['🎵', 'Music Mode'], ['😴', 'Chill']].map(function(m) {
+                var active = moodDraft.emoji === m[0] && moodDraft.label === m[1];
+                return (
+                  <button key={m[1]} onClick={function() { setMoodDraft({ emoji: m[0], label: m[1] }); }}
+                    style={{ background: active ? GOLD : CARD2, border: '1px solid ' + (active ? GOLD : BORDER), borderRadius: 8, padding: '5px 10px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: active ? BG : TEXT, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span>{m[0]}</span><span>{m[1]}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={function() {
+              if (socket) socket.emit('host-mood-set', { roomId: roomId, emoji: moodDraft.emoji, label: moodDraft.label });
+              setShowMoodSet(false);
+            }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+              SET MOOD
+            </button>
           </div>
         </div>
       )}
