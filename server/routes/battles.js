@@ -58,12 +58,12 @@ router.post('/', requireAuth, battleCreateRateLimit, async (req, res) => {
 
 router.post('/:id/accept', requireAuth, validateId, async (req, res) => {
   try {
-    const existing = await battleService.getBattle(req.tenantId, req.params.id);
+    const existing = await battleService.getBattle(req.params.id);
     if (!existing) return res.status(404).json({ error: 'battle not found' });
     if (existing.defender_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
     const { roomId } = req.body;
     if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
-    const battle = await battleService.acceptChallenge(req.tenantId, req.params.id, roomId);
+    const battle = await battleService.acceptChallenge(req.params.id, roomId);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
   } catch (err) { console.error('[ROUTE ERROR]', err);
@@ -73,12 +73,12 @@ router.post('/:id/accept', requireAuth, validateId, async (req, res) => {
 
 router.post('/:id/start', requireAuth, validateId, async (req, res) => {
   try {
-    const existing = await battleService.getBattle(req.tenantId, req.params.id);
+    const existing = await battleService.getBattle(req.params.id);
     if (!existing) return res.status(404).json({ error: 'battle not found' });
     if (existing.challenger_id !== req.user.id && existing.defender_id !== req.user.id) {
       return res.status(403).json({ error: 'forbidden' });
     }
-    const battle = await battleService.startBattle(req.tenantId, req.params.id);
+    const battle = await battleService.startBattle(req.params.id);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
   } catch (err) { console.error('[ROUTE ERROR]', err);
@@ -111,7 +111,7 @@ router.post('/:id/vote', requireAuth, battleVoteRateLimit, validateId, async (re
 
 router.get('/active', async (req, res) => {
   try {
-    const battles = await battleService.getActiveBattles(req.tenantId);
+    const battles = await battleService.getActiveBattles();
     res.json(battles);
   } catch (err) { console.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -148,7 +148,7 @@ router.get('/leaderboard', async (req, res) => {
 
 router.get('/:id', validateId, async (req, res) => {
   try {
-    const battle = await battleService.getBattle(req.tenantId, req.params.id);
+    const battle = await battleService.getBattle(req.params.id);
     if (!battle) return res.status(404).json({ error: 'battle not found' });
     res.json(battle);
   } catch (err) { console.error('[ROUTE ERROR]', err);
