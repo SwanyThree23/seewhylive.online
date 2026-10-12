@@ -870,6 +870,23 @@ export default function LiveRoomPage({
   var [hasFollowedGoal,    setHasFollowedGoal]    = useState(false);
   var [showStickerBombPick,setShowStickerBombPick]= useState(false);
 
+  // ─── Batch 50: Live Caption / Lucky Drop / Hype Word / Scene Label ────────
+  var [caption,          setCaption]          = useState(null);   // { text, color }
+  var [captionDraft,     setCaptionDraft]     = useState({ text: '', color: '#F0E8D4' });
+  var [showCaptionSet,   setShowCaptionSet]   = useState(false);
+  var [luckyDrop,        setLuckyDrop]        = useState(null);   // { label, prize, maxWinners, endsAt, winnerCount }
+  var [luckyDropFlash,   setLuckyDropFlash]   = useState(null);   // { username, prize }
+  var [luckyDropDraft,   setLuckyDropDraft]   = useState({ label: 'Lucky Drop', prize: '🎁 Prize', maxWinners: '5', secs: '30' });
+  var [showLuckySet,     setShowLuckySet]     = useState(false);
+  var [myLuckyWon,       setMyLuckyWon]       = useState(false);
+  var [hypeWord,         setHypeWord]         = useState(null);   // string
+  var [hypeWordDraft,    setHypeWordDraft]    = useState('');
+  var [showHypeWordSet,  setShowHypeWordSet]  = useState(false);
+  var [hypeWordFlash,    setHypeWordFlash]    = useState(null);   // { word, username }
+  var [sceneLabel,       setSceneLabel]       = useState(null);   // { text, emoji }
+  var [sceneDraft,       setSceneDraft]       = useState({ text: '', emoji: '🎬' });
+  var [showSceneSet,     setShowSceneSet]     = useState(false);
+
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
   var screenStreamRef = useRef(null);
@@ -1005,6 +1022,10 @@ export default function LiveRoomPage({
       if (data.highlightVote && data.highlightVote.endsAt > Date.now()) setHighlightVote(data.highlightVote);
       if (data.donationMatch) setDonationMatch(data.donationMatch);
       if (data.followerGoal) setFollowerGoal(data.followerGoal);
+      if (data.caption) setCaption(data.caption);
+      if (data.sceneLabel) setSceneLabel(data.sceneLabel);
+      if (data.luckyDrop && data.luckyDrop.endsAt > Date.now()) setLuckyDrop(data.luckyDrop);
+      if (data.hypeWord) setHypeWord(data.hypeWord);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2049,6 +2070,51 @@ export default function LiveRoomPage({
       }
     });
 
+    // ── Batch 50 listeners ─────────────────────────────────────────────────
+    socket.on('caption-update', function(d) {
+      setCaption(d || null);
+    });
+
+    socket.on('lucky-drop-start', function(d) {
+      if (!d) return;
+      setLuckyDrop(d);
+      setMyLuckyWon(false);
+    });
+
+    socket.on('lucky-drop-winner', function(d) {
+      if (!d) return;
+      setLuckyDropFlash(d);
+      setTimeout(function() { setLuckyDropFlash(null); }, 3000);
+      if (d.remaining !== undefined) {
+        setLuckyDrop(function(prev) { return prev ? Object.assign({}, prev, { winnerCount: (prev.maxWinners || 1) - d.remaining }) : prev; });
+      }
+    });
+
+    socket.on('lucky-drop-ended', function(d) {
+      setLuckyDrop(null);
+      if (d && d.winnerCount > 0 && addToast) addToast('🎁 Lucky Drop ended — ' + d.winnerCount + ' winner(s)!', 'success');
+    });
+
+    socket.on('hype-word-update', function(d) {
+      setHypeWord(d ? d.word : null);
+    });
+
+    socket.on('hype-word-triggered', function(d) {
+      if (!d) return;
+      setHypeWordFlash(d);
+      setTimeout(function() { setHypeWordFlash(null); }, 2500);
+      var burstItems = [];
+      for (var _hwi = 0; _hwi < 12; _hwi++) {
+        burstItems.push({ id: _hwi, emoji: '✨', x: Math.random() * 80 + 10, delay: Math.random() * 0.8, dur: Math.random() * 0.8 + 0.6 });
+      }
+      setStickerItems(burstItems);
+      setTimeout(function() { setStickerItems([]); }, 2500);
+    });
+
+    socket.on('scene-label-update', function(d) {
+      setSceneLabel(d || null);
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2457,6 +2523,13 @@ export default function LiveRoomPage({
       socket.off('follower-goal-update');
       socket.off('follower-goal-complete');
       socket.off('broadcast-ended');
+      socket.off('caption-update');
+      socket.off('lucky-drop-start');
+      socket.off('lucky-drop-winner');
+      socket.off('lucky-drop-ended');
+      socket.off('hype-word-update');
+      socket.off('hype-word-triggered');
+      socket.off('scene-label-update');
     };
   }, [socket]);
 
@@ -4234,6 +4307,22 @@ export default function LiveRoomPage({
                 if (followerGoal) { if (socket) socket.emit('follower-goal-set', null); }
                 else { setShowFollowGoalSet(function(s) { return !s; }); }
               }},
+              { emoji: caption ? '💬' : '📝', label: caption ? 'Caption ✓' : 'Caption', active: !!caption || showCaptionSet, onTap: function() {
+                if (caption) { if (socket) socket.emit('caption-clear', { roomId: roomId }); }
+                else { setCaptionDraft({ text: '', color: '#F0E8D4' }); setShowCaptionSet(function(s) { return !s; }); }
+              }},
+              { emoji: '🎁', label: luckyDrop ? 'Drop Live' : 'Lucky Drop', active: !!luckyDrop || showLuckySet, onTap: function() {
+                if (luckyDrop) { if (socket) socket.emit('lucky-drop-end', { roomId: roomId }); }
+                else { setShowLuckySet(function(s) { return !s; }); }
+              }},
+              { emoji: hypeWord ? '🔥' : '💬', label: hypeWord ? 'Hype: ' + hypeWord.slice(0, 6) : 'Hype Word', active: !!hypeWord || showHypeWordSet, onTap: function() {
+                if (hypeWord) { if (socket) socket.emit('hype-word-clear', { roomId: roomId }); }
+                else { setHypeWordDraft(''); setShowHypeWordSet(function(s) { return !s; }); }
+              }},
+              { emoji: sceneLabel ? sceneLabel.emoji : '🎬', label: sceneLabel ? sceneLabel.text.slice(0, 8) : 'Scene', active: !!sceneLabel || showSceneSet, onTap: function() {
+                if (sceneLabel) { if (socket) socket.emit('scene-label-clear', { roomId: roomId }); }
+                else { setSceneDraft({ text: '', emoji: '🎬' }); setShowSceneSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🎵', label: 'Request SR', active: false, onTap: function() { setShowSongQueue(function(s) { return !s; }); } },
               { emoji: '📍', label: 'Check In', active: false, onTap: function() {
@@ -4284,6 +4373,14 @@ export default function LiveRoomPage({
                 if (socket) socket.emit('follower-goal-tap', { roomId: roomId }, function(res) {
                   if (res && res.ok) { setHasFollowedGoal(true); if (addToast) addToast('➕ Following! Total: ' + res.count, 'success'); }
                   else if (res && res.already) { setHasFollowedGoal(true); if (addToast) addToast('Already counted!', 'info'); }
+                });
+              }},
+              { emoji: myLuckyWon ? '🏆' : '🎁', label: luckyDrop ? (myLuckyWon ? 'Won!' : 'Claim Drop') : 'Lucky Drop', active: !!luckyDrop, onTap: function() {
+                if (!luckyDrop || myLuckyWon) return;
+                if (socket) socket.emit('lucky-drop-claim', { roomId: roomId }, function(res) {
+                  if (res && res.ok) { setMyLuckyWon(true); if (addToast) addToast('🎁 You won: ' + res.prize, 'success'); }
+                  else if (res && res.full) { if (addToast) addToast('All prizes claimed — be faster next time!', 'info'); }
+                  else if (res && res.already) { if (addToast) addToast('You already claimed!', 'info'); }
                 });
               }},
             ] : [])),
@@ -10906,6 +11003,197 @@ export default function LiveRoomPage({
             <button onClick={function() { setShowRecap(false); setRecapData(null); }} style={{ background: GOLD, border: 'none', borderRadius: 12, padding: '10px 28px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: BG, cursor: 'pointer', letterSpacing: 1.5, width: '100%' }}>
               CLOSE RECAP
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 50: Scene Label overlay ══ */}
+      {sceneLabel && (
+        <div style={{ position: 'fixed', top: followerGoal ? 84 : 54, left: '50%', transform: 'translateX(-50%)', zIndex: 59, pointerEvents: 'none' }}>
+          <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 999, padding: '5px 18px', display: 'flex', alignItems: 'center', gap: 7, animation: 'fadeSlideIn .3s ease' }}>
+            <span style={{ fontSize: 18 }}>{sceneLabel.emoji}</span>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 2 }}>{sceneLabel.text.toUpperCase()}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 50: Live Caption bar ══ */}
+      {caption && (
+        <div style={{ position: 'fixed', bottom: 160, left: 12, right: 12, zIndex: 55, pointerEvents: 'none' }}>
+          <div style={{ background: 'rgba(14,12,9,.85)', border: '1px solid rgba(240,232,212,.15)', borderRadius: 10, padding: '8px 14px', textAlign: 'center' }}>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 17, color: caption.color || TEXT, letterSpacing: 0.5 }}>{caption.text}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 50: Lucky Drop banner ══ */}
+      {luckyDrop && (
+        <div style={{ position: 'fixed', bottom: 210, left: '50%', transform: 'translateX(-50%)', zIndex: 65, animation: 'fadeSlideIn .35s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.97)', border: '2px solid rgba(201,168,76,.7)', borderRadius: 16, padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 0 30px rgba(201,168,76,.3)' }}>
+            <span style={{ fontSize: 30 }}>🎁</span>
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 2 }}>LUCKY DROP — TAP TO CLAIM</div>
+              <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: TEXT, letterSpacing: 1 }}>{luckyDrop.prize}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{(luckyDrop.maxWinners - (luckyDrop.winnerCount || 0))} spots left</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 50: Lucky Drop winner flash ══ */}
+      {luckyDropFlash && (
+        <div style={{ position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 700, pointerEvents: 'none', animation: 'milestoneIn .4s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.97)', border: '2px solid ' + GOLD, borderRadius: 18, padding: '18px 28px', textAlign: 'center', boxShadow: '0 0 40px rgba(201,168,76,.4)' }}>
+            <div style={{ fontSize: 40, marginBottom: 6 }}>🎁</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 22, color: GOLD, letterSpacing: 2 }}>{luckyDropFlash.username} WON!</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT }}>{luckyDropFlash.prize}</div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 50: Hype Word flash ══ */}
+      {hypeWordFlash && (
+        <div style={{ position: 'fixed', bottom: 240, left: '50%', transform: 'translateX(-50%)', zIndex: 66, pointerEvents: 'none', animation: 'fadeSlideIn .25s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(255,215,0,.5)', borderRadius: 999, padding: '5px 16px' }}>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 15, color: '#FFD700', letterSpacing: 2 }}>🔥 {hypeWordFlash.username}: "{hypeWordFlash.word}"</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 50: Caption Set panel (host/cohost) ══ */}
+      {showCaptionSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 320, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>📝 LIVE CAPTION</span>
+              <button onClick={function() { setShowCaptionSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <input value={captionDraft.text}
+                onChange={function(e) { setCaptionDraft(function(d) { return Object.assign({}, d, { text: e.target.value.slice(0, 120) }); }); }}
+                placeholder="Caption text (max 120 chars)"
+                style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box' }} />
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['#F0E8D4', '#C9A84C', '#D4854A', '#FF1A3C', '#A855F7'].map(function(col) {
+                  return (
+                    <button key={col} onClick={function() { setCaptionDraft(function(d) { return Object.assign({}, d, { color: col }); }); }}
+                      style={{ width: 28, height: 28, borderRadius: '50%', background: col, border: captionDraft.color === col ? '2px solid white' : '2px solid transparent', cursor: 'pointer', flexShrink: 0 }} />
+                  );
+                })}
+              </div>
+              <button onClick={function() {
+                var txt = captionDraft.text.trim();
+                if (!txt) return;
+                if (socket) socket.emit('caption-set', { roomId: roomId, text: txt, color: captionDraft.color });
+                setShowCaptionSet(false);
+              }} disabled={!captionDraft.text.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: captionDraft.text.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: captionDraft.text.trim() ? 1 : 0.5 }}>
+                SET CAPTION
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 50: Lucky Drop Set panel (host/cohost) ══ */}
+      {showLuckySet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 300, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🎁 LUCKY DROP</span>
+              <button onClick={function() { setShowLuckySet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <input value={luckyDropDraft.prize}
+                onChange={function(e) { setLuckyDropDraft(function(d) { return Object.assign({}, d, { prize: e.target.value.slice(0, 40) }); }); }}
+                placeholder="Prize (e.g. 🎁 Free Sub)"
+                style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box' }} />
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input value={luckyDropDraft.maxWinners}
+                  onChange={function(e) { setLuckyDropDraft(function(d) { return Object.assign({}, d, { maxWinners: e.target.value.replace(/[^0-9]/g, '').slice(0, 2) }); }); }}
+                  placeholder="# winners"
+                  style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', flex: 1, boxSizing: 'border-box' }} />
+                <input value={luckyDropDraft.secs}
+                  onChange={function(e) { setLuckyDropDraft(function(d) { return Object.assign({}, d, { secs: e.target.value.replace(/[^0-9]/g, '').slice(0, 3) }); }); }}
+                  placeholder="secs"
+                  style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', flex: 1, boxSizing: 'border-box' }} />
+              </div>
+              <button onClick={function() {
+                var prize = luckyDropDraft.prize.trim() || '🎁 Prize';
+                var max   = parseInt(luckyDropDraft.maxWinners || '5', 10) || 5;
+                var secs  = parseInt(luckyDropDraft.secs || '30', 10) || 30;
+                if (socket) socket.emit('lucky-drop-start', { roomId: roomId, prize: prize, maxWinners: max, secs: secs, label: 'Lucky Drop' }, function(res) {
+                  if (res && res.error) { if (addToast) addToast(res.error, 'error'); }
+                });
+                setShowLuckySet(false);
+              }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                START DROP
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 50: Hype Word Set panel (host/cohost) ══ */}
+      {showHypeWordSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🔥 HYPE WORD</span>
+              <button onClick={function() { setShowHypeWordSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 8, letterSpacing: 0.5 }}>Viewers typing this word trigger a burst effect</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input value={hypeWordDraft}
+                onChange={function(e) { setHypeWordDraft(e.target.value.replace(/\s/g, '').slice(0, 30)); }}
+                placeholder="e.g. hype / fire / let's go"
+                style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', flex: 1, boxSizing: 'border-box' }} />
+              <button onClick={function() {
+                var w = hypeWordDraft.trim().toLowerCase();
+                if (!w) return;
+                if (socket) socket.emit('hype-word-set', { roomId: roomId, word: w });
+                setShowHypeWordSet(false);
+              }} disabled={!hypeWordDraft.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '7px 14px', fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: BG, cursor: hypeWordDraft.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: hypeWordDraft.trim() ? 1 : 0.5, flexShrink: 0 }}>
+                SET
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 50: Scene Label Set panel (host/cohost) ══ */}
+      {showSceneSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🎬 SCENE LABEL</span>
+              <button onClick={function() { setShowSceneSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+              {[['🎮', 'GAMING'], ['🍕', 'COOKING'], ['💰', 'GIVEAWAY'], ['🎵', 'MUSIC'], ['❓', 'Q&A'], ['🛒', 'SHOP'], ['🎬', 'INTRO'], ['⚔️', 'BATTLE']].map(function(sc) {
+                return (
+                  <button key={sc[1]} onClick={function() {
+                    if (socket) socket.emit('scene-label-set', { roomId: roomId, emoji: sc[0], text: sc[1] });
+                    setShowSceneSet(false);
+                  }} style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '5px 10px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span>{sc[0]}</span><span>{sc[1]}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input value={sceneDraft.text}
+                onChange={function(e) { setSceneDraft(function(d) { return Object.assign({}, d, { text: e.target.value.slice(0, 30) }); }); }}
+                placeholder="Custom scene name"
+                style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', flex: 1, boxSizing: 'border-box' }} />
+              <button onClick={function() {
+                var txt = sceneDraft.text.trim();
+                if (!txt) return;
+                if (socket) socket.emit('scene-label-set', { roomId: roomId, text: txt.toUpperCase(), emoji: sceneDraft.emoji });
+                setShowSceneSet(false);
+              }} disabled={!sceneDraft.text.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '7px 12px', fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: BG, cursor: sceneDraft.text.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: sceneDraft.text.trim() ? 1 : 0.5, flexShrink: 0 }}>
+                SET
+              </button>
+            </div>
           </div>
         </div>
       )}

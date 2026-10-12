@@ -536,6 +536,11 @@ var roomCapacityMap    = new Map();  // roomId → { max, warn } (max viewer cap
 var viewerDmMap      = new Map();  // roomId → [{ id, userId, username, text, ts }] max 50
 var viewerDmThrottle = new Map();  // userId → lastDmTs ms (60s throttle)
 var followerGoalMap  = new Map();  // roomId → { target, label, count, followers: Set<userId> }
+// Batch 50: Live Caption / Lucky Drop / Hype Word / Scene Label
+var captionMap       = new Map();  // roomId → { text, color }
+var luckyDropMap     = new Map();  // roomId → { label, prize, maxWinners, endsAt, winners: Set<userId>, timerId }
+var hypeWordMap      = new Map();  // roomId → string (trigger word, lowercase)
+var sceneLabelMap    = new Map();  // roomId → { text, emoji }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -760,6 +765,12 @@ function getJoinStateForRoom(roomId) {
   // Batch 49
   var _fg49 = followerGoalMap.get(roomId);
   state.followerGoal = _fg49 ? { target: _fg49.target, label: _fg49.label, count: _fg49.count } : null;
+  // Batch 50
+  state.caption   = captionMap.get(roomId) || null;
+  state.sceneLabel = sceneLabelMap.get(roomId) || null;
+  var _ld50 = luckyDropMap.get(roomId);
+  state.luckyDrop = (_ld50 && _ld50.endsAt > Date.now()) ? { label: _ld50.label, prize: _ld50.prize, maxWinners: _ld50.maxWinners, endsAt: _ld50.endsAt, winnerCount: _ld50.winners.size } : null;
+  state.hypeWord  = hypeWordMap.get(roomId) || null;
   return state;
 }
 
@@ -2316,6 +2327,11 @@ io.on('connection', function(socket) {
             io.to(roomId).emit('word-cloud-update', { words: _wcTop });
             if (_wcMap.size > 500) { var _wcArr = Array.from(_wcMap.entries()).sort(function(a,b){return b[1]-a[1];}).slice(0,300); chatWordMap.set(roomId, new Map(_wcArr)); }
           }
+        }
+        // Batch 50: hype word trigger
+        var _hw50 = hypeWordMap.get(roomId);
+        if (_hw50 && message.toLowerCase().indexOf(_hw50) !== -1) {
+          io.to(roomId).emit('hype-word-triggered', { word: _hw50, username: username });
         }
         // Auto-queue song request if message starts with !sr
         if (message.toLowerCase().startsWith('!sr ') || message.toLowerCase().startsWith('!songrequest ')) {
@@ -6339,6 +6355,13 @@ io.on('connection', function(socket) {
     // Batch 49 cleanup
     viewerDmMap.delete(roomId);
     followerGoalMap.delete(roomId);
+    // Batch 50 cleanup
+    captionMap.delete(roomId);
+    var _ldC = luckyDropMap.get(roomId);
+    if (_ldC && _ldC.timerId) clearTimeout(_ldC.timerId);
+    luckyDropMap.delete(roomId);
+    hypeWordMap.delete(roomId);
+    sceneLabelMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -6414,6 +6437,128 @@ io.on('connection', function(socket) {
       io.to(roomId).emit('follower-goal-complete', { target: goal.target, label: goal.label });
     }
     if (ack) ack({ ok: true, count: goal.count });
+  });
+
+  // ── caption (Batch 50) ──────────────────────────────────────────────────
+  socket.on('caption-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !String(data.text || '').trim()) {
+      captionMap.delete(roomId);
+      io.to(roomId).emit('caption-update', null);
+      return;
+    }
+    var cap = { text: String(data.text).trim().slice(0, 120), color: String(data.color || '#F0E8D4').slice(0, 20) };
+    captionMap.set(roomId, cap);
+    io.to(roomId).emit('caption-update', cap);
+  });
+
+  socket.on('caption-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    captionMap.delete(roomId);
+    io.to(roomId).emit('caption-update', null);
+  });
+
+  // ── lucky-drop (Batch 50) ───────────────────────────────────────────────
+  socket.on('lucky-drop-start', function(data, ack) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') { if (ack) ack({ error: 'not host' }); return; }
+    if (luckyDropMap.has(roomId)) { if (ack) ack({ error: 'already active' }); return; }
+    var label      = String((data && data.label) || 'Lucky Drop').slice(0, 40);
+    var prize      = String((data && data.prize) || '🎁 Prize').slice(0, 40);
+    var maxWinners = Math.min(50, Math.max(1, parseInt((data && data.maxWinners) || 5, 10)));
+    var secs       = Math.min(120, Math.max(5, parseInt((data && data.secs) || 30, 10)));
+    var endsAt     = Date.now() + secs * 1000;
+    var drop = { label: label, prize: prize, maxWinners: maxWinners, endsAt: endsAt, winners: new Set(), timerId: null };
+    drop.timerId = setTimeout(function() {
+      var d = luckyDropMap.get(roomId);
+      if (!d) return;
+      luckyDropMap.delete(roomId);
+      io.to(roomId).emit('lucky-drop-ended', { label: label, prize: prize, winnerCount: d.winners.size });
+    }, secs * 1000);
+    luckyDropMap.set(roomId, drop);
+    io.to(roomId).emit('lucky-drop-start', { label: label, prize: prize, maxWinners: maxWinners, endsAt: endsAt });
+    if (ack) ack({ ok: true });
+  });
+
+  socket.on('lucky-drop-claim', function(data, ack) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId || userId.startsWith('anon')) { if (ack) ack({ error: 'auth required' }); return; }
+    var drop = luckyDropMap.get(roomId);
+    if (!drop || drop.endsAt < Date.now()) { if (ack) ack({ error: 'no active drop' }); return; }
+    if (drop.winners.has(userId)) { if (ack) ack({ ok: false, already: true }); return; }
+    if (drop.winners.size >= drop.maxWinners) { if (ack) ack({ ok: false, full: true }); return; }
+    drop.winners.add(userId);
+    var username = socket.data.username || 'Viewer';
+    io.to(roomId).emit('lucky-drop-winner', { username: username, prize: drop.prize, remaining: drop.maxWinners - drop.winners.size });
+    if (drop.winners.size >= drop.maxWinners) {
+      clearTimeout(drop.timerId);
+      luckyDropMap.delete(roomId);
+      io.to(roomId).emit('lucky-drop-ended', { label: drop.label, prize: drop.prize, winnerCount: drop.maxWinners });
+    }
+    if (ack) ack({ ok: true, prize: drop.prize });
+  });
+
+  socket.on('lucky-drop-end', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var drop = luckyDropMap.get(roomId);
+    if (!drop) return;
+    clearTimeout(drop.timerId);
+    luckyDropMap.delete(roomId);
+    io.to(roomId).emit('lucky-drop-ended', { label: drop.label, prize: drop.prize, winnerCount: drop.winners.size });
+  });
+
+  // ── hype-word (Batch 50) ────────────────────────────────────────────────
+  socket.on('hype-word-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !String(data.word || '').trim()) {
+      hypeWordMap.delete(roomId);
+      io.to(roomId).emit('hype-word-update', null);
+      return;
+    }
+    var word = String(data.word).trim().toLowerCase().slice(0, 30);
+    hypeWordMap.set(roomId, word);
+    io.to(roomId).emit('hype-word-update', { word: word });
+  });
+
+  socket.on('hype-word-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    hypeWordMap.delete(roomId);
+    io.to(roomId).emit('hype-word-update', null);
+  });
+
+  // ── scene-label (Batch 50) ──────────────────────────────────────────────
+  socket.on('scene-label-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !String(data.text || '').trim()) {
+      sceneLabelMap.delete(roomId);
+      io.to(roomId).emit('scene-label-update', null);
+      return;
+    }
+    var scene = { text: String(data.text).trim().slice(0, 30), emoji: String(data.emoji || '🎬').slice(0, 8) };
+    sceneLabelMap.set(roomId, scene);
+    io.to(roomId).emit('scene-label-update', scene);
+  });
+
+  socket.on('scene-label-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    sceneLabelMap.delete(roomId);
+    io.to(roomId).emit('scene-label-update', null);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
