@@ -133,7 +133,6 @@ function registerPanelHandlers(io, socket) {
       if (!userId || userId.startsWith('anon')) { ack?.({ ok: false, error: 'auth required' }); return; }
       if (!roomId) { ack?.({ ok: false, error: 'not in a room' }); return; }
       await panelService.releaseSlot({ roomId, userId });
-      socket.leave(roomId);
       io.to(roomId).emit('panel:slot_released', { roomId, userId });
       ack?.({ ok: true });
     } catch (err) {
