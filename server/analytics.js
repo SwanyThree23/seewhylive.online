@@ -116,8 +116,10 @@ function _getPeriodStart(period) {
   throw new Error('_getPeriodStart: unknown period "' + period + '"');
 }
 
-function getCreatorAnalytics(creatorId, period) {
+function getCreatorAnalytics(creatorId, period, tenantId) {
   var periodStart = _getPeriodStart(period);
+  var _tf = tenantId ? ' AND tenant_id = ?' : '';
+  var _ta = tenantId ? [tenantId] : [];
 
   var totalsRow = db.prepare(
     'SELECT' +
@@ -125,8 +127,8 @@ function getCreatorAnalytics(creatorId, period) {
     '  SUM(creator_cents) AS creator,' +
     '  SUM(platform_cents) AS platform' +
     ' FROM creator_earnings' +
-    ' WHERE creator_id = ? AND created_at >= ?'
-  ).get(creatorId, periodStart);
+    ' WHERE creator_id = ? AND created_at >= ?' + _tf
+  ).get(creatorId, periodStart, ..._ta);
 
   var totalEarningsCents = Math.floor(totalsRow.total || 0);
   var creatorCents = Math.floor(totalsRow.creator || 0);
@@ -135,9 +137,9 @@ function getCreatorAnalytics(creatorId, period) {
   var typeRows = db.prepare(
     'SELECT payment_type, SUM(creator_cents) AS total' +
     ' FROM creator_earnings' +
-    ' WHERE creator_id = ? AND created_at >= ?' +
+    ' WHERE creator_id = ? AND created_at >= ?' + _tf +
     ' GROUP BY payment_type'
-  ).all(creatorId, periodStart);
+  ).all(creatorId, periodStart, ..._ta);
 
   var byType = { tip: 0, subscription: 0, paywall: 0, gift: 0 };
   for (var i = 0; i < typeRows.length; i++) {
@@ -149,9 +151,9 @@ function getCreatorAnalytics(creatorId, period) {
 
   var recentEarnings = db.prepare(
     'SELECT * FROM creator_earnings' +
-    ' WHERE creator_id = ?' +
+    ' WHERE creator_id = ?' + _tf +
     ' ORDER BY created_at DESC LIMIT 50'
-  ).all(creatorId);
+  ).all(creatorId, ..._ta);
 
   var topSupporters = db.prepare(
     'SELECT user_id, SUM(amount_cents) AS total_cents, COUNT(*) AS count' +
@@ -159,12 +161,12 @@ function getCreatorAnalytics(creatorId, period) {
     '   SELECT vs.user_id, ce.amount_cents' +
     '   FROM creator_earnings ce' +
     '   JOIN viewer_sessions vs ON vs.stream_id = ce.stream_id' +
-    '   WHERE ce.creator_id = ? AND ce.created_at >= ?' +
+    '   WHERE ce.creator_id = ? AND ce.created_at >= ?' + _tf +
     ' )' +
     ' GROUP BY user_id' +
     ' ORDER BY total_cents DESC' +
     ' LIMIT 10'
-  ).all(creatorId, periodStart);
+  ).all(creatorId, periodStart, ..._ta);
 
   var topSupportersMapped = [];
   for (var j = 0; j < topSupporters.length; j++) {
