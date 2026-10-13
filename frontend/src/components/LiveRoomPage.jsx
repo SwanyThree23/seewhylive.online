@@ -988,6 +988,16 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 61: Tip Goal Meter / Fan Highlight / Watch Counter / Trivia LB ──
+  var [tipGoal,          setTipGoal]          = useState(null);
+  var [tipGoalDraft,     setTipGoalDraft]     = useState({ targetCents: '1000', label: 'Tip Goal' });
+  var [showTipGoalSet,   setShowTipGoalSet]   = useState(false);
+  var [fanHighlight,     setFanHighlight]     = useState(null);
+  var [fanHighlightDraft,setFanHighlightDraft]= useState({ username: '', reason: '' });
+  var [showFanHighlightSet,setShowFanHighlightSet]= useState(false);
+  var [watchCounterVisible,setWatchCounterVisible]= useState(false);
+  var [triviaLeaderboard,setTriviaLeaderboard]= useState([]);
+  var [showTriviaLb,     setShowTriviaLb]     = useState(false);
   // ─── Batch 60: QR Overlay / Sub-Goal / Donation Alert Ticker / Emoji Wall ──
   var [qrOverlay,        setQrOverlay]        = useState(null);
   var [qrDraft,          setQrDraft]          = useState({ url: '', label: '' });
@@ -1213,6 +1223,10 @@ export default function LiveRoomPage({
       if (data.qrOverlay) setQrOverlay(data.qrOverlay);
       if (data.subGoal) setSubGoal(data.subGoal);
       if (data.emojiWall && typeof data.emojiWall === 'object') setEmojiWall(data.emojiWall);
+      if (data.tipGoal) setTipGoal(data.tipGoal);
+      if (data.fanHighlight) setFanHighlight(data.fanHighlight);
+      if (data.watchCounterVisible) setWatchCounterVisible(true);
+      if (Array.isArray(data.triviaLeaderboard) && data.triviaLeaderboard.length > 0) setTriviaLeaderboard(data.triviaLeaderboard);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2538,6 +2552,23 @@ export default function LiveRoomPage({
       setTimeout(function() { setSuperFollowBurst(null); }, 3500);
     });
 
+    // ── Batch 61 listeners ─────────────────────────────────────────────────
+    socket.on('tip-goal-update', function(d) {
+      setTipGoal(d || null);
+    });
+
+    socket.on('fan-highlight-update', function(d) {
+      setFanHighlight(d || null);
+    });
+
+    socket.on('watch-counter-update', function(d) {
+      setWatchCounterVisible(!!(d && d.visible));
+    });
+
+    socket.on('trivia-leaderboard-update', function(d) {
+      setTriviaLeaderboard(Array.isArray(d) ? d : []);
+    });
+
     // ── Batch 60 listeners ─────────────────────────────────────────────────
     socket.on('qr-overlay-update', function(d) {
       setQrOverlay(d || null);
@@ -3039,6 +3070,10 @@ export default function LiveRoomPage({
       socket.off('sub-goal-update');
       socket.off('donation-alert-tick');
       socket.off('emoji-wall-update');
+      socket.off('tip-goal-update');
+      socket.off('fan-highlight-update');
+      socket.off('watch-counter-update');
+      socket.off('trivia-leaderboard-update');
     };
   }, [socket]);
 
@@ -4908,6 +4943,19 @@ export default function LiveRoomPage({
                 if (subGoal) { if (socket) socket.emit('sub-goal-clear', { roomId: roomId }); }
                 else { setShowSubGoalSet(function(s) { return !s; }); }
               }},
+              { emoji: tipGoal ? '💸' : '💰', label: tipGoal ? 'Tip Goal ✓' : 'Tip Goal', active: !!tipGoal || showTipGoalSet, onTap: function() {
+                if (tipGoal) { if (socket) socket.emit('tip-goal-clear', { roomId: roomId }); }
+                else { setShowTipGoalSet(function(s) { return !s; }); }
+              }},
+              { emoji: fanHighlight ? '🌟' : '⭐', label: fanHighlight ? 'Fan ✓' : 'Fan Spot', active: !!fanHighlight || showFanHighlightSet, onTap: function() {
+                if (fanHighlight) { if (socket) socket.emit('fan-highlight-clear', { roomId: roomId }); }
+                else { setShowFanHighlightSet(function(s) { return !s; }); }
+              }},
+              { emoji: watchCounterVisible ? '👁' : '👀', label: watchCounterVisible ? 'Hide Count' : 'View Count', active: watchCounterVisible, onTap: function() {
+                if (watchCounterVisible) { if (socket) socket.emit('watch-counter-hide', { roomId: roomId }); }
+                else { if (socket) socket.emit('watch-counter-show', { roomId: roomId }); }
+              }},
+              { emoji: triviaLeaderboard.length > 0 ? '🏅' : '🏆', label: 'Trivia LB', active: showTriviaLb, onTap: function() { setShowTriviaLb(function(s) { return !s; }); } },
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -12933,6 +12981,141 @@ export default function LiveRoomPage({
               setShowMilestoneDraft(false);
             }} disabled={!milestoneDraft.text.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: milestoneDraft.text.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: milestoneDraft.text.trim() ? 1 : 0.5 }}>
               ANNOUNCE
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 61: Tip Goal Meter ══ */}
+      {tipGoal && (
+        <div style={{ position: 'fixed', bottom: 80, left: 0, right: 0, zIndex: 598, padding: '0 12px', pointerEvents: 'none' }}>
+          <div style={{ background: 'rgba(14,12,9,.82)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '6px 12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, letterSpacing: .5 }}>{tipGoal.label}</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: GOLD }}>${(tipGoal.current / 100).toFixed(0)}/${(tipGoal.target / 100).toFixed(0)}</span>
+            </div>
+            <div style={{ width: '100%', height: 5, background: 'rgba(201,168,76,.12)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: Math.min(100, Math.round(tipGoal.current / tipGoal.target * 100)) + '%', background: tipGoal.current >= tipGoal.target ? '#FF1A3C' : GOLD, borderRadius: 3, transition: 'width .4s ease' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 61: Fan Highlight Card ══ */}
+      {fanHighlight && (
+        <div style={{ position: 'fixed', top: '30%', left: '50%', transform: 'translateX(-50%)', zIndex: 628, width: 260, animation: 'fadeSlideIn .35s ease', pointerEvents: 'none' }}>
+          <div style={{ background: CARD, border: '2px solid ' + GOLD, borderRadius: 16, padding: '16px 18px', textAlign: 'center' }}>
+            <div style={{ fontSize: 32, marginBottom: 6 }}>⭐</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 20, color: GOLD, letterSpacing: 2, lineHeight: 1.1 }}>{fanHighlight.username}</div>
+            {fanHighlight.reason ? <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, marginTop: 6, lineHeight: 1.35 }}>{fanHighlight.reason}</div> : null}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 61: Watch Counter Badge ══ */}
+      {watchCounterVisible && (
+        <div style={{ position: 'fixed', top: 10, right: 12, zIndex: 605, pointerEvents: 'none', animation: 'fadeSlideIn .3s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.85)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 20, padding: '4px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 13 }}>👀</span>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: TEXT, letterSpacing: 1.5 }}>{viewerCount || 0}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 61: Trivia Leaderboard Overlay (host panel) ══ */}
+      {showTriviaLb && (
+        <div style={{ position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 260, animation: 'fadeSlideIn .3s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🏆 TRIVIA LEADERBOARD</span>
+              <button onClick={function() { setShowTriviaLb(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            {triviaLeaderboard.length === 0 ? (
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: MUTED, textAlign: 'center', padding: '10px 0' }}>No scores yet</div>
+            ) : triviaLeaderboard.slice(0, 8).map(function(row, i) {
+              return (
+                <div key={row.username} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < triviaLeaderboard.length - 1 ? '1px solid ' + BORDER : 'none' }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: i === 0 ? GOLD : MUTED, width: 18, textAlign: 'center' }}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1)}</span>
+                  <span style={{ flex: 1, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT }}>{row.username}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: GOLD }}>{row.score}</span>
+                </div>
+              );
+            })}
+            {(role === 'host' || role === 'cohost') && (
+              <button onClick={function() {
+                if (socket) socket.emit('trivia-leaderboard-clear', { roomId: roomId });
+              }} style={{ marginTop: 10, background: 'none', border: '1px solid ' + BORDER, borderRadius: 8, padding: '5px 0', width: '100%', fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+                CLEAR LEADERBOARD
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 61: Tip Goal Set panel (host) ══ */}
+      {showTipGoalSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>💰 TIP GOAL</span>
+              <button onClick={function() { setShowTipGoalSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={tipGoalDraft.label}
+              onChange={function(e) { setTipGoalDraft(function(d) { return Object.assign({}, d, { label: e.target.value.slice(0, 60) }); }); }}
+              placeholder="Label (e.g. Studio Fund)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, color: MUTED }}>$</span>
+              <input value={tipGoalDraft.targetCents} type="number" min="1"
+                onChange={function(e) { setTipGoalDraft(function(d) { return Object.assign({}, d, { targetCents: e.target.value }); }); }}
+                placeholder="Goal in dollars"
+                style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', flex: 1 }} />
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() {
+                var t = Math.round(parseFloat(tipGoalDraft.targetCents) * 100);
+                if (!t || t < 100) return;
+                if (socket) socket.emit('tip-goal-set', { roomId: roomId, targetCents: t, label: tipGoalDraft.label.trim() || 'Tip Goal' });
+                setShowTipGoalSet(false);
+              }} style={{ flex: 1, background: GOLD, border: 'none', borderRadius: 10, padding: '8px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                SET GOAL
+              </button>
+              {tipGoal && (
+                <button onClick={function() {
+                  var inc = Math.round(parseFloat(tipGoalDraft.targetCents || '1') * 100);
+                  if (socket) socket.emit('tip-goal-add', { roomId: roomId, amountCents: Math.min(inc, 1000) });
+                }} style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, padding: '8px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: GOLD, cursor: 'pointer', letterSpacing: 1 }}>
+                  +AMOUNT
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 61: Fan Highlight Set panel (host) ══ */}
+      {showFanHighlightSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>⭐ FAN SPOTLIGHT</span>
+              <button onClick={function() { setShowFanHighlightSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={fanHighlightDraft.username}
+              onChange={function(e) { setFanHighlightDraft(function(d) { return Object.assign({}, d, { username: e.target.value.slice(0, 50) }); }); }}
+              placeholder="Username (required)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <input value={fanHighlightDraft.reason}
+              onChange={function(e) { setFanHighlightDraft(function(d) { return Object.assign({}, d, { reason: e.target.value.slice(0, 80) }); }); }}
+              placeholder="Reason (optional)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 10 }} />
+            <button onClick={function() {
+              var uname = fanHighlightDraft.username.trim();
+              if (!uname) return;
+              if (socket) socket.emit('fan-highlight-set', { roomId: roomId, username: uname, reason: fanHighlightDraft.reason.trim() });
+              setShowFanHighlightSet(false);
+            }} disabled={!fanHighlightDraft.username.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: fanHighlightDraft.username.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: fanHighlightDraft.username.trim() ? 1 : 0.5 }}>
+              SPOTLIGHT
             </button>
           </div>
         </div>

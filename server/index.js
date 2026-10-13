@@ -589,6 +589,11 @@ var qrOverlayMap     = new Map();  // roomId → { url, label }
 var subGoalMap       = new Map();  // roomId → { target, current, label }
 var donationTickerMap= new Map();  // roomId → Array<{ username, amountCents, ts }>
 var emojiWallMap     = new Map();  // roomId → Map<emoji, count>
+// Batch 61: Tip Goal Meter / Fan Highlight Card / Watch Counter Badge / Trivia Leaderboard
+var tipGoalMap       = new Map();  // roomId → { target, current, label }
+var fanHighlightMap  = new Map();  // roomId → { username, reason, avatar, ts }
+var watchCounterMap  = new Map();  // roomId → { visible }
+var triviaLbMap      = new Map();  // roomId → Array<{ username, score }>  (top 5)
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -881,6 +886,11 @@ function getJoinStateForRoom(roomId) {
   state.subGoal      = subGoalMap.get(roomId) || null;
   var _ew60 = emojiWallMap.get(roomId);
   state.emojiWall    = _ew60 ? Object.fromEntries(_ew60) : {};
+  // Batch 61
+  state.tipGoal      = tipGoalMap.get(roomId) || null;
+  state.fanHighlight = fanHighlightMap.get(roomId) || null;
+  state.watchCounterVisible = !!(watchCounterMap.get(roomId) && watchCounterMap.get(roomId).visible);
+  state.triviaLeaderboard = triviaLbMap.get(roomId) || [];
   return state;
 }
 
@@ -6546,6 +6556,11 @@ io.on('connection', function(socket) {
     subGoalMap.delete(roomId);
     donationTickerMap.delete(roomId);
     emojiWallMap.delete(roomId);
+    // Batch 61 cleanup
+    tipGoalMap.delete(roomId);
+    fanHighlightMap.delete(roomId);
+    watchCounterMap.delete(roomId);
+    triviaLbMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -7670,6 +7685,96 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     emojiWallMap.delete(roomId);
     io.to(roomId).emit('emoji-wall-update', { emoji: null, counts: {} });
+  });
+
+  // ── tip-goal (Batch 61) ──────────────────────────────────────────────────
+  socket.on('tip-goal-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var target  = Math.min(1000000, Math.max(1, parseInt(data.targetCents, 10) || 1000));
+    var label   = (data.label || '').trim().slice(0, 60) || 'Tip Goal';
+    var goal = { target: target, current: 0, label: label };
+    tipGoalMap.set(roomId, goal);
+    io.to(roomId).emit('tip-goal-update', goal);
+  });
+
+  socket.on('tip-goal-add', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var goal = tipGoalMap.get(roomId);
+    if (!goal) return;
+    var amount = Math.max(0, parseInt(data.amountCents, 10) || 0);
+    goal.current = Math.min(goal.target, goal.current + amount);
+    tipGoalMap.set(roomId, goal);
+    io.to(roomId).emit('tip-goal-update', goal);
+  });
+
+  socket.on('tip-goal-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    tipGoalMap.delete(roomId);
+    io.to(roomId).emit('tip-goal-update', null);
+  });
+
+  // ── fan-highlight (Batch 61) ────────────────────────────────────────────
+  socket.on('fan-highlight-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var username = (data.username || '').trim().slice(0, 50);
+    var reason   = (data.reason   || '').trim().slice(0, 80);
+    if (!username) return;
+    var card = { username: username, reason: reason, ts: Date.now() };
+    fanHighlightMap.set(roomId, card);
+    io.to(roomId).emit('fan-highlight-update', card);
+  });
+
+  socket.on('fan-highlight-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    fanHighlightMap.delete(roomId);
+    io.to(roomId).emit('fan-highlight-update', null);
+  });
+
+  // ── watch-counter (Batch 61) ────────────────────────────────────────────
+  socket.on('watch-counter-show', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    watchCounterMap.set(roomId, { visible: true });
+    io.to(roomId).emit('watch-counter-update', { visible: true });
+  });
+
+  socket.on('watch-counter-hide', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    watchCounterMap.delete(roomId);
+    io.to(roomId).emit('watch-counter-update', { visible: false });
+  });
+
+  // ── trivia-leaderboard (Batch 61) ──────────────────────────────────────
+  socket.on('trivia-leaderboard-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!Array.isArray(data.rows)) return;
+    var rows = data.rows.slice(0, 10).map(function(r) {
+      return { username: String(r.username || '').slice(0, 40), score: parseInt(r.score, 10) || 0 };
+    });
+    triviaLbMap.set(roomId, rows);
+    io.to(roomId).emit('trivia-leaderboard-update', rows);
+  });
+
+  socket.on('trivia-leaderboard-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    triviaLbMap.delete(roomId);
+    io.to(roomId).emit('trivia-leaderboard-update', null);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
