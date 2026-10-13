@@ -1,3 +1,4 @@
+'use strict';
 var express     = require('express');
 var https       = require('https');
 var db          = require('../db');
