@@ -329,6 +329,15 @@ var stripeOnboardRateLimit = rateLimit({
   validate: { xForwardedForHeader: false },
   message: { error: 'Too many onboard requests — please try again later.' }
 });
+var turnCredentialsRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many TURN credential requests — please wait.' }
+});
 var ppvRateLimit = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 10,
@@ -1121,7 +1130,7 @@ app.post('/api/connect/onboard', requireAuth, stripeOnboardRateLimit, function(r
 });
 
 // POST /api/turn/credentials
-app.post('/api/turn/credentials', requireAuth, function(req, res) {
+app.post('/api/turn/credentials', requireAuth, turnCredentialsRateLimit, function(req, res) {
   if (!process.env.TURN_SECRET) {
     res.status(500).json({ error: 'TURN_SECRET not configured' });
     return;
@@ -2464,7 +2473,7 @@ io.on('connection', function(socket) {
           clientSecret:    piResult.clientSecret,
           paymentIntentId: piResult.paymentIntentId
         });
-        _commitGift();
+        stripeModule.registerPaymentCallback(piResult.paymentIntentId, _commitGift);
       }).catch(function(err) {
         logger.error('[send-gift] createGiftCharge failed: ' + err.message);
         io.to(socket.id).emit('gift-error', { message: 'Payment setup failed — gift not recorded' });
@@ -3321,7 +3330,7 @@ io.on('connection', function(socket) {
           clientSecret:    piResult.clientSecret,
           paymentIntentId: piResult.paymentIntentId,
         });
-        _commitSuperChat();
+        stripeModule.registerPaymentCallback(piResult.paymentIntentId, _commitSuperChat);
       })
       .catch(function(err) {
         logger.error('[super-chat] createGiftCharge failed: ' + err.message);
@@ -3439,7 +3448,7 @@ io.on('connection', function(socket) {
           clientSecret:    piResult.clientSecret,
           paymentIntentId: piResult.paymentIntentId,
         });
-        _commitTtsSuperChat();
+        stripeModule.registerPaymentCallback(piResult.paymentIntentId, _commitTtsSuperChat);
       })
       .catch(function(err) {
         logger.error('[super-chat:tts] createGiftCharge failed: ' + err.message);

@@ -10,6 +10,16 @@ var Stripe = require('stripe');
 var jwt = require('jsonwebtoken');
 var Database = require('better-sqlite3');
 
+// Callbacks registered by socket handlers when a paid gift PaymentIntent is created.
+// On payment_intent.succeeded the callback is fired to commit the gift to DB + broadcast.
+// Entries auto-expire after 30 minutes to prevent unbounded growth.
+var _pendingGiftCallbacks = new Map(); // paymentIntentId -> { cb, expiresAt }
+var _GIFT_CB_TTL_MS = 30 * 60 * 1000;
+setInterval(function() {
+  var now = Date.now();
+  _pendingGiftCallbacks.forEach(function(v, k) { if (now > v.expiresAt) _pendingGiftCallbacks.delete(k); });
+}, 5 * 60 * 1000).unref();
+
 // ─── Immutable revenue split ──────────────────────────────────────────────
 var CREATOR = 0.90;
 
@@ -183,6 +193,13 @@ async function handleStripeWebhook(rawBody, signature) {
     } catch (dbErr) {
       console.error('[stripe] Webhook DB update failed for PI ' + pi.id + ':', dbErr.message);
     }
+    var pending = _pendingGiftCallbacks.get(pi.id);
+    if (pending) {
+      _pendingGiftCallbacks.delete(pi.id);
+      try { pending.cb(); } catch (cbErr) {
+        console.error('[stripe] Gift commit callback failed for PI ' + pi.id + ':', cbErr.message);
+      }
+    }
   }
 
   if (event.type === 'checkout.session.completed') {
@@ -274,6 +291,10 @@ async function createGiftCharge(fromViewerId, roomId, giftValueCents, creatorStr
   };
 }
 
+function registerPaymentCallback(paymentIntentId, cb) {
+  _pendingGiftCallbacks.set(String(paymentIntentId), { cb: cb, expiresAt: Date.now() + _GIFT_CB_TTL_MS });
+}
+
 module.exports = {
   createPPVPaymentIntent: createPPVPaymentIntent,
   getStripe: getStripe,
@@ -281,5 +302,5 @@ module.exports = {
   handleStripeWebhook: handleStripeWebhook,
   createConnectAccount: createConnectAccount,
   createGiftCharge: createGiftCharge,
-  getStripe: getStripe
+  registerPaymentCallback: registerPaymentCallback,
 };
