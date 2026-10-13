@@ -1,18 +1,19 @@
-const express = require('express');
-const { createClient } = require('@supabase/supabase-js');
-const { rateLimit } = require('express-rate-limit');
-const ws = require('ws');
-const jwt = require('jsonwebtoken');
-const router = express.Router();
-const db = require('../db');
+'use strict';
+var express = require('express');
+var { createClient } = require('@supabase/supabase-js');
+var { rateLimit } = require('express-rate-limit');
+var ws = require('ws');
+var jwt = require('jsonwebtoken');
+var router = express.Router();
+var db = require('../db');
 
-const supabaseAuth = createClient(
+var supabaseAuth = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY,
   { realtime: { transport: ws } }
 );
 
-const loginRateLimit = rateLimit({
+var loginRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   keyGenerator: function(req) { return req.ip; },
@@ -23,15 +24,15 @@ const loginRateLimit = rateLimit({
 });
 
 async function claimOwnershipIfEligible(tenantId, userId, email) {
-  const client = await db.pool.connect();
+  var client = await db.pool.connect();
   try {
     await client.query('BEGIN');
-    const tenantRes = await client.query(
+    var tenantRes = await client.query(
       'SELECT owner_id, owner_email FROM tenants WHERE id = $1 FOR UPDATE',
       [tenantId]
     );
-    const tenant = tenantRes.rows[0];
-    const eligible = tenant && !tenant.owner_id && tenant.owner_email &&
+    var tenant = tenantRes.rows[0];
+    var eligible = tenant && !tenant.owner_id && tenant.owner_email &&
       tenant.owner_email.toLowerCase() === email.toLowerCase();
 
     if (!eligible) {
@@ -39,7 +40,7 @@ async function claimOwnershipIfEligible(tenantId, userId, email) {
       return null;
     }
 
-    const userRes = await client.query(
+    var userRes = await client.query(
       `INSERT INTO users (id, tenant_id, email, account_type, display_name)
        VALUES ($1, $2, $3, 'owner', $4)
        ON CONFLICT (id, tenant_id) DO NOTHING
@@ -63,33 +64,33 @@ async function claimOwnershipIfEligible(tenantId, userId, email) {
   }
 }
 
-router.post('/login', loginRateLimit, async (req, res) => {
+router.post('/login', loginRateLimit, async function(req, res) {
   try {
-    const email    = String(req.body.email    || '').slice(0, 254).trim();
-    const password = String(req.body.password || '').slice(0, 1000);
+    var email    = String(req.body.email    || '').slice(0, 254).trim();
+    var password = String(req.body.password || '').slice(0, 1000);
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
     }
 
-    const { data, error } = await supabaseAuth.auth.signInWithPassword({ email, password });
-    if (error) {
-      return res.status(401).json({ error: error.message });
+    var authResult = await supabaseAuth.auth.signInWithPassword({ email: email, password: password });
+    if (authResult.error) {
+      return res.status(401).json({ error: authResult.error.message });
     }
 
-    const { user } = data;
+    var user = authResult.data.user;
 
-    const { data: profile, error: profileErr } = await supabaseAuth
+    var profileResult = await supabaseAuth
       .from('users')
       .select('account_type')
       .eq('id', user.id)
       .eq('tenant_id', req.tenantId)
       .maybeSingle();
 
-    if (profileErr) {
+    if (profileResult.error) {
       return res.status(500).json({ error: 'Login failed' });
     }
 
-    var finalProfile = profile;
+    var finalProfile = profileResult.data;
     if (!finalProfile) {
       finalProfile = await claimOwnershipIfEligible(req.tenantId, user.id, email);
     }
