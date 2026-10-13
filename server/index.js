@@ -569,6 +569,11 @@ var giftedSubThrottle = new Map(); // roomId → lastBannerAt
 var askQueueMap      = new Map();  // roomId → Map<id, { id, username, text, pinned, ts }>
 var hypeMap          = new Map();  // roomId → { score, timerId, peakFired }
 var clipBookmarkMap  = new Map();  // roomId → Array<{ id, username, label, ts }>
+// Batch 57: Overlay Sticker / Viewer Streak / Speed Round Quiz / Mood Spectrum
+var overlayStickerMap = new Map(); // roomId → { emoji, ts }
+var viewerStreakMap   = new Map(); // userId → { streak, lastDay }
+var speedRoundMap    = new Map();  // roomId → { questions, idx, scores, timerId, active }
+var moodSpectrumMap  = new Map();  // roomId → Map<userId, { emotion, ts }>
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -836,6 +841,16 @@ function getJoinStateForRoom(roomId) {
   var _hm56 = hypeMap.get(roomId);
   state.hypeMeter = _hm56 ? Math.min(100, _hm56.score) : 0;
   state.clipBookmarks = clipBookmarkMap.get(roomId) || [];
+  // Batch 57
+  state.overlaySticker = overlayStickerMap.get(roomId) || null;
+  var _sr57 = speedRoundMap.get(roomId);
+  state.speedRound = (_sr57 && _sr57.active) ? { idx: _sr57.idx, question: _sr57.questions[_sr57.idx] } : null;
+  var _ms57 = moodSpectrumMap.get(roomId);
+  if (_ms57) {
+    var _tally57 = {};
+    _ms57.forEach(function(v) { _tally57[v.emotion] = (_tally57[v.emotion] || 0) + 1; });
+    state.moodSpectrum = _tally57;
+  } else { state.moodSpectrum = {}; }
   return state;
 }
 
@@ -6480,6 +6495,12 @@ io.on('connection', function(socket) {
     hypeMap.delete(roomId);
     askQueueMap.delete(roomId);
     clipBookmarkMap.delete(roomId);
+    // Batch 57 cleanup
+    var _srC57 = speedRoundMap.get(roomId);
+    if (_srC57 && _srC57.timerId) clearTimeout(_srC57.timerId);
+    speedRoundMap.delete(roomId);
+    overlayStickerMap.delete(roomId);
+    moodSpectrumMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -7252,6 +7273,103 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('clip-bookmark-update', bmarks.slice(-20));
     if (ack) ack({ ok: true, id: entry.id });
     addEnergy(roomId, userId, username, 2);
+  });
+
+  // ── overlay-sticker (Batch 57) ──────────────────────────────────────────
+  socket.on('overlay-sticker-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var SAFE_STICKERS = ['🔥','⭐','💯','🎉','👏','❤️','🚀','💫','✨','🎶','🏆','👑','😂','🤩','🙌','💎'];
+    var emoji = data && SAFE_STICKERS.indexOf(data.emoji) !== -1 ? data.emoji : '🔥';
+    var pos   = data && data.pos ? { x: Math.min(90, Math.max(5, Number(data.pos.x) || 50)), y: Math.min(90, Math.max(5, Number(data.pos.y) || 30)) } : { x: 50, y: 30 };
+    overlayStickerMap.set(roomId, { emoji: emoji, pos: pos, ts: Date.now() });
+    io.to(roomId).emit('overlay-sticker-update', overlayStickerMap.get(roomId));
+  });
+
+  socket.on('overlay-sticker-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    overlayStickerMap.delete(roomId);
+    io.to(roomId).emit('overlay-sticker-update', null);
+  });
+
+  // ── viewer-streak (Batch 57) ────────────────────────────────────────────
+  socket.on('streak-checkin', function(data, ack) {
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    var roomId   = socket.data.roomId;
+    if (!userId || !roomId) { if (ack) ack({ err: 'no auth' }); return; }
+    var today = new Date().toISOString().slice(0, 10);
+    var rec   = viewerStreakMap.get(userId) || { streak: 0, lastDay: '' };
+    if (rec.lastDay === today) { if (ack) ack({ streak: rec.streak, already: true }); return; }
+    var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    rec.streak  = (rec.lastDay === yesterday) ? rec.streak + 1 : 1;
+    rec.lastDay = today;
+    viewerStreakMap.set(userId, rec);
+    socket.emit('streak-update', { streak: rec.streak });
+    if (ack) ack({ ok: true, streak: rec.streak });
+    addEnergy(roomId, userId, username, Math.min(10, rec.streak));
+  });
+
+  // ── speed-round (Batch 57) ──────────────────────────────────────────────
+  socket.on('speed-round-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var questions = Array.isArray(data && data.questions) ? data.questions.slice(0, 5) : [];
+    if (questions.length < 2) return;
+    var round = { questions: questions, idx: 0, scores: new Map(), timerId: null, active: true };
+    speedRoundMap.set(roomId, round);
+    io.to(roomId).emit('speed-round-question', { idx: 0, question: questions[0], total: questions.length });
+    round.timerId = setTimeout(function() { advanceSpeedRound(roomId); }, 10000);
+  });
+
+  function advanceSpeedRound(roomId) {
+    var round = speedRoundMap.get(roomId);
+    if (!round || !round.active) return;
+    round.idx++;
+    if (round.idx >= round.questions.length) {
+      round.active = false;
+      var results = Array.from(round.scores.entries()).sort(function(a, b) { return b[1].pts - a[1].pts; }).slice(0, 5).map(function(e) { return { username: e[1].username, pts: e[1].pts }; });
+      io.to(roomId).emit('speed-round-ended', { results: results });
+      speedRoundMap.delete(roomId);
+    } else {
+      io.to(roomId).emit('speed-round-question', { idx: round.idx, question: round.questions[round.idx], total: round.questions.length });
+      round.timerId = setTimeout(function() { advanceSpeedRound(roomId); }, 10000);
+    }
+  }
+
+  socket.on('speed-round-answer', function(data) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId || !userId) return;
+    var round = speedRoundMap.get(roomId);
+    if (!round || !round.active) return;
+    if (round.scores.has(userId + '_' + round.idx)) return;
+    var q = round.questions[round.idx];
+    if (!q) return;
+    var correct = (String(data.answer).toLowerCase() === String(q.answer).toLowerCase());
+    var pts = correct ? 5 : 0;
+    round.scores.set(userId + '_' + round.idx, { username: username, pts: pts, ts: Date.now() });
+    socket.emit('speed-round-answer-ack', { correct: correct, pts: pts });
+    if (correct) addEnergy(roomId, userId, username, pts);
+  });
+
+  // ── mood-spectrum (Batch 57) ────────────────────────────────────────────
+  socket.on('mood-spectrum-vote', function(data) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    if (!roomId || !userId) return;
+    var VALID_EMOTIONS = ['hyped', 'happy', 'chill', 'bored', 'sad', 'angry'];
+    var emotion = data && VALID_EMOTIONS.indexOf(data.emotion) !== -1 ? data.emotion : 'chill';
+    if (!moodSpectrumMap.has(roomId)) moodSpectrumMap.set(roomId, new Map());
+    moodSpectrumMap.get(roomId).set(userId, { emotion: emotion, ts: Date.now() });
+    var tally = {};
+    moodSpectrumMap.get(roomId).forEach(function(v) { tally[v.emotion] = (tally[v.emotion] || 0) + 1; });
+    io.to(roomId).emit('mood-spectrum-update', tally);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────

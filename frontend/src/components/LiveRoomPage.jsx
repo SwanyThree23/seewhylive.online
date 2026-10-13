@@ -956,6 +956,19 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 57: Overlay Sticker / Viewer Streak / Speed Round / Mood Spectrum ─
+  var [overlaySticker,   setOverlaySticker]   = useState(null);
+  var [showStickerPick,  setShowStickerPick]  = useState(false);
+  var [viewerStreak,     setViewerStreak]     = useState(0);
+  var [streakFlash,      setStreakFlash]      = useState(false);
+  var [speedRound,       setSpeedRound]       = useState(null);
+  var [speedAnswer,      setSpeedAnswer]      = useState(null);
+  var [speedAck,         setSpeedAck]         = useState(null);
+  var [speedResults,     setSpeedResults]     = useState(null);
+  var [moodSpectrum,     setMoodSpectrum]     = useState({});
+  var [myMood,           setMyMood]           = useState(null);
+  var [showMoodSpectrum, setShowMoodSpectrum] = useState(false);
+
   // ─── Batch 56: Gifted Sub Banner / Ask Queue / Hype Meter / Clip Bookmarks ─
   var [giftedSubFlash,   setGiftedSubFlash]   = useState(null);
   var [askQueue,         setAskQueue]         = useState([]);
@@ -1124,6 +1137,9 @@ export default function LiveRoomPage({
       if (Array.isArray(data.askQueue)) setAskQueue(data.askQueue);
       if (typeof data.hypeMeter === 'number') setHypeMeter(data.hypeMeter);
       if (Array.isArray(data.clipBookmarks)) setClipBookmarks(data.clipBookmarks);
+      if (data.overlaySticker) setOverlaySticker(data.overlaySticker);
+      if (data.speedRound) setSpeedRound(data.speedRound);
+      if (data.moodSpectrum) setMoodSpectrum(data.moodSpectrum);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2391,6 +2407,43 @@ export default function LiveRoomPage({
       setClipBookmarks(Array.isArray(d) ? d : []);
     });
 
+    // ── Batch 57 listeners ─────────────────────────────────────────────────
+    socket.on('overlay-sticker-update', function(d) {
+      setOverlaySticker(d || null);
+    });
+
+    socket.on('streak-update', function(d) {
+      if (!d || typeof d.streak !== 'number') return;
+      setViewerStreak(d.streak);
+      if (d.streak > 1) {
+        setStreakFlash(true);
+        setTimeout(function() { setStreakFlash(false); }, 4000);
+      }
+    });
+
+    socket.on('speed-round-question', function(d) {
+      if (!d) return;
+      setSpeedRound(d);
+      setSpeedAnswer(null);
+      setSpeedAck(null);
+    });
+
+    socket.on('speed-round-answer-ack', function(d) {
+      if (!d) return;
+      setSpeedAck(d);
+      setTimeout(function() { setSpeedAck(null); }, 2500);
+    });
+
+    socket.on('speed-round-ended', function(d) {
+      setSpeedRound(null);
+      setSpeedResults(d && d.results ? d.results : []);
+      setTimeout(function() { setSpeedResults(null); }, 8000);
+    });
+
+    socket.on('mood-spectrum-update', function(d) {
+      setMoodSpectrum(d || {});
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2837,6 +2890,12 @@ export default function LiveRoomPage({
       socket.off('hype-meter-update');
       socket.off('hype-peak');
       socket.off('clip-bookmark-update');
+      socket.off('overlay-sticker-update');
+      socket.off('streak-update');
+      socket.off('speed-round-question');
+      socket.off('speed-round-answer-ack');
+      socket.off('speed-round-ended');
+      socket.off('mood-spectrum-update');
     };
   }, [socket]);
 
@@ -4677,6 +4736,10 @@ export default function LiveRoomPage({
               { emoji: '🎁', label: 'Gift Sub', active: false, onTap: function() {
                 if (socket) socket.emit('gifted-sub-banner', { roomId: roomId, count: 1 });
               }},
+              { emoji: overlaySticker ? '🚫' : '🌟', label: overlaySticker ? 'Clear Sticker' : 'Sticker', active: !!overlaySticker || showStickerPick, onTap: function() {
+                if (overlaySticker) { if (socket) socket.emit('overlay-sticker-clear', { roomId: roomId }); }
+                else { setShowStickerPick(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -4764,6 +4827,13 @@ export default function LiveRoomPage({
               }},
               { emoji: '🙋', label: 'Ask', active: showAskQueue, onTap: function() { setAskDraft(''); setShowAskQueue(function(s) { return !s; }); } },
               { emoji: '🔖', label: 'Bookmark', active: showBookmarks, onTap: function() { setBookmarkDraft(''); setShowBookmarks(function(s) { return !s; }); } },
+              { emoji: viewerStreak > 1 ? '🔥' : '📅', label: viewerStreak > 1 ? viewerStreak + '🔥 Streak' : 'Check In', active: viewerStreak > 0, onTap: function() {
+                if (socket) socket.emit('streak-checkin', { roomId: roomId }, function(res) {
+                  if (res && res.ok) { if (addToast) addToast('🔥 Day ' + res.streak + ' streak!', 'success'); }
+                  else if (res && res.already) { if (addToast) addToast('Streak already checked in today!', 'info'); }
+                });
+              }},
+              { emoji: '😊', label: 'My Mood', active: showMoodSpectrum, onTap: function() { setShowMoodSpectrum(function(s) { return !s; }); } },
             ] : [])),
           ].map(function(tool) {
             return (
@@ -12477,6 +12547,122 @@ export default function LiveRoomPage({
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 57: Overlay Sticker ══ */}
+      {overlaySticker && (
+        <div style={{ position: 'fixed', top: (overlaySticker.pos ? overlaySticker.pos.y : 30) + '%', left: (overlaySticker.pos ? overlaySticker.pos.x : 50) + '%', transform: 'translate(-50%,-50%)', zIndex: 620, fontSize: 52, pointerEvents: 'none', userSelect: 'none', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,.5))' }}>
+          {overlaySticker.emoji}
+        </div>
+      )}
+
+      {/* ══ Batch 57: Viewer Streak flash ══ */}
+      {streakFlash && viewerStreak > 1 && (
+        <div style={{ position: 'fixed', top: 58, left: '50%', transform: 'translateX(-50%)', zIndex: 661, animation: 'fadeSlideIn .35s ease', background: 'rgba(255,100,0,.15)', border: '1px solid rgba(255,100,0,.4)', borderRadius: 20, padding: '4px 14px', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <span style={{ fontSize: 16 }}>🔥</span>
+          <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: '#FF6400', letterSpacing: 1 }}>{viewerStreak}-DAY STREAK!</span>
+        </div>
+      )}
+
+      {/* ══ Batch 57: Speed Round Question overlay ══ */}
+      {speedRound && (
+        <div style={{ position: 'fixed', bottom: 150, left: '50%', transform: 'translateX(-50%)', zIndex: 680, width: 300, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.96)', border: '1px solid ' + GOLD, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 11, color: GOLD, letterSpacing: 1.5, marginBottom: 6 }}>⚡ SPEED ROUND · Q{(speedRound.idx || 0) + 1} of {speedRound.total || '?'}</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15, color: TEXT, lineHeight: 1.3, marginBottom: 12 }}>{speedRound.question && speedRound.question.text}</div>
+            {speedAck ? (
+              <div style={{ textAlign: 'center', fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: speedAck.correct ? GOLD : MUTED, letterSpacing: 1 }}>{speedAck.correct ? '✓ CORRECT! +' + speedAck.pts : '✗ WRONG'}</div>
+            ) : (
+              <div style={{ display: 'flex', gap: 10 }}>
+                {['true', 'false'].map(function(ans) {
+                  var chosen = speedAnswer === ans;
+                  return (
+                    <button key={ans} disabled={!!speedAnswer} onClick={function() {
+                      if (speedAnswer || !socket) return;
+                      setSpeedAnswer(ans);
+                      socket.emit('speed-round-answer', { roomId: roomId, answer: ans });
+                    }} style={{ flex: 1, background: chosen ? 'rgba(201,168,76,.2)' : CARD2, border: '1px solid ' + (chosen ? GOLD : BORDER), borderRadius: 10, padding: '9px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: chosen ? GOLD : TEXT, cursor: speedAnswer ? 'default' : 'pointer', letterSpacing: 1 }}>
+                      {ans === 'true' ? '✓ TRUE' : '✗ FALSE'}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 57: Speed Round Results ══ */}
+      {speedResults && speedResults.length > 0 && (
+        <div style={{ position: 'fixed', bottom: 150, left: '50%', transform: 'translateX(-50%)', zIndex: 680, width: 260, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.96)', border: '1px solid ' + GOLD, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: GOLD, letterSpacing: 1.5, marginBottom: 10 }}>🏆 SPEED ROUND RESULTS</div>
+            {speedResults.map(function(r, i) {
+              return (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT }}>{i + 1}. {r.username}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: GOLD }}>{r.pts}pts</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 57: Sticker Picker (host) ══ */}
+      {showStickerPick && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 260, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🌟 OVERLAY STICKER</span>
+              <button onClick={function() { setShowStickerPick(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
+              {['🔥','⭐','💯','🎉','👏','❤️','🚀','💫','✨','🎶','🏆','👑','😂','🤩','🙌','💎'].map(function(em) {
+                return (
+                  <button key={em} onClick={function() {
+                    if (socket) socket.emit('overlay-sticker-set', { roomId: roomId, emoji: em, pos: { x: 50, y: 30 } });
+                    setShowStickerPick(false);
+                  }} style={{ fontSize: 24, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>{em}</button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 57: Mood Spectrum panel ══ */}
+      {showMoodSpectrum && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>😊 CROWD MOOD</span>
+              <button onClick={function() { setShowMoodSpectrum(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+              {[{ k: 'hyped', e: '🤩' }, { k: 'happy', e: '😊' }, { k: 'chill', e: '😌' }, { k: 'bored', e: '😐' }, { k: 'sad', e: '😢' }, { k: 'angry', e: '😤' }].map(function(m) {
+                var chosen = myMood === m.k;
+                var count  = moodSpectrum[m.k] || 0;
+                return (
+                  <button key={m.k} onClick={function() {
+                    setMyMood(m.k);
+                    if (socket) socket.emit('mood-spectrum-vote', { roomId: roomId, emotion: m.k });
+                  }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: chosen ? 'rgba(201,168,76,.18)' : CARD2, border: '1px solid ' + (chosen ? GOLD : BORDER), borderRadius: 10, padding: '6px 10px', cursor: 'pointer', minWidth: 52 }}>
+                    <span style={{ fontSize: 18 }}>{m.e}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: chosen ? GOLD : MUTED }}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 4, height: 8, borderRadius: 4, overflow: 'hidden' }}>
+              {[{ k: 'hyped', c: '#FF6400' }, { k: 'happy', c: '#C9A84C' }, { k: 'chill', c: '#00CED1' }, { k: 'bored', c: '#8A7A62' }, { k: 'sad', c: '#7B68EE' }, { k: 'angry', c: '#FF1A3C' }].map(function(m) {
+                var total = Object.keys(moodSpectrum).reduce(function(acc, k) { return acc + (moodSpectrum[k] || 0); }, 0);
+                var pct = total > 0 ? Math.round((moodSpectrum[m.k] || 0) / total * 100) : 0;
+                return pct > 0 ? <div key={m.k} style={{ flex: pct, background: m.c, borderRadius: 3 }} /> : null;
+              })}
+            </div>
           </div>
         </div>
       )}
