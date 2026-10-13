@@ -420,6 +420,7 @@ export default function App() {
   var uptimeRef = useRef(null);
   var liveStartRef = useRef(null);
   var peakViewerRef = useRef(0);
+  var passedMilestonesRef = useRef({});
   var sessionEarningsRef = useRef(0);
   var popstateNavRef = useRef(false);
   var streamRecapRef = useRef(null);
@@ -552,15 +553,16 @@ export default function App() {
       addToast('Reconnected to SeeWhy LIVE', 'success');
     });
 
-    socket.on('connect', function() {
+    var onConnect = function() {
       setConnected(true);
       socket.emit('join-room', joinPayload);
-    });
-
-    socket.on('disconnect', function() {
+    };
+    var onDisconnect = function() {
       setConnected(false);
       addToast('Connection lost — reconnecting...', 'error');
-    });
+    };
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
 
     socket.on('roster-update', function(data) {
       if (!data || !data.guests) return;
@@ -613,20 +615,21 @@ export default function App() {
     });
 
     var viewerMilestones = [50, 100, 250, 500, 1000, 2500, 5000, 10000];
-    var passedMilestones = {};
     socket.on('viewer-count', function(data) {
       if (!data || typeof data.count !== 'number') return;
-      var prev = viewerCount;
-      setViewerCount(data.count);
-      if (data.count > peakViewerRef.current) peakViewerRef.current = data.count;
-      viewerMilestones.forEach(function(m) {
-        if (data.count >= m && prev < m && !passedMilestones[m]) {
-          passedMilestones[m] = true;
-          addToast('🎉 ' + m.toLocaleString() + ' VIEWERS!', 'success');
-          var floatId = Date.now() + Math.random();
-          setGiftFloats(function(gf) { return gf.concat([{ floatId: floatId, emoji: '👁', name: m.toLocaleString() + ' viewers!', from_user: 'Milestone', value_cents: 0 }]); });
-          setTimeout(function() { setGiftFloats(function(gf) { return gf.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
-        }
+      // Use functional update to read non-stale prev without adding viewerCount to deps.
+      setViewerCount(function(prev) {
+        if (data.count > peakViewerRef.current) peakViewerRef.current = data.count;
+        viewerMilestones.forEach(function(m) {
+          if (data.count >= m && prev < m && !passedMilestonesRef.current[m]) {
+            passedMilestonesRef.current[m] = true;
+            addToast('🎉 ' + m.toLocaleString() + ' VIEWERS!', 'success');
+            var floatId = Date.now() + Math.random();
+            setGiftFloats(function(gf) { return gf.concat([{ floatId: floatId, emoji: '👁', name: m.toLocaleString() + ' viewers!', from_user: 'Milestone', value_cents: 0 }]); });
+            setTimeout(function() { setGiftFloats(function(gf) { return gf.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
+          }
+        });
+        return data.count;
       });
     });
 
@@ -691,6 +694,7 @@ export default function App() {
       setIsLive(true);
       liveStartRef.current = Date.now();
       peakViewerRef.current = 0;
+      passedMilestonesRef.current = {};
       sessionEarningsRef.current = 0;
       setLoveTotal(0);
       addToast('🔴 LIVE! Stream is broadcasting', 'success');
@@ -1081,8 +1085,8 @@ export default function App() {
     });
 
     return function() {
-      socket.off('connect');
-      socket.off('disconnect');
+      socket.off('connect',    onConnect);
+      socket.off('disconnect', onDisconnect);
       socket.off('roster-update');
       socket.off('viewer-count');
       socket.off('chat-message');
