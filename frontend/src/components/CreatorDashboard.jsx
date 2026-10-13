@@ -9,8 +9,8 @@ var TXN=[{date:"2026-05-31",amt:281.16,method:"CashApp",status:"paid"},{date:"20
 function Bar({data,color}){var max=Math.max(...data,1);return React.createElement("div",{style:{display:"flex",alignItems:"flex-end",gap:3,height:80}},data.map((v,i)=>React.createElement("div",{key:i,style:{flex:1,height:Math.max(4,(v/max)*80)+"px",background:"linear-gradient("+color+","+color+"66)",borderRadius:"3px 3px 0 0"}})));}
 function Card({icon,label,value,color}){return React.createElement("div",{style:{background:D.card,border:"1px solid "+D.bord,borderRadius:12,padding:"14px 16px",minWidth:140,flexShrink:0,position:"relative",overflow:"hidden"}},React.createElement("div",{style:{position:"absolute",top:0,left:0,right:0,height:2,background:color}}),React.createElement("div",{style:{fontSize:20,marginBottom:6}},icon),React.createElement("div",{style:{fontFamily:D.mono,fontSize:20,fontWeight:700,color:color}},value),React.createElement("div",{style:{fontFamily:D.body,fontSize:11,color:D.mut,marginTop:2,textTransform:"uppercase",letterSpacing:0.8}},label));}
 export default function CreatorDashboard(){
-const[range,setRange]=useState("30D");
-const[showPayout,setShowPayout]=useState(false);
+var[range,setRange]=useState("30D");
+var[showPayout,setShowPayout]=useState(false);
 var s=STATS[range];
 var bal=847.23;
 var creatorBal=Math.floor(bal*0.90*100)/100;
