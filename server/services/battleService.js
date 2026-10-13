@@ -95,11 +95,18 @@ async function castVote({ battleId, voterId, side, giftValueCents }) {
     [battleId, voterId, side, giftValueCents]
   );
   if (insert.rowCount === 0) throw new Error('already voted in this battle');
-  const column = side === 'challenger' ? 'challenger_points' : 'defender_points';
-  const result = await db.query(
-    `UPDATE pk_battles SET ${column} = ${column} + $1 WHERE id = $2 AND status = 'active' RETURNING *`,
-    [giftValueCents, battleId]
-  );
+  var result;
+  if (side === 'challenger') {
+    result = await db.query(
+      `UPDATE pk_battles SET challenger_points = challenger_points + $1 WHERE id = $2 AND status = 'active' RETURNING *`,
+      [giftValueCents, battleId]
+    );
+  } else {
+    result = await db.query(
+      `UPDATE pk_battles SET defender_points = defender_points + $1 WHERE id = $2 AND status = 'active' RETURNING *`,
+      [giftValueCents, battleId]
+    );
+  }
   if (!result.rows[0]) throw new Error('battle no longer active');
   return result.rows[0];
 }
