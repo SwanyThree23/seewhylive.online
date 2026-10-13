@@ -1,6 +1,12 @@
 'use strict';
 
 var axios = require('axios');
+var crypto = require('crypto');
+
+function _cacheKey(text, lang) {
+  var hash = crypto.createHash('sha1').update(text).digest('hex');
+  return lang ? hash + ':' + lang : hash;
+}
 
 var DEEPL_API_URL = 'https://api-free.deepl.com/v2/translate';
 var CACHE_MAX = 500;
@@ -16,7 +22,7 @@ function cacheSet(key, value) {
 }
 
 async function detectAndTranslate(text) {
-  var cacheKey = text.substring(0, 100);
+  var cacheKey = _cacheKey(text);
 
   if (translationCache.has(cacheKey)) {
     return translationCache.get(cacheKey);
@@ -76,7 +82,7 @@ async function detectAndTranslate(text) {
 }
 
 async function translateTo(text, targetLang) {
-  var cacheKey = text.substring(0, 100) + ':' + targetLang;
+  var cacheKey = _cacheKey(text, targetLang);
 
   if (translationCache.has(cacheKey)) {
     return translationCache.get(cacheKey);

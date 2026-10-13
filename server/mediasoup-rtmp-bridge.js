@@ -82,6 +82,14 @@ function buildSdp(audioConsumer, videoConsumer, audioPort, videoPort) {
   return lines.join('\r\n') + '\r\n';
 }
 
+function _cleanupBridgeResources(bridge) {
+  try { if (bridge.audioConsumer)  bridge.audioConsumer.close();  } catch (e) {}
+  try { if (bridge.videoConsumer)  bridge.videoConsumer.close();  } catch (e) {}
+  try { if (bridge.transport)      bridge.transport.close();      } catch (e) {}
+  try { if (bridge.videoTransport) bridge.videoTransport.close(); } catch (e) {}
+  try { if (bridge.sdpPath)        fs.unlinkSync(bridge.sdpPath); } catch (e) {}
+}
+
 // ─── Core bridge control ─────────────────────────────────────────────────
 
 /**
@@ -243,20 +251,21 @@ function stopBridge(roomId) {
 
     try {
       if (bridge.ffmpegProcess && !bridge.ffmpegProcess.killed) {
-        bridge.ffmpegProcess.once('exit', function() { resolve(); });
+        bridge.ffmpegProcess.once('exit', function() {
+          _cleanupBridgeResources(bridge);
+          resolve();
+        });
         bridge.ffmpegProcess.kill('SIGTERM');
         // Fallback in case 'exit' never fires
-        setTimeout(resolve, 3000);
+        setTimeout(function() {
+          _cleanupBridgeResources(bridge);
+          resolve();
+        }, 3000);
         return;
       }
     } catch (e) { /* ignore */ }
 
-    try { if (bridge.audioConsumer) bridge.audioConsumer.close(); } catch (e) {}
-    try { if (bridge.videoConsumer) bridge.videoConsumer.close(); } catch (e) {}
-    try { if (bridge.transport) bridge.transport.close(); } catch (e) {}
-    try { if (bridge.videoTransport) bridge.videoTransport.close(); } catch (e) {}
-    try { if (bridge.sdpPath) fs.unlinkSync(bridge.sdpPath); } catch (e) {}
-
+    _cleanupBridgeResources(bridge);
     resolve();
   });
 }
