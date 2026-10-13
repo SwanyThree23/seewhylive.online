@@ -24,9 +24,9 @@ import PanelReactionBar from './PanelReactionBar';
 import PanelPrivacySettings from './PanelPrivacySettings';
 import { useAutoSpeakGate } from '../../hooks/useAutoSpeakGate.js';
 
-var GOLD = '#D4AF37';
-var CREAM = '#F5F5DC';
-var RED = '#dc2626';
+var GOLD = '#C9A84C';
+var CREAM = '#F0E8D4';
+var RED = '#FF1A3C';
 
 /**
  * Responsive grid: N tiles in a roughly-square grid when nothing is
@@ -129,7 +129,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         setIsAudioOnlyRoom(isAudioOnly);
       }));
 
-      function onSlotMuted(payload) {
+      var onSlotMuted = function(payload) {
         var rid = payload.roomId, uid = payload.userId, isMuted = payload.isMuted;
         if (rid !== roomId) return;
         setSlots(function(prev) {
@@ -139,7 +139,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       socket.on('panel:slot_muted', onSlotMuted);
       unsubs.push(function() { socket.off('panel:slot_muted', onSlotMuted); });
 
-      function onKicked(payload) {
+      var onKicked = function(payload) {
         if (payload.roomId !== roomId) return;
         // If this client was kicked, remove their slot from local state
         setSlots(function(prev) { return prev.filter(function(s) { return s.user_id !== userId; }); });
@@ -147,7 +147,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       socket.on('panel:kicked', onKicked);
       unsubs.push(function() { socket.off('panel:kicked', onKicked); });
 
-      function onHandUpdate(payload) {
+      var onHandUpdate = function(payload) {
         if (payload.roomId !== roomId) return;
         setRaisedHands(function(prev) {
           var next = Object.assign({}, prev);
@@ -159,7 +159,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       socket.on('panel:hand_update', onHandUpdate);
       unsubs.push(function() { socket.off('panel:hand_update', onHandUpdate); });
 
-      function onScreenShareActive(payload) {
+      var onScreenShareActive = function(payload) {
         if (payload.roomId !== roomId) return;
         setScreenSharingIds(function(prev) {
           var next = Object.assign({}, prev);
@@ -167,7 +167,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
           return next;
         });
       }
-      function onScreenShareEnded(payload) {
+      var onScreenShareEnded = function(payload) {
         if (payload.roomId !== roomId) return;
         setScreenSharingIds(function(prev) {
           var next = Object.assign({}, prev);
@@ -182,11 +182,11 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
     })();
 
       // PK battle score overlay events
-      function onPkStart(data) {
+      var onPkStart = function(data) {
         if (!data) return;
         setPkBattle({ active: true, challenger: data.challenger || '', defender: data.defender || '', challengerScore: 0, defenderScore: 0, duration: data.duration || 300 });
       }
-      function onPkVoteUpdate(data) {
+      var onPkVoteUpdate = function(data) {
         if (!data) return;
         setPkBattle(function(prev) {
           if (!prev) return prev;
@@ -196,7 +196,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
           });
         });
       }
-      function onPkEnd(data) {
+      var onPkEnd = function(data) {
         if (!data) return;
         setPkBattle(function(prev) {
           if (!prev) return null;
@@ -240,7 +240,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
     );
   }
 
-  function handleJoined(slot) {
+  var handleJoined = function(slot) {
     setSlots(function(prev) {
       var exists = prev.some(function(s) { return s.slot_index === slot.slot_index; });
       return exists
@@ -250,13 +250,13 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
     setShowJoinModal(false);
   }
 
-  function handleLeave() {
+  var handleLeave = function() {
     if (!socket) return;
     panelService.leavePanel(socket, roomId);
     setSlots(function(prev) { return prev.filter(function(s) { return s.user_id !== userId; }); });
   }
 
-  function tileProps(slot) {
+  var tileProps = function(slot) {
     var isLocal = !!(userId && slot.user_id === userId);
     var guest = guests && guests.find(function(g) { return (g.guestId || g.userId) === slot.user_id; });
     return {
@@ -297,7 +297,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
 
   var videoProducer = rtcManager && rtcManager.producers && rtcManager.producers['video'];
 
-  function renderControls() {
+  var renderControls = function() {
     return (
       <div style={{ padding: '6px 8px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

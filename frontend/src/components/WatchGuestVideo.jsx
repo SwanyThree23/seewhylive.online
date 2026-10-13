@@ -12,7 +12,7 @@ export default function WatchGuestVideo(props) {
     if (!rtcManager || !guest || !guest.producerId) return;
     var cancelled = false;
 
-    async function subscribeRemote() {
+    var subscribeRemote = async function() {
       try {
         var videoStream = await rtcManager.subscribeToProducer(guest.producerId);
         if (cancelled) return;
