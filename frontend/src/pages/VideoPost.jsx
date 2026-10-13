@@ -21,27 +21,29 @@ import StreamGoals from '../components/live/StreamGoals';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
-const GOLD = '#D4AF37';
+var GOLD = '#D4AF37';
 
-const MAX_DURATION_SECONDS = 600; // 10 minutes
+var MAX_DURATION_SECONDS = 600; // 10 minutes
 
 export default function VideoPost() {
-  const fileInputRef = useRef(null);
-  const videoRef = useRef(null);
-  const videoUrlRef = useRef(null);
+  var fileInputRef = useRef(null);
+  var videoRef = useRef(null);
+  var videoUrlRef = useRef(null);
 
-  useEffect(() => () => { if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current); }, []);
+  useEffect(function() {
+    return function() { if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current); };
+  }, []);
 
-  const [step, setStep] = useState('upload'); // upload | details | published
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [videoUrl, setVideoUrl] = useState(null);
-  const [videoDuration, setVideoDuration] = useState(0);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [publishedUrl, setPublishedUrl] = useState('');
+  var [step, setStep] = useState('upload'); // upload | details | published
+  var [selectedFile, setSelectedFile] = useState(null);
+  var [videoUrl, setVideoUrl] = useState(null);
+  var [videoDuration, setVideoDuration] = useState(0);
+  var [uploading, setUploading] = useState(false);
+  var [uploadProgress, setUploadProgress] = useState(0);
+  var [shareOpen, setShareOpen] = useState(false);
+  var [publishedUrl, setPublishedUrl] = useState('');
 
-  const [form, setForm] = useState({
+  var [form, setForm] = useState({
     title: '',
     description: '',
     tags: '',
@@ -51,27 +53,27 @@ export default function VideoPost() {
     thumbnail: '',
   });
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user && user.id],
+    queryFn: function() { return base44.entities.Room.filter({ host_id: user && user.id, status: 'live' }).then(function(r) { return r[0] || null; }); },
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const roomId = activeRoomId;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var roomId = activeRoomId;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user && user.id],
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: user && user.id }).then(function(r) { return r[0] || null; }); },
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
+  var handleFileSelect = function(e) {
+    var file = e.target.files[0];
     if (!file) return;
 
     if (!file.type.startsWith('video/')) {
@@ -85,24 +87,24 @@ export default function VideoPost() {
     }
 
     if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current);
-    const url = URL.createObjectURL(file);
+    var url = URL.createObjectURL(file);
     videoUrlRef.current = url;
     setSelectedFile(file);
     setVideoUrl(url);
-    setForm(prev => ({ ...prev, title: file.name.replace(/\.[^/.]+$/, '') }));
+    setForm(function(prev) { return { ...prev, title: file.name.replace(/\.[^/.]+$/, '') }; });
   };
 
-  const handleVideoLoad = () => {
-    const duration = videoRef.current?.duration || 0;
+  var handleVideoLoad = function() {
+    var duration = (videoRef.current && videoRef.current.duration) || 0;
     setVideoDuration(Math.round(duration));
     if (duration > MAX_DURATION_SECONDS) {
-      toast.error(`Video must be ${MAX_DURATION_SECONDS / 60} minutes or less. Your video is ${Math.round(duration / 60)} minutes.`);
+      toast.error('Video must be ' + (MAX_DURATION_SECONDS / 60) + ' minutes or less. Your video is ' + Math.round(duration / 60) + ' minutes.');
       setSelectedFile(null);
       setVideoUrl(null);
     }
   };
 
-  const handleUpload = async () => {
+  var handleUpload = async function() {
     if (!selectedFile) return;
     if (!form.title.trim()) { toast.error('Add a title'); return; }
     if (videoDuration > MAX_DURATION_SECONDS) { toast.error('Video too long'); return; }
@@ -112,27 +114,27 @@ export default function VideoPost() {
 
     try {
       // Simulate progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress(p => Math.min(p + 15, 85));
+      var progressInterval = setInterval(function() {
+        setUploadProgress(function(p) { return Math.min(p + 15, 85); });
       }, 400);
 
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
+      var { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
       clearInterval(progressInterval);
       setUploadProgress(100);
 
       // Save as a room of type "video"
-      const post = await base44.entities.Room.create({
+      var post = await base44.entities.Room.create({
         title: form.title,
         description: form.description,
-        host_id: user?.id,
+        host_id: user && user.id,
         type: 'video',
         status: 'ended',
         is_public: !form.isPrivate,
         recording_url: file_url,
-        tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+        tags: form.tags ? form.tags.split(',').map(function(t) { return t.trim(); }).filter(Boolean) : [],
       });
 
-      const postUrl = `${window.location.origin}${createPageUrl('Room')}?id=${post.id}`;
+      var postUrl = window.location.origin + createPageUrl('Room') + '?id=' + post.id;
       setPublishedUrl(postUrl);
       setStep('published');
       toast.success('Video posted!');
@@ -144,10 +146,10 @@ export default function VideoPost() {
     }
   };
 
-  const formatDuration = (s) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${String(sec).padStart(2, '0')}`;
+  var formatDuration = function(s) {
+    var m = Math.floor(s / 60);
+    var sec = s % 60;
+    return m + ':' + String(sec).padStart(2, '0');
   };
 
   return (
@@ -172,7 +174,7 @@ export default function VideoPost() {
             {/* Drop zone */}
             {!selectedFile ? (
               <div
-                onClick={() => fileInputRef.current?.click()}
+                onClick={function() { if (fileInputRef.current) fileInputRef.current.click(); }}
                 className="border-2 border-dashed border-[#d4af37]/30 rounded-2xl p-12 text-center cursor-pointer hover:border-[#d4af37]/60 hover:bg-[#d4af37]/5 transition-all"
               >
                 <Upload className="w-12 h-12 mx-auto mb-4 text-[#d4af37]/50" />
@@ -201,7 +203,7 @@ export default function VideoPost() {
                     onLoadedMetadata={handleVideoLoad}
                   />
                   <button
-                    onClick={() => { setSelectedFile(null); setVideoUrl(null); }}
+                    onClick={function() { setSelectedFile(null); setVideoUrl(null); }}
                     className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 flex items-center justify-center hover:bg-black"
                   >
                     <X className="w-4 h-4 text-white" />
@@ -217,7 +219,7 @@ export default function VideoPost() {
                 {/* Duration warning */}
                 {videoDuration > 0 && (
                   <div style={{ height:6, borderRadius:4, background: videoDuration > MAX_DURATION_SECONDS ? 'rgba(127,29,29,0.5)' : 'rgba(255,255,255,0.08)' }}>
-                    <div style={{ height:'100%', width:`${Math.min((videoDuration / MAX_DURATION_SECONDS) * 100, 100)}%`, background:'#D4AF37', borderRadius:4 }} />
+                    <div style={{ height:'100%', width:(Math.min((videoDuration / MAX_DURATION_SECONDS) * 100, 100)) + '%', background:'#D4AF37', borderRadius:4 }} />
                   </div>
                 )}
 
@@ -225,20 +227,20 @@ export default function VideoPost() {
                 <div className="space-y-3 bg-[rgba(255,255,255,0.04)] border border-[rgba(212,175,55,0.1)] rounded-xl p-5">
                   <input
                     value={form.title}
-                    onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
+                    onChange={function(e) { setForm(function(prev) { return { ...prev, title: e.target.value }; }); }}
                     placeholder="Video title *"
                     style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                   <textarea
                     value={form.description}
-                    onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={function(e) { setForm(function(prev) { return { ...prev, description: e.target.value }; }); }}
                     placeholder="Description (optional)"
                     rows={3}
                     style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', resize:'none', height:80 }}
                   />
                   <input
                     value={form.tags}
-                    onChange={e => setForm(prev => ({ ...prev, tags: e.target.value }))}
+                    onChange={function(e) { setForm(function(prev) { return { ...prev, tags: e.target.value }; }); }}
                     placeholder="Tags (comma-separated)"
                     style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
@@ -246,10 +248,8 @@ export default function VideoPost() {
                   {/* Privacy & Paywall */}
                   <div className="grid grid-cols-2 gap-3">
                     <button
-                      onClick={() => setForm(prev => ({ ...prev, isPrivate: !prev.isPrivate }))}
-                      className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${
-                        form.isPrivate ? 'border-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 bg-white/5'
-                      }`}
+                      onClick={function() { setForm(function(prev) { return { ...prev, isPrivate: !prev.isPrivate }; }); }}
+                      className={'flex items-center gap-2 p-3 rounded-lg border transition-all ' + (form.isPrivate ? 'border-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 bg-white/5')}
                     >
                       {form.isPrivate ? <Lock className="w-4 h-4 text-[#d4af37]" /> : <Globe className="w-4 h-4 text-white/50" />}
                       <div className="text-left">
@@ -259,15 +259,13 @@ export default function VideoPost() {
                     </button>
 
                     <button
-                      onClick={() => setForm(prev => ({ ...prev, isPaywalled: !prev.isPaywalled }))}
-                      className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${
-                        form.isPaywalled ? 'border-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 bg-white/5'
-                      }`}
+                      onClick={function() { setForm(function(prev) { return { ...prev, isPaywalled: !prev.isPaywalled }; }); }}
+                      className={'flex items-center gap-2 p-3 rounded-lg border transition-all ' + (form.isPaywalled ? 'border-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 bg-white/5')}
                     >
                       <span className="text-lg">{form.isPaywalled ? '💰' : '🆓'}</span>
                       <div className="text-left">
                         <p className="text-xs font-semibold text-white">{form.isPaywalled ? 'Paywall' : 'Free'}</p>
-                        <p className="text-[10px] text-white/40">{form.isPaywalled ? `$${form.paywallPrice}` : 'Open access'}</p>
+                        <p className="text-[10px] text-white/40">{form.isPaywalled ? '$' + form.paywallPrice : 'Open access'}</p>
                       </div>
                     </button>
                   </div>
@@ -277,7 +275,7 @@ export default function VideoPost() {
                       <span className="text-white/60 text-sm">$</span>
                       <input
                         value={form.paywallPrice}
-                        onChange={e => setForm(prev => ({ ...prev, paywallPrice: e.target.value }))}
+                        onChange={function(e) { setForm(function(prev) { return { ...prev, paywallPrice: e.target.value }; }); }}
                         placeholder="Price"
                         type="number"
                         min="0.99"
@@ -293,7 +291,7 @@ export default function VideoPost() {
                   <div className="space-y-2">
                     <p className="text-xs text-white/50 text-center">Uploading... {uploadProgress}%</p>
                     <div style={{ height:8, borderRadius:4, background:'rgba(255,255,255,0.08)' }}>
-                      <div style={{ height:'100%', width:`${uploadProgress}%`, background:GOLD, borderRadius:4 }} />
+                      <div style={{ height:'100%', width:uploadProgress + '%', background:GOLD, borderRadius:4 }} />
                     </div>
                   </div>
                 )}
@@ -323,13 +321,13 @@ export default function VideoPost() {
             <div className="flex flex-col gap-3 max-w-xs mx-auto">
               <button
                 style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', padding:'10px 16px', borderRadius:8, background:GOLD, color:'#000', border:'none', fontSize:14, fontWeight:900, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
-                onClick={() => setShareOpen(true)}
+                onClick={function() { setShareOpen(true); }}
               >
                 <Share2 className="w-4 h-4" />
                 Share to Instagram, TikTok &amp; more
               </button>
               <div className="flex justify-center">
-                <ShareButtons url={publishedUrl} title={`Watch my video: ${form.title}`} />
+                <ShareButtons url={publishedUrl} title={'Watch my video: ' + form.title} />
               </div>
               <Link to={createPageUrl('Home')}>
                 <button style={{ display:'flex', alignItems:'center', justifyContent:'center', width:'100%', padding:'10px 16px', borderRadius:8, background:'transparent', color:'rgba(255,255,255,0.6)', border:'1px solid rgba(255,255,255,0.15)', fontSize:14, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
@@ -343,16 +341,16 @@ export default function VideoPost() {
 
       <ShareModal
         isOpen={shareOpen}
-        onClose={() => setShareOpen(false)}
+        onClose={function() { setShareOpen(false); }}
         url={publishedUrl}
         title={form.title}
       />
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <VODCard vod={null} onEdit={() => {}} onTrim={() => {}} onChapters={() => {}} onPublish={() => {}} />
-        <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user?.id} elapsedSeconds={0} roomTitle="" onClose={() => {}} />
+        <VODCard vod={null} onEdit={function() {}} onTrim={function() {}} onChapters={function() {}} onPublish={function() {}} />
+        <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user && user.id} elapsedSeconds={0} roomTitle="" onClose={function() {}} />
         <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <MilestoneAlerts userId={user && user.id} roomId={roomId} />
         <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <DiscussionFeed communityId="video-posts" />
@@ -360,7 +358,7 @@ export default function VideoPost() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
-        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+        <AnnouncementPanel communityId={userCommunityId} userId={user && user.id} />
         <StreamGoals isHost={false} />
       </div>
     </div>
