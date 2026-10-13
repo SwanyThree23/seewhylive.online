@@ -551,6 +551,11 @@ var clipMarkerMap    = new Map();  // roomId → { count, clips: [{username, ts}
 var followBannerThrottle = new Map();  // roomId+userId → lastFollowAt
 var speedDonateThrottle  = new Map();  // userId → lastDonateAt
 var triviaMap        = new Map();  // roomId → { question, options, correctIdx, endsAt, timerId, answers: Map<userId,idx>, revealed }
+// Batch 53: Chat Challenge / Tip Jar / Stream Goal / Spotlight Viewer
+var chatChallengeMap = new Map();  // roomId → { keyword, prize, maxWinners, winners: Set<userId>, ended }
+var tipJarMap        = new Map();  // roomId → [{ username, amount, message, ts }] last-20
+var streamGoalMap    = new Map();  // roomId → { label, target, current, ended }
+var spotlightMap     = new Map();  // roomId → { username, label }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -792,6 +797,14 @@ function getJoinStateForRoom(roomId) {
   state.clipCount = _cm52 ? _cm52.count : 0;
   var _tr52 = triviaMap.get(roomId);
   state.trivia = (_tr52 && !_tr52.revealed && _tr52.endsAt > Date.now()) ? { question: _tr52.question, options: _tr52.options, endsAt: _tr52.endsAt } : null;
+  // Batch 53
+  var _cc53 = chatChallengeMap.get(roomId);
+  state.chatChallenge = (_cc53 && !_cc53.ended) ? { keyword: _cc53.keyword, prize: _cc53.prize, maxWinners: _cc53.maxWinners, winnerCount: _cc53.winners.size } : null;
+  var _tj53 = tipJarMap.get(roomId);
+  state.tipJar = _tj53 ? _tj53.slice(-10) : [];
+  var _sg53 = streamGoalMap.get(roomId);
+  state.donationGoal = _sg53 || null;
+  state.viewerSpotlight = spotlightMap.get(roomId) || null;
   return state;
 }
 
@@ -2353,6 +2366,21 @@ io.on('connection', function(socket) {
         var _hw50 = hypeWordMap.get(roomId);
         if (_hw50 && message.toLowerCase().indexOf(_hw50) !== -1) {
           io.to(roomId).emit('hype-word-triggered', { word: _hw50, username: username });
+        }
+        // Batch 53: chat challenge trigger
+        var _cc53chat = chatChallengeMap.get(roomId);
+        if (_cc53chat && !_cc53chat.ended && message.toLowerCase().indexOf(_cc53chat.keyword) !== -1) {
+          var _ccUid = socket.data.userId;
+          if (_ccUid && !_cc53chat.winners.has(_ccUid)) {
+            _cc53chat.winners.add(_ccUid);
+            chatChallengeMap.set(roomId, _cc53chat);
+            io.to(roomId).emit('chat-challenge-winner', { username: username, prize: _cc53chat.prize, count: _cc53chat.winners.size, maxWinners: _cc53chat.maxWinners });
+            if (_cc53chat.winners.size >= _cc53chat.maxWinners) {
+              _cc53chat.ended = true;
+              chatChallengeMap.set(roomId, _cc53chat);
+              io.to(roomId).emit('chat-challenge-update', null);
+            }
+          }
         }
         // Auto-queue song request if message starts with !sr
         if (message.toLowerCase().startsWith('!sr ') || message.toLowerCase().startsWith('!songrequest ')) {
@@ -6397,6 +6425,11 @@ io.on('connection', function(socket) {
     var _trC52 = triviaMap.get(roomId);
     if (_trC52 && _trC52.timerId) clearTimeout(_trC52.timerId);
     triviaMap.delete(roomId);
+    // Batch 53 cleanup
+    chatChallengeMap.delete(roomId);
+    tipJarMap.delete(roomId);
+    streamGoalMap.delete(roomId);
+    spotlightMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -6817,6 +6850,96 @@ io.on('connection', function(socket) {
     var winners = [];
     t.answers.forEach(function(idx, uid) { if (idx === t.correctIdx) winners.push(uid); });
     io.to(roomId).emit('trivia-reveal', { question: t.question, options: t.options, correctIdx: t.correctIdx, totalAnswers: t.answers.size, winnerCount: winners.length });
+  });
+
+  // ── chat-challenge (Batch 53) ───────────────────────────────────────────
+  socket.on('chat-challenge-set', function(data, ack) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.keyword) return;
+    var keyword    = String(data.keyword).toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);
+    var prize      = data.prize ? String(data.prize).slice(0, 60) : '🎁 Prize';
+    var maxWinners = Math.min(50, Math.max(1, parseInt(data.maxWinners, 10) || 5));
+    if (!keyword) return;
+    chatChallengeMap.set(roomId, { keyword: keyword, prize: prize, maxWinners: maxWinners, winners: new Set(), ended: false });
+    io.to(roomId).emit('chat-challenge-update', { keyword: keyword, prize: prize, maxWinners: maxWinners, winnerCount: 0 });
+    if (ack) ack({ ok: true });
+  });
+
+  socket.on('chat-challenge-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    chatChallengeMap.delete(roomId);
+    io.to(roomId).emit('chat-challenge-update', null);
+  });
+
+  // ── tip-jar (Batch 53) ──────────────────────────────────────────────────
+  socket.on('tip-jar-send', function(data, ack) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId || !userId) return;
+    var amount  = Math.min(100, Math.max(1, parseInt(data && data.amount, 10) || 1));
+    var message = data && data.message ? String(data.message).slice(0, 80) : '';
+    var entry   = { username: username, amount: amount, message: message, ts: Date.now() };
+    var jar     = tipJarMap.get(roomId) || [];
+    jar = jar.slice(-19).concat([entry]);
+    tipJarMap.set(roomId, jar);
+    io.to(roomId).emit('tip-jar-update', entry);
+    // increment stream goal if active
+    var sg = streamGoalMap.get(roomId);
+    if (sg && !sg.ended) {
+      sg.current = (sg.current || 0) + amount;
+      if (sg.current >= sg.target) { sg.ended = true; io.to(roomId).emit('donation-goal-complete', sg); }
+      streamGoalMap.set(roomId, sg);
+      io.to(roomId).emit('donation-goal-update', sg);
+    }
+    if (ack) ack({ ok: true });
+  });
+
+  // ── donation-goal (Batch 53) ────────────────────────────────────────────
+  socket.on('donation-goal-set', function(data, ack) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.label) return;
+    var label  = String(data.label).slice(0, 60);
+    var target = Math.min(100000, Math.max(1, parseInt(data.target, 10) || 100));
+    var existing = streamGoalMap.get(roomId);
+    var current  = existing ? existing.current : 0;
+    streamGoalMap.set(roomId, { label: label, target: target, current: current, ended: false });
+    io.to(roomId).emit('donation-goal-update', streamGoalMap.get(roomId));
+    if (ack) ack({ ok: true });
+  });
+
+  socket.on('donation-goal-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    streamGoalMap.delete(roomId);
+    io.to(roomId).emit('donation-goal-update', null);
+  });
+
+  // ── viewer-spotlight (Batch 53) ─────────────────────────────────────────
+  socket.on('viewer-spotlight-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.username) return;
+    var username = String(data.username).replace(/[^a-zA-Z0-9_\-. ]/g, '').slice(0, 30);
+    var label    = data.label ? String(data.label).slice(0, 40) : '';
+    spotlightMap.set(roomId, { username: username, label: label });
+    io.to(roomId).emit('viewer-spotlight-update', { username: username, label: label });
+  });
+
+  socket.on('viewer-spotlight-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    spotlightMap.delete(roomId);
+    io.to(roomId).emit('viewer-spotlight-update', null);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────

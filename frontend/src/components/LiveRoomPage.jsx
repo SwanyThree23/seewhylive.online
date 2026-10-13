@@ -916,6 +916,22 @@ export default function LiveRoomPage({
   var [triviaDraft,      setTriviaDraft]      = useState({ question: '', options: ['', '', '', ''], correctIdx: 0, secs: '20' });
   var [showTriviaSet,    setShowTriviaSet]    = useState(false);
 
+  // ─── Batch 53: Chat Challenge / Tip Jar / Donation Goal / Viewer Spotlight ──
+  var [chatChallenge,    setChatChallenge]    = useState(null);
+  var [challengeDraft,   setChallengeDraft]   = useState({ keyword: '', prize: '🎁 Prize', maxWinners: '5' });
+  var [showChallengeSet, setShowChallengeSet] = useState(false);
+  var [challengeWinner,  setChallengeWinner]  = useState(null);
+  var [tipJarFlash,      setTipJarFlash]      = useState(null);
+  var [tipJarDraft,      setTipJarDraft]      = useState({ amount: 5, message: '' });
+  var [showTipJar,       setShowTipJar]       = useState(false);
+  var [donationGoal,     setDonationGoal]     = useState(null);
+  var [goalDraft,        setGoalDraft]        = useState({ label: 'Tip Goal', target: '100' });
+  var [showGoalSet,      setShowGoalSet]      = useState(false);
+  var [goalComplete,     setGoalComplete]     = useState(false);
+  var [viewerSpotlight,  setViewerSpotlight]  = useState(null);
+  var [spotlightDraft53, setSpotlightDraft53] = useState({ username: '', label: '' });
+  var [showSpotlightSet, setShowSpotlightSet] = useState(false);
+
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
   var screenStreamRef = useRef(null);
@@ -1060,6 +1076,9 @@ export default function LiveRoomPage({
       if (data.hostMood) setHostMood(data.hostMood);
       if (data.clipCount) setClipCount(data.clipCount);
       if (data.trivia && data.trivia.endsAt > Date.now()) setTrivia(data.trivia);
+      if (data.chatChallenge && !data.chatChallenge.ended) setChatChallenge(data.chatChallenge);
+      if (data.donationGoal && !data.donationGoal.ended) setDonationGoal(data.donationGoal);
+      if (data.viewerSpotlight) setViewerSpotlight(data.viewerSpotlight);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2221,6 +2240,42 @@ export default function LiveRoomPage({
       setTimeout(function() { setTriviaReveal(null); setTriviaAnswerCount(0); }, 7000);
     });
 
+    // ── Batch 53 listeners ─────────────────────────────────────────────────
+    socket.on('chat-challenge-update', function(d) {
+      setChatChallenge(d || null);
+    });
+
+    socket.on('chat-challenge-winner', function(d) {
+      if (!d) return;
+      setChallengeWinner(d);
+      if (d.count <= d.maxWinners) {
+        setChatChallenge(function(prev) { return prev ? Object.assign({}, prev, { winnerCount: d.count }) : prev; });
+      }
+      setTimeout(function() { setChallengeWinner(null); }, 4000);
+    });
+
+    socket.on('tip-jar-update', function(d) {
+      if (!d) return;
+      setTipJarFlash(d);
+      setTimeout(function() { setTipJarFlash(null); }, 3500);
+    });
+
+    socket.on('donation-goal-update', function(d) {
+      setDonationGoal(d || null);
+      if (!d) setGoalComplete(false);
+    });
+
+    socket.on('donation-goal-complete', function(d) {
+      if (d) setDonationGoal(d);
+      setGoalComplete(true);
+      if (addToast) addToast('🎯 Donation goal reached!', 'success');
+      setTimeout(function() { setGoalComplete(false); }, 5000);
+    });
+
+    socket.on('viewer-spotlight-update', function(d) {
+      setViewerSpotlight(d || null);
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2648,6 +2703,12 @@ export default function LiveRoomPage({
       socket.off('trivia-update');
       socket.off('trivia-answer-count');
       socket.off('trivia-reveal');
+      socket.off('chat-challenge-update');
+      socket.off('chat-challenge-winner');
+      socket.off('tip-jar-update');
+      socket.off('donation-goal-update');
+      socket.off('donation-goal-complete');
+      socket.off('viewer-spotlight-update');
     };
   }, [socket]);
 
@@ -4460,7 +4521,20 @@ export default function LiveRoomPage({
                 if (trivia) { if (socket) socket.emit('trivia-end', { roomId: roomId }); }
                 else { setTriviaDraft({ question: '', options: ['', '', '', ''], correctIdx: 0, secs: '20' }); setShowTriviaSet(function(s) { return !s; }); }
               }},
+              { emoji: '💬', label: chatChallenge ? 'Clear Challenge' : 'Chat Challenge', active: !!chatChallenge || showChallengeSet, onTap: function() {
+                if (chatChallenge) { if (socket) socket.emit('chat-challenge-clear', { roomId: roomId }); }
+                else { setChallengeDraft({ keyword: '', prize: '🎁 Prize', maxWinners: '5' }); setShowChallengeSet(function(s) { return !s; }); }
+              }},
+              { emoji: '💰', label: donationGoal ? 'Clear Goal' : 'Tip Goal', active: !!donationGoal || showGoalSet, onTap: function() {
+                if (donationGoal) { if (socket) socket.emit('donation-goal-clear', { roomId: roomId }); }
+                else { setGoalDraft({ label: 'Tip Goal', target: '100' }); setShowGoalSet(function(s) { return !s; }); }
+              }},
+              { emoji: '⭐', label: viewerSpotlight ? 'Clear Spotlight' : 'Spotlight', active: !!viewerSpotlight || showSpotlightSet, onTap: function() {
+                if (viewerSpotlight) { if (socket) socket.emit('viewer-spotlight-clear', { roomId: roomId }); }
+                else { setSpotlightDraft53({ username: '', label: '' }); setShowSpotlightSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
+              { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
                 if (socket) socket.emit('clip-marker', { roomId: roomId }, function(res) {
                   if (res && res.ok && addToast) addToast('📌 Clip marked! (' + res.count + ' total)', 'success');
@@ -11685,6 +11759,208 @@ export default function LiveRoomPage({
                 START
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 53: Viewer Spotlight banner ══ */}
+      {viewerSpotlight && (
+        <div style={{ position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 650, pointerEvents: 'none', animation: 'slideUp .3s ease' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(14,12,9,.94)', border: '2px solid ' + GOLD, borderRadius: 24, padding: '8px 20px', backdropFilter: 'blur(8px)', boxShadow: '0 0 24px rgba(201,168,76,.25)' }}>
+            <span style={{ fontSize: 18 }}>⭐</span>
+            <div>
+              <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: GOLD, letterSpacing: 2 }}>SPOTLIGHT</div>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, fontWeight: 600 }}>@{viewerSpotlight.username}{viewerSpotlight.label ? ' · ' + viewerSpotlight.label : ''}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 53: Chat Challenge banner ══ */}
+      {chatChallenge && (
+        <div style={{ position: 'fixed', top: 58, right: 12, zIndex: 590, width: 180, animation: 'slideUp .3s ease' }}>
+          <div style={{ background: 'rgba(26,21,16,.94)', border: '1px solid ' + TEAL, borderRadius: 12, padding: '8px 12px' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 12, color: TEAL, letterSpacing: 1.5, marginBottom: 3 }}>💬 TYPE TO WIN</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, color: GOLD, fontWeight: 700, marginBottom: 2 }}>"{chatChallenge.keyword}"</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT }}>{chatChallenge.prize}</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, marginTop: 3 }}>{chatChallenge.winnerCount || 0}/{chatChallenge.maxWinners} claimed</div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 53: Chat Challenge winner flash ══ */}
+      {challengeWinner && (
+        <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 750, textAlign: 'center', pointerEvents: 'none', animation: 'fadeIn .3s ease' }}>
+          <div style={{ background: 'rgba(26,21,16,.96)', border: '2px solid ' + TEAL, borderRadius: 18, padding: '18px 28px', backdropFilter: 'blur(12px)', boxShadow: '0 0 40px rgba(212,133,74,.35)' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 12, color: TEAL, letterSpacing: 3, marginBottom: 4 }}>🏆 CHALLENGE WINNER</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 26, color: GOLD, letterSpacing: 2 }}>@{challengeWinner.username}</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, marginTop: 4 }}>{challengeWinner.prize}</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, marginTop: 4 }}>Winner {challengeWinner.count} of {challengeWinner.maxWinners}</div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 53: Tip Jar flash ══ */}
+      {tipJarFlash && (
+        <div style={{ position: 'fixed', bottom: 130, left: 16, zIndex: 600, pointerEvents: 'none', animation: 'slideUp .3s ease' }}>
+          <div style={{ background: 'rgba(26,21,16,.92)', border: '1px solid ' + GOLD, borderRadius: 12, padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 14 }}>🪙</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT }}>{tipJarFlash.username}</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, color: GOLD }}>{tipJarFlash.amount}🪙</span>
+            {tipJarFlash.message && <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: MUTED, fontStyle: 'italic' }}>"{tipJarFlash.message}"</span>}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 53: Donation Goal bar ══ */}
+      {donationGoal && (
+        <div style={{ position: 'fixed', bottom: 72, left: '50%', transform: 'translateX(-50%)', zIndex: 580, width: 280, animation: 'slideUp .3s ease', pointerEvents: 'none' }}>
+          <div style={{ background: 'rgba(14,12,9,.9)', border: '1px solid ' + (goalComplete ? TEAL : BORDER), borderRadius: 12, padding: '8px 14px', backdropFilter: 'blur(6px)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT }}>{goalComplete ? '🎯 ' : '💰 '}{donationGoal.label}</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: GOLD }}>{donationGoal.current || 0}/{donationGoal.target}🪙</span>
+            </div>
+            <div style={{ height: 6, background: CARD2, borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: Math.min(100, Math.round(((donationGoal.current || 0) / donationGoal.target) * 100)) + '%', background: goalComplete ? TEAL : GOLD, borderRadius: 4, transition: 'width .5s ease' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 53: Tip Jar send panel (viewer) ══ */}
+      {showTipJar && role === 'viewer' && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🪙 TIP JAR</span>
+              <button onClick={function() { setShowTipJar(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+              {[1, 5, 10, 25, 50].map(function(amt) {
+                var active = tipJarDraft.amount === amt;
+                return (
+                  <button key={amt} onClick={function() { setTipJarDraft(function(d) { return Object.assign({}, d, { amount: amt }); }); }}
+                    style={{ flex: 1, background: active ? GOLD : CARD2, border: '1px solid ' + (active ? GOLD : BORDER), borderRadius: 8, padding: '6px 0', fontFamily: "'DM Mono',monospace", fontSize: 11, color: active ? BG : TEXT, cursor: 'pointer', fontWeight: active ? 700 : 400 }}>
+                    {amt}🪙
+                  </button>
+                );
+              })}
+            </div>
+            <input value={tipJarDraft.message}
+              onChange={function(e) { setTipJarDraft(function(d) { return Object.assign({}, d, { message: e.target.value.slice(0, 80) }); }); }}
+              placeholder="Message (optional)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 10 }} />
+            <button onClick={function() {
+              if (socket) socket.emit('tip-jar-send', { roomId: roomId, amount: tipJarDraft.amount, message: tipJarDraft.message.trim() }, function(res) {
+                if (res && res.ok && addToast) addToast('🪙 Tip sent!', 'success');
+              });
+              setShowTipJar(false);
+            }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+              SEND {tipJarDraft.amount}🪙 TIP
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 53: Chat Challenge Set panel (host/cohost) ══ */}
+      {showChallengeSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>💬 CHAT CHALLENGE</span>
+              <button onClick={function() { setShowChallengeSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={challengeDraft.keyword}
+              onChange={function(e) { setChallengeDraft(function(d) { return Object.assign({}, d, { keyword: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20) }); }); }}
+              placeholder="Keyword (e.g. hype)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <input value={challengeDraft.prize}
+              onChange={function(e) { setChallengeDraft(function(d) { return Object.assign({}, d, { prize: e.target.value.slice(0, 60) }); }); }}
+              placeholder="Prize (e.g. 🎁 Gift)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10, alignItems: 'center' }}>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: MUTED, flexShrink: 0 }}>Max winners:</span>
+              {[1, 3, 5, 10].map(function(n) {
+                var active = parseInt(challengeDraft.maxWinners, 10) === n;
+                return (
+                  <button key={n} onClick={function() { setChallengeDraft(function(d) { return Object.assign({}, d, { maxWinners: String(n) }); }); }}
+                    style={{ flex: 1, background: active ? GOLD : CARD2, border: '1px solid ' + (active ? GOLD : BORDER), borderRadius: 8, padding: '5px 0', fontFamily: "'DM Mono',monospace", fontSize: 11, color: active ? BG : TEXT, cursor: 'pointer' }}>
+                    {n}
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={function() {
+              var kw = challengeDraft.keyword.trim();
+              if (!kw) return;
+              if (socket) socket.emit('chat-challenge-set', { roomId: roomId, keyword: kw, prize: challengeDraft.prize.trim(), maxWinners: parseInt(challengeDraft.maxWinners, 10) || 5 });
+              setShowChallengeSet(false);
+            }} disabled={!challengeDraft.keyword.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: challengeDraft.keyword.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: challengeDraft.keyword.trim() ? 1 : 0.5 }}>
+              START CHALLENGE
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 53: Donation Goal Set panel (host/cohost) ══ */}
+      {showGoalSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>💰 TIP GOAL</span>
+              <button onClick={function() { setShowGoalSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={goalDraft.label}
+              onChange={function(e) { setGoalDraft(function(d) { return Object.assign({}, d, { label: e.target.value.slice(0, 60) }); }); }}
+              placeholder="Goal label (e.g. New Mic Fund)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+              {[['50🪙', '50'], ['100🪙', '100'], ['250🪙', '250'], ['500🪙', '500'], ['1000🪙', '1000']].map(function(p) {
+                var active = goalDraft.target === p[1];
+                return (
+                  <button key={p[1]} onClick={function() { setGoalDraft(function(d) { return Object.assign({}, d, { target: p[1] }); }); }}
+                    style={{ background: active ? GOLD : CARD2, border: '1px solid ' + (active ? GOLD : BORDER), borderRadius: 8, padding: '5px 10px', fontFamily: "'DM Mono',monospace", fontSize: 11, color: active ? BG : TEXT, cursor: 'pointer' }}>
+                    {p[0]}
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={function() {
+              var lbl = goalDraft.label.trim();
+              if (!lbl) return;
+              if (socket) socket.emit('donation-goal-set', { roomId: roomId, label: lbl, target: parseInt(goalDraft.target, 10) || 100 });
+              setShowGoalSet(false);
+            }} disabled={!goalDraft.label.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: goalDraft.label.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: goalDraft.label.trim() ? 1 : 0.5 }}>
+              SET GOAL
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 53: Spotlight Set panel (host/cohost) ══ */}
+      {showSpotlightSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>⭐ SPOTLIGHT VIEWER</span>
+              <button onClick={function() { setShowSpotlightSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={spotlightDraft53.username}
+              onChange={function(e) { setSpotlightDraft53(function(d) { return Object.assign({}, d, { username: e.target.value.slice(0, 30) }); }); }}
+              placeholder="@username to spotlight"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <input value={spotlightDraft53.label}
+              onChange={function(e) { setSpotlightDraft53(function(d) { return Object.assign({}, d, { label: e.target.value.slice(0, 40) }); }); }}
+              placeholder="Label (e.g. Top Fan, Super Gifter)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 10 }} />
+            <button onClick={function() {
+              var uname = spotlightDraft53.username.trim();
+              if (!uname) return;
+              if (socket) socket.emit('viewer-spotlight-set', { roomId: roomId, username: uname, label: spotlightDraft53.label.trim() });
+              setShowSpotlightSet(false);
+            }} disabled={!spotlightDraft53.username.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: spotlightDraft53.username.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: spotlightDraft53.username.trim() ? 1 : 0.5 }}>
+              SPOTLIGHT
+            </button>
           </div>
         </div>
       )}
