@@ -164,6 +164,9 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
   var retrying = retryingState[0];
   var setRetrying = retryingState[1];
   var retryTimerRef = useRef(null);
+  var retryKeyState = useState(0);
+  var retryKey = retryKeyState[0];
+  var setRetryKey = retryKeyState[1];
 
   // Token is passed as a request header (xhrSetup below) — never in the URL
   // so it is not written to CDN access logs or Referer headers.
@@ -200,12 +203,14 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
           retryTimerRef.current = setTimeout(function() {
             setHlsError(false);
             setRetrying(false);
+            // Bumping retryKey triggers the effect to re-run, creating a new hls instance.
+            setRetryKey(function(k) { return k + 1; });
           }, 4000);
         }
       });
     }
     return function() { hls.destroy(); if (retryTimerRef.current) clearTimeout(retryTimerRef.current); };
-  }, [isLive, ppvToken]);
+  }, [isLive, ppvToken, retryKey]);
 
   useEffect(function() {
     if (ppvToken || !isLive) return;

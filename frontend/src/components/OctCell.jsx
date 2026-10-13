@@ -450,7 +450,8 @@ function areOctCellPropsEqual(prev, next) {
     prev.handRaised     === next.handRaised    &&
     prev.isHost         === next.isHost        &&
     prev.fadesMode      === next.fadesMode     &&
-    prev.branding       === next.branding
+    prev.branding       === next.branding      &&
+    prev.mediaConfig    === next.mediaConfig
   );
 }
 
