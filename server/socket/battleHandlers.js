@@ -60,6 +60,7 @@ function registerBattleHandlers(io, socket) {
     try {
       const rawDur = Math.floor(Number(payload.durationMinutes) || 5);
       const battle = await battleService.createChallenge({
+        tenantId: socket.data.tenantId,
         challengerId: socket.data.userId,
         defenderId: payload.defenderId,
         challengerName: String(payload.challengerName || '').slice(0, 80),
