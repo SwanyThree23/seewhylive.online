@@ -2,12 +2,12 @@
 import { useEffect, useState } from 'react';
 import panelService from '../../services/panelService';
 
-const BG = '#0C0806';
-const GOLD = '#D4AF37';
-const CREAM = '#F5F5DC';
+var BG = '#0C0806';
+var GOLD = '#D4AF37';
+var CREAM = '#F5F5DC';
 
 export default function JoinRequestQueue({ socket, roomId }) {
-  const [requests, setRequests] = useState([]);
+  var [requests, setRequests] = useState([]);
 
   useEffect(function() {
     if (!socket || !roomId) return;

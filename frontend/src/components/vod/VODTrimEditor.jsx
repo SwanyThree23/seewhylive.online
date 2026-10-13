@@ -2,21 +2,21 @@ import React, { useState, useRef } from 'react';
 import { Scissors, Play, Pause, Save } from 'lucide-react';
 
 export default function VODTrimEditor({ video, onSave, onCancel }) {
-  const [trimStart, setTrimStart] = useState(video.trim_start || 0);
-  const [trimEnd, setTrimEnd] = useState(video.trim_end || video.duration_seconds || 100);
-  const [playing, setPlaying] = useState(false);
-  const duration = video.duration_seconds || 100;
+  var [trimStart, setTrimStart] = useState(video.trim_start || 0);
+  var [trimEnd, setTrimEnd] = useState(video.trim_end || video.duration_seconds || 100);
+  var [playing, setPlaying] = useState(false);
+  var duration = video.duration_seconds || 100;
 
-  const pctStart = (trimStart / duration) * 100;
-  const pctEnd = (trimEnd / duration) * 100;
+  var pctStart = (trimStart / duration) * 100;
+  var pctEnd = (trimEnd / duration) * 100;
 
-  const fmt = (s) => {
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
+  var fmt = (s) => {
+    var m = Math.floor(s / 60);
+    var sec = Math.floor(s % 60);
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
-  const inputStyle = {
+  var inputStyle = {
     width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
     borderRadius: 8, padding: '8px 12px', fontSize: 14, color: '#fff', outline: 'none', marginTop: 4,
   };

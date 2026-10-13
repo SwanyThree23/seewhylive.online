@@ -24,9 +24,9 @@ import PanelReactionBar from './PanelReactionBar';
 import PanelPrivacySettings from './PanelPrivacySettings';
 import { useAutoSpeakGate } from '../../hooks/useAutoSpeakGate.js';
 
-const GOLD = '#D4AF37';
-const CREAM = '#F5F5DC';
-const RED = '#dc2626';
+var GOLD = '#D4AF37';
+var CREAM = '#F5F5DC';
+var RED = '#dc2626';
 
 /**
  * Responsive grid: N tiles in a roughly-square grid when nothing is
@@ -35,20 +35,20 @@ const RED = '#dc2626';
  * the platform's MAX_PANEL_GUESTS=20 ceiling.
  */
 export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, guests, addToast }) {
-  const [slots, setSlots] = useState([]);
-  const [gatingMode, setGatingMode] = useState(null);
-  const [isAudioOnlyRoom, setIsAudioOnlyRoom] = useState(false);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [localStream, setLocalStream] = useState(null);
-  const [raisedHands, setRaisedHands] = useState({});
-  const [screenSharingIds, setScreenSharingIds] = useState({});
-  const [spotlightUserId, setSpotlightUserId] = useState(null);
-  const [exitingIds, setExitingIds] = useState(new Set());
-  const [pkBattle, setPkBattle] = useState(null);
-  const exitTimersRef = useRef({});
-  const localStreamRef = useRef(null);
-  const prevSlotKeysRef = useRef(new Set());
-  const pkTimerRef = useRef(null);
+  var [slots, setSlots] = useState([]);
+  var [gatingMode, setGatingMode] = useState(null);
+  var [isAudioOnlyRoom, setIsAudioOnlyRoom] = useState(false);
+  var [showJoinModal, setShowJoinModal] = useState(false);
+  var [localStream, setLocalStream] = useState(null);
+  var [raisedHands, setRaisedHands] = useState({});
+  var [screenSharingIds, setScreenSharingIds] = useState({});
+  var [spotlightUserId, setSpotlightUserId] = useState(null);
+  var [exitingIds, setExitingIds] = useState(new Set());
+  var [pkBattle, setPkBattle] = useState(null);
+  var exitTimersRef = useRef({});
+  var localStreamRef = useRef(null);
+  var prevSlotKeysRef = useRef(new Set());
+  var pkTimerRef = useRef(null);
 
   useEffect(function() { injectPanelGridStyles(); }, []);
 

@@ -3,18 +3,18 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Video, Clock, Lock } from 'lucide-react';
 
-const G = '#d4af37';
+var G = '#d4af37';
 
 export default function VideoShortRecorder({ roomId, creatorId }) {
-  const [isRecording, isRecordingSet] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [paywall, setPaywall] = useState(false);
-  const [paywallPrice, setPaywallPrice] = useState(2.99);
-  const [videoTitle, setVideoTitle] = useState('');
-  const [publishing, setPublishing] = useState(false);
+  var [isRecording, isRecordingSet] = useState(false);
+  var [duration, setDuration] = useState(0);
+  var [paywall, setPaywall] = useState(false);
+  var [paywallPrice, setPaywallPrice] = useState(2.99);
+  var [videoTitle, setVideoTitle] = useState('');
+  var [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
-    let timer;
+    var timer;
     if (isRecording) {
       timer = setInterval(() => {
         setDuration(d => {
@@ -29,10 +29,10 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
     return () => clearInterval(timer);
   }, [isRecording]);
 
-  const handlePublish = async () => {
+  var handlePublish = async () => {
     setPublishing(true);
     try {
-      const result = await base44.entities.VODVideo.create({
+      var result = await base44.entities.VODVideo.create({
         room_id: roomId,
         creator_id: creatorId,
         title: videoTitle || 'Untitled Short',
@@ -55,9 +55,9 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
     setPublishing(false);
   };
 
-  const minutes = Math.floor(duration / 60);
-  const seconds = duration % 60;
-  const maxDuration = duration >= 600;
+  var minutes = Math.floor(duration / 60);
+  var seconds = duration % 60;
+  var maxDuration = duration >= 600;
 
   return (
     <motion.div

@@ -5,19 +5,19 @@
 import { useState } from 'react';
 import panelService from '../../services/panelService';
 
-const GOLD = '#D4AF37';
-const CREAM = '#F5F5DC';
-const SURFACE = '#1a1a1a';
-const BORDER = '#2a2a2a';
-const RED = '#dc2626';
+var GOLD = '#D4AF37';
+var CREAM = '#F5F5DC';
+var SURFACE = '#1a1a1a';
+var BORDER = '#2a2a2a';
+var RED = '#dc2626';
 
 export default function PanelPrivacySettings({ roomId, addToast }) {
-  const [open, setOpen] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [gatingMode, setGatingMode] = useState('invite_code');
-  const [inviteCode, setInviteCode] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [copied, setCopied] = useState(false);
+  var [open, setOpen] = useState(false);
+  var [isPrivate, setIsPrivate] = useState(false);
+  var [gatingMode, setGatingMode] = useState('invite_code');
+  var [inviteCode, setInviteCode] = useState(null);
+  var [saving, setSaving] = useState(false);
+  var [copied, setCopied] = useState(false);
 
   async function handleSave() {
     setSaving(true);

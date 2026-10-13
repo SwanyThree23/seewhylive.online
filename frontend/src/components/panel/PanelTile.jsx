@@ -2,10 +2,10 @@
 import { useEffect, useRef, useState } from 'react';
 import panelService from '../../services/panelService';
 
-const GOLD = '#D4AF37';
-const CREAM = '#F5F5DC';
-const BG = '#1a1a1a';
-const LIVE_RED = '#dc2626';
+var GOLD = '#D4AF37';
+var CREAM = '#F5F5DC';
+var BG = '#1a1a1a';
+var LIVE_RED = '#dc2626';
 
 export default function PanelTile({
   socket, roomId, slot,
@@ -17,16 +17,16 @@ export default function PanelTile({
   isSpotlighted, onSpotlight,
   onExpand,
 }) {
-  const { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
-  const videoRef = useRef(null);
-  const audioRef = useRef(null);
-  const [camActive, setCamActive] = useState(false);
-  const [localCamOn, setLocalCamOn] = useState(true);
-  const [localMicOn, setLocalMicOn] = useState(true);
-  const [localHandRaised, setLocalHandRaised] = useState(false);
-  const [showControls, setShowControls] = useState(false);
-  const touchStartRef = useRef({ x: 0, y: 0 });
-  const [remoteSpeaking, setRemoteSpeaking] = useState(false);
+  var { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
+  var videoRef = useRef(null);
+  var audioRef = useRef(null);
+  var [camActive, setCamActive] = useState(false);
+  var [localCamOn, setLocalCamOn] = useState(true);
+  var [localMicOn, setLocalMicOn] = useState(true);
+  var [localHandRaised, setLocalHandRaised] = useState(false);
+  var [showControls, setShowControls] = useState(false);
+  var touchStartRef = useRef({ x: 0, y: 0 });
+  var [remoteSpeaking, setRemoteSpeaking] = useState(false);
 
   // Subscribe to remote stream or wire up local producer track
   useEffect(function() {

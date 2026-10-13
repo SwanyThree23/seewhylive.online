@@ -5,21 +5,21 @@ import { useEffect, useRef, useState } from 'react';
 import panelService from '../../services/panelService';
 import rtcManager from '../../webrtc.js';
 
-const GOLD = '#D4AF37';
-const CREAM = '#F5F5DC';
-const BG = '#111';
-const SURFACE = '#1e1e1e';
-const BORDER = '#2a2a2a';
-const RED = '#dc2626';
+var GOLD = '#D4AF37';
+var CREAM = '#F5F5DC';
+var BG = '#111';
+var SURFACE = '#1e1e1e';
+var BORDER = '#2a2a2a';
+var RED = '#dc2626';
 
 export default function PanelJoinModal({ socket, roomId, onJoined, onCancel }) {
-  const videoRef = useRef(null);
-  const streamRef = useRef(null);
-  const [camOn, setCamOn] = useState(true);
-  const [micOn, setMicOn] = useState(true);
-  const [joining, setJoining] = useState(false);
-  const [error, setError] = useState(null);
-  const [camError, setCamError] = useState(false);
+  var videoRef = useRef(null);
+  var streamRef = useRef(null);
+  var [camOn, setCamOn] = useState(true);
+  var [micOn, setMicOn] = useState(true);
+  var [joining, setJoining] = useState(false);
+  var [error, setError] = useState(null);
+  var [camError, setCamError] = useState(false);
 
   // Acquire local preview stream on mount
   useEffect(function() {
