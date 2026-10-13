@@ -40,13 +40,12 @@ async function getUserPoints(userId) {
   return data || { user_id: userId, total_points: 0, level: 1 };
 }
 
-async function getLeaderboard(period) {
+async function getLeaderboard(period, tenantId) {
   if (period === 'weekly') {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { data, error } = await supabase
-      .from('loyalty_point_events')
-      .select('user_id, points')
-      .gte('created_at', since);
+    let q = supabase.from('loyalty_point_events').select('user_id, points').gte('created_at', since);
+    if (tenantId) q = q.eq('tenant_id', tenantId);
+    const { data, error } = await q;
     if (error) throw error;
     const totals = {};
     data.forEach((row) => {
@@ -57,17 +56,17 @@ async function getLeaderboard(period) {
       .sort((a, b) => b.points - a.points)
       .slice(0, 100);
   }
-  const { data, error } = await supabase
-    .from('user_loyalty')
-    .select('user_id, total_points, level')
-    .order('total_points', { ascending: false })
-    .limit(100);
+  let q = supabase.from('user_loyalty').select('user_id, total_points, level').order('total_points', { ascending: false }).limit(100);
+  if (tenantId) q = q.eq('tenant_id', tenantId);
+  const { data, error } = await q;
   if (error) throw error;
   return data;
 }
 
-async function getTiers() {
-  const { data, error } = await supabase.from('pricing_tiers').select('*').order('price', { ascending: true });
+async function getTiers(tenantId) {
+  let q = supabase.from('pricing_tiers').select('*').order('price', { ascending: true });
+  if (tenantId) q = q.eq('tenant_id', tenantId);
+  const { data, error } = await q;
   if (error) throw error;
   return data;
 }
@@ -111,22 +110,18 @@ async function setSelectedTier(userId, tierId) {
   return payload;
 }
 
-async function getActiveChallenges() {
-  const { data, error } = await supabase
-    .from('challenges')
-    .select('*')
-    .eq('status', 'active')
-    .order('ends_at', { ascending: true });
+async function getActiveChallenges(tenantId) {
+  let q = supabase.from('challenges').select('*').eq('status', 'active').order('ends_at', { ascending: true });
+  if (tenantId) q = q.eq('tenant_id', tenantId);
+  const { data, error } = await q;
   if (error) throw error;
   return data;
 }
 
-async function completeChallenge(userId, challengeId) {
-  const { data: challenge, error: chErr } = await supabase
-    .from('challenges')
-    .select('*')
-    .eq('id', challengeId)
-    .single();
+async function completeChallenge(userId, challengeId, tenantId) {
+  let q = supabase.from('challenges').select('*').eq('id', challengeId);
+  if (tenantId) q = q.eq('tenant_id', tenantId);
+  const { data: challenge, error: chErr } = await q.single();
   if (chErr) throw chErr;
   if (!challenge || challenge.status !== 'active') throw new Error('challenge is not active');
   if (challenge.ends_at && new Date(challenge.ends_at) < new Date()) throw new Error('challenge has expired');

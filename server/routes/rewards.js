@@ -18,7 +18,7 @@ var challengeCompleteRateLimit = rateLimit({
 router.get('/leaderboard', requireAuth, async function(req, res) {
   try {
     var period = req.query.period === 'weekly' ? 'weekly' : 'alltime';
-    var rows = await rewardsService.getLeaderboard(period);
+    var rows = await rewardsService.getLeaderboard(period, req.tenantId);
     var data = rows.map(function(r) { return { user_id: r.user_id, points: r.points || r.total_points, level: r.level }; });
     res.json(data);
   } catch (err) {
@@ -66,7 +66,7 @@ router.get('/challenges', async function(req, res) {
 router.post('/challenges/:id/complete', requireAuth, challengeCompleteRateLimit, async function(req, res) {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.id)) return res.status(400).json({ error: 'invalid challenge id' });
   try {
-    var result = await rewardsService.completeChallenge(req.user.id, req.params.id);
+    var result = await rewardsService.completeChallenge(req.user.id, req.params.id, req.tenantId);
     res.json(result);
   } catch (err) {
     console.error('[ROUTE ERROR]', err);
