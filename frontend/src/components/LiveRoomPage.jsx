@@ -988,6 +988,19 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 62: Crowd Meter / Hot Take / Scroll Credits / Color Overlay ──────
+  var [crowdMeter,       setCrowdMeter]       = useState(null);
+  var [myRating,         setMyRating]         = useState(0);
+  var [showCrowdMeter,   setShowCrowdMeter]   = useState(false);
+  var [hotTake,          setHotTake]          = useState(null);
+  var [hotTakeDraft,     setHotTakeDraft]     = useState('');
+  var [showHotTakeSet,   setShowHotTakeSet]   = useState(false);
+  var [myHotVote,        setMyHotVote]        = useState(null);
+  var [scrollCredits,    setScrollCredits]    = useState(null);
+  var [scrollCreditsDraft,setScrollCreditsDraft]= useState('');
+  var [showScrollSet,    setShowScrollSet]    = useState(false);
+  var [colorOverlay,     setColorOverlay]     = useState(null);
+  var [showColorOverlaySet,setShowColorOverlaySet]= useState(false);
   // ─── Batch 61: Tip Goal Meter / Fan Highlight / Watch Counter / Trivia LB ──
   var [tipGoal,          setTipGoal]          = useState(null);
   var [tipGoalDraft,     setTipGoalDraft]     = useState({ targetCents: '1000', label: 'Tip Goal' });
@@ -1227,6 +1240,10 @@ export default function LiveRoomPage({
       if (data.fanHighlight) setFanHighlight(data.fanHighlight);
       if (data.watchCounterVisible) setWatchCounterVisible(true);
       if (Array.isArray(data.triviaLeaderboard) && data.triviaLeaderboard.length > 0) setTriviaLeaderboard(data.triviaLeaderboard);
+      if (data.crowdMeter && data.crowdMeter.active) setCrowdMeter(data.crowdMeter);
+      if (data.hotTake && data.hotTake.active) setHotTake(data.hotTake);
+      if (data.scrollCredits && data.scrollCredits.active) setScrollCredits(data.scrollCredits);
+      if (data.colorOverlay) setColorOverlay(data.colorOverlay);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2552,6 +2569,25 @@ export default function LiveRoomPage({
       setTimeout(function() { setSuperFollowBurst(null); }, 3500);
     });
 
+    // ── Batch 62 listeners ─────────────────────────────────────────────────
+    socket.on('crowd-meter-update', function(d) {
+      setCrowdMeter(d || null);
+      if (!d) { setMyRating(0); }
+    });
+
+    socket.on('hot-take-update', function(d) {
+      setHotTake(d || null);
+      if (!d) setMyHotVote(null);
+    });
+
+    socket.on('scroll-credits-update', function(d) {
+      setScrollCredits(d || null);
+    });
+
+    socket.on('color-overlay-update', function(d) {
+      setColorOverlay(d || null);
+    });
+
     // ── Batch 61 listeners ─────────────────────────────────────────────────
     socket.on('tip-goal-update', function(d) {
       setTipGoal(d || null);
@@ -3074,6 +3110,10 @@ export default function LiveRoomPage({
       socket.off('fan-highlight-update');
       socket.off('watch-counter-update');
       socket.off('trivia-leaderboard-update');
+      socket.off('crowd-meter-update');
+      socket.off('hot-take-update');
+      socket.off('scroll-credits-update');
+      socket.off('color-overlay-update');
     };
   }, [socket]);
 
@@ -4956,6 +4996,22 @@ export default function LiveRoomPage({
                 else { if (socket) socket.emit('watch-counter-show', { roomId: roomId }); }
               }},
               { emoji: triviaLeaderboard.length > 0 ? '🏅' : '🏆', label: 'Trivia LB', active: showTriviaLb, onTap: function() { setShowTriviaLb(function(s) { return !s; }); } },
+              { emoji: crowdMeter ? '📊' : '🌡', label: crowdMeter ? 'Stop Meter' : 'Crowd Meter', active: !!crowdMeter, onTap: function() {
+                if (crowdMeter) { if (socket) socket.emit('crowd-meter-stop', { roomId: roomId }); }
+                else { if (socket) socket.emit('crowd-meter-start', { roomId: roomId }); }
+              }},
+              { emoji: hotTake ? '🚫' : '🌶', label: hotTake ? 'End Take' : 'Hot Take', active: !!hotTake || showHotTakeSet, onTap: function() {
+                if (hotTake) { if (socket) socket.emit('hot-take-clear', { roomId: roomId }); }
+                else { setShowHotTakeSet(function(s) { return !s; }); }
+              }},
+              { emoji: scrollCredits ? '🚫' : '📜', label: scrollCredits ? 'Stop Credits' : 'Credits', active: !!scrollCredits || showScrollSet, onTap: function() {
+                if (scrollCredits) { if (socket) socket.emit('scroll-credits-clear', { roomId: roomId }); }
+                else { setShowScrollSet(function(s) { return !s; }); }
+              }},
+              { emoji: colorOverlay ? '🚫' : '🎨', label: colorOverlay ? 'Clear Wash' : 'Color Wash', active: !!colorOverlay || showColorOverlaySet, onTap: function() {
+                if (colorOverlay) { if (socket) socket.emit('color-overlay-clear', { roomId: roomId }); }
+                else { setShowColorOverlaySet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -5070,6 +5126,9 @@ export default function LiveRoomPage({
               }},
               { emoji: '🔥', label: 'Emoji Wall', active: showEmojiWall, onTap: function() {
                 setShowEmojiWall(function(s) { return !s; });
+              }},
+              { emoji: crowdMeter ? '🌡' : '🌡', label: crowdMeter ? 'Rate It' : 'Crowd', active: !!crowdMeter && myRating > 0, onTap: function() {
+                if (crowdMeter) setShowCrowdMeter(function(s) { return !s; });
               }},
             ] : [])),
           ].map(function(tool) {
@@ -12982,6 +13041,156 @@ export default function LiveRoomPage({
             }} disabled={!milestoneDraft.text.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: milestoneDraft.text.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: milestoneDraft.text.trim() ? 1 : 0.5 }}>
               ANNOUNCE
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 62: Color Overlay wash ══ */}
+      {colorOverlay && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 42, pointerEvents: 'none', background: colorOverlay.color, opacity: colorOverlay.opacity }} />
+      )}
+
+      {/* ══ Batch 62: Scroll Credits ══ */}
+      {scrollCredits && scrollCredits.active && (
+        <div style={{ position: 'fixed', bottom: 90, left: 0, right: 0, zIndex: 650, pointerEvents: 'none', overflow: 'hidden', height: 36 }}>
+          <div style={{ whiteSpace: 'nowrap', animation: 'marqueeScroll 18s linear infinite', display: 'inline-block', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15, color: GOLD, letterSpacing: 1, paddingLeft: '100%' }}>
+            {scrollCredits.text}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 62: Hot Take overlay ══ */}
+      {hotTake && hotTake.active && (
+        <div style={{ position: 'fixed', top: '18%', left: '50%', transform: 'translateX(-50%)', zIndex: 642, width: 290, animation: 'fadeSlideIn .35s ease' }}>
+          <div style={{ background: CARD, border: '2px solid #FF1A3C', borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#FF1A3C', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>🌶 HOT TAKE</div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: TEXT, letterSpacing: 1.5, lineHeight: 1.2, marginBottom: 12 }}>{hotTake.text}</div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+              <button onClick={function() {
+                if (myHotVote || !socket) return;
+                setMyHotVote('agree');
+                socket.emit('hot-take-vote', { roomId: roomId, side: 'agree' });
+              }} style={{ flex: 1, padding: '8px', borderRadius: 10, background: myHotVote === 'agree' ? 'rgba(26,255,110,.15)' : CARD2, border: '1px solid ' + (myHotVote === 'agree' ? '#1AFF6E' : BORDER), color: myHotVote === 'agree' ? '#1AFF6E' : TEXT, fontFamily: "'Bebas Neue',cursive", fontSize: 14, cursor: myHotVote ? 'default' : 'pointer', letterSpacing: 1 }}>
+                ✅ AGREE ({hotTake.agree})
+              </button>
+              <button onClick={function() {
+                if (myHotVote || !socket) return;
+                setMyHotVote('disagree');
+                socket.emit('hot-take-vote', { roomId: roomId, side: 'disagree' });
+              }} style={{ flex: 1, padding: '8px', borderRadius: 10, background: myHotVote === 'disagree' ? 'rgba(255,26,60,.15)' : CARD2, border: '1px solid ' + (myHotVote === 'disagree' ? '#FF1A3C' : BORDER), color: myHotVote === 'disagree' ? '#FF1A3C' : TEXT, fontFamily: "'Bebas Neue',cursive", fontSize: 14, cursor: myHotVote ? 'default' : 'pointer', letterSpacing: 1 }}>
+                ❌ NAH ({hotTake.disagree})
+              </button>
+            </div>
+            {(hotTake.agree + hotTake.disagree) > 0 && (
+              <div style={{ width: '100%', height: 5, background: '#FF1A3C', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: Math.round(hotTake.agree / (hotTake.agree + hotTake.disagree) * 100) + '%', background: '#1AFF6E', borderRadius: 3, transition: 'width .3s ease' }} />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 62: Crowd Meter panel (viewer) ══ */}
+      {showCrowdMeter && crowdMeter && crowdMeter.active && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🌡 CROWD METER</span>
+              <button onClick={function() { setShowCrowdMeter(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: MUTED, textAlign: 'center', marginBottom: 10 }}>
+              AVG: {crowdMeter.avg} / 5 &nbsp;&middot;&nbsp; {crowdMeter.count} votes
+            </div>
+            <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+              {[1,2,3,4,5].map(function(r) {
+                return (
+                  <button key={r} onClick={function() {
+                    if (myRating || !socket) return;
+                    setMyRating(r);
+                    socket.emit('crowd-meter-vote', { roomId: roomId, rating: r });
+                    setShowCrowdMeter(false);
+                  }} style={{ width: 44, height: 44, borderRadius: '50%', background: myRating === r ? 'rgba(201,168,76,.2)' : CARD2, border: '2px solid ' + (myRating === r ? GOLD : BORDER), color: TEXT, fontFamily: "'Bebas Neue',cursive", fontSize: 18, cursor: myRating ? 'default' : 'pointer' }}>
+                    {r}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 62: Hot Take Set panel (host) ══ */}
+      {showHotTakeSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🌶 HOT TAKE</span>
+              <button onClick={function() { setShowHotTakeSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <textarea value={hotTakeDraft}
+              onChange={function(e) { setHotTakeDraft(e.target.value.slice(0, 120)); }}
+              placeholder="Your controversial take…"
+              rows={3}
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', resize: 'none', marginBottom: 10 }} />
+            <button onClick={function() {
+              var t = hotTakeDraft.trim();
+              if (!t) return;
+              if (socket) socket.emit('hot-take-set', { roomId: roomId, text: t });
+              setShowHotTakeSet(false);
+            }} disabled={!hotTakeDraft.trim()} style={{ background: '#FF1A3C', border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: TEXT, cursor: hotTakeDraft.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: hotTakeDraft.trim() ? 1 : 0.5 }}>
+              POST HOT TAKE
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 62: Scroll Credits Set panel (host) ══ */}
+      {showScrollSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>📜 SCROLL CREDITS</span>
+              <button onClick={function() { setShowScrollSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <textarea value={scrollCreditsDraft}
+              onChange={function(e) { setScrollCreditsDraft(e.target.value.slice(0, 600)); }}
+              placeholder="Thanks to… Special guests… Sponsors…"
+              rows={4}
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', resize: 'none', marginBottom: 10 }} />
+            <button onClick={function() {
+              var t = scrollCreditsDraft.trim();
+              if (!t) return;
+              if (socket) socket.emit('scroll-credits-set', { roomId: roomId, text: t });
+              setShowScrollSet(false);
+            }} disabled={!scrollCreditsDraft.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: scrollCreditsDraft.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: scrollCreditsDraft.trim() ? 1 : 0.5 }}>
+              START SCROLL
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 62: Color Overlay Set panel (host) ══ */}
+      {showColorOverlaySet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🎨 COLOR WASH</span>
+              <button onClick={function() { setShowColorOverlaySet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginBottom: 14 }}>
+              {[['#FF1A3C','Red'],['#C9A84C','Gold'],['#1A3CFF','Blue'],['#1AFF6E','Green'],['#FF6E1A','Orange'],['#9B59B6','Purple'],['#00CED1','Teal'],['#000000','Black']].map(function(pair) {
+                var c = pair[0]; var lbl = pair[1];
+                return (
+                  <button key={c} onClick={function() {
+                    if (socket) socket.emit('color-overlay-set', { roomId: roomId, color: c, opacity: 0.18 });
+                    setShowColorOverlaySet(false);
+                  }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: c, border: '2px solid ' + (colorOverlay && colorOverlay.color === c ? TEXT : 'transparent') }} />
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{lbl}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

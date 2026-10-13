@@ -594,6 +594,11 @@ var tipGoalMap       = new Map();  // roomId → { target, current, label }
 var fanHighlightMap  = new Map();  // roomId → { username, reason, avatar, ts }
 var watchCounterMap  = new Map();  // roomId → { visible }
 var triviaLbMap      = new Map();  // roomId → Array<{ username, score }>  (top 5)
+// Batch 62: Crowd Meter / Hot Take / Scroll Credits / Color Overlay
+var crowdMeterMap    = new Map();  // roomId → { votes: Map<userId,rating>, active }
+var hotTakeMap       = new Map();  // roomId → { text, agree: Set<userId>, disagree: Set<userId>, active }
+var scrollCreditsMap = new Map();  // roomId → { text, active }
+var colorOverlayMap  = new Map();  // roomId → { color, opacity }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -891,6 +896,18 @@ function getJoinStateForRoom(roomId) {
   state.fanHighlight = fanHighlightMap.get(roomId) || null;
   state.watchCounterVisible = !!(watchCounterMap.get(roomId) && watchCounterMap.get(roomId).visible);
   state.triviaLeaderboard = triviaLbMap.get(roomId) || [];
+  // Batch 62
+  var _cm62 = crowdMeterMap.get(roomId);
+  if (_cm62 && _cm62.active) {
+    var _total62 = 0; _cm62.votes.forEach(function(v) { _total62 += v; });
+    state.crowdMeter = { active: true, avg: _cm62.votes.size ? (_total62 / _cm62.votes.size).toFixed(1) : '0', count: _cm62.votes.size };
+  } else { state.crowdMeter = null; }
+  var _ht62 = hotTakeMap.get(roomId);
+  if (_ht62 && _ht62.active) {
+    state.hotTake = { text: _ht62.text, agree: _ht62.agree.size, disagree: _ht62.disagree.size, active: true };
+  } else { state.hotTake = null; }
+  state.scrollCredits = scrollCreditsMap.get(roomId) || null;
+  state.colorOverlay  = colorOverlayMap.get(roomId) || null;
   return state;
 }
 
@@ -6561,6 +6578,11 @@ io.on('connection', function(socket) {
     fanHighlightMap.delete(roomId);
     watchCounterMap.delete(roomId);
     triviaLbMap.delete(roomId);
+    // Batch 62 cleanup
+    crowdMeterMap.delete(roomId);
+    hotTakeMap.delete(roomId);
+    scrollCreditsMap.delete(roomId);
+    colorOverlayMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -7775,6 +7797,113 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     triviaLbMap.delete(roomId);
     io.to(roomId).emit('trivia-leaderboard-update', null);
+  });
+
+  // ── crowd-meter (Batch 62) ──────────────────────────────────────────────
+  socket.on('crowd-meter-start', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    crowdMeterMap.set(roomId, { votes: new Map(), active: true });
+    io.to(roomId).emit('crowd-meter-update', { active: true, avg: '0', count: 0 });
+  });
+
+  socket.on('crowd-meter-vote', function(data, ack) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) { if (ack) ack({ err: 'no room' }); return; }
+    var cm = crowdMeterMap.get(roomId);
+    if (!cm || !cm.active) { if (ack) ack({ err: 'not active' }); return; }
+    var rating = Math.min(5, Math.max(1, parseInt(data.rating, 10) || 3));
+    cm.votes.set(userId, rating);
+    var total = 0; cm.votes.forEach(function(v) { total += v; });
+    var avg = (total / cm.votes.size).toFixed(1);
+    io.to(roomId).emit('crowd-meter-update', { active: true, avg: avg, count: cm.votes.size });
+    addEnergy(roomId, userId, socket.data.username || userId, 1);
+    if (ack) ack({ ok: true, rating: rating });
+  });
+
+  socket.on('crowd-meter-stop', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    crowdMeterMap.delete(roomId);
+    io.to(roomId).emit('crowd-meter-update', null);
+  });
+
+  // ── hot-take (Batch 62) ─────────────────────────────────────────────────
+  socket.on('hot-take-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var text = (data.text || '').trim().slice(0, 120);
+    if (!text) return;
+    hotTakeMap.set(roomId, { text: text, agree: new Set(), disagree: new Set(), active: true });
+    io.to(roomId).emit('hot-take-update', { text: text, agree: 0, disagree: 0, active: true });
+  });
+
+  socket.on('hot-take-vote', function(data, ack) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) { if (ack) ack({ err: 'no room' }); return; }
+    var ht = hotTakeMap.get(roomId);
+    if (!ht || !ht.active) { if (ack) ack({ err: 'not active' }); return; }
+    var side = data.side === 'disagree' ? 'disagree' : 'agree';
+    ht.agree.delete(userId); ht.disagree.delete(userId);
+    ht[side].add(userId);
+    io.to(roomId).emit('hot-take-update', { text: ht.text, agree: ht.agree.size, disagree: ht.disagree.size, active: true });
+    addEnergy(roomId, userId, socket.data.username || userId, 1);
+    if (ack) ack({ ok: true, side: side });
+  });
+
+  socket.on('hot-take-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    hotTakeMap.delete(roomId);
+    io.to(roomId).emit('hot-take-update', null);
+  });
+
+  // ── scroll-credits (Batch 62) ───────────────────────────────────────────
+  socket.on('scroll-credits-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var text = (data.text || '').trim().slice(0, 600);
+    if (!text) return;
+    var sc = { text: text, active: true };
+    scrollCreditsMap.set(roomId, sc);
+    io.to(roomId).emit('scroll-credits-update', sc);
+  });
+
+  socket.on('scroll-credits-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    scrollCreditsMap.delete(roomId);
+    io.to(roomId).emit('scroll-credits-update', null);
+  });
+
+  // ── color-overlay (Batch 62) ────────────────────────────────────────────
+  var OVERLAY_SAFE_COLORS62 = new Set(['#FF1A3C','#C9A84C','#1A3CFF','#1AFF6E','#FF6E1A','#9B59B6','#00CED1','#000000']);
+  socket.on('color-overlay-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var color   = String(data.color || '#000000');
+    var opacity = Math.min(0.6, Math.max(0.05, parseFloat(data.opacity) || 0.15));
+    if (!OVERLAY_SAFE_COLORS62.has(color)) color = '#000000';
+    var ov = { color: color, opacity: opacity };
+    colorOverlayMap.set(roomId, ov);
+    io.to(roomId).emit('color-overlay-update', ov);
+  });
+
+  socket.on('color-overlay-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    colorOverlayMap.delete(roomId);
+    io.to(roomId).emit('color-overlay-update', null);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
