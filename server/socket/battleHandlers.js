@@ -124,6 +124,10 @@ function registerBattleHandlers(io, socket) {
         if (cb) cb({ ok: false, error: 'forbidden' });
         return;
       }
+      if (existing.status !== 'accepted') {
+        if (cb) cb({ ok: false, error: 'battle must be accepted before it can be started' });
+        return;
+      }
       const battle = await battleService.startBattle(payload.battleId, socket.data.tenantId);
       if (!battle) { if (cb) cb({ ok: false, error: 'Battle could not be started' }); return; }
       const room = roomName(payload.battleId);

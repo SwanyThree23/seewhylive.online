@@ -24,15 +24,28 @@ async function awardPoints({ userId, tenantId, points, source, sourceId }) {
          SET total_points = user_loyalty.total_points + $3, updated_at = now()`,
       [userId, tenantId, points]
     );
+    const _totals = await client.query(
+      `SELECT total_points FROM user_loyalty WHERE user_id = $1 AND tenant_id = $2`,
+      [userId, tenantId]
+    );
+    const _totalPoints = _totals.rows[0] ? _totals.rows[0].total_points : 0;
+    const _tier = await client.query(
+      `SELECT level FROM reward_tiers WHERE points_required <= $1 AND tenant_id = $2 ORDER BY level DESC LIMIT 1`,
+      [_totalPoints, tenantId]
+    );
+    const _newLevel = _tier.rows[0] ? _tier.rows[0].level : 1;
+    const _updated = await client.query(
+      `UPDATE user_loyalty SET level = $2 WHERE user_id = $1 AND tenant_id = $3 RETURNING *`,
+      [userId, _newLevel, tenantId]
+    );
     await client.query('COMMIT');
+    return _updated.rows[0];
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;
   } finally {
     client.release();
   }
-
-  return recomputeLevel(userId, tenantId);
 }
 
 // Recompute level from total_points against reward_tiers thresholds.

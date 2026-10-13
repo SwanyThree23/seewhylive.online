@@ -86,7 +86,7 @@ function registerPanelHandlers(io, socket) {
         return;
       }
       panelRequestThrottle.set(userId, _prjNow);
-      const request = await panelService.requestJoin({ roomId, userId });
+      const request = await panelService.requestJoin({ roomId, userId, tenantId: socket.data.tenantId });
       // Emit only to host sockets in this room — not all viewers
       const roomSockets = await io.in(roomId).fetchSockets();
       const hostSockets = roomSockets.filter(function(s) { return s.data && s.data.role === 'host'; });

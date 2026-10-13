@@ -61,7 +61,7 @@ router.post('/:id/respond', requireAuth, async function(req, res) {
     return res.status(400).json({ error: 'status must be accepted or declined' });
   }
   try {
-    var invite = await inviteService.respondToInvitation(req.params.id, status, req.user.id);
+    var invite = await inviteService.respondToInvitation(req.params.id, status, req.user.id, req.tenantId);
     if (!invite) return res.status(404).json({ error: 'invite not found, expired, or already responded' });
     res.json(invite);
   } catch (err) {

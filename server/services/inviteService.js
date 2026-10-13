@@ -14,7 +14,9 @@ async function sendInvitation({ tenantId, fromUserId, toUserId, roomId, message,
   if (message && (typeof message !== 'string' || message.length > 500)) {
     const e = new Error('message must be at most 500 characters'); e.status = 400; throw e;
   }
-  const hours = expiryHours || DEFAULT_EXPIRY_HOURS;
+  const MAX_EXPIRY_HOURS = 168; // 7 days
+  const _rawHours = Math.floor(Number(expiryHours) || DEFAULT_EXPIRY_HOURS);
+  const hours = Math.min(Math.max(1, _rawHours), MAX_EXPIRY_HOURS);
   const target = await db.query('SELECT id FROM users WHERE id = $1 AND tenant_id = $2', [toUserId, tenantId]);
   if (!target.rows[0]) { const e = new Error('user not found'); e.status = 404; throw e; }
   const result = await db.query(
@@ -25,14 +27,16 @@ async function sendInvitation({ tenantId, fromUserId, toUserId, roomId, message,
   return result.rows[0];
 }
 
-async function respondToInvitation(inviteId, status, userId) {
+async function respondToInvitation(inviteId, status, userId, tenantId) {
+  if (!tenantId) throw new Error('tenantId is required');
   if (status !== 'accepted' && status !== 'declined') {
     throw new Error('status must be "accepted" or "declined"');
   }
   const result = await db.query(
     `UPDATE guest_invitations SET status = $2
-     WHERE id = $1 AND to_user_id = $3 AND status = 'pending' AND expires_at > now() RETURNING *`,
-    [inviteId, status, userId]
+     WHERE id = $1 AND to_user_id = $3 AND tenant_id = $4
+       AND status = 'pending' AND expires_at > now() RETURNING *`,
+    [inviteId, status, userId, tenantId]
   );
   return result.rows[0];
 }
