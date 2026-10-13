@@ -1066,6 +1066,9 @@ app.get('/api/leaderboard', requireAuth, function(req, res) {
         'SELECT from_user, SUM(value_cents) as total, SUM(creator_cents) as creator_total, COUNT(*) as cnt FROM gifts WHERE room_id = ? GROUP BY from_user ORDER BY total DESC LIMIT 10'
       ).all(roomId);
     } else {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'roomId required' });
+      }
       rows = db.prepare(
         'SELECT from_user, SUM(value_cents) as total, SUM(creator_cents) as creator_total, COUNT(*) as cnt FROM gifts GROUP BY from_user ORDER BY total DESC LIMIT 10'
       ).all();
@@ -1293,7 +1296,7 @@ app.post('/api/summarize-chat', requireAuth, function(req, res) {
 });
 
 var _liveStreamsCache = { data: null, ts: 0 };
-app.get('/api/streams/live', function(req, res) {
+app.get('/api/streams/live', requireAuth, function(req, res) {
   var fsModule = require('fs');
   var pathModule = require('path');
   var HLS_DIR = '/var/www/html/hls';

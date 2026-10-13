@@ -88,8 +88,15 @@ async function getStreamGuests(streamId, tenantId) {
 
 // ---- room_participants (broader roster: viewers + on-stage) ----
 
-async function joinRoomAsParticipant({ streamId, userId, role }) {
+async function joinRoomAsParticipant({ streamId, userId, role, tenantId }) {
   if (role && !ALLOWED_GUEST_ROLES.includes(role)) { const e = new Error('invalid role'); e.status = 400; throw e; }
+  if (tenantId) {
+    const streamCheck = await db.query(
+      'SELECT id FROM streams WHERE id = $1 AND tenant_id = $2',
+      [streamId, tenantId]
+    );
+    if (!streamCheck.rows[0]) { const e = new Error('stream not found'); e.status = 404; throw e; }
+  }
   const result = await db.query(
     `INSERT INTO room_participants (stream_id, user_id, role) VALUES ($1, $2, $3)
      ON CONFLICT (stream_id, user_id) DO UPDATE
