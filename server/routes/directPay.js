@@ -150,6 +150,9 @@ router.get('/', requireAuth, function(req, res) {
 });
 
 router.get('/:userId', requireAuth, function(req, res) {
+  if (req.params.userId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'forbidden' });
+  }
   loadAndDecryptHandles(req.params.userId, req.tenantId, res);
 });
 
