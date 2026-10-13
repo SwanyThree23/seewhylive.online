@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Play, Eye, ThumbsUp, Share2, Trash2 } from 'lucide-react';
 
-var G      = '#D4AF37';
+var G      = '#C9A84C';
 var BG     = '#080B18';
 var BORDER = 'rgba(212,175,55,0.18)';
 

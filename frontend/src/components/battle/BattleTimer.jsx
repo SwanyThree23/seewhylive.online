@@ -16,10 +16,10 @@ var BattleTimer = function (props) {
     textAlign: 'center',
     padding: '8px 24px',
     minHeight: '44px',
-    color: isUrgent ? '#dc2626' : '#F5F5DC',
+    color: isUrgent ? '#FF1A3C' : '#F0E8D4',
     backgroundColor: '#0C0806',
     borderRadius: '8px',
-    border: isUrgent ? '2px solid #dc2626' : '2px solid #D4AF37',
+    border: isUrgent ? '2px solid #FF1A3C' : '2px solid #C9A84C',
     transition: 'color 0.3s ease, border-color 0.3s ease',
   };
 

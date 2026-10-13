@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Scissors } from 'lucide-react';
 import { toast } from 'sonner';
 
-var G      = '#D4AF37';
+var G      = '#C9A84C';
 var BG     = '#080B18';
 var PANEL  = '#0D1022';
 var BORDER = 'rgba(212,175,55,0.18)';

@@ -39,7 +39,7 @@ function Modal(props) {
         style={{ background: '#080B18', border: '1px solid ' + (titleColor || 'rgba(212,175,55,0.2)'), borderRadius: 12, padding: 24, maxWidth: 512, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
         onClick={function(e) { e.stopPropagation(); }}
       >
-        <h2 style={{ color: titleColor || '#d4af37', fontWeight: 700, fontSize: 16, marginBottom: 16 }}>{title}</h2>
+        <h2 style={{ color: titleColor || '#C9A84C', fontWeight: 700, fontSize: 16, marginBottom: 16 }}>{title}</h2>
         {children}
       </div>
     </div>
@@ -118,7 +118,7 @@ export default function VideoLibrary(props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h3 style={{ fontSize: 14, fontWeight: 600, color: '#d4af37', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, color: '#C9A84C', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
           <Video style={{ width: 16, height: 16 }} /> Video Library
         </h3>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -139,7 +139,7 @@ export default function VideoLibrary(props) {
             style={{
               height: 32, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6,
               fontSize: 12, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
-              background: '#d4af37', color: '#000', border: 'none',
+              background: '#C9A84C', color: '#000', border: 'none',
             }}
           >
             <Plus style={{ width: 14, height: 14 }} /> Add VOD
@@ -169,7 +169,7 @@ export default function VideoLibrary(props) {
       )}
 
       {/* Trim Modal */}
-      <Modal open={!!trimTarget} onClose={function() { setTrimTarget(null); }} title="Trim Video" titleColor="#d4af37">
+      <Modal open={!!trimTarget} onClose={function() { setTrimTarget(null); }} title="Trim Video" titleColor="#C9A84C">
         {trimTarget && (
           <VODTrimEditor
             video={trimTarget}
@@ -180,7 +180,7 @@ export default function VideoLibrary(props) {
       </Modal>
 
       {/* Chapters Modal */}
-      <Modal open={!!chapterTarget} onClose={function() { setChapterTarget(null); }} title="Chapter Markers" titleColor="#D4AF37">
+      <Modal open={!!chapterTarget} onClose={function() { setChapterTarget(null); }} title="Chapter Markers" titleColor="#C9A84C">
         {chapterTarget && (
           <ChapterEditor
             video={chapterTarget}
@@ -191,7 +191,7 @@ export default function VideoLibrary(props) {
       </Modal>
 
       {/* Add VOD Modal */}
-      <Modal open={showAdd} onClose={function() { setShowAdd(false); }} title="Add VOD to Library" titleColor="#d4af37">
+      <Modal open={showAdd} onClose={function() { setShowAdd(false); }} title="Add VOD to Library" titleColor="#C9A84C">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input
             placeholder="Video title..."
@@ -227,7 +227,7 @@ export default function VideoLibrary(props) {
               onClick={function() { createVOD.mutate(newVOD); }}
               style={{
                 marginLeft: 'auto', fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
-                background: '#d4af37', color: '#000', border: 'none',
+                background: '#C9A84C', color: '#000', border: 'none',
                 opacity: (!newVOD.title || createVOD.isPending) ? 0.5 : 1,
               }}
             >

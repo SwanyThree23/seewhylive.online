@@ -31,9 +31,9 @@ export default function VODTrimEditor(props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
-        <Scissors style={{ width: 16, height: 16, color: '#D4AF37' }} />
+        <Scissors style={{ width: 16, height: 16, color: '#C9A84C' }} />
         <span>Trim Video</span>
-        <span style={{ marginLeft: 'auto', color: '#D4AF37', fontFamily: 'monospace', fontSize: 12 }}>
+        <span style={{ marginLeft: 'auto', color: '#C9A84C', fontFamily: 'monospace', fontSize: 12 }}>
           {fmt(trimStart)} {'→'} {fmt(trimEnd)} ({fmt(trimEnd - trimStart)} kept)
         </span>
       </div>
@@ -44,7 +44,7 @@ export default function VODTrimEditor(props) {
         <div style={{
           position: 'absolute', top: 0, bottom: 0,
           background: 'rgba(212,175,55,0.2)',
-          borderLeft: '2px solid #D4AF37', borderRight: '2px solid #D4AF37',
+          borderLeft: '2px solid #C9A84C', borderRight: '2px solid #C9A84C',
           left: pctStart + '%', width: (pctEnd - pctStart) + '%',
         }} />
         <input
@@ -90,7 +90,7 @@ export default function VODTrimEditor(props) {
           style={{
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
             fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
-            background: '#D4AF37', color: '#000', border: 'none',
+            background: '#C9A84C', color: '#000', border: 'none',
           }}
         >
           <Save style={{ width: 14, height: 14 }} /> Save Trim
