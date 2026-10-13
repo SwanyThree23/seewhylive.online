@@ -46,8 +46,8 @@ async function recomputeLevel(userId, tenantId) {
   const totalPoints = totals.rows[0].total_points;
 
   const tier = await db.query(
-    `SELECT level FROM reward_tiers WHERE points_required <= $1 ORDER BY level DESC LIMIT 1`,
-    [totalPoints]
+    `SELECT level FROM reward_tiers WHERE points_required <= $1 AND tenant_id = $2 ORDER BY level DESC LIMIT 1`,
+    [totalPoints, tenantId]
   );
   const newLevel = tier.rows[0] ? tier.rows[0].level : 1;
 

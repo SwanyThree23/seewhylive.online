@@ -3,26 +3,45 @@ const ws = require('ws');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { realtime: { transport: ws } });
 const db = require('../db');
 
-async function awardPoints(userId, points, source, sourceId) {
+async function awardPoints(userId, points, source, sourceId, tenantId) {
   if (!Number.isFinite(points) || points <= 0) throw new Error('awardPoints: points must be a positive finite number');
 
   const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
-    await client.query(
-      `INSERT INTO loyalty_point_events (user_id, points, source, source_id) VALUES ($1, $2, $3, $4)`,
-      [userId, points, source || null, sourceId || null]
-    );
-    const result = await client.query(
-      `INSERT INTO user_loyalty (user_id, total_points, level, updated_at)
-       VALUES ($1, $2, floor($2::numeric / 1000)::int + 1, now())
-       ON CONFLICT (user_id) DO UPDATE SET
-         total_points = user_loyalty.total_points + EXCLUDED.total_points,
-         level        = floor((user_loyalty.total_points + EXCLUDED.total_points)::numeric / 1000)::int + 1,
-         updated_at   = now()
-       RETURNING total_points, level`,
-      [userId, points]
-    );
+    if (tenantId) {
+      await client.query(
+        `INSERT INTO loyalty_point_events (user_id, tenant_id, points, source, source_id) VALUES ($1, $2, $3, $4, $5)`,
+        [userId, tenantId, points, source || null, sourceId || null]
+      );
+    } else {
+      await client.query(
+        `INSERT INTO loyalty_point_events (user_id, points, source, source_id) VALUES ($1, $2, $3, $4)`,
+        [userId, points, source || null, sourceId || null]
+      );
+    }
+    const conflictKey = tenantId ? '(user_id, tenant_id)' : '(user_id)';
+    const result = tenantId
+      ? await client.query(
+          `INSERT INTO user_loyalty (user_id, tenant_id, total_points, level, updated_at)
+           VALUES ($1, $3, $2, floor($2::numeric / 1000)::int + 1, now())
+           ON CONFLICT (user_id, tenant_id) DO UPDATE SET
+             total_points = user_loyalty.total_points + EXCLUDED.total_points,
+             level        = floor((user_loyalty.total_points + EXCLUDED.total_points)::numeric / 1000)::int + 1,
+             updated_at   = now()
+           RETURNING total_points, level`,
+          [userId, points, tenantId]
+        )
+      : await client.query(
+          `INSERT INTO user_loyalty (user_id, total_points, level, updated_at)
+           VALUES ($1, $2, floor($2::numeric / 1000)::int + 1, now())
+           ON CONFLICT (user_id) DO UPDATE SET
+             total_points = user_loyalty.total_points + EXCLUDED.total_points,
+             level        = floor((user_loyalty.total_points + EXCLUDED.total_points)::numeric / 1000)::int + 1,
+             updated_at   = now()
+           RETURNING total_points, level`,
+          [userId, points]
+        );
     await client.query('COMMIT');
     const row = result.rows[0];
     return { total_points: row.total_points, level: row.level };
@@ -136,7 +155,7 @@ async function completeChallenge(userId, challengeId, tenantId) {
   }
 
   try {
-    return await awardPoints(userId, challenge.points_reward, 'challenge_complete', challengeId);
+    return await awardPoints(userId, challenge.points_reward, 'challenge_complete', challengeId, tenantId);
   } catch (awardErr) {
     await supabase.from('challenge_completions')
       .delete().eq('challenge_id', challengeId).eq('user_id', userId)

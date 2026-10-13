@@ -202,7 +202,7 @@ router.post('/aura/mode', requireAuth, function(req, res) {
   }
 });
 
-router.post('/aura/trigger', requireAuth, auraTriggerRateLimit, function(req, res) {
+router.post('/aura/trigger', requireAuth, auraTriggerRateLimit, async function(req, res) {
   if (req.user.role !== 'host' && req.user.role !== 'admin') {
     return res.status(403).json({ success: false, error: 'forbidden' });
   }
@@ -210,6 +210,13 @@ router.post('/aura/trigger', requireAuth, auraTriggerRateLimit, function(req, re
     var type = req.body.type || '';
     var streamId = String(req.body.streamId || '');
     if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
+    if (req.user.role !== 'admin') {
+      var _auraOwn = await db.query(
+        'SELECT id FROM streams WHERE id = $1 AND creator_id = $2 AND tenant_id = $3',
+        [streamId, req.user.id, req.tenantId]
+      );
+      if (!_auraOwn.rows[0]) return res.status(403).json({ success: false, error: 'forbidden' });
+    }
     var mode = req.body.mode || 'hype';
     var data = req.body.data || {};
 

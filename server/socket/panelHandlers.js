@@ -46,12 +46,12 @@ function registerPanelHandlers(io, socket) {
         return;
       }
       panelJoinThrottle.set(userId, _pjNow);
-      const gate = await panelService.checkJoinGate({ roomId, userId, inviteCode });
+      const gate = await panelService.checkJoinGate({ roomId, userId, inviteCode, tenantId: socket.data.tenantId });
       if (!gate.allowed) {
         ack?.({ ok: false, reason: gate.reason });
         return;
       }
-      const { slot, isNew } = await panelService.assignSlot({ roomId, userId });
+      const { slot, isNew } = await panelService.assignSlot({ roomId, userId, tenantId: socket.data.tenantId });
       socket.join(roomId);
       io.to(roomId).emit('panel:slot_assigned', { roomId, slot });
       if (isNew) {

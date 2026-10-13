@@ -36,7 +36,7 @@ function registerBattleHandlers(io, socket) {
   socket.on('battle:watch', async (payload, cb) => {
     if (!payload || !validBattleId(payload.battleId)) { if (cb) cb({ ok: false, error: 'battleId required' }); return; }
     try {
-      const battle = await battleService.getBattle(payload.battleId);
+      const battle = await battleService.getBattle(payload.battleId, socket.data.tenantId);
       if (!battle) { if (cb) cb({ ok: false, error: 'battle not found' }); return; }
       socket.join(roomName(payload.battleId));
       if (cb) cb({ ok: true });
@@ -80,12 +80,12 @@ function registerBattleHandlers(io, socket) {
     if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
     if (payload.roomId && !BATTLE_UUID_RE.test(payload.roomId)) { if (cb) cb({ ok: false, error: 'invalid roomId' }); return; }
     try {
-      const existing = await battleService.getBattle(payload.battleId);
+      const existing = await battleService.getBattle(payload.battleId, socket.data.tenantId);
       if (!existing || existing.defender_id !== socket.data.userId) {
         if (cb) cb({ ok: false, error: 'forbidden' });
         return;
       }
-      const battle = await battleService.acceptChallenge(payload.battleId, payload.roomId);
+      const battle = await battleService.acceptChallenge(payload.battleId, payload.roomId, socket.data.tenantId);
       socket.join(roomName(payload.battleId));
       // Notify challenger so they can join the battle room too.
       io.to(`user:${battle.challenger_id}`).emit('battle:accept', battle);
@@ -99,12 +99,12 @@ function registerBattleHandlers(io, socket) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
     try {
-      const battle = await battleService.getBattle(payload.battleId);
+      const battle = await battleService.getBattle(payload.battleId, socket.data.tenantId);
       if (!battle || battle.defender_id !== socket.data.userId) {
         if (cb) cb({ ok: false, error: 'forbidden' });
         return;
       }
-      await battleService.declineBattle(payload.battleId, socket.data.userId);
+      await battleService.declineBattle(payload.battleId, socket.data.userId, socket.data.tenantId);
       io.to(`user:${battle.challenger_id}`).emit('battle:decline', { battleId: payload.battleId });
       if (cb) cb({ ok: true });
     } catch (err) {
@@ -119,12 +119,12 @@ function registerBattleHandlers(io, socket) {
     if (_stNow - (startThrottle.get(socket.data.userId) || 0) < 5000) { if (cb) cb({ ok: false, error: 'too many requests' }); return; }
     startThrottle.set(socket.data.userId, _stNow);
     try {
-      const existing = await battleService.getBattle(payload.battleId);
+      const existing = await battleService.getBattle(payload.battleId, socket.data.tenantId);
       if (!existing || (existing.challenger_id !== socket.data.userId && existing.defender_id !== socket.data.userId)) {
         if (cb) cb({ ok: false, error: 'forbidden' });
         return;
       }
-      const battle = await battleService.startBattle(payload.battleId);
+      const battle = await battleService.startBattle(payload.battleId, socket.data.tenantId);
       if (!battle) { if (cb) cb({ ok: false, error: 'Battle could not be started' }); return; }
       const room = roomName(payload.battleId);
       io.to(room).emit('battle:start', battle);
