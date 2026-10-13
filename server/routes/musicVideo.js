@@ -157,7 +157,7 @@ router.delete('/jobs/:id', requireAuth, async function(req, res) {
     if (row.audio_path && row.audio_path.startsWith(os.tmpdir())) {
       fs.unlink(row.audio_path, function() {});
     }
-    await db.query('DELETE FROM music_video_jobs WHERE id=$1 AND tenant_id=$2', [req.params.id, req.tenantId]);
+    await db.query('DELETE FROM music_video_jobs WHERE id=$1 AND user_id=$2 AND tenant_id=$3', [req.params.id, userId, req.tenantId]);
     res.json({ deleted: true });
   } catch (e) {
     res.status(500).json({ error: 'Failed to delete job' });
