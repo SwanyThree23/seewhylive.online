@@ -65,8 +65,8 @@ async function getUserLoyalty(userId) {
   return result.rows[0] || { user_id: userId, total_points: 0, level: 1 };
 }
 
-async function getRewardTiers() {
-  const result = await db.query(`SELECT * FROM reward_tiers ORDER BY level ASC`);
+async function getRewardTiers(tenantId) {
+  const result = await db.query(`SELECT * FROM reward_tiers WHERE tenant_id = $1 ORDER BY level ASC`, [tenantId]);
   return result.rows;
 }
 
@@ -104,14 +104,15 @@ async function getWeeklyLeaderboard(limit, tenantId) {
   return result.rows;
 }
 
-// 1-indexed rank of a user on the all-time leaderboard.
-async function getUserRank(userId) {
+// 1-indexed rank of a user on the all-time leaderboard, scoped to tenant.
+async function getUserRank(userId, tenantId) {
   const result = await db.query(
     `SELECT rank FROM (
        SELECT user_id, RANK() OVER (ORDER BY total_points DESC) AS rank
        FROM user_loyalty
+       WHERE tenant_id = $2
      ) ranked WHERE user_id = $1`,
-    [userId]
+    [userId, tenantId]
   );
   return result.rows[0] ? result.rows[0].rank : null;
 }

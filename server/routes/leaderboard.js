@@ -31,7 +31,7 @@ router.get('/weekly', requireAuth, async function(req, res) {
 router.get('/me', requireAuth, async function(req, res) {
   try {
     var loyalty = await loyaltyService.getUserLoyalty(req.user.id);
-    var rank = await loyaltyService.getUserRank(req.user.id);
+    var rank = await loyaltyService.getUserRank(req.user.id, req.tenantId);
     res.json(Object.assign({}, loyalty, { rank: rank }));
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
