@@ -45,7 +45,7 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
         created_at: new Date().toISOString(),
       });
 
-      if (result?.id) {
+      if (result && result.id) {
         alert('Video published!');
         setDuration(0);
         setVideoTitle('');

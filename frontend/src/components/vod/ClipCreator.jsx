@@ -44,7 +44,7 @@ export default function ClipCreator({ streamSessionId, roomId, creatorId, onClip
       base44.entities.Activity.create({
         user_id: userId,
         type: 'clip_created',
-        title: `Clipped: ${clip?.title || 'Stream clip'}`,
+        title: 'Clipped: ' + ((clip && clip.title) || 'Stream clip'),
       }).catch(() => {});
     },
     onError: () => toast.error('Failed to create clip.'),
