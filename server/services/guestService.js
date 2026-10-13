@@ -71,10 +71,14 @@ async function leaveStreamAsGuest(streamId, userId) {
   return result.rows[0];
 }
 
-async function getStreamGuests(streamId) {
+async function getStreamGuests(streamId, tenantId) {
   const result = await db.query(
-    `SELECT * FROM stream_guests WHERE stream_id = $1 AND left_at IS NULL ORDER BY joined_at ASC`,
-    [streamId]
+    `SELECT sg.* FROM stream_guests sg
+     JOIN streams s ON s.id = sg.stream_id
+     WHERE sg.stream_id = $1 AND sg.left_at IS NULL
+       AND (s.tenant_id = $2 OR $2::text IS NULL)
+     ORDER BY sg.joined_at ASC`,
+    [streamId, tenantId || null]
   );
   return result.rows;
 }
@@ -142,10 +146,14 @@ async function leaveRoom(streamId, userId) {
   return result.rows[0];
 }
 
-async function getRoomParticipants(streamId) {
+async function getRoomParticipants(streamId, tenantId) {
   const result = await db.query(
-    `SELECT * FROM room_participants WHERE stream_id = $1 AND left_at IS NULL ORDER BY joined_at ASC`,
-    [streamId]
+    `SELECT rp.* FROM room_participants rp
+     JOIN streams s ON s.id = rp.stream_id
+     WHERE rp.stream_id = $1 AND rp.left_at IS NULL
+       AND (s.tenant_id = $2 OR $2::text IS NULL)
+     ORDER BY rp.joined_at ASC`,
+    [streamId, tenantId || null]
   );
   return result.rows;
 }

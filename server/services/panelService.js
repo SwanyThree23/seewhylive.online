@@ -134,15 +134,16 @@ async function setAudioOnly({ roomId, isAudioOnly }) {
   return result.rows[0];
 }
 
-async function setPrivacy({ roomId, isPrivate, gatingMode = null }) {
+async function setPrivacy({ tenantId, roomId, isPrivate, gatingMode = null }) {
   let inviteCode = null;
   if (isPrivate && gatingMode === 'invite_code') {
     inviteCode = generateInviteCode();
   }
   const result = await db.query(
     `UPDATE streams SET privacy = $2, private_gating_mode = $3, invite_code = $4
-     WHERE id = $1 RETURNING id, privacy, private_gating_mode, invite_code`,
-    [roomId, isPrivate ? 'private' : 'public', isPrivate ? gatingMode : null, inviteCode]
+     WHERE id = $1 AND (tenant_id = $5 OR $5::text IS NULL)
+     RETURNING id, privacy, private_gating_mode, invite_code`,
+    [roomId, isPrivate ? 'private' : 'public', isPrivate ? gatingMode : null, inviteCode, tenantId || null]
   );
   return result.rows[0];
 }

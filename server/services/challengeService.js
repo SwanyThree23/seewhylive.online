@@ -24,8 +24,11 @@ async function getActiveChallenges(tenantId) {
 // Marks a challenge complete for a user and awards points exactly once —
 // the PRIMARY KEY on challenge_completions(challenge_id, user_id) prevents
 // double-completion at the DB level.
-async function completeChallenge(challengeId, userId) {
-  const challenge = await db.query(`SELECT * FROM challenges WHERE id = $1`, [challengeId]);
+async function completeChallenge(challengeId, userId, tenantId) {
+  const challenge = await db.query(
+    `SELECT * FROM challenges WHERE id = $1 AND (tenant_id = $2 OR $2::text IS NULL)`,
+    [challengeId, tenantId || null]
+  );
   const row = challenge.rows[0];
   if (!row) throw new Error('challenge not found');
   if (row.status !== 'active') throw new Error('challenge is not active');
@@ -63,10 +66,13 @@ async function completeChallenge(challengeId, userId) {
   return inserted.rows[0];
 }
 
-async function getUserCompletions(userId) {
+async function getUserCompletions(userId, tenantId) {
   const result = await db.query(
-    `SELECT challenge_id, completed_at FROM challenge_completions WHERE user_id = $1`,
-    [userId]
+    `SELECT cc.challenge_id, cc.completed_at
+     FROM challenge_completions cc
+     JOIN challenges c ON c.id = cc.challenge_id
+     WHERE cc.user_id = $1 AND (c.tenant_id = $2 OR $2::text IS NULL)`,
+    [userId, tenantId || null]
   );
   return result.rows;
 }
