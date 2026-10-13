@@ -58,6 +58,9 @@ function decryptKey(stored) {
 router.post('/encrypt-key', requireAuth, function (req, res) {
   var streamKey = (req.body || {}).streamKey;
   if (!streamKey) return res.status(400).json({ error: 'streamKey is required' });
+  if (typeof streamKey !== 'string' || streamKey.length > 500) {
+    return res.status(400).json({ error: 'streamKey must be a string of at most 500 characters' });
+  }
   try {
     res.json({ success: true, encryptedKey: encryptKey(streamKey) });
   } catch (err) {

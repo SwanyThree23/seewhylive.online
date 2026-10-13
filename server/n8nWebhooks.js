@@ -36,12 +36,15 @@ n8nRouter.post('/stream-live', function(req, res) {
   var d = req.body;
   var title = String(d.title || 'SeeWhy LIVE is streaming!').slice(0, 120);
   var streamId = N8N_UUID_RE.test(String(d.streamId || '')) ? String(d.streamId) : null;
-  if (global.io) global.io.emit('stream-alert', { type:'live', streamId:streamId, title:title, ts:Date.now() });
+  var tenantId = N8N_UUID_RE.test(String(d.tenantId || '')) ? String(d.tenantId) : null;
+  if (global.io && tenantId) global.io.to('tenant:' + tenantId).emit('stream-alert', { type:'live', streamId:streamId, title:title, ts:Date.now() });
   res.json({ ok: true, event: 'stream-live' });
 });
 
 n8nRouter.post('/stream-end', function(req, res) {
-  if (global.io) global.io.emit('stream-alert', { type:'ended', ts:Date.now() });
+  var d = req.body;
+  var tenantId = N8N_UUID_RE.test(String(d.tenantId || '')) ? String(d.tenantId) : null;
+  if (global.io && tenantId) global.io.to('tenant:' + tenantId).emit('stream-alert', { type:'ended', ts:Date.now() });
   res.json({ ok: true, event: 'stream-end' });
 });
 

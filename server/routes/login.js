@@ -54,7 +54,8 @@ async function claimOwnershipIfEligible(tenantId, userId, email) {
     );
 
     await client.query('COMMIT');
-    return userRes.rows[0] || { account_type: 'owner' };
+    // If the INSERT was skipped (user already exists with a different role), don't grant owner.
+    return userRes.rows[0] || null;
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('[login] ownership claim failed', err.message);
@@ -79,18 +80,12 @@ router.post('/login', loginRateLimit, async function(req, res) {
 
     var user = authResult.data.user;
 
-    var profileResult = await supabaseAuth
-      .from('users')
-      .select('account_type')
-      .eq('id', user.id)
-      .eq('tenant_id', req.tenantId)
-      .maybeSingle();
+    var profileResult = await db.query(
+      'SELECT account_type FROM users WHERE id = $1 AND tenant_id = $2',
+      [user.id, req.tenantId]
+    );
 
-    if (profileResult.error) {
-      return res.status(500).json({ error: 'Login failed' });
-    }
-
-    var finalProfile = profileResult.data;
+    var finalProfile = profileResult.rows[0] || null;
     if (!finalProfile) {
       finalProfile = await claimOwnershipIfEligible(req.tenantId, user.id, email);
     }
