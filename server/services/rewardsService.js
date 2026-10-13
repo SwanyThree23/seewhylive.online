@@ -61,10 +61,10 @@ async function getUserPoints(userId, tenantId) {
 }
 
 async function getLeaderboard(period, tenantId) {
+  if (!tenantId) throw Object.assign(new Error('tenantId is required'), { status: 400 });
   if (period === 'weekly') {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    let q = supabase.from('loyalty_point_events').select('user_id, points').gte('created_at', since);
-    if (tenantId) q = q.eq('tenant_id', tenantId);
+    let q = supabase.from('loyalty_point_events').select('user_id, points').gte('created_at', since).eq('tenant_id', tenantId);
     const { data, error } = await q;
     if (error) throw error;
     const totals = {};
@@ -76,8 +76,7 @@ async function getLeaderboard(period, tenantId) {
       .sort((a, b) => b.points - a.points)
       .slice(0, 100);
   }
-  let q = supabase.from('user_loyalty').select('user_id, total_points, level').order('total_points', { ascending: false }).limit(100);
-  if (tenantId) q = q.eq('tenant_id', tenantId);
+  let q = supabase.from('user_loyalty').select('user_id, total_points, level').order('total_points', { ascending: false }).limit(100).eq('tenant_id', tenantId);
   const { data, error } = await q;
   if (error) throw error;
   return data;
