@@ -206,7 +206,7 @@ export default function HostHUD(props) {
     if (addToast) addToast('Trivia ended', 'info');
   };
 
-  function fmtTime(s) {
+  var fmtTime = function(s) {
     var h   = Math.floor(s / 3600);
     var m   = Math.floor((s % 3600) / 60);
     var sec = s % 60;

@@ -14,7 +14,7 @@ var ShareSheet = function (props) {
   useEffect(function() {
     window.history.pushState({ swOverlay: 'share' }, '');
     pushedRef.current = true;
-    function onPop() {
+    var onPop = function() {
       if (pushedRef.current) { pushedRef.current = false; onClose(); }
     }
     window.addEventListener('popstate', onPop);
@@ -24,7 +24,7 @@ var ShareSheet = function (props) {
     };
   }, [onClose]);
 
-  function handleClose() {
+  var handleClose = function() {
     if (pushedRef.current) { window.history.back(); }
     else { onClose(); }
   }
@@ -56,15 +56,15 @@ var ShareSheet = function (props) {
 
   var overlayStyle = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1000, overscrollBehavior: 'contain' };
   var sheetStyle = { backgroundColor: '#0A0A0A', borderTopLeftRadius: '16px', borderTopRightRadius: '16px', width: '100%', maxWidth: '480px', padding: '20px 20px calc(20px + env(safe-area-inset-bottom, 16px))', fontFamily: '"Barlow Condensed", sans-serif' };
-  var headerStyle = { color: '#F5F5DC', fontFamily: '"Bebas Neue", sans-serif', fontSize: '20px', marginBottom: '16px', textAlign: 'center' };
+  var headerStyle = { color: '#F0E8D4', fontFamily: '"Bebas Neue", sans-serif', fontSize: '20px', marginBottom: '16px', textAlign: 'center' };
   var gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' };
   var buttonStyle = function (color) {
     return { minHeight: '64px', borderRadius: '12px', border: 'none', backgroundColor: color, color: color === '#FFFC00' ? '#0A0A0A' : '#FFFFFF', fontFamily: '"Barlow Condensed", sans-serif', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none', WebkitUserSelect: 'none' };
   };
   var copyRowStyle = { display: 'flex', gap: '8px', minHeight: '44px' };
-  var inputStyle = { flex: 1, minHeight: '44px', padding: '0 12px', borderRadius: '8px', border: '1px solid #800020', backgroundColor: '#1a1210', color: '#F5F5DC', fontFamily: '"DM Mono", monospace', fontSize: '13px' };
-  var copyButtonStyle = { minHeight: '44px', minWidth: '80px', padding: '0 16px', borderRadius: '8px', border: 'none', backgroundColor: '#D4AF37', color: '#0A0A0A', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 'bold', userSelect: 'none', WebkitUserSelect: 'none' };
-  var closeButtonStyle = { minHeight: '44px', width: '100%', marginTop: '12px', borderRadius: '8px', border: '1px solid #800020', backgroundColor: 'transparent', color: '#F5F5DC', fontFamily: '"Barlow Condensed", sans-serif', userSelect: 'none', WebkitUserSelect: 'none' };
+  var inputStyle = { flex: 1, minHeight: '44px', padding: '0 12px', borderRadius: '8px', border: '1px solid #800020', backgroundColor: '#1a1210', color: '#F0E8D4', fontFamily: '"DM Mono", monospace', fontSize: '13px' };
+  var copyButtonStyle = { minHeight: '44px', minWidth: '80px', padding: '0 16px', borderRadius: '8px', border: 'none', backgroundColor: '#C9A84C', color: '#0A0A0A', fontFamily: '"Barlow Condensed", sans-serif', fontWeight: 'bold', userSelect: 'none', WebkitUserSelect: 'none' };
+  var closeButtonStyle = { minHeight: '44px', width: '100%', marginTop: '12px', borderRadius: '8px', border: '1px solid #800020', backgroundColor: 'transparent', color: '#F0E8D4', fontFamily: '"Barlow Condensed", sans-serif', userSelect: 'none', WebkitUserSelect: 'none' };
 
   return (
     <div style={overlayStyle} onClick={handleClose}>

@@ -54,13 +54,13 @@ export default function GiftLeaderboardOverlay(props) {
   useEffect(function() {
     if (!socket) return;
 
-    function onLeaderboard(data) {
+    var onLeaderboard = function(data) {
       if (!data || !data.roomId || String(data.roomId) !== String(roomId)) return;
       setLeaders(data.leaders || []);
       setVisible(true);
     }
 
-    function onBroadcastEnded() {
+    var onBroadcastEnded = function() {
       setVisible(false);
       setLeaders([]);
     }

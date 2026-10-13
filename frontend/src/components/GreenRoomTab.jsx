@@ -64,7 +64,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
   useEffect(function() {
     if (!socket) return;
 
-    function onHandRaise(data) {
+    var onHandRaise = function(data) {
       if (!data || !data.guestId) return;
       setHandQueue(function(q) {
         var already = false;
@@ -74,7 +74,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
       });
     }
 
-    function onStageInvite(data) {
+    var onStageInvite = function(data) {
       if (!data || !data.guestId) return;
       setStageList(function(s) {
         if (s.indexOf(data.guestId) >= 0) return s;
@@ -83,31 +83,31 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
       setHandQueue(function(q) { return q.filter(function(x) { return x.guestId !== data.guestId; }); });
     }
 
-    function onStageRemove(data) {
+    var onStageRemove = function(data) {
       if (!data || !data.guestId) return;
       setStageList(function(s) { return s.filter(function(x) { return x !== data.guestId; }); });
     }
 
-    function onGuestMuted(data) {
+    var onGuestMuted = function(data) {
       if (!data || !data.guestId) return;
       // Reflect mute badge in local state (guests state is owned by App)
     }
 
-    function onGuestUnmuted(data) {
+    var onGuestUnmuted = function(data) {
       if (!data || !data.guestId) return;
     }
 
-    function onGuestKicked(data) {
+    var onGuestKicked = function(data) {
       if (!data || !data.guestId) return;
       setStageList(function(s) { return s.filter(function(x) { return x !== data.guestId; }); });
       setHandQueue(function(q) { return q.filter(function(x) { return x.guestId !== data.guestId; }); });
     }
 
-    function onStageLock(data) {
+    var onStageLock = function(data) {
       if (data && typeof data.locked === 'boolean') setLockStage(data.locked);
     }
 
-    function onMuteAll() {
+    var onMuteAll = function() {
       // reflect in local state if needed (mute badge on self handled by parent)
     }
 
@@ -132,13 +132,13 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     };
   }, [socket]);
 
-  function muteAll() {
+  var muteAll = function() {
     if (!socket || !isHost) return;
     socket.emit('mute-all', { roomId: roomId });
     if (addToast) addToast('All participants muted', 'info');
   }
 
-  function toggleLockStage() {
+  var toggleLockStage = function() {
     if (!socket || !isHost) return;
     var next = !lockStage;
     setLockStage(next);
@@ -146,43 +146,43 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     if (addToast) addToast(next ? '🔒 Stage locked — no new invites' : '🔓 Stage unlocked', 'info');
   }
 
-  function muteGuest(gid) {
+  var muteGuest = function(gid) {
     if (!socket || !isHost) return;
     socket.emit('mute-guest', { roomId: roomId, guestId: gid });
     if (addToast) addToast('Guest muted', 'info');
   }
 
-  function unmuteGuest(gid) {
+  var unmuteGuest = function(gid) {
     if (!socket || !isHost) return;
     socket.emit('unmute-guest', { roomId: roomId, guestId: gid });
     if (addToast) addToast('Guest unmuted', 'info');
   }
 
-  function kickGuest(gid, name) {
+  var kickGuest = function(gid, name) {
     if (!socket || !isHost) return;
     socket.emit('kick-guest', { roomId: roomId, guestId: gid });
     if (addToast) addToast('Kicked: ' + (name || gid), 'info');
   }
 
-  function promoteGuest(gid, newRole) {
+  var promoteGuest = function(gid, newRole) {
     if (!socket || !isHost) return;
     socket.emit('promote-guest', { roomId: roomId, guestId: gid, role: newRole });
     if (addToast) addToast('Role → ' + newRole, 'info');
   }
 
-  function inviteToStage(gid) {
+  var inviteToStage = function(gid) {
     if (!socket) return;
     if (stageList.length >= 6) { if (addToast) addToast('Stage full — max 6 participants', 'error'); return; }
     socket.emit('stage-invite', { roomId: roomId, guestId: gid });
     setHandQueue(function(q) { return q.filter(function(x) { return x.guestId !== gid; }); });
   }
 
-  function removeFromStage(gid) {
+  var removeFromStage = function(gid) {
     if (!socket) return;
     socket.emit('stage-remove', { roomId: roomId, guestId: gid });
   }
 
-  function addBan() {
+  var addBan = function() {
     var u = newBan.trim();
     if (!u) return;
     for (var i = 0; i < banned.length; i++) { if (banned[i] === u) return; }
@@ -192,13 +192,13 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     if (addToast) addToast('Banned: ' + u, 'info');
   }
 
-  function removeBan(u) {
+  var removeBan = function(u) {
     setBanned(function(p) { return p.filter(function(x) { return x !== u; }); });
     if (socket) socket.emit('unban-user', { roomId: roomId, username: u });
     if (addToast) addToast('Unbanned: ' + u, 'info');
   }
 
-  function toggleModRule(key) {
+  var toggleModRule = function(key) {
     setModRules(function(prev) {
       var next = Object.assign({}, prev);
       next[key] = !prev[key];
@@ -208,7 +208,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     });
   }
 
-  function addSegment() {
+  var addSegment = function() {
     if (!newSegTitle.trim()) return;
     var seg = { id: 'sg' + Date.now(), time: newSegTime.trim() || '?', title: newSegTitle.trim(), done: false };
     setSegments(function(p) { return p.concat([seg]); });
@@ -217,38 +217,38 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     if (addToast) addToast('Segment added: ' + seg.title, 'success');
   }
 
-  function toggleSegDone(id) {
+  var toggleSegDone = function(id) {
     setSegments(function(p) {
       return p.map(function(s) { return s.id === id ? Object.assign({}, s, { done: !s.done }) : s; });
     });
   }
 
-  function removeSegment(id) {
+  var removeSegment = function(id) {
     setSegments(function(p) { return p.filter(function(s) { return s.id !== id; }); });
   }
 
-  function toggleAudioOnly() {
+  var toggleAudioOnly = function() {
     var next = !audioOnly;
     setAudioOnly(next);
     if (socket) socket.emit('room-audio-only', { roomId: roomId, enabled: next });
     if (addToast) addToast(next ? '🎙️ Audio-only mode ON — video feeds hidden' : '📹 Video restored', next ? 'info' : 'success');
   }
 
-  function togglePrivateRoom() {
+  var togglePrivateRoom = function() {
     var next = !privateRoom;
     setPrivateRoom(next);
     if (socket) socket.emit('room-private', { roomId: roomId, enabled: next });
     if (addToast) addToast(next ? '🔒 Room locked — invite only' : '🔓 Room unlocked — public access', next ? 'info' : 'success');
   }
 
-  function togglePaywall() {
+  var togglePaywall = function() {
     var next = !paywallOn;
     setPaywallOn(next);
     if (socket) socket.emit('room-paywall', { roomId: roomId, enabled: next, amountCents: paywallCents });
     if (addToast) addToast(next ? '💰 Paywall ON — $' + (Math.floor(paywallCents) / 100).toFixed(2) + ' entry' : '🚪 Paywall removed', next ? 'info' : 'success');
   }
 
-  function savePaywallAmount() {
+  var savePaywallAmount = function() {
     var parsed = parseFloat(paywallInput);
     if (isNaN(parsed) || parsed < 0) { if (addToast) addToast('Invalid amount', 'error'); return; }
     var cents = Math.floor(parsed * 100);
@@ -260,12 +260,12 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
 
   var CATS = ['Domino', 'Tournament', 'Podcast', 'Watch Party', 'Music', 'Talk'];
 
-  function saveStreamInfo() {
+  var saveStreamInfo = function() {
     if (socket) socket.emit('stream-info', { roomId: roomId, title: streamTitle.trim(), category: streamCategory, desc: streamDesc.trim() });
     if (addToast) addToast('Stream info saved', 'success');
   }
 
-  function genCohostLink() {
+  var genCohostLink = function() {
     var token = Math.floor(Math.random() * 999999999).toString(36) + Date.now().toString(36);
     setCohostToken(token);
     var link = 'https://seewhylive.online/join/' + (roomId || 'live') + '?role=cohost&token=' + token;
@@ -971,7 +971,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               {paywallOn && (
                 <div style={{ marginTop: 8, display: 'flex', justifyContent: 'space-between', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>
                   <span>You receive: <span style={{ color: '#C9A84C' }}>${(Math.floor(paywallCents * CREATOR) / 100).toFixed(2)}</span></span>
-                  <span>Platform: <span style={{ color: '#8A7A62' }}>${(Math.floor(paywallCents * PLATFORM) / 100).toFixed(2)}</span></span>
+                  <span>Platform: <span style={{ color: '#8A7A62' }}>${((paywallCents - Math.floor(paywallCents * CREATOR)) / 100).toFixed(2)}</span></span>
                 </div>
               )}
             </div>

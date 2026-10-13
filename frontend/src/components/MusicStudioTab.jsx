@@ -393,7 +393,7 @@ export default function MusicStudioTab(props) {
 
   useEffect(function() {
     if (!isLive) { setWaveform([]); return; }
-    function gen() { var b = []; for (var i = 0; i < 20; i++) b.push(10 + Math.floor(Math.random() * 91)); return b; }
+    var gen = function() { var b = []; for (var i = 0; i < 20; i++) b.push(10 + Math.floor(Math.random() * 91)); return b; }
     setWaveform(gen());
     var id = setInterval(function() { setWaveform(gen()); }, 130);
     return function() { clearInterval(id); };
@@ -429,7 +429,7 @@ export default function MusicStudioTab(props) {
   }, [beatPlaying, bpm]);
 
   // ── AI helper ────────────────────────────────────────────────────────────
-  function callAI(systemPrompt, userMsg, onSuccess, onError) {
+  var callAI = function(systemPrompt, userMsg, onSuccess, onError) {
     fetch('/api/ai/chat', {
       method: 'POST',
       headers: _authHeaders({ 'Content-Type': 'application/json' }),
@@ -445,13 +445,13 @@ export default function MusicStudioTab(props) {
   }
 
   // ── Generate ─────────────────────────────────────────────────────────────
-  function generateSong() {
+  var generateSong = function() {
     var p = customMode ? lyricsInput : prompt;
     if (!p.trim() && selStyles.length === 0) { if (addToast) addToast('Add a prompt or select a style first', 'error'); return; }
     setGenerating(true); setGenPct(0); setGenStep(0);
     var steps = GEN_STEPS.length;
     var i = 0;
-    function tick() {
+    var tick = function() {
       i++;
       setGenPct(Math.floor((i / steps) * 100));
       setGenStep(i < steps ? i : steps - 1);
@@ -482,7 +482,7 @@ export default function MusicStudioTab(props) {
   }
 
   // ── Lyrics (real AI) ─────────────────────────────────────────────────────
-  function generateLyrics() {
+  var generateLyrics = function() {
     if (!lyricPrompt.trim()) { if (addToast) addToast('Describe the song topic first', 'error'); return; }
     setGenLyricsing(true);
     var system = 'You are a professional songwriter and lyricist specializing in authentic, emotionally resonant music. Write compelling song lyrics that feel real and personal, not generic.';
@@ -522,7 +522,7 @@ export default function MusicStudioTab(props) {
   }
 
   // ── Vocal → Generate ────────────────────────────────────────────────────
-  function applyVocalToGenerate() {
+  var applyVocalToGenerate = function() {
     var vs = VOCAL_STYLES.find(function(v) { return v.id === vocalStyle; });
     var styleDesc = vs ? vs.label : '';
     var fxStr = vocalFX.length > 0 ? ', ' + vocalFX.join(', ') : '';
@@ -539,7 +539,7 @@ export default function MusicStudioTab(props) {
   }
 
   // ── Creator AI ──────────────────────────────────────────────────────────
-  function generateCreatorContent() {
+  var generateCreatorContent = function() {
     if (!creatorInput.trim()) { if (addToast) addToast('Fill in the details first', 'error'); return; }
     var tool = CREATOR_TOOLS.find(function(t) { return t.id === creatorTool; });
     if (!tool) return;
@@ -560,7 +560,7 @@ export default function MusicStudioTab(props) {
     );
   }
 
-  function copyCreatorOutput() {
+  var copyCreatorOutput = function() {
     if (!creatorOutput) return;
     try {
       navigator.clipboard.writeText(creatorOutput).then(function() {
@@ -574,7 +574,7 @@ export default function MusicStudioTab(props) {
   }
 
   // ── Quick Drop ──────────────────────────────────────────────────────────
-  function openQuickDrop(track) {
+  var openQuickDrop = function(track) {
     if (quickDropId === track.id) { setQuickDropId(null); setQuickDropContent(null); return; }
     setQuickDropId(track.id);
     setQuickDropContent(null);
@@ -607,7 +607,7 @@ export default function MusicStudioTab(props) {
     });
   }
 
-  function copyPlatformText(text, platform) {
+  var copyPlatformText = function(text, platform) {
     try {
       navigator.clipboard.writeText(text).then(function() {
         setCopiedPlatform(platform);
@@ -620,7 +620,7 @@ export default function MusicStudioTab(props) {
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
-  function toggleTag(arr, setArr, val) {
+  var toggleTag = function(arr, setArr, val) {
     setArr(function(prev) {
       var idx = prev.indexOf(val);
       if (idx >= 0) return prev.filter(function(x) { return x !== val; });
@@ -628,13 +628,13 @@ export default function MusicStudioTab(props) {
     });
   }
 
-  function shareTrack(track) {
+  var shareTrack = function(track) {
     if (!socket || !roomId) { if (addToast) addToast('Join a room to share', 'error'); return; }
     socket.emit('share-music', { roomId: roomId, title: track.title, style: track.style, emoji: track.emoji });
     if (addToast) addToast('🎵 "' + track.title + '" shared to stream!', 'success');
   }
 
-  function tapTempo() {
+  var tapTempo = function() {
     var now = Date.now();
     var taps = tapRef.current;
     if (taps.length > 0 && now - taps[taps.length - 1] > 3000) taps = [];
@@ -654,14 +654,14 @@ export default function MusicStudioTab(props) {
     }
   }
 
-  function beatToGenerate() {
+  var beatToGenerate = function() {
     var style = beatPreset || 'Custom';
     setPrompt(style + ' beat at ' + bpm + ' BPM');
     setTab('generate');
     if (addToast) addToast('Beat settings sent to Generate!', 'success');
   }
 
-  function randomizeBeat() {
+  var randomizeBeat = function() {
     var probMap = { kick: 0.25, snare: 0.2, clap: 0.15, hihat: 0.5, bass: 0.2, chord: 0.15, lead: 0.12, fx: 0.1 };
     var newGrid = {};
     PADS.forEach(function(p) {
@@ -672,14 +672,14 @@ export default function MusicStudioTab(props) {
     if (addToast) addToast('Pattern randomized!', 'info');
   }
 
-  function clearBeat() {
+  var clearBeat = function() {
     var newGrid = {};
     PADS.forEach(function(p) { newGrid[p.id] = Array(GRID_STEPS).fill(false); });
     setGrid(newGrid);
     if (addToast) addToast('Pattern cleared', 'info');
   }
 
-  function savePreset() {
+  var savePreset = function() {
     var name = presetName.trim() || ('Pattern ' + (savedPresets.length + 1));
     var preset = { id: 'p' + Date.now(), name: name, grid: grid, bpm: bpm };
     setSavedPresets(function(prev) {
@@ -692,14 +692,14 @@ export default function MusicStudioTab(props) {
     if (addToast) addToast('Preset saved: ' + name, 'success');
   }
 
-  function loadPreset(preset) {
+  var loadPreset = function(preset) {
     setGrid(preset.grid);
     setBpm(preset.bpm);
     setBeatPreset(preset.name);
     if (addToast) addToast('Loaded: ' + preset.name, 'success');
   }
 
-  function deletePreset(id) {
+  var deletePreset = function(id) {
     setSavedPresets(function(prev) {
       var next = prev.filter(function(p) { return p.id !== id; });
       try { localStorage.setItem('sw_beat_presets', JSON.stringify(next)); } catch(e) {}
@@ -707,7 +707,7 @@ export default function MusicStudioTab(props) {
     });
   }
 
-  function aiGenerateBeat() {
+  var aiGenerateBeat = function() {
     setAiBeating(true);
     var style = beatPreset || selStyles[0] || 'Hip-Hop';
     var system = 'You are a professional music producer AI. When asked for a beat pattern, respond ONLY with valid compact JSON, no markdown, no explanation.';
@@ -745,7 +745,7 @@ export default function MusicStudioTab(props) {
     });
   }
 
-  function generateChords() {
+  var generateChords = function() {
     setChordLoading(true);
     setChordResult('');
     var system = 'You are a music theory expert. Respond with concise chord progressions only, no lengthy explanation.';

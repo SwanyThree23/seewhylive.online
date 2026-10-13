@@ -59,12 +59,12 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
   // Real-time unban + remote mod-rules sync
   useEffect(function() {
     if (!socket) return;
-    function onUserUnbanned(data) {
+    var onUserUnbanned = function(data) {
       if (!data || !data.username) return;
       setBannedUsers(function(prev) { return prev.filter(function(u) { return u !== data.username; }); });
       if (addToast) addToast('✅ ' + data.username + ' unbanned', 'success');
     }
-    function onModRulesUpdated(data) {
+    var onModRulesUpdated = function(data) {
       if (!data || !Array.isArray(data.rules)) return;
       setRules(function(prev) {
         return prev.map(function(r) {
@@ -190,7 +190,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     });
   }, [chat, guardOn, banned, socket, roomId, addToast]);
 
-  function toggleRule(id) {
+  var toggleRule = function(id) {
     setRules(function(prev) {
       return prev.map(function(r) {
         return r.id === id ? Object.assign({}, r, { enabled: !r.enabled }) : r;
@@ -199,12 +199,12 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     addToast('Rule updated', 'success');
   }
 
-  function dismissFlag(id) {
+  var dismissFlag = function(id) {
     setFlags(function(prev) { return prev.filter(function(f) { return f.id !== id; }); });
     addToast('Flag dismissed', 'success');
   }
 
-  function banUserFromFlag(f) {
+  var banUserFromFlag = function(f) {
     setBannedUsers(function(prev) {
       return prev.concat([{ username: f.user, userId: f.userId || f.user, reason: f.reason || f.rule || 'Banned by creator', ts: f.ts }]);
     });
@@ -229,12 +229,12 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     });
   }
 
-  function banUser(user) {
+  var banUser = function(user) {
     addToast(user + ' banned', 'error');
     setFlags(function(prev) { return prev.filter(function(f) { return f.user !== user; }); });
   }
 
-  function shadowBanUser(userId, username) {
+  var shadowBanUser = function(userId, username) {
     setShadowBanned(function(prev) {
       var next = Object.assign({}, prev);
       next[userId] = true;
@@ -252,7 +252,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     });
   }
 
-  function addWord() {
+  var addWord = function() {
     var w = newWord.trim().toLowerCase();
     if (!w || banned.indexOf(w) !== -1) return;
     setBanned(function(prev) { return prev.concat([w]); });
@@ -286,7 +286,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     }
   }
 
-  function removeWord(w) {
+  var removeWord = function(w) {
     var wordId = wordMeta[w];
     setBanned(function(prev) { return prev.filter(function(x) { return x !== w; }); });
     addToast('"' + w + '" removed', 'success');
@@ -295,7 +295,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     }
   }
 
-  function toggleSubscriberOnly() {
+  var toggleSubscriberOnly = function() {
     var next = !subscriberOnly;
     setSubscriberOnly(next);
     fetch('/api/moderation/subscriber-only', {
