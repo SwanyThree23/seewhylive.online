@@ -2258,7 +2258,7 @@ io.on('connection', function(socket) {
         }
       }
       if (_banUserId) {
-        io.to(roomId).emit('user-banned', { userId: _banUserId, ts: _banTs });
+        io.to(roomId).emit('user-banned', { username: _banTarget, ts: _banTs });
       }
       io.to(roomId).emit('chat-message', {
         id: uuidv4(), username: '🛡 SeeWhy',
@@ -2495,7 +2495,11 @@ io.on('connection', function(socket) {
         io.to(socket.id).emit('gift-error', { message: 'Payment setup failed — gift not recorded' });
       });
     } else {
-      // Free gift (valueCents === 0): no payment required, commit immediately
+      // Free gift (valueCents === 0): validate against catalog before committing
+      var _freeGiftRow = db.prepare(
+        'SELECT id FROM gift_types WHERE name = ? AND icon = ? AND amount_cents = 0 AND is_active = 1'
+      ).get(name, emoji);
+      if (!_freeGiftRow) return;
       _commitGift();
     }
   });
@@ -3106,7 +3110,7 @@ io.on('connection', function(socket) {
     var lastTs = viewerReactThrottle.get(socket.data.userId) || 0;
     if (now - lastTs < 1000) return;
     viewerReactThrottle.set(socket.data.userId, now);
-    io.to(roomId).emit('watch-react', { emoji: emoji, userId: socket.data.userId || socket.id, ts: now });
+    io.to(roomId).emit('watch-react', { emoji: emoji, ts: now });
   });
 
   // ── VS Poll ───────────────────────────────────────────────────────────
@@ -3587,7 +3591,7 @@ io.on('connection', function(socket) {
     var lastTs = viewerReactThrottle.get(socket.data.userId) || 0;
     if (now - lastTs < 2000) return;
     viewerReactThrottle.set(socket.data.userId, now);
-    io.to(roomId).emit('react-burst', { emoji: emoji, userId: socket.data.userId || socket.id, ts: now });
+    io.to(roomId).emit('react-burst', { emoji: emoji, ts: now });
   });
 
   // ── collab events ─────────────────────────────────────────────────────
@@ -4596,7 +4600,7 @@ io.on('connection', function(socket) {
     var _whNow = Date.now();
     if (_whNow - (watchHeartbeatThrottle.get(uid) || 0) < 25000) return;
     watchHeartbeatThrottle.set(uid, _whNow);
-    loyaltyService.awardPoints({ userId: uid, tenantId: socket.data.tenantId, points: 1, source: 'watch_time' }).catch(function(e) {
+    loyaltyService.awardPoints({ userId: uid, tenantId: socket.data.tenantId, points: 1, source: 'watch_time', sourceId: uid + ':' + Math.floor(_whNow / 25000) }).catch(function(e) {
       logger.warn('[watch-heartbeat] awardPoints: ' + e.message);
     });
   });
