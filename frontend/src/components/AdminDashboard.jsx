@@ -44,7 +44,7 @@ export default function AdminDashboard({ addToast }) {
   var [tab, setTab]           = useState('overview');
   var timerRef = useRef(null);
 
-  function load() {
+  var load = function() {
     setLoading(true);
     fetch('/api/admin/financial-summary', { headers: _authHeaders() })
       .then(function(r) {

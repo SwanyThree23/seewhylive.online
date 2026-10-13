@@ -131,7 +131,7 @@ export default function AnalyticsTab({ socket, roomId, role, isLive, addToast })
   // Socket listener for analytics-update
   useEffect(function() {
     if (!socket) return;
-    function onUpdate(data) {
+    var onUpdate = function(data) {
       if (!data) return;
       if (typeof data.viewers === 'number') setViewers(data.viewers);
       if (typeof data.peak    === 'number') setPeak(data.peak);
@@ -147,7 +147,7 @@ export default function AnalyticsTab({ socket, roomId, role, isLive, addToast })
   // Ping every 10s
   useEffect(function() {
     if (!socket || !roomId) return;
-    function ping() {
+    var ping = function() {
       socket.emit('analytics-ping', { roomId: roomId });
     }
     ping(); // immediate first ping

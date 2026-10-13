@@ -82,7 +82,7 @@ export default function AudioStageTab(props) {
   useEffect(function() {
     if (!socket) return;
 
-    function onStageState(data) {
+    var onStageState = function(data) {
       if (!data) return;
       setSpeakers(data.speakers || []);
       setListeners(data.listeners || []);
@@ -93,7 +93,7 @@ export default function AudioStageTab(props) {
       setActiveSpeaker(speaking ? (speaking.username || '') : '');
     }
 
-    function onStageUpdate(data) {
+    var onStageUpdate = function(data) {
       if (!data) return;
       if (data.speakers) setSpeakers(data.speakers);
       if (data.listeners) setListeners(data.listeners);
@@ -103,21 +103,21 @@ export default function AudioStageTab(props) {
       setActiveSpeaker(speaking ? (speaking.username || '') : '');
     }
 
-    function onLoveUpdate(data) {
+    var onLoveUpdate = function(data) {
       if (!data || !data.roomId || String(data.roomId) !== String(roomId)) return;
       setLoveCount(data.total || 0);
     }
 
-    function onStagePin(data) {
+    var onStagePin = function(data) {
       if (!data || !data.ytId) return;
       setPinnedYtId(data.ytId);
     }
 
-    function onStageLock(data) {
+    var onStageLock = function(data) {
       if (data && typeof data.locked === 'boolean') setStageLocked(data.locked);
     }
 
-    function onStageRemove(data) {
+    var onStageRemove = function(data) {
       if (!data || !data.guestId || data.guestId !== userId) return;
       if (addToast) addToast('You have been removed from the stage', 'error');
       stopMic();
@@ -125,7 +125,7 @@ export default function AudioStageTab(props) {
       setMyHandRaised(false);
     }
 
-    function onStageInvite(data) {
+    var onStageInvite = function(data) {
       if (!data || data.guestId !== userId) return;
       if (addToast) addToast('🎙 You\'ve been invited to speak on stage!', 'success');
     }
@@ -162,7 +162,7 @@ export default function AudioStageTab(props) {
   }, [socket]);
 
   // ── Mic / WebAudio ─────────────────────────────────────────
-  function stopMic() {
+  var stopMic = function() {
     if (micTimerRef.current)   { clearInterval(micTimerRef.current);  micTimerRef.current = null; }
     if (speakTimerRef.current) { clearInterval(speakTimerRef.current); speakTimerRef.current = null; }
     if (analyserRef.current)   { try { analyserRef.current.disconnect(); } catch(e) {} analyserRef.current = null; }
@@ -174,7 +174,7 @@ export default function AudioStageTab(props) {
     if (hiddenAudioRef.current) { hiddenAudioRef.current.srcObject = null; }
   }
 
-  function startMic() {
+  var startMic = function() {
     navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(stream) {
       micStreamRef.current = stream;
       if (hiddenAudioRef.current) {
@@ -226,7 +226,7 @@ export default function AudioStageTab(props) {
     });
   }
 
-  function toggleMic() {
+  var toggleMic = function() {
     if (myMicOn) {
       stopMic();
       setMyMicOn(false);
@@ -237,33 +237,33 @@ export default function AudioStageTab(props) {
     }
   }
 
-  function toggleHand() {
+  var toggleHand = function() {
     var next = !myHandRaised;
     setMyHandRaised(next);
     if (socket) socket.emit('audio-stage-hand-raise', { roomId: roomId, userId: userId, raised: next });
   }
 
-  function sendLove() {
+  var sendLove = function() {
     if (socket) {
       socket.emit('love-send', { roomId: roomId, userId: userId, username: username, amount: 1 });
     }
   }
 
-  function promoteUser(targetUserId) {
+  var promoteUser = function(targetUserId) {
     if (socket) socket.emit('audio-stage-promote', { roomId: roomId, targetUserId: targetUserId });
   }
 
-  function demoteUser(targetUserId) {
+  var demoteUser = function(targetUserId) {
     if (socket) socket.emit('audio-stage-demote', { roomId: roomId, targetUserId: targetUserId });
   }
 
-  function extractYtId(url) {
+  var extractYtId = function(url) {
     if (!url) return '';
     var m = url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);
     return m ? m[1] : '';
   }
 
-  function pinYoutube() {
+  var pinYoutube = function() {
     var id = extractYtId(pinInput.trim());
     if (!id) {
       if (addToast) addToast('Enter a valid YouTube URL', 'error');
@@ -273,14 +273,14 @@ export default function AudioStageTab(props) {
     if (socket) socket.emit('watch-stage-pin', { roomId: roomId, ytId: id });
   }
 
-  function unpinYoutube() {
+  var unpinYoutube = function() {
     setPinnedYtId('');
     if (socket) socket.emit('watch-stage-pin', { roomId: roomId, ytId: '' });
     setPinInput('');
   }
 
   // ── Render helpers ─────────────────────────────────────────
-  function renderSpeakerTile(spk, idx) {
+  var renderSpeakerTile = function(spk, idx) {
     var isSpeaking = spk.speaking && !spk.muted;
     var initials = getInitials(spk.username);
     var color = avatarColor(spk.username);
@@ -347,7 +347,7 @@ export default function AudioStageTab(props) {
     );
   }
 
-  function renderEmptySlot(idx) {
+  var renderEmptySlot = function(idx) {
     return (
       <div key={'empty-' + idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
         <div style={{ width: 56, height: 56, clipPath: OCT_CLIP, background: DIM, border: '1px solid ' + BORDER, opacity: 0.4 }} />
@@ -356,7 +356,7 @@ export default function AudioStageTab(props) {
     );
   }
 
-  function renderListenerCard(lst, idx) {
+  var renderListenerCard = function(lst, idx) {
     var initials = getInitials(lst.username);
     var color    = avatarColor(lst.username);
     var isMe     = String(lst.userId) === String(userId);
