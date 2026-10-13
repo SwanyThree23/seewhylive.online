@@ -14,7 +14,7 @@ var StateVsStateBanner = function (props) {
     minHeight: '44px',
     padding: '10px 16px',
     backgroundColor: '#800020',
-    color: '#F5F5DC',
+    color: '#F0E8D4',
     fontFamily: '"Bebas Neue", sans-serif',
     fontSize: '20px',
     letterSpacing: '1px',
@@ -22,7 +22,7 @@ var StateVsStateBanner = function (props) {
   };
 
   var vsStyle = {
-    color: '#D4AF37',
+    color: '#C9A84C',
     fontSize: '16px',
     padding: '0 12px',
   };

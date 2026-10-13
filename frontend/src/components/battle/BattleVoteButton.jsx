@@ -30,7 +30,7 @@ var BattleVoteButton = function (props) {
     borderRadius: '24px',
     border: 'none',
     backgroundColor: side === 'challenger' ? '#800020' : '#CC7755',
-    color: '#F5F5DC',
+    color: '#F0E8D4',
     fontFamily: '"Barlow Condensed", sans-serif',
     fontSize: '16px',
     fontWeight: 'bold',

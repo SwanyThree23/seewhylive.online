@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import panelService from '../../services/panelService';
 
-var GOLD = '#D4AF37';
-var CREAM = '#F5F5DC';
+var GOLD = '#C9A84C';
+var CREAM = '#F0E8D4';
 
 /**
  * Host-only control. Toggling this both updates the room's persisted mode
@@ -13,7 +13,7 @@ var CREAM = '#F5F5DC';
 export default function AudioOnlyToggle({ socket, roomId, isAudioOnly, videoProducer }) {
   var [pending, setPending] = useState(false);
 
-  async function handleToggle() {
+  var handleToggle = async function() {
     setPending(true);
     var next = !isAudioOnly;
 

@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 var GOLD     = '#C9A84C';
-var LIVE_RED = '#dc2626';
+var LIVE_RED = '#FF1A3C';
 var TEAL     = '#5CB8A0';
 
 export default function GlobalMicButtonV49(props) {

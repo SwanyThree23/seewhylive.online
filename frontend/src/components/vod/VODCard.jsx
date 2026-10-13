@@ -20,13 +20,13 @@ export default function VODCard(props) {
   var statusStyles = {
     published: { color: '#6DBF7E', borderColor: '#4A9B5E', background: 'rgba(109,191,126,0.12)' },
     draft:     { color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' },
-    unlisted:  { color: '#D4AF37', borderColor: '#800020', background: 'rgba(113,63,18,0.2)' },
+    unlisted:  { color: '#C9A84C', borderColor: '#800020', background: 'rgba(113,63,18,0.2)' },
   };
   var statusStyle = statusStyles[vod.status] || statusStyles.draft;
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} whileHover={{ y: -2 }}>
-      <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 12, overflow: 'hidden', color: '#fff' }}>
+      <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.1)', borderRadius: 12, overflow: 'hidden', color: '#fff' }}>
         {/* Thumbnail */}
         <div style={{ position: 'relative', height: 144, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
           {vod.thumbnail_url
@@ -45,7 +45,7 @@ export default function VODCard(props) {
             <span style={{
               position: 'absolute', top: 8, left: 8, fontSize: 10, padding: '2px 8px',
               borderRadius: 99, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4,
-              background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)',
+              background: 'rgba(201,168,76,0.2)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.3)',
             }}>
               <Scissors style={{ width: 10, height: 10 }} /> Clipped
             </span>
@@ -103,7 +103,7 @@ export default function VODCard(props) {
                 style={{
                   marginLeft: 'auto', height: 28, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4,
                   fontSize: 10, fontWeight: 700, borderRadius: 6, cursor: 'pointer',
-                  background: '#D4AF37', color: '#000', border: 'none',
+                  background: '#C9A84C', color: '#000', border: 'none',
                 }}
               >
                 <Globe style={{ width: 12, height: 12 }} /> Publish

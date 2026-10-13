@@ -22,24 +22,24 @@ var BattleScoreBar = function (props) {
 
   var challengerStyle = {
     width: challengerPct + '%',
-    backgroundColor: challengerLeading ? '#D4AF37' : '#800020',
+    backgroundColor: challengerLeading ? '#C9A84C' : '#800020',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingLeft: '12px',
-    color: challengerLeading ? '#0C0806' : '#F5F5DC',
+    color: challengerLeading ? '#0C0806' : '#F0E8D4',
     fontWeight: 'bold',
     transition: 'width 0.4s ease',
   };
 
   var opponentStyle = {
     width: opponentPct + '%',
-    backgroundColor: opponentLeading ? '#D4AF37' : '#CC7755',
+    backgroundColor: opponentLeading ? '#C9A84C' : '#CC7755',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingRight: '12px',
-    color: opponentLeading ? '#0C0806' : '#F5F5DC',
+    color: opponentLeading ? '#0C0806' : '#F0E8D4',
     fontWeight: 'bold',
     transition: 'width 0.4s ease',
   };

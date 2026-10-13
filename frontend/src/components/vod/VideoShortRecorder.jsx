@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Video, Clock, Lock } from 'lucide-react';
 
-var G = '#d4af37';
+var G = '#C9A84C';
 
 export default function VideoShortRecorder(props) {
   var roomId    = props.roomId;

@@ -44,7 +44,7 @@ export default function ChapterEditor(props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
-        <BookOpen style={{ width: 16, height: 16, color: '#D4AF37' }} />
+        <BookOpen style={{ width: 16, height: 16, color: '#C9A84C' }} />
         <span>Chapter Markers</span>
         <span style={{ marginLeft: 'auto', fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{chapters.length} chapters</span>
       </div>
@@ -56,7 +56,7 @@ export default function ChapterEditor(props) {
         {chapters.map(function(ch, i) {
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '8px 12px' }}>
-              <span style={{ color: '#D4AF37', fontFamily: 'monospace', fontSize: 12, width: 40, flexShrink: 0 }}>{fmt(ch.time)}</span>
+              <span style={{ color: '#C9A84C', fontFamily: 'monospace', fontSize: 12, width: 40, flexShrink: 0 }}>{fmt(ch.time)}</span>
               <span style={{ fontSize: 14, color: '#fff', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.title}</span>
               <button
                 onClick={function() { remove(i); }}
@@ -107,7 +107,7 @@ export default function ChapterEditor(props) {
           style={{
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
             fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
-            background: '#D4AF37', color: '#000', border: 'none',
+            background: '#C9A84C', color: '#000', border: 'none',
           }}
         >
           <Save style={{ width: 14, height: 14 }} /> Save Chapters
