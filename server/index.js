@@ -579,6 +579,11 @@ var captionColorMap  = new Map();  // roomId → { color }
 var milestoneMap     = new Map();  // roomId → { text, icon, ts }
 var stampThrottle    = new Map();  // userId → lastStampAt
 var superFollowThrottle = new Map(); // userId → lastSuperAt
+// Batch 59: Timer Overlay / Callout Card / Cheer-O-Meter / Name Banner
+var timerOverlayMap  = new Map();  // roomId → { label, mode, endsAt, startTs, active }
+var calloutCardMap   = new Map();  // roomId → { headline, body, cta, color }
+var cheerMap         = new Map();  // roomId → { score, decayTimerId }
+var nameBannerMap    = new Map();  // roomId → { name, tagline }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -859,6 +864,13 @@ function getJoinStateForRoom(roomId) {
   // Batch 58
   state.captionColor = captionColorMap.get(roomId) || null;
   state.milestone    = milestoneMap.get(roomId) || null;
+  // Batch 59
+  var _to59 = timerOverlayMap.get(roomId);
+  state.timerOverlay = (_to59 && _to59.active) ? _to59 : null;
+  state.calloutCard  = calloutCardMap.get(roomId) || null;
+  state.nameBanner   = nameBannerMap.get(roomId) || null;
+  var _ch59 = cheerMap.get(roomId);
+  state.cheerScore   = _ch59 ? _ch59.score : 0;
   return state;
 }
 
@@ -6512,6 +6524,13 @@ io.on('connection', function(socket) {
     // Batch 58 cleanup
     captionColorMap.delete(roomId);
     milestoneMap.delete(roomId);
+    // Batch 59 cleanup
+    timerOverlayMap.delete(roomId);
+    calloutCardMap.delete(roomId);
+    var _chC59 = cheerMap.get(roomId);
+    if (_chC59 && _chC59.decayTimerId) clearTimeout(_chC59.decayTimerId);
+    cheerMap.delete(roomId);
+    nameBannerMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -7451,6 +7470,94 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('super-follow-burst', { username: username });
     addEnergy(roomId, userId, username, 10);
     if (ack) ack({ ok: true });
+  });
+
+  // ── timer-overlay (Batch 59) ────────────────────────────────────────────
+  socket.on('timer-overlay-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data) return;
+    var mode     = data.mode === 'countup' ? 'countup' : 'countdown';
+    var label    = data.label ? String(data.label).trim().slice(0, 30) : 'Timer';
+    var durSecs  = Math.max(10, Math.min(3600, parseInt(data.secs, 10) || 60));
+    var endsAt   = mode === 'countdown' ? Date.now() + durSecs * 1000 : null;
+    var entry    = { label: label, mode: mode, endsAt: endsAt, startTs: Date.now(), durSecs: durSecs, active: true };
+    timerOverlayMap.set(roomId, entry);
+    io.to(roomId).emit('timer-overlay-update', entry);
+  });
+
+  socket.on('timer-overlay-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    timerOverlayMap.delete(roomId);
+    io.to(roomId).emit('timer-overlay-update', null);
+  });
+
+  // ── callout-card (Batch 59) ─────────────────────────────────────────────
+  socket.on('callout-card-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.headline) return;
+    var headline = String(data.headline).trim().slice(0, 50);
+    var body     = data.body ? String(data.body).trim().slice(0, 100) : '';
+    var cta      = data.cta  ? String(data.cta).trim().slice(0, 24)  : '';
+    var SAFE_COLORS = ['#C9A84C', '#D4854A', '#FF1A3C', '#7B68EE', '#00CED1', '#90EE90'];
+    var color    = data.color && SAFE_COLORS.indexOf(data.color) !== -1 ? data.color : '#C9A84C';
+    var entry    = { headline: headline, body: body, cta: cta, color: color };
+    calloutCardMap.set(roomId, entry);
+    io.to(roomId).emit('callout-card-update', entry);
+  });
+
+  socket.on('callout-card-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    calloutCardMap.delete(roomId);
+    io.to(roomId).emit('callout-card-update', null);
+  });
+
+  // ── cheer-hold (Batch 59) ───────────────────────────────────────────────
+  socket.on('cheer-hold', function() {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId || !userId) return;
+    if (!cheerMap.has(roomId)) cheerMap.set(roomId, { score: 0, decayTimerId: null });
+    var ch = cheerMap.get(roomId);
+    ch.score = Math.min(100, ch.score + 3);
+    io.to(roomId).emit('cheer-update', { score: ch.score });
+    if (ch.decayTimerId) clearTimeout(ch.decayTimerId);
+    ch.decayTimerId = setTimeout(function() {
+      var entry = cheerMap.get(roomId);
+      if (!entry) return;
+      entry.score = Math.max(0, entry.score - 5);
+      entry.decayTimerId = null;
+      io.to(roomId).emit('cheer-update', { score: entry.score });
+    }, 2000);
+    addEnergy(roomId, userId, username, 1);
+  });
+
+  // ── name-banner (Batch 59) ──────────────────────────────────────────────
+  socket.on('name-banner-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.name) return;
+    var name    = String(data.name).trim().slice(0, 40);
+    var tagline = data.tagline ? String(data.tagline).trim().slice(0, 60) : '';
+    nameBannerMap.set(roomId, { name: name, tagline: tagline });
+    io.to(roomId).emit('name-banner-update', nameBannerMap.get(roomId));
+  });
+
+  socket.on('name-banner-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    nameBannerMap.delete(roomId);
+    io.to(roomId).emit('name-banner-update', null);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────

@@ -384,6 +384,38 @@ function OverlayCustomLT({ lowerThirds, guestId }) {
   );
 }
 
+// ─── Batch 59: Timer Overlay helper ───────────────────────────────────────
+function TimerOverlay59({ overlay }) {
+  var [display, setDisplay] = React.useState('');
+  React.useEffect(function() {
+    if (!overlay || !overlay.active) { setDisplay(''); return; }
+    function tick() {
+      var now = Date.now();
+      var secs;
+      if (overlay.mode === 'countdown') {
+        secs = Math.max(0, Math.floor((overlay.endsAt - now) / 1000));
+      } else {
+        secs = Math.floor((now - overlay.startTs) / 1000);
+      }
+      var m = Math.floor(secs / 60);
+      var s = secs % 60;
+      setDisplay((m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+    }
+    tick();
+    var id = setInterval(tick, 500);
+    return function() { clearInterval(id); };
+  }, [overlay]);
+  if (!overlay || !overlay.active) return null;
+  return (
+    <div style={{ position: 'fixed', top: 72, left: '50%', transform: 'translateX(-50%)', zIndex: 640, pointerEvents: 'none', animation: 'fadeSlideIn .3s ease' }}>
+      <div style={{ background: 'rgba(14,12,9,.85)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 10, padding: '6px 18px', textAlign: 'center' }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: 'rgba(201,168,76,.7)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 2 }}>{overlay.label}</div>
+        <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 28, color: '#C9A84C', letterSpacing: 3, lineHeight: 1 }}>{display}</div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ────────────────────────────────────────────────────────
 
 export default function LiveRoomPage({
@@ -956,6 +988,18 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 59: Timer Overlay / Callout Card / Cheer-O-Meter / Name Banner ───
+  var [timerOverlay,    setTimerOverlay]    = useState(null);
+  var [timerDraft59,    setTimerDraft59]    = useState({ label: 'Round 1', secs: '60', mode: 'countdown' });
+  var [showTimerSet59,  setShowTimerSet59]  = useState(false);
+  var [calloutCard,     setCalloutCard]     = useState(null);
+  var [calloutDraft,    setCalloutDraft]    = useState({ headline: '', body: '', cta: '', color: '#C9A84C' });
+  var [showCalloutSet,  setShowCalloutSet]  = useState(false);
+  var [cheerScore,      setCheerScore]      = useState(0);
+  var [nameBanner,      setNameBanner]      = useState(null);
+  var [nameBannerDraft, setNameBannerDraft] = useState({ name: '', tagline: '' });
+  var [showNameBannerSet, setShowNameBannerSet] = useState(false);
+
   // ─── Batch 58: Caption Color / Milestone / Stamp Burst / Super Follow ───────
   var [captionColor,      setCaptionColor]      = useState(null);
   var [showCaptionColor,  setShowCaptionColor]  = useState(false);
@@ -1152,6 +1196,10 @@ export default function LiveRoomPage({
       if (data.moodSpectrum) setMoodSpectrum(data.moodSpectrum);
       if (data.captionColor) setCaptionColor(data.captionColor);
       if (data.milestone) setMilestone(data.milestone);
+      if (data.timerOverlay && data.timerOverlay.active) setTimerOverlay(data.timerOverlay);
+      if (data.calloutCard) setCalloutCard(data.calloutCard);
+      if (data.nameBanner) setNameBanner(data.nameBanner);
+      if (typeof data.cheerScore === 'number') setCheerScore(data.cheerScore);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2477,6 +2525,23 @@ export default function LiveRoomPage({
       setTimeout(function() { setSuperFollowBurst(null); }, 3500);
     });
 
+    // ── Batch 59 listeners ─────────────────────────────────────────────────
+    socket.on('timer-overlay-update', function(d) {
+      setTimerOverlay(d || null);
+    });
+
+    socket.on('callout-card-update', function(d) {
+      setCalloutCard(d || null);
+    });
+
+    socket.on('cheer-update', function(d) {
+      if (d && typeof d.score === 'number') setCheerScore(d.score);
+    });
+
+    socket.on('name-banner-update', function(d) {
+      setNameBanner(d || null);
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2933,6 +2998,10 @@ export default function LiveRoomPage({
       socket.off('milestone-update');
       socket.off('stamp-burst');
       socket.off('super-follow-burst');
+      socket.off('timer-overlay-update');
+      socket.off('callout-card-update');
+      socket.off('cheer-update');
+      socket.off('name-banner-update');
     };
   }, [socket]);
 
@@ -4782,6 +4851,18 @@ export default function LiveRoomPage({
                 else { setShowCaptionColor(function(s) { return !s; }); }
               }},
               { emoji: '📣', label: 'Milestone', active: showMilestoneDraft, onTap: function() { setShowMilestoneDraft(function(s) { return !s; }); } },
+              { emoji: timerOverlay ? '⏹' : '⏱', label: timerOverlay ? 'Stop Timer' : 'Timer', active: !!timerOverlay || showTimerSet59, onTap: function() {
+                if (timerOverlay) { if (socket) socket.emit('timer-overlay-clear', { roomId: roomId }); }
+                else { setShowTimerSet59(function(s) { return !s; }); }
+              }},
+              { emoji: calloutCard ? '🚫' : '📋', label: calloutCard ? 'Clear Card' : 'Callout', active: !!calloutCard || showCalloutSet, onTap: function() {
+                if (calloutCard) { if (socket) socket.emit('callout-card-clear', { roomId: roomId }); }
+                else { setShowCalloutSet(function(s) { return !s; }); }
+              }},
+              { emoji: nameBanner ? '🚫' : '🪧', label: nameBanner ? 'Clear Name' : 'Name Banner', active: !!nameBanner || showNameBannerSet, onTap: function() {
+                if (nameBanner) { if (socket) socket.emit('name-banner-clear', { roomId: roomId }); }
+                else { setShowNameBannerSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -4890,6 +4971,9 @@ export default function LiveRoomPage({
                     if (addToast) addToast('Super Follow cooldown: ' + res.remainSecs + 's left', 'info');
                   }
                 });
+              }},
+              { emoji: '📣', label: 'Cheer ' + (cheerScore > 0 ? cheerScore + '%' : ''), active: cheerScore > 80, onTap: function() {
+                if (socket) socket.emit('cheer-hold', { roomId: roomId });
               }},
             ] : [])),
           ].map(function(tool) {
@@ -12801,6 +12885,150 @@ export default function LiveRoomPage({
               setShowMilestoneDraft(false);
             }} disabled={!milestoneDraft.text.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: milestoneDraft.text.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: milestoneDraft.text.trim() ? 1 : 0.5 }}>
               ANNOUNCE
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 59: Name Banner lower-third ══ */}
+      {nameBanner && (
+        <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', zIndex: 620, pointerEvents: 'none', animation: 'slideUp .3s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.88)', border: '2px solid ' + GOLD, borderRadius: 8, padding: '8px 20px', minWidth: 200, textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 22, color: GOLD, letterSpacing: 2, lineHeight: 1 }}>{nameBanner.name}</div>
+            {nameBanner.tagline ? <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, letterSpacing: .5, marginTop: 2 }}>{nameBanner.tagline}</div> : null}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 59: Callout Card overlay ══ */}
+      {calloutCard && (
+        <div style={{ position: 'fixed', top: '25%', left: '50%', transform: 'translateX(-50%)', zIndex: 630, width: 280, animation: 'fadeSlideIn .35s ease', pointerEvents: 'none' }}>
+          <div style={{ background: CARD, border: '2px solid ' + (calloutCard.color || GOLD), borderRadius: 16, padding: '16px 18px', textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 22, color: calloutCard.color || GOLD, letterSpacing: 2, lineHeight: 1.1, marginBottom: 6 }}>{calloutCard.headline}</div>
+            {calloutCard.body ? <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, marginBottom: 8, lineHeight: 1.35 }}>{calloutCard.body}</div> : null}
+            {calloutCard.cta ? <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: calloutCard.color || GOLD, letterSpacing: 1, border: '1px solid ' + (calloutCard.color || GOLD), borderRadius: 6, padding: '4px 10px', display: 'inline-block' }}>{calloutCard.cta}</div> : null}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 59: Cheer-O-Meter bar ══ */}
+      {cheerScore > 0 && (
+        <div style={{ position: 'fixed', top: 120, right: 12, zIndex: 610, width: 36, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontSize: 14 }}>📣</span>
+          <div style={{ width: 10, height: 80, background: 'rgba(201,168,76,.15)', borderRadius: 5, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+            <div style={{ width: '100%', height: cheerScore + '%', background: cheerScore > 80 ? '#FF1A3C' : GOLD, borderRadius: 5, transition: 'height .3s ease' }} />
+          </div>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{cheerScore}</span>
+        </div>
+      )}
+
+      {/* ══ Batch 59: Timer Overlay ══ */}
+      {timerOverlay && timerOverlay.active && (
+        <TimerOverlay59 overlay={timerOverlay} />
+      )}
+
+      {/* ══ Batch 59: Timer Set panel (host) ══ */}
+      {showTimerSet59 && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>⏱ TIMER OVERLAY</span>
+              <button onClick={function() { setShowTimerSet59(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={timerDraft59.label}
+              onChange={function(e) { setTimerDraft59(function(d) { return Object.assign({}, d, { label: e.target.value.slice(0, 30) }); }); }}
+              placeholder="Label (e.g. Round 1)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              {['countdown', 'countup'].map(function(m) {
+                return (
+                  <button key={m} onClick={function() { setTimerDraft59(function(d) { return Object.assign({}, d, { mode: m }); }); }}
+                    style={{ flex: 1, padding: '6px 0', borderRadius: 8, border: '1px solid ' + (timerDraft59.mode === m ? GOLD : BORDER), background: timerDraft59.mode === m ? 'rgba(201,168,76,.15)' : CARD2, color: timerDraft59.mode === m ? GOLD : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 11, cursor: 'pointer', letterSpacing: .5 }}>
+                    {m === 'countdown' ? '⬇ DOWN' : '⬆ UP'}
+                  </button>
+                );
+              })}
+            </div>
+            <input value={timerDraft59.secs} type="number" min="10" max="3600"
+              onChange={function(e) { setTimerDraft59(function(d) { return Object.assign({}, d, { secs: e.target.value }); }); }}
+              placeholder="Seconds"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 10 }} />
+            <button onClick={function() {
+              var secs = parseInt(timerDraft59.secs, 10);
+              if (!secs || secs < 10) return;
+              if (socket) socket.emit('timer-overlay-set', { roomId: roomId, label: timerDraft59.label.trim() || 'Timer', mode: timerDraft59.mode, secs: secs });
+              setShowTimerSet59(false);
+            }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+              START
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 59: Callout Card Set panel (host) ══ */}
+      {showCalloutSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>📋 CALLOUT CARD</span>
+              <button onClick={function() { setShowCalloutSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={calloutDraft.headline}
+              onChange={function(e) { setCalloutDraft(function(d) { return Object.assign({}, d, { headline: e.target.value.slice(0, 50) }); }); }}
+              placeholder="Headline (required)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <textarea value={calloutDraft.body}
+              onChange={function(e) { setCalloutDraft(function(d) { return Object.assign({}, d, { body: e.target.value.slice(0, 100) }); }); }}
+              placeholder="Body text (optional)"
+              rows={2}
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', resize: 'none', marginBottom: 8 }} />
+            <input value={calloutDraft.cta}
+              onChange={function(e) { setCalloutDraft(function(d) { return Object.assign({}, d, { cta: e.target.value.slice(0, 24) }); }); }}
+              placeholder="CTA label (optional)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+              {['#C9A84C', '#FF1A3C', '#D4854A', '#7B68EE', '#00CED1', '#F0E8D4'].map(function(c) {
+                return (
+                  <button key={c} onClick={function() { setCalloutDraft(function(d) { return Object.assign({}, d, { color: c }); }); }}
+                    style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: calloutDraft.color === c ? '3px solid ' + TEXT : '2px solid transparent', cursor: 'pointer' }} />
+                );
+              })}
+            </div>
+            <button onClick={function() {
+              var hl = calloutDraft.headline.trim();
+              if (!hl) return;
+              if (socket) socket.emit('callout-card-set', { roomId: roomId, headline: hl, body: calloutDraft.body.trim(), cta: calloutDraft.cta.trim(), color: calloutDraft.color });
+              setShowCalloutSet(false);
+            }} disabled={!calloutDraft.headline.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: calloutDraft.headline.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: calloutDraft.headline.trim() ? 1 : 0.5 }}>
+              SHOW
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 59: Name Banner Set panel (host) ══ */}
+      {showNameBannerSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🪧 NAME BANNER</span>
+              <button onClick={function() { setShowNameBannerSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={nameBannerDraft.name}
+              onChange={function(e) { setNameBannerDraft(function(d) { return Object.assign({}, d, { name: e.target.value.slice(0, 40) }); }); }}
+              placeholder="Display name (required)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <input value={nameBannerDraft.tagline}
+              onChange={function(e) { setNameBannerDraft(function(d) { return Object.assign({}, d, { tagline: e.target.value.slice(0, 60) }); }); }}
+              placeholder="Tagline (optional)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 10 }} />
+            <button onClick={function() {
+              var nm = nameBannerDraft.name.trim();
+              if (!nm) return;
+              if (socket) socket.emit('name-banner-set', { roomId: roomId, name: nm, tagline: nameBannerDraft.tagline.trim() });
+              setShowNameBannerSet(false);
+            }} disabled={!nameBannerDraft.name.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: nameBannerDraft.name.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: nameBannerDraft.name.trim() ? 1 : 0.5 }}>
+              SHOW
             </button>
           </div>
         </div>
