@@ -273,7 +273,7 @@ export default function AnalyticsTab({ socket, roomId, role, isLive, addToast })
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: MUTED, lineHeight: 1 }}>
-                {fmtDollars(Math.floor(earnings * 0.1))}
+                {fmtDollars(earnings - Math.floor(earnings * 0.9))}
               </div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>PLATFORM (10%)</div>
             </div>
