@@ -3,8 +3,15 @@ var express = require('express');
 var crypto = require('crypto');
 var spawn = require('child_process').spawn;
 var db = require('./db');
+var requireAuth = require('./middleware/auth');
 
 var router = express.Router();
+
+function isValidRtmpUrl(url) {
+  if (typeof url !== 'string') return false;
+  var lower = url.toLowerCase();
+  return lower.startsWith('rtmp://') || lower.startsWith('rtmps://');
+}
 
 var ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
 if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length < 32) {
@@ -36,7 +43,7 @@ function decryptKey(stored) {
   return decrypted.toString('utf8');
 }
 
-router.post('/encrypt-key', function (req, res) {
+router.post('/encrypt-key', requireAuth, function (req, res) {
   var streamKey = (req.body || {}).streamKey;
   if (!streamKey) return res.status(400).json({ error: 'streamKey is required' });
   try {
@@ -47,9 +54,10 @@ router.post('/encrypt-key', function (req, res) {
   }
 });
 
-router.post('/add-destination', async function (req, res) {
+router.post('/add-destination', requireAuth, async function (req, res) {
   var body = req.body || {};
   if (!body.streamKey || !body.streamUrl) return res.status(400).json({ error: 'streamUrl and streamKey are required' });
+  if (!isValidRtmpUrl(body.streamUrl)) return res.status(400).json({ error: 'streamUrl must start with rtmp:// or rtmps://' });
   try {
     var encryptedKey = encryptKey(body.streamKey);
     var result = await db.query(
@@ -63,7 +71,7 @@ router.post('/add-destination', async function (req, res) {
   }
 });
 
-router.post('/start-stream', async function (req, res) {
+router.post('/start-stream', requireAuth, async function (req, res) {
   var body = req.body || {};
   var destinationId = body.destinationId;
   var streamId = body.streamId;
@@ -97,7 +105,7 @@ router.post('/start-stream', async function (req, res) {
   }
 });
 
-router.post('/stop-stream', async function (req, res) {
+router.post('/stop-stream', requireAuth, async function (req, res) {
   var destinationId = (req.body || {}).destinationId;
   var entry = activeProcesses.get(destinationId);
   if (!entry) return res.json({ success: true, message: 'no active process for this destination' });
@@ -112,7 +120,7 @@ router.post('/stop-stream', async function (req, res) {
   }
 });
 
-router.get('/status/:destinationId', function (req, res) {
+router.get('/status/:destinationId', requireAuth, function (req, res) {
   var entry = activeProcesses.get(req.params.destinationId);
   if (!entry) return res.json({ live: false });
   res.json({ live: true, pid: entry.process.pid, uptimeMs: Date.now() - entry.startedAt });
