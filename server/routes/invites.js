@@ -71,7 +71,7 @@ router.post('/:id/respond', requireAuth, async function(req, res) {
 
 router.get('/me', requireAuth, async function(req, res) {
   try {
-    var invites = await inviteService.getPendingInvitations(req.user.id);
+    var invites = await inviteService.getPendingInvitations(req.user.id, req.tenantId);
     res.json(invites);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
@@ -119,7 +119,7 @@ router.post('/links/:token/redeem', requireAuth, async function(req, res) {
   }
   _redeemLog.set(_rlKey, _rlNow);
   try {
-    var link = await inviteService.redeemInviteLink(token);
+    var link = await inviteService.redeemInviteLink(token, req.tenantId);
     res.json(link);
   } catch (err) {
     _redeemLog.delete(_rlKey);
@@ -148,7 +148,7 @@ router.get('/streams/:streamId/links', requireAuth, async function(req, res) {
     if (!ownerCheck.rows[0] || ownerCheck.rows[0].creator_id !== req.user.id) {
       return res.status(403).json({ error: 'forbidden' });
     }
-    var links = await inviteService.getStreamInviteLinks(req.params.streamId);
+    var links = await inviteService.getStreamInviteLinks(req.params.streamId, req.tenantId);
     res.json(links);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });

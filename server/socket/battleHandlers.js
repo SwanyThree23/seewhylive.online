@@ -159,6 +159,7 @@ function registerBattleHandlers(io, socket) {
         voterId: socket.data.userId,
         side: payload.side,
         giftValueCents: cents,
+        tenantId: socket.data.tenantId,
       });
       io.to(roomName(payload.battleId)).emit('battle:score_update', {
         battleId: battle.id,
@@ -190,17 +191,17 @@ function startCountdown(io, battle) {
       clearInterval(interval);
       activeTimers.delete(battle.id);
       try {
-        const ended = await battleService.endBattle(battle.id);
+        const ended = await battleService.endBattle(battle.id, battle.tenant_id);
         io.to(room).emit('battle:end', ended);
         // Award loyalty points: 150 for winner, 50 for participant
         if (ended.winner_id) {
           const loserId = ended.winner_id === ended.challenger_id ? ended.defender_id : ended.challenger_id;
-          loyaltyService.awardPoints({ userId: ended.winner_id, points: 150, source: 'battle_win', sourceId: ended.id }).catch(() => {});
-          if (loserId) loyaltyService.awardPoints({ userId: loserId, points: 50, source: 'battle_participate', sourceId: ended.id }).catch(() => {});
+          loyaltyService.awardPoints({ userId: ended.winner_id, tenantId: ended.tenant_id, points: 150, source: 'battle_win', sourceId: ended.id }).catch(() => {});
+          if (loserId) loyaltyService.awardPoints({ userId: loserId, tenantId: ended.tenant_id, points: 50, source: 'battle_participate', sourceId: ended.id }).catch(() => {});
         } else {
           // Tie — both get participation points
           [ended.challenger_id, ended.defender_id].filter(Boolean).forEach(uid => {
-            loyaltyService.awardPoints({ userId: uid, points: 75, source: 'battle_tie', sourceId: ended.id }).catch(() => {});
+            loyaltyService.awardPoints({ userId: uid, tenantId: ended.tenant_id, points: 75, source: 'battle_tie', sourceId: ended.id }).catch(() => {});
           });
         }
       } catch (err) {
@@ -217,15 +218,16 @@ function startCountdown(io, battle) {
   activeTimers.set(battle.id, interval);
 }
 
-async function endBattleAndBroadcast(io, room, battleId) {
+async function endBattleAndBroadcast(io, room, battleId, tenantId) {
   try {
-    const ended = await battleService.endBattle(battleId);
+    const ended = await battleService.endBattle(battleId, tenantId);
     io.to(room).emit('battle:end', ended);
 
     // Rewards & Leaderboard integration: award points to the winner.
     if (ended.winner_id) {
       await loyaltyService.awardPoints({
         userId: ended.winner_id,
+        tenantId: ended.tenant_id,
         points: BATTLE_WIN_POINTS,
         source: 'pk_battle_win',
         sourceId: ended.id,

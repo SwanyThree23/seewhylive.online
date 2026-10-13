@@ -37,12 +37,13 @@ async function respondToInvitation(inviteId, status, userId) {
   return result.rows[0];
 }
 
-async function getPendingInvitations(userId) {
+async function getPendingInvitations(userId, tenantId) {
+  if (!tenantId) throw new Error('tenantId is required');
   const result = await db.query(
     `SELECT * FROM guest_invitations
-     WHERE to_user_id = $1 AND status = 'pending' AND expires_at > now()
+     WHERE to_user_id = $1 AND tenant_id = $2 AND status = 'pending' AND expires_at > now()
      ORDER BY created_at DESC`,
-    [userId]
+    [userId, tenantId]
   );
   return result.rows;
 }
@@ -65,14 +66,15 @@ async function createInviteLink({ streamId, createdBy, displayName, role, maxUse
 
 // Validates and consumes one use of an invite link. Does not itself create a
 // stream_guests row — call guestService.joinStreamAsGuest() after this succeeds.
-async function redeemInviteLink(token) {
+async function redeemInviteLink(token, tenantId) {
+  if (!tenantId) throw new Error('tenantId is required');
   const result = await db.query(
     `UPDATE stream_guest_invites
      SET use_count = use_count + 1, used_at = now()
-     WHERE guest_token = $1 AND use_count < max_uses AND revoked_at IS NULL
+     WHERE guest_token = $1 AND tenant_id = $2 AND use_count < max_uses AND revoked_at IS NULL
        AND (expires_at IS NULL OR expires_at > now())
      RETURNING *`,
-    [token]
+    [token, tenantId]
   );
   if (!result.rows[0]) throw new Error('invite link not found, exhausted, or revoked');
   return result.rows[0];
@@ -87,10 +89,11 @@ async function revokeInviteLink(inviteId, createdBy) {
   return result.rows[0];
 }
 
-async function getStreamInviteLinks(streamId) {
+async function getStreamInviteLinks(streamId, tenantId) {
+  if (!tenantId) throw new Error('tenantId is required');
   const result = await db.query(
-    `SELECT * FROM stream_guest_invites WHERE stream_id = $1 ORDER BY created_at DESC`,
-    [streamId]
+    `SELECT * FROM stream_guest_invites WHERE stream_id = $1 AND tenant_id = $2 ORDER BY created_at DESC`,
+    [streamId, tenantId]
   );
   return result.rows;
 }

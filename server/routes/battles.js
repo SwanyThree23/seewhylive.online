@@ -66,7 +66,7 @@ router.post('/:id/accept', requireAuth, validateId, async function(req, res) {
     if (existing.defender_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
     var roomId = req.body.roomId;
     if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
-    var battle = await battleService.acceptChallenge(req.params.id, roomId);
+    var battle = await battleService.acceptChallenge(req.params.id, roomId, req.tenantId);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
   } catch (err) {
@@ -82,7 +82,7 @@ router.post('/:id/start', requireAuth, validateId, async function(req, res) {
     if (existing.challenger_id !== req.user.id && existing.defender_id !== req.user.id) {
       return res.status(403).json({ error: 'forbidden' });
     }
-    var battle = await battleService.startBattle(req.params.id);
+    var battle = await battleService.startBattle(req.params.id, req.tenantId);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
   } catch (err) {
