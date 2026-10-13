@@ -75,7 +75,7 @@ export async function applyVirtualBackground(videoTrack, mode, imageUrl) {
     ctx.restore();
   });
 
-  async function frameLoop() {
+  var frameLoop = async function() {
     if (!running) return;
     try {
       await segmenter.send({ image: video });
