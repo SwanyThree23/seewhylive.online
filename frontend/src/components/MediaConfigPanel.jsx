@@ -38,7 +38,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
 
   // Enumerate devices
   useEffect(function() {
-    async function loadDevices() {
+    var loadDevices = async function() {
       try {
         // Request permission first so labels are populated
         var tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
