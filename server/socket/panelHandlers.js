@@ -163,7 +163,7 @@ function registerPanelHandlers(io, socket) {
         ack?.({ ok: false, error: 'invalid slotIndex' });
         return;
       }
-      const slot = await panelService.setExpandedSlot({ roomId, slotIndex: _si, expanded });
+      const slot = await panelService.setExpandedSlot({ roomId, tenantId: socket.data.tenantId, slotIndex: _si, expanded });
       io.to(roomId).emit('panel:layout_update', { roomId, slot });
       ack?.({ ok: true });
     } catch (err) {
@@ -177,7 +177,7 @@ function registerPanelHandlers(io, socket) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
-      const room = await panelService.setAudioOnly({ roomId, isAudioOnly });
+      const room = await panelService.setAudioOnly({ roomId, tenantId: socket.data.tenantId, isAudioOnly });
       io.to(roomId).emit('panel:audio_only_changed', { roomId, isAudioOnly: room.is_audio_only });
       ack?.({ ok: true });
     } catch (err) {
