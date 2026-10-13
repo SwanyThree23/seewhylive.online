@@ -539,10 +539,10 @@ router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
     if (stripe) {
       stripe.createGiftCharge(fromUserId, streamId, amtCents, creatorStripeAccountId)
         .then(function(result) {
-          if (analytics) {
-            try {
-              analytics.recordEarning(creatorId, streamId, 'tip', amtCents, note);
-            } catch (e) { /* ignore analytics error */ }
+          if (analytics && stripe.registerPaymentCallback) {
+            stripe.registerPaymentCallback(result.paymentIntentId, function() {
+              try { analytics.recordEarning(creatorId, streamId, 'tip', amtCents, note); } catch (e) { /* ignore */ }
+            });
           }
           res.json({
             success: true,
@@ -958,7 +958,7 @@ router.post('/stream-sync', requireAuth, streamWriteRateLimit, async function(re
     var safeTitle = String(b.title || '').slice(0, 120);
     var safeCategory = String(b.category || 'live').slice(0, 40);
     var safeViewerCount = Math.max(0, Math.min(Math.floor(Number(b.viewer_count) || 0), 1000000));
-    var payload = { title: safeTitle, status: safeStatus, viewer_count: safeViewerCount, started_at: new Date().toISOString(), category: safeCategory, is_live: true, host_user_id: creatorId, creator_id: creatorId };
+    var payload = { title: safeTitle, status: safeStatus, viewer_count: safeViewerCount, started_at: new Date().toISOString(), category: safeCategory, is_live: true, host_user_id: creatorId, creator_id: creatorId, tenant_id: req.tenantId || null };
     var resp = await fetch(SUPA_URL + '/rest/v1/streams', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Prefer': 'return=representation' },
@@ -1154,7 +1154,7 @@ router.post('/rtmp/authorize', async function(req, res) {
 router.get('/streams/:id/ingest', requireAuth, async function(req, res) {
   if (!ROUTES_UUID_RE.test(req.params.id)) return res.status(400).json({ ok: false, error: 'invalid stream id' });
   try {
-    var result = await db.query('SELECT id, creator_id, stream_key FROM streams WHERE id = $1', [req.params.id]);
+    var result = await db.query('SELECT id, creator_id, stream_key FROM streams WHERE id = $1 AND tenant_id = $2', [req.params.id, req.tenantId]);
     if (result.rowCount === 0) return res.status(404).json({ ok: false, error: 'not found' });
     var row = result.rows[0];
     if (row.creator_id !== req.user.id && req.user.role !== 'admin') {
