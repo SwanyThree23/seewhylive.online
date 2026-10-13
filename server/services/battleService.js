@@ -36,11 +36,10 @@ async function getActiveBattles(tenantId) {
 }
 
 async function getActiveBattlesForRoom(roomId, tenantId) {
+  if (!tenantId) throw new Error('tenantId is required');
   const result = await db.query(
-    tenantId
-      ? `SELECT * FROM pk_battles WHERE room_id = $1 AND status = 'active' AND tenant_id = $2 ORDER BY created_at DESC`
-      : `SELECT * FROM pk_battles WHERE room_id = $1 AND status = 'active' ORDER BY created_at DESC`,
-    tenantId ? [roomId, tenantId] : [roomId]
+    `SELECT * FROM pk_battles WHERE room_id = $1 AND status = 'active' AND tenant_id = $2 ORDER BY created_at DESC`,
+    [roomId, tenantId]
   );
   return result.rows;
 }
@@ -99,39 +98,38 @@ async function castVote({ battleId, voterId, side, giftValueCents, tenantId }) {
   }
 
   if (side !== 'challenger' && side !== 'defender') throw new Error('invalid side');
-  const insert = await db.query(
-    `INSERT INTO pk_battle_votes (battle_id, voter_id, side, gift_value_cents)
-     VALUES ($1, $2, $3, $4)
-     ON CONFLICT (battle_id, voter_id) DO NOTHING`,
-    [battleId, voterId, side, giftValueCents]
+
+  // Atomic: insert vote and update points in one CTE to prevent TOCTOU where
+  // endBattle fires between the INSERT and the UPDATE, leaving votes consumed
+  // but points never credited.
+  const result = await db.query(
+    `WITH ins AS (
+       INSERT INTO pk_battle_votes (battle_id, voter_id, side, gift_value_cents)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (battle_id, voter_id) DO NOTHING
+       RETURNING voter_id
+     )
+     UPDATE pk_battles
+     SET challenger_points = challenger_points + CASE WHEN $3 = 'challenger' THEN $4 ELSE 0 END,
+         defender_points   = defender_points   + CASE WHEN $3 = 'defender'   THEN $4 ELSE 0 END
+     WHERE id = $1
+       AND status = 'active'
+       AND tenant_id = $5
+       AND EXISTS (SELECT 1 FROM ins)
+     RETURNING *`,
+    [battleId, voterId, side, giftValueCents, tenantId]
   );
-  if (insert.rowCount === 0) throw new Error('already voted in this battle');
-  var result;
-  if (side === 'challenger') {
-    result = await db.query(
-      `UPDATE pk_battles SET challenger_points = challenger_points + $1 WHERE id = $2 AND status = 'active' AND tenant_id = $3 RETURNING *`,
-      [giftValueCents, battleId, tenantId]
-    );
-  } else {
-    result = await db.query(
-      `UPDATE pk_battles SET defender_points = defender_points + $1 WHERE id = $2 AND status = 'active' AND tenant_id = $3 RETURNING *`,
-      [giftValueCents, battleId, tenantId]
-    );
-  }
-  if (!result.rows[0]) throw new Error('battle no longer active');
+  if (!result.rows[0]) throw new Error('already voted in this battle or battle no longer active');
   return result.rows[0];
 }
 
 async function declineBattle(battleId, defenderId, tenantId) {
+  if (!tenantId) throw new Error('tenantId is required');
   const result = await db.query(
-    tenantId
-      ? `UPDATE pk_battles SET status = 'declined'
-         WHERE id = $1 AND defender_id = $2 AND status = 'pending' AND tenant_id = $3
-         RETURNING *`
-      : `UPDATE pk_battles SET status = 'declined'
-         WHERE id = $1 AND defender_id = $2 AND status = 'pending'
-         RETURNING *`,
-    tenantId ? [battleId, defenderId, tenantId] : [battleId, defenderId]
+    `UPDATE pk_battles SET status = 'declined'
+     WHERE id = $1 AND defender_id = $2 AND status = 'pending' AND tenant_id = $3
+     RETURNING *`,
+    [battleId, defenderId, tenantId]
   );
   return result.rows[0] || null;
 }
