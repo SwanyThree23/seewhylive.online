@@ -56,7 +56,7 @@ export default function VODCard({ vod, onEdit, onTrim, onChapters, onPublish }) 
           <p className="text-sm font-semibold text-white line-clamp-1">{vod.title}</p>
           <div className="flex items-center gap-2 text-[10px] text-white/40">
             <Eye className="w-3 h-3" /> {vod.views || 0} views
-            {vod.chapters?.length > 0 && (
+            {vod.chapters && vod.chapters.length > 0 && (
               <><BookOpen className="w-3 h-3 ml-1" />{vod.chapters.length} chapters</>
             )}
           </div>

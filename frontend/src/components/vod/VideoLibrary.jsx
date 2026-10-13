@@ -75,7 +75,7 @@ export default function VideoLibrary({ creatorId }) {
         base44.entities.Activity.create({
           user_id: creatorId,
           type: 'clip_created',
-          title: `Added VOD: ${vod?.title || 'New Video'}`,
+          title: 'Added VOD: ' + ((vod && vod.title) || 'New Video'),
         }).catch(() => {});
       }
     },

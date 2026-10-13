@@ -58,14 +58,14 @@ export default function VODLibrary({ creatorId }) {
               border: filter === f ? `1px solid ${G}40` : `1px solid ${BORDER}`,
             }}
           >
-            {f.toUpperCase()} ({filter === 'all' ? (vods?.length || 0) + (clips?.length || 0) : filter === 'vods' ? vods?.length || 0 : clips?.length || 0})
+            {f.toUpperCase()} ({filter === 'all' ? ((vods && vods.length) || 0) + ((clips && clips.length) || 0) : filter === 'vods' ? (vods && vods.length) || 0 : (clips && clips.length) || 0})
           </button>
         ))}
       </div>
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {filteredItems?.map((item, idx) => (
+        {filteredItems && filteredItems.map((item, idx) => (
           <motion.div
             key={item.id}
             initial={{ opacity: 0, y: 20 }}
