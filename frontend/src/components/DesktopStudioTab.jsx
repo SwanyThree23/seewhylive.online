@@ -59,7 +59,7 @@ function DesktopStudioTab() {
   // ── Socket setup ──────────────────────────────────────────────────────────
   useEffect(function() {
     var token   = localStorage.getItem('sw_token') || '';
-    var userId  = localStorage.getItem('sw_user_id') || '';
+    var userId  = localStorage.getItem('sw_userId') || '';
     var username = localStorage.getItem('sw_username') || 'Host';
     var roomId  = localStorage.getItem('sw_room_id') || '';
 
@@ -234,7 +234,7 @@ function DesktopStudioTab() {
     if (!stream) { setError('Start camera or screen share first'); return; }
 
     var token   = localStorage.getItem('sw_token') || '';
-    var userId  = localStorage.getItem('sw_user_id') || '';
+    var userId  = localStorage.getItem('sw_userId') || '';
     var roomId  = localStorage.getItem('sw_room_id') || '';
 
     setStatus('connecting');

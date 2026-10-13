@@ -67,7 +67,7 @@ var PLATFORMS = [
     accent: '#0D8B3F',
     placeholder: 'Chime Pay Me link or @handle',
     buildUrl: function(handle) {
-      if (handle.indexOf('https://') === 0) return handle;
+      if (/^https:\/\/([a-z0-9-]+\.)?chime\.com\//.test(handle)) return handle;
       return null;
     },
     note: 'Viewers open Chime app and pay this account'
