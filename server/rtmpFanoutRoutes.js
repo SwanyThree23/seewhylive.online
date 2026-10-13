@@ -62,7 +62,7 @@ router.post('/add-destination', requireAuth, async function (req, res) {
     var encryptedKey = encryptKey(body.streamKey);
     var result = await db.query(
       'INSERT INTO stream_destinations (stream_id, platform, stream_url, stream_key, status, is_enabled, user_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
-      [body.streamId, body.platform, body.streamUrl, encryptedKey, 'disconnected', true, body.userId]
+      [body.streamId, body.platform, body.streamUrl, encryptedKey, 'disconnected', true, req.user.id]
     );
     res.json({ success: true, destination: result.rows[0] });
   } catch (err) {
@@ -80,7 +80,7 @@ router.post('/start-stream', requireAuth, async function (req, res) {
     return res.json({ success: true, message: 'already running', pid: activeProcesses.get(destinationId).process.pid });
   }
   try {
-    var result = await db.query('SELECT * FROM stream_destinations WHERE id = $1', [destinationId]);
+    var result = await db.query('SELECT * FROM stream_destinations WHERE id = $1 AND user_id = $2', [destinationId, req.user.id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'destination not found' });
     var destination = result.rows[0];
     var plainKey = decryptKey(destination.stream_key);
@@ -109,6 +109,9 @@ router.post('/stop-stream', requireAuth, async function (req, res) {
   var destinationId = (req.body || {}).destinationId;
   var entry = activeProcesses.get(destinationId);
   if (!entry) return res.json({ success: true, message: 'no active process for this destination' });
+  if (entry.destination && entry.destination.user_id && entry.destination.user_id !== req.user.id) {
+    return res.status(403).json({ error: 'forbidden' });
+  }
   entry.process.kill('SIGTERM');
   activeProcesses.delete(destinationId);
   try {
