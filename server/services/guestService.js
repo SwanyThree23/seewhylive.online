@@ -30,7 +30,7 @@ async function joinStreamAsGuest({ streamId, tenantId, userId, displayName, role
 // Self-update (guest): pass userId, omit streamOwnerId.
 // Host-controlled update (e.g. spotlight): pass streamOwnerId instead; the query
 // scopes to guests in streams owned by that user, preventing cross-stream IDOR.
-async function updateGuestState(guestId, patch, userId, streamOwnerId) {
+async function updateGuestState(guestId, patch, userId, streamOwnerId, tenantId) {
   const fields = [];
   const values = [];
   let i = 1;
@@ -48,10 +48,12 @@ async function updateGuestState(guestId, patch, userId, streamOwnerId) {
   let result;
   if (streamOwnerId) {
     values.push(guestId, streamOwnerId);
+    let _tenantClause = '';
+    if (tenantId) { values.push(tenantId); _tenantClause = ` AND streams.tenant_id = $${i + 2}`; }
     result = await db.query(
       `UPDATE stream_guests SET ${fields.join(', ')}
        FROM streams
-       WHERE stream_guests.id = $${i} AND stream_guests.stream_id = streams.id AND streams.creator_id = $${i + 1}
+       WHERE stream_guests.id = $${i} AND stream_guests.stream_id = streams.id AND streams.creator_id = $${i + 1}${_tenantClause}
        RETURNING stream_guests.*`,
       values
     );

@@ -35,7 +35,7 @@ router.patch('/guests/:guestId', requireAuth, async function(req, res) {
   }
   try {
     var guest = isHostOp
-      ? await guestService.updateGuestState(req.params.guestId, req.body, null, req.user.id)
+      ? await guestService.updateGuestState(req.params.guestId, req.body, null, req.user.id, req.tenantId)
       : await guestService.updateGuestState(req.params.guestId, req.body, req.user.id);
     if (!guest) return res.status(403).json({ error: 'not found or forbidden' });
     res.json(guest);

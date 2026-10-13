@@ -118,31 +118,46 @@ async function verifyPPVPayment(paymentIntentId, roomId, viewerId) {
   var stripe = getStripe();
   var db = getDb();
 
+  var now = Math.floor(Date.now() / 1000);
+
+  // Atomically claim the pending row so concurrent calls cannot both succeed.
+  // SQLite's serialized write lock ensures exactly one UPDATE with AND status='pending' wins.
+  var claimed = db.prepare(
+    "UPDATE ppv_unlocks SET status = 'verifying', completed_at = ? " +
+    "WHERE payment_intent_id = ? AND status = 'pending'"
+  ).run(now, paymentIntentId);
+  if (claimed.changes === 0) {
+    throw new Error('Payment already redeemed or not found');
+  }
+
+  // Verify with Stripe; roll back the claimed row on any failure.
   var paymentIntent;
   try {
     paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
   } catch (err) {
+    db.prepare("UPDATE ppv_unlocks SET status = 'pending', completed_at = NULL WHERE payment_intent_id = ?").run(paymentIntentId);
     throw new Error('Failed to retrieve PaymentIntent: ' + err.message);
   }
 
   if (paymentIntent.status !== 'succeeded') {
+    db.prepare("UPDATE ppv_unlocks SET status = 'pending', completed_at = NULL WHERE payment_intent_id = ?").run(paymentIntentId);
     throw new Error('Payment not succeeded. Current status: ' + paymentIntent.status);
   }
 
   if (paymentIntent.metadata.roomId !== roomId) {
+    db.prepare("UPDATE ppv_unlocks SET status = 'pending', completed_at = NULL WHERE payment_intent_id = ?").run(paymentIntentId);
     throw new Error('PaymentIntent roomId mismatch');
   }
   if (paymentIntent.metadata.viewerId !== viewerId) {
+    db.prepare("UPDATE ppv_unlocks SET status = 'pending', completed_at = NULL WHERE payment_intent_id = ?").run(paymentIntentId);
     throw new Error('PaymentIntent viewerId mismatch');
   }
-
-  var now = Math.floor(Date.now() / 1000);
-  var exp = now + 86400;
 
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET env var is required');
   }
 
+  var exp = now + 86400;
   var token = jwt.sign(
     {
       roomId: roomId,
@@ -154,13 +169,9 @@ async function verifyPPVPayment(paymentIntentId, roomId, viewerId) {
   );
 
   try {
-    db.prepare(`
-      UPDATE ppv_unlocks
-      SET status = 'succeeded', completed_at = ?
-      WHERE payment_intent_id = ?
-    `).run(now, paymentIntentId);
+    db.prepare("UPDATE ppv_unlocks SET status = 'succeeded' WHERE payment_intent_id = ?").run(paymentIntentId);
   } catch (dbErr) {
-    console.error('[stripe] Failed to update PPV unlock status:', dbErr.message);
+    console.error('[stripe] Failed to finalize PPV unlock status:', dbErr.message);
   }
 
   return { token: token };
