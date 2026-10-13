@@ -115,7 +115,16 @@ function generateInviteCode() {
   return crypto.randomBytes(12).toString('hex').toUpperCase();
 }
 
-async function setExpandedSlot({ roomId, slotIndex, expanded }) {
+async function setExpandedSlot({ roomId, tenantId, slotIndex, expanded }) {
+  const room = await db.query(
+    'SELECT id FROM streams WHERE id = $1 AND tenant_id = $2',
+    [roomId, tenantId]
+  );
+  if (!room.rows.length) {
+    const err = new Error('room not found or forbidden');
+    err.status = 403;
+    throw err;
+  }
   if (expanded) {
     await db.query('UPDATE room_panel_slots SET is_expanded = false WHERE stream_id = $1', [roomId]);
   }
@@ -126,10 +135,10 @@ async function setExpandedSlot({ roomId, slotIndex, expanded }) {
   return result.rows[0];
 }
 
-async function setAudioOnly({ roomId, isAudioOnly }) {
+async function setAudioOnly({ roomId, tenantId, isAudioOnly }) {
   const result = await db.query(
-    'UPDATE streams SET is_audio_only = $2 WHERE id = $1 RETURNING *',
-    [roomId, isAudioOnly]
+    'UPDATE streams SET is_audio_only = $2 WHERE id = $1 AND tenant_id = $3 RETURNING *',
+    [roomId, isAudioOnly, tenantId]
   );
   return result.rows[0];
 }
