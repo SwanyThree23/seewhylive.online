@@ -136,4 +136,26 @@ router.post('/upload', requireAuth, soundUploadRateLimit, upload.single('audio')
   });
 });
 
+router.delete('/:id', requireAuth, function(req, res) {
+  var UUID_RE_S = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  var soundId = req.params.id || '';
+  if (!UUID_RE_S.test(soundId)) return res.status(400).json({ error: 'invalid sound id' });
+  var qPath = '/rest/v1/custom_sounds?id=eq.' + encodeURIComponent(soundId) +
+    '&tenant_id=eq.' + encodeURIComponent(req.tenantId) +
+    '&select=id,creator_id,storage_path&limit=1';
+  sbReq('GET', qPath, null, function(err, status, data) {
+    if (err || status >= 400) return res.status(500).json({ error: 'Database error' });
+    var sound = Array.isArray(data) ? data[0] : data;
+    if (!sound || sound.creator_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
+    var storagePath = sound.storage_path || '';
+    sbReq('DELETE', '/storage/v1/object/sounds', { prefixes: [storagePath] }, function() {
+      sbReq('DELETE', '/rest/v1/custom_sounds?id=eq.' + encodeURIComponent(soundId) +
+        '&tenant_id=eq.' + encodeURIComponent(req.tenantId), null, function(delErr, delStatus) {
+        if (delErr || delStatus >= 400) return res.status(500).json({ error: 'Delete failed' });
+        res.json({ ok: true, deleted: soundId });
+      });
+    });
+  });
+});
+
 module.exports = router;

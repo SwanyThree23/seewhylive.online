@@ -1496,6 +1496,12 @@ io.use(async function(socket, next) {
 
 // ─── Socket.io Connection Handler ────────────────────────────────────────
 
+function _stagePublic(arr) {
+  return arr.map(function(e) {
+    return { stageId: e.stageId, username: e.username, speaking: e.speaking, muted: e.muted, handRaised: e.handRaised };
+  });
+}
+
 io.on('connection', function(socket) {
   registerBattleHandlers(io, socket);
   registerPanelHandlers(io, socket);
@@ -3847,13 +3853,15 @@ io.on('connection', function(socket) {
     stage.speakers  = stage.speakers.filter(function(s)  { return String(s.userId) !== uId; });
     stage.listeners = stage.listeners.filter(function(l) { return String(l.userId) !== uId; });
 
+    var _asjStageId = uuidv4();
+    socket.data.stageId = _asjStageId;
     if (uRole === 'host') {
-      stage.speakers.push({ userId: uId, username: uName, speaking: false, muted: false });
+      stage.speakers.push({ stageId: _asjStageId, userId: uId, username: uName, speaking: false, muted: false });
     } else {
-      stage.listeners.push({ userId: uId, username: uName, handRaised: false });
+      stage.listeners.push({ stageId: _asjStageId, userId: uId, username: uName, handRaised: false });
     }
     socket.data.stageRoomId = sRoomId;
-    io.to(sRoomId).emit('audio-stage-state', { speakers: stage.speakers, listeners: stage.listeners });
+    io.to(sRoomId).emit('audio-stage-state', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
   });
 
   socket.on('audio-stage-leave', function(data) {
@@ -3869,7 +3877,7 @@ io.on('connection', function(socket) {
     var uId = String(socket.data.userId || socket.id);
     stage.speakers  = stage.speakers.filter(function(s)  { return String(s.userId) !== uId; });
     stage.listeners = stage.listeners.filter(function(l) { return String(l.userId) !== uId; });
-    io.to(sRoomId).emit('audio-stage-update', { speakers: stage.speakers, listeners: stage.listeners });
+    io.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
   });
 
   socket.on('audio-stage-hand-raise', function(data) {
@@ -3885,7 +3893,7 @@ io.on('connection', function(socket) {
     var uId = String(socket.data.userId || socket.id);
     var lst = stage.listeners.find(function(l) { return String(l.userId) === uId; });
     if (lst) { lst.handRaised = !!data.raised; }
-    io.to(sRoomId).emit('audio-stage-update', { speakers: stage.speakers, listeners: stage.listeners });
+    io.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
   });
 
   socket.on('audio-stage-speaking', function(data) {
@@ -3901,7 +3909,7 @@ io.on('connection', function(socket) {
     var uId = String(socket.data.userId || socket.id);
     var spk = stage.speakers.find(function(s) { return String(s.userId) === uId; });
     if (spk) { spk.speaking = !!data.speaking; }
-    io.to(sRoomId).emit('audio-stage-update', { speakers: stage.speakers, listeners: stage.listeners });
+    io.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
   });
 
   socket.on('audio-stage-promote', function(data) {
@@ -3910,14 +3918,14 @@ io.on('connection', function(socket) {
     if (!sRoomId) return;
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
-    var targetId = String(data.targetUserId || '');
+    var targetId = String(data.targetStageId || '');
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetId)) return;
-    var lstIdx = stage.listeners.findIndex(function(l) { return String(l.userId) === targetId; });
+    var lstIdx = stage.listeners.findIndex(function(l) { return l.stageId === targetId; });
     if (lstIdx === -1) return;
     if (stage.speakers.length >= 20) return;
     var lst = stage.listeners.splice(lstIdx, 1)[0];
-    stage.speakers.push({ userId: lst.userId, username: lst.username, speaking: false, muted: false });
-    io.to(sRoomId).emit('audio-stage-update', { speakers: stage.speakers, listeners: stage.listeners });
+    stage.speakers.push({ stageId: lst.stageId, userId: lst.userId, username: lst.username, speaking: false, muted: false });
+    io.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
   });
 
   socket.on('audio-stage-demote', function(data) {
@@ -3926,13 +3934,13 @@ io.on('connection', function(socket) {
     if (!sRoomId) return;
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
-    var targetId = String(data.targetUserId || '');
+    var targetId = String(data.targetStageId || '');
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetId)) return;
-    var spkIdx = stage.speakers.findIndex(function(s) { return String(s.userId) === targetId; });
+    var spkIdx = stage.speakers.findIndex(function(s) { return s.stageId === targetId; });
     if (spkIdx === -1) return;
     var spk = stage.speakers.splice(spkIdx, 1)[0];
-    stage.listeners.push({ userId: spk.userId, username: spk.username, handRaised: false });
-    io.to(sRoomId).emit('audio-stage-update', { speakers: stage.speakers, listeners: stage.listeners });
+    stage.listeners.push({ stageId: spk.stageId, userId: spk.userId, username: spk.username, handRaised: false });
+    io.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
   });
 
   // ── Screen share handlers ──────────────────────────────────────────────
@@ -4155,8 +4163,9 @@ io.on('connection', function(socket) {
     var idx = parseInt(data.answerIdx, 10);
     if (isNaN(idx) || idx < 0 || idx >= trivia.options.length) return;
     var _taKey = socket.data.userId || socket.id;
+    if (trivia.answers.has(_taKey)) return;
     trivia.answers.set(_taKey, { idx: idx, username: socket.data.username || 'Anonymous', ts: Date.now() });
-    socket.emit('trivia-answer-ack', { answerIdx: idx, isCorrect: idx === trivia.correctIdx });
+    socket.emit('trivia-answer-ack', { answerIdx: idx });
   });
 
   socket.on('trivia-end', function(data) {
@@ -4337,9 +4346,15 @@ io.on('connection', function(socket) {
       if (!_muteUuidRe.test(_muteId)) return;
     }
     var _muteReason = String(data.reason || '').slice(0, 200);
+    var _muteUsername = _muteUuidRe.test(_muteTarget) ? '' : _muteTarget;
+    if (!_muteUsername) {
+      io.sockets.sockets.forEach(function(s) {
+        if (s.data.roomId === sId && s.data.userId === _muteId) _muteUsername = s.data.username || '';
+      });
+    }
     var _muteProducers = mediasoup.getProducerIdsByGuest(_muteId, sId);
     _muteProducers.forEach(function(pid) { mediasoup.pauseProducer(pid); });
-    io.to(sId).emit('user-muted', { userId: _muteId, reason: _muteReason, ts: Math.floor(Date.now() / 1000) });
+    io.to(sId).emit('user-muted', { username: _muteUsername, reason: _muteReason, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── ban-user ───────────────────────────────────────────────────────────
@@ -4359,7 +4374,13 @@ io.on('connection', function(socket) {
       });
       if (!_banUuidRe.test(bannedId)) return;
     }
-    io.to(sId).emit('user-banned', { userId: bannedId, ts: Math.floor(Date.now() / 1000) });
+    var _bannedUsername = _banUuidRe.test(_banTarget) ? '' : _banTarget;
+    if (!_bannedUsername) {
+      io.sockets.sockets.forEach(function(s) {
+        if (s.data.roomId === sId && s.data.userId === bannedId) _bannedUsername = s.data.username || '';
+      });
+    }
+    io.to(sId).emit('user-banned', { username: _bannedUsername, ts: Math.floor(Date.now() / 1000) });
     // Disconnect every socket in this room whose userId matches the ban target
     var room = rooms.get(sId);
     if (room) {
