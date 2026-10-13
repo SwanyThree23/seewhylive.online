@@ -20,7 +20,7 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-router.get('/', async function(req, res) {
+router.get('/', requireAuth, async function(req, res) {
   try {
     var challenges = await challengeService.getActiveChallenges(req.tenantId);
     res.json(challenges);

@@ -1077,7 +1077,7 @@ app.get('/api/leaderboard', requireAuth, function(req, res) {
     res.json({
       leaderboard: rows.map(function(r) {
         return {
-          from_user:     r.from_user,
+          username:      r.from_user,
           total_cents:   Math.floor(r.total),
           creator_cents: Math.floor(r.creator_total),
           gift_count:    r.cnt

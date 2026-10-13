@@ -154,7 +154,7 @@ router.get('/leaderboard', requireAuth, async function(req, res) {
   }
 });
 
-router.get('/:id', validateId, async function(req, res) {
+router.get('/:id', requireAuth, validateId, async function(req, res) {
   try {
     var battle = await battleService.getBattle(req.params.id, req.tenantId);
     if (!battle) return res.status(404).json({ error: 'battle not found' });
