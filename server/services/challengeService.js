@@ -26,8 +26,8 @@ async function getActiveChallenges(tenantId) {
 // double-completion at the DB level.
 async function completeChallenge(challengeId, userId, tenantId) {
   const challenge = await db.query(
-    `SELECT * FROM challenges WHERE id = $1 AND (tenant_id = $2 OR $2::text IS NULL)`,
-    [challengeId, tenantId || null]
+    `SELECT * FROM challenges WHERE id = $1 AND tenant_id = $2`,
+    [challengeId, tenantId]
   );
   const row = challenge.rows[0];
   if (!row) throw new Error('challenge not found');
@@ -71,8 +71,8 @@ async function getUserCompletions(userId, tenantId) {
     `SELECT cc.challenge_id, cc.completed_at
      FROM challenge_completions cc
      JOIN challenges c ON c.id = cc.challenge_id
-     WHERE cc.user_id = $1 AND (c.tenant_id = $2 OR $2::text IS NULL)`,
-    [userId, tenantId || null]
+     WHERE cc.user_id = $1 AND c.tenant_id = $2`,
+    [userId, tenantId]
   );
   return result.rows;
 }

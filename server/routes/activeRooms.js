@@ -1,11 +1,12 @@
 'use strict';
 var express = require('express');
 var router = express.Router();
+var requireAuth = require('../middleware/auth');
 
 // Read-only room snapshot. Pulls the live in-memory rooms map from index.js
 // via a lazy require to avoid circular-require issues at module load time.
 // Never writes to rooms - purely reads Set/Map sizes for a safe refresh.
-router.get('/', function(req, res) {
+router.get('/', requireAuth, function(req, res) {
   try {
     var rooms = require('../index').rooms;
     if (!rooms || typeof rooms.forEach !== 'function') {
