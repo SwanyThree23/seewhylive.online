@@ -4627,6 +4627,7 @@ io.on('connection', function(socket) {
     qaUpvoteThrottle.delete(_tKey);   qaUpvoteThrottle.delete(socket.id);
     judgeScoreThrottle.delete(_tKey);
     pinChatThrottle.delete(socket.id);
+    swanybot.onSocketDisconnect(socket.id);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
     }

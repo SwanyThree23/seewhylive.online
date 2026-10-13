@@ -68,8 +68,19 @@ function buildArgs(audioPath, outputPath, style) {
   ];
 }
 
+var SAFE_AUDIO_PATH_RE = /^\/[^\0]+\.(?:mp3|wav|ogg|aac|flac|m4a|webm)$/i;
+
 // ---- Process one job ---------------------------------------------------
 async function processJob(job) {
+  // Reject non-local or directory-traversal paths before passing to FFmpeg.
+  if (!SAFE_AUDIO_PATH_RE.test(job.audio_path) || job.audio_path.indexOf('..') !== -1) {
+    await pool.query(
+      "UPDATE music_video_jobs SET status='failed', error=$1, updated_at=NOW() WHERE id=$2",
+      ['invalid audio_path', job.id]
+    );
+    return;
+  }
+
   var outputName = 'mv_' + job.id + '.mp4';
   var outputPath = path.join(MEDIA_DIR, outputName);
 

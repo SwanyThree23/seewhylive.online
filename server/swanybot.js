@@ -515,6 +515,12 @@ class SwanyBot extends EventEmitter {
       console.warn('[SwanyBot] toggleRule: unknown rule "' + ruleName + '"');
     }
   }
+
+  onSocketDisconnect(socketId) {
+    this.chatRateMap.delete(socketId);
+    this.mutedSockets.delete(socketId);
+    this.commandCooldown.delete(socketId);
+  }
 }
 
 module.exports = SwanyBot;
