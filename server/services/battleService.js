@@ -13,8 +13,13 @@ const DEFAULT_DURATION_MINUTES = 5;
 
 // ── Core read ────────────────────────────────────────────────────────────────
 
-async function getBattle(battleId) {
-  const result = await db.query(`SELECT * FROM pk_battles WHERE id = $1`, [battleId]);
+async function getBattle(battleId, tenantId) {
+  var result;
+  if (tenantId) {
+    result = await db.query(`SELECT * FROM pk_battles WHERE id = $1 AND tenant_id = $2`, [battleId, tenantId]);
+  } else {
+    result = await db.query(`SELECT * FROM pk_battles WHERE id = $1`, [battleId]);
+  }
   return result.rows[0] || null;
 }
 
@@ -23,9 +28,10 @@ async function getBattleTeams(battleId) {
   return result.rows;
 }
 
-async function getActiveBattles() {
+async function getActiveBattles(tenantId) {
   const result = await db.query(
-    `SELECT * FROM pk_battles WHERE status = 'active' ORDER BY started_at DESC`
+    `SELECT * FROM pk_battles WHERE status = 'active' AND tenant_id = $1 ORDER BY started_at DESC`,
+    [tenantId]
   );
   return result.rows;
 }
@@ -40,14 +46,14 @@ async function getActiveBattlesForRoom(roomId) {
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 
-async function createChallenge({ challengerId, defenderId, challengerName, defenderName, roomId, durationMinutes }) {
+async function createChallenge({ tenantId, challengerId, defenderId, challengerName, defenderName, roomId, durationMinutes }) {
   const result = await db.query(
     `INSERT INTO pk_battles
-      (room_id, challenger_id, defender_id, challenger_name, defender_name,
+      (tenant_id, room_id, challenger_id, defender_id, challenger_name, defender_name,
        challenger_points, defender_points, status, duration_minutes)
-     VALUES ($1, $2, $3, $4, $5, 0, 0, 'pending', $6)
+     VALUES ($1, $2, $3, $4, $5, $6, 0, 0, 'pending', $7)
      RETURNING *`,
-    [roomId || null, challengerId, defenderId, challengerName || null, defenderName || null,
+    [tenantId, roomId || null, challengerId, defenderId, challengerName || null, defenderName || null,
      durationMinutes || DEFAULT_DURATION_MINUTES]
   );
   return result.rows[0];

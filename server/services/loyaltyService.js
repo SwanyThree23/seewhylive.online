@@ -70,23 +70,24 @@ async function getRewardTiers() {
   return result.rows;
 }
 
-// Global (all-time) leaderboard, top N by total points.
-async function getGlobalLeaderboard(limit) {
+// Global (all-time) leaderboard, top N by total points scoped to tenant.
+async function getGlobalLeaderboard(limit, tenantId) {
   const result = await db.query(
     `SELECT ul.user_id, ul.total_points, ul.level,
             COALESCE(u.display_name, ul.user_id::text) AS display_name,
             u.avatar_url
      FROM user_loyalty ul
      LEFT JOIN users u ON u.id = ul.user_id
+     WHERE ul.tenant_id = $2
      ORDER BY ul.total_points DESC
      LIMIT $1`,
-    [limit || 50]
+    [limit || 50, tenantId]
   );
   return result.rows;
 }
 
-// Weekly leaderboard, summed from the point-event ledger over the trailing 7 days.
-async function getWeeklyLeaderboard(limit) {
+// Weekly leaderboard, summed from the point-event ledger over the trailing 7 days, scoped to tenant.
+async function getWeeklyLeaderboard(limit, tenantId) {
   const result = await db.query(
     `SELECT e.user_id, SUM(e.points) AS total_points,
             COALESCE(u.display_name, e.user_id::text) AS display_name,
@@ -94,10 +95,11 @@ async function getWeeklyLeaderboard(limit) {
      FROM loyalty_point_events e
      LEFT JOIN users u ON u.id = e.user_id
      WHERE e.created_at >= now() - interval '7 days'
+       AND e.tenant_id = $2
      GROUP BY e.user_id, u.display_name, u.avatar_url
      ORDER BY total_points DESC
      LIMIT $1`,
-    [limit || 50]
+    [limit || 50, tenantId]
   );
   return result.rows;
 }

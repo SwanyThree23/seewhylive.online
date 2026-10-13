@@ -1,11 +1,12 @@
-const express = require('express');
-const router = express.Router();
-const battleService = require('../services/battleService');
-const requireAuth   = require('../middleware/auth');
-const pool          = require('../db');
-const { rateLimit } = require('express-rate-limit');
+'use strict';
+var express = require('express');
+var router = express.Router();
+var battleService = require('../services/battleService');
+var requireAuth   = require('../middleware/auth');
+var pool          = require('../db');
+var { rateLimit } = require('express-rate-limit');
 
-const battleVoteRateLimit = rateLimit({
+var battleVoteRateLimit = rateLimit({
   windowMs: 60 * 1000,
   max: 30,
   keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
@@ -15,7 +16,7 @@ const battleVoteRateLimit = rateLimit({
   message: { error: 'Too many vote requests — please slow down.' },
 });
 
-const battleCreateRateLimit = rateLimit({
+var battleCreateRateLimit = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
   keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
@@ -25,100 +26,106 @@ const battleCreateRateLimit = rateLimit({
   message: { error: 'Too many challenge requests — please slow down.' },
 });
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function validateId(req, res, next) {
   if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid battle id' });
   next();
 }
 
-router.post('/', requireAuth, battleCreateRateLimit, async (req, res) => {
+router.post('/', requireAuth, battleCreateRateLimit, async function(req, res) {
   try {
-    const { defenderId, roomId } = req.body;
+    var defenderId = req.body.defenderId;
+    var roomId = req.body.roomId;
     if (!UUID_RE.test(defenderId)) return res.status(400).json({ error: 'invalid defenderId' });
     if (defenderId === req.user.id) return res.status(400).json({ error: 'cannot challenge yourself' });
     if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
-    const challengerName = String(req.body.challengerName || '').slice(0, 80);
-    const defenderName   = String(req.body.defenderName  || '').slice(0, 80);
-    const rawDuration = Math.floor(Number(req.body.durationMinutes) || 5);
-    const durationMinutes = Math.min(Math.max(rawDuration, 1), 60);
-    const battle = await battleService.createChallenge({
+    var challengerName = String(req.body.challengerName || '').slice(0, 80);
+    var defenderName   = String(req.body.defenderName  || '').slice(0, 80);
+    var rawDuration = Math.floor(Number(req.body.durationMinutes) || 5);
+    var durationMinutes = Math.min(Math.max(rawDuration, 1), 60);
+    var battle = await battleService.createChallenge({
       tenantId: req.tenantId,
       challengerId: req.user.id,
-      defenderId,
-      challengerName,
-      defenderName,
-      roomId,
-      durationMinutes,
+      defenderId: defenderId,
+      challengerName: challengerName,
+      defenderName: defenderName,
+      roomId: roomId,
+      durationMinutes: durationMinutes,
     });
     res.status(201).json(battle);
-  } catch (err) { console.error('[ROUTE ERROR]', err);
+  } catch (err) {
+    console.error('[ROUTE ERROR]', err);
     res.status(400).json({ error: err.message });
   }
 });
 
-router.post('/:id/accept', requireAuth, validateId, async (req, res) => {
+router.post('/:id/accept', requireAuth, validateId, async function(req, res) {
   try {
-    const existing = await battleService.getBattle(req.params.id);
+    var existing = await battleService.getBattle(req.params.id, req.tenantId);
     if (!existing) return res.status(404).json({ error: 'battle not found' });
     if (existing.defender_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
-    const { roomId } = req.body;
+    var roomId = req.body.roomId;
     if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
-    const battle = await battleService.acceptChallenge(req.params.id, roomId);
+    var battle = await battleService.acceptChallenge(req.params.id, roomId);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
-  } catch (err) { console.error('[ROUTE ERROR]', err);
+  } catch (err) {
+    console.error('[ROUTE ERROR]', err);
     res.status(400).json({ error: err.message });
   }
 });
 
-router.post('/:id/start', requireAuth, validateId, async (req, res) => {
+router.post('/:id/start', requireAuth, validateId, async function(req, res) {
   try {
-    const existing = await battleService.getBattle(req.params.id);
+    var existing = await battleService.getBattle(req.params.id, req.tenantId);
     if (!existing) return res.status(404).json({ error: 'battle not found' });
     if (existing.challenger_id !== req.user.id && existing.defender_id !== req.user.id) {
       return res.status(403).json({ error: 'forbidden' });
     }
-    const battle = await battleService.startBattle(req.params.id);
+    var battle = await battleService.startBattle(req.params.id);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
-  } catch (err) { console.error('[ROUTE ERROR]', err);
+  } catch (err) {
+    console.error('[ROUTE ERROR]', err);
     res.status(400).json({ error: err.message });
   }
 });
 
-router.post('/:id/vote', requireAuth, battleVoteRateLimit, validateId, async (req, res) => {
+router.post('/:id/vote', requireAuth, battleVoteRateLimit, validateId, async function(req, res) {
   try {
-    const { side } = req.body;
+    var side = req.body.side;
     if (side !== 'challenger' && side !== 'defender') {
       return res.status(400).json({ error: 'side must be challenger or defender' });
     }
-    const giftValueCents = Math.floor(req.body.giftValueCents);
+    var giftValueCents = Math.floor(req.body.giftValueCents);
     if (!Number.isFinite(giftValueCents) || giftValueCents < 1 || giftValueCents > 50000) {
       return res.status(400).json({ error: 'giftValueCents must be between 1 and 50000' });
     }
-    const battle = await battleService.castVote({
+    var battle = await battleService.castVote({
       tenantId: req.tenantId,
       battleId: req.params.id,
       voterId: req.user.id,
-      side,
-      giftValueCents,
+      side: side,
+      giftValueCents: giftValueCents,
     });
     res.json(battle);
-  } catch (err) { console.error('[ROUTE ERROR]', err);
+  } catch (err) {
+    console.error('[ROUTE ERROR]', err);
     res.status(400).json({ error: err.message });
   }
 });
 
-router.get('/active', async (req, res) => {
+router.get('/active', requireAuth, async function(req, res) {
   try {
-    const battles = await battleService.getActiveBattles();
+    var battles = await battleService.getActiveBattles(req.tenantId);
     res.json(battles);
-  } catch (err) { console.error('[ROUTE ERROR]', err);
+  } catch (err) {
+    console.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.get('/leaderboard', async (req, res) => {
+router.get('/leaderboard', async function(req, res) {
   try {
     var limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
     var result = await pool.query(
@@ -141,17 +148,19 @@ router.get('/leaderboard', async (req, res) => {
         totalPoints: parseInt(r.total_points) || 0,
       };
     }));
-  } catch (err) { console.error('[ROUTE ERROR]', err);
+  } catch (err) {
+    console.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.get('/:id', validateId, async (req, res) => {
+router.get('/:id', validateId, async function(req, res) {
   try {
-    const battle = await battleService.getBattle(req.params.id);
+    var battle = await battleService.getBattle(req.params.id, req.tenantId);
     if (!battle) return res.status(404).json({ error: 'battle not found' });
     res.json(battle);
-  } catch (err) { console.error('[ROUTE ERROR]', err);
+  } catch (err) {
+    console.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
