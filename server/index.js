@@ -584,6 +584,11 @@ var timerOverlayMap  = new Map();  // roomId → { label, mode, endsAt, startTs,
 var calloutCardMap   = new Map();  // roomId → { headline, body, cta, color }
 var cheerMap         = new Map();  // roomId → { score, decayTimerId }
 var nameBannerMap    = new Map();  // roomId → { name, tagline }
+// Batch 60: QR Overlay / Sub-Goal / Donation Alert Ticker / Emoji Wall
+var qrOverlayMap     = new Map();  // roomId → { url, label }
+var subGoalMap       = new Map();  // roomId → { target, current, label }
+var donationTickerMap= new Map();  // roomId → Array<{ username, amountCents, ts }>
+var emojiWallMap     = new Map();  // roomId → Map<emoji, count>
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -871,6 +876,11 @@ function getJoinStateForRoom(roomId) {
   state.nameBanner   = nameBannerMap.get(roomId) || null;
   var _ch59 = cheerMap.get(roomId);
   state.cheerScore   = _ch59 ? _ch59.score : 0;
+  // Batch 60
+  state.qrOverlay    = qrOverlayMap.get(roomId) || null;
+  state.subGoal      = subGoalMap.get(roomId) || null;
+  var _ew60 = emojiWallMap.get(roomId);
+  state.emojiWall    = _ew60 ? Object.fromEntries(_ew60) : {};
   return state;
 }
 
@@ -6531,6 +6541,11 @@ io.on('connection', function(socket) {
     if (_chC59 && _chC59.decayTimerId) clearTimeout(_chC59.decayTimerId);
     cheerMap.delete(roomId);
     nameBannerMap.delete(roomId);
+    // Batch 60 cleanup
+    qrOverlayMap.delete(roomId);
+    subGoalMap.delete(roomId);
+    donationTickerMap.delete(roomId);
+    emojiWallMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -7558,6 +7573,103 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     nameBannerMap.delete(roomId);
     io.to(roomId).emit('name-banner-update', null);
+  });
+
+  // ── qr-overlay (Batch 60) ───────────────────────────────────────────────
+  socket.on('qr-overlay-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var url   = (data.url   || '').trim().slice(0, 300);
+    var label = (data.label || '').trim().slice(0, 50);
+    if (!url || !url.match(/^https?:\/\//)) return;
+    var qr = { url: url, label: label };
+    qrOverlayMap.set(roomId, qr);
+    io.to(roomId).emit('qr-overlay-update', qr);
+  });
+
+  socket.on('qr-overlay-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    qrOverlayMap.delete(roomId);
+    io.to(roomId).emit('qr-overlay-update', null);
+  });
+
+  // ── sub-goal (Batch 60) ─────────────────────────────────────────────────
+  socket.on('sub-goal-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var target  = Math.min(100000, Math.max(1, parseInt(data.target, 10) || 100));
+    var current = Math.max(0, parseInt(data.current, 10) || 0);
+    var label   = (data.label || '').trim().slice(0, 50) || 'Subscriber Goal';
+    var goal = { target: target, current: current, label: label };
+    subGoalMap.set(roomId, goal);
+    io.to(roomId).emit('sub-goal-update', goal);
+  });
+
+  socket.on('sub-goal-add', function(data, ack) {
+    var roomId = socket.data.roomId;
+    if (!roomId) { if (ack) ack({ err: 'no room' }); return; }
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') { if (ack) ack({ err: 'auth' }); return; }
+    var goal = subGoalMap.get(roomId);
+    if (!goal) { if (ack) ack({ err: 'no goal' }); return; }
+    goal.current = Math.min(goal.target, goal.current + (parseInt(data.inc, 10) || 1));
+    subGoalMap.set(roomId, goal);
+    io.to(roomId).emit('sub-goal-update', goal);
+    if (ack) ack({ ok: true, current: goal.current });
+  });
+
+  socket.on('sub-goal-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    subGoalMap.delete(roomId);
+    io.to(roomId).emit('sub-goal-update', null);
+  });
+
+  // ── donation-alert (Batch 60) ───────────────────────────────────────────
+  socket.on('donation-alert', function(data) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Donor';
+    if (!roomId || !userId || userId.startsWith('anon')) return;
+    var amountCents = Math.max(0, parseInt(data.amountCents, 10) || 0);
+    if (amountCents < 50) return;
+    if (!donationTickerMap.has(roomId)) donationTickerMap.set(roomId, []);
+    var ticker = donationTickerMap.get(roomId);
+    ticker.push({ username: username, amountCents: amountCents, ts: Date.now() });
+    if (ticker.length > 20) ticker.splice(0, ticker.length - 20);
+    io.to(roomId).emit('donation-alert-tick', { username: username, amountCents: amountCents });
+    addEnergy(roomId, userId, username, Math.floor(amountCents / 10));
+  });
+
+  // ── emoji-wall (Batch 60) ───────────────────────────────────────────────
+  var WALL_EMOJI_SAFE = new Set(['🔥','💯','🙌','❤️','😂','😍','👑','🚀','💎','⚡','🥳','🎉','🌟','💪','👏','🤩','😎','💖','🤑','🫶']);
+  socket.on('emoji-wall-tap', function(data) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId || !userId) return;
+    var _ewNow = Date.now();
+    if (_ewNow - (reactionRainThrottle.get(userId) || 0) < 1000) return;
+    reactionRainThrottle.set(userId, _ewNow);
+    var emoji = (data.emoji || '🔥');
+    if (!WALL_EMOJI_SAFE.has(emoji)) emoji = '🔥';
+    if (!emojiWallMap.has(roomId)) emojiWallMap.set(roomId, new Map());
+    var wall = emojiWallMap.get(roomId);
+    wall.set(emoji, (wall.get(emoji) || 0) + 1);
+    io.to(roomId).emit('emoji-wall-update', { emoji: emoji, counts: Object.fromEntries(wall) });
+    addEnergy(roomId, userId, username, 1);
+  });
+
+  socket.on('emoji-wall-reset', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    emojiWallMap.delete(roomId);
+    io.to(roomId).emit('emoji-wall-update', { emoji: null, counts: {} });
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────

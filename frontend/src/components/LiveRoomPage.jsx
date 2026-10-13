@@ -988,6 +988,16 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 60: QR Overlay / Sub-Goal / Donation Alert Ticker / Emoji Wall ──
+  var [qrOverlay,        setQrOverlay]        = useState(null);
+  var [qrDraft,          setQrDraft]          = useState({ url: '', label: '' });
+  var [showQrSet,        setShowQrSet]        = useState(false);
+  var [subGoal,          setSubGoal]          = useState(null);
+  var [subGoalDraft,     setSubGoalDraft]     = useState({ target: '100', label: 'Subscriber Goal' });
+  var [showSubGoalSet,   setShowSubGoalSet]   = useState(false);
+  var [donationAlert,    setDonationAlert]    = useState(null);
+  var [emojiWall,        setEmojiWall]        = useState({});
+  var [showEmojiWall,    setShowEmojiWall]    = useState(false);
   // ─── Batch 59: Timer Overlay / Callout Card / Cheer-O-Meter / Name Banner ───
   var [timerOverlay,    setTimerOverlay]    = useState(null);
   var [timerDraft59,    setTimerDraft59]    = useState({ label: 'Round 1', secs: '60', mode: 'countdown' });
@@ -1200,6 +1210,9 @@ export default function LiveRoomPage({
       if (data.calloutCard) setCalloutCard(data.calloutCard);
       if (data.nameBanner) setNameBanner(data.nameBanner);
       if (typeof data.cheerScore === 'number') setCheerScore(data.cheerScore);
+      if (data.qrOverlay) setQrOverlay(data.qrOverlay);
+      if (data.subGoal) setSubGoal(data.subGoal);
+      if (data.emojiWall && typeof data.emojiWall === 'object') setEmojiWall(data.emojiWall);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2525,6 +2538,26 @@ export default function LiveRoomPage({
       setTimeout(function() { setSuperFollowBurst(null); }, 3500);
     });
 
+    // ── Batch 60 listeners ─────────────────────────────────────────────────
+    socket.on('qr-overlay-update', function(d) {
+      setQrOverlay(d || null);
+    });
+
+    socket.on('sub-goal-update', function(d) {
+      setSubGoal(d || null);
+    });
+
+    socket.on('donation-alert-tick', function(d) {
+      if (!d) return;
+      setDonationAlert(d);
+      setTimeout(function() { setDonationAlert(null); }, 5000);
+    });
+
+    socket.on('emoji-wall-update', function(d) {
+      if (!d) return;
+      setEmojiWall(d.counts || {});
+    });
+
     // ── Batch 59 listeners ─────────────────────────────────────────────────
     socket.on('timer-overlay-update', function(d) {
       setTimerOverlay(d || null);
@@ -3002,6 +3035,10 @@ export default function LiveRoomPage({
       socket.off('callout-card-update');
       socket.off('cheer-update');
       socket.off('name-banner-update');
+      socket.off('qr-overlay-update');
+      socket.off('sub-goal-update');
+      socket.off('donation-alert-tick');
+      socket.off('emoji-wall-update');
     };
   }, [socket]);
 
@@ -4863,6 +4900,14 @@ export default function LiveRoomPage({
                 if (nameBanner) { if (socket) socket.emit('name-banner-clear', { roomId: roomId }); }
                 else { setShowNameBannerSet(function(s) { return !s; }); }
               }},
+              { emoji: qrOverlay ? '🚫' : '📲', label: qrOverlay ? 'Clear QR' : 'QR Code', active: !!qrOverlay || showQrSet, onTap: function() {
+                if (qrOverlay) { if (socket) socket.emit('qr-overlay-clear', { roomId: roomId }); }
+                else { setShowQrSet(function(s) { return !s; }); }
+              }},
+              { emoji: subGoal ? '📊' : '🎯', label: subGoal ? 'Sub Goal ✓' : 'Sub Goal', active: !!subGoal || showSubGoalSet, onTap: function() {
+                if (subGoal) { if (socket) socket.emit('sub-goal-clear', { roomId: roomId }); }
+                else { setShowSubGoalSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -4974,6 +5019,9 @@ export default function LiveRoomPage({
               }},
               { emoji: '📣', label: 'Cheer ' + (cheerScore > 0 ? cheerScore + '%' : ''), active: cheerScore > 80, onTap: function() {
                 if (socket) socket.emit('cheer-hold', { roomId: roomId });
+              }},
+              { emoji: '🔥', label: 'Emoji Wall', active: showEmojiWall, onTap: function() {
+                setShowEmojiWall(function(s) { return !s; });
               }},
             ] : [])),
           ].map(function(tool) {
@@ -12886,6 +12934,148 @@ export default function LiveRoomPage({
             }} disabled={!milestoneDraft.text.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: milestoneDraft.text.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: milestoneDraft.text.trim() ? 1 : 0.5 }}>
               ANNOUNCE
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 60: Sub-Goal Bar ══ */}
+      {subGoal && (
+        <div style={{ position: 'fixed', top: 60, left: 0, right: 0, zIndex: 600, padding: '0 12px', pointerEvents: 'none' }}>
+          <div style={{ background: 'rgba(14,12,9,.82)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '6px 12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, letterSpacing: .5 }}>{subGoal.label}</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: GOLD }}>{subGoal.current}/{subGoal.target}</span>
+            </div>
+            <div style={{ width: '100%', height: 6, background: 'rgba(201,168,76,.15)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: Math.min(100, Math.round(subGoal.current / subGoal.target * 100)) + '%', background: GOLD, borderRadius: 3, transition: 'width .4s ease' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 60: QR Overlay ══ */}
+      {qrOverlay && (
+        <div style={{ position: 'fixed', top: '20%', right: 14, zIndex: 625, animation: 'fadeSlideIn .3s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 14, padding: '12px 14px', textAlign: 'center', maxWidth: 140 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>
+              {qrOverlay.label || 'Scan QR'}
+            </div>
+            <div style={{ width: 96, height: 96, background: '#fff', borderRadius: 6, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src={'https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=' + encodeURIComponent(qrOverlay.url)} alt="QR" style={{ width: 96, height: 96, borderRadius: 4 }} />
+            </div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: MUTED, marginTop: 6, wordBreak: 'break-all' }}>
+              {qrOverlay.url.slice(0, 40)}{qrOverlay.url.length > 40 ? '…' : ''}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 60: Donation Alert Ticker ══ */}
+      {donationAlert && (
+        <div style={{ position: 'fixed', bottom: 86, left: '50%', transform: 'translateX(-50%)', zIndex: 615, animation: 'slideUp .3s ease, fadeSlideIn .3s ease', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+          <div style={{ background: 'rgba(14,12,9,.9)', border: '1px solid ' + GOLD, borderRadius: 20, padding: '6px 18px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 16 }}>💝</span>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 15, color: GOLD, letterSpacing: 1.5 }}>{donationAlert.username}</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, color: TEXT }}>
+              donated ${(donationAlert.amountCents / 100).toFixed(2)}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 60: Emoji Wall panel (viewer) ══ */}
+      {showEmojiWall && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🔥 EMOJI WALL</span>
+              <button onClick={function() { setShowEmojiWall(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 12 }}>
+              {['🔥','💯','🙌','❤️','😂','😍','👑','🚀','💎','⚡','🥳','🎉','🌟','💪','👏','🤩','😎','💖','🤑','🫶'].map(function(em) {
+                var cnt = emojiWall[em] || 0;
+                return (
+                  <button key={em} onClick={function() {
+                    if (socket) socket.emit('emoji-wall-tap', { roomId: roomId, emoji: em });
+                  }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: cnt > 0 ? 'rgba(201,168,76,.1)' : CARD2, border: '1px solid ' + (cnt > 0 ? 'rgba(201,168,76,.3)' : BORDER), borderRadius: 10, padding: '6px 8px', cursor: 'pointer', minWidth: 42 }}>
+                    <span style={{ fontSize: 20 }}>{em}</span>
+                    {cnt > 0 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, marginTop: 2 }}>{cnt}</span>}
+                  </button>
+                );
+              })}
+            </div>
+            {(role === 'host' || role === 'cohost') && (
+              <button onClick={function() {
+                if (socket) socket.emit('emoji-wall-reset', { roomId: roomId });
+              }} style={{ background: 'none', border: '1px solid ' + BORDER, borderRadius: 8, padding: '5px 0', width: '100%', fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+                RESET WALL
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 60: QR Set panel (host) ══ */}
+      {showQrSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>📲 QR CODE</span>
+              <button onClick={function() { setShowQrSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={qrDraft.url}
+              onChange={function(e) { setQrDraft(function(d) { return Object.assign({}, d, { url: e.target.value.slice(0, 300) }); }); }}
+              placeholder="https://… (required)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <input value={qrDraft.label}
+              onChange={function(e) { setQrDraft(function(d) { return Object.assign({}, d, { label: e.target.value.slice(0, 50) }); }); }}
+              placeholder="Label (optional)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 10 }} />
+            <button onClick={function() {
+              var url = qrDraft.url.trim();
+              if (!url || !url.match(/^https?:\/\//)) { return; }
+              if (socket) socket.emit('qr-overlay-set', { roomId: roomId, url: url, label: qrDraft.label.trim() });
+              setShowQrSet(false);
+            }} disabled={!qrDraft.url.trim().match(/^https?:\/\//)} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: qrDraft.url.trim().match(/^https?:\/\//) ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: qrDraft.url.trim().match(/^https?:\/\//) ? 1 : 0.5 }}>
+              SHOW QR
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 60: Sub-Goal Set panel (host) ══ */}
+      {showSubGoalSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🎯 SUB GOAL</span>
+              <button onClick={function() { setShowSubGoalSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={subGoalDraft.label}
+              onChange={function(e) { setSubGoalDraft(function(d) { return Object.assign({}, d, { label: e.target.value.slice(0, 50) }); }); }}
+              placeholder="Goal label"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <input value={subGoalDraft.target} type="number" min="1" max="100000"
+              onChange={function(e) { setSubGoalDraft(function(d) { return Object.assign({}, d, { target: e.target.value }); }); }}
+              placeholder="Target count"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 10 }} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() {
+                var t = parseInt(subGoalDraft.target, 10);
+                if (!t || t < 1) return;
+                if (socket) socket.emit('sub-goal-set', { roomId: roomId, target: t, current: 0, label: subGoalDraft.label.trim() || 'Subscriber Goal' });
+                setShowSubGoalSet(false);
+              }} style={{ flex: 1, background: GOLD, border: 'none', borderRadius: 10, padding: '8px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                SET GOAL
+              </button>
+              {subGoal && (
+                <button onClick={function() {
+                  if (socket) socket.emit('sub-goal-add', { roomId: roomId, inc: 1 });
+                }} style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, padding: '8px', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: GOLD, cursor: 'pointer', letterSpacing: 1 }}>
+                  +1
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
