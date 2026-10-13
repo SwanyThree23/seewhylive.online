@@ -12,7 +12,6 @@ var Database = require('better-sqlite3');
 
 // ─── Immutable revenue split ──────────────────────────────────────────────
 var CREATOR = 0.90;
-var PLATFORM = 0.10; // eslint-disable-line no-unused-vars
 
 // ─── Stripe client ────────────────────────────────────────────────────────
 var stripeClient = null;
