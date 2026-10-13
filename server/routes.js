@@ -104,6 +104,36 @@ var webhookTestRateLimit = rateLimit({
   message: { error: 'Too many webhook test requests — please wait.' },
 });
 
+var payoutRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many payout requests — please wait.' },
+});
+
+var subscribePayRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many subscription requests — please wait.' },
+});
+
+var pushSubscribeRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many push subscription requests — please wait.' },
+});
+
 // ─── Optional module loading (graceful fallback) ──────────────────────────────
 var analytics = null;
 try { analytics = require('./analytics'); } catch (e) { console.warn('[routes] analytics module unavailable'); }
@@ -136,6 +166,9 @@ var _pushSubscriptions = {};
 // ─── AURA routes ──────────────────────────────────────────────────────────────
 
 router.get('/aura/usage', requireAuth, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'forbidden' });
+  }
   try {
     var streamId = String(req.query.streamId || '');
     if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
@@ -524,7 +557,7 @@ router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
   }
 });
 
-router.post('/payments/payout', requireAuth, function(req, res) {
+router.post('/payments/payout', requireAuth, payoutRateLimit, function(req, res) {
   try {
     var creatorId = req.user.id;
     var amountCents = req.body.amountCents || 0;
@@ -546,7 +579,7 @@ router.post('/payments/payout', requireAuth, function(req, res) {
   }
 });
 
-router.post('/payments/subscribe', requireAuth, function(req, res) {
+router.post('/payments/subscribe', requireAuth, subscribePayRateLimit, function(req, res) {
   try {
     var subscriberId = req.user.id;
     var creatorId = String(req.body.creatorId || '');
@@ -656,7 +689,7 @@ router.get('/users/me/earnings', requireAuth, function(req, res) {
 
 // ─── NOTIFICATION routes ──────────────────────────────────────────────────────
 
-router.post('/push/subscribe', requireAuth, function(req, res) {
+router.post('/push/subscribe', requireAuth, pushSubscribeRateLimit, function(req, res) {
   try {
     var userId = req.user.id;
     var raw = req.body.subscription || {};
