@@ -15,12 +15,20 @@ var inputStyle = {
 };
 
 var textareaStyle = {
-  ...inputStyle,
-  resize: 'none',
-  minHeight: 80,
+  width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
+  fontSize: 13, outline: 'none', boxSizing: 'border-box',
+  fontFamily: 'Barlow Condensed, sans-serif',
+  resize: 'none', minHeight: 80,
 };
 
-function Modal({ open, onClose, title, titleColor, children }) {
+function Modal(props) {
+  var open       = props.open;
+  var onClose    = props.onClose;
+  var title      = props.title;
+  var titleColor = props.titleColor;
+  var children   = props.children;
+
   if (!open) return null;
   return (
     <div
@@ -28,8 +36,8 @@ function Modal({ open, onClose, title, titleColor, children }) {
       onClick={onClose}
     >
       <div
-        style={{ background: '#080B18', border: `1px solid ${titleColor || 'rgba(212,175,55,0.2)'}`, borderRadius: 12, padding: 24, maxWidth: 512, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
-        onClick={e => e.stopPropagation()}
+        style={{ background: '#080B18', border: '1px solid ' + (titleColor || 'rgba(212,175,55,0.2)'), borderRadius: 12, padding: 24, maxWidth: 512, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
+        onClick={function(e) { e.stopPropagation(); }}
       >
         <h2 style={{ color: titleColor || '#d4af37', fontWeight: 700, fontSize: 16, marginBottom: 16 }}>{title}</h2>
         {children}
@@ -38,35 +46,47 @@ function Modal({ open, onClose, title, titleColor, children }) {
   );
 }
 
-export default function VideoLibrary({ creatorId }) {
+export default function VideoLibrary(props) {
+  var creatorId = props.creatorId;
+
   var qc = useQueryClient();
-  var [trimTarget, setTrimTarget] = useState(null);
-  var [chapterTarget, setChapterTarget] = useState(null);
-  var [showAdd, setShowAdd] = useState(false);
-  var [newVOD, setNewVOD] = useState({ title: '', video_url: '', description: '' });
+  var trimTargetState = useState(null);
+  var trimTarget    = trimTargetState[0];
+  var setTrimTarget = trimTargetState[1];
+  var chapterTargetState = useState(null);
+  var chapterTarget    = chapterTargetState[0];
+  var setChapterTarget = chapterTargetState[1];
+  var showAddState = useState(false);
+  var showAdd    = showAddState[0];
+  var setShowAdd = showAddState[1];
+  var newVODState = useState({ title: '', video_url: '', description: '' });
+  var newVOD    = newVODState[0];
+  var setNewVOD = newVODState[1];
 
-  var { data: vods = [] } = useQuery({
+  var vodsQuery = useQuery({
     queryKey: ['vod-library', creatorId],
-    queryFn: () => base44.entities.VODVideo.filter({ creator_id: creatorId }, '-created_date', 30),
+    queryFn: function() { return base44.entities.VODVideo.filter({ creator_id: creatorId }, '-created_date', 30); },
     enabled: !!creatorId,
   });
+  var vods = vodsQuery.data || [];
 
-  var { data: recordings = [] } = useQuery({
+  var recordingsQuery = useQuery({
     queryKey: ['recordings-for-vod', creatorId],
-    queryFn: () => base44.entities.Recording.filter({ host_id: creatorId }, '-created_date', 10),
+    queryFn: function() { return base44.entities.Recording.filter({ host_id: creatorId }, '-created_date', 10); },
     enabled: !!creatorId,
   });
+  var recordings = recordingsQuery.data || [];
 
   var updateVOD = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
-    onError: () => toast.error('Failed to save changes.'),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['vod-library', creatorId] }); toast.success('Saved!'); },
+    mutationFn: function(params) { return base44.entities.VODVideo.update(params.id, params.data); },
+    onError: function() { toast.error('Failed to save changes.'); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['vod-library', creatorId] }); toast.success('Saved!'); },
   });
 
   var createVOD = useMutation({
-    mutationFn: (data) => base44.entities.VODVideo.create({ ...data, creator_id: creatorId, status: 'draft' }),
-    onError: () => toast.error('Failed to add VOD. Please try again.'),
-    onSuccess: (vod) => {
+    mutationFn: function(data) { return base44.entities.VODVideo.create(Object.assign({}, data, { creator_id: creatorId, status: 'draft' })); },
+    onError: function() { toast.error('Failed to add VOD. Please try again.'); },
+    onSuccess: function(vod) {
       qc.invalidateQueries({ queryKey: ['vod-library', creatorId] });
       setShowAdd(false);
       setNewVOD({ title: '', video_url: '', description: '' });
@@ -76,12 +96,12 @@ export default function VideoLibrary({ creatorId }) {
           user_id: creatorId,
           type: 'clip_created',
           title: 'Added VOD: ' + ((vod && vod.title) || 'New Video'),
-        }).catch(() => {});
+        }).catch(function() {});
       }
     },
   });
 
-  var importRecording = (rec) => {
+  var importRecording = function(rec) {
     createVOD.mutate({
       title: rec.title,
       video_url: rec.stream_url || '',
@@ -91,106 +111,110 @@ export default function VideoLibrary({ creatorId }) {
     });
   };
 
-  var handlePublish = (vod) => updateVOD.mutate({ id: vod.id, data: { status: 'published' } });
+  var handlePublish = function(vod) { updateVOD.mutate({ id: vod.id, data: { status: 'published' } }); };
+
+  var readyRecordings = recordings.filter(function(r) { return r.status === 'ready'; });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-[#d4af37] flex items-center gap-2">
-          <Video className="w-4 h-4" /> Video Library
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, color: '#d4af37', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+          <Video style={{ width: 16, height: 16 }} /> Video Library
         </h3>
-        <div className="flex gap-2">
-          {recordings.filter(r => r.status === 'ready').length > 0 && (
+        <div style={{ display: 'flex', gap: 8 }}>
+          {readyRecordings.length > 0 && (
             <button
-              onClick={() => importRecording(recordings.find(r => r.status === 'ready'))}
+              onClick={function() { importRecording(readyRecordings[0]); }}
               style={{
                 height: 32, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6,
                 fontSize: 12, borderRadius: 8, cursor: 'pointer',
                 background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)',
               }}
             >
-              <Upload className="w-3.5 h-3.5" /> Import Recording
+              <Upload style={{ width: 14, height: 14 }} /> Import Recording
             </button>
           )}
           <button
-            onClick={() => setShowAdd(true)}
+            onClick={function() { setShowAdd(true); }}
             style={{
               height: 32, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6,
               fontSize: 12, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
               background: '#d4af37', color: '#000', border: 'none',
             }}
           >
-            <Plus className="w-3.5 h-3.5" /> Add VOD
+            <Plus style={{ width: 14, height: 14 }} /> Add VOD
           </button>
         </div>
       </div>
 
       {vods.length === 0 ? (
-        <div className="text-center py-12 text-white/30">
-          <Video className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No videos yet — add one or import a past recording</p>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: 'rgba(255,255,255,0.3)' }}>
+          <Video style={{ width: 40, height: 40, margin: '0 auto 12px', display: 'block', opacity: 0.3 }} />
+          <p style={{ fontSize: 14 }}>No videos yet — add one or import a past recording</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {vods.map(vod => (
-            <VODCard
-              key={vod.id}
-              vod={vod}
-              onTrim={setTrimTarget}
-              onChapters={setChapterTarget}
-              onPublish={handlePublish}
-            />
-          ))}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
+          {vods.map(function(vod) {
+            return (
+              <VODCard
+                key={vod.id}
+                vod={vod}
+                onTrim={setTrimTarget}
+                onChapters={setChapterTarget}
+                onPublish={handlePublish}
+              />
+            );
+          })}
         </div>
       )}
 
       {/* Trim Modal */}
-      <Modal open={!!trimTarget} onClose={() => setTrimTarget(null)} title="Trim Video" titleColor="#d4af37">
+      <Modal open={!!trimTarget} onClose={function() { setTrimTarget(null); }} title="Trim Video" titleColor="#d4af37">
         {trimTarget && (
           <VODTrimEditor
             video={trimTarget}
-            onSave={(data) => { updateVOD.mutate({ id: trimTarget.id, data }); setTrimTarget(null); }}
-            onCancel={() => setTrimTarget(null)}
+            onSave={function(data) { updateVOD.mutate({ id: trimTarget.id, data: data }); setTrimTarget(null); }}
+            onCancel={function() { setTrimTarget(null); }}
           />
         )}
       </Modal>
 
       {/* Chapters Modal */}
-      <Modal open={!!chapterTarget} onClose={() => setChapterTarget(null)} title="Chapter Markers" titleColor="#D4AF37">
+      <Modal open={!!chapterTarget} onClose={function() { setChapterTarget(null); }} title="Chapter Markers" titleColor="#D4AF37">
         {chapterTarget && (
           <ChapterEditor
             video={chapterTarget}
-            onSave={(data) => { updateVOD.mutate({ id: chapterTarget.id, data }); setChapterTarget(null); }}
-            onCancel={() => setChapterTarget(null)}
+            onSave={function(data) { updateVOD.mutate({ id: chapterTarget.id, data: data }); setChapterTarget(null); }}
+            onCancel={function() { setChapterTarget(null); }}
           />
         )}
       </Modal>
 
       {/* Add VOD Modal */}
-      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add VOD to Library" titleColor="#d4af37">
-        <div className="space-y-3">
+      <Modal open={showAdd} onClose={function() { setShowAdd(false); }} title="Add VOD to Library" titleColor="#d4af37">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input
             placeholder="Video title..."
             value={newVOD.title}
-            onChange={e => setNewVOD(p => ({ ...p, title: e.target.value }))}
+            onChange={function(e) { setNewVOD(function(p) { return Object.assign({}, p, { title: e.target.value }); }); }}
             style={inputStyle}
           />
           <input
             placeholder="Video URL (stream URL, direct link...)"
             value={newVOD.video_url}
-            onChange={e => setNewVOD(p => ({ ...p, video_url: e.target.value }))}
+            onChange={function(e) { setNewVOD(function(p) { return Object.assign({}, p, { video_url: e.target.value }); }); }}
             style={inputStyle}
           />
           <textarea
             placeholder="Description (optional)..."
             value={newVOD.description}
-            onChange={e => setNewVOD(p => ({ ...p, description: e.target.value }))}
+            onChange={function(e) { setNewVOD(function(p) { return Object.assign({}, p, { description: e.target.value }); }); }}
             rows={3}
             style={textareaStyle}
           />
-          <div className="flex gap-2 pt-1">
+          <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
             <button
-              onClick={() => setShowAdd(false)}
+              onClick={function() { setShowAdd(false); }}
               style={{
                 fontSize: 12, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
                 background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)',
@@ -200,7 +224,7 @@ export default function VideoLibrary({ creatorId }) {
             </button>
             <button
               disabled={!newVOD.title || createVOD.isPending}
-              onClick={() => createVOD.mutate(newVOD)}
+              onClick={function() { createVOD.mutate(newVOD); }}
               style={{
                 marginLeft: 'auto', fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
                 background: '#d4af37', color: '#000', border: 'none',

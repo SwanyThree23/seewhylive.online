@@ -1,27 +1,39 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, BookOpen, Save } from 'lucide-react';
 
-export default function ChapterEditor({ video, onSave, onCancel }) {
-  var [chapters, setChapters] = useState(video.chapters || []);
-  var [newTime, setNewTime] = useState('');
-  var [newTitle, setNewTitle] = useState('');
+export default function ChapterEditor(props) {
+  var video    = props.video;
+  var onSave   = props.onSave;
+  var onCancel = props.onCancel;
 
-  var addChapter = () => {
+  var chapState = useState(video.chapters || []);
+  var chapters  = chapState[0];
+  var setChapters = chapState[1];
+  var timeState = useState('');
+  var newTime   = timeState[0];
+  var setNewTime = timeState[1];
+  var titleState = useState('');
+  var newTitle  = titleState[0];
+  var setNewTitle = titleState[1];
+
+  var fmt = function(s) {
+    var m   = Math.floor(s / 60);
+    var sec = Math.floor(s % 60);
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  };
+
+  var addChapter = function() {
     if (!newTitle || newTime === '') return;
     var t = Number(newTime);
-    var updated = [...chapters, { time: t, title: newTitle }]
-      .sort((a, b) => a.time - b.time);
+    var updated = chapters.concat([{ time: t, title: newTitle }]);
+    updated.sort(function(a, b) { return a.time - b.time; });
     setChapters(updated);
     setNewTime('');
     setNewTitle('');
   };
 
-  var remove = (i) => setChapters(chapters.filter((_, idx) => idx !== i));
-
-  var fmt = (s) => {
-    var m = Math.floor(s / 60);
-    var sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, '0')}`;
+  var remove = function(i) {
+    setChapters(chapters.filter(function(_, idx) { return idx !== i; }));
   };
 
   var inputStyle = {
@@ -30,38 +42,43 @@ export default function ChapterEditor({ video, onSave, onCancel }) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 text-sm text-white/70">
-        <BookOpen className="w-4 h-4 text-[#D4AF37]" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
+        <BookOpen style={{ width: 16, height: 16, color: '#D4AF37' }} />
         <span>Chapter Markers</span>
-        <span className="ml-auto text-xs text-white/30">{chapters.length} chapters</span>
+        <span style={{ marginLeft: 'auto', fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{chapters.length} chapters</span>
       </div>
 
-      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 192, overflowY: 'auto', paddingRight: 4 }}>
         {chapters.length === 0 && (
-          <p className="text-xs text-white/30 text-center py-4">No chapters yet</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '16px 0', margin: 0 }}>No chapters yet</p>
         )}
-        {chapters.map((ch, i) => (
-          <div key={i} className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2">
-            <span className="text-[#D4AF37] font-mono text-xs w-10 shrink-0">{fmt(ch.time)}</span>
-            <span className="text-sm text-white flex-1 truncate">{ch.title}</span>
-            <button onClick={() => remove(i)} className="text-white/30 hover:text-[#C0392B]" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        ))}
+        {chapters.map(function(ch, i) {
+          return (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '8px 12px' }}>
+              <span style={{ color: '#D4AF37', fontFamily: 'monospace', fontSize: 12, width: 40, flexShrink: 0 }}>{fmt(ch.time)}</span>
+              <span style={{ fontSize: 14, color: '#fff', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ch.title}</span>
+              <button
+                onClick={function() { remove(i); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(255,255,255,0.3)' }}
+              >
+                <Trash2 style={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="flex gap-2">
+      <div style={{ display: 'flex', gap: 8 }}>
         <input
           type="number" placeholder="Time (s)" value={newTime}
-          onChange={e => setNewTime(e.target.value)}
+          onChange={function(e) { setNewTime(e.target.value); }}
           style={{ ...inputStyle, width: 96 }}
         />
         <input
           type="text" placeholder="Chapter title..." value={newTitle}
-          onChange={e => setNewTitle(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && addChapter()}
+          onChange={function(e) { setNewTitle(e.target.value); }}
+          onKeyDown={function(e) { if (e.key === 'Enter') addChapter(); }}
           style={{ ...inputStyle, flex: 1 }}
         />
         <button
@@ -71,11 +88,11 @@ export default function ChapterEditor({ video, onSave, onCancel }) {
             background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)',
           }}
         >
-          <Plus className="w-4 h-4" />
+          <Plus style={{ width: 16, height: 16 }} />
         </button>
       </div>
 
-      <div className="flex gap-2 pt-1">
+      <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
         <button
           onClick={onCancel}
           style={{
@@ -86,14 +103,14 @@ export default function ChapterEditor({ video, onSave, onCancel }) {
           Cancel
         </button>
         <button
-          onClick={() => onSave({ chapters })}
+          onClick={function() { onSave({ chapters: chapters }); }}
           style={{
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
             fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
             background: '#D4AF37', color: '#000', border: 'none',
           }}
         >
-          <Save className="w-3.5 h-3.5" /> Save Chapters
+          <Save style={{ width: 14, height: 14 }} /> Save Chapters
         </button>
       </div>
     </div>

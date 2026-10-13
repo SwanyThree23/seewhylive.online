@@ -5,19 +5,34 @@ import { Video, Clock, Lock } from 'lucide-react';
 
 var G = '#d4af37';
 
-export default function VideoShortRecorder({ roomId, creatorId }) {
-  var [isRecording, isRecordingSet] = useState(false);
-  var [duration, setDuration] = useState(0);
-  var [paywall, setPaywall] = useState(false);
-  var [paywallPrice, setPaywallPrice] = useState(2.99);
-  var [videoTitle, setVideoTitle] = useState('');
-  var [publishing, setPublishing] = useState(false);
+export default function VideoShortRecorder(props) {
+  var roomId    = props.roomId;
+  var creatorId = props.creatorId;
 
-  useEffect(() => {
+  var isRecordingState = useState(false);
+  var isRecording    = isRecordingState[0];
+  var isRecordingSet = isRecordingState[1];
+  var durationState = useState(0);
+  var duration    = durationState[0];
+  var setDuration = durationState[1];
+  var paywallState = useState(false);
+  var paywall    = paywallState[0];
+  var setPaywall = paywallState[1];
+  var paywallPriceState = useState(2.99);
+  var paywallPrice    = paywallPriceState[0];
+  var setPaywallPrice = paywallPriceState[1];
+  var videoTitleState = useState('');
+  var videoTitle    = videoTitleState[0];
+  var setVideoTitle = videoTitleState[1];
+  var publishingState = useState(false);
+  var publishing    = publishingState[0];
+  var setPublishing = publishingState[1];
+
+  useEffect(function() {
     var timer;
     if (isRecording) {
-      timer = setInterval(() => {
-        setDuration(d => {
+      timer = setInterval(function() {
+        setDuration(function(d) {
           if (d >= 600) {
             isRecordingSet(false);
             return 600;
@@ -26,17 +41,17 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
         });
       }, 1000);
     }
-    return () => clearInterval(timer);
+    return function() { clearInterval(timer); };
   }, [isRecording]);
 
-  var handlePublish = async () => {
+  var handlePublish = async function() {
     setPublishing(true);
     try {
       var result = await base44.entities.VODVideo.create({
         room_id: roomId,
         creator_id: creatorId,
         title: videoTitle || 'Untitled Short',
-        description: `Published at ${new Date().toLocaleTimeString()}`,
+        description: 'Published at ' + new Date().toLocaleTimeString(),
         video_url: '',
         thumbnail_url: '',
         duration_seconds: duration,
@@ -59,56 +74,59 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
   var seconds = duration % 60;
   var maxDuration = duration >= 600;
 
+  var inputSmall = {
+    width: '100%', padding: '6px 8px', borderRadius: 6,
+    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+    color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box',
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="p-4 rounded-lg space-y-3"
-      style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}30` }}
+      style={{ padding: 16, borderRadius: 8, background: 'rgba(8,11,24,0.95)', border: '1px solid ' + G + '30', display: 'flex', flexDirection: 'column', gap: 12 }}
     >
-      <div className="flex items-center gap-2">
-        <Video className="w-4 h-4" style={{ color: G }} />
-        <p className="text-xs font-bold" style={{ color: G }}>Create Short (Max 10 min)</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Video style={{ width: 16, height: 16, color: G }} />
+        <p style={{ fontSize: 12, fontWeight: 700, color: G, margin: 0 }}>Create Short (Max 10 min)</p>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${isRecording ? 'animate-pulse' : ''}`}
-            style={{ background: isRecording ? '#C0392B' : 'rgba(255,255,255,0.2)' }} />
-          <span className="text-xs font-bold text-white/70">
-            {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')} / 10:00
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 12, height: 12, borderRadius: '50%', background: isRecording ? '#C0392B' : 'rgba(255,255,255,0.2)' }} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
+            {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')} / 10:00
           </span>
         </div>
         <button
-          onClick={() => isRecordingSet(!isRecording)}
+          onClick={function() { isRecordingSet(!isRecording); }}
           disabled={maxDuration}
-          className="px-3 py-1.5 rounded text-xs font-bold"
-          style={{ background: isRecording ? '#C0392B' : G, color: isRecording ? 'white' : '#000' }}
+          style={{ padding: '6px 12px', borderRadius: 4, fontSize: 12, fontWeight: 700, border: 'none', cursor: maxDuration ? 'not-allowed' : 'pointer', background: isRecording ? '#C0392B' : G, color: isRecording ? 'white' : '#000' }}
         >
           {isRecording ? 'Stop' : 'Record'}
         </button>
       </div>
 
       {duration > 0 && (
-        <>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <input
             type="text"
             placeholder="Short title..."
             value={videoTitle}
-            onChange={(e) => setVideoTitle(e.target.value)}
-            className="w-full px-2 py-1.5 rounded text-xs bg-white/5 border border-white/10 text-white placeholder-white/30"
+            onChange={function(e) { setVideoTitle(e.target.value); }}
+            style={inputSmall}
           />
 
-          <div className="flex items-center gap-2 p-2 rounded" style={{ background: 'rgba(255,255,255,0.02)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 8, borderRadius: 4, background: 'rgba(255,255,255,0.02)' }}>
             <input
               type="checkbox"
               id="paywall"
               checked={paywall}
-              onChange={(e) => setPaywall(e.target.checked)}
-              className="w-3 h-3"
+              onChange={function(e) { setPaywall(e.target.checked); }}
+              style={{ width: 12, height: 12 }}
             />
-            <label htmlFor="paywall" className="text-xs text-white/70 flex items-center gap-1">
-              <Lock className="w-3 h-3" style={{ color: G }} />
+            <label htmlFor="paywall" style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Lock style={{ width: 12, height: 12, color: G }} />
               Paywall (viewers pay to watch)
             </label>
           </div>
@@ -119,8 +137,8 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
               min="0.99"
               step="0.01"
               value={paywallPrice}
-              onChange={(e) => setPaywallPrice(Number(e.target.value))}
-              className="w-full px-2 py-1.5 rounded text-xs bg-white/5 border border-white/10 text-white"
+              onChange={function(e) { setPaywallPrice(Number(e.target.value)); }}
+              style={inputSmall}
               placeholder="Price in USD"
             />
           )}
@@ -128,12 +146,11 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
           <button
             onClick={handlePublish}
             disabled={publishing || !videoTitle}
-            className="w-full px-3 py-2 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
-            style={{ background: G, color: '#000' }}
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, border: 'none', cursor: (publishing || !videoTitle) ? 'not-allowed' : 'pointer', background: G, color: '#000', opacity: (publishing || !videoTitle) ? 0.5 : 1 }}
           >
             {publishing ? 'Publishing...' : 'Publish Short'}
           </button>
-        </>
+        </div>
       )}
     </motion.div>
   );
