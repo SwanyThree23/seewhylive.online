@@ -85,6 +85,7 @@ async function handleTenantCheckoutCompleted(session) {
   var result = await db.query(
     `INSERT INTO tenants (name, subdomain, plan_tier, feature_flags, stripe_customer_id, stripe_subscription_id, owner_email, active)
      VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+     ON CONFLICT (stripe_subscription_id) DO NOTHING
      RETURNING *`,
     [
       finalSubdomain,
@@ -97,7 +98,13 @@ async function handleTenantCheckoutCompleted(session) {
     ]
   );
 
-  return result.rows[0];
+  if (result.rows[0]) return result.rows[0];
+  // Concurrent webhook delivery already created the row — re-fetch it.
+  var fetched = await db.query(
+    'SELECT * FROM tenants WHERE stripe_subscription_id = $1',
+    [session.subscription]
+  );
+  return fetched.rows[0] || null;
 }
 
 async function createBillingPortalSession(tenantId) {

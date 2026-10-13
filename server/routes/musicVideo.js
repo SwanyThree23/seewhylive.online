@@ -100,11 +100,15 @@ router.get('/jobs', requireAuth, async function(req, res) {
   var userId = req.user.userId || req.user.id;
   try {
     var result = await db.query(
-      'SELECT id, style, status, output_path, error, created_at, updated_at ' +
+      'SELECT id, style, status, error, created_at, updated_at ' +
       'FROM music_video_jobs WHERE user_id=$1 AND tenant_id=$2 ORDER BY created_at DESC LIMIT 20',
       [userId, req.tenantId]
     );
-    res.json({ jobs: result.rows });
+    var jobs = result.rows.map(function(row) {
+      row.downloadUrl = row.status === 'done' ? '/api/music-video/output/mv_' + row.id + '.mp4' : null;
+      return row;
+    });
+    res.json({ jobs: jobs });
   } catch (e) {
     res.status(500).json({ error: 'Failed to fetch jobs' });
   }
@@ -114,12 +118,14 @@ router.get('/jobs/:id', requireAuth, async function(req, res) {
   var userId = req.user.userId || req.user.id;
   try {
     var result = await db.query(
-      'SELECT id, style, status, output_path, error, created_at, updated_at ' +
+      'SELECT id, style, status, error, created_at, updated_at ' +
       'FROM music_video_jobs WHERE id=$1 AND user_id=$2 AND tenant_id=$3',
       [req.params.id, userId, req.tenantId]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'Job not found' });
-    res.json(result.rows[0]);
+    var row = result.rows[0];
+    row.downloadUrl = row.status === 'done' ? '/api/music-video/output/mv_' + row.id + '.mp4' : null;
+    res.json(row);
   } catch (e) {
     res.status(500).json({ error: 'Failed to fetch job' });
   }

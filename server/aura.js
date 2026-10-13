@@ -44,18 +44,18 @@ var MODES = {
 };
 
 // ---------------------------------------------------------------------------
-// Current mode state
+// Current mode state — per-tenant so one host's mode change can't affect another
 // ---------------------------------------------------------------------------
-var _currentMode = 'hype';
+var _modes = {};
 
-function setMode(mode) {
+function setMode(tenantId, mode) {
   if (MODES[mode]) {
-    _currentMode = mode;
+    _modes[tenantId || '_default'] = mode;
   }
 }
 
-function getMode() {
-  return _currentMode;
+function getMode(tenantId) {
+  return _modes[tenantId || '_default'] || 'hype';
 }
 
 // ---------------------------------------------------------------------------
@@ -313,50 +313,50 @@ function enqueue(type, params, callback) {
 // ---------------------------------------------------------------------------
 // Trigger functions (public API)
 // ---------------------------------------------------------------------------
-function triggerStreamStart(streamId, streamTitle, viewerCount, callback) {
+function triggerStreamStart(streamId, streamTitle, viewerCount, callback, tenantId) {
   enqueue('streamStart', {
     streamId: streamId,
     streamTitle: streamTitle,
     viewerCount: viewerCount,
-    mode: _currentMode
+    mode: getMode(tenantId)
   }, callback);
 }
 
-function triggerTip(streamId, viewerName, amountCents, note, callback) {
+function triggerTip(streamId, viewerName, amountCents, note, callback, tenantId) {
   enqueue('tip', {
     streamId: streamId,
     viewerName: viewerName,
     amountCents: Math.floor(amountCents),
     note: note,
-    mode: _currentMode
+    mode: getMode(tenantId)
   }, callback);
 }
 
-function triggerGift(streamId, viewerName, giftName, amountCents, callback) {
+function triggerGift(streamId, viewerName, giftName, amountCents, callback, tenantId) {
   enqueue('gift', {
     streamId: streamId,
     viewerName: viewerName,
     giftName: giftName,
     amountCents: Math.floor(amountCents),
-    mode: _currentMode
+    mode: getMode(tenantId)
   }, callback);
 }
 
-function triggerNewViewer(streamId, viewerName, isReturning, callback) {
+function triggerNewViewer(streamId, viewerName, isReturning, callback, tenantId) {
   enqueue('newViewer', {
     streamId: streamId,
     viewerName: viewerName,
     isReturning: isReturning,
-    mode: _currentMode
+    mode: getMode(tenantId)
   }, callback);
 }
 
-function triggerStreamEnd(streamId, peakViewers, totalEarningsCents, callback) {
+function triggerStreamEnd(streamId, peakViewers, totalEarningsCents, callback, tenantId) {
   enqueue('streamEnd', {
     streamId: streamId,
     peakViewers: peakViewers,
     totalEarningsCents: Math.floor(totalEarningsCents),
-    mode: _currentMode
+    mode: getMode(tenantId)
   }, callback);
 }
 
@@ -369,7 +369,7 @@ function generateGreeting(username) {
     return Promise.resolve('Welcome ' + username + ' to SeeWhy LIVE!');
   }
   incrementHourlyCount(key);
-  var systemPrompt = MODES[_currentMode] || MODES['hype'];
+  var systemPrompt = MODES[getMode()] || MODES['hype'];
   return getClient().messages.create({
     model: MODEL,
     max_tokens: 128,
@@ -398,7 +398,7 @@ function generateHype(giftName, giftValue, username) {
     return Promise.resolve((username || 'Someone') + ' just blessed the stream!');
   }
   incrementHourlyCount(key);
-  var systemPrompt = MODES[_currentMode] || MODES['hype'];
+  var systemPrompt = MODES[getMode()] || MODES['hype'];
   var content;
   if (giftName == null || giftValue == null) {
     content = 'The SeeWhy LIVE domino stream is absolutely on fire right now — hype up the crowd and keep the energy soaring!';
@@ -438,7 +438,7 @@ function generateShoutout(username, tier) {
     return Promise.resolve('Big shoutout to ' + username + ' for the ' + tier + ' subscription!');
   }
   incrementHourlyCount(key);
-  var systemPrompt = MODES[_currentMode] || MODES['hype'];
+  var systemPrompt = MODES[getMode()] || MODES['hype'];
   return getClient().messages.create({
     model: MODEL,
     max_tokens: 128,

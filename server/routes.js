@@ -194,7 +194,7 @@ router.post('/aura/mode', requireAuth, function(req, res) {
     var VALID_MODES = ['hype', 'chill', 'professional', 'comedy'];
     var mode = VALID_MODES.includes(req.body.mode) ? req.body.mode : 'hype';
     if (aura) {
-      aura.setMode(mode);
+      aura.setMode(req.tenantId, mode);
     }
     return res.json({ mode: mode, success: true });
   } catch (err) {
