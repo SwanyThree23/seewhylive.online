@@ -120,7 +120,7 @@ var stmtIsShadowBanned = db.prepare(
 );
 
 var stmtGetShadowBans = db.prepare(
-  'SELECT * FROM shadow_bans ORDER BY created_at DESC'
+  'SELECT * FROM shadow_bans ORDER BY created_at DESC LIMIT 500'
 );
 
 var stmtInsertSubscription = db.prepare(
