@@ -11,6 +11,12 @@ const HEARTBEAT_MS = 5000;
 const MAX_DRIFT_MS = 300;
 const BATTLE_WIN_POINTS = 100; // adjust to taste
 
+// Only these pre-defined gift denominations (in cents) are accepted as vote weights.
+// Arbitrary values from the client must be rejected because there is currently no
+// server-side charge verification — a whitelist prevents score inflation without
+// requiring a chargeId lookup.
+const VALID_GIFT_CENTS = new Set([100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000]);
+
 const activeTimers       = new Map(); // battleId -> interval handle
 const voteThrottle       = new Map(); // userId -> last vote timestamp (2s)
 const challengeThrottle  = new Map(); // userId -> last challenge timestamp (10s)
@@ -140,10 +146,8 @@ function registerBattleHandlers(io, socket) {
         if (cb) cb({ ok: false, error: 'giftValueCents must be a positive integer' });
         return;
       }
-      // Cap at $500 per vote to limit score inflation from unverified client values
-      const MAX_VOTE_CENTS = 50000;
-      if (cents > MAX_VOTE_CENTS) {
-        if (cb) cb({ ok: false, error: 'giftValueCents exceeds maximum' });
+      if (!VALID_GIFT_CENTS.has(cents)) {
+        if (cb) cb({ ok: false, error: 'giftValueCents is not a valid gift denomination' });
         return;
       }
       if (payload.side !== 'challenger' && payload.side !== 'defender') {

@@ -43,7 +43,7 @@ router.get('/me/:userId', requireAuth, async function(req, res) {
   }
 });
 
-router.get('/tiers', async function(req, res) {
+router.get('/tiers', requireAuth, async function(req, res) {
   try {
     var data = await rewardsService.getTiers(req.tenantId);
     res.json(data);
@@ -53,7 +53,7 @@ router.get('/tiers', async function(req, res) {
   }
 });
 
-router.get('/challenges', async function(req, res) {
+router.get('/challenges', requireAuth, async function(req, res) {
   try {
     var data = await rewardsService.getActiveChallenges(req.tenantId);
     res.json(data);
