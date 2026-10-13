@@ -54,6 +54,7 @@ try {
   console.warn('[push] web-push not loaded: ' + wpErr.message);
 }
 
+var pgDb         = require('./db');
 var mediasoup    = require('./mediasoup');
 var rtmp         = require('./rtmp');
 var bridge       = require('./mediasoup-rtmp-bridge');
@@ -1115,21 +1116,27 @@ app.get('/api/clips/:roomId', requireAuth, function(req, res) {
 });
 
 // POST /api/connect/onboard
-app.post('/api/connect/onboard', requireAuth, stripeOnboardRateLimit, function(req, res) {
-  var body = req.body;
-  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  var _ceEmail = String(body.email || '').slice(0, 254);
-  if (!_ceEmail || !EMAIL_RE.test(_ceEmail)) {
-    res.status(400).json({ error: 'valid email is required' });
-    return;
+app.post('/api/connect/onboard', requireAuth, stripeOnboardRateLimit, async function(req, res) {
+  try {
+    var _emailRow = await pgDb.query(
+      'SELECT email FROM users WHERE id = $1 AND tenant_id = $2',
+      [req.user.id, req.tenantId]
+    );
+    if (!_emailRow.rows[0] || !_emailRow.rows[0].email) {
+      return res.status(400).json({ error: 'no verified email on file for this account' });
+    }
+    var _ceEmail = _emailRow.rows[0].email;
+    stripeModule.createConnectAccount(_ceEmail)
+      .then(function(result) {
+        res.json(result);
+      }).catch(function(err) {
+        logger.error('[connect/onboard] ' + err.message);
+        res.status(500).json({ error: 'Internal server error' });
+      });
+  } catch (err) {
+    logger.error('[connect/onboard] email lookup failed: ' + err.message);
+    res.status(500).json({ error: 'Internal server error' });
   }
-  stripeModule.createConnectAccount(_ceEmail)
-    .then(function(result) {
-      res.json(result);
-    }).catch(function(err) {
-      logger.error('[connect/onboard] ' + err.message);
-      res.status(500).json({ error: 'Internal server error' });
-    });
 });
 
 // POST /api/turn/credentials

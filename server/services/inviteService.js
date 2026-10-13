@@ -81,11 +81,11 @@ async function redeemInviteLink(token, tenantId) {
   return result.rows[0];
 }
 
-async function revokeInviteLink(inviteId, createdBy) {
+async function revokeInviteLink(inviteId, createdBy, tenantId) {
   const result = await db.query(
     `UPDATE stream_guest_invites SET revoked_at = now()
-     WHERE id = $1 AND created_by = $2 AND revoked_at IS NULL RETURNING *`,
-    [inviteId, createdBy]
+     WHERE id = $1 AND created_by = $2 AND tenant_id = $3 AND revoked_at IS NULL RETURNING *`,
+    [inviteId, createdBy, tenantId]
   );
   return result.rows[0];
 }
