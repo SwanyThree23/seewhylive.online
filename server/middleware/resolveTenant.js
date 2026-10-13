@@ -21,6 +21,11 @@ async function lookupTenant(host) {
   var hit = cache.get(subdomain);
 
   if (hit && hit.expires > Date.now()) {
+    if (!hit.tenant.active) {
+      var cached = new Error('tenant suspended');
+      cached.code = 'TENANT_SUSPENDED';
+      throw cached;
+    }
     return hit.tenant;
   }
 

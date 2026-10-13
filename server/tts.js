@@ -20,6 +20,13 @@ function _ttsRateLimited(userId) {
   if (times.length >= TTS_RATE_MAX) return true;
   times.push(now);
   _ttsWindow.set(userId, times);
+  // Evict after window expires so one-call users don't accumulate in memory forever.
+  setTimeout(function() {
+    var cur = _ttsWindow.get(userId) || [];
+    if (cur.every(function(t) { return Date.now() - t >= TTS_RATE_WINDOW_MS; })) {
+      _ttsWindow.delete(userId);
+    }
+  }, TTS_RATE_WINDOW_MS + 100);
   return false;
 }
 

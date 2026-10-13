@@ -84,13 +84,24 @@ function extractVaultId(ref) {
     : null;
 }
 
+function cleanupVaultRefs(vaultRefs) {
+  Object.keys(vaultRefs).forEach(function(platform) {
+    var vaultId = extractVaultId(vaultRefs[platform]);
+    if (vaultId) {
+      db.query('SELECT vault.delete_secret($1)', [vaultId]).catch(function(e) {
+        console.error('[directPay] vault cleanup failed for', vaultId, e.message);
+      });
+    }
+  });
+}
+
 router.post('/', requireAuth, directPayLimit, async function(req, res) {
   var rawHandles = sanitizeHandles(req.body && req.body.handles);
   var userId = req.user.id;
   var tenantId = req.tenantId;
 
+  var vaultRefs = {};
   try {
-    var vaultRefs = {};
     for (var platform in rawHandles) {
       var vaultId = await storeSecretInVault(
         rawHandles[platform],
@@ -99,27 +110,35 @@ router.post('/', requireAuth, directPayLimit, async function(req, res) {
       );
       vaultRefs[platform] = 'vault:' + vaultId;
     }
-
-    var selectPath = '/rest/v1/user_settings?user_id=eq.' + encodeURIComponent(userId) +
-      '&tenant_id=eq.' + encodeURIComponent(tenantId) +
-      '&setting_key=eq.direct_pay_handles&select=id';
-
-    sbReq('GET', selectPath, null, function(err, status, existing) {
-      if (err) return res.status(500).json({ error: 'Failed to check existing settings' });
-
-      var op = (Array.isArray(existing) && existing.length > 0)
-        ? { method: 'PATCH', path: '/rest/v1/user_settings?id=eq.' + encodeURIComponent(existing[0].id) + '&tenant_id=eq.' + encodeURIComponent(tenantId), body: { setting_value: vaultRefs, updated_at: new Date().toISOString() } }
-        : { method: 'POST', path: '/rest/v1/user_settings', body: { tenant_id: tenantId, user_id: userId, setting_key: 'direct_pay_handles', setting_value: vaultRefs } };
-
-      sbReq(op.method, op.path, op.body, function(err2, status2) {
-        if (err2 || status2 >= 400) return res.status(500).json({ error: 'Failed to save direct pay handles' });
-        res.json({ handles: rawHandles });
-      });
-    });
   } catch (e) {
     console.error('[directPay] vault store error:', e.message);
-    res.status(500).json({ error: 'Failed to save direct pay handles' });
+    cleanupVaultRefs(vaultRefs);
+    return res.status(500).json({ error: 'Failed to save direct pay handles' });
   }
+
+  var selectPath = '/rest/v1/user_settings?user_id=eq.' + encodeURIComponent(userId) +
+    '&tenant_id=eq.' + encodeURIComponent(tenantId) +
+    '&setting_key=eq.direct_pay_handles&select=id';
+
+  sbReq('GET', selectPath, null, function(err, status, existing) {
+    if (err) {
+      cleanupVaultRefs(vaultRefs);
+      return res.status(500).json({ error: 'Failed to check existing settings' });
+    }
+
+    // Include user_id in the PATCH filter to prevent cross-user overwrite if RLS is misconfigured.
+    var op = (Array.isArray(existing) && existing.length > 0)
+      ? { method: 'PATCH', path: '/rest/v1/user_settings?id=eq.' + encodeURIComponent(existing[0].id) + '&user_id=eq.' + encodeURIComponent(userId) + '&tenant_id=eq.' + encodeURIComponent(tenantId), body: { setting_value: vaultRefs, updated_at: new Date().toISOString() } }
+      : { method: 'POST', path: '/rest/v1/user_settings', body: { tenant_id: tenantId, user_id: userId, setting_key: 'direct_pay_handles', setting_value: vaultRefs } };
+
+    sbReq(op.method, op.path, op.body, function(err2, status2) {
+      if (err2 || status2 >= 400) {
+        cleanupVaultRefs(vaultRefs);
+        return res.status(500).json({ error: 'Failed to save direct pay handles' });
+      }
+      res.json({ handles: rawHandles });
+    });
+  });
 });
 
 async function loadAndDecryptHandles(userId, tenantId, res) {
