@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import panelService from '../../services/panelService';
 
 var BG = '#0C0806';
-var GOLD = '#D4AF37';
-var CREAM = '#F5F5DC';
+var GOLD = '#C9A84C';
+var CREAM = '#F0E8D4';
 
 export default function JoinRequestQueue({ socket, roomId }) {
   var [requests, setRequests] = useState([]);
@@ -19,7 +19,7 @@ export default function JoinRequestQueue({ socket, roomId }) {
     return unsub;
   }, [socket, roomId]);
 
-  async function handleResolve(userId, approve) {
+  var handleResolve = async function(userId, approve) {
     try {
       await panelService.resolveJoinRequest(socket, roomId, userId, approve);
       setRequests(function(prev) { return prev.filter(function(r) { return r.user_id !== userId; }); });

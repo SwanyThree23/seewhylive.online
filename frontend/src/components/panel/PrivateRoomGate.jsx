@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import panelService from '../../services/panelService';
 
 var BG = '#0C0806';
-var GOLD = '#D4AF37';
-var CREAM = '#F5F5DC';
-var RED = '#dc2626';
+var GOLD = '#C9A84C';
+var CREAM = '#F0E8D4';
+var RED = '#FF1A3C';
 
-export default function PrivateRoomGate({ socket, roomId, gatingMode, onJoined }) {
+export default function PrivateRoomGate({ socket, roomId, userId, gatingMode, onJoined }) {
   var [code, setCode] = useState('');
   var [error, setError] = useState(null);
   var [requested, setRequested] = useState(false);
@@ -18,7 +18,7 @@ export default function PrivateRoomGate({ socket, roomId, gatingMode, onJoined }
   useEffect(function() {
     if (!socket || gatingMode !== 'approval') return;
     var unsub = panelService.onJoinRequestResolved(socket, function(payload) {
-      if (payload.roomId !== roomId) return;
+      if (payload.roomId !== roomId || payload.userId !== userId) return;
       if (payload.approve) {
         // Approved — claim the slot now
         panelService.joinPanel(socket, roomId, null)
@@ -32,7 +32,7 @@ export default function PrivateRoomGate({ socket, roomId, gatingMode, onJoined }
     return unsub;
   }, [socket, roomId, gatingMode]);
 
-  async function handleCodeSubmit() {
+  var handleCodeSubmit = async function() {
     setPending(true);
     setError(null);
     try {
@@ -45,7 +45,7 @@ export default function PrivateRoomGate({ socket, roomId, gatingMode, onJoined }
     }
   }
 
-  async function handleRequestJoin() {
+  var handleRequestJoin = async function() {
     setPending(true);
     setError(null);
     setDenied(false);

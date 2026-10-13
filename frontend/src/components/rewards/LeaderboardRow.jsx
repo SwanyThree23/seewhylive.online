@@ -25,18 +25,18 @@ var LeaderboardRow = function (props) {
     textAlign: 'center',
     fontFamily: '"Bebas Neue", sans-serif',
     fontSize: '20px',
-    color: isTopThree ? '#D4AF37' : '#CC7755',
+    color: isTopThree ? '#C9A84C' : '#CC7755',
   };
 
   var nameStyle = {
     flex: 1,
-    color: '#F5F5DC',
+    color: '#F0E8D4',
     fontFamily: '"Barlow Condensed", sans-serif',
     fontSize: '16px',
   };
 
   var pointsStyle = {
-    color: '#D4AF37',
+    color: '#C9A84C',
     fontFamily: '"DM Mono", monospace',
     fontSize: '14px',
   };

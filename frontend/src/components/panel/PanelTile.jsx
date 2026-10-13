@@ -2,10 +2,10 @@
 import { useEffect, useRef, useState } from 'react';
 import panelService from '../../services/panelService';
 
-var GOLD = '#D4AF37';
-var CREAM = '#F5F5DC';
-var BG = '#1a1a1a';
-var LIVE_RED = '#dc2626';
+var GOLD = '#C9A84C';
+var CREAM = '#F0E8D4';
+var BG = '#0E0C09';
+var LIVE_RED = '#FF1A3C';
 
 export default function PanelTile({
   socket, roomId, slot,
@@ -102,7 +102,7 @@ export default function PanelTile({
           analyser.fftSize = 256;
           ctx.createMediaStreamSource(stream).connect(analyser);
           var data = new Uint8Array(analyser.frequencyBinCount);
-          function loop() {
+          var loop = function() {
             analyser.getByteTimeDomainData(data);
             var sum = 0;
             for (var i = 0; i < data.length; i++) {
@@ -137,13 +137,13 @@ export default function PanelTile({
 
   var effectiveSpeaking = isLocal ? isSpeaking : remoteSpeaking;
 
-  function handleTileClick(e) {
+  var handleTileClick = function(e) {
     // Don't expand if clicking a control button
     if (e.target.closest && e.target.closest('[data-panel-ctrl]')) return;
     if (socket) panelService.expandTile(socket, roomId, slot_index, !is_expanded);
   }
 
-  function toggleLocalCam() {
+  var toggleLocalCam = function() {
     if (!rtcManager) return;
     var vp = rtcManager.producers && rtcManager.producers['video'];
     if (!vp) return;
@@ -159,7 +159,7 @@ export default function PanelTile({
     }
   }
 
-  function toggleLocalMic() {
+  var toggleLocalMic = function() {
     if (!rtcManager) return;
     var ap = rtcManager.producers && rtcManager.producers['audio'];
     if (!ap) return;
@@ -169,13 +169,13 @@ export default function PanelTile({
     if (socket) panelService.mutePanelist(socket, roomId, user_id, !next);
   }
 
-  function toggleRaiseHand() {
+  var toggleRaiseHand = function() {
     var next = !localHandRaised;
     setLocalHandRaised(next);
     if (onRaiseHand) onRaiseHand(next);
   }
 
-  function renderLocalControls() {
+  var renderLocalControls = function() {
     if (!isLocal) return null;
     return (
       <div
@@ -230,7 +230,7 @@ export default function PanelTile({
     );
   }
 
-  function renderHostControls() {
+  var renderHostControls = function() {
     if (!isHost || isLocal || !onKick) return null;
     return (
       <div
