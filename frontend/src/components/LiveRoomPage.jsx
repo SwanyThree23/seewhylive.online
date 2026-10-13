@@ -956,6 +956,18 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 56: Gifted Sub Banner / Ask Queue / Hype Meter / Clip Bookmarks ─
+  var [giftedSubFlash,   setGiftedSubFlash]   = useState(null);
+  var [askQueue,         setAskQueue]         = useState([]);
+  var [askDraft,         setAskDraft]         = useState('');
+  var [showAskQueue,     setShowAskQueue]     = useState(false);
+  var [pinnedAsk,        setPinnedAsk]        = useState(null);
+  var [hypeMeter,        setHypeMeter]        = useState(0);
+  var [hypePeak,         setHypePeak]         = useState(false);
+  var [clipBookmarks,    setClipBookmarks]    = useState([]);
+  var [bookmarkDraft,    setBookmarkDraft]    = useState('');
+  var [showBookmarks,    setShowBookmarks]    = useState(false);
+
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
   var screenStreamRef = useRef(null);
@@ -1109,6 +1121,9 @@ export default function LiveRoomPage({
       if (data.bonusXp) setBonusXp(data.bonusXp);
       if (data.streamLang) setStreamLang(data.streamLang);
       if (data.contentNotice) setContentNotice(data.contentNotice);
+      if (Array.isArray(data.askQueue)) setAskQueue(data.askQueue);
+      if (typeof data.hypeMeter === 'number') setHypeMeter(data.hypeMeter);
+      if (Array.isArray(data.clipBookmarks)) setClipBookmarks(data.clipBookmarks);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2349,6 +2364,33 @@ export default function LiveRoomPage({
       setNoticeDismissed(false);
     });
 
+    // ── Batch 56 listeners ─────────────────────────────────────────────────
+    socket.on('gifted-sub-banner', function(d) {
+      if (!d) return;
+      setGiftedSubFlash(d);
+      setTimeout(function() { setGiftedSubFlash(null); }, 5000);
+    });
+
+    socket.on('ask-queue-update', function(d) {
+      var arr = Array.isArray(d) ? d : [];
+      setAskQueue(arr);
+      var pinned = arr.find(function(q) { return q.pinned; });
+      setPinnedAsk(pinned || null);
+    });
+
+    socket.on('hype-meter-update', function(d) {
+      if (d && typeof d.score === 'number') setHypeMeter(d.score);
+    });
+
+    socket.on('hype-peak', function() {
+      setHypePeak(true);
+      setTimeout(function() { setHypePeak(false); }, 4000);
+    });
+
+    socket.on('clip-bookmark-update', function(d) {
+      setClipBookmarks(Array.isArray(d) ? d : []);
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2790,6 +2832,11 @@ export default function LiveRoomPage({
       socket.off('stream-lang-update');
       socket.off('reaction-rain-burst');
       socket.off('content-notice-update');
+      socket.off('gifted-sub-banner');
+      socket.off('ask-queue-update');
+      socket.off('hype-meter-update');
+      socket.off('hype-peak');
+      socket.off('clip-bookmark-update');
     };
   }, [socket]);
 
@@ -4626,6 +4673,10 @@ export default function LiveRoomPage({
                 if (contentNotice) { if (socket) socket.emit('content-notice-clear', { roomId: roomId }); }
                 else { setNoticeDraft({ text: '', color: '#C9A84C' }); setShowNoticeSet(function(s) { return !s; }); }
               }},
+              { emoji: '🙋', label: 'Ask Queue', active: showAskQueue, onTap: function() { setShowAskQueue(function(s) { return !s; }); } },
+              { emoji: '🎁', label: 'Gift Sub', active: false, onTap: function() {
+                if (socket) socket.emit('gifted-sub-banner', { roomId: roomId, count: 1 });
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -4708,6 +4759,11 @@ export default function LiveRoomPage({
               { emoji: '🌧', label: 'React Rain', active: false, onTap: function() {
                 if (socket) socket.emit('reaction-rain', { roomId: roomId, emoji: '🔥', username: username });
               }},
+              { emoji: '⚡', label: 'Hype!', active: hypeMeter >= 100, onTap: function() {
+                if (socket) socket.emit('hype-tap', { roomId: roomId });
+              }},
+              { emoji: '🙋', label: 'Ask', active: showAskQueue, onTap: function() { setAskDraft(''); setShowAskQueue(function(s) { return !s; }); } },
+              { emoji: '🔖', label: 'Bookmark', active: showBookmarks, onTap: function() { setBookmarkDraft(''); setShowBookmarks(function(s) { return !s; }); } },
             ] : [])),
           ].map(function(tool) {
             return (
@@ -12297,6 +12353,130 @@ export default function LiveRoomPage({
             }} disabled={!noticeDraft.text.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: noticeDraft.text.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: noticeDraft.text.trim() ? 1 : 0.5 }}>
               POST NOTICE
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 56: Gifted Sub Banner ══ */}
+      {giftedSubFlash && (
+        <div style={{ position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)', zIndex: 660, animation: 'fadeSlideIn .4s ease', background: 'linear-gradient(135deg,#C9A84C,#D4854A)', borderRadius: 20, padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 4px 24px rgba(201,168,76,.35)' }}>
+          <span style={{ fontSize: 22 }}>🎁</span>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, letterSpacing: 1.5 }}>{giftedSubFlash.gifter} GIFTED {giftedSubFlash.count > 1 ? giftedSubFlash.count + ' SUBS' : 'A SUB'}{giftedSubFlash.recipient ? ' TO ' + giftedSubFlash.recipient : ' TO THE COMMUNITY'}!</div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 56: Hype Meter bar ══ */}
+      {hypeMeter > 0 && (
+        <div style={{ position: 'fixed', bottom: 80, left: 10, right: 10, zIndex: 540, height: 5, background: 'rgba(14,12,9,.5)', borderRadius: 3 }}>
+          <div style={{ height: '100%', width: hypeMeter + '%', background: hypeMeter >= 100 ? RED : GOLD, borderRadius: 3, transition: 'width .3s ease,background .3s', boxShadow: hypeMeter >= 100 ? '0 0 8px ' + RED : 'none' }} />
+        </div>
+      )}
+
+      {/* ══ Batch 56: Hype Peak toast ══ */}
+      {hypePeak && (
+        <div style={{ position: 'fixed', top: '40%', left: '50%', transform: 'translateX(-50%)', zIndex: 900, animation: 'fadeSlideIn .35s ease', pointerEvents: 'none' }}>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 40, color: RED, letterSpacing: 3, textShadow: '0 0 20px ' + RED + '88' }}>🔥 HYPE PEAK!</div>
+        </div>
+      )}
+
+      {/* ══ Batch 56: Pinned Ask ══ */}
+      {pinnedAsk && (
+        <div style={{ position: 'fixed', bottom: 92, left: 10, right: 10, zIndex: 555, background: 'rgba(14,12,9,.94)', border: '1px solid ' + GOLD, borderRadius: 14, padding: '9px 14px' }}>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 10, color: GOLD, letterSpacing: 1.5, marginBottom: 3 }}>🙋 HOST IS ANSWERING</div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, lineHeight: 1.3 }}>"{pinnedAsk.text}"</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, marginTop: 2 }}>— {pinnedAsk.username}</div>
+        </div>
+      )}
+
+      {/* ══ Batch 56: Ask Queue panel ══ */}
+      {showAskQueue && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 300, maxHeight: 360, animation: 'slideUp .25s ease', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🙋 ASK THE HOST</span>
+              <button onClick={function() { setShowAskQueue(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            {(role === 'host' || role === 'cohost') ? (
+              <div style={{ overflowY: 'auto', flex: 1, marginBottom: 8 }}>
+                {askQueue.length === 0 && <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: MUTED, textAlign: 'center', padding: '12px 0' }}>No questions yet</div>}
+                {askQueue.map(function(q) {
+                  return (
+                    <div key={q.id} style={{ background: q.pinned ? 'rgba(201,168,76,.1)' : CARD2, border: '1px solid ' + (q.pinned ? 'rgba(201,168,76,.3)' : BORDER), borderRadius: 10, padding: '8px 10px', marginBottom: 6 }}>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: GOLD, marginBottom: 3 }}>{q.username}</div>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, lineHeight: 1.3, marginBottom: 5 }}>"{q.text}"</div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button onClick={function() { if (socket) socket.emit('ask-queue-pin', { roomId: roomId, id: q.id }); }} style={{ background: q.pinned ? GOLD : 'none', border: '1px solid ' + GOLD, borderRadius: 6, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: q.pinned ? BG : GOLD, cursor: 'pointer' }}>{q.pinned ? '📌 Answering' : 'Answer'}</button>
+                        <button onClick={function() { if (socket) socket.emit('ask-queue-clear', { roomId: roomId, id: q.id }); }} style={{ background: 'none', border: '1px solid ' + BORDER, borderRadius: 6, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer' }}>Remove</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div>
+                <textarea value={askDraft}
+                  onChange={function(e) { setAskDraft(e.target.value.slice(0, 120)); }}
+                  placeholder="Type your question… (120 chars)"
+                  rows={3}
+                  style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', resize: 'none', marginBottom: 8 }} />
+                <button onClick={function() {
+                  var txt = askDraft.trim();
+                  if (!txt || !socket) return;
+                  socket.emit('ask-queue-submit', { roomId: roomId, text: txt }, function(res) {
+                    if (res && res.ok) { setAskDraft(''); if (addToast) addToast('🙋 Question submitted!', 'success'); }
+                    else if (res && res.err && addToast) addToast(res.err, 'error');
+                  });
+                }} disabled={!askDraft.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: askDraft.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: askDraft.trim() ? 1 : 0.5 }}>
+                  SUBMIT QUESTION
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 56: Clip Bookmarks panel ══ */}
+      {showBookmarks && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 290, maxHeight: 340, animation: 'slideUp .25s ease', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🔖 CLIP BOOKMARKS</span>
+              <button onClick={function() { setShowBookmarks(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ overflowY: 'auto', flex: 1, marginBottom: 8, maxHeight: 180 }}>
+              {clipBookmarks.length === 0 && <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: MUTED, textAlign: 'center', padding: '10px 0' }}>No bookmarks yet</div>}
+              {clipBookmarks.slice(-10).reverse().map(function(b) {
+                return (
+                  <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, background: CARD2, borderRadius: 8, padding: '5px 8px' }}>
+                    <span style={{ fontSize: 11 }}>🔖</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT }}>{b.label}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>by {b.username}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {role === 'viewer' && (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input value={bookmarkDraft}
+                  onChange={function(e) { setBookmarkDraft(e.target.value.slice(0, 40)); }}
+                  placeholder="Label this moment…"
+                  style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, padding: '6px 8px', outline: 'none', flex: 1 }} />
+                <button onClick={function() {
+                  var label = bookmarkDraft.trim() || 'Moment';
+                  if (!socket) return;
+                  socket.emit('clip-bookmark-add', { roomId: roomId, label: label }, function(res) {
+                    if (res && res.ok) { setBookmarkDraft(''); if (addToast) addToast('🔖 Bookmarked!', 'success'); }
+                    else if (res && res.err === 'limit' && addToast) addToast('Max 5 bookmarks per stream', 'info');
+                  });
+                }} style={{ background: GOLD, border: 'none', borderRadius: 8, padding: '6px 10px', fontFamily: "'Bebas Neue',cursive", fontSize: 12, color: BG, cursor: 'pointer', letterSpacing: 0.5 }}>
+                  MARK
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

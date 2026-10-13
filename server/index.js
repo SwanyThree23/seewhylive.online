@@ -564,6 +564,11 @@ var bonusXpMap       = new Map();  // roomId → { multiplier, endsAt, timerId }
 var streamLangMap    = new Map();  // roomId → { code, label, emoji }
 var reactionRainThrottle = new Map();  // userId → lastRainAt
 var contentNoticeMap = new Map();  // roomId → { text, color }
+// Batch 56: Gifted Sub Banner / Ask Queue / Hype Meter / Clip Bookmarks
+var giftedSubThrottle = new Map(); // roomId → lastBannerAt
+var askQueueMap      = new Map();  // roomId → Map<id, { id, username, text, pinned, ts }>
+var hypeMap          = new Map();  // roomId → { score, timerId, peakFired }
+var clipBookmarkMap  = new Map();  // roomId → Array<{ id, username, label, ts }>
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -825,6 +830,12 @@ function getJoinStateForRoom(roomId) {
   state.bonusXp = (_bxp55 && _bxp55.endsAt > Date.now()) ? { multiplier: _bxp55.multiplier, endsAt: _bxp55.endsAt } : null;
   state.streamLang = streamLangMap.get(roomId) || null;
   state.contentNotice = contentNoticeMap.get(roomId) || null;
+  // Batch 56
+  var _aq56 = askQueueMap.get(roomId);
+  state.askQueue = _aq56 ? Array.from(_aq56.values()).sort(function(a, b) { return b.ts - a.ts; }).slice(0, 20) : [];
+  var _hm56 = hypeMap.get(roomId);
+  state.hypeMeter = _hm56 ? Math.min(100, _hm56.score) : 0;
+  state.clipBookmarks = clipBookmarkMap.get(roomId) || [];
   return state;
 }
 
@@ -6463,6 +6474,12 @@ io.on('connection', function(socket) {
     bonusXpMap.delete(roomId);
     streamLangMap.delete(roomId);
     contentNoticeMap.delete(roomId);
+    // Batch 56 cleanup
+    var _hmC56 = hypeMap.get(roomId);
+    if (_hmC56 && _hmC56.timerId) clearTimeout(_hmC56.timerId);
+    hypeMap.delete(roomId);
+    askQueueMap.delete(roomId);
+    clipBookmarkMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -7121,6 +7138,120 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     contentNoticeMap.delete(roomId);
     io.to(roomId).emit('content-notice-update', null);
+  });
+
+  // ── gifted-sub-banner (Batch 56) ────────────────────────────────────────
+  socket.on('gifted-sub-banner', function(data) {
+    var roomId   = socket.data.roomId;
+    var username = socket.data.username || 'Someone';
+    if (!roomId) return;
+    var now = Date.now();
+    var last = giftedSubThrottle.get(roomId) || 0;
+    if (now - last < 3000) return;
+    giftedSubThrottle.set(roomId, now);
+    var recipient = data && data.recipient ? String(data.recipient).slice(0, 40) : null;
+    var count     = data && data.count     ? Math.min(100, Math.max(1, parseInt(data.count, 10) || 1)) : 1;
+    io.to(roomId).emit('gifted-sub-banner', { gifter: username, recipient: recipient, count: count });
+    addEnergy(roomId, socket.data.userId, username, count * 3);
+  });
+
+  // ── ask-queue (Batch 56) ────────────────────────────────────────────────
+  socket.on('ask-queue-submit', function(data, ack) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId) return;
+    if (!data || !data.text) { if (ack) ack({ err: 'no text' }); return; }
+    var text = String(data.text).trim().slice(0, 120);
+    if (!text) { if (ack) ack({ err: 'empty' }); return; }
+    if (!askQueueMap.has(roomId)) askQueueMap.set(roomId, new Map());
+    var queue = askQueueMap.get(roomId);
+    if (queue.size >= 50) { if (ack) ack({ err: 'queue full' }); return; }
+    var id = Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    queue.set(id, { id: id, userId: userId, username: username, text: text, pinned: false, ts: Date.now() });
+    var arr = Array.from(queue.values()).sort(function(a, b) { return b.ts - a.ts; }).slice(0, 20);
+    io.to(roomId).emit('ask-queue-update', arr);
+    if (ack) ack({ ok: true, id: id });
+    addEnergy(roomId, userId, username, 2);
+  });
+
+  socket.on('ask-queue-pin', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.id) return;
+    var queue = askQueueMap.get(roomId);
+    if (!queue) return;
+    queue.forEach(function(item) { item.pinned = false; });
+    var entry = queue.get(data.id);
+    if (entry) {
+      entry.pinned = true;
+      var arr = Array.from(queue.values()).sort(function(a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.ts - a.ts; }).slice(0, 20);
+      io.to(roomId).emit('ask-queue-update', arr);
+    }
+  });
+
+  socket.on('ask-queue-clear', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (data && data.id) {
+      var queue = askQueueMap.get(roomId);
+      if (queue) {
+        queue.delete(data.id);
+        var arr = Array.from(queue.values()).sort(function(a, b) { return b.ts - a.ts; }).slice(0, 20);
+        io.to(roomId).emit('ask-queue-update', arr);
+      }
+    } else {
+      askQueueMap.delete(roomId);
+      io.to(roomId).emit('ask-queue-update', []);
+    }
+  });
+
+  // ── hype-meter (Batch 56) ───────────────────────────────────────────────
+  socket.on('hype-tap', function() {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId) return;
+    if (!hypeMap.has(roomId)) {
+      hypeMap.set(roomId, { score: 0, timerId: null, peakFired: false });
+    }
+    var h = hypeMap.get(roomId);
+    h.score = Math.min(100, h.score + 2);
+    io.to(roomId).emit('hype-meter-update', { score: h.score });
+    if (h.score >= 100 && !h.peakFired) {
+      h.peakFired = true;
+      io.to(roomId).emit('hype-peak', {});
+    }
+    if (h.timerId) clearTimeout(h.timerId);
+    h.timerId = setTimeout(function() {
+      var entry = hypeMap.get(roomId);
+      if (!entry) return;
+      entry.score = 0;
+      entry.peakFired = false;
+      entry.timerId = null;
+      io.to(roomId).emit('hype-meter-update', { score: 0 });
+    }, 30000);
+    addEnergy(roomId, userId, username, 1);
+  });
+
+  // ── clip-bookmark (Batch 56) ────────────────────────────────────────────
+  socket.on('clip-bookmark-add', function(data, ack) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId) return;
+    var label = data && data.label ? String(data.label).trim().slice(0, 40) : 'Moment';
+    var bmarks = clipBookmarkMap.get(roomId) || [];
+    var mine = bmarks.filter(function(b) { return b.userId === userId; });
+    if (mine.length >= 5) { if (ack) ack({ err: 'limit' }); return; }
+    var entry = { id: Date.now() + '_' + Math.random().toString(36).slice(2, 5), userId: userId, username: username, label: label, ts: Date.now() };
+    bmarks.push(entry);
+    clipBookmarkMap.set(roomId, bmarks.slice(-100));
+    io.to(roomId).emit('clip-bookmark-update', bmarks.slice(-20));
+    if (ack) ack({ ok: true, id: entry.id });
+    addEnergy(roomId, userId, username, 2);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
