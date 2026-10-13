@@ -8,7 +8,7 @@ export default function Login(props) {
   var [error, setError] = useState('');
   var [loading, setLoading] = useState(false);
 
-  function handleSubmit() {
+  var handleSubmit = function() {
     if (!email.trim() || !password) return;
     setLoading(true);
     setError('');

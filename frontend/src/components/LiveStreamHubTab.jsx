@@ -51,7 +51,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
   var [leadersLoading, setLeadersLoading] = useState(false);
   var timerRef = useRef(null);
 
-  function fetchData() {
+  var fetchData = function() {
     fetch('/api/streams/live')
       .then(function(r) { return r.json(); })
       .then(function(d) {

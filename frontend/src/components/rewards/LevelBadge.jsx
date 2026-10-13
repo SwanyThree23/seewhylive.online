@@ -13,7 +13,7 @@ var LevelBadge = function (props) {
     minHeight: '28px',
     padding: '4px 12px',
     borderRadius: '14px',
-    backgroundColor: '#D4AF37',
+    backgroundColor: '#C9A84C',
     color: '#0C0806',
     fontFamily: '"Barlow Condensed", sans-serif',
     fontWeight: 'bold',

@@ -89,7 +89,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
       .catch(function() {});
   }, [tab]);
 
-  function selectRewardTier(tierId) {
+  var selectRewardTier = function(tierId) {
     var token = localStorage.getItem('sw_token');
     if (!token) { if (addToast) addToast('Please log in first', 'error'); return; }
     fetch('/api/rewards/my-tier', {
@@ -113,7 +113,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
   var creatorCents = Math.floor(sessionCents * CREATOR_SHARE);
   var platformCents = sessionCents - creatorCents;
 
-  function sendTip() {
+  var sendTip = function() {
     if (!tipAmt || !socket) return;
     var cents = Math.floor(tipAmt * 100);
     socket.emit('super-chat', { roomId: roomId, userId: username, username: username, message: tipMsg || '🎁 Tip!', amountCents: cents });
@@ -121,14 +121,14 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
     if (addToast) addToast('🎁 Tip sent!', 'success');
   }
 
-  function sendSub(tier) {
+  var sendSub = function(tier) {
     if (!socket) return;
     socket.emit('subscribe', { roomId: roomId, username: username, tier: tier.id, price_cents: tier.cents });
     setSubTier(tier.id);
     if (addToast) addToast('⭐ Subscribed at ' + tier.label + '!', 'success');
   }
 
-  function setGoal() {
+  var setGoal = function() {
     if (!goalAmt || !goalLabel) { if (addToast) addToast('Enter a label and amount', 'error'); return; }
     var cents = Math.floor(parseFloat(goalAmt) * 100);
     if (cents <= 0) return;

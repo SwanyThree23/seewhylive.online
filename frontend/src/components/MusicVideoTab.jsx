@@ -55,7 +55,7 @@ export default function MusicVideoTab({ addToast, userId, username }) {
   var pollRef      = useRef(null);
 
   // Fetch job list
-  function fetchJobs() {
+  var fetchJobs = function() {
     fetch('/api/music-video/jobs', { headers: _authHeaders() })
       .then(function(r) { return r.json(); })
       .then(function(data) {
@@ -78,7 +78,7 @@ export default function MusicVideoTab({ addToast, userId, username }) {
     return function() { clearInterval(pollRef.current); };
   }, []);
 
-  function handleFile(file) {
+  var handleFile = function(file) {
     if (!file) return;
     var ext = file.name.split('.').pop().toLowerCase();
     var ok  = ['mp3','wav','ogg','m4a','flac','aac'].indexOf(ext) !== -1;
@@ -88,14 +88,14 @@ export default function MusicVideoTab({ addToast, userId, username }) {
     setAudioName(file.name);
   }
 
-  function handleDrop(e) {
+  var handleDrop = function(e) {
     e.preventDefault();
     setDragOver(false);
     var file = e.dataTransfer.files[0];
     handleFile(file);
   }
 
-  function handleSubmit() {
+  var handleSubmit = function() {
     if (!audioFile || !selectedStyle) return;
     setSubmitting(true);
     var form = new FormData();
@@ -118,7 +118,7 @@ export default function MusicVideoTab({ addToast, userId, username }) {
       .finally(function() { setSubmitting(false); });
   }
 
-  function handleDelete(jobId) {
+  var handleDelete = function(jobId) {
     fetch('/api/music-video/jobs/' + jobId, { method: 'DELETE', headers: _authHeaders() })
       .then(function(r) {
         if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Delete failed'); });

@@ -5,12 +5,12 @@ import { useEffect, useRef, useState } from 'react';
 import panelService from '../../services/panelService';
 import rtcManager from '../../webrtc.js';
 
-var GOLD = '#D4AF37';
-var CREAM = '#F5F5DC';
+var GOLD = '#C9A84C';
+var CREAM = '#F0E8D4';
 var BG = '#111';
 var SURFACE = '#1e1e1e';
 var BORDER = '#2a2a2a';
-var RED = '#dc2626';
+var RED = '#FF1A3C';
 
 export default function PanelJoinModal({ socket, roomId, onJoined, onCancel }) {
   var videoRef = useRef(null);
@@ -50,7 +50,7 @@ export default function PanelJoinModal({ socket, roomId, onJoined, onCancel }) {
     };
   }, []);
 
-  function toggleCam() {
+  var toggleCam = function() {
     var stream = streamRef.current;
     if (!stream) return;
     var next = !camOn;
@@ -58,7 +58,7 @@ export default function PanelJoinModal({ socket, roomId, onJoined, onCancel }) {
     setCamOn(next);
   }
 
-  function toggleMic() {
+  var toggleMic = function() {
     var stream = streamRef.current;
     if (!stream) return;
     var next = !micOn;
@@ -66,7 +66,7 @@ export default function PanelJoinModal({ socket, roomId, onJoined, onCancel }) {
     setMicOn(next);
   }
 
-  async function handleJoin() {
+  var handleJoin = async function() {
     if (joining) return;
     setJoining(true);
     setError(null);

@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 var EMOJIS = ['❤️', '🔥', '👏', '😂', '😮', '💯', '🎉', '💜'];
-var GOLD = '#D4AF37';
+var GOLD = '#C9A84C';
 
 // Individual floating emoji that rises and fades out
 function FloatingEmoji({ emoji, x, onDone }) {
@@ -48,7 +48,7 @@ export default function PanelReactionBar({ socket, roomId, userId }) {
 
   useEffect(function() {
     if (!socket || !roomId) return;
-    function onReaction(payload) {
+    var onReaction = function(payload) {
       if (payload.roomId !== roomId) return;
       spawnFloat(payload.emoji);
     }
@@ -56,13 +56,13 @@ export default function PanelReactionBar({ socket, roomId, userId }) {
     return function() { socket.off('panel:reaction', onReaction); };
   }, [socket, roomId]);
 
-  function spawnFloat(emoji) {
+  var spawnFloat = function(emoji) {
     var id = ++floatId.current;
     var x = 5 + Math.random() * 70;
     setFloats(function(prev) { return prev.concat([{ id: id, emoji: emoji, x: x }]); });
   }
 
-  function sendReaction(emoji) {
+  var sendReaction = function(emoji) {
     if (cooldown.current || !socket) return;
     cooldown.current = true;
     setTimeout(function() { cooldown.current = false; }, 800);
