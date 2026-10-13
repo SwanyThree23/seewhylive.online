@@ -15,12 +15,12 @@ function urlBase64ToUint8Array(base64String) {
 export function usePushNotifications() {
   var supported = 'serviceWorker' in navigator && 'PushManager' in window;
 
-  function getPermissionStatus() {
+  var getPermissionStatus = function() {
     if (!supported) return 'unsupported';
     return Notification.permission;
   }
 
-  function subscribe(username, onSuccess, onError) {
+  var subscribe = function(username, onSuccess, onError) {
     if (!supported) { if (onError) onError('Push not supported'); return; }
     Notification.requestPermission().then(function(permission) {
       if (permission !== 'granted') { if (onError) onError('Permission denied'); return; }
@@ -41,7 +41,7 @@ export function usePushNotifications() {
     });
   }
 
-  function unsubscribe(onDone) {
+  var unsubscribe = function(onDone) {
     if (!supported) return;
     navigator.serviceWorker.ready.then(function(reg) {
       reg.pushManager.getSubscription().then(function(sub) {
@@ -57,7 +57,7 @@ export function usePushNotifications() {
     });
   }
 
-  function isSubscribed(onResult) {
+  var isSubscribed = function(onResult) {
     if (!supported) { if (onResult) onResult(false); return; }
     navigator.serviceWorker.ready.then(function(reg) {
       reg.pushManager.getSubscription().then(function(sub) {

@@ -149,7 +149,7 @@ function CountdownClock({ targetTs }) {
   var h = Math.floor(secs / 3600);
   var m = Math.floor((secs % 3600) / 60);
   var s = secs % 60;
-  function pad(n) { return n < 10 ? '0' + n : String(n); }
+  var pad = function(n) { return n < 10 ? '0' + n : String(n); }
   return (
     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: '#F0E8D4', letterSpacing: 4, marginTop: 4 }}>
       {pad(h)}:{pad(m)}:{pad(s)}
@@ -181,7 +181,7 @@ function PlatformHealthMonitor() {
   var socketInfo = socketState[0];
   var setSocketInfo = socketState[1];
 
-  async function runChecks() {
+  var runChecks = async function() {
     setLoading(true);
     var next = {};
     for (var i = 0; i < checks.length; i++) {
@@ -234,10 +234,10 @@ function PlatformHealthMonitor() {
 
   return React.createElement("div",{style:{color:"#EDE7D9"}},
     React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}},
-      React.createElement("h2",{style:{margin:0,color:"#D4AF37",fontSize:22}},"Platform Health"),
+      React.createElement("h2",{style:{margin:0,color:"#C9A84C",fontSize:22}},"Platform Health"),
       React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
         lastCheck?React.createElement("span",{style:{fontSize: 11,color:"#8A8678"}},"Last check: "+lastCheck):null,
-        React.createElement("button",{onClick:runChecks,disabled:loading,style:{background:"#D4AF37",color:"#0B0B0D",border:"none",borderRadius:4,padding:"7px 14px",fontWeight:700,fontSize:12,cursor:"pointer"}},loading?"Checking...":"Run Checks"))),
+        React.createElement("button",{onClick:runChecks,disabled:loading,style:{background:"#C9A84C",color:"#0B0B0D",border:"none",borderRadius:4,padding:"7px 14px",fontWeight:700,fontSize:12,cursor:"pointer"}},loading?"Checking...":"Run Checks"))),
 
     React.createElement("div",{style:{display:"flex",gap:10,marginBottom:14,flexWrap:"wrap"}},
       checks.map(function(c){
@@ -265,7 +265,7 @@ function PlatformHealthMonitor() {
         return React.createElement("div",{key:ep.path,style:{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderBottom:"1px solid #151518"}},
           React.createElement("span",{style:{fontSize: 11,fontWeight:700,background:ep.method==="GET"?"#1A3A1A":"#1A2A3A",color:ep.method==="GET"?"#7AD45A":"#6A9AF0",padding:"2px 6px",borderRadius:3,minWidth:36,textAlign:"center"}},ep.method),
           React.createElement("div",{style:{flex:1}},
-            React.createElement("div",{style:{fontSize:11,fontFamily:"monospace",color:"#D4AF37"}},ep.path),
+            React.createElement("div",{style:{fontSize:11,fontFamily:"monospace",color:"#C9A84C"}},ep.path),
             React.createElement("div",{style:{fontSize: 11,color:"#8A8678"}},ep.desc)));
       })));
 }
@@ -281,7 +281,7 @@ var GiftPayConfirmModal = function(props) {
   var [processing,  setProcessing]  = useState(false);
   var [done,        setDone]        = useState(false);
 
-  function handleConfirm() {
+  var handleConfirm = function() {
     if (!stripe || !elements) return;
     setProcessing(true);
     setCardError('');
@@ -330,7 +330,7 @@ export default function App() {
   var [isLive, setIsLive] = useState(false);
   var [viewerCount, setViewerCount] = useState(0);
 
-  function refreshLiveRoomData() {
+  var refreshLiveRoomData = function() {
     fetch('/api/active-rooms')
       .then(function(r) { return r.json(); })
       .then(function(d) {
@@ -363,7 +363,7 @@ export default function App() {
   var [nameEditVal,   setNameEditVal]   = useState('');
   var [role, setRole] = useState(function() { return localStorage.getItem('sw_role') || 'viewer'; });
 
-  function handleGoLive() {
+  var handleGoLive = function() {
     var newRole = 'host';
     try { localStorage.setItem('sw_role', newRole); } catch (e) {}
     setRole(newRole);
@@ -471,7 +471,7 @@ export default function App() {
   // History API — wire Android back button to tab navigation + overlay dismissal
   useEffect(function() {
     window.history.replaceState({ swTab: 'room' }, '');
-    function onPop(e) {
+    var onPop = function(e) {
       // If the stream recap modal is open, dismiss it instead of navigating
       if (streamRecapRef.current) {
         setStreamRecap(null);
@@ -531,7 +531,7 @@ export default function App() {
   }, [sessionEarningsCents, addToast]);
 
   useEffect(function() {
-    function handleInstallPrompt(e) {
+    var handleInstallPrompt = function(e) {
       e.preventDefault();
       setInstallPrompt(e);
       setShowInstallBanner(true);
@@ -1164,7 +1164,7 @@ export default function App() {
     }
   }, [streamGoal]);
 
-  function handleNameSubmit() {
+  var handleNameSubmit = function() {
     var name = nameInput.trim().slice(0, 32);
     if (!name) return;
     localStorage.setItem('sw_username', name);
@@ -1172,7 +1172,7 @@ export default function App() {
     setShowNameModal(false);
   }
 
-  function saveNameEdit() {
+  var saveNameEdit = function() {
     var name = nameEditVal.trim().slice(0, 32);
     if (!name) { setEditingName(false); return; }
     localStorage.setItem('sw_username', name);
@@ -1182,7 +1182,7 @@ export default function App() {
     addToast('Name updated', 'success');
   }
 
-  function shareRoom() {
+  var shareRoom = function() {
     var url = window.location.origin;
     if (navigator.share) {
       navigator.share({ title: 'SeeWhy LIVE', text: 'Join me on SeeWhy LIVE!', url: url }).catch(function() {});
@@ -1191,7 +1191,7 @@ export default function App() {
     }
   }
 
-  function formatUptime(s) {
+  var formatUptime = function(s) {
     var h = Math.floor(s / 3600);
     var m = Math.floor((s % 3600) / 60);
     var sec = s % 60;
@@ -1199,7 +1199,7 @@ export default function App() {
   }
 
   useEffect(function() {
-    function checkHealth() {
+    var checkHealth = function() {
       fetch('/api/health').then(function(r) {
         setApiHealth(r.ok ? 'good' : 'degraded');
       }).catch(function() { setApiHealth('down'); });
@@ -2149,14 +2149,14 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
   var cDollars     = cCents > 0     ? ('$' + (cCents / 100).toFixed(2))     : null;
   var pDollars     = pCents > 0     ? ('$' + (pCents / 100).toFixed(2))     : null;
 
-  function openPay(p, h) {
+  var openPay = function(p, h) {
     h = (h || '').trim();
     if (!h) return;
     if (p.buildUrl) { window.open(p.buildUrl(h), '_blank', 'noopener'); }
     else { navigator.clipboard.writeText(h).then(function() { if (addToast) addToast(p.name + ': ' + h + ' copied!', 'success'); }); }
   }
 
-  function renderPayRow(p, h, accentColor) {
+  var renderPayRow = function(p, h, accentColor) {
     return (
       <button key={p.id} onClick={function() { openPay(p, h); }}
         style={{ background: 'rgba(255,255,255,.04)', border: '1.5px solid ' + accentColor + '55', borderRadius: 14, padding: '12px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', transition: 'background .2s' }}>
@@ -2270,7 +2270,7 @@ function StreamKeysTab(props) {
       .catch(function(e) { console.error('fetch keys meta error:', e); });
   }, [userId]);
 
-  function handleSave() {
+  var handleSave = function() {
     if (!streamKey.trim()) { addToast('Enter a stream key', 'error'); return; }
     setSaving(true);
     fetch('/api/keys/save', {
@@ -2295,7 +2295,7 @@ function StreamKeysTab(props) {
       .catch(function(e) { setSaving(false); addToast('Save error: ' + e.message, 'error'); });
   }
 
-  function handleDelete(destId) {
+  var handleDelete = function(destId) {
     fetch('/api/keys/delete', {
       method: 'DELETE',
       headers: _streamKeysAuthHeaders({ 'Content-Type': 'application/json' }),
