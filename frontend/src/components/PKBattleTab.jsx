@@ -56,7 +56,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   var challengerRef      = useRef('');
   var defenderRef        = useRef('');
   var suddenDeathRef     = useRef(false);
-  function clearAllIntervals() {
+  var clearAllIntervals = function() {
     if (countdownRef.current)  { clearInterval(countdownRef.current);  countdownRef.current  = null; }
   }
 
@@ -72,7 +72,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   useEffect(function() {
     if (!socket) return;
 
-    function onPkStart(data) {
+    var onPkStart = function(data) {
       if (!data) return;
       setChallenger(data.challenger || '');
       setDefender(data.defender || '');
@@ -86,19 +86,19 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       setCheerB([]);
       if (addToast) addToast('⚔️ PK Battle started!', 'success');
     }
-    function onPkEnd(data) {
+    var onPkEnd = function(data) {
       if (!data) return;
       setWinner(data.winner || null);
       setBattleState('ended');
       clearAllIntervals();
       if (addToast) addToast('🏆 ' + (data.winner || 'Battle') + ' wins the PK!', 'success');
     }
-    function onPkVoteUpdate(data) {
+    var onPkVoteUpdate = function(data) {
       if (!data) return;
       if (typeof data.challengerVotes === 'number') setChallengerScore(data.challengerVotes);
       if (typeof data.defenderVotes   === 'number') setDefenderScore(data.defenderVotes);
     }
-    function onPkGiftBoost(data) {
+    var onPkGiftBoost = function(data) {
       if (!data) return;
       var pts = data.points || 5;
       if (data.side === 'challenger') {
@@ -114,12 +114,12 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       });
       if (addToast) addToast('🎁 Gift boost! +' + pts, 'success');
     }
-    function onPkCheerUpdate(data) {
+    var onPkCheerUpdate = function(data) {
       if (!data) return;
       if (data.cheerA) setCheerA(data.cheerA.slice(0, 20));
       if (data.cheerB) setCheerB(data.cheerB.slice(0, 20));
     }
-    function onPkSuddenDeath() {
+    var onPkSuddenDeath = function() {
       setBattleLog(function(prev) { return [{ text: '⚡ SUDDEN DEATH — next point wins!', ts: Date.now() }].concat(prev).slice(0, 20); });
       if (addToast) addToast('⚡ SUDDEN DEATH round!', 'error');
     }
@@ -141,7 +141,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     };
   }, [socket, addToast]);
 
-  function startBattle() {
+  var startBattle = function() {
     suddenDeathRef.current = false;
     var cName = challengerInput.trim();
     var dName = defenderInput.trim();
@@ -193,7 +193,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     addToast('Battle started!', 'success');
   }
 
-  function endBattle() {
+  var endBattle = function() {
     clearAllIntervals();
     setBattleState('ended');
 
@@ -214,7 +214,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     });
   }
 
-  function castVote(side) {
+  var castVote = function(side) {
     if (myVote) return;
     setMyVote(side);
     var votedName = side === 'challenger' ? challenger : defender;
@@ -228,7 +228,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     addToast('Voted for ' + votedName + '!', 'success');
   }
 
-  function handleRematch() {
+  var handleRematch = function() {
     if (!challenger || !defender) return;
     var cName = challenger;
     var dName = defender;
@@ -272,7 +272,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     addToast('⚔️ REMATCH started!', 'success');
   }
 
-  function resetBattle() {
+  var resetBattle = function() {
     clearAllIntervals();
     suddenDeathRef.current = false;
     setBattleState('idle');
@@ -662,7 +662,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   }
 
   // ── ACTIVE BATTLE ───────────────────────────────────────────────────────────
-  var countdownColor = countdown < 30 ? '#800020' : '#F0E8D4';
+  var countdownColor = countdown < 30 ? '#FF1A3C' : '#F0E8D4';
   var lastLog = battleLog.slice(-5);
   var totalVotes = (challengerScore || 0) + (defenderScore || 0);
   var challPct = totalVotes > 0 ? Math.floor((challengerScore || 0) / totalVotes * 100) : 50;

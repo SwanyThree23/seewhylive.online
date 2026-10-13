@@ -32,11 +32,11 @@ var ChallengeCard = function (props) {
     padding: '16px',
     borderRadius: '8px',
     backgroundColor: '#1a1210',
-    border: '1px solid #800020',
+    border: '1px solid #FF1A3C',
   };
 
   var titleStyle = {
-    color: '#F5F5DC',
+    color: '#F0E8D4',
     fontFamily: '"Bebas Neue", sans-serif',
     fontSize: '20px',
     letterSpacing: '0.5px',
@@ -56,7 +56,7 @@ var ChallengeCard = function (props) {
   };
 
   var pointsStyle = {
-    color: '#D4AF37',
+    color: '#C9A84C',
     fontFamily: '"DM Mono", monospace',
     fontSize: '14px',
   };
@@ -67,8 +67,8 @@ var ChallengeCard = function (props) {
     padding: '8px 18px',
     borderRadius: '20px',
     border: 'none',
-    backgroundColor: isCompleted ? '#3a2f2c' : '#800020',
-    color: '#F5F5DC',
+    backgroundColor: isCompleted ? '#3a2f2c' : '#FF1A3C',
+    color: '#F0E8D4',
     fontFamily: '"Barlow Condensed", sans-serif',
     fontWeight: 'bold',
     opacity: isSending ? 0.6 : 1,
