@@ -35,7 +35,7 @@ router.get('/me/:userId', requireAuth, async function(req, res) {
     if (req.user.id !== req.params.userId && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'forbidden' });
     }
-    var data = await rewardsService.getUserPoints(req.params.userId);
+    var data = await rewardsService.getUserPoints(req.params.userId, req.tenantId);
     res.json(data);
   } catch (err) {
     console.error('[ROUTE ERROR]', err);

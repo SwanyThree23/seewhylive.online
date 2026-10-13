@@ -54,12 +54,13 @@ function generateToken() {
   return crypto.randomBytes(16).toString('hex');
 }
 
-async function createInviteLink({ streamId, createdBy, displayName, role, maxUses }) {
+async function createInviteLink({ streamId, tenantId, createdBy, displayName, role, maxUses }) {
+  if (!tenantId) throw new Error('tenantId is required');
   const token = generateToken();
   const result = await db.query(
-    `INSERT INTO stream_guest_invites (stream_id, guest_token, display_name, role, created_by, max_uses)
-     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-    [streamId, token, displayName || null, role || 'guest', createdBy, maxUses || 1]
+    `INSERT INTO stream_guest_invites (stream_id, tenant_id, guest_token, display_name, role, created_by, max_uses)
+     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    [streamId, tenantId, token, displayName || null, role || 'guest', createdBy, maxUses || 1]
   );
   return result.rows[0];
 }

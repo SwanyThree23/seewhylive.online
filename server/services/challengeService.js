@@ -51,6 +51,7 @@ async function completeChallenge(challengeId, userId, tenantId) {
   try {
     await loyaltyService.awardPoints({
       userId,
+      tenantId,
       points: row.points_reward,
       source: 'challenge_complete',
       sourceId: challengeId,

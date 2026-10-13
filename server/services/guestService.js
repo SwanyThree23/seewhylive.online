@@ -8,8 +8,11 @@ const db = require('../db'); // <-- verify this matches your actual db module
 
 var ALLOWED_GUEST_ROLES = ['guest', 'viewer', 'co-host'];
 
-async function joinStreamAsGuest({ streamId, userId, displayName, role, vdoStreamId, mediasoupProducerId }) {
+async function joinStreamAsGuest({ streamId, tenantId, userId, displayName, role, vdoStreamId, mediasoupProducerId }) {
+  if (!tenantId) { const e = new Error('tenantId is required'); e.status = 400; throw e; }
   if (role && !ALLOWED_GUEST_ROLES.includes(role)) { const e = new Error('invalid role'); e.status = 400; throw e; }
+  const tenantCheck = await db.query('SELECT id FROM streams WHERE id = $1 AND tenant_id = $2', [streamId, tenantId]);
+  if (!tenantCheck.rows[0]) { const e = new Error('stream not found'); e.status = 404; throw e; }
   const result = await db.query(
     `INSERT INTO stream_guests (stream_id, user_id, display_name, role, vdo_stream_id, mediasoup_producer_id, is_host)
      VALUES ($1, $2, $3, $4, $5, $6, false)

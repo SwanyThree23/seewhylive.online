@@ -212,7 +212,7 @@ function doStop(res, vodId, tenantId, durationSec, playbackUrl) {
   });
 }
 
-router.get('/list', function(req, res) {
+router.get('/list', requireAuth, function(req, res) {
   var streamId = req.query.stream_id || '';
   var limit    = Math.min(parseInt(req.query.limit, 10) || 20, 100);
 
