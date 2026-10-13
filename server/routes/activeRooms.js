@@ -1,16 +1,17 @@
-const express = require('express');
-const router = express.Router();
+'use strict';
+var express = require('express');
+var router = express.Router();
 
 // Read-only room snapshot. Pulls the live in-memory rooms map from index.js
 // via a lazy require to avoid circular-require issues at module load time.
 // Never writes to rooms - purely reads Set/Map sizes for a safe refresh.
 router.get('/', function(req, res) {
   try {
-    const { rooms } = require('../index');
+    var rooms = require('../index').rooms;
     if (!rooms || typeof rooms.forEach !== 'function') {
       return res.json({ rooms: [] });
     }
-    const out = [];
+    var out = [];
     rooms.forEach(function(room, roomId) {
       var viewerCount = (room && room.viewers) ? room.viewers.size : 0;
       var guestCount = (room && room.guests) ? room.guests.size : 0;
