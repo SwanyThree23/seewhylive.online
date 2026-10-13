@@ -11,7 +11,6 @@ var { rateLimit } = require('express-rate-limit');
 
 // ─── Revenue split constants (immutable) ──────────────────────────────────────
 var CREATOR  = 0.90;
-var PLATFORM = 0.10;
 
 var ROUTES_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -1113,6 +1112,7 @@ router.post('/rtmp/authorize', async function(req, res) {
 });
 
 router.get('/streams/:id/ingest', requireAuth, async function(req, res) {
+  if (!ROUTES_UUID_RE.test(req.params.id)) return res.status(400).json({ ok: false, error: 'invalid stream id' });
   try {
     var result = await db.query('SELECT id, creator_id, stream_key FROM streams WHERE id = $1', [req.params.id]);
     if (result.rowCount === 0) return res.status(404).json({ ok: false, error: 'not found' });
@@ -1131,6 +1131,10 @@ router.get('/streams/:id/ingest', requireAuth, async function(req, res) {
 });
 
 router.post('/rtmp/auth', async function(req, res) {
+  var rtmpSecret = process.env.RTMP_CALLBACK_SECRET;
+  if (rtmpSecret && req.headers['x-rtmp-secret'] !== rtmpSecret) {
+    return res.status(401).json({ ok: false, error: 'unauthorized' });
+  }
   try {
     var mtxPath = req.body.name || '';
     var m = mtxPath.match(/^live\/([0-9a-f-]{36})$/i);
@@ -1151,6 +1155,10 @@ router.post('/rtmp/auth', async function(req, res) {
 });
 
 router.post('/rtmp/done', async function(req, res) {
+  var rtmpSecret = process.env.RTMP_CALLBACK_SECRET;
+  if (rtmpSecret && req.headers['x-rtmp-secret'] !== rtmpSecret) {
+    return res.status(401).json({ ok: false, error: 'unauthorized' });
+  }
   try {
     var mtxPath = req.body.name || '';
     var m = mtxPath.match(/^live\/([0-9a-f-]{36})$/i);

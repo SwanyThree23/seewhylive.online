@@ -197,7 +197,10 @@ function doStop(res, vodId, tenantId, durationSec, playbackUrl) {
     is_public:        true,
   };
   if (playbackUrl) {
-    if (!/^https:\/\//i.test(String(playbackUrl))) return res.status(400).json({ error: 'playback_url must begin with https://' });
+    var parsedPb;
+    try { parsedPb = new URL(String(playbackUrl)); } catch (e) { return res.status(400).json({ error: 'invalid playback_url' }); }
+    if (parsedPb.protocol !== 'https:') return res.status(400).json({ error: 'playback_url must begin with https://' });
+    if (parsedPb.hostname !== 'xlrcibziouffgxciecvc.supabase.co') return res.status(400).json({ error: 'playback_url host not allowed' });
     patch.playback_url = String(playbackUrl).slice(0, 2000);
   }
 
