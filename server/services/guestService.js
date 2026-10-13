@@ -76,9 +76,9 @@ async function getStreamGuests(streamId, tenantId) {
     `SELECT sg.* FROM stream_guests sg
      JOIN streams s ON s.id = sg.stream_id
      WHERE sg.stream_id = $1 AND sg.left_at IS NULL
-       AND (s.tenant_id = $2 OR $2::text IS NULL)
+       AND s.tenant_id = $2
      ORDER BY sg.joined_at ASC`,
-    [streamId, tenantId || null]
+    [streamId, tenantId]
   );
   return result.rows;
 }
@@ -151,9 +151,9 @@ async function getRoomParticipants(streamId, tenantId) {
     `SELECT rp.* FROM room_participants rp
      JOIN streams s ON s.id = rp.stream_id
      WHERE rp.stream_id = $1 AND rp.left_at IS NULL
-       AND (s.tenant_id = $2 OR $2::text IS NULL)
+       AND s.tenant_id = $2
      ORDER BY rp.joined_at ASC`,
-    [streamId, tenantId || null]
+    [streamId, tenantId]
   );
   return result.rows;
 }

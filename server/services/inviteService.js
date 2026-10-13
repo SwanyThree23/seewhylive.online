@@ -9,13 +9,13 @@ const DEFAULT_EXPIRY_HOURS = 1;
 
 // ---- guest_invitations (direct, user-to-user) ----
 
-async function sendInvitation({ fromUserId, toUserId, roomId, message, expiryHours }) {
+async function sendInvitation({ tenantId, fromUserId, toUserId, roomId, message, expiryHours }) {
   if (fromUserId === toUserId) { const e = new Error('cannot invite yourself'); e.status = 400; throw e; }
   if (message && (typeof message !== 'string' || message.length > 500)) {
     const e = new Error('message must be at most 500 characters'); e.status = 400; throw e;
   }
   const hours = expiryHours || DEFAULT_EXPIRY_HOURS;
-  const target = await db.query('SELECT id FROM users WHERE id = $1', [toUserId]);
+  const target = await db.query('SELECT id FROM users WHERE id = $1 AND tenant_id = $2', [toUserId, tenantId]);
   if (!target.rows[0]) { const e = new Error('user not found'); e.status = 404; throw e; }
   const result = await db.query(
     `INSERT INTO guest_invitations (from_user_id, to_user_id, room_id, message, status, expires_at)
