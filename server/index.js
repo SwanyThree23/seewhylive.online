@@ -897,9 +897,9 @@ app.post('/api/ppv/verify', requireAuth, ppvRateLimit, function(req, res) {
 });
 
 // GET /api/schedule
-app.get('/api/schedule', function(req, res) {
+app.get('/api/schedule', requireAuth, function(req, res) {
   try {
-    var rows = db.prepare('SELECT id, title, category, desc, scheduled_at, created_at, recurring FROM schedules ORDER BY scheduled_at ASC LIMIT 200').all();
+    var rows = db.prepare('SELECT id, title, category, desc, scheduled_at, created_at, recurring FROM schedules WHERE creator_id = ? ORDER BY scheduled_at ASC LIMIT 200').all(req.user.id);
     res.json({ events: rows });
   } catch (err) {
     res.json({ events: [] });
@@ -1084,6 +1084,11 @@ app.get('/api/clips/:roomId', requireAuth, function(req, res) {
     return res.status(400).json({ error: 'invalid roomId' });
   }
   if (req.user.role !== 'host' && req.user.role !== 'cohost' && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'forbidden' });
+  }
+  var roomRow = db.prepare('SELECT host_id FROM rooms WHERE room_id = ?').get(roomId);
+  if (!roomRow) return res.status(404).json({ error: 'room not found' });
+  if (req.user.role !== 'admin' && roomRow.host_id !== req.user.id) {
     return res.status(403).json({ error: 'forbidden' });
   }
   try {
