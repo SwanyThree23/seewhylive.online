@@ -559,6 +559,11 @@ var spotlightMap     = new Map();  // roomId → { username, label }
 // Batch 54: Sound FX Board / Chat Upvote / VIP Color Badge / Mini Gift Leaderboard
 var chatUpvoteMap    = new Map();  // roomId → Map<msgId, { text, username, votes: Set<userId> }>
 var vipColorMap      = new Map();  // roomId → Map<userId, { username, color }>
+// Batch 55: Bonus XP Event / Stream Language Badge / Reaction Rain / Content Notice
+var bonusXpMap       = new Map();  // roomId → { multiplier, endsAt, timerId }
+var streamLangMap    = new Map();  // roomId → { code, label, emoji }
+var reactionRainThrottle = new Map();  // userId → lastRainAt
+var contentNoticeMap = new Map();  // roomId → { text, color }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -815,12 +820,21 @@ function getJoinStateForRoom(roomId) {
   state.vipColors = _vc54 ? Array.from(_vc54.entries()).map(function(e) { return { userId: e[0], username: e[1].username, color: e[1].color }; }) : [];
   var _gl54 = giftLeaderboards.get(roomId);
   state.miniLeader = _gl54 ? _gl54.slice(0, 3).map(function(e) { return { username: e.username, totalCents: e.totalCents }; }) : [];
+  // Batch 55
+  var _bxp55 = bonusXpMap.get(roomId);
+  state.bonusXp = (_bxp55 && _bxp55.endsAt > Date.now()) ? { multiplier: _bxp55.multiplier, endsAt: _bxp55.endsAt } : null;
+  state.streamLang = streamLangMap.get(roomId) || null;
+  state.contentNotice = contentNoticeMap.get(roomId) || null;
   return state;
 }
 
 // Helper: add engagement points to energy bar and fan wall; broadcast score
 function addEnergy(roomId, userId, username, pts) {
   if (!roomId) return;
+  // Batch 55: apply bonus XP multiplier if active
+  var _bxp = bonusXpMap.get(roomId);
+  if (_bxp && _bxp.endsAt > Date.now()) pts = pts * _bxp.multiplier;
+  pts = Math.ceil(pts);
   // Energy bar
   if (!energyMap.has(roomId)) energyMap.set(roomId, { score: 0, points: 0, lastDecay: Date.now() });
   var eng = energyMap.get(roomId);
@@ -6443,6 +6457,12 @@ io.on('connection', function(socket) {
     // Batch 54 cleanup
     chatUpvoteMap.delete(roomId);
     vipColorMap.delete(roomId);
+    // Batch 55 cleanup
+    var _bxpC55 = bonusXpMap.get(roomId);
+    if (_bxpC55 && _bxpC55.timerId) clearTimeout(_bxpC55.timerId);
+    bonusXpMap.delete(roomId);
+    streamLangMap.delete(roomId);
+    contentNoticeMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -7015,6 +7035,92 @@ io.on('connection', function(socket) {
     else vcMap.clear();
     var allVips = Array.from(vcMap.entries()).map(function(e) { return { userId: e[0], username: e[1].username, color: e[1].color }; });
     io.to(roomId).emit('vip-color-update', allVips.length ? allVips : []);
+  });
+
+  // ── bonus-xp (Batch 55) ─────────────────────────────────────────────────
+  socket.on('bonus-xp-start', function(data, ack) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var mins = Math.min(10, Math.max(1, parseInt(data && data.mins, 10) || 5));
+    var multiplier = 2;
+    var existing = bonusXpMap.get(roomId);
+    if (existing && existing.timerId) clearTimeout(existing.timerId);
+    var endsAt = Date.now() + mins * 60 * 1000;
+    var timerId = setTimeout(function() {
+      bonusXpMap.delete(roomId);
+      io.to(roomId).emit('bonus-xp-update', null);
+    }, mins * 60 * 1000);
+    bonusXpMap.set(roomId, { multiplier: multiplier, endsAt: endsAt, timerId: timerId });
+    io.to(roomId).emit('bonus-xp-update', { multiplier: multiplier, endsAt: endsAt });
+    if (ack) ack({ ok: true });
+  });
+
+  socket.on('bonus-xp-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var existing = bonusXpMap.get(roomId);
+    if (existing && existing.timerId) clearTimeout(existing.timerId);
+    bonusXpMap.delete(roomId);
+    io.to(roomId).emit('bonus-xp-update', null);
+  });
+
+  // ── stream-lang (Batch 55) ──────────────────────────────────────────────
+  socket.on('stream-lang-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.code) return;
+    var LANGS = { en: { label: 'English', emoji: '🇺🇸' }, es: { label: 'Español', emoji: '🇪🇸' }, fr: { label: 'Français', emoji: '🇫🇷' }, pt: { label: 'Português', emoji: '🇧🇷' }, de: { label: 'Deutsch', emoji: '🇩🇪' }, ja: { label: '日本語', emoji: '🇯🇵' }, ko: { label: '한국어', emoji: '🇰🇷' }, ar: { label: 'العربية', emoji: '🇸🇦' }, hi: { label: 'हिन्दी', emoji: '🇮🇳' }, zh: { label: '中文', emoji: '🇨🇳' } };
+    var code = String(data.code).slice(0, 5);
+    var info = LANGS[code] || { label: code.toUpperCase(), emoji: '🌐' };
+    streamLangMap.set(roomId, { code: code, label: info.label, emoji: info.emoji });
+    io.to(roomId).emit('stream-lang-update', streamLangMap.get(roomId));
+  });
+
+  socket.on('stream-lang-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    streamLangMap.delete(roomId);
+    io.to(roomId).emit('stream-lang-update', null);
+  });
+
+  // ── reaction-rain (Batch 55) ────────────────────────────────────────────
+  socket.on('reaction-rain', function(data, ack) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId || !userId) return;
+    var now = Date.now();
+    var last = reactionRainThrottle.get(userId) || 0;
+    if (now - last < 3000) { if (ack) ack({ err: 'throttled' }); return; }
+    reactionRainThrottle.set(userId, now);
+    var SAFE_EMOJIS = ['❤️', '🔥', '⭐', '✨', '🎉', '💯', '👏', '😍', '🥰', '💪', '🎊', '🌟'];
+    var emoji = data && data.emoji && SAFE_EMOJIS.includes(data.emoji) ? data.emoji : '❤️';
+    io.to(roomId).emit('reaction-rain-burst', { emoji: emoji, username: username });
+    if (ack) ack({ ok: true });
+  });
+
+  // ── content-notice (Batch 55) ───────────────────────────────────────────
+  socket.on('content-notice-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.text) return;
+    var text  = String(data.text).slice(0, 80);
+    var color = data.color && /^#[0-9A-Fa-f]{6}$/.test(data.color) ? data.color : '#C9A84C';
+    contentNoticeMap.set(roomId, { text: text, color: color });
+    io.to(roomId).emit('content-notice-update', contentNoticeMap.get(roomId));
+  });
+
+  socket.on('content-notice-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    contentNoticeMap.delete(roomId);
+    io.to(roomId).emit('content-notice-update', null);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────

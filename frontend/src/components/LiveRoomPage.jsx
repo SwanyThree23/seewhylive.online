@@ -943,6 +943,19 @@ export default function LiveRoomPage({
   var [showVipColorSet,  setShowVipColorSet]  = useState(false);
   var [vipColorDraft,    setVipColorDraft]    = useState({ username: '', userId: '', color: '#C9A84C' });
 
+  // ─── Batch 55: Bonus XP / Stream Language / Reaction Rain / Content Notice ──
+  var [bonusXp,          setBonusXp]          = useState(null);
+  var [bonusXpDraft,     setBonusXpDraft]     = useState({ mins: '5' });
+  var [showBonusXpSet,   setShowBonusXpSet]   = useState(false);
+  var [bonusXpFlash,     setBonusXpFlash]     = useState(false);
+  var [streamLang,       setStreamLang]       = useState(null);
+  var [showLangPicker,   setShowLangPicker]   = useState(false);
+  var [reactionRainBurst,setReactionRainBurst]= useState(null);
+  var [contentNotice,    setContentNotice]    = useState(null);
+  var [noticeDraft,      setNoticeDraft]      = useState({ text: '', color: '#C9A84C' });
+  var [showNoticeSet,    setShowNoticeSet]    = useState(false);
+  var [noticeDismissed,  setNoticeDismissed]  = useState(false);
+
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
   var screenStreamRef = useRef(null);
@@ -1093,6 +1106,9 @@ export default function LiveRoomPage({
       if (data.topQuestion) setTopQuestion(data.topQuestion);
       if (Array.isArray(data.vipColors) && data.vipColors.length) setVipColors54(data.vipColors);
       if (Array.isArray(data.miniLeader) && data.miniLeader.length) setMiniLeader(data.miniLeader);
+      if (data.bonusXp) setBonusXp(data.bonusXp);
+      if (data.streamLang) setStreamLang(data.streamLang);
+      if (data.contentNotice) setContentNotice(data.contentNotice);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2309,6 +2325,30 @@ export default function LiveRoomPage({
       if (d && Array.isArray(d.leaders)) setMiniLeader(d.leaders.slice(0, 3));
     });
 
+    // ── Batch 55 listeners ─────────────────────────────────────────────────
+    socket.on('bonus-xp-update', function(d) {
+      setBonusXp(d || null);
+      if (d && !bonusXpFlash) {
+        setBonusXpFlash(true);
+        setTimeout(function() { setBonusXpFlash(false); }, 4000);
+      }
+    });
+
+    socket.on('stream-lang-update', function(d) {
+      setStreamLang(d || null);
+    });
+
+    socket.on('reaction-rain-burst', function(d) {
+      if (!d) return;
+      setReactionRainBurst(d);
+      setTimeout(function() { setReactionRainBurst(null); }, 3000);
+    });
+
+    socket.on('content-notice-update', function(d) {
+      setContentNotice(d || null);
+      setNoticeDismissed(false);
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2746,6 +2786,10 @@ export default function LiveRoomPage({
       socket.off('chat-upvote-update');
       socket.off('vip-color-update');
       socket.off('gift-leaderboard');
+      socket.off('bonus-xp-update');
+      socket.off('stream-lang-update');
+      socket.off('reaction-rain-burst');
+      socket.off('content-notice-update');
     };
   }, [socket]);
 
@@ -4573,6 +4617,15 @@ export default function LiveRoomPage({
               { emoji: '🎚', label: 'Sound FX', active: showSoundBoard, onTap: function() { setShowSoundBoard(function(s) { return !s; }); } },
               { emoji: '🎨', label: 'VIP Color', active: showVipColorSet, onTap: function() { setVipColorDraft({ username: '', userId: '', color: '#C9A84C' }); setShowVipColorSet(function(s) { return !s; }); } },
               { emoji: '🏆', label: 'Leaderboard', active: showMiniLeader, onTap: function() { setShowMiniLeader(function(s) { return !s; }); } },
+              { emoji: '⚡', label: bonusXp ? 'Clear XP' : 'Bonus XP', active: !!bonusXp || showBonusXpSet, onTap: function() {
+                if (bonusXp) { if (socket) socket.emit('bonus-xp-clear', { roomId: roomId }); }
+                else { setBonusXpDraft({ mins: '5' }); setShowBonusXpSet(function(s) { return !s; }); }
+              }},
+              { emoji: '🌐', label: streamLang ? streamLang.flag + ' Lang' : 'Set Lang', active: !!streamLang || showLangPicker, onTap: function() { setShowLangPicker(function(s) { return !s; }); } },
+              { emoji: contentNotice ? '🔕' : '📢', label: contentNotice ? 'Clear Notice' : 'Notice', active: !!contentNotice || showNoticeSet, onTap: function() {
+                if (contentNotice) { if (socket) socket.emit('content-notice-clear', { roomId: roomId }); }
+                else { setNoticeDraft({ text: '', color: '#C9A84C' }); setShowNoticeSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -4651,6 +4704,9 @@ export default function LiveRoomPage({
                   else if (res && res.full) { if (addToast) addToast('All prizes claimed — be faster next time!', 'info'); }
                   else if (res && res.already) { if (addToast) addToast('You already claimed!', 'info'); }
                 });
+              }},
+              { emoji: '🌧', label: 'React Rain', active: false, onTap: function() {
+                if (socket) socket.emit('reaction-rain', { roomId: roomId, emoji: '🔥', username: username });
               }},
             ] : [])),
           ].map(function(tool) {
@@ -12103,6 +12159,143 @@ export default function LiveRoomPage({
               setShowVipColorSet(false);
             }} disabled={!vipColorDraft.username.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: vipColorDraft.username.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: vipColorDraft.username.trim() ? 1 : 0.5 }}>
               AWARD VIP COLOR
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 55: Content Notice bar ══ */}
+      {contentNotice && !noticeDismissed && (
+        <div style={{ position: 'fixed', top: 52, left: 0, right: 0, zIndex: 620, background: contentNotice.color || GOLD, padding: '7px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: BG, fontWeight: 700, flex: 1 }}>📢 {contentNotice.text}</span>
+          <button onClick={function() { setNoticeDismissed(true); }} style={{ background: 'none', border: 'none', color: BG, fontSize: 14, cursor: 'pointer', opacity: 0.7 }}>✕</button>
+        </div>
+      )}
+
+      {/* ══ Batch 55: Bonus XP flash badge ══ */}
+      {bonusXp && bonusXpFlash && (
+        <div style={{ position: 'fixed', top: contentNotice && !noticeDismissed ? 88 : 52, left: 10, zIndex: 621, background: 'rgba(201,168,76,.18)', border: '1px solid ' + GOLD, borderRadius: 22, padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 5, animation: 'fadeSlideIn .35s ease' }}>
+          <span style={{ fontSize: 14 }}>⚡</span>
+          <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: GOLD, letterSpacing: 1 }}>{bonusXp.multiplier}× XP ACTIVE</span>
+        </div>
+      )}
+
+      {/* ══ Batch 55: Stream language pill ══ */}
+      {streamLang && (
+        <div style={{ position: 'fixed', top: contentNotice && !noticeDismissed ? 88 : 52, right: 10, zIndex: 621, background: 'rgba(201,168,76,.12)', border: '1px solid ' + BORDER, borderRadius: 20, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontSize: 14 }}>{streamLang.flag}</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, letterSpacing: .5 }}>{streamLang.code}</span>
+        </div>
+      )}
+
+      {/* ══ Batch 55: Reaction rain burst ══ */}
+      {reactionRainBurst && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', zIndex: 900, overflow: 'hidden' }}>
+          {reactionRainBurst.emojis.map(function(em, i) {
+            return (
+              <div key={i} style={{ position: 'absolute', top: -30, left: (10 + Math.random() * 80) + '%', fontSize: 22, animation: 'confettiFall ' + (1.2 + Math.random() * 1.2) + 's ease ' + (i * 0.08) + 's forwards', pointerEvents: 'none' }}>{em}</div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ══ Batch 55: Bonus XP Set panel (host) ══ */}
+      {showBonusXpSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 260, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>⚡ BONUS XP EVENT</span>
+              <button onClick={function() { setShowBonusXpSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: MUTED, marginBottom: 10 }}>Grant a 2× XP multiplier to all viewers for a limited time.</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT }}>Duration:</span>
+              {['3', '5', '10'].map(function(m) {
+                return (
+                  <button key={m} onClick={function() { setBonusXpDraft(function(d) { return Object.assign({}, d, { mins: m }); }); }}
+                    style={{ background: bonusXpDraft.mins === m ? 'rgba(201,168,76,.22)' : CARD2, border: '1px solid ' + (bonusXpDraft.mins === m ? GOLD : BORDER), borderRadius: 8, color: bonusXpDraft.mins === m ? GOLD : TEXT, fontFamily: "'DM Mono',monospace", fontSize: 11, padding: '4px 10px', cursor: 'pointer' }}>
+                    {m}m
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={function() {
+              if (socket) socket.emit('bonus-xp-start', { roomId: roomId, mins: parseInt(bonusXpDraft.mins, 10) || 5 });
+              setShowBonusXpSet(false);
+            }} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+              START BONUS XP
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 55: Stream Language Picker (host) ══ */}
+      {showLangPicker && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🌐 STREAM LANGUAGE</span>
+              <button onClick={function() { setShowLangPicker(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+              {[
+                { code: 'EN', flag: '🇺🇸' }, { code: 'ES', flag: '🇪🇸' }, { code: 'PT', flag: '🇧🇷' },
+                { code: 'FR', flag: '🇫🇷' }, { code: 'DE', flag: '🇩🇪' }, { code: 'JA', flag: '🇯🇵' },
+                { code: 'KO', flag: '🇰🇷' }, { code: 'ZH', flag: '🇨🇳' }, { code: 'AR', flag: '🇸🇦' },
+                { code: 'HI', flag: '🇮🇳' }
+              ].map(function(l) {
+                var active = streamLang && streamLang.code === l.code;
+                return (
+                  <button key={l.code} onClick={function() {
+                    if (socket) socket.emit('stream-lang-set', { roomId: roomId, code: l.code, flag: l.flag });
+                    setShowLangPicker(false);
+                  }} style={{ background: active ? 'rgba(201,168,76,.22)' : CARD2, border: '1px solid ' + (active ? GOLD : BORDER), borderRadius: 10, padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+                    <span style={{ fontSize: 16 }}>{l.flag}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: active ? GOLD : TEXT }}>{l.code}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {streamLang && (
+              <button onClick={function() {
+                if (socket) socket.emit('stream-lang-clear', { roomId: roomId });
+                setShowLangPicker(false);
+              }} style={{ background: 'none', border: '1px solid ' + BORDER, borderRadius: 10, padding: '6px', width: '100%', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: MUTED, cursor: 'pointer' }}>
+                Clear Language Badge
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 55: Content Notice Set panel (host) ══ */}
+      {showNoticeSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>📢 CONTENT NOTICE</span>
+              <button onClick={function() { setShowNoticeSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <textarea value={noticeDraft.text}
+              onChange={function(e) { setNoticeDraft(function(d) { return Object.assign({}, d, { text: e.target.value.slice(0, 80) }); }); }}
+              placeholder="Notice text (max 80 chars)…"
+              rows={2}
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', resize: 'none', marginBottom: 8 }} />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              {['#C9A84C', '#FF1A3C', '#D4854A', '#7B68EE', '#F0E8D4'].map(function(c) {
+                return (
+                  <button key={c} onClick={function() { setNoticeDraft(function(d) { return Object.assign({}, d, { color: c }); }); }}
+                    style={{ width: 24, height: 24, borderRadius: '50%', background: c, border: noticeDraft.color === c ? '3px solid ' + TEXT : '2px solid transparent', cursor: 'pointer', flexShrink: 0 }} />
+                );
+              })}
+            </div>
+            <button onClick={function() {
+              var txt = noticeDraft.text.trim();
+              if (!txt) return;
+              if (socket) socket.emit('content-notice-set', { roomId: roomId, text: txt, color: noticeDraft.color });
+              setShowNoticeSet(false);
+            }} disabled={!noticeDraft.text.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: noticeDraft.text.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: noticeDraft.text.trim() ? 1 : 0.5 }}>
+              POST NOTICE
             </button>
           </div>
         </div>
