@@ -120,7 +120,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     push.isSubscribed(function(subbed) { setPushSubscribed(subbed); });
   }, []);
 
-  function saveProfile() {
+  var saveProfile = function() {
     setProfileSaving(true);
     fetch('/api/users/me', {
       method: 'PUT',
@@ -141,7 +141,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     });
   }
 
-  function connectStripe() {
+  var connectStripe = function() {
     fetch('/api/creator/onboard/link', { headers: _authHeaders() })
       .then(function(r) {
         if (!r.ok) return r.json().then(function(d) { throw new Error((d && d.error) || 'Failed to get Stripe link'); });
@@ -155,7 +155,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
       });
   }
 
-  function requestPayout() {
+  var requestPayout = function() {
     if (availableCents < 1000) {
       addToast('Minimum payout is $10.00', 'error');
       return;
@@ -181,7 +181,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     });
   }
 
-  function saveNotifications() {
+  var saveNotifications = function() {
     fetch('/api/users/me/notifications', {
       method: 'POST',
       headers: _authHeaders({ 'Content-Type': 'application/json' }),
@@ -204,7 +204,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     });
   }
 
-  function enablePush() {
+  var enablePush = function() {
     if (!('Notification' in window)) {
       addToast('Push notifications not supported in this browser', 'error');
       return;
@@ -218,13 +218,13 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     });
   }
 
-  function cycleEmoji() {
+  var cycleEmoji = function() {
     var idx = AVATAR_EMOJIS.indexOf(avatarEmoji);
     var next = (idx + 1) % AVATAR_EMOJIS.length;
     setAvatarEmoji(AVATAR_EMOJIS[next]);
   }
 
-  function renderToggle(value, setter) {
+  var renderToggle = function(value, setter) {
     return (
       <button
         onClick={function() { setter(function(v) { return !v; }); }}
@@ -253,7 +253,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     );
   }
 
-  function renderProfileTab() {
+  var renderProfileTab = function() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 18 }}>
@@ -347,7 +347,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     );
   }
 
-  function renderPayoutsTab() {
+  var renderPayoutsTab = function() {
     if (stripeChecking) {
       return (
         <div style={Object.assign({}, cardStyle, { color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9 })}>
@@ -447,7 +447,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     );
   }
 
-  function renderNotificationsTab() {
+  var renderNotificationsTab = function() {
     var rows = [
       { label: '&#x1F534; New Stream Alerts', desc: 'New stream from followed creators', value: notifyNewStream, setter: setNotifyNewStream },
       { label: '&#x1F4B0; Tip Received',       desc: 'Get notified of tips',              value: notifyTip,       setter: setNotifyTip },
@@ -509,7 +509,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     );
   }
 
-  function renderSubscriptionTab() {
+  var renderSubscriptionTab = function() {
     var tierOrder = ['free', 'creator', 'pro', 'studio'];
     var currentIdx = tierOrder.indexOf(currentTier);
 
@@ -569,7 +569,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
 
   var [deleteInFlight, setDeleteInFlight] = useState(false);
 
-  function handleDeleteAccount() {
+  var handleDeleteAccount = function() {
     setDeleteInFlight(true);
     fetch('/api/users/me', { method: 'DELETE', headers: _authHeaders() })
       .then(function(r) {
@@ -588,7 +588,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
       });
   }
 
-  function renderPrivacyTab() {
+  var renderPrivacyTab = function() {
     var toggleRows = [
       { label: 'Public Profile',   desc: 'Your profile is visible to everyone', value: publicProfile,   setter: setPublicProfile },
       { label: 'Show Earnings',    desc: 'Display earnings on your public page', value: showEarnings,    setter: setShowEarnings },

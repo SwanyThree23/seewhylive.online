@@ -129,7 +129,7 @@ export default function ReplayTab({ addToast, isLive }) {
     }
   }
 
-  function toggleHighlight(id) {
+  var toggleHighlight = function(id) {
     setClips(function(prev) {
       return prev.map(function(c) {
         if (c.id === id) return Object.assign({}, c, { highlight: !c.highlight });
@@ -138,7 +138,7 @@ export default function ReplayTab({ addToast, isLive }) {
     });
   }
 
-  function addToReel(clip) {
+  var addToReel = function(clip) {
     for (var j = 0; j < reel.length; j++) {
       if (reel[j].id === clip.id) {
         addToast('⚠️ Already in highlight reel', 'info');
@@ -149,7 +149,7 @@ export default function ReplayTab({ addToast, isLive }) {
     addToast('✂️ Added to reel: ' + clip.title.slice(0, 20), 'info');
   }
 
-  function removeFromReel(id) {
+  var removeFromReel = function(id) {
     setReel(function(prev) { return prev.filter(function(c) { return c.id !== id; }); });
     addToast('Removed from reel', 'info');
   }
@@ -163,7 +163,7 @@ export default function ReplayTab({ addToast, isLive }) {
     if (clips[ci].chapter) chapterCount++;
   }
 
-  function shareReplay(clip) {
+  var shareReplay = function(clip) {
     var url = 'https://seewhylive.online/replay/' + clip.id;
     navigator.clipboard.writeText(url);
     setCopiedId(clip.id);
@@ -171,7 +171,7 @@ export default function ReplayTab({ addToast, isLive }) {
     setTimeout(function() { setCopiedId(null); }, 1500);
   }
 
-  function isInReel(id) {
+  var isInReel = function(id) {
     for (var ri = 0; ri < reel.length; ri++) {
       if (reel[ri].id === id) return true;
     }

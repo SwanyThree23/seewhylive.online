@@ -74,7 +74,7 @@ export default function WelcomeAudio(props) {
     return function() { clearTimeout(t); };
   }, []);
 
-  function getBestVoice() {
+  var getBestVoice = function() {
     if (!synthRef.current) return null;
     var voices = synthRef.current.getVoices();
     var v = voices.find(function(voice) {
@@ -85,7 +85,7 @@ export default function WelcomeAudio(props) {
     return v || null;
   }
 
-  function speakSection(idx) {
+  var speakSection = function(idx) {
     if (!synthRef.current) return;
     synthRef.current.cancel();
 
@@ -116,7 +116,7 @@ export default function WelcomeAudio(props) {
     synthRef.current.speak(utt);
   }
 
-  function handleStart() {
+  var handleStart = function() {
     setStarted(true);
     idxRef.current = 0;
     if (hasAudio) {
@@ -126,7 +126,7 @@ export default function WelcomeAudio(props) {
     }
   }
 
-  function handleTogglePause() {
+  var handleTogglePause = function() {
     if (!synthRef.current) return;
     if (synthRef.current.paused) {
       synthRef.current.resume();
@@ -137,7 +137,7 @@ export default function WelcomeAudio(props) {
     }
   }
 
-  function handleNext() {
+  var handleNext = function() {
     var next = idxRef.current + 1;
     if (next < SECTIONS.length) {
       if (hasAudio) {
@@ -153,7 +153,7 @@ export default function WelcomeAudio(props) {
     }
   }
 
-  function handlePrev() {
+  var handlePrev = function() {
     var prev = idxRef.current - 1;
     if (prev >= 0) {
       if (hasAudio) {
@@ -165,7 +165,7 @@ export default function WelcomeAudio(props) {
     }
   }
 
-  function handleClose() {
+  var handleClose = function() {
     if (synthRef.current) synthRef.current.cancel();
     setVisible(false);
     try { sessionStorage.setItem(STORAGE_KEY, '1'); } catch(e) {}

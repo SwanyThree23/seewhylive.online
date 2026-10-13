@@ -71,7 +71,7 @@ export default function TriviaTab(props) {
   useEffect(function() {
     if (!socket) return;
 
-    function onQuestion(data) {
+    var onQuestion = function(data) {
       setAnswerResult(null);
       setActiveQ(data);
       setSelectedIdx(null);
@@ -92,11 +92,11 @@ export default function TriviaTab(props) {
       }, 250);
     }
 
-    function onAck(data) {
+    var onAck = function(data) {
       setAnswerResult(data.isCorrect ? 'correct' : 'wrong');
     }
 
-    function onResults(data) {
+    var onResults = function(data) {
       if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
       setActiveQ(null);
       setResults(data);
@@ -127,13 +127,13 @@ export default function TriviaTab(props) {
     };
   }, [socket, username, selectedIdx]);
 
-  function handleAnswer(idx) {
+  var handleAnswer = function(idx) {
     if (selectedIdx !== null || !activeQ) return;
     setSelectedIdx(idx);
     if (socket) socket.emit('trivia-answer', { roomId: roomId, answerIdx: idx, username: username });
   }
 
-  function handleSend() {
+  var handleSend = function() {
     if (!question.trim()) { addToast('Enter a question', 'error'); return; }
     var opts = options.filter(function(o) { return o.trim(); });
     if (opts.length < 2) { addToast('Need at least 2 options', 'error'); return; }
@@ -149,12 +149,12 @@ export default function TriviaTab(props) {
     addToast('🎯 Trivia launched!', 'success');
   }
 
-  function handleEndEarly() {
+  var handleEndEarly = function() {
     if (socket) socket.emit('trivia-end', { roomId: roomId });
   }
 
   // ── Percent bar helper ──────────────────────────────────────────────────
-  function getPct(votes, total) {
+  var getPct = function(votes, total) {
     if (!total) return 0;
     return Math.min(100, Math.floor((votes / total) * 100));
   }

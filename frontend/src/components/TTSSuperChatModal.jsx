@@ -33,7 +33,7 @@ export default function TTSSuperChatModal({ socket, roomId, userId, username, on
   var [previewing, setPreviewing] = useState(false);
   var [sending, setSending]     = useState(false);
 
-  function previewVoice(v) {
+  var previewVoice = function(v) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     var u = new window.SpeechSynthesisUtterance(message.trim() || 'This is how ' + v.label + ' sounds in the room!');
@@ -44,12 +44,12 @@ export default function TTSSuperChatModal({ socket, roomId, userId, username, on
     window.speechSynthesis.speak(u);
   }
 
-  function stopPreview() {
+  var stopPreview = function() {
     window.speechSynthesis && window.speechSynthesis.cancel();
     setPreviewing(false);
   }
 
-  function handleSend() {
+  var handleSend = function() {
     if (!selectedTier || !selectedVoice || !message.trim() || !socket) return;
     setSending(true);
     socket.emit('super-chat:tts', {

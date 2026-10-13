@@ -56,7 +56,7 @@ export default function MerchTab({ addToast, isLive, socket, roomId, username })
   var totalSold = items.reduce(function(s, it) { return s + it.sold; }, 0);
   var creatorEarned = Math.floor(totalSold * 45 * CREATOR);
 
-  function addToCart(item) {
+  var addToCart = function(item) {
     if (item.stock <= 0) {
       addToast('❌ Sold out!', 'error');
       return;
@@ -85,7 +85,7 @@ export default function MerchTab({ addToast, isLive, socket, roomId, username })
     }
   }
 
-  function initiateDrop(item) {
+  var initiateDrop = function(item) {
     setDropped(item);
     setDropCountdown(30);
     clearInterval(cdRef.current);
@@ -103,13 +103,13 @@ export default function MerchTab({ addToast, isLive, socket, roomId, username })
     }, 1000);
   }
 
-  function endDrop() {
+  var endDrop = function() {
     clearInterval(cdRef.current);
     setDropped(null);
     setDropCountdown(null);
   }
 
-  function placeOrder() {
+  var placeOrder = function() {
     var totalCents = Math.floor(cartTotal * 100);
     var earned = Math.floor(cartCreator);
     if (socket && roomId && totalCents > 0) {

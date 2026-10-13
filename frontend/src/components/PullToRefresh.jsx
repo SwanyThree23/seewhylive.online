@@ -8,14 +8,14 @@ export default function PullToRefresh({ onRefresh, children }) {
   var startY   = useRef(0);
   var THRESHOLD = 72;
 
-  function onTouchStart(e) {
+  var onTouchStart = function(e) {
     var el = e.currentTarget;
     if (el.scrollTop > 0) return;
     startY.current = e.touches[0].clientY;
     setPulling(true);
   }
 
-  function onTouchMove(e) {
+  var onTouchMove = function(e) {
     if (!pulling) return;
     var el = e.currentTarget;
     if (el.scrollTop > 0) { setPulling(false); setPullY(0); return; }
@@ -24,7 +24,7 @@ export default function PullToRefresh({ onRefresh, children }) {
     setReady(dy >= THRESHOLD);
   }
 
-  function onTouchEnd() {
+  var onTouchEnd = function() {
     if (!pulling) return;
     if (ready && onRefresh) onRefresh();
     setPulling(false);

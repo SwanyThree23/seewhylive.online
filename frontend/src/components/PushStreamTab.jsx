@@ -63,7 +63,7 @@ export default function PushStreamTab({ isLive, addToast }) {
   var [keyVisible, setKeyVisible] = useState(false);
   var [copied, setCopied] = useState('');
 
-  function copyText(text, label) {
+  var copyText = function(text, label) {
     navigator.clipboard.writeText(text).then(function() {
       setCopied(label);
       addToast(label + ' copied', 'success');

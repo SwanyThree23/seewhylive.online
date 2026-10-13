@@ -60,25 +60,25 @@ export default function MobileNavBar(props) {
 
   // Push to history when More drawer opens — Android back button dismisses it
   useEffect(function() {
-    function onPop() {
+    var onPop = function() {
       if (showMoreRef.current) setShowMore(false);
     }
     window.addEventListener('popstate', onPop);
     return function() { window.removeEventListener('popstate', onPop); };
   }, []);
 
-  function openMore() {
+  var openMore = function() {
     setShowMore(true);
     window.history.pushState({ swOverlay: 'more' }, '');
   }
-  function closeMore() {
+  var closeMore = function() {
     if (showMoreRef.current) window.history.back();
     else setShowMore(false);
   }
 
   // Always show, including in room
 
-  function goTo(id) {
+  var goTo = function(id) {
     if (id === '__more__') {
       if (showMore) closeMore(); else openMore();
       return;

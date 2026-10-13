@@ -107,7 +107,7 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
   // ── Socket: real-time bracket updates ─────────────────────────────────────
   useEffect(function() {
     if (!socket) return;
-    function onBracketUpdate(data) {
+    var onBracketUpdate = function(data) {
       if (data.round === 'qf') setQf(function(prev) { return prev.map(function(m) { return m.id === data.matchId ? Object.assign({}, m, { score: data.score, status: data.status, winner: data.winner || m.winner }) : m; }); });
       if (data.round === 'sf') setSf(function(prev) { return prev.map(function(m) { return m.id === data.matchId ? Object.assign({}, m, { score: data.score, status: data.status, winner: data.winner || m.winner }) : m; }); });
       if (data.round === 'fn') setFinals(function(prev) { return prev.map(function(m) { return m.id === data.matchId ? Object.assign({}, m, { score: data.score, status: data.status, winner: data.winner || m.winner }) : m; }); });
@@ -118,11 +118,11 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
 
   var isHost = role === 'host' || role === 'cohost';
 
-  function getEditVal(matchId, key, fallback) {
+  var getEditVal = function(matchId, key, fallback) {
     return editScores[matchId] && editScores[matchId][key] !== undefined ? editScores[matchId][key] : fallback;
   }
 
-  function setEditVal(matchId, key, val) {
+  var setEditVal = function(matchId, key, val) {
     setEditScores(function(prev) {
       var entry = Object.assign({}, prev[matchId] || {});
       entry[key] = val;
@@ -132,7 +132,7 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
     });
   }
 
-  function saveEditedMatch(rk, match) {
+  var saveEditedMatch = function(rk, match) {
     var newScore  = getEditVal(match.id, 'score',  match.score);
     var newStatus = getEditVal(match.id, 'status', match.status);
     var newWinner = getEditVal(match.id, 'winner', match.winner);
@@ -189,15 +189,15 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
     });
   }, [isLive]);
 
-  function getRound(r) { return r === 'qf' ? qf : r === 'sf' ? sf : finals; }
+  var getRound = function(r) { return r === 'qf' ? qf : r === 'sf' ? sf : finals; }
 
-  function setRoundUpdater(r, updater) {
+  var setRoundUpdater = function(r, updater) {
     if (r === 'qf') setQf(updater);
     else if (r === 'sf') setSf(updater);
     else setFinals(updater);
   }
 
-  function openScore(b) {
+  var openScore = function(b) {
     if (b.status === 'DONE') return;
     setActiveId(b.id);
     var parts = (b.score || '').split('-');
@@ -205,7 +205,7 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
     setS2(parseInt(parts[1]) || 0);
   }
 
-  function completeMatch(b) {
+  var completeMatch = function(b) {
     var winner = s1 > s2 ? b.p1 : b.p2;
     setRoundUpdater(round, function(prev) {
       return prev.map(function(x) {
@@ -220,7 +220,7 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
 
   var [bracketCopied, setBracketCopied] = useState(false);
 
-  function shareBracket() {
+  var shareBracket = function() {
     var lines = ['🏆 WASHINGTON CLASSIC — Bracket Update'];
     var allMatches = qf.concat(sf).concat(finals);
     for (var i = 0; i < allMatches.length; i++) {

@@ -15,7 +15,7 @@ export default function Ticker(props) {
   var xRef         = useRef(0);
 
   useEffect(function() {
-    function onResize() { setIsMobile(window.innerWidth <= 900); }
+    var onResize = function() { setIsMobile(window.innerWidth <= 900); }
     window.addEventListener('resize', onResize);
     return function() { window.removeEventListener('resize', onResize); };
   }, []);
@@ -42,7 +42,7 @@ export default function Ticker(props) {
     var speed = isLive ? 1.6 : 1.0;
     var container = containerRef.current;
     if (!container) return;
-    function animate() {
+    var animate = function() {
       xRef.current -= speed;
       var width = tickerText.length * 7.5;
       if (Math.abs(xRef.current) > width) xRef.current = window.innerWidth;

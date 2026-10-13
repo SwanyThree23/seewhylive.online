@@ -39,7 +39,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
       streamRef.current = null;
     }
 
-    async function initCamera() {
+    var initCamera = async function() {
       try {
         var preset = mediaConfig && mediaConfig.preset ? mediaConfig.preset : { width: 1280, height: 720, frameRate: 30 };
         var videoConstraints = {
@@ -153,7 +153,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   // Listen for reactions targeted at this seat
   useEffect(function() {
     if (!socket || !guestId) return;
-    function onReaction(payload) {
+    var onReaction = function(payload) {
       if (payload.guestId !== guestId) return;
       var id = Date.now() + Math.random();
       setFlyReactions(function(prev) { return prev.concat([{ id: id, emoji: payload.emoji, offset: Math.round(Math.random() * 40 - 20) }]); });
@@ -175,7 +175,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     if (!guest.producerId) return;
     var cancelled = false;
 
-    async function subscribeRemote() {
+    var subscribeRemote = async function() {
       try {
         setLoading(true);
         var videoStream = await rtcManager.subscribeToProducer(guest.producerId);
@@ -210,7 +210,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     return function() { cancelled = true; };
   }, [isOwnCell, rtcManager, guest && guest.producerId, guest && guest.audioProducerId]);
 
-  function initAnalyser(stream) {
+  var initAnalyser = function(stream) {
     if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null; }
     if (audioCtxRef.current) { audioCtxRef.current.close().catch(function(){}); audioCtxRef.current = null; }
     analyserRef.current = null;
@@ -230,10 +230,10 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     }
   }
 
-  function drawEQ() {
+  var drawEQ = function() {
     if (!analyserRef.current) return;
     var dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-    function tick() {
+    var tick = function() {
       animRef.current = requestAnimationFrame(tick);
       analyserRef.current.getByteFrequencyData(dataArray);
       var bars = [];

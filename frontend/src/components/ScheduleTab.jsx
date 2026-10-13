@@ -167,7 +167,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
     return function() { clearInterval(id); };
   }, [isLive, schedule]);
 
-  function addEvent() {
+  var addEvent = function() {
     if (!newTitle.trim() || !newTime.trim() || saving) return;
     var baseDate = new Date(newTime);
     var occurrences = [{ date: baseDate, suffix: '' }];
@@ -224,7 +224,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
     });
   }
 
-  function removeEvent(id) {
+  var removeEvent = function(id) {
     var ev = schedule.find(function(s) { return s.id === id; });
     if (ev && ev.fromApi) {
       var _delTok = localStorage.getItem('sw_token') || '';
@@ -233,7 +233,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
     setSchedule(function(p) { return p.filter(function(s) { return s.id !== id; }); });
   }
 
-  function toggleReminder(eventId) {
+  var toggleReminder = function(eventId) {
     var idx = reminders.indexOf(eventId);
     var updated;
     if (idx >= 0) {
@@ -247,7 +247,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
     localStorage.setItem('sw_reminders', JSON.stringify(updated));
   }
 
-  function setStatus(id, status) {
+  var setStatus = function(id, status) {
     setSchedule(function(p) {
       return p.map(function(ev) {
         if (ev.id !== id) return ev;

@@ -70,24 +70,24 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
   // Real-time bot state sync from server broadcasts
   useEffect(function() {
     if (!socket) return;
-    function onRuleChanged(data) {
+    var onRuleChanged = function(data) {
       if (!data || !data.rule) return;
       setRules(function(prev) {
         return prev.map(function(r) { return r.id === data.rule ? Object.assign({}, r, { enabled: data.enabled }) : r; });
       });
     }
-    function onTriggerAdded(data) {
+    var onTriggerAdded = function(data) {
       if (!data || !data.trigger) return;
       setTriggers(function(prev) {
         if (prev.some(function(t) { return t.id === data.trigger.id; })) return prev;
         return prev.concat([data.trigger]);
       });
     }
-    function onTriggerRemoved(data) {
+    var onTriggerRemoved = function(data) {
       if (!data || !data.triggerId) return;
       setTriggers(function(prev) { return prev.filter(function(t) { return t.id !== data.triggerId; }); });
     }
-    function onPollUpdate(data) {
+    var onPollUpdate = function(data) {
       if (!data || !Array.isArray(data.options)) return;
       // Old-system options are objects {text, votes}; new-system are strings (handled by PollOverlay)
       if (typeof data.options[0] !== 'object') return;
@@ -131,7 +131,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
   }, [pollRunning]);
 
 
-  function toggleRule(id) {
+  var toggleRule = function(id) {
     setRules(function(prev) {
       return prev.map(function(r) {
         if (r.id !== id) return r;
@@ -142,7 +142,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     });
   }
 
-  function sendManual() {
+  var sendManual = function() {
     if (!manualMsg.trim() || sending) return;
     setSending(true);
     if (socket) socket.emit('bot-manual-message', { roomId: roomId, message: manualMsg.trim() });
@@ -151,7 +151,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     setTimeout(function() { setSending(false); }, 600);
   }
 
-  function addTrigger() {
+  var addTrigger = function() {
     if (!newKw.trim() || !newResp.trim()) {
       if (addToast) addToast('Keyword and response are required', 'error');
       return;
@@ -167,12 +167,12 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     if (addToast) addToast('Trigger added: ' + kw, 'success');
   }
 
-  function removeTrigger(id) {
+  var removeTrigger = function(id) {
     setTriggers(function(prev) { return prev.filter(function(t) { return t.id !== id; }); });
     if (socket) socket.emit('bot-remove-trigger', { roomId: roomId, triggerId: id });
   }
 
-  function launchPoll() {
+  var launchPoll = function() {
     var validOptions = pollOptions.filter(function(o) { return o.trim().length > 0; });
     if (!pollQuestion.trim() || validOptions.length < 2) {
       if (addToast) addToast('Need a question and at least 2 options', 'error');
@@ -190,7 +190,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     if (addToast) addToast('📊 Poll started!', 'success');
   }
 
-  function endPoll() {
+  var endPoll = function() {
     setPollRunning(false);
     setPollEnded(true);
     if (pollTimerRef.current) clearInterval(pollTimerRef.current);
@@ -204,17 +204,17 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     }
   }
 
-  function addOption() {
+  var addOption = function() {
     if (pollOptions.length >= 4) { if (addToast) addToast('Maximum 4 options', 'info'); return; }
     setPollOptions(function(prev) { return prev.concat(['']); });
   }
 
-  function removeOption(idx) {
+  var removeOption = function(idx) {
     if (pollOptions.length <= 2) return;
     setPollOptions(function(prev) { return prev.filter(function(_, i) { return i !== idx; }); });
   }
 
-  function updateOption(idx, val) {
+  var updateOption = function(idx, val) {
     setPollOptions(function(prev) { return prev.map(function(o, i) { return i === idx ? val : o; }); });
   }
 

@@ -98,20 +98,20 @@ export default function PortalTab({ addToast, isLive, socket, roomId }) {
   var [channels, setChannels] = useState(PORTAL_CHANNELS.map(function(ch) { return Object.assign({}, ch); }));
 
 
-  function openChannel(ch) {
+  var openChannel = function(ch) {
     setActive(ch);
     addToast(ch.avatar + ' Opening ' + ch.name + ' portal...', 'info');
   }
 
-  function handleFeature() {
+  var handleFeature = function() {
     addToast('📺 Now featuring ' + active.name + ' on your stream!', 'info');
   }
 
-  function handleFollow() {
+  var handleFollow = function() {
     addToast(active.avatar + ' Following ' + active.name + '!', 'success');
   }
 
-  function handleShare() {
+  var handleShare = function() {
     if (socket && roomId) {
       socket.emit('portal-share', { roomId: roomId, channelName: active.name });
     }

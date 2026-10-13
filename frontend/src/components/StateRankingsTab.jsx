@@ -58,7 +58,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
     try { if (myState) { localStorage.setItem('sw_my_state', myState); } else { localStorage.removeItem('sw_my_state'); } } catch(e) {}
   }, [myState]);
 
-  function shareRankings() {
+  var shareRankings = function() {
     var lines = ['🏅 STATE RANKINGS — Week ' + WEEK + ' Season ' + SEASON];
     for (var i = 0; i < rankings.length && i < 8; i++) {
       var r = rankings[i];
