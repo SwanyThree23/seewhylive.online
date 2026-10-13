@@ -35,10 +35,12 @@ async function getActiveBattles(tenantId) {
   return result.rows;
 }
 
-async function getActiveBattlesForRoom(roomId) {
+async function getActiveBattlesForRoom(roomId, tenantId) {
   const result = await db.query(
-    `SELECT * FROM pk_battles WHERE room_id = $1 AND status = 'active' ORDER BY created_at DESC`,
-    [roomId]
+    tenantId
+      ? `SELECT * FROM pk_battles WHERE room_id = $1 AND status = 'active' AND tenant_id = $2 ORDER BY created_at DESC`
+      : `SELECT * FROM pk_battles WHERE room_id = $1 AND status = 'active' ORDER BY created_at DESC`,
+    tenantId ? [roomId, tenantId] : [roomId]
   );
   return result.rows;
 }
@@ -120,12 +122,16 @@ async function castVote({ battleId, voterId, side, giftValueCents, tenantId }) {
   return result.rows[0];
 }
 
-async function declineBattle(battleId, defenderId) {
+async function declineBattle(battleId, defenderId, tenantId) {
   const result = await db.query(
-    `UPDATE pk_battles SET status = 'declined'
-     WHERE id = $1 AND defender_id = $2 AND status = 'pending'
-     RETURNING *`,
-    [battleId, defenderId]
+    tenantId
+      ? `UPDATE pk_battles SET status = 'declined'
+         WHERE id = $1 AND defender_id = $2 AND status = 'pending' AND tenant_id = $3
+         RETURNING *`
+      : `UPDATE pk_battles SET status = 'declined'
+         WHERE id = $1 AND defender_id = $2 AND status = 'pending'
+         RETURNING *`,
+    tenantId ? [battleId, defenderId, tenantId] : [battleId, defenderId]
   );
   return result.rows[0] || null;
 }

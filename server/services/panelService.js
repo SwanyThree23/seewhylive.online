@@ -2,8 +2,13 @@
 const db = require('../db');
 const crypto = require('crypto');
 
-async function assignSlot({ roomId, userId }) {
-  const room = await db.query('SELECT max_panel_guests FROM streams WHERE id = $1', [roomId]);
+async function assignSlot({ roomId, userId, tenantId }) {
+  const room = await db.query(
+    tenantId
+      ? 'SELECT max_panel_guests FROM streams WHERE id = $1 AND tenant_id = $2'
+      : 'SELECT max_panel_guests FROM streams WHERE id = $1',
+    tenantId ? [roomId, tenantId] : [roomId]
+  );
   if (!room.rows.length) {
     const err = new Error('Room not found');
     err.status = 404;
@@ -45,10 +50,12 @@ async function releaseSlot({ roomId, userId }) {
   await db.query('DELETE FROM room_panel_slots WHERE stream_id = $1 AND user_id = $2', [roomId, userId]);
 }
 
-async function checkJoinGate({ roomId, userId, inviteCode = null }) {
+async function checkJoinGate({ roomId, userId, inviteCode = null, tenantId = null }) {
   const room = await db.query(
-    'SELECT privacy, invite_code, private_gating_mode, creator_id FROM streams WHERE id = $1',
-    [roomId]
+    tenantId
+      ? 'SELECT privacy, invite_code, private_gating_mode, creator_id FROM streams WHERE id = $1 AND tenant_id = $2'
+      : 'SELECT privacy, invite_code, private_gating_mode, creator_id FROM streams WHERE id = $1',
+    tenantId ? [roomId, tenantId] : [roomId]
   );
   if (!room.rows.length) {
     const err = new Error('Room not found');
