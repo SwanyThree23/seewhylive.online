@@ -148,12 +148,15 @@ router.delete('/:id', requireAuth, function(req, res) {
     var sound = Array.isArray(data) ? data[0] : data;
     if (!sound || sound.creator_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
     var storagePath = sound.storage_path || '';
-    sbReq('DELETE', '/storage/v1/object/sounds', { prefixes: [storagePath] }, function() {
-      sbReq('DELETE', '/rest/v1/custom_sounds?id=eq.' + encodeURIComponent(soundId) +
-        '&tenant_id=eq.' + encodeURIComponent(req.tenantId), null, function(delErr, delStatus) {
-        if (delErr || delStatus >= 400) return res.status(500).json({ error: 'Delete failed' });
-        res.json({ ok: true, deleted: soundId });
+    sbReq('DELETE', '/rest/v1/custom_sounds?id=eq.' + encodeURIComponent(soundId) +
+      '&tenant_id=eq.' + encodeURIComponent(req.tenantId), null, function(delErr, delStatus) {
+      if (delErr || delStatus >= 400) return res.status(500).json({ error: 'Delete failed' });
+      sbReq('DELETE', '/storage/v1/object/sounds', { prefixes: [storagePath] }, function(stErr, stStatus) {
+        if (stErr || stStatus >= 400) {
+          console.warn('[sounds] storage cleanup failed for path=%s status=%s', storagePath, stStatus);
+        }
       });
+      res.json({ ok: true, deleted: soundId });
     });
   });
 });

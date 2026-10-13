@@ -56,7 +56,8 @@ router.get('/:id/panel', requireAuth, validateId, async function(req, res) {
       'SELECT privacy, private_gating_mode, creator_id FROM streams WHERE id = $1 AND tenant_id = $2',
       [req.params.id, req.tenantId]
     );
-    var row = privacyResult.rows[0] || {};
+    if (!privacyResult.rows[0]) return res.status(404).json({ error: 'not found' });
+    var row = privacyResult.rows[0];
     var slots = await panelService.getPanelState(req.params.id);
     var isCreator = row.creator_id === req.user.id;
     var isOccupant = slots.some(function(s) { return s.user_id === req.user.id; });

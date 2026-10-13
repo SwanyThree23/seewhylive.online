@@ -314,7 +314,7 @@ router.get('/creator/analytics', requireAuth, function(req, res) {
     }
     var period = _rawPeriod;
     if (analytics) {
-      var result = analytics.getCreatorAnalytics(creatorId, period);
+      var result = analytics.getCreatorAnalytics(creatorId, period, req.tenantId);
       return res.json(result);
     }
     return res.json({
@@ -763,7 +763,7 @@ router.get('/metrics', requireAuth, function(req, res) {
       return res.status(400).json({ error: 'invalid roomId' });
     }
     if (analytics) {
-      var result = analytics.getCreatorAnalytics(roomId, 'month');
+      var result = analytics.getCreatorAnalytics(roomId, 'month', req.tenantId);
       return res.json({
         roomId: roomId,
         viewerCount: 0,
@@ -824,7 +824,7 @@ router.post('/ppv/create', requireAuth, ppvCreateRateLimit, async function(req, 
       return res.status(400).json({ success: false, error: 'priceCents must be between 100 and 50000' });
     }
     // Verify the caller owns this stream
-    var ownerResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(streamId) + '&select=host_user_id&limit=1', {
+    var ownerResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(streamId) + '&tenant_id=eq.' + encodeURIComponent(req.tenantId || '') + '&select=host_user_id&limit=1', {
       headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
     });
     if (!ownerResp.ok) {
@@ -1132,22 +1132,29 @@ function spawnFanout(streamId, ingestUrl, resolvedDests, restartCount) {
 }
 
 router.post('/rtmp/authorize', async function(req, res) {
+  var _rtmpSecret = process.env.RTMP_CALLBACK_SECRET;
+  if (!_rtmpSecret && process.env.NODE_ENV === 'production') {
+    return res.status(401).json({ ok: false, error: 'unauthorized' });
+  }
+  if (_rtmpSecret && req.headers['x-rtmp-secret'] !== _rtmpSecret) {
+    return res.status(401).json({ ok: false, error: 'unauthorized' });
+  }
   try {
     var mtxPath = req.body.name || '';
     var query = req.body.query || '';
     var m = mtxPath.match(/^live\/([0-9a-f-]{36})$/i);
-    if (!m) return res.status(401).json({ ok: false, error: 'invalid path' });
+    if (!m) return res.status(401).json({ ok: false, error: 'unauthorized' });
     var streamId = m[1];
     var params = new URLSearchParams(query);
     var key = params.get('key') || '';
-    if (!key) return res.status(401).json({ ok: false, error: 'missing key' });
+    if (!key) return res.status(401).json({ ok: false, error: 'unauthorized' });
     var result = await db.query('SELECT stream_key FROM streams WHERE id = $1', [streamId]);
-    if (result.rowCount === 0) return res.status(401).json({ ok: false, error: 'unknown room' });
-    if (result.rows[0].stream_key !== key) return res.status(401).json({ ok: false, error: 'invalid key' });
+    if (result.rowCount === 0) return res.status(401).json({ ok: false, error: 'unauthorized' });
+    if (result.rows[0].stream_key !== key) return res.status(401).json({ ok: false, error: 'unauthorized' });
     return res.status(200).json({ ok: true });
   } catch (e) {
     console.error('[rtmp/authorize] error:', e.message);
-    return res.status(401).json({ ok: false, error: 'server error' });
+    return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
 });
 
