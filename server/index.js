@@ -70,7 +70,6 @@ var analytics    = require('./analytics');
 
 // ─── Revenue split constants (immutable) ─────────────────────────────────
 var CREATOR  = 0.90;
-var PLATFORM = 0.10; // eslint-disable-line no-unused-vars
 
 // ─── Logger ───────────────────────────────────────────────────────────────
 var logger = winston.createLogger({
@@ -1046,7 +1045,7 @@ app.get('/api/admin/financial-summary', requireAuth, function(req, res) {
 });
 
 // GET /api/leaderboard
-app.get('/api/leaderboard', function(req, res) {
+app.get('/api/leaderboard', requireAuth, function(req, res) {
   try {
     var roomId = req.query.roomId || '';
     if (roomId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roomId)) {
@@ -1055,11 +1054,11 @@ app.get('/api/leaderboard', function(req, res) {
     var rows;
     if (roomId) {
       rows = db.prepare(
-        'SELECT from_user, SUM(value_cents) as total, COUNT(*) as cnt FROM gifts WHERE room_id = ? GROUP BY from_user ORDER BY total DESC LIMIT 10'
+        'SELECT from_user, SUM(value_cents) as total, SUM(creator_cents) as creator_total, COUNT(*) as cnt FROM gifts WHERE room_id = ? GROUP BY from_user ORDER BY total DESC LIMIT 10'
       ).all(roomId);
     } else {
       rows = db.prepare(
-        'SELECT from_user, SUM(value_cents) as total, COUNT(*) as cnt FROM gifts GROUP BY from_user ORDER BY total DESC LIMIT 10'
+        'SELECT from_user, SUM(value_cents) as total, SUM(creator_cents) as creator_total, COUNT(*) as cnt FROM gifts GROUP BY from_user ORDER BY total DESC LIMIT 10'
       ).all();
     }
     res.json({
@@ -1067,7 +1066,7 @@ app.get('/api/leaderboard', function(req, res) {
         return {
           from_user:     r.from_user,
           total_cents:   Math.floor(r.total),
-          creator_cents: Math.floor(r.total * CREATOR),
+          creator_cents: Math.floor(r.creator_total),
           gift_count:    r.cnt
         };
       })
@@ -2890,15 +2889,17 @@ io.on('connection', function(socket) {
     var tier        = VALID_TIERS.includes(String(data.tier || '')) ? String(data.tier) : 'bronze';
     var priceCents = Math.floor(data.price_cents || 0);
     if (!Number.isFinite(priceCents) || priceCents < 0 || priceCents > 50000) return;
-    var creatorCents = Math.floor(priceCents * CREATOR);
+    var creatorCents  = Math.floor(priceCents * CREATOR);
+    var platformCents = priceCents - creatorCents;
     if (!roomId) return;
     var _subTs = Math.floor(Date.now() / 1000);
     io.to(roomId).emit('new-subscription', {
-      username:      fromUser,
-      tier:          tier,
-      price_cents:   priceCents,
-      creator_cents: creatorCents,
-      ts:            _subTs
+      username:       fromUser,
+      tier:           tier,
+      price_cents:    priceCents,
+      creator_cents:  creatorCents,
+      platform_cents: platformCents,
+      ts:             _subTs
     });
     var _subRoom = rooms.get(roomId);
     if (_subRoom && _subRoom.hostUserId) {
