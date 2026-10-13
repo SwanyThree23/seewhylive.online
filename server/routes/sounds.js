@@ -97,7 +97,7 @@ function sbUpload(bucketPath, buffer, contentType, cb) {
 }
 
 router.get('/', requireAuth, function(req, res) {
-  var qPath = '/rest/v1/custom_sounds?creator_id=eq.' + req.user.id +
+  var qPath = '/rest/v1/custom_sounds?creator_id=eq.' + encodeURIComponent(req.user.id) +
     '&tenant_id=eq.' + encodeURIComponent(req.tenantId) + '&order=created_at.desc';
   sbReq('GET', qPath, null, function(err, status, data) {
     if (err) return res.status(500).json({ error: 'Failed to load sounds' });

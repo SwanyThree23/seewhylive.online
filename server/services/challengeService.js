@@ -2,20 +2,21 @@
 const db = require('../db'); // <-- verify this matches your actual db module
 const loyaltyService = require('./loyaltyService');
 
-async function createChallenge({ title, description, pointsReward, startsAt, endsAt }) {
+async function createChallenge({ tenantId, title, description, pointsReward, startsAt, endsAt }) {
   const result = await db.query(
-    `INSERT INTO challenges (title, description, points_reward, starts_at, ends_at)
-     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-    [title, description || null, pointsReward || 0, startsAt || null, endsAt || null]
+    `INSERT INTO challenges (tenant_id, title, description, points_reward, starts_at, ends_at)
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+    [tenantId, title, description || null, pointsReward || 0, startsAt || null, endsAt || null]
   );
   return result.rows[0];
 }
 
-async function getActiveChallenges() {
+async function getActiveChallenges(tenantId) {
   const result = await db.query(
     `SELECT * FROM challenges
-     WHERE status = 'active' AND (ends_at IS NULL OR ends_at > now())
-     ORDER BY created_at DESC`
+     WHERE tenant_id = $1 AND status = 'active' AND (ends_at IS NULL OR ends_at > now())
+     ORDER BY created_at DESC`,
+    [tenantId]
   );
   return result.rows;
 }
