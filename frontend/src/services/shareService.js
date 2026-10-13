@@ -39,8 +39,8 @@ export async function copyLink(url) {
 // Desktop fallback links — these are the only platforms with a stable public
 // "share this URL" web intent that doesn't require app-specific SDK setup.
 export function buildFallbackLinks({ url, title }) {
-  const encodedUrl = encodeURIComponent(url);
-  const encodedTitle = encodeURIComponent(title);
+  var encodedUrl = encodeURIComponent(url);
+  var encodedTitle = encodeURIComponent(title);
   return {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
