@@ -7,6 +7,9 @@ var router = express.Router();
 router.post('/token', async function (req, res) {
   var inviteToken = req.body.inviteToken;
   if (!inviteToken) return res.status(400).json({ error: 'inviteToken is required' });
+  if (typeof inviteToken !== 'string' || inviteToken.length > 200) {
+    return res.status(400).json({ error: 'inviteToken invalid' });
+  }
 
   try {
     var result = await db.query('SELECT * FROM accept_guest_invitation($1)', [inviteToken]);

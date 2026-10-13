@@ -125,10 +125,22 @@ router.get('/jobs/:id', requireAuth, async function(req, res) {
   }
 });
 
-router.get('/output/:filename', requireAuth, function(req, res) {
+router.get('/output/:filename', requireAuth, async function(req, res) {
   var name     = path.basename(req.params.filename);
   var filePath = path.join(MEDIA_DIR, name);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Not found' });
+  // Verify the requesting user owns the job that produced this file
+  var jobId = name.replace(/^mv_/, '').replace(/\.mp4$/, '');
+  var userId = req.user.userId || req.user.id;
+  try {
+    var check = await db.query(
+      'SELECT id FROM music_video_jobs WHERE id=$1 AND user_id=$2 AND tenant_id=$3',
+      [jobId, userId, req.tenantId]
+    );
+    if (!check.rows.length) return res.status(404).json({ error: 'Not found' });
+  } catch (e) {
+    return res.status(500).json({ error: 'Internal error' });
+  }
   res.sendFile(filePath);
 });
 

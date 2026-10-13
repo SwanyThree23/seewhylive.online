@@ -6,7 +6,10 @@ const db = require('../db'); // <-- verify this matches your actual db module
 
 // ---- stream_guests (on-stream, mediasoup-wired) ----
 
+var ALLOWED_GUEST_ROLES = ['guest', 'viewer', 'co-host'];
+
 async function joinStreamAsGuest({ streamId, userId, displayName, role, vdoStreamId, mediasoupProducerId }) {
+  if (role && !ALLOWED_GUEST_ROLES.includes(role)) { const e = new Error('invalid role'); e.status = 400; throw e; }
   const result = await db.query(
     `INSERT INTO stream_guests (stream_id, user_id, display_name, role, vdo_stream_id, mediasoup_producer_id, is_host)
      VALUES ($1, $2, $3, $4, $5, $6, false)
@@ -79,6 +82,7 @@ async function getStreamGuests(streamId) {
 // ---- room_participants (broader roster: viewers + on-stage) ----
 
 async function joinRoomAsParticipant({ streamId, userId, role }) {
+  if (role && !ALLOWED_GUEST_ROLES.includes(role)) { const e = new Error('invalid role'); e.status = 400; throw e; }
   const result = await db.query(
     `INSERT INTO room_participants (stream_id, user_id, role) VALUES ($1, $2, $3)
      ON CONFLICT (stream_id, user_id) DO UPDATE
