@@ -28,9 +28,10 @@ export function useVODRecording(opts) {
   var ps = useState('');     var playbackUrl = ps[0]; var setPlaybackUrl = ps[1];
   var es = useState(null);   var error = es[0];     var setError = es[1];
 
-  var tickerRef  = useRef(null);
-  var startTsRef = useRef(0);
-  var idRef      = useRef('');
+  var tickerRef   = useRef(null);
+  var startTsRef  = useRef(0);
+  var idRef       = useRef('');
+  var pendingRef  = useRef(false);
 
   function startTicker() {
     startTsRef.current = Date.now();
@@ -48,9 +49,10 @@ export function useVODRecording(opts) {
   useEffect(function() { return function() { stopTicker(); }; }, []);
 
   var startRecording = useCallback(function() {
-    if (recording) return;
+    if (recording || pendingRef.current) return;
     if (!streamId)  { setError('streamId is required');  return; }
     if (!creatorId) { setError('creatorId is required'); return; }
+    pendingRef.current = true;
     setError(null);
     fetch('/api/vod/start', {
       method:  'POST',
@@ -59,6 +61,7 @@ export function useVODRecording(opts) {
     })
       .then(function(r) { return r.json(); })
       .then(function(data) {
+        pendingRef.current = false;
         if (data && data.id) {
           idRef.current = data.id;
           setVodId(data.id);
@@ -68,7 +71,7 @@ export function useVODRecording(opts) {
           setError((data && data.error) || 'Failed to start recording');
         }
       })
-      .catch(function(e) { setError(e.message || 'Network error'); });
+      .catch(function(e) { pendingRef.current = false; setError(e.message || 'Network error'); });
   }, [recording, streamId, creatorId, title]);
 
   var stopRecording = useCallback(function() {
