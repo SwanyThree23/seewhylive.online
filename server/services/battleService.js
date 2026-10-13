@@ -14,12 +14,11 @@ const DEFAULT_DURATION_MINUTES = 5;
 // ── Core read ────────────────────────────────────────────────────────────────
 
 async function getBattle(battleId, tenantId) {
-  var result;
-  if (tenantId) {
-    result = await db.query(`SELECT * FROM pk_battles WHERE id = $1 AND tenant_id = $2`, [battleId, tenantId]);
-  } else {
-    result = await db.query(`SELECT * FROM pk_battles WHERE id = $1`, [battleId]);
-  }
+  if (!tenantId) throw new Error('tenantId is required');
+  const result = await db.query(
+    `SELECT * FROM pk_battles WHERE id = $1 AND tenant_id = $2`,
+    [battleId, tenantId]
+  );
   return result.rows[0] || null;
 }
 
@@ -59,34 +58,38 @@ async function createChallenge({ tenantId, challengerId, defenderId, challengerN
   return result.rows[0];
 }
 
-async function acceptChallenge(battleId, roomId) {
+async function acceptChallenge(battleId, roomId, tenantId) {
+  if (!tenantId) throw new Error('tenantId is required');
   const result = await db.query(
     `UPDATE pk_battles
      SET status = 'accepted', room_id = COALESCE($2, room_id)
-     WHERE id = $1 AND status = 'pending'
+     WHERE id = $1 AND status = 'pending' AND tenant_id = $3
      RETURNING *`,
-    [battleId, roomId || null]
+    [battleId, roomId || null, tenantId]
   );
   return result.rows[0] || null;
 }
 
-async function startBattle(battleId) {
+async function startBattle(battleId, tenantId) {
+  if (!tenantId) throw new Error('tenantId is required');
   const result = await db.query(
     `UPDATE pk_battles
      SET status = 'active',
          started_at = now(),
          ends_at = now() + (duration_minutes || ' minutes')::interval
-     WHERE id = $1 AND status IN ('pending', 'accepted')
+     WHERE id = $1 AND status IN ('pending', 'accepted') AND tenant_id = $2
      RETURNING *`,
-    [battleId]
+    [battleId, tenantId]
   );
   return result.rows[0] || null;
 }
 
-async function castVote({ battleId, voterId, side, giftValueCents }) {
+async function castVote({ battleId, voterId, side, giftValueCents, tenantId }) {
+  if (!tenantId) throw new Error('tenantId is required');
   if (!Number.isFinite(giftValueCents) || giftValueCents < 1 || giftValueCents > 50000) throw new Error('invalid giftValueCents');
   const active = await db.query(
-    `SELECT id, challenger_id, defender_id FROM pk_battles WHERE id = $1 AND status = 'active'`, [battleId]
+    `SELECT id, challenger_id, defender_id FROM pk_battles WHERE id = $1 AND status = 'active' AND tenant_id = $2`,
+    [battleId, tenantId]
   );
   if (!active.rows[0]) throw new Error('battle not active');
   if (voterId === active.rows[0].challenger_id || voterId === active.rows[0].defender_id) {
@@ -104,13 +107,13 @@ async function castVote({ battleId, voterId, side, giftValueCents }) {
   var result;
   if (side === 'challenger') {
     result = await db.query(
-      `UPDATE pk_battles SET challenger_points = challenger_points + $1 WHERE id = $2 AND status = 'active' RETURNING *`,
-      [giftValueCents, battleId]
+      `UPDATE pk_battles SET challenger_points = challenger_points + $1 WHERE id = $2 AND status = 'active' AND tenant_id = $3 RETURNING *`,
+      [giftValueCents, battleId, tenantId]
     );
   } else {
     result = await db.query(
-      `UPDATE pk_battles SET defender_points = defender_points + $1 WHERE id = $2 AND status = 'active' RETURNING *`,
-      [giftValueCents, battleId]
+      `UPDATE pk_battles SET defender_points = defender_points + $1 WHERE id = $2 AND status = 'active' AND tenant_id = $3 RETURNING *`,
+      [giftValueCents, battleId, tenantId]
     );
   }
   if (!result.rows[0]) throw new Error('battle no longer active');
@@ -127,8 +130,9 @@ async function declineBattle(battleId, defenderId) {
   return result.rows[0] || null;
 }
 
-async function endBattle(battleId) {
-  const battle = await getBattle(battleId);
+async function endBattle(battleId, tenantId) {
+  if (!tenantId) throw new Error('tenantId is required');
+  const battle = await getBattle(battleId, tenantId);
   if (!battle) throw new Error('Battle not found');
   if (battle.status === 'ended') return battle;  // idempotent — already ended
 
@@ -141,9 +145,9 @@ async function endBattle(battleId) {
            WHEN defender_points > challenger_points THEN defender_id
            ELSE NULL
          END
-     WHERE id = $1 AND status = 'active'
+     WHERE id = $1 AND status = 'active' AND tenant_id = $2
      RETURNING *`,
-    [battleId]
+    [battleId, tenantId]
   );
   return result.rows[0] || battle;
 }
