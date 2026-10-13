@@ -36,11 +36,23 @@ async function completeChallenge(challengeId, userId, tenantId) {
 
   let inserted;
   try {
+    // WHERE EXISTS re-evaluates status and ends_at atomically at INSERT time,
+    // closing the TOCTOU window between the SELECT above and this write.
     inserted = await db.query(
-      `INSERT INTO challenge_completions (challenge_id, user_id) VALUES ($1, $2) RETURNING *`,
-      [challengeId, userId]
+      `INSERT INTO challenge_completions (challenge_id, user_id)
+       SELECT $1, $2
+       WHERE EXISTS (
+         SELECT 1 FROM challenges
+         WHERE id = $1 AND tenant_id = $3
+           AND status = 'active'
+           AND (ends_at IS NULL OR ends_at > now())
+       )
+       RETURNING *`,
+      [challengeId, userId, tenantId]
     );
+    if (!inserted.rows.length) throw new Error('challenge is not active');
   } catch (err) {
+    if (err.message === 'challenge is not active') throw err;
     // unique_violation on the composite PK means already completed
     if (err.code === '23505') {
       throw new Error('challenge already completed');

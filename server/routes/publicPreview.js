@@ -84,7 +84,7 @@ function renderPreviewPage(opts) {
       ? '<video controls playsinline poster="' + escapeHtml(thumbnailUrl) + '" src="' + escapeHtml(videoUrl) + '"></video>'
       : '<img src="' + escapeHtml(thumbnailUrl) + '" style="width:100%;max-width:480px;border-radius:12px;" />'
     ) +
-    '<a class="cta" href="' + siteUrl + escapeHtml(canonicalUrl) + '">Open in ' + escapeHtml(appName) + '</a>' +
+    '<a class="cta" href="' + escapeHtml(siteUrl) + escapeHtml(canonicalUrl) + '">Open in ' + escapeHtml(appName) + '</a>' +
     '</body>' +
     '</html>';
 }
