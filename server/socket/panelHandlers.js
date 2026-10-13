@@ -59,7 +59,7 @@ function registerPanelHandlers(io, socket) {
         var _loyNow = Date.now();
         if (_loyNow - (panelLoyaltyThrottle.get(_loyKey) || 0) >= LOYALTY_AWARD_COOLDOWN_MS) {
           panelLoyaltyThrottle.set(_loyKey, _loyNow);
-          loyaltyService.awardPoints({ userId, points: 25, source: 'panel_join', sourceId: roomId }).catch(function() {});
+          loyaltyService.awardPoints({ userId, tenantId: socket.data.tenantId, points: 25, source: 'panel_join', sourceId: roomId }).catch(function() {});
         }
       }
       ack?.({ ok: true, slot });
