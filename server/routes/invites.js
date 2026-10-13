@@ -130,7 +130,7 @@ router.post('/links/:token/redeem', requireAuth, async function(req, res) {
 router.post('/links/:id/revoke', requireAuth, async function(req, res) {
   if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid invite link id' });
   try {
-    var link = await inviteService.revokeInviteLink(req.params.id, req.user.id);
+    var link = await inviteService.revokeInviteLink(req.params.id, req.user.id, req.tenantId);
     if (!link) return res.status(404).json({ error: 'not found, not yours, or already revoked' });
     res.json(link);
   } catch (err) {
