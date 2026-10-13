@@ -78,7 +78,7 @@ var ShareSheet = function (props) {
         <div style={gridStyle}>
           {platforms.map(function (p) {
             return (
-              <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer" style={Object.assign({}, buttonStyle(p.color), { textDecoration: 'none' })}>
+              <a key={p.name} href={p.fallback || p.url} target="_blank" rel="noopener noreferrer" style={Object.assign({}, buttonStyle(p.color), { textDecoration: 'none' })}>
                 {p.name}
               </a>
             );

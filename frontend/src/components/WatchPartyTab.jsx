@@ -342,6 +342,7 @@ export default function WatchPartyTab(props) {
         setDirectUrl('');
         setLocalFileUrl('');
       } else if (data.url) {
+        if (!/^https:\/\//i.test(data.url)) return;
         setDirectUrl(data.url);
         setVideoId('');
         setLocalFileUrl('');
@@ -542,6 +543,10 @@ export default function WatchPartyTab(props) {
       if (addToast) addToast('Loading YouTube video for all guests...', 'info');
     } else {
       // Direct URL (MP4, WebM, HLS, etc.)
+      if (!/^https:\/\//i.test(raw)) {
+        if (addToast) addToast('Direct video URLs must start with https://', 'error');
+        return;
+      }
       setDirectUrl(raw);
       setVideoId('');
       setLocalFileUrl('');

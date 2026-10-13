@@ -7,6 +7,8 @@ function _authHeaders(extra) {
   return Object.assign(h, extra || {});
 }
 
+var CREATOR_SPLIT = 0.90;
+
 var BG    = '#0E0C09';
 var SURF  = '#1A1510';
 var CARD  = '#241C12';
@@ -41,14 +43,14 @@ export default function PayoutDashboard({ addToast, roomId }) {
   }, [roomId]);
 
   var totalCents    = sessions.reduce(function(s, sess) { return s + Math.floor(sess.totalCents || 0); }, 0);
-  var creatorCents  = Math.floor(totalCents * 0.9);
+  var creatorCents  = Math.floor(totalCents * CREATOR_SPLIT);
   var platformCents = totalCents - creatorCents;
   var lifetimeViews = sessions.reduce(function(s, sess) { return s + (sess.viewers || 0); }, 0);
 
   var exportCSV = function() {
     var rows = ['Date,Session,Total,Your 90%,Platform 10%,SuperChats,Gifts,Tips,Viewers'];
     sessions.forEach(function(sess) {
-      var cr = Math.floor((sess.totalCents || 0) * 0.9);
+      var cr = Math.floor((sess.totalCents || 0) * CREATOR_SPLIT);
       var pl = (sess.totalCents || 0) - cr;
       rows.push([
         fmtDate(sess.date),
@@ -123,7 +125,7 @@ export default function PayoutDashboard({ addToast, roomId }) {
       )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {sessions.map(function(sess) {
-          var cr = Math.floor((sess.totalCents || 0) * 0.9);
+          var cr = Math.floor((sess.totalCents || 0) * CREATOR_SPLIT);
           return (
             <div key={sess.id} style={{ background: SURF, border: '1px solid rgba(201,168,76,.1)', borderRadius: 10, padding: '10px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>

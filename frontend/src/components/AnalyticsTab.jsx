@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import UpgradeGate from './UpgradeGate.jsx';
 
+var CREATOR_SPLIT = 0.90;
+
 var BG     = '#0E0C09';
 var SURF   = '#1A1510';
 var CARD   = '#241C12';
@@ -267,13 +269,13 @@ export default function AnalyticsTab({ socket, roomId, role, isLive, addToast })
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, lineHeight: 1 }}>
-                {fmtDollars(Math.floor(earnings * 0.9))}
+                {fmtDollars(Math.floor(earnings * CREATOR_SPLIT))}
               </div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD }}>YOU (90%)</div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: MUTED, lineHeight: 1 }}>
-                {fmtDollars(earnings - Math.floor(earnings * 0.9))}
+                {fmtDollars(earnings - Math.floor(earnings * CREATOR_SPLIT))}
               </div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>PLATFORM (10%)</div>
             </div>

@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SelectSheet from './SelectSheet.jsx';
 
+var CREATOR_SPLIT = 0.90;
+
 var CARD   = '#241C12';
 var GOLD   = '#C9A84C';
 var AMBER  = '#D4854A';
@@ -215,7 +217,7 @@ export default function HostHUD(props) {
   }
 
   var totalCents    = Math.floor(sessionEarningsCents || 0);
-  var creatorCents  = Math.floor(totalCents * 0.9);
+  var creatorCents  = Math.floor(totalCents * CREATOR_SPLIT);
   var platformCents = totalCents - creatorCents;
   var trendUp       = (viewerCount || 0) >= prevViewers.current;
 

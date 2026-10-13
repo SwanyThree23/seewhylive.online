@@ -47,13 +47,7 @@ var VIEWER_COLORS = ['#FF1A3C','#C9A84C','#C9A84C','#C9A84C','#C9A84C','#D4854A'
 
 export default function AvatarHubTab({ addToast, isLive }) {
   var [items,            setItems]            = useState(AVATAR_ITEMS.map(function(a) { return Object.assign({}, a); }));
-  var [gemBal,           setGemBal]           = useState(function() {
-    try {
-      var stored = localStorage.getItem('sw_gem_bal');
-      if (stored !== null) return parseInt(stored, 10) || 350;
-    } catch(e) {}
-    return 350;
-  });
+  var [gemBal,           setGemBal]           = useState(350);
   var [dailyClaimed,     setDailyClaimed]     = useState(function() {
     try {
       var d = localStorage.getItem('sw_daily_bonus');
@@ -81,11 +75,6 @@ export default function AvatarHubTab({ addToast, isLive }) {
     if (!isLive) setLiveViewerAvatars([]);
   }, [isLive]);
 
-  useEffect(function() {
-    try {
-      localStorage.setItem('sw_gem_bal', String(gemBal));
-    } catch(e) {}
-  }, [gemBal]);
 
   var claimDailyBonus = function() {
     setGemBal(function(b) { return Math.floor(b + 50); });
