@@ -18,17 +18,17 @@ export default function ChyronOverlay({ socket, roomId, role, isLive }) {
 
   useEffect(function() {
     if (!socket) return;
-    function onChyron(data) {
+    var onChyron = function(data) {
       if (data && data.text) setChyron(data);
       else setChyron(null);
     }
-    function onChyronClear() { setChyron(null); }
+    var onChyronClear = function() { setChyron(null); }
     socket.on('chyron-update', onChyron);
     socket.on('chyron-clear',  onChyronClear);
     return function() { socket.off('chyron-update', onChyron); socket.off('chyron-clear', onChyronClear); };
   }, [socket]);
 
-  function sendChyron() {
+  var sendChyron = function() {
     if (!socket || !draftText.trim()) return;
     var payload = { roomId: roomId, text: draftText.trim(), type: draftType, color: GOLD };
     socket.emit('chyron-update', payload);
@@ -37,7 +37,7 @@ export default function ChyronOverlay({ socket, roomId, role, isLive }) {
     setHostOpen(false);
   }
 
-  function clearChyron() {
+  var clearChyron = function() {
     if (!socket) return;
     socket.emit('chyron-update', { roomId: roomId, text: null });
     setChyron(null);

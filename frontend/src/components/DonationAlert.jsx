@@ -73,7 +73,7 @@ export default function DonationAlert(props) {
   useEffect(function() {
     if (!socket) return;
 
-    function onGift(data) {
+    var onGift = function(data) {
       if (!data || !data.valueCents) return;
       if (String(data.roomId || roomId) !== String(roomId)) return;
       if (data.valueCents < threshold) return;
@@ -91,7 +91,7 @@ export default function DonationAlert(props) {
       setQueue(function(q) { return q.concat([alert]); });
     }
 
-    function onSuperChat(data) {
+    var onSuperChat = function(data) {
       if (!data || !data.amountCents) return;
       if (data.amountCents < threshold) return;
       var tier = getTier(data.amountCents);

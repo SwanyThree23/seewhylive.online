@@ -36,7 +36,7 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
   var [logoUploading, setLogoUploading] = useState(false);
   var [cssCopied, setCssCopied] = useState(false);
 
-  function copyCssVars() {
+  var copyCssVars = function() {
     var g = branding.gold || '#C9A84C';
     var b = branding.burg || '#800020';
     var css = ':root {\n  --sw-gold: ' + g + ';\n  --sw-burg: ' + b + ';\n  --sw-bg: #0E0C09;\n  --sw-text: #F0E8D4;\n  --sw-teal: #C9A84C;\n  --sw-muted: #8A7A62;\n}';
@@ -53,19 +53,19 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
   var font = branding.font || 'bebas';
   var ff   = FONT_FAMILIES[font] || FONT_FAMILIES.bebas;
 
-  function update(key, value) {
+  var update = function(key, value) {
     setBranding(function(prev) { return Object.assign({}, prev, { [key]: value }); });
   }
 
-  function applyPreset(p) {
+  var applyPreset = function(p) {
     setBranding(function(prev) { return Object.assign({}, prev, { gold: p.gold, burg: p.burg }); });
   }
 
-  function getToggle(key) {
+  var getToggle = function(key) {
     return branding[key] !== false;
   }
 
-  function handleLogoUpload(e) {
+  var handleLogoUpload = function(e) {
     var file = e.target.files && e.target.files[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {

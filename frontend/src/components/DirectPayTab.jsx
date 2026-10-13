@@ -136,7 +136,7 @@ export default function DirectPayTab({ addToast, username }) {
     try { localStorage.setItem('sw_directpay_handles', JSON.stringify(handles)); } catch(e) {}
   }, [handles]);
 
-  function saveHandle(id) {
+  var saveHandle = function(id) {
     var err = validateHandle(id, draftHandle);
     if (err) { setDraftError(err); return; }
     setHandles(function(prev) {
@@ -158,7 +158,7 @@ export default function DirectPayTab({ addToast, username }) {
     addToast('✓ ' + id + ' handle saved', 'success');
   }
 
-  function openPayment(platform) {
+  var openPayment = function(platform) {
     var handle = handles[platform.id];
     if (!handle) {
       addToast('No ' + platform.name + ' handle configured', 'error');
@@ -186,7 +186,7 @@ export default function DirectPayTab({ addToast, username }) {
     }
   }
 
-  function copyHandle(platform) {
+  var copyHandle = function(platform) {
     var handle = handles[platform.id];
     if (!handle) { addToast('No handle set', 'error'); return; }
     if (navigator.clipboard) {

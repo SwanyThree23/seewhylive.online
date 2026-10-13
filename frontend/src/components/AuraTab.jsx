@@ -77,7 +77,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
     });
   }, [incomingMessages]);
 
-  function fetchUsage() {
+  var fetchUsage = function() {
     if (!roomId) return;
     fetch('/api/aura/usage?streamId=' + roomId, { headers: _authHeaders() })
       .then(function(r) { return r.json(); })
@@ -93,14 +93,14 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
     return function() { clearInterval(interval); };
   }, [roomId]);
 
-  function copyHistory() {
+  var copyHistory = function() {
     var text = msgs.map(function(m) {
       return '[' + m.time + '] ' + (m.role === 'aura' ? 'AURA: ' : 'YOU: ') + m.text;
     }).join('\n');
     if (navigator.clipboard) navigator.clipboard.writeText(text).catch(function() {});
   }
 
-  function callAura(prompt, userMsg) {
+  var callAura = function(prompt, userMsg) {
     setLoading(true);
     if (userMsg) {
       setMsgs(function(p) { return p.concat([{ role: 'user', text: userMsg, time: fmtTime() }]); });
@@ -132,17 +132,17 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
     return function() { clearInterval(interval); };
   }, [autoHype, isLive]);
 
-  function send() {
+  var send = function() {
     if (!input.trim() || loading) return;
     callAura(input, input);
     setInput('');
   }
 
-  function clearChat() {
+  var clearChat = function() {
     setMsgs([{ role: 'aura', text: '🤖 AURA ONLINE — SeeWhy LIVE v33 suite active. Washington Classic energy IMMACULATE! 🎲', time: fmtTime() }]);
   }
 
-  function selectMode(modeObj) {
+  var selectMode = function(modeObj) {
     setAuraMode(modeObj.id);
     try { localStorage.setItem('sw_aura_mode', modeObj.id); } catch(e) {}
     fetch('/api/aura/mode', {
@@ -161,7 +161,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
     { type: 'stream_end',   label: '🏁 STREAM END',  data: { peakViewers: viewerCount || 100, totalEarningsCents: 5000 } },
   ];
 
-  function fireTrigger(trigger) {
+  var fireTrigger = function(trigger) {
     setTriggerLoading(trigger.type);
     fetch('/api/aura/trigger', {
       method: 'POST',

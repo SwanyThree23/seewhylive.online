@@ -60,7 +60,7 @@ export default function CreatorProfileTab(props) {
       });
   }, [creatorUsername]);
 
-  function handleFollow() {
+  var handleFollow = function() {
     var next = !following;
     setFollowing(next);
     if (socket) {
@@ -73,7 +73,7 @@ export default function CreatorProfileTab(props) {
     }
   }
 
-  function handleShareProfile() {
+  var handleShareProfile = function() {
     var url = 'https://seewhylive.online/@' + profile.username;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(function() {
@@ -87,7 +87,7 @@ export default function CreatorProfileTab(props) {
     }
   }
 
-  function renderSectionTab(label, val) {
+  var renderSectionTab = function(label, val) {
     var active = activeSection === val;
     return React.createElement(
       'button',
@@ -111,7 +111,7 @@ export default function CreatorProfileTab(props) {
     );
   }
 
-  function renderAboutSection() {
+  var renderAboutSection = function() {
     return React.createElement(
       'div',
       {
@@ -250,7 +250,7 @@ export default function CreatorProfileTab(props) {
     );
   }
 
-  function renderStreamsSection() {
+  var renderStreamsSection = function() {
     return React.createElement(
       'div',
       {
@@ -326,7 +326,7 @@ export default function CreatorProfileTab(props) {
     );
   }
 
-  function renderSubscribeSection() {
+  var renderSubscribeSection = function() {
     return React.createElement(
       'div',
       { style: { marginTop: 10 } },
