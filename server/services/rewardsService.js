@@ -119,16 +119,16 @@ async function getActiveChallenges(tenantId) {
 }
 
 async function completeChallenge(userId, challengeId, tenantId) {
-  let q = supabase.from('challenges').select('*').eq('id', challengeId);
-  if (tenantId) q = q.eq('tenant_id', tenantId);
-  const { data: challenge, error: chErr } = await q.single();
+  if (!tenantId) throw Object.assign(new Error('tenantId is required'), { status: 400 });
+  const { data: challenge, error: chErr } = await supabase
+    .from('challenges').select('*').eq('id', challengeId).eq('tenant_id', tenantId).single();
   if (chErr) throw chErr;
   if (!challenge || challenge.status !== 'active') throw new Error('challenge is not active');
   if (challenge.ends_at && new Date(challenge.ends_at) < new Date()) throw new Error('challenge has expired');
 
   const { error: insErr } = await supabase
     .from('challenge_completions')
-    .insert({ challenge_id: challengeId, user_id: userId });
+    .insert({ challenge_id: challengeId, user_id: userId, tenant_id: tenantId });
   if (insErr) {
     if (insErr.code === '23505') return { alreadyCompleted: true };
     throw insErr;
