@@ -46,7 +46,6 @@ n8nRouter.post('/stream-end', function(req, res) {
 });
 
 var CREATOR_SPLIT = 0.90;
-var PLATFORM_FEE  = 0.10;
 
 n8nRouter.post('/gem-transaction', function(req, res) {
   var d = req.body;
@@ -55,7 +54,7 @@ n8nRouter.post('/gem-transaction', function(req, res) {
   if (safeAmount === 0) { res.json({ ok: true, skipped: true }); return; }
   var usd = Math.floor(safeAmount * 10) / 100;
   var creator = Math.floor(usd * CREATOR_SPLIT * 100) / 100;
-  var platform = Math.floor(usd * PLATFORM_FEE * 100) / 100;
+  var platform = usd - creator;
   var safeFrom = String(d.from || '').slice(0, 80);
   var gemStreamId = N8N_UUID_RE.test(String(d.streamId || '')) ? String(d.streamId) : 'main';
   if (global.io) global.io.to(gemStreamId).emit('gem-send', { user:safeFrom, amount:safeAmount, usd:usd, creatorShare:creator, ts:Date.now() });

@@ -4,7 +4,6 @@ var Database = require('better-sqlite3');
 var { v4: uuidv4 } = require('uuid');
 
 var CREATOR = 0.90;
-var PLATFORM = 0.10;
 
 var DB_PATH = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
 
