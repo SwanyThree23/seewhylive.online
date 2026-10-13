@@ -932,6 +932,17 @@ export default function LiveRoomPage({
   var [spotlightDraft53, setSpotlightDraft53] = useState({ username: '', label: '' });
   var [showSpotlightSet, setShowSpotlightSet] = useState(false);
 
+  // ─── Batch 54: Sound FX Board / Chat Upvote / VIP Color / Mini Leaderboard ─
+  var [soundFxFlash,     setSoundFxFlash]     = useState(null);
+  var [showSoundBoard,   setShowSoundBoard]   = useState(false);
+  var [topQuestion,      setTopQuestion]      = useState(null);
+  var [myUpvoted,        setMyUpvoted]        = useState({});
+  var [vipColors54,      setVipColors54]      = useState([]);
+  var [miniLeader,       setMiniLeader]       = useState([]);
+  var [showMiniLeader,   setShowMiniLeader]   = useState(false);
+  var [showVipColorSet,  setShowVipColorSet]  = useState(false);
+  var [vipColorDraft,    setVipColorDraft]    = useState({ username: '', userId: '', color: '#C9A84C' });
+
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
   var screenStreamRef = useRef(null);
@@ -1079,6 +1090,9 @@ export default function LiveRoomPage({
       if (data.chatChallenge && !data.chatChallenge.ended) setChatChallenge(data.chatChallenge);
       if (data.donationGoal && !data.donationGoal.ended) setDonationGoal(data.donationGoal);
       if (data.viewerSpotlight) setViewerSpotlight(data.viewerSpotlight);
+      if (data.topQuestion) setTopQuestion(data.topQuestion);
+      if (Array.isArray(data.vipColors) && data.vipColors.length) setVipColors54(data.vipColors);
+      if (Array.isArray(data.miniLeader) && data.miniLeader.length) setMiniLeader(data.miniLeader);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2276,6 +2290,25 @@ export default function LiveRoomPage({
       setViewerSpotlight(d || null);
     });
 
+    // ── Batch 54 listeners ─────────────────────────────────────────────────
+    socket.on('sound-fx', function(d) {
+      if (!d) return;
+      setSoundFxFlash(d.label);
+      setTimeout(function() { setSoundFxFlash(null); }, 2500);
+    });
+
+    socket.on('chat-upvote-update', function(d) {
+      setTopQuestion(d || null);
+    });
+
+    socket.on('vip-color-update', function(d) {
+      setVipColors54(Array.isArray(d) ? d : []);
+    });
+
+    socket.on('gift-leaderboard', function(d) {
+      if (d && Array.isArray(d.leaders)) setMiniLeader(d.leaders.slice(0, 3));
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2709,6 +2742,10 @@ export default function LiveRoomPage({
       socket.off('donation-goal-update');
       socket.off('donation-goal-complete');
       socket.off('viewer-spotlight-update');
+      socket.off('sound-fx');
+      socket.off('chat-upvote-update');
+      socket.off('vip-color-update');
+      socket.off('gift-leaderboard');
     };
   }, [socket]);
 
@@ -4533,6 +4570,9 @@ export default function LiveRoomPage({
                 if (viewerSpotlight) { if (socket) socket.emit('viewer-spotlight-clear', { roomId: roomId }); }
                 else { setSpotlightDraft53({ username: '', label: '' }); setShowSpotlightSet(function(s) { return !s; }); }
               }},
+              { emoji: '🎚', label: 'Sound FX', active: showSoundBoard, onTap: function() { setShowSoundBoard(function(s) { return !s; }); } },
+              { emoji: '🎨', label: 'VIP Color', active: showVipColorSet, onTap: function() { setVipColorDraft({ username: '', userId: '', color: '#C9A84C' }); setShowVipColorSet(function(s) { return !s; }); } },
+              { emoji: '🏆', label: 'Leaderboard', active: showMiniLeader, onTap: function() { setShowMiniLeader(function(s) { return !s; }); } },
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -5267,6 +5307,13 @@ export default function LiveRoomPage({
                           if (socket && msg.id) socket.emit('chat-star', { roomId: roomId, msgId: msg.id, message: msg.message, username: msg.username });
                         }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8A7A62', fontSize: 10, padding: '0 2px', flexShrink: 0, lineHeight: 1.3 }}>
                           ⭐
+                        </button>
+                        <button onClick={function() {
+                          if (!socket || !msg.id || myUpvoted[msg.id]) return;
+                          setMyUpvoted(function(u) { return Object.assign({}, u, { [msg.id]: true }); });
+                          socket.emit('chat-upvote', { roomId: roomId, msgId: msg.id, text: msg.message, username: msg.username });
+                        }} style={{ background: 'none', border: 'none', cursor: myUpvoted[msg.id] ? 'default' : 'pointer', color: myUpvoted[msg.id] ? GOLD : '#8A7A62', fontSize: 10, padding: '0 2px', flexShrink: 0, lineHeight: 1.3 }}>
+                          ▲
                         </button>
                       </div>
                     </div>
@@ -11960,6 +12007,102 @@ export default function LiveRoomPage({
               setShowSpotlightSet(false);
             }} disabled={!spotlightDraft53.username.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: spotlightDraft53.username.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: spotlightDraft53.username.trim() ? 1 : 0.5 }}>
               SPOTLIGHT
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 54: Sound FX flash ══ */}
+      {soundFxFlash && (
+        <div style={{ position: 'fixed', top: '38%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 740, pointerEvents: 'none', animation: 'fadeIn .2s ease' }}>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 42, color: GOLD, letterSpacing: 4, textShadow: '0 0 30px rgba(201,168,76,.8)', textAlign: 'center' }}>
+            {soundFxFlash}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 54: Top Question (upvoted) ══ */}
+      {topQuestion && topQuestion.votes > 0 && (
+        <div style={{ position: 'fixed', bottom: 130, right: 16, zIndex: 580, width: 190, animation: 'slideUp .3s ease', pointerEvents: 'none' }}>
+          <div style={{ background: 'rgba(26,21,16,.93)', border: '1px solid ' + GOLD, borderRadius: 12, padding: '8px 12px' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 11, color: GOLD, letterSpacing: 1.5, marginBottom: 4 }}>🔝 TOP QUESTION · {topQuestion.votes}↑</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, lineHeight: 1.3 }}>"{topQuestion.text}"</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, marginTop: 3 }}>— {topQuestion.username}</div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 54: Mini Gift Leaderboard ══ */}
+      {showMiniLeader && miniLeader.length > 0 && (
+        <div style={{ position: 'fixed', top: 58, left: 12, zIndex: 560, width: 160, animation: 'slideUp .3s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.93)', border: '1px solid ' + BORDER, borderRadius: 12, padding: '10px 12px' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 13, color: GOLD, letterSpacing: 1.5, marginBottom: 8 }}>🏆 TOP GIFTERS</div>
+            {miniLeader.map(function(entry, i) {
+              var medals = ['🥇', '🥈', '🥉'];
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+                  <span style={{ fontSize: 12 }}>{medals[i] || '#' + (i + 1)}</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.username}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: GOLD, flexShrink: 0 }}>${(Math.floor(entry.totalCents / 100))}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 54: Sound FX Board (host) ══ */}
+      {showSoundBoard && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 290, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🎚 SOUND FX BOARD</span>
+              <button onClick={function() { setShowSoundBoard(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {['👏 CLAP', '😂 LAUGH', '🥁 DRUM ROLL', '🎉 PARTY', '👎 BOO', '🔥 HYPE', '🤩 WOO', '🤫 SHHH', '😱 GASP', '👑 CROWN'].map(function(fx) {
+                return (
+                  <button key={fx} onClick={function() {
+                    if (socket) socket.emit('sound-fx-trigger', { roomId: roomId, label: fx });
+                  }} style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, padding: '8px 10px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, cursor: 'pointer', letterSpacing: .3 }}>
+                    {fx}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 54: VIP Color Set panel (host/cohost) ══ */}
+      {showVipColorSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 280, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🎨 VIP COLOR BADGE</span>
+              <button onClick={function() { setShowVipColorSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={vipColorDraft.username}
+              onChange={function(e) { setVipColorDraft(function(d) { return Object.assign({}, d, { username: e.target.value.slice(0, 30) }); }); }}
+              placeholder="@username to award"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              {['#C9A84C', '#D4854A', '#FF69B4', '#7B68EE', '#00CED1', '#FF6347', '#90EE90'].map(function(c) {
+                var active = vipColorDraft.color === c;
+                return (
+                  <button key={c} onClick={function() { setVipColorDraft(function(d) { return Object.assign({}, d, { color: c }); }); }}
+                    style={{ width: 28, height: 28, borderRadius: '50%', background: c, border: active ? '3px solid ' + TEXT : '2px solid transparent', cursor: 'pointer', flexShrink: 0 }} />
+                );
+              })}
+            </div>
+            <button onClick={function() {
+              var uname = vipColorDraft.username.trim();
+              if (!uname) return;
+              var fakeUserId = 'vip_' + uname.toLowerCase();
+              if (socket) socket.emit('vip-color-set', { roomId: roomId, userId: fakeUserId, username: uname, color: vipColorDraft.color });
+              setShowVipColorSet(false);
+            }} disabled={!vipColorDraft.username.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: vipColorDraft.username.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: vipColorDraft.username.trim() ? 1 : 0.5 }}>
+              AWARD VIP COLOR
             </button>
           </div>
         </div>

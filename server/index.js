@@ -556,6 +556,9 @@ var chatChallengeMap = new Map();  // roomId → { keyword, prize, maxWinners, w
 var tipJarMap        = new Map();  // roomId → [{ username, amount, message, ts }] last-20
 var streamGoalMap    = new Map();  // roomId → { label, target, current, ended }
 var spotlightMap     = new Map();  // roomId → { username, label }
+// Batch 54: Sound FX Board / Chat Upvote / VIP Color Badge / Mini Gift Leaderboard
+var chatUpvoteMap    = new Map();  // roomId → Map<msgId, { text, username, votes: Set<userId> }>
+var vipColorMap      = new Map();  // roomId → Map<userId, { username, color }>
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -805,6 +808,13 @@ function getJoinStateForRoom(roomId) {
   var _sg53 = streamGoalMap.get(roomId);
   state.donationGoal = _sg53 || null;
   state.viewerSpotlight = spotlightMap.get(roomId) || null;
+  // Batch 54
+  var _cu54 = chatUpvoteMap.get(roomId);
+  state.topQuestion = _cu54 ? (function() { var best = null; _cu54.forEach(function(v, k) { if (!best || v.votes.size > best.votes) best = { msgId: k, text: v.text, username: v.username, votes: v.votes.size }; }); return best; })() : null;
+  var _vc54 = vipColorMap.get(roomId);
+  state.vipColors = _vc54 ? Array.from(_vc54.entries()).map(function(e) { return { userId: e[0], username: e[1].username, color: e[1].color }; }) : [];
+  var _gl54 = giftLeaderboards.get(roomId);
+  state.miniLeader = _gl54 ? _gl54.slice(0, 3).map(function(e) { return { username: e.username, totalCents: e.totalCents }; }) : [];
   return state;
 }
 
@@ -6430,6 +6440,9 @@ io.on('connection', function(socket) {
     tipJarMap.delete(roomId);
     streamGoalMap.delete(roomId);
     spotlightMap.delete(roomId);
+    // Batch 54 cleanup
+    chatUpvoteMap.delete(roomId);
+    vipColorMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -6940,6 +6953,68 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     spotlightMap.delete(roomId);
     io.to(roomId).emit('viewer-spotlight-update', null);
+  });
+
+  // ── sound-fx (Batch 54) ─────────────────────────────────────────────────
+  socket.on('sound-fx-trigger', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var FX_LIST = ['👏 CLAP', '😂 LAUGH', '🥁 DRUM ROLL', '🎉 PARTY', '👎 BOO', '🔥 HYPE', '🤩 WOO', '🤫 SHHH', '😱 GASP', '👑 CROWN'];
+    var label = data && data.label ? String(data.label).slice(0, 30) : FX_LIST[0];
+    io.to(roomId).emit('sound-fx', { label: label });
+  });
+
+  // ── chat-upvote (Batch 54) ──────────────────────────────────────────────
+  socket.on('chat-upvote', function(data, ack) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) return;
+    if (!data || !data.msgId || !data.text) return;
+    var msgId    = String(data.msgId).slice(0, 40);
+    var text     = String(data.text).slice(0, 200);
+    var username = String(data.username || 'Viewer').slice(0, 30);
+    var upMap = chatUpvoteMap.get(roomId);
+    if (!upMap) { upMap = new Map(); chatUpvoteMap.set(roomId, upMap); }
+    if (!upMap.has(msgId)) upMap.set(msgId, { text: text, username: username, votes: new Set() });
+    var entry = upMap.get(msgId);
+    if (entry.votes.has(userId)) { if (ack) ack({ err: 'already_voted' }); return; }
+    entry.votes.add(userId);
+    // Find top question
+    var best = null;
+    upMap.forEach(function(v, k) { if (!best || v.votes.size > best.votes) best = { msgId: k, text: v.text, username: v.username, votes: v.votes.size }; });
+    io.to(roomId).emit('chat-upvote-update', best);
+    if (ack) ack({ ok: true, votes: entry.votes.size });
+  });
+
+  // ── vip-color (Batch 54) ────────────────────────────────────────────────
+  var VIP_COLORS = ['#C9A84C', '#D4854A', '#FF69B4', '#7B68EE', '#00CED1', '#FF6347', '#90EE90'];
+  socket.on('vip-color-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data || !data.userId || !data.username) return;
+    var targetUserId = String(data.userId).slice(0, 40);
+    var targetUsername = String(data.username).replace(/[^a-zA-Z0-9_\-. ]/g, '').slice(0, 30);
+    var color = VIP_COLORS.includes(data.color) ? data.color : VIP_COLORS[0];
+    var vcMap = vipColorMap.get(roomId);
+    if (!vcMap) { vcMap = new Map(); vipColorMap.set(roomId, vcMap); }
+    vcMap.set(targetUserId, { username: targetUsername, color: color });
+    var allVips = Array.from(vcMap.entries()).map(function(e) { return { userId: e[0], username: e[1].username, color: e[1].color }; });
+    io.to(roomId).emit('vip-color-update', allVips);
+  });
+
+  socket.on('vip-color-clear', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var targetUserId = data && data.userId ? String(data.userId).slice(0, 40) : null;
+    var vcMap = vipColorMap.get(roomId);
+    if (!vcMap) return;
+    if (targetUserId) vcMap.delete(targetUserId);
+    else vcMap.clear();
+    var allVips = Array.from(vcMap.entries()).map(function(e) { return { userId: e[0], username: e[1].username, color: e[1].color }; });
+    io.to(roomId).emit('vip-color-update', allVips.length ? allVips : []);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
