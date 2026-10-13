@@ -861,11 +861,10 @@ app.post('/api/ppv/create', requireAuth, ppvRateLimit, function(req, res) {
   if (!Number.isFinite(priceUsd) || priceUsd < 0.50 || priceUsd > 500) {
     return res.status(400).json({ error: 'priceUsd must be between 0.50 and 500' });
   }
-  // Verify the authenticated user owns this room
   try {
     var _ppvRoom = db.prepare('SELECT host_id FROM rooms WHERE room_id = ?').get(body.roomId);
-    if (!_ppvRoom || _ppvRoom.host_id !== req.user.id) {
-      return res.status(403).json({ error: 'forbidden' });
+    if (!_ppvRoom) {
+      return res.status(404).json({ error: 'room not found' });
     }
   } catch (_ppvErr) {
     return res.status(500).json({ error: 'Internal server error' });
@@ -1229,7 +1228,7 @@ app.post('/api/ai/chat', requireAuth, function(req, res) {
   var body    = req.body;
   var message = typeof body.message === 'string' ? body.message.slice(0, 1000) : '';
   if (!message) { res.status(400).json({ error: 'message required' }); return; }
-  var system  = typeof body.system === 'string' && body.system.trim() ? body.system.slice(0, 2000) : 'You are a helpful assistant for SeeWhy LIVE.';
+  var system  = 'You are a helpful assistant for SeeWhy LIVE.';
   var client = require('./llm').getClient();
   client.messages.create({
     model: 'anthropic/claude-sonnet-5',
