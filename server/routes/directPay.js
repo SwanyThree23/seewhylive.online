@@ -148,7 +148,7 @@ router.get('/', requireAuth, function(req, res) {
   loadAndDecryptHandles(req.user.id, req.tenantId, res);
 });
 
-router.get('/:userId', function(req, res) {
+router.get('/:userId', requireAuth, function(req, res) {
   loadAndDecryptHandles(req.params.userId, req.tenantId, res);
 });
 
