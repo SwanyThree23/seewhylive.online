@@ -127,7 +127,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
 
   var shareMsg = customMsg || defaultMsg;
 
-  function copyToClipboard(text, label) {
+  var copyToClipboard = function(text, label) {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(function() {
         setCopied(label);
@@ -141,7 +141,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
     }
   }
 
-  function shareToPlatform(platform) {
+  var shareToPlatform = function(platform) {
     if (platform.copyOnly) {
       copyToClipboard(streamUrl, platform.name);
       addToast(platform.emoji + ' ' + platform.copyNote, 'info');
@@ -154,7 +154,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
     }
   }
 
-  function shareNative() {
+  var shareNative = function() {
     if (navigator.share) {
       navigator.share({
         title: 'SeeWhy LIVE' + (username ? ' — ' + username : ''),

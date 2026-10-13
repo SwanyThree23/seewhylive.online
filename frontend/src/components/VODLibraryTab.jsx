@@ -64,7 +64,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
     setClips(listClips());
   }, [tab]);
 
-  function openClip(meta) {
+  var openClip = function(meta) {
     setLoadingId(meta.id);
     loadClip(meta.id).then(function(blob) {
       if (!blob) { if (addToast) addToast('Clip not found — was it cleared from storage?', 'error'); setLoadingId(null); return; }
@@ -77,7 +77,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
     });
   }
 
-  function removeClip(id) {
+  var removeClip = function(id) {
     deleteClip(id).then(function() {
       setClips(listClips());
       if (playingClip && playingClip.meta.id === id) setPlayingClip(null);
@@ -88,7 +88,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
     setConfirmDelete(null);
   }
 
-  function doShareClip(meta) {
+  var doShareClip = function(meta) {
     if (typeof navigator !== 'undefined' && navigator.share) {
       loadClip(meta.id).then(function(blob) {
         if (!blob) return;
@@ -100,7 +100,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
     }
   }
 
-  function copyShareLink(clip) {
+  var copyShareLink = function(clip) {
     var url = 'https://seewhylive.online/clip/' + (clip.id || clip.ts);
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(function() {
@@ -111,7 +111,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
     }
   }
 
-  function downloadShareClip(clip) {
+  var downloadShareClip = function(clip) {
     loadClip(clip.id).then(function(blob) {
       if (!blob) { if (addToast) addToast('Clip not found', 'error'); return; }
       var url = URL.createObjectURL(blob);

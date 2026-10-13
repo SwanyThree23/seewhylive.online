@@ -61,7 +61,7 @@ function OverlayCountdown({ countdown }) {
   var [rem, setRem] = useState(0);
   useEffect(function() {
     if (!countdown || !countdown.visible || !countdown.targetTs) return;
-    function tick() { setRem(Math.max(0, countdown.targetTs - Math.floor(Date.now() / 1000))); }
+    var tick = function() { setRem(Math.max(0, countdown.targetTs - Math.floor(Date.now() / 1000))); }
     tick();
     var t = setInterval(tick, 1000);
     return function() { clearInterval(t); };
@@ -231,14 +231,14 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
   useEffect(function() {
     if (!socket) return;
-    function onJoinRoomAck(data) {
+    var onJoinRoomAck = function(data) {
       if (!data) return;
       if (data.watchParty && data.watchParty.url) setWatchPartyUrl(data.watchParty.url);
       console.log('[RoomTab] calling rtcManager.connect', { roomId: roomId, userId: userId, role: role }); rtcManager.connect(socket, roomId, userId, role)
         .then(function() { console.log('[RoomTab] connect() RESOLVED'); setRtcReady(true); addToast('WebRTC ready', 'success'); })
         .catch(function(e) { console.error('[RoomTab] connect() REJECTED', e); addToast('WebRTC: ' + e.message, 'error'); });
     }
-    function onHandRaise(data) {
+    var onHandRaise = function(data) {
       if (!data || role !== 'host') return;
       var gid   = data.guestId;
       var gname = data.username || gid;
@@ -249,7 +249,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       });
       addToast('✋ ' + gname + ' wants to join the stage', 'info');
     }
-    function onStageInvite(data) {
+    var onStageInvite = function(data) {
       if (!data || !data.guestId) return;
       setStageGuests(function(s) {
         if (s.indexOf(data.guestId) >= 0) return s;
@@ -257,34 +257,34 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         return s.concat([data.guestId]);
       });
     }
-    function onStageRemove(data) {
+    var onStageRemove = function(data) {
       if (!data || !data.guestId) return;
       setStageGuests(function(s) { return s.filter(function(x) { return x !== data.guestId; }); });
     }
-    function onPkStart(data) {
+    var onPkStart = function(data) {
       if (!data) return;
       setActiveBattle({ challenger: data.challenger || 'CHALLENGER', defender: data.defender || 'DEFENDER', durationSec: data.duration || 180, startTs: Date.now() });
       setBattleScores({ a: 0, b: 0 });
       setStageLayout('battle');
     }
-    function onPkVoteUpdate(data) {
+    var onPkVoteUpdate = function(data) {
       if (!data) return;
       setBattleScores({ a: data.challengerVotes || 0, b: data.defenderVotes || 0 });
     }
-    function onPkEnd() {
+    var onPkEnd = function() {
       setActiveBattle(null);
       setBattleScores({ a: 0, b: 0 });
     }
-    function onWatchPartyUrl(data) {
+    var onWatchPartyUrl = function(data) {
       if (!data || !data.url) return;
       setWatchPartyUrl(data.url);
       setStageLayout('watchparty');
     }
-    function onWatchPartyStarted(data) {
+    var onWatchPartyStarted = function(data) {
       setStageLayout('watchparty');
       if (data && data.url) setWatchPartyUrl(data.url);
     }
-    function onPollUpdate(poll) {
+    var onPollUpdate = function(poll) {
       if (!poll) return;
       setActivePoll(poll);
       if (!poll.active) {
@@ -292,10 +292,10 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         pollTimerRef.current = setTimeout(function() { setActivePoll(null); setMyVote(-1); }, 4000);
       }
     }
-    function onClipMarked(data) {
+    var onClipMarked = function(data) {
       if (data && data.label) addToast('📎 Clip: ' + data.label, 'success');
     }
-    function onChatReactUpdate(data) {
+    var onChatReactUpdate = function(data) {
       if (!data || !data.msgId) return;
       setReactions(function(prev) {
         var next = Object.assign({}, prev);
@@ -303,11 +303,11 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         return next;
       });
     }
-    function onSuperChat(sc) {
+    var onSuperChat = function(sc) {
       if (!sc) return;
       setSuperChats(function(prev) { return prev.concat([sc]).slice(-20); });
     }
-    function onReactBurst(data) {
+    var onReactBurst = function(data) {
       if (!data || !data.emoji) return;
       var rid = Date.now() + Math.random();
       var leftPct = 60 + Math.floor(Math.random() * 30);
@@ -316,13 +316,13 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         setFloatReacts(function(prev) { return prev.filter(function(r) { return r.id !== rid; }); });
       }, 3600));
     }
-    function onGiftLeaderboard(data) {
+    var onGiftLeaderboard = function(data) {
       if (!data || !data.leaders) return;
       setGiftLeaderboard(data.leaders.map(function(e) {
         return { username: e.username, total: e.totalCents, count: 1 };
       }));
     }
-    function onGiftReceived(gift) {
+    var onGiftReceived = function(gift) {
       if (!gift || !gift.fromUser) return;
       setGiftLeaderboard(function(prev) {
         var next = prev.slice();
@@ -391,7 +391,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     };
   }, []);
 
-  function fmtUptime(s) {
+  var fmtUptime = function(s) {
     var h = Math.floor(s / 3600);
     var m = Math.floor((s % 3600) / 60);
     var sec = s % 60;
@@ -400,27 +400,27 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     return h > 0 ? h + ':' + mm + ':' + ss : mm + ':' + ss;
   }
 
-  function sendChat() {
+  var sendChat = function() {
     if (!chatInput.trim() || !socket) return;
     var msg = chatInput.trim();
     socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg });
     setChatInput('');
   }
 
-  function pinMessage(msg) {
+  var pinMessage = function(msg) {
     setPinnedMsg(msg);
     if (addToast) addToast('📌 Message pinned', 'info');
   }
 
-  function unpinMessage() {
+  var unpinMessage = function() {
     setPinnedMsg(null);
   }
 
-  function addReaction(msgId, emoji) {
+  var addReaction = function(msgId, emoji) {
     if (socket) socket.emit('chat-react', { roomId: roomId, msgId: msgId, emoji: emoji });
   }
 
-  function sendSuperChat() {
+  var sendSuperChat = function() {
     if (!scMsg.trim()) { addToast('Enter a message', 'error'); return; }
     if (!socket) return;
     socket.emit('super-chat', { roomId: roomId, userId: userId, username: username, message: scMsg.trim(), amountCents: scAmount });
@@ -430,7 +430,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     addToast('💎 SuperChat sent!', 'success');
   }
 
-  function translateMessage(msgId, text, targetLang) {
+  var translateMessage = function(msgId, text, targetLang) {
     var txKey = msgId + ':' + targetLang;
     if (txTexts[txKey] || txLoading[txKey]) return;
     setTxLoading(function(p) { return Object.assign({}, p, {[txKey]: true}); });
@@ -452,11 +452,11 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       });
   }
 
-  function openGoLive() {
+  var openGoLive = function() {
     setShowGoLiveModal(true);
   }
 
-  function confirmGoLive() {
+  var confirmGoLive = function() {
     if (!socket) return;
     var dests = [];
     GO_LIVE_PLATFORMS.forEach(function(p) {
@@ -468,20 +468,20 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     setShowGoLiveModal(false);
   }
 
-  function endBroadcast() {
+  var endBroadcast = function() {
     if (!socket) return;
     socket.emit('end-broadcast', { roomId: roomId });
     setIsLive(false);
     stopScreenShare();
   }
 
-  function sendHandRaise() {
+  var sendHandRaise = function() {
     if (!socket) return;
     socket.emit('hand-raise', { roomId: roomId, guestId: userId, username: username });
     addToast('✋ Hand raised! Waiting for host...', 'info');
   }
 
-  function inviteToStage(item) {
+  var inviteToStage = function(item) {
     setStageGuests(function(s) {
       if (s.indexOf(item.guestId) >= 0) return s;
       if (s.length >= MAX_STAGE) { addToast('Stage full (' + MAX_STAGE + ' max)', 'error'); return s; }
@@ -492,41 +492,41 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     addToast(item.username + ' invited to stage', 'success');
   }
 
-  function removeFromStage(gid) {
+  var removeFromStage = function(gid) {
     if (gid === userId) return;
     setStageGuests(function(s) { return s.filter(function(x) { return x !== gid; }); });
     if (socket) socket.emit('stage-remove', { roomId: roomId, guestId: gid });
     addToast('Removed from stage', 'info');
   }
 
-  function denyHand(gid) {
+  var denyHand = function(gid) {
     setHandQueue(function(q) { return q.filter(function(x) { return x.guestId !== gid; }); });
   }
 
-  function promoteGuest(gid, newRole) {
+  var promoteGuest = function(gid, newRole) {
     if (!socket) return;
     socket.emit('promote-guest', { roomId: roomId, guestId: gid, role: newRole });
     addToast(newRole === 'cohost' ? 'Co-host assigned' : 'Role updated', 'success');
   }
 
-  function kickGuest(gid) {
+  var kickGuest = function(gid) {
     if (!socket) return;
     socket.emit('kick-guest', { roomId: roomId, guestId: gid });
   }
 
-  function toggleMute() {
+  var toggleMute = function() {
     var next = !isMuted;
     setIsMuted(next);
     addToast(next ? '🔇 Muted' : '🎙 Unmuted', 'info');
   }
 
-  function toggleCam() {
+  var toggleCam = function() {
     var next = !isCamOff;
     setIsCamOff(next);
     addToast(next ? '📵 Camera off' : '📷 Camera on', 'info');
   }
 
-  async function onPanelCameraCommand(payload) {
+  var onPanelCameraCommand = async function(payload) {
     if (!payload || payload.userId !== userId) return;
     try {
       var stream = await navigator.mediaDevices.getUserMedia({
@@ -545,7 +545,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     }
   }
 
-  async function onPanelBackgroundCommand(payload) {
+  var onPanelBackgroundCommand = async function(payload) {
     if (!payload || payload.userId !== userId) return;
     try {
       var bgMode = payload.background && payload.background !== 'none' ? payload.background : null;
@@ -568,7 +568,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     }
   }
 
-  async function toggleScreenShare() {
+  var toggleScreenShare = async function() {
     if (isScreenShare) { stopScreenShare(); return; }
     try {
       var stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
@@ -584,7 +584,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     }
   }
 
-  function stopScreenShare() {
+  var stopScreenShare = function() {
     if (screenStreamRef.current) {
       screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
       screenStreamRef.current = null;
@@ -593,7 +593,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     if (stageLayout === 'screen') setStageLayout('panel');
   }
 
-  async function handleMediaApply(config) {
+  var handleMediaApply = async function(config) {
     setMediaConfig(config);
     setIsMuted(false);
     setIsCamOff(false);
@@ -665,7 +665,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   var allTileSize = allPeerCount <= 9 ? 120 : allPeerCount <= 16 ? 80 : 60;
 
   // mc-btn base style helper
-  function mcBtnStyle(variant) {
+  var mcBtnStyle = function(variant) {
     var base = {
       display: 'flex',
       flexDirection: 'column',

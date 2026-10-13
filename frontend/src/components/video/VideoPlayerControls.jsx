@@ -58,24 +58,24 @@ export default function VideoPlayerControls({ playerRef, playerType, isHost, isC
 
   // Track fullscreen changes
   useEffect(function() {
-    function onFSChange() { setFullscreen(!!document.fullscreenElement); }
+    var onFSChange = function() { setFullscreen(!!document.fullscreenElement); }
     document.addEventListener('fullscreenchange', onFSChange);
     return function() { document.removeEventListener('fullscreenchange', onFSChange); };
   }, []);
 
-  function handlePlay() {
+  var handlePlay = function() {
     if (playerType === 'direct' && playerRef && playerRef.current) playerRef.current.play();
     setPlaying(true);
     if (onPlay) onPlay();
   }
 
-  function handlePause() {
+  var handlePause = function() {
     if (playerType === 'direct' && playerRef && playerRef.current) playerRef.current.pause();
     setPlaying(false);
     if (onPause) onPause();
   }
 
-  function handleMuteToggle() {
+  var handleMuteToggle = function() {
     var vid = playerRef && playerRef.current;
     if (playerType === 'direct' && vid) {
       vid.muted = !vid.muted;
@@ -83,7 +83,7 @@ export default function VideoPlayerControls({ playerRef, playerType, isHost, isC
     }
   }
 
-  function handleSeek(e) {
+  var handleSeek = function(e) {
     if (!canControl || !duration) return;
     var rect  = e.currentTarget.getBoundingClientRect();
     var ratio = (e.clientX - rect.left) / rect.width;
@@ -94,19 +94,19 @@ export default function VideoPlayerControls({ playerRef, playerType, isHost, isC
     if (onSeek) onSeek(time);
   }
 
-  function handleSkipBack() {
+  var handleSkipBack = function() {
     var vid = playerRef && playerRef.current;
     if (playerType === 'direct' && vid) vid.currentTime = Math.max(0, vid.currentTime - 10);
     if (onSkipBack) onSkipBack();
   }
 
-  function handleSkipForward() {
+  var handleSkipForward = function() {
     var vid = playerRef && playerRef.current;
     if (playerType === 'direct' && vid) vid.currentTime = Math.min(duration, vid.currentTime + 10);
     if (onSkipForward) onSkipForward();
   }
 
-  function handleFullscreen() {
+  var handleFullscreen = function() {
     var el = (containerRef.current && containerRef.current.closest('[data-video-container]')) || document.documentElement;
     if (!document.fullscreenElement) {
       if (el.requestFullscreen) el.requestFullscreen();

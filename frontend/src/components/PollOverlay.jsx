@@ -39,20 +39,20 @@ export default function PollOverlay({ socket, roomId, role, isLive, addToast }) 
   useEffect(function() {
     if (!socket) return;
 
-    function onPollStart(data) {
+    var onPollStart = function(data) {
       setActivePoll(data);
       setMyVote(null);
       setPollEnded(false);
       if (clearEndTimer.current) clearTimeout(clearEndTimer.current);
     }
 
-    function onPollUpdate(data) {
+    var onPollUpdate = function(data) {
       setActivePoll(function(p) {
         return p && p.id === data.id ? data : p;
       });
     }
 
-    function onPollEnd(data) {
+    var onPollEnd = function(data) {
       // Update with final data then clear after 5s
       setActivePoll(function(p) {
         return p && p.id === data.id ? Object.assign({}, p, { votes: data.votes, totalVotes: data.totalVotes }) : p;
@@ -80,13 +80,13 @@ export default function PollOverlay({ socket, roomId, role, isLive, addToast }) 
     };
   }, [socket]);
 
-  function handleVote(optionIdx) {
+  var handleVote = function(optionIdx) {
     if (myVote !== null || !activePoll) return;
     setMyVote(optionIdx);
     socket.emit('poll-vote', { roomId: roomId, pollId: activePoll.id, option: activePoll.options[optionIdx] });
   }
 
-  function handleCreatePoll() {
+  var handleCreatePoll = function() {
     if (!socket) return;
     var q = hostDraft.question.trim();
     if (!q) { if (addToast) addToast('Enter a question', 'error'); return; }
@@ -98,7 +98,7 @@ export default function PollOverlay({ socket, roomId, role, isLive, addToast }) 
     if (addToast) addToast('Poll launched!', 'success');
   }
 
-  function handleClosePoll() {
+  var handleClosePoll = function() {
     if (!socket || !activePoll) return;
     socket.emit('poll-end', { roomId: roomId, pollId: activePoll.id });
     if (addToast) addToast('Poll closed', 'info');

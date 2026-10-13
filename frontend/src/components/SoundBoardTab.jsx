@@ -46,7 +46,7 @@ export default function SoundBoardTab(props) {
 
   useEffect(function() {
     if (!socket) return;
-    function onSfx(data) {
+    var onSfx = function(data) {
       if (!data || !data.sfxId) return;
       var sfx = SOUNDS.find(function(s) { return s.id === data.sfxId; });
       if (sfx) {
@@ -64,7 +64,7 @@ export default function SoundBoardTab(props) {
   }, [socket]);
   useEffect(function() { fetch('/api/sounds', { headers: { Authorization: 'Bearer ' + (localStorage.getItem('sw_token') || '') } }).then(function(r) { return r.json(); }).then(function(list) { if (Array.isArray(list)) { setCustomSounds(list.map(function(s) { return { id: s.id, label: s.label || 'CUSTOM', emoji: '🎵', cat: 'custom', url: s.playback_url }; })); } }).catch(function(e) {}); }, []);
 
-  function triggerFx(sfx) {
+  var triggerFx = function(sfx) {
     if (sfx.url) { playCustomSound(sfx, vol); } else { playSound(sfx); }
     setActiveFx(sfx.id);
     if (sfxTimerRef.current) clearTimeout(sfxTimerRef.current);

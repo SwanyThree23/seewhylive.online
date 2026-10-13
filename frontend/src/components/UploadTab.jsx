@@ -36,7 +36,7 @@ export default function UploadTab({ addToast, isLive }) {
   var ytInputRef       = useRef(null);
   var deviceInputRef   = useRef(null);
 
-  function handleYtFilePick(e) {
+  var handleYtFilePick = function(e) {
     var f = e.target.files && e.target.files[0];
     if (!f) return;
     if (!f.type.startsWith('video/')) { addToast && addToast('Select a video file', 'error'); return; }
@@ -61,7 +61,7 @@ export default function UploadTab({ addToast, isLive }) {
     });
   }
 
-  function startUpload() {
+  var startUpload = function() {
     if (!ytFile) { addToast && addToast('Select a video file first', 'error'); return; }
     if (durationError) { addToast && addToast('Video must be 10 minutes or less', 'error'); return; }
     if (!title.trim()) { addToast && addToast('Enter a title', 'error'); return; }
@@ -69,13 +69,13 @@ export default function UploadTab({ addToast, isLive }) {
     addToast && addToast('YouTube upload requires backend integration — coming soon', 'error');
   }
 
-  function removeHistory(id) {
+  var removeHistory = function(id) {
     setHistory(function(h) { return h.filter(function(x) { return x.id !== id; }); });
     addToast && addToast('Removed from history', 'info');
   }
 
   // Device upload
-  function handleDeviceFiles(fileList) {
+  var handleDeviceFiles = function(fileList) {
     var arr = [];
     for (var i = 0; i < fileList.length; i++) {
       var f = fileList[i];
@@ -89,7 +89,7 @@ export default function UploadTab({ addToast, isLive }) {
     }
   }
 
-  function removeDeviceFile(idx) {
+  var removeDeviceFile = function(idx) {
     setDeviceFiles(function(prev) {
       var next = prev.slice();
       next.splice(idx, 1);
@@ -97,7 +97,7 @@ export default function UploadTab({ addToast, isLive }) {
     });
   }
 
-  function handleDrop(e) {
+  var handleDrop = function(e) {
     e.preventDefault();
     setIsDragging(false);
     handleDeviceFiles(e.dataTransfer.files);

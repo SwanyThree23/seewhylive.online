@@ -36,11 +36,11 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
 
   useEffect(function() {
     if (!socket) return;
-    function onFanoutFailed(data) {
+    var onFanoutFailed = function(data) {
       setFanoutActive(false);
       if (addToast) addToast('⚠️ Fanout failed' + (data && data.platform ? ': ' + data.platform : ''), 'error');
     }
-    function onFanoutRestarted(data) {
+    var onFanoutRestarted = function(data) {
       if (addToast) addToast('♻️ Fanout restarted' + (data && data.platform ? ': ' + data.platform : ''), 'success');
     }
     socket.on('fanout-failed',    onFanoutFailed);
@@ -55,7 +55,7 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
     if (!fanoutActive) setBitrates({});
   }, [fanoutActive]);
 
-  function toggle(id) {
+  var toggle = function(id) {
     if (id === 'seewhy') return;
     setEnabled(function(prev) {
       var next = Object.assign({}, prev);
@@ -64,12 +64,12 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
     });
   }
 
-  function testConnection(p) {
+  var testConnection = function(p) {
     if (!keys[p.id] && !p.locked) { addToast('Enter a stream key for ' + p.name, 'error'); return; }
     addToast(p.name + ' key saved — will connect when fanout starts', 'success');
   }
 
-  function startFanout() {
+  var startFanout = function() {
     var missingKeys = PLATFORMS.filter(function(p) {
       return enabled[p.id] && !p.locked && !keys[p.id];
     });
@@ -107,7 +107,7 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
       .catch(function(e) { addToast('Fanout error: ' + e.message, 'error'); });
   }
 
-  function stopAll() {
+  var stopAll = function() {
     var streamId = roomId || 'default';
     fetch('/api/fanout-stop', {
       method: 'POST',
@@ -123,7 +123,7 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
       });
   }
 
-  function pingServer() {
+  var pingServer = function() {
     setPingingServer(true);
     var t0 = Date.now();
     fetch('/api/health').then(function() {
@@ -141,7 +141,7 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
     });
   }
 
-  function copyRtmpUrl() {
+  var copyRtmpUrl = function() {
     navigator.clipboard.writeText('rtmp://seewhylive.online:1935/live');
     setCopiedRtmp(true);
     addToast('RTMP URL copied to clipboard', 'success');

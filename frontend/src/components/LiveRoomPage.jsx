@@ -270,7 +270,7 @@ function OverlayCountdown({ countdown }) {
   var [rem, setRem] = useState(0);
   useEffect(function() {
     if (!countdown || !countdown.visible || !countdown.targetTs) return;
-    function tick() { setRem(Math.max(0, countdown.targetTs - Math.floor(Date.now() / 1000))); }
+    var tick = function() { setRem(Math.max(0, countdown.targetTs - Math.floor(Date.now() / 1000))); }
     tick();
     var t = setInterval(tick, 1000);
     return function() { clearInterval(t); };
@@ -1054,15 +1054,15 @@ export default function LiveRoomPage({
     };
   }, [rtcReady, isMuted]);
 
-  function toggleMute() { setIsMuted(function(v) { return !v; }); }
-  function toggleCam()  { setIsCamOff(function(v) { return !v; }); }
+  var toggleMute = function() { setIsMuted(function(v) { return !v; }); }
+  var toggleCam = function()  { setIsCamOff(function(v) { return !v; }); }
 
-  function addChatReaction(msgId, emoji) {
+  var addChatReaction = function(msgId, emoji) {
     if (!socket || !msgId) return;
     socket.emit('chat-react', { roomId: roomId, msgId: msgId, emoji: emoji });
   }
 
-  function sendChat() {
+  var sendChat = function() {
     if (slowWaitSec > 0) return;
     var msg = chatInput.trim();
     if (!msg || !socket) return;
@@ -1070,7 +1070,7 @@ export default function LiveRoomPage({
     setChatInput('');
   }
 
-  function sendGif() {
+  var sendGif = function() {
     if (slowWaitSec > 0) return;
     var url = gifInput.trim();
     if (!url || !socket) return;
@@ -1079,7 +1079,7 @@ export default function LiveRoomPage({
     setShowGifInput(false);
   }
 
-  function raiseHand() {
+  var raiseHand = function() {
     var next = !handRaised;
     setHandRaised(next);
     if (socket && next)  socket.emit('hand-raise', { roomId: roomId, guestId: userId, username: username });
@@ -1087,7 +1087,7 @@ export default function LiveRoomPage({
     if (addToast) addToast(next ? '✋ Hand raised — waiting for host' : 'Hand lowered', 'info');
   }
 
-  function sendReact(emoji) {
+  var sendReact = function(emoji) {
     var fid = Date.now() + Math.random();
     setFloatReacts(function(r) { return r.concat([{ emoji: emoji, fid: fid }]); });
     floatTimersRef.current.add(setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200));
@@ -1095,7 +1095,7 @@ export default function LiveRoomPage({
     setReactsOpen(false);
   }
 
-  function stopScreenShare() {
+  var stopScreenShare = function() {
     setIsScreenSharing(false);
     if (screenStreamRef.current) {
       screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
@@ -1108,7 +1108,7 @@ export default function LiveRoomPage({
     if (addToast) addToast('Screen share ended — camera restored', 'info');
   }
 
-  async function startScreenShare() {
+  var startScreenShare = async function() {
     if (!rtcManager || !rtcManager.producers || !rtcManager.producers['video']) {
       if (addToast) addToast('Go live first to share your screen', 'error');
       return;
@@ -1130,7 +1130,7 @@ export default function LiveRoomPage({
     }
   }
 
-  function submitPoll() {
+  var submitPoll = function() {
     if (!socket || !pollDraft.q.trim()) return;
     var opts = pollDraft.opts.filter(function(o) { return o.trim(); });
     if (opts.length < 2) { if (addToast) addToast('Need at least 2 options', 'error'); return; }
@@ -1140,7 +1140,7 @@ export default function LiveRoomPage({
     if (addToast) addToast('Poll launched!', 'success');
   }
 
-  function votePoll(idx) {
+  var votePoll = function(idx) {
     if (!socket || pollVoted) return;
     socket.emit('poll-vote', { roomId: roomId, optionIdx: idx });
     setPollVoted(true);
@@ -1153,7 +1153,7 @@ export default function LiveRoomPage({
     });
   }
 
-  function submitQa() {
+  var submitQa = function() {
     var text = qaInput.trim();
     if (!text || !socket) return;
     var qid = Date.now() + '-' + userId;
@@ -1162,7 +1162,7 @@ export default function LiveRoomPage({
     if (addToast) addToast('Question sent!', 'success');
   }
 
-  function startVs() {
+  var startVs = function() {
     if (!socket || !vsDraft.sideA.trim() || !vsDraft.sideB.trim()) return;
     var dur = Math.min(300, Math.max(10, parseInt(vsDraft.duration) || 60));
     socket.emit('vs-start', { roomId: roomId, sideA: vsDraft.sideA.trim(), sideB: vsDraft.sideB.trim(), durationSec: dur });
@@ -1171,7 +1171,7 @@ export default function LiveRoomPage({
     if (addToast) addToast('VS Poll launched!', 'success');
   }
 
-  function submitJudgeScore() {
+  var submitJudgeScore = function() {
     var s = parseInt(judgeScoreVal);
     if (!socket || isNaN(s) || s < 0 || s > 10) { if (addToast) addToast('Score must be 0–10', 'error'); return; }
     socket.emit('judge-score', { roomId: roomId, score: s, label: judgeScoreLabel.trim() });
@@ -1180,7 +1180,7 @@ export default function LiveRoomPage({
     if (addToast) addToast('Score submitted!', 'success');
   }
 
-  function shareRoom() {
+  var shareRoom = function() {
     var url = window.location.origin + (roomId !== '6990f5f24823b53e21fcdc9d' ? ('?room=' + roomId) : '');
     if (navigator.share) {
       navigator.share({ title: 'SeeWhy LIVE', text: 'Watch live domino action on SeeWhy LIVE!', url: url });
@@ -1193,7 +1193,7 @@ export default function LiveRoomPage({
     }
   }
 
-  function openPayLink(platform, handle) {
+  var openPayLink = function(platform, handle) {
     if (!handle || !handle.trim()) {
       if (addToast) addToast('Host hasn\'t set up ' + platform.name + ' yet', 'info');
       return;
@@ -1209,7 +1209,7 @@ export default function LiveRoomPage({
     }
   }
 
-  function openSocialShare(platform, roomUrl, msg) {
+  var openSocialShare = function(platform, roomUrl, msg) {
     if (platform.open && platform.buildUrl) {
       window.open(platform.buildUrl(roomUrl, msg), '_blank', 'noopener,width=600,height=450');
     } else {
@@ -1221,7 +1221,7 @@ export default function LiveRoomPage({
     }
   }
 
-  function startRecording() {
+  var startRecording = function() {
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function(stream) {
       recChunksRef.current = [];
       var opts = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? { mimeType: 'video/webm;codecs=vp9' } : {};
@@ -1262,27 +1262,27 @@ export default function LiveRoomPage({
     });
   }
 
-  function stopRecording() {
+  var stopRecording = function() {
     if (mediaRecRef.current && mediaRecRef.current.state !== 'inactive') {
       mediaRecRef.current.stop();
     }
     clearInterval(recTimerRef.current);
   }
 
-  function fmtTime(s) {
+  var fmtTime = function(s) {
     var m = Math.floor(s / 60);
     var sec = s % 60;
     return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
   }
 
-  function goLive() {
+  var goLive = function() {
     if (!socket) return;
     socket.emit('go-live', { roomId: roomId, destinations: { seewhy: true } });
     setShowLiveModal(false);
     if (addToast) addToast('🔴 Going LIVE...', 'success');
   }
 
-  function endStream() {
+  var endStream = function() {
     if (!socket) return;
     if (isScreenSharing) stopScreenShare();
     socket.emit('end-broadcast', { roomId: roomId });
@@ -3139,7 +3139,7 @@ export default function LiveRoomPage({
         var hasAnyCreator = DP_PLATFORMS.some(function(p) { return !!(handles[p.id] || '').trim(); });
         var hasAnyPlat    = DP_PLATFORMS.some(function(p) { return !!(platHandles[p.id] || '').trim(); });
 
-        function renderPayRow(p, handle, accentColor) {
+        var renderPayRow = function(p, handle, accentColor) {
           var hasHandle = !!handle.trim();
           return (
             <button key={p.id} onClick={function() { openPayLink(p, handle); }}
@@ -3247,7 +3247,7 @@ export default function LiveRoomPage({
         ];
         var selectedTier = SC_TIERS.filter(function(t) { return t.cents === scAmt; })[0] || SC_TIERS[0];
 
-        function sendSuperChat() {
+        var sendSuperChat = function() {
           var msg = scMsg.trim();
           if (!msg) { if (addToast) addToast('Write a message first', 'error'); return; }
           if (!socket) return;

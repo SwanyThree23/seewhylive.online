@@ -45,7 +45,7 @@ export default function PayoutDashboard({ addToast, roomId }) {
   var platformCents = totalCents - creatorCents;
   var lifetimeViews = sessions.reduce(function(s, sess) { return s + (sess.viewers || 0); }, 0);
 
-  function exportCSV() {
+  var exportCSV = function() {
     var rows = ['Date,Session,Total,Your 90%,Platform 10%,SuperChats,Gifts,Tips,Viewers'];
     sessions.forEach(function(sess) {
       var cr = Math.floor((sess.totalCents || 0) * 0.9);

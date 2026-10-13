@@ -69,7 +69,7 @@ export default function StreamGoalBar(props) {
   useEffect(function() {
     if (!socket) return;
 
-    function onGoalSet(data) {
+    var onGoalSet = function(data) {
       if (!data || String(data.roomId) !== String(roomId)) return;
       setGoal({ type: data.type, target: data.target, label: data.label || '' });
       setCompleted(false);
@@ -78,7 +78,7 @@ export default function StreamGoalBar(props) {
       prevPct.current = 0;
     }
 
-    function onGoalClear(data) {
+    var onGoalClear = function(data) {
       if (!data || String(data.roomId) !== String(roomId)) return;
       setVisible(false);
       setGoal(null);
@@ -94,7 +94,7 @@ export default function StreamGoalBar(props) {
   }, [socket, roomId]);
 
   // ── Compute current value ───────────────────────────────────────────────
-  function getCurrentValue() {
+  var getCurrentValue = function() {
     if (!goal) return 0;
     if (goal.type === 'viewers')  return viewerCount;
     if (goal.type === 'revenue') return Math.floor(earningsCents / 100);
@@ -118,7 +118,7 @@ export default function StreamGoalBar(props) {
     return function() { if (burstTimerRef.current) clearTimeout(burstTimerRef.current); };
   }, [pct, goal, completed]);
 
-  function handleSetGoal() {
+  var handleSetGoal = function() {
     var t = parseInt(goalTarget, 10);
     if (!t || t <= 0) return;
     var payload = { roomId: roomId, type: goalType, target: t, label: goalLabel.trim() || null };
@@ -128,7 +128,7 @@ export default function StreamGoalBar(props) {
     setGoalLabel('');
   }
 
-  function handleClearGoal() {
+  var handleClearGoal = function() {
     if (socket) socket.emit('stream-goal-clear', { roomId: roomId });
     setShowSetup(false);
   }

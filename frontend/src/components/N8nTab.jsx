@@ -123,7 +123,7 @@ export default function N8nTab({ addToast, isLive }) {
     setExecLog(seeds.slice().reverse());
   }, []);
 
-  function triggerRun(id) {
+  var triggerRun = function(id) {
     var wf = null;
     workflows.forEach(function(w) { if (w.id === id) wf = w; });
     if (!wf) return;
@@ -136,7 +136,7 @@ export default function N8nTab({ addToast, isLive }) {
     addToast((wf.icon || '⚡') + ' ' + wf.name + ' triggered manually', 'info');
   }
 
-  function toggleWorkflow(id) {
+  var toggleWorkflow = function(id) {
     var wf = null;
     workflows.forEach(function(w) { if (w.id === id) wf = w; });
     if (!wf) return;
@@ -154,7 +154,7 @@ export default function N8nTab({ addToast, isLive }) {
     }
   }
 
-  function testWebhook(wf) {
+  var testWebhook = function(wf) {
     setWebhookTesting(function(prev) { return Object.assign({}, prev, { [wf.id]: true }); });
     fetch('/api/n8n/test', {
       method: 'POST',

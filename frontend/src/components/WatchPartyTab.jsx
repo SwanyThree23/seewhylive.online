@@ -311,21 +311,21 @@ export default function WatchPartyTab(props) {
   useEffect(function() {
     if (!socket) return;
 
-    function _playerSeekTo(pos) {
+    var _playerSeekTo = function(pos) {
       if (sourceTypeRef.current === 'youtube') {
         if (playerRef.current) { try { playerRef.current.seekTo(pos, true); } catch(e) {} }
       } else if (videoRef2.current) {
         videoRef2.current.currentTime = pos;
       }
     }
-    function _playerPlay() {
+    var _playerPlay = function() {
       if (sourceTypeRef.current === 'youtube') {
         if (playerRef.current) { try { playerRef.current.playVideo(); } catch(e) {} }
       } else if (videoRef2.current) {
         videoRef2.current.play().catch(function() {});
       }
     }
-    function _playerPause() {
+    var _playerPause = function() {
       if (sourceTypeRef.current === 'youtube') {
         if (playerRef.current) { try { playerRef.current.pauseVideo(); } catch(e) {} }
       } else if (videoRef2.current) {
@@ -333,7 +333,7 @@ export default function WatchPartyTab(props) {
       }
     }
 
-    function onWatchUrl(data) {
+    var onWatchUrl = function(data) {
       if (!data) return;
       var type = data.type || (data.videoId ? 'youtube' : 'direct');
       setSourceType(type);
@@ -352,7 +352,7 @@ export default function WatchPartyTab(props) {
       posRef.current = 0;
     }
 
-    function onWatchPlay(data) {
+    var onWatchPlay = function(data) {
       if (!data) return;
       setPlaying(true);
       if (!isHost) {
@@ -363,7 +363,7 @@ export default function WatchPartyTab(props) {
       }
     }
 
-    function onWatchPause(data) {
+    var onWatchPause = function(data) {
       setPlaying(false);
       if (!isHost) {
         if (data && typeof data.position === 'number') {
@@ -373,7 +373,7 @@ export default function WatchPartyTab(props) {
       }
     }
 
-    function onWatchSeek(data) {
+    var onWatchSeek = function(data) {
       if (!data || typeof data.position !== 'number') return;
       setPosition(Math.floor(data.position));
       posRef.current = data.position;
@@ -382,7 +382,7 @@ export default function WatchPartyTab(props) {
       }
     }
 
-    function onWatchSync(data) {
+    var onWatchSync = function(data) {
       if (!data) return;
       var type = data.type || (data.videoId ? 'youtube' : 'direct');
       setSourceType(type);
@@ -409,7 +409,7 @@ export default function WatchPartyTab(props) {
       }
     }
 
-    function onWatchReact(data) {
+    var onWatchReact = function(data) {
       if (!data || !data.emoji) return;
       var id = Date.now() + Math.random();
       setFloatReacts(function(p) {
@@ -421,16 +421,16 @@ export default function WatchPartyTab(props) {
     }
 
     // Screen share events
-    function onScreenShareActive(data) {
+    var onScreenShareActive = function(data) {
       if (!data) return;
       setRemoteScreenUser(data.username || 'Someone');
     }
-    function onScreenShareEnded() {
+    var onScreenShareEnded = function() {
       setRemoteScreenUser(null);
     }
 
     // New watch-sync event (from server broadcast)
-    function onSyncAction(data) {
+    var onSyncAction = function(data) {
       if (!data) return;
       if (data.timestamp) {
         setSyncMs(Math.abs(Date.now() - data.timestamp));
@@ -448,7 +448,7 @@ export default function WatchPartyTab(props) {
       }
     }
 
-    function onWatchPartyStarted() { setWatchPartyActive(true); }
+    var onWatchPartyStarted = function() { setWatchPartyActive(true); }
 
     socket.on('watch-party-url',     onWatchUrl);
     socket.on('watch-party-play',    onWatchPlay);
@@ -508,18 +508,18 @@ export default function WatchPartyTab(props) {
   // ─────────────────────────────────────────────
   // Handlers
   // ─────────────────────────────────────────────
-  function handleStartWatchParty() {
+  var handleStartWatchParty = function() {
     setWatchPartyActive(true);
     if (addToast) addToast('Watch party started!', 'success');
     if (socket) socket.emit('watch-party-start', { roomId: roomId });
   }
 
-  function handleEndWatchParty() {
+  var handleEndWatchParty = function() {
     setWatchPartyActive(false);
     if (addToast) addToast('Watch party ended', 'info');
   }
 
-  function handleLoadUrl() {
+  var handleLoadUrl = function() {
     var raw = urlInput.trim();
     if (!raw) {
       if (addToast) addToast('Paste a video URL first', 'error');
@@ -555,7 +555,7 @@ export default function WatchPartyTab(props) {
     }
   }
 
-  function handleFileSelect(e) {
+  var handleFileSelect = function(e) {
     var file = e.target.files && e.target.files[0];
     if (!file) return;
     if (localFileUrl) URL.revokeObjectURL(localFileUrl);
@@ -570,7 +570,7 @@ export default function WatchPartyTab(props) {
     // Local blob URLs can't be shared with other users
   }
 
-  function _playerPlay() {
+  var _playerPlay = function() {
     if (sourceType === 'youtube') {
       if (playerRef.current) { try { playerRef.current.playVideo(); } catch(e) {} }
     } else if (videoRef2.current) {
@@ -578,7 +578,7 @@ export default function WatchPartyTab(props) {
     }
   }
 
-  function _playerPause() {
+  var _playerPause = function() {
     if (sourceType === 'youtube') {
       if (playerRef.current) { try { playerRef.current.pauseVideo(); } catch(e) {} }
     } else if (videoRef2.current) {
@@ -586,7 +586,7 @@ export default function WatchPartyTab(props) {
     }
   }
 
-  function _playerSeekTo(pos) {
+  var _playerSeekTo = function(pos) {
     if (sourceType === 'youtube') {
       if (playerRef.current) { try { playerRef.current.seekTo(pos, true); } catch(e) {} }
     } else if (videoRef2.current) {
@@ -594,7 +594,7 @@ export default function WatchPartyTab(props) {
     }
   }
 
-  function handlePlay() {
+  var handlePlay = function() {
     var pos = posRef.current;
     setPlaying(true);
     _playerPlay();
@@ -603,7 +603,7 @@ export default function WatchPartyTab(props) {
     }
   }
 
-  function handlePause() {
+  var handlePause = function() {
     var pos = posRef.current;
     setPlaying(false);
     _playerPause();
@@ -612,7 +612,7 @@ export default function WatchPartyTab(props) {
     }
   }
 
-  function handleSeekClick(e) {
+  var handleSeekClick = function(e) {
     if (!isHost) return;
     var r      = e.currentTarget.getBoundingClientRect();
     var pct    = (e.clientX - r.left) / r.width;
@@ -625,7 +625,7 @@ export default function WatchPartyTab(props) {
     }
   }
 
-  function handleSkipBack() {
+  var handleSkipBack = function() {
     if (sourceType === 'youtube' && playerRef.current) {
       try { playerRef.current.seekTo(Math.max(0, posRef.current - 10), true); } catch(e) {}
     } else if (videoRef2.current) {
@@ -633,7 +633,7 @@ export default function WatchPartyTab(props) {
     }
   }
 
-  function handleSkipForward() {
+  var handleSkipForward = function() {
     if (sourceType === 'youtube' && playerRef.current) {
       try { playerRef.current.seekTo(posRef.current + 10, true); } catch(e) {}
     } else if (videoRef2.current) {
@@ -641,7 +641,7 @@ export default function WatchPartyTab(props) {
     }
   }
 
-  function handleSyncAll() {
+  var handleSyncAll = function() {
     var pos = posRef.current;
     if (socket && roomId) {
       socket.emit('watch-party-sync', {
@@ -656,7 +656,7 @@ export default function WatchPartyTab(props) {
     if (addToast) addToast('Synced all viewers to current position', 'success');
   }
 
-  function handleSourceSelect(source) {
+  var handleSourceSelect = function(source) {
     if (!isHost) return;
     var url   = source.url   || '';
     var title = source.title || url;
@@ -683,7 +683,7 @@ export default function WatchPartyTab(props) {
     }
   }
 
-  function handleCreateParty() {
+  var handleCreateParty = function() {
     setShowCreatePanel(false);
     setWatchPartyActive(true);
     if (socket) socket.emit('watch-party-start', { roomId: roomId });
@@ -705,7 +705,7 @@ export default function WatchPartyTab(props) {
   }
 
   // ── Screen Share ──────────────────────────────
-  function handleScreenShare() {
+  var handleScreenShare = function() {
     if (!isHost) return;
     navigator.mediaDevices.getDisplayMedia({ video: { width: 3840, height: 2160 }, audio: true })
       .then(function(stream) {
@@ -731,7 +731,7 @@ export default function WatchPartyTab(props) {
       });
   }
 
-  function handleStopScreenShare() {
+  var handleStopScreenShare = function() {
     if (screenStreamRef.current) {
       screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
       screenStreamRef.current = null;
@@ -744,13 +744,13 @@ export default function WatchPartyTab(props) {
   }
 
   // ── 4K Toggle ─────────────────────────────────
-  function toggle4K() {
+  var toggle4K = function() {
     setIs4K(function(prev) { return !prev; });
     if (addToast) addToast(!is4K ? '4K quality enabled' : '4K quality disabled', 'info');
   }
 
   // ── Sync Watch ────────────────────────────────
-  function handleSyncWatch(action) {
+  var handleSyncWatch = function(action) {
     if (!isHost || !socket || !roomId) return;
     var pos = posRef.current;
     socket.emit('watch-sync', { roomId: roomId, action: action, position: pos });
@@ -760,7 +760,7 @@ export default function WatchPartyTab(props) {
   }
 
   // ── Featured handlers ─────────────────────────
-  function handleLoadFeatured(item) {
+  var handleLoadFeatured = function(item) {
     setVideoId(item.id);
     setDirectUrl('');
     setLocalFileUrl('');
@@ -780,14 +780,14 @@ export default function WatchPartyTab(props) {
     if (addToast) addToast('Loading: ' + item.channel, 'info');
   }
 
-  function handleAddFeaturedToQueue(item) {
+  var handleAddFeaturedToQueue = function(item) {
     var qitem = { id: Date.now() + Math.random(), title: item.channel, url: item.url, videoId: item.id, type: 'youtube', addedBy: 'host', duration: 0 };
     setQueue(function(q) { return q.concat([qitem]); });
     if (addToast) addToast('Added to queue: ' + item.channel, 'success');
   }
 
   // ── Queue handlers ───────────────────────────
-  function handleAddToQueue() {
+  var handleAddToQueue = function() {
     var raw = queueInput.trim();
     if (!raw) { if (addToast) addToast('Enter a URL to add', 'error'); return; }
     var vid = extractYtId(raw);
@@ -802,7 +802,7 @@ export default function WatchPartyTab(props) {
     if (addToast) addToast('Added to queue', 'success');
   }
 
-  function handleQueueMove(idx, dir) {
+  var handleQueueMove = function(idx, dir) {
     setQueue(function(q) {
       var arr = q.slice();
       var target = idx + dir;
@@ -814,11 +814,11 @@ export default function WatchPartyTab(props) {
     });
   }
 
-  function handleQueueRemove(idx) {
+  var handleQueueRemove = function(idx) {
     setQueue(function(q) { return q.filter(function(_, i) { return i !== idx; }); });
   }
 
-  function handlePlayFromQueue(idx) {
+  var handlePlayFromQueue = function(idx) {
     var item = queue[idx];
     if (!item) return;
     setQueue(function(q) { return q.filter(function(_, i) { return i !== idx; }); });
@@ -835,7 +835,7 @@ export default function WatchPartyTab(props) {
   }
 
   // ── Reaction handlers ────────────────────────
-  function sendReact(emoji) {
+  var sendReact = function(emoji) {
     var id = Date.now() + Math.random();
     setFloatReacts(function(p) {
       return p.slice(-9).concat([{ id: id, emoji: emoji, x: rnd(10, 80) }]);
@@ -849,7 +849,7 @@ export default function WatchPartyTab(props) {
   }
 
   // ── Chat handler ─────────────────────────────
-  function handleChatSend() {
+  var handleChatSend = function() {
     var msg = chatInput.trim();
     if (!msg) return;
     if (socket && roomId) {

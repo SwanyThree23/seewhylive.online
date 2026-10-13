@@ -50,9 +50,9 @@ export default function VideoSourcePicker({ onSelect, playlist, onPlaylistChange
   var canControl = isHost || isCoHost;
   if (!canControl) return null;
 
-  function showErr(msg) { setErr(msg); setTimeout(function() { setErr(''); }, 3000); }
+  var showErr = function(msg) { setErr(msg); setTimeout(function() { setErr(''); }, 3000); }
 
-  function handleDeviceFile(e) {
+  var handleDeviceFile = function(e) {
     var file = e.target.files && e.target.files[0];
     if (!file) return;
     var blobUrl = URL.createObjectURL(file);
@@ -60,7 +60,7 @@ export default function VideoSourcePicker({ onSelect, playlist, onPlaylistChange
     setOpen(false);
   }
 
-  function submitYouTube() {
+  var submitYouTube = function() {
     var id = getYouTubeId(ytUrl);
     if (!id) { showErr('Invalid YouTube URL'); return; }
     if (onSelect) onSelect({ type: 'youtube', url: ytUrl, title: 'YouTube: ' + id, ytId: id });
@@ -68,21 +68,21 @@ export default function VideoSourcePicker({ onSelect, playlist, onPlaylistChange
     setOpen(false);
   }
 
-  function submitDirect() {
+  var submitDirect = function() {
     if (!directUrl.trim()) { showErr('Enter a URL'); return; }
     if (onSelect) onSelect({ type: 'direct', url: directUrl.trim(), title: directUrl.trim() });
     setDirectUrl('');
     setOpen(false);
   }
 
-  function submitStream() {
+  var submitStream = function() {
     if (!streamUrl.trim()) { showErr('Enter a stream URL'); return; }
     if (onSelect) onSelect({ type: 'stream', url: streamUrl.trim(), title: 'Live Stream' });
     setStreamUrl('');
     setOpen(false);
   }
 
-  function addToPlaylist() {
+  var addToPlaylist = function() {
     if (!newPlaylistUrl.trim()) return;
     var updated = playlist.concat([{ url: newPlaylistUrl.trim(), title: newPlaylistTitle.trim() || newPlaylistUrl.trim() }]);
     if (onPlaylistChange) onPlaylistChange(updated);
@@ -90,12 +90,12 @@ export default function VideoSourcePicker({ onSelect, playlist, onPlaylistChange
     setNewPlaylistTitle('');
   }
 
-  function removeFromPlaylist(i) {
+  var removeFromPlaylist = function(i) {
     var updated = playlist.filter(function(_, idx) { return idx !== i; });
     if (onPlaylistChange) onPlaylistChange(updated);
   }
 
-  function playFromPlaylist(item) {
+  var playFromPlaylist = function(item) {
     var type = detectVideoType(item.url);
     var ytId = type === 'youtube' ? getYouTubeId(item.url) : null;
     if (onSelect) onSelect({ type: type, url: item.url, title: item.title, ytId: ytId });

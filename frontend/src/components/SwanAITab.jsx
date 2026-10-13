@@ -146,7 +146,7 @@ export default function SwanAITab(props) {
   }, [isLive]);
 
   // ── AI call ───────────────────────────────────────────────────────────────
-  function callDirector(prompt, userMsg) {
+  var callDirector = function(prompt, userMsg) {
     setLoading(true);
     if (userMsg) {
       setMsgs(function(p) { return p.concat([{ role: 'user', text: userMsg, time: fmtTime() }]); });
@@ -169,25 +169,25 @@ export default function SwanAITab(props) {
       });
   }
 
-  function send() {
+  var send = function() {
     if (!input.trim() || loading) return;
     callDirector(input, input);
     setInput('');
   }
 
   // ── Pin to cue cards ─────────────────────────────────────────────────────
-  function pinCard(text) {
+  var pinCard = function(text) {
     var card = { id: 'card-' + Date.now(), text: text, ts: fmtTime() };
     setCueCards(function(prev) { return [card].concat(prev).slice(0, 30); });
     if (addToast) addToast('📌 Pinned to Cue Cards', 'success');
   }
 
-  function removeCard(id) {
+  var removeCard = function(id) {
     setCueCards(function(prev) { return prev.filter(function(c) { return c.id !== id; }); });
   }
 
   // ── Send to room chat ─────────────────────────────────────────────────────
-  function sendToRoom(text, msgIdx) {
+  var sendToRoom = function(text, msgIdx) {
     if (!socket || !roomId) { if (addToast) addToast('Join a room first', 'error'); return; }
     setSendingToRoom(msgIdx);
     socket.emit('chat-message', { roomId: roomId, message: '[🎯 Director] ' + text.slice(0, 200), username: username });
@@ -198,7 +198,7 @@ export default function SwanAITab(props) {
   }
 
   // ── Rundown generator ─────────────────────────────────────────────────────
-  function generateRundown() {
+  var generateRundown = function() {
     setRundownLoad(true);
     var prompt = 'Create a detailed timed stream rundown for the next 60 minutes of the SeeWhy LIVE Washington Classic domino tournament stream.' +
       ' Current stats: ' + (viewerCount || 0) + ' viewers, ' + fmtEarnings(sessionEarningsCents) + ' earned this session.' +

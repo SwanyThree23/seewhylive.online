@@ -104,7 +104,7 @@ export default function ShowcaseTab(p) {
 
   var [viewerCounts, setViewerCounts] = useState({});
 
-  function getState(id) {
+  var getState = function(id) {
     for (var i = 0; i < STATES.length; i++) {
       if (STATES[i].id === id) return STATES[i];
     }
@@ -159,7 +159,7 @@ export default function ShowcaseTab(p) {
     };
   }, []);
 
-  function startBattle(id) {
+  var startBattle = function(id) {
     setBattleId(id);
     setBlue(0);
     setRed(0);
@@ -169,7 +169,7 @@ export default function ShowcaseTab(p) {
     setDetail(null);
   }
 
-  function castVote(matchId, side) {
+  var castVote = function(matchId, side) {
     if (myVotes[matchId]) return;
     setMyVotes(function(v) { return Object.assign({}, v, { [matchId]: side }); });
     setVotes(function(v) {
@@ -182,7 +182,7 @@ export default function ShowcaseTab(p) {
     if (addToast) addToast('Vote locked in! 🗳️', 'success');
   }
 
-  function copyProfileLink(st) {
+  var copyProfileLink = function(st) {
     var url = 'https://seewhylive.online/creator/' + st.id;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(function() {

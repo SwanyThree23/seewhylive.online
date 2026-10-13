@@ -2,8 +2,8 @@
 import React, { useEffect, useRef } from 'react';
 
 var BG = '#0C0806';
-var CREAM = '#F5F5DC';
-var GOLD = '#D4AF37';
+var CREAM = '#F0E8D4';
+var GOLD = '#C9A84C';
 
 export default function MoreMenuSheet({ items, onSelect, onClose }) {
   var pushedRef = useRef(false);
@@ -11,7 +11,7 @@ export default function MoreMenuSheet({ items, onSelect, onClose }) {
   useEffect(function() {
     window.history.pushState({ swOverlay: 'moremenu' }, '');
     pushedRef.current = true;
-    function onPop() {
+    var onPop = function() {
       if (pushedRef.current) { pushedRef.current = false; onClose(); }
     }
     window.addEventListener('popstate', onPop);
@@ -21,7 +21,7 @@ export default function MoreMenuSheet({ items, onSelect, onClose }) {
     };
   }, [onClose]);
 
-  function handleClose() {
+  var handleClose = function() {
     if (pushedRef.current) { window.history.back(); }
     else { onClose(); }
   }

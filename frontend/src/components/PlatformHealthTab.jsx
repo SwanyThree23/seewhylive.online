@@ -31,7 +31,7 @@ export default function PlatformHealthTab({ socket, addToast }) {
 
   useEffect(function() {
     if (!socket) return;
-    function onHealthUpdate(data) {
+    var onHealthUpdate = function(data) {
       if (!data) return;
       setHealth(function(prev) { return Object.assign({}, prev, data); });
       setLastCheck(Date.now());
@@ -41,7 +41,7 @@ export default function PlatformHealthTab({ socket, addToast }) {
     return function() { socket.off('platform-health', onHealthUpdate); };
   }, [socket]);
 
-  function runCheck() {
+  var runCheck = function() {
     setChecking(true);
     if (socket) socket.emit('platform-health-check', {});
     fetch('/health', { credentials: 'include' })

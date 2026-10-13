@@ -17,7 +17,7 @@ export default function AgeGate({ role, onConfirm }) {
   var [dobYear, setDobYear] = useState('');
   var [error, setError] = useState('');
 
-  function handleConfirm() {
+  var handleConfirm = function() {
     if (!checked) { setError('You must confirm your age to continue'); return; }
     if (dobYear) {
       var yr = parseInt(dobYear, 10);

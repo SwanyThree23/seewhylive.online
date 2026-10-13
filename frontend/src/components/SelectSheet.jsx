@@ -10,10 +10,10 @@ export default function SelectSheet(props) {
 
   var [open, setOpen] = useState(false);
 
-  function getLabel(opt) {
+  var getLabel = function(opt) {
     return typeof opt === 'string' ? opt : opt.label;
   }
-  function getValue(opt) {
+  var getValue = function(opt) {
     return typeof opt === 'string' ? opt : opt.value;
   }
 

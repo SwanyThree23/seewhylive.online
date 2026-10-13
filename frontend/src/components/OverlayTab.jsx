@@ -50,7 +50,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
     setDraftScore(JSON.parse(JSON.stringify(Object.assign({}, INIT_OVERLAY.scoreBug, cfg.scoreBug || {}))));
   }, []);
 
-  function pushOverlay(partial) {
+  var pushOverlay = function(partial) {
     var next = Object.assign({}, cfg, partial);
     if (setOverlayConfig) setOverlayConfig(next);
     if (socket && roomId) {
@@ -58,11 +58,11 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
     }
   }
 
-  function applyLowerThirds() {
+  var applyLowerThirds = function() {
     pushOverlay({ lowerThirds: Object.assign({}, draftLT) });
   }
 
-  function toggleLT(gid) {
+  var toggleLT = function(gid) {
     setDraftLT(function(d) {
       var next = Object.assign({}, d);
       next[gid] = Object.assign({}, next[gid], { visible: !next[gid].visible });
@@ -70,7 +70,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
     });
   }
 
-  function clearAllLT() {
+  var clearAllLT = function() {
     var cleared = {};
     Object.keys(draftLT).forEach(function(k) {
       cleared[k] = Object.assign({}, draftLT[k], { visible: false });
@@ -79,17 +79,17 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
     pushOverlay({ lowerThirds: cleared });
   }
 
-  function applyBanner() {
+  var applyBanner = function() {
     if (!draftBanner) return;
     pushOverlay({ banner: Object.assign({}, draftBanner, { visible: true }) });
   }
 
-  function hideBanner() {
+  var hideBanner = function() {
     pushOverlay({ banner: Object.assign({}, cfg.banner || {}, { visible: false }) });
     if (draftBanner) setDraftBanner(function(d) { return Object.assign({}, d, { visible: false }); });
   }
 
-  function startCountdown() {
+  var startCountdown = function() {
     var targetTs;
     if (cdMode === 'duration') {
       var mins = parseInt(cdMinutes, 10) || 0;
@@ -103,21 +103,21 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
     pushOverlay({ countdown: { label: cdLabel, targetTs: targetTs, visible: true } });
   }
 
-  function stopCountdown() {
+  var stopCountdown = function() {
     setCdRunning(false);
     pushOverlay({ countdown: Object.assign({}, cfg.countdown || {}, { visible: false }) });
   }
 
-  function applyScore() {
+  var applyScore = function() {
     if (!draftScore) return;
     pushOverlay({ scoreBug: Object.assign({}, draftScore, { visible: true }) });
   }
 
-  function hideScore() {
+  var hideScore = function() {
     pushOverlay({ scoreBug: Object.assign({}, cfg.scoreBug || {}, { visible: false }) });
   }
 
-  function changeScore(team, delta) {
+  var changeScore = function(team, delta) {
     if (!draftScore) return;
     setDraftScore(function(d) {
       var next  = JSON.parse(JSON.stringify(d));
