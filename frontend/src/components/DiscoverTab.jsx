@@ -94,7 +94,7 @@ export default function DiscoverTab(props) {
   var debounceRef = useRef(null);
 
   useEffect(function() {
-    function fetchLiveRooms() {
+    var fetchLiveRooms = function() {
       fetch('/api/rooms/live')
         .then(function(r) { return r.json(); })
         .then(function(d) {
@@ -160,7 +160,7 @@ export default function DiscoverTab(props) {
   // ── Socket: real-time trending rooms from server ──
   useEffect(function() {
     if (!socket) return;
-    function onTrending(data) {
+    var onTrending = function(data) {
       if (!data || !Array.isArray(data.rooms) || data.rooms.length === 0) return;
       var ranked = data.rooms.map(function(r) {
         return {
@@ -191,7 +191,7 @@ export default function DiscoverTab(props) {
   // ── Socket: listen for notification events ──
   useEffect(function() {
     if (!socket) return;
-    function onNotification(data) {
+    var onNotification = function(data) {
       if (!data) return;
       var entry = Object.assign({ id: Date.now(), ts: Date.now(), read: false }, data);
       setNotifs(function(prev) {
@@ -204,7 +204,7 @@ export default function DiscoverTab(props) {
     return function() { socket.off('notification', onNotification); };
   }, [socket]);
 
-  function markAllRead() {
+  var markAllRead = function() {
     setNotifs(function(prev) {
       var next = prev.map(function(n) { return Object.assign({}, n, { read: true }); });
       try { localStorage.setItem('sw_notifications', JSON.stringify(next)); } catch(e) {}
@@ -212,7 +212,7 @@ export default function DiscoverTab(props) {
     });
   }
 
-  function toggleFollow(username) {
+  var toggleFollow = function(username) {
     setFollowing(function(prev) {
       var idx = prev.indexOf(username);
       var next;
@@ -228,7 +228,7 @@ export default function DiscoverTab(props) {
     });
   }
 
-  function handleQueryChange(e) {
+  var handleQueryChange = function(e) {
     var val = e.target.value;
     setQuery(val);
     if (debounceRef.current) {
@@ -254,7 +254,7 @@ export default function DiscoverTab(props) {
     }, 300);
   }
 
-  function renderLiveBadge(isLive) {
+  var renderLiveBadge = function(isLive) {
     if (isLive) {
       return React.createElement(
         'span',
@@ -304,7 +304,7 @@ export default function DiscoverTab(props) {
     );
   }
 
-  function renderStreamCard(stream) {
+  var renderStreamCard = function(stream) {
     var genreColor = GENRE_COLORS[stream.genre] || '#8A7A62';
     var isTrending = stream.viewerCount >= 2000;
     return React.createElement(
@@ -433,7 +433,7 @@ export default function DiscoverTab(props) {
     );
   }
 
-  function renderCreatorCard(creator) {
+  var renderCreatorCard = function(creator) {
     var bioCut = creator.bio.length > 60 ? creator.bio.slice(0, 60) + '...' : creator.bio;
     return React.createElement(
       'div',
@@ -550,7 +550,7 @@ export default function DiscoverTab(props) {
     );
   }
 
-  function renderToggleBtn(label, val) {
+  var renderToggleBtn = function(label, val) {
     var active = view === val;
     return React.createElement(
       'button',
@@ -574,7 +574,7 @@ export default function DiscoverTab(props) {
     );
   }
 
-  function renderQuickActions() {
+  var renderQuickActions = function() {
     return React.createElement(
       'div',
       {
@@ -620,7 +620,7 @@ export default function DiscoverTab(props) {
     );
   }
 
-  function renderContentTabs() {
+  var renderContentTabs = function() {
     var tabs = [
       { id: 'live',      label: 'LIVE NOW' },
       { id: 'upcoming',  label: 'UPCOMING' },
@@ -662,7 +662,7 @@ export default function DiscoverTab(props) {
     );
   }
 
-  function renderCategoryPills() {
+  var renderCategoryPills = function() {
     return React.createElement(
       'div',
       {
@@ -703,7 +703,7 @@ export default function DiscoverTab(props) {
     );
   }
 
-  function renderFeaturedYouTube() {
+  var renderFeaturedYouTube = function() {
     return React.createElement(
       'div',
       {
@@ -864,7 +864,7 @@ export default function DiscoverTab(props) {
     );
   }
 
-  function renderMobileBanner() {
+  var renderMobileBanner = function() {
     return React.createElement(
       'div',
       {
@@ -985,7 +985,7 @@ export default function DiscoverTab(props) {
     );
   }
 
-  function renderComingSoon(label) {
+  var renderComingSoon = function(label) {
     return React.createElement(
       'div',
       {
@@ -1007,7 +1007,7 @@ export default function DiscoverTab(props) {
 
   var filteredCreators = creators;
 
-  function handleRefresh() {
+  var handleRefresh = function() {
     fetch('/api/active-rooms')
       .then(function(r) { return r.json(); })
       .then(function(d) {

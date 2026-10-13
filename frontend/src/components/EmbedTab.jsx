@@ -21,7 +21,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
 
   var creatorAmt = (PPV_PRICE_USD * CREATOR_SHARE).toFixed(2);
 
-  async function handleSubmit(e) {
+  var handleSubmit = async function(e) {
     e.preventDefault();
     setProcessing(true);
     setError(null);
@@ -229,7 +229,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
     setEmbedCode(code);
   }, [roomId]);
 
-  function handleUnlock(token) {
+  var handleUnlock = function(token) {
     setPpvToken(token);
     setShowPaywall(false);
     setPreviewExpired(false);

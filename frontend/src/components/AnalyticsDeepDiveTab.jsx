@@ -113,7 +113,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
 
   var totalGross   = txns.reduce(function(s, t) { return s + t.amount; }, 0);
   var totalCreator = apiData ? Math.floor(apiData.creatorCents || 0) : Math.floor(totalGross * CREATOR);
-  var totalPlatform = apiData ? Math.floor(apiData.platformCents || 0) : Math.floor(totalGross * PLATFORM);
+  var totalPlatform = apiData ? Math.floor(apiData.platformCents || 0) : (totalGross - Math.floor(totalGross * CREATOR));
   var peakEng      = engData.length > 0 ? Math.max.apply(null, engData) : 0;
   var peakRev      = revData.length > 0 ? Math.max.apply(null, revData) : 0;
   var viewers      = viewerCount || 0;
@@ -124,7 +124,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
   var byType = (apiData && apiData.byType) || { tip: 0, subscription: 0, paywall: 0, gift: 0 };
   var topSupporters = (apiData && apiData.topSupporters) || [];
 
-  function exportCSV() {
+  var exportCSV = function() {
     var rows = ['id,type,note,amount_cents,creator_payout_cents'].concat(txns.map(function(tx) {
       return [tx.id, tx.type, (tx.creator || tx.stream || ''), tx.amount, Math.floor(tx.amount * CREATOR)].join(',');
     }));

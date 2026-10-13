@@ -87,7 +87,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
     } catch(e) {}
   }, [gemBal]);
 
-  function claimDailyBonus() {
+  var claimDailyBonus = function() {
     setGemBal(function(b) { return Math.floor(b + 50); });
     setDailyClaimed(true);
     try {
@@ -99,7 +99,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
   var equipped = items.find(function(a) { return a.equipped; });
   var activeFrame = frames.find(function(f) { return f.id === equippedFrame; });
 
-  function equip(id) {
+  var equip = function(id) {
     setItems(function(p) {
       return p.map(function(a) {
         return Object.assign({}, a, { equipped: a.id === id });
@@ -109,7 +109,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
     if (addToast && item) addToast(item.emoji + ' ' + item.name + ' equipped', 'success');
   }
 
-  function purchase(item) {
+  var purchase = function(item) {
     if (gemBal < item.price) { if (addToast) addToast('Not enough gems (need 💎' + item.price + ')', 'error'); return; }
     setGemBal(function(b) { return Math.floor(b - item.price); });
     setItems(function(p) {
@@ -118,7 +118,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
     if (addToast) addToast(item.emoji + ' ' + item.name + ' purchased!', 'success');
   }
 
-  function purchaseFrame(frame) {
+  var purchaseFrame = function(frame) {
     if (gemBal < frame.price) { if (addToast) addToast('Not enough gems (need 💎' + frame.price + ')', 'error'); return; }
     setGemBal(function(b) { return Math.floor(b - frame.price); });
     setFrames(function(prev) {
@@ -127,7 +127,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
     if (addToast) addToast(frame.name + ' frame purchased!', 'success');
   }
 
-  function equipFrame(id) {
+  var equipFrame = function(id) {
     var frame = frames.find(function(f) { return f.id === id; });
     setEquippedFrame(id);
     if (addToast && frame) addToast(frame.name + ' frame equipped', 'success');
