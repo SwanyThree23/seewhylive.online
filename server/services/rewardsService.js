@@ -34,10 +34,11 @@ async function awardPoints(userId, points, source, sourceId) {
   }
 }
 
-async function getUserPoints(userId) {
-  const { data, error } = await supabase.from('user_loyalty').select('*').eq('user_id', userId).maybeSingle();
+async function getUserPoints(userId, tenantId) {
+  if (!tenantId) throw new Error('tenantId is required');
+  const { data, error } = await supabase.from('user_loyalty').select('*').eq('user_id', userId).eq('tenant_id', tenantId).maybeSingle();
   if (error) throw error;
-  return data || { user_id: userId, total_points: 0, level: 1 };
+  return data || { user_id: userId, tenant_id: tenantId, total_points: 0, level: 1 };
 }
 
 async function getLeaderboard(period, tenantId) {
