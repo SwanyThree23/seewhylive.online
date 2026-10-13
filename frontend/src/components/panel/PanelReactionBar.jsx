@@ -5,12 +5,12 @@
 // emoji animations over the panel grid.
 import { useEffect, useRef, useState } from 'react';
 
-const EMOJIS = ['❤️', '🔥', '👏', '😂', '😮', '💯', '🎉', '💜'];
-const GOLD = '#D4AF37';
+var EMOJIS = ['❤️', '🔥', '👏', '😂', '😮', '💯', '🎉', '💜'];
+var GOLD = '#D4AF37';
 
 // Individual floating emoji that rises and fades out
 function FloatingEmoji({ emoji, x, onDone }) {
-  const ref = useRef(null);
+  var ref = useRef(null);
   useEffect(function() {
     var el = ref.current;
     if (!el) return;
@@ -42,9 +42,9 @@ function FloatingEmoji({ emoji, x, onDone }) {
 }
 
 export default function PanelReactionBar({ socket, roomId, userId }) {
-  const [floats, setFloats] = useState([]);
-  const floatId = useRef(0);
-  const cooldown = useRef(false);
+  var [floats, setFloats] = useState([]);
+  var floatId = useRef(0);
+  var cooldown = useRef(false);
 
   useEffect(function() {
     if (!socket || !roomId) return;

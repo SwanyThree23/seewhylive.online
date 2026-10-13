@@ -5,23 +5,23 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Scissors, Play, Copy, Share2, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
-const BG = '#080B18';
-const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+var G = '#D4AF37';
+var BG = '#080B18';
+var PANEL = '#0D1022';
+var BORDER = 'rgba(212,175,55,0.18)';
 
 export default function ClipCreator({ streamSessionId, roomId, creatorId, onClipCreated }) {
-  const [title, setTitle] = useState('');
-  const [startSec, setStartSec] = useState(0);
-  const [endSec, setEndSec] = useState(60);
-  const [isLoading, setIsLoading] = useState(false);
-  const queryClient = useQueryClient();
+  var [title, setTitle] = useState('');
+  var [startSec, setStartSec] = useState(0);
+  var [endSec, setEndSec] = useState(60);
+  var [isLoading, setIsLoading] = useState(false);
+  var queryClient = useQueryClient();
 
-  const createClipMutation = useMutation({
+  var createClipMutation = useMutation({
     mutationFn: async () => {
       setIsLoading(true);
-      const me = await base44.auth.me();
-      const clip = await base44.entities.StreamClip.create({
+      var me = await base44.auth.me();
+      var clip = await base44.entities.StreamClip.create({
         stream_session_id: streamSessionId,
         room_id: roomId,
         creator_id: creatorId,

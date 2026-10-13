@@ -2,29 +2,29 @@ import React, { useState } from 'react';
 import { Plus, Trash2, BookOpen, Save } from 'lucide-react';
 
 export default function ChapterEditor({ video, onSave, onCancel }) {
-  const [chapters, setChapters] = useState(video.chapters || []);
-  const [newTime, setNewTime] = useState('');
-  const [newTitle, setNewTitle] = useState('');
+  var [chapters, setChapters] = useState(video.chapters || []);
+  var [newTime, setNewTime] = useState('');
+  var [newTitle, setNewTitle] = useState('');
 
-  const addChapter = () => {
+  var addChapter = () => {
     if (!newTitle || newTime === '') return;
-    const t = Number(newTime);
-    const updated = [...chapters, { time: t, title: newTitle }]
+    var t = Number(newTime);
+    var updated = [...chapters, { time: t, title: newTitle }]
       .sort((a, b) => a.time - b.time);
     setChapters(updated);
     setNewTime('');
     setNewTitle('');
   };
 
-  const remove = (i) => setChapters(chapters.filter((_, idx) => idx !== i));
+  var remove = (i) => setChapters(chapters.filter((_, idx) => idx !== i));
 
-  const fmt = (s) => {
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
+  var fmt = (s) => {
+    var m = Math.floor(s / 60);
+    var sec = Math.floor(s % 60);
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
-  const inputStyle = {
+  var inputStyle = {
     background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
     borderRadius: 8, padding: '6px 12px', fontSize: 14, color: '#fff', outline: 'none',
   };

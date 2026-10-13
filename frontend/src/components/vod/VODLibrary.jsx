@@ -4,15 +4,15 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Play, Eye, ThumbsUp, Share2, Trash2 } from 'lucide-react';
 
-const G = '#D4AF37';
-const BG = '#080B18';
-const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+var G = '#D4AF37';
+var BG = '#080B18';
+var PANEL = '#0D1022';
+var BORDER = 'rgba(212,175,55,0.18)';
 
 export default function VODLibrary({ creatorId }) {
-  const [filter, setFilter] = useState('all');
+  var [filter, setFilter] = useState('all');
 
-  const { data: vods } = useQuery({
+  var { data: vods } = useQuery({
     queryKey: ['creatorVODs', creatorId],
     queryFn: () =>
       base44.entities.VODVideo.filter(
@@ -23,7 +23,7 @@ export default function VODLibrary({ creatorId }) {
     enabled: !!creatorId,
   });
 
-  const { data: clips } = useQuery({
+  var { data: clips } = useQuery({
     queryKey: ['creatorClips', creatorId],
     queryFn: () =>
       base44.entities.StreamClip.filter(
@@ -34,12 +34,12 @@ export default function VODLibrary({ creatorId }) {
     enabled: !!creatorId,
   });
 
-  const filteredItems = filter === 'vods' ? vods : filter === 'clips' ? clips : [...(vods || []), ...(clips || [])];
+  var filteredItems = filter === 'vods' ? vods : filter === 'clips' ? clips : [...(vods || []), ...(clips || [])];
 
-  const formatDuration = (sec) => {
-    const h = Math.floor(sec / 3600);
-    const m = Math.floor((sec % 3600) / 60);
-    const s = sec % 60;
+  var formatDuration = (sec) => {
+    var h = Math.floor(sec / 3600);
+    var m = Math.floor((sec % 3600) / 60);
+    var s = sec % 60;
     return h > 0 ? `${h}h ${m}m` : `${m}m ${s}s`;
   };
 

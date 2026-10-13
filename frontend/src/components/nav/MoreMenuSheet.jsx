@@ -1,9 +1,9 @@
 // frontend/src/components/nav/MoreMenuSheet.jsx
 import React, { useEffect, useRef } from 'react';
 
-const BG = '#0C0806';
-const CREAM = '#F5F5DC';
-const GOLD = '#D4AF37';
+var BG = '#0C0806';
+var CREAM = '#F5F5DC';
+var GOLD = '#D4AF37';
 
 export default function MoreMenuSheet({ items, onSelect, onClose }) {
   var pushedRef = useRef(false);

@@ -3,15 +3,15 @@ import { motion } from 'framer-motion';
 import { Play, Scissors, BookOpen, Eye, Globe, Edit } from 'lucide-react';
 
 export default function VODCard({ vod, onEdit, onTrim, onChapters, onPublish }) {
-  const fmt = (s) => {
-    const m = Math.floor((s || 0) / 60);
-    const sec = Math.floor((s || 0) % 60);
+  var fmt = (s) => {
+    var m = Math.floor((s || 0) / 60);
+    var sec = Math.floor((s || 0) % 60);
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
-  const trimmedDuration = (vod.trim_end || vod.duration_seconds || 0) - (vod.trim_start || 0);
+  var trimmedDuration = (vod.trim_end || vod.duration_seconds || 0) - (vod.trim_start || 0);
 
-  const statusStyle = {
+  var statusStyle = {
     published: { color: '#6DBF7E', borderColor: '#4A9B5E', background: 'rgba(109,191,126,0.12)' },
     draft: { color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' },
     unlisted: { color: '#D4AF37', borderColor: '#800020', background: 'rgba(113,63,18,0.2)' },

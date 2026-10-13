@@ -7,14 +7,14 @@ import VODCard from './VODCard';
 import VODTrimEditor from './VODTrimEditor';
 import ChapterEditor from './ChapterEditor';
 
-const inputStyle = {
+var inputStyle = {
   width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.05)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box',
   fontFamily: 'Barlow Condensed, sans-serif',
 };
 
-const textareaStyle = {
+var textareaStyle = {
   ...inputStyle,
   resize: 'none',
   minHeight: 80,
@@ -39,31 +39,31 @@ function Modal({ open, onClose, title, titleColor, children }) {
 }
 
 export default function VideoLibrary({ creatorId }) {
-  const qc = useQueryClient();
-  const [trimTarget, setTrimTarget] = useState(null);
-  const [chapterTarget, setChapterTarget] = useState(null);
-  const [showAdd, setShowAdd] = useState(false);
-  const [newVOD, setNewVOD] = useState({ title: '', video_url: '', description: '' });
+  var qc = useQueryClient();
+  var [trimTarget, setTrimTarget] = useState(null);
+  var [chapterTarget, setChapterTarget] = useState(null);
+  var [showAdd, setShowAdd] = useState(false);
+  var [newVOD, setNewVOD] = useState({ title: '', video_url: '', description: '' });
 
-  const { data: vods = [] } = useQuery({
+  var { data: vods = [] } = useQuery({
     queryKey: ['vod-library', creatorId],
     queryFn: () => base44.entities.VODVideo.filter({ creator_id: creatorId }, '-created_date', 30),
     enabled: !!creatorId,
   });
 
-  const { data: recordings = [] } = useQuery({
+  var { data: recordings = [] } = useQuery({
     queryKey: ['recordings-for-vod', creatorId],
     queryFn: () => base44.entities.Recording.filter({ host_id: creatorId }, '-created_date', 10),
     enabled: !!creatorId,
   });
 
-  const updateVOD = useMutation({
+  var updateVOD = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
     onError: () => toast.error('Failed to save changes.'),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['vod-library', creatorId] }); toast.success('Saved!'); },
   });
 
-  const createVOD = useMutation({
+  var createVOD = useMutation({
     mutationFn: (data) => base44.entities.VODVideo.create({ ...data, creator_id: creatorId, status: 'draft' }),
     onError: () => toast.error('Failed to add VOD. Please try again.'),
     onSuccess: (vod) => {
@@ -81,7 +81,7 @@ export default function VideoLibrary({ creatorId }) {
     },
   });
 
-  const importRecording = (rec) => {
+  var importRecording = (rec) => {
     createVOD.mutate({
       title: rec.title,
       video_url: rec.stream_url || '',
@@ -91,7 +91,7 @@ export default function VideoLibrary({ creatorId }) {
     });
   };
 
-  const handlePublish = (vod) => updateVOD.mutate({ id: vod.id, data: { status: 'published' } });
+  var handlePublish = (vod) => updateVOD.mutate({ id: vod.id, data: { status: 'published' } });
 
   return (
     <div className="space-y-4">

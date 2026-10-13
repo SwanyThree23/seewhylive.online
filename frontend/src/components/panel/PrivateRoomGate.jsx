@@ -2,17 +2,17 @@
 import { useEffect, useState } from 'react';
 import panelService from '../../services/panelService';
 
-const BG = '#0C0806';
-const GOLD = '#D4AF37';
-const CREAM = '#F5F5DC';
-const RED = '#dc2626';
+var BG = '#0C0806';
+var GOLD = '#D4AF37';
+var CREAM = '#F5F5DC';
+var RED = '#dc2626';
 
 export default function PrivateRoomGate({ socket, roomId, gatingMode, onJoined }) {
-  const [code, setCode] = useState('');
-  const [error, setError] = useState(null);
-  const [requested, setRequested] = useState(false);
-  const [pending, setPending] = useState(false);
-  const [denied, setDenied] = useState(false);
+  var [code, setCode] = useState('');
+  var [error, setError] = useState(null);
+  var [requested, setRequested] = useState(false);
+  var [pending, setPending] = useState(false);
+  var [denied, setDenied] = useState(false);
 
   // When host resolves our join request in approval mode, auto-join or show denial
   useEffect(function() {
