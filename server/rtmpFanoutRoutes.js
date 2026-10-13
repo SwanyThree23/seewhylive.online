@@ -7,11 +7,23 @@ var requireAuth = require('./middleware/auth');
 
 var router = express.Router();
 
+// RFC-1918, loopback, and link-local ranges are blocked to prevent SSRF.
+var PRIVATE_HOST_RE = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|169\.254\.|localhost$|::1$)/i;
+
 function isValidRtmpUrl(url) {
   if (typeof url !== 'string') return false;
   var lower = url.toLowerCase();
-  return lower.startsWith('rtmp://') || lower.startsWith('rtmps://');
+  if (!lower.startsWith('rtmp://') && !lower.startsWith('rtmps://')) return false;
+  try {
+    var parsed = new URL(url);
+    if (PRIVATE_HOST_RE.test(parsed.hostname)) return false;
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
+
+var STREAM_ID_RE = /^[a-zA-Z0-9_-]{1,128}$/;
 
 var ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
 if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length < 32) {
@@ -76,6 +88,7 @@ router.post('/start-stream', requireAuth, async function (req, res) {
   var destinationId = body.destinationId;
   var streamId = body.streamId;
   if (!destinationId) return res.status(400).json({ error: 'destinationId is required' });
+  if (!streamId || !STREAM_ID_RE.test(String(streamId))) return res.status(400).json({ error: 'invalid streamId' });
   if (activeProcesses.has(destinationId)) {
     return res.json({ success: true, message: 'already running', pid: activeProcesses.get(destinationId).process.pid });
   }
@@ -109,7 +122,7 @@ router.post('/stop-stream', requireAuth, async function (req, res) {
   var destinationId = (req.body || {}).destinationId;
   var entry = activeProcesses.get(destinationId);
   if (!entry) return res.json({ success: true, message: 'no active process for this destination' });
-  if (entry.destination && entry.destination.user_id && entry.destination.user_id !== req.user.id) {
+  if (!entry.destination || (entry.destination.user_id !== req.user.id && req.user.role !== 'admin')) {
     return res.status(403).json({ error: 'forbidden' });
   }
   entry.process.kill('SIGTERM');
@@ -126,6 +139,9 @@ router.post('/stop-stream', requireAuth, async function (req, res) {
 router.get('/status/:destinationId', requireAuth, function (req, res) {
   var entry = activeProcesses.get(req.params.destinationId);
   if (!entry) return res.json({ live: false });
+  if (!entry.destination || (entry.destination.user_id !== req.user.id && req.user.role !== 'admin')) {
+    return res.status(403).json({ error: 'forbidden' });
+  }
   res.json({ live: true, pid: entry.process.pid, uptimeMs: Date.now() - entry.startedAt });
 });
 
