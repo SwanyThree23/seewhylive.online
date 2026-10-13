@@ -141,9 +141,9 @@ async function setPrivacy({ tenantId, roomId, isPrivate, gatingMode = null }) {
   }
   const result = await db.query(
     `UPDATE streams SET privacy = $2, private_gating_mode = $3, invite_code = $4
-     WHERE id = $1 AND (tenant_id = $5 OR $5::text IS NULL)
+     WHERE id = $1 AND tenant_id = $5
      RETURNING id, privacy, private_gating_mode, invite_code`,
-    [roomId, isPrivate ? 'private' : 'public', isPrivate ? gatingMode : null, inviteCode, tenantId || null]
+    [roomId, isPrivate ? 'private' : 'public', isPrivate ? gatingMode : null, inviteCode, tenantId]
   );
   return result.rows[0];
 }
