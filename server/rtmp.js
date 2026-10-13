@@ -27,6 +27,7 @@ var RTMP_BASE_URLS = {
 var fanouts = new Map();
 
 var SAFE_ROOM_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var PRIVATE_HOST_RE = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|169\.254\.|localhost$|::1$)/i;
 
 var MAX_RESTARTS  = 3;
 var BASE_BACKOFF  = 2000;  // ms
@@ -69,7 +70,16 @@ function buildFfmpegArgs(roomId, destinations) {
     var dest = destinations[i];
     var baseUrl = RTMP_BASE_URLS[dest.platform];
     if (dest.platform === 'custom' || !baseUrl) {
-      baseUrl = dest.rtmpUrl;
+      var _rtmpUrl = String(dest.rtmpUrl || '');
+      if (!/^rtmps?:\/\//i.test(_rtmpUrl)) {
+        throw new Error('invalid rtmpUrl: must start with rtmp:// or rtmps://');
+      }
+      var _parsed;
+      try { _parsed = new URL(_rtmpUrl); } catch (e) { throw new Error('invalid rtmpUrl: malformed URL'); }
+      if (PRIVATE_HOST_RE.test(_parsed.hostname)) {
+        throw new Error('invalid rtmpUrl: private/loopback host not allowed');
+      }
+      baseUrl = _rtmpUrl;
     }
     var _safeKey = String(dest.streamKey || '').replace(/[^A-Za-z0-9_\-\.]/g, '').slice(0, 200);
     var fullUrl = baseUrl + '/' + _safeKey;
