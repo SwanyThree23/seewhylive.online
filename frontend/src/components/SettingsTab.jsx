@@ -449,10 +449,10 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
 
   var renderNotificationsTab = function() {
     var rows = [
-      { label: '&#x1F534; New Stream Alerts', desc: 'New stream from followed creators', value: notifyNewStream, setter: setNotifyNewStream },
-      { label: '&#x1F4B0; Tip Received',       desc: 'Get notified of tips',              value: notifyTip,       setter: setNotifyTip },
-      { label: '&#x2B50; New Subscriber',      desc: 'Know when someone subscribes',      value: notifySubscriber,setter: setNotifySubscriber },
-      { label: '&#x1F4E7; Weekly Digest',      desc: 'Monday morning stats summary',      value: notifyEmailDigest,setter: setNotifyEmailDigest },
+      { label: '🔴 New Stream Alerts', desc: 'New stream from followed creators', value: notifyNewStream, setter: setNotifyNewStream },
+      { label: '💰 Tip Received',      desc: 'Get notified of tips',              value: notifyTip,       setter: setNotifyTip },
+      { label: '⭐ New Subscriber',    desc: 'Know when someone subscribes',      value: notifySubscriber,setter: setNotifySubscriber },
+      { label: '📧 Weekly Digest',     desc: 'Monday morning stats summary',      value: notifyEmailDigest,setter: setNotifyEmailDigest },
     ];
 
     return (
@@ -463,8 +463,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
               <div>
                 <div
                   style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', fontWeight: 600 }}
-                  dangerouslySetInnerHTML={{ __html: row.label }}
-                />
+                >{row.label}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 2 }}>
                   {row.desc}
                 </div>
