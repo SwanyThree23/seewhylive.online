@@ -201,6 +201,10 @@ function doStop(res, vodId, tenantId, durationSec, playbackUrl) {
     try { parsedPb = new URL(String(playbackUrl)); } catch (e) { return res.status(400).json({ error: 'invalid playback_url' }); }
     if (parsedPb.protocol !== 'https:') return res.status(400).json({ error: 'playback_url must begin with https://' });
     if (parsedPb.hostname !== 'xlrcibziouffgxciecvc.supabase.co') return res.status(400).json({ error: 'playback_url host not allowed' });
+    var _expectedPrefix = '/storage/v1/object/public/vods/' + tenantId + '/';
+    if (!parsedPb.pathname.startsWith(_expectedPrefix)) {
+      return res.status(400).json({ error: 'playback_url path not within your storage namespace' });
+    }
     patch.playback_url = String(playbackUrl).slice(0, 2000);
   }
 
