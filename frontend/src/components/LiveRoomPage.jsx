@@ -956,6 +956,16 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 58: Caption Color / Milestone / Stamp Burst / Super Follow ───────
+  var [captionColor,      setCaptionColor]      = useState(null);
+  var [showCaptionColor,  setShowCaptionColor]  = useState(false);
+  var [milestone,         setMilestone]         = useState(null);
+  var [milestoneDraft,    setMilestoneDraft]    = useState({ text: '1K Followers!', icon: '🏆' });
+  var [showMilestoneDraft,setShowMilestoneDraft]= useState(false);
+  var [stampBurst,        setStampBurst]        = useState(null);
+  var [superFollowBurst,  setSuperFollowBurst]  = useState(null);
+  var [superFollowCooldown, setSuperFollowCooldown] = useState(false);
+
   // ─── Batch 57: Overlay Sticker / Viewer Streak / Speed Round / Mood Spectrum ─
   var [overlaySticker,   setOverlaySticker]   = useState(null);
   var [showStickerPick,  setShowStickerPick]  = useState(false);
@@ -1140,6 +1150,8 @@ export default function LiveRoomPage({
       if (data.overlaySticker) setOverlaySticker(data.overlaySticker);
       if (data.speedRound) setSpeedRound(data.speedRound);
       if (data.moodSpectrum) setMoodSpectrum(data.moodSpectrum);
+      if (data.captionColor) setCaptionColor(data.captionColor);
+      if (data.milestone) setMilestone(data.milestone);
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2444,6 +2456,27 @@ export default function LiveRoomPage({
       setMoodSpectrum(d || {});
     });
 
+    // ── Batch 58 listeners ─────────────────────────────────────────────────
+    socket.on('caption-color-update', function(d) {
+      setCaptionColor(d || null);
+    });
+
+    socket.on('milestone-update', function(d) {
+      setMilestone(d || null);
+    });
+
+    socket.on('stamp-burst', function(d) {
+      if (!d) return;
+      setStampBurst(d);
+      setTimeout(function() { setStampBurst(null); }, 2500);
+    });
+
+    socket.on('super-follow-burst', function(d) {
+      if (!d) return;
+      setSuperFollowBurst(d);
+      setTimeout(function() { setSuperFollowBurst(null); }, 3500);
+    });
+
     // Batch 43 listeners
     socket.on('prize-wheel-update', function(data) {
       setPrizeWheel(data || null);
@@ -2896,6 +2929,10 @@ export default function LiveRoomPage({
       socket.off('speed-round-answer-ack');
       socket.off('speed-round-ended');
       socket.off('mood-spectrum-update');
+      socket.off('caption-color-update');
+      socket.off('milestone-update');
+      socket.off('stamp-burst');
+      socket.off('super-follow-burst');
     };
   }, [socket]);
 
@@ -4740,6 +4777,11 @@ export default function LiveRoomPage({
                 if (overlaySticker) { if (socket) socket.emit('overlay-sticker-clear', { roomId: roomId }); }
                 else { setShowStickerPick(function(s) { return !s; }); }
               }},
+              { emoji: '🎨', label: captionColor ? 'Cap Color ✓' : 'Cap Color', active: !!captionColor || showCaptionColor, onTap: function() {
+                if (captionColor) { if (socket) socket.emit('caption-color-clear', { roomId: roomId }); }
+                else { setShowCaptionColor(function(s) { return !s; }); }
+              }},
+              { emoji: '📣', label: 'Milestone', active: showMilestoneDraft, onTap: function() { setShowMilestoneDraft(function(s) { return !s; }); } },
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -4834,6 +4876,21 @@ export default function LiveRoomPage({
                 });
               }},
               { emoji: '😊', label: 'My Mood', active: showMoodSpectrum, onTap: function() { setShowMoodSpectrum(function(s) { return !s; }); } },
+              { emoji: '❤️', label: 'Stamp', active: false, onTap: function() {
+                if (socket) socket.emit('stamp-tap', { roomId: roomId, emoji: '❤️' });
+              }},
+              { emoji: superFollowCooldown ? '💫' : '💖', label: superFollowCooldown ? 'Cooling…' : 'Super ♥', active: !superFollowCooldown, onTap: function() {
+                if (superFollowCooldown || !socket) return;
+                socket.emit('super-follow', { roomId: roomId }, function(res) {
+                  if (res && res.ok) {
+                    setSuperFollowCooldown(true);
+                    if (addToast) addToast('💖 Super Follow sent!', 'success');
+                    setTimeout(function() { setSuperFollowCooldown(false); }, 30000);
+                  } else if (res && res.err === 'cooldown') {
+                    if (addToast) addToast('Super Follow cooldown: ' + res.remainSecs + 's left', 'info');
+                  }
+                });
+              }},
             ] : [])),
           ].map(function(tool) {
             return (
@@ -12663,6 +12720,88 @@ export default function LiveRoomPage({
                 return pct > 0 ? <div key={m.k} style={{ flex: pct, background: m.c, borderRadius: 3 }} /> : null;
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 58: Milestone Announce overlay ══ */}
+      {milestone && (
+        <div style={{ position: 'fixed', top: '36%', left: '50%', transform: 'translateX(-50%)', zIndex: 900, animation: 'fadeSlideIn .4s ease', pointerEvents: 'none' }}>
+          <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.22),rgba(212,133,74,.14))', border: '1px solid ' + GOLD, borderRadius: 20, padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 4px 32px rgba(201,168,76,.25)' }}>
+            <span style={{ fontSize: 36 }}>{milestone.icon}</span>
+            <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 22, color: GOLD, letterSpacing: 2 }}>{milestone.text}</span>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 58: Stamp burst ══ */}
+      {stampBurst && (
+        <div style={{ position: 'fixed', bottom: 120, left: '50%', transform: 'translateX(-50%)', zIndex: 880, animation: 'fadeSlideIn .25s ease', pointerEvents: 'none', textAlign: 'center' }}>
+          <div style={{ fontSize: 36 }}>{stampBurst.emoji}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginTop: 2 }}>{stampBurst.username}</div>
+        </div>
+      )}
+
+      {/* ══ Batch 58: Super Follow burst ══ */}
+      {superFollowBurst && (
+        <div style={{ position: 'fixed', top: '40%', left: '50%', transform: 'translateX(-50%)', zIndex: 890, animation: 'fadeSlideIn .35s ease', pointerEvents: 'none', textAlign: 'center' }}>
+          <div style={{ fontSize: 48 }}>💖</div>
+          <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: '#FF69B4', letterSpacing: 2, marginTop: 4 }}>{superFollowBurst.username} SUPER FOLLOWED!</div>
+        </div>
+      )}
+
+      {/* ══ Batch 58: Caption Color Picker (host) ══ */}
+      {showCaptionColor && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 260, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🎨 CAPTION COLOR</span>
+              <button onClick={function() { setShowCaptionColor(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginBottom: 12 }}>
+              {['#C9A84C', '#FF1A3C', '#D4854A', '#7B68EE', '#00CED1', '#FF69B4', '#90EE90', '#F0E8D4'].map(function(c) {
+                return (
+                  <button key={c} onClick={function() {
+                    if (socket) socket.emit('caption-color-set', { roomId: roomId, color: c });
+                    setShowCaptionColor(false);
+                  }} style={{ width: 32, height: 32, borderRadius: '50%', background: c, border: captionColor && captionColor.color === c ? '3px solid ' + TEXT : '2px solid transparent', cursor: 'pointer' }} />
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 58: Milestone Draft panel (host) ══ */}
+      {showMilestoneDraft && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>📣 MILESTONE</span>
+              <button onClick={function() { setShowMilestoneDraft(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={milestoneDraft.text}
+              onChange={function(e) { setMilestoneDraft(function(d) { return Object.assign({}, d, { text: e.target.value.slice(0, 60) }); }); }}
+              placeholder="Milestone text…"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 10 }} />
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+              {['🏆','🎉','🌟','💯','🔥','🚀','👑','💎','🎊','📈'].map(function(ic) {
+                return (
+                  <button key={ic} onClick={function() { setMilestoneDraft(function(d) { return Object.assign({}, d, { icon: ic }); }); }}
+                    style={{ fontSize: 20, background: milestoneDraft.icon === ic ? 'rgba(201,168,76,.2)' : 'none', border: '1px solid ' + (milestoneDraft.icon === ic ? GOLD : 'transparent'), borderRadius: 8, padding: 4, cursor: 'pointer' }}>
+                    {ic}
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={function() {
+              var txt = milestoneDraft.text.trim();
+              if (!txt) return;
+              if (socket) socket.emit('milestone-announce', { roomId: roomId, text: txt, icon: milestoneDraft.icon });
+              setShowMilestoneDraft(false);
+            }} disabled={!milestoneDraft.text.trim()} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: milestoneDraft.text.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: milestoneDraft.text.trim() ? 1 : 0.5 }}>
+              ANNOUNCE
+            </button>
           </div>
         </div>
       )}

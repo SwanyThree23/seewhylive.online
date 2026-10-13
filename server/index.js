@@ -574,6 +574,11 @@ var overlayStickerMap = new Map(); // roomId → { emoji, ts }
 var viewerStreakMap   = new Map(); // userId → { streak, lastDay }
 var speedRoundMap    = new Map();  // roomId → { questions, idx, scores, timerId, active }
 var moodSpectrumMap  = new Map();  // roomId → Map<userId, { emotion, ts }>
+// Batch 58: Caption Color / Milestone Announce / Stamp Burst / Super Follow
+var captionColorMap  = new Map();  // roomId → { color }
+var milestoneMap     = new Map();  // roomId → { text, icon, ts }
+var stampThrottle    = new Map();  // userId → lastStampAt
+var superFollowThrottle = new Map(); // userId → lastSuperAt
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -851,6 +856,9 @@ function getJoinStateForRoom(roomId) {
     _ms57.forEach(function(v) { _tally57[v.emotion] = (_tally57[v.emotion] || 0) + 1; });
     state.moodSpectrum = _tally57;
   } else { state.moodSpectrum = {}; }
+  // Batch 58
+  state.captionColor = captionColorMap.get(roomId) || null;
+  state.milestone    = milestoneMap.get(roomId) || null;
   return state;
 }
 
@@ -6501,6 +6509,9 @@ io.on('connection', function(socket) {
     speedRoundMap.delete(roomId);
     overlayStickerMap.delete(roomId);
     moodSpectrumMap.delete(roomId);
+    // Batch 58 cleanup
+    captionColorMap.delete(roomId);
+    milestoneMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -7370,6 +7381,76 @@ io.on('connection', function(socket) {
     var tally = {};
     moodSpectrumMap.get(roomId).forEach(function(v) { tally[v.emotion] = (tally[v.emotion] || 0) + 1; });
     io.to(roomId).emit('mood-spectrum-update', tally);
+  });
+
+  // ── caption-color (Batch 58) ────────────────────────────────────────────
+  socket.on('caption-color-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var color = data && /^#[0-9A-Fa-f]{6}$/.test(data.color) ? data.color : '#C9A84C';
+    captionColorMap.set(roomId, { color: color });
+    io.to(roomId).emit('caption-color-update', { color: color });
+  });
+
+  socket.on('caption-color-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    captionColorMap.delete(roomId);
+    io.to(roomId).emit('caption-color-update', null);
+  });
+
+  // ── milestone-announce (Batch 58) ───────────────────────────────────────
+  socket.on('milestone-announce', function(data) {
+    var roomId   = socket.data.roomId;
+    var username = socket.data.username || 'Host';
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var SAFE_ICONS = ['🏆','🎉','🌟','💯','🔥','🚀','👑','💎','🎊','📈'];
+    var text = data && data.text ? String(data.text).trim().slice(0, 60) : 'Milestone reached!';
+    var icon = data && SAFE_ICONS.indexOf(data.icon) !== -1 ? data.icon : '🏆';
+    var entry = { text: text, icon: icon, ts: Date.now() };
+    milestoneMap.set(roomId, entry);
+    io.to(roomId).emit('milestone-update', entry);
+    addEnergy(roomId, socket.data.userId, username, 5);
+    setTimeout(function() {
+      if (milestoneMap.get(roomId) === entry) {
+        milestoneMap.delete(roomId);
+        io.to(roomId).emit('milestone-update', null);
+      }
+    }, 8000);
+  });
+
+  // ── stamp-tap (Batch 58) ────────────────────────────────────────────────
+  socket.on('stamp-tap', function(data) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId || !userId) return;
+    var now  = Date.now();
+    var last = stampThrottle.get(userId) || 0;
+    if (now - last < 2000) return;
+    stampThrottle.set(userId, now);
+    var SAFE_STAMPS = ['❤️','🔥','👏','😂','🤩','💯','⭐','🎉','💙','💚','💛','🧡'];
+    var emoji = data && SAFE_STAMPS.indexOf(data.emoji) !== -1 ? data.emoji : '❤️';
+    io.to(roomId).emit('stamp-burst', { emoji: emoji, username: username });
+    addEnergy(roomId, userId, username, 1);
+  });
+
+  // ── super-follow (Batch 58) ─────────────────────────────────────────────
+  socket.on('super-follow', function(data, ack) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || 'Viewer';
+    if (!roomId || !userId) { if (ack) ack({ err: 'no auth' }); return; }
+    var now  = Date.now();
+    var last = superFollowThrottle.get(userId) || 0;
+    if (now - last < 30000) { if (ack) ack({ err: 'cooldown', remainSecs: Math.ceil((30000 - (now - last)) / 1000) }); return; }
+    superFollowThrottle.set(userId, now);
+    io.to(roomId).emit('super-follow-burst', { username: username });
+    addEnergy(roomId, userId, username, 10);
+    if (ack) ack({ ok: true });
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
