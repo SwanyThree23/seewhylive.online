@@ -1132,6 +1132,9 @@ router.get('/streams/:id/ingest', requireAuth, async function(req, res) {
 
 router.post('/rtmp/auth', async function(req, res) {
   var rtmpSecret = process.env.RTMP_CALLBACK_SECRET;
+  if (!rtmpSecret && process.env.NODE_ENV === 'production') {
+    return res.status(401).json({ ok: false, error: 'unauthorized' });
+  }
   if (rtmpSecret && req.headers['x-rtmp-secret'] !== rtmpSecret) {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
@@ -1156,6 +1159,9 @@ router.post('/rtmp/auth', async function(req, res) {
 
 router.post('/rtmp/done', async function(req, res) {
   var rtmpSecret = process.env.RTMP_CALLBACK_SECRET;
+  if (!rtmpSecret && process.env.NODE_ENV === 'production') {
+    return res.status(401).json({ ok: false, error: 'unauthorized' });
+  }
   if (rtmpSecret && req.headers['x-rtmp-secret'] !== rtmpSecret) {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
