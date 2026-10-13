@@ -11,7 +11,7 @@ export default function BottomSheet(props) {
 
   useEffect(function() {
     if (!open) return;
-    function onKey(e) { if (e.key === 'Escape') handleClose(); }
+    var onKey = function(e) { if (e.key === 'Escape') handleClose(); }
     document.addEventListener('keydown', onKey);
     return function() { document.removeEventListener('keydown', onKey); };
   }, [open, onClose]);
@@ -30,7 +30,7 @@ export default function BottomSheet(props) {
   }, [open]);
 
   useEffect(function() {
-    function onPop() {
+    var onPop = function() {
       if (pushedRef.current) {
         pushedRef.current = false;
         onClose();
@@ -40,7 +40,7 @@ export default function BottomSheet(props) {
     return function() { window.removeEventListener('popstate', onPop); };
   }, [onClose]);
 
-  function handleClose() {
+  var handleClose = function() {
     if (pushedRef.current) {
       window.history.back();
     } else {

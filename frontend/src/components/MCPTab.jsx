@@ -67,7 +67,7 @@ export default function MCPTab({ addToast, isLive }) {
 
   // Health polling every 30s
   useEffect(function() {
-    function doHealthCheck() {
+    var doHealthCheck = function() {
       fetch('/api/health').then(function(res) {
         return res.json();
       }).then(function(data) {
@@ -82,14 +82,14 @@ export default function MCPTab({ addToast, isLive }) {
     return function() { clearInterval(id); };
   }, []);
 
-  function copyEndpoint() {
+  var copyEndpoint = function() {
     navigator.clipboard.writeText('https://xlrcibziouffgxciecvc.supabase.co/functions/v1/mcp');
     setCopiedEndpoint(true);
     addToast('MCP endpoint copied to clipboard', 'success');
     setTimeout(function() { setCopiedEndpoint(false); }, 1500);
   }
 
-  function pingAll() {
+  var pingAll = function() {
     addToast('MCP ping requires a server-side health endpoint — not yet available', 'error');
   }
 

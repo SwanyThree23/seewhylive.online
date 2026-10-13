@@ -103,13 +103,13 @@ export default function InsForgeTab({ addToast, isLive }) {
     };
   }, [isLive]);
 
-  function runAction(action) {
+  var runAction = function(action) {
     var entry = { ts: Date.now(), label: action.label, status: 'done', output: 'VPS action execution requires a secure backend endpoint — not yet available.' };
     setActionLog(function(prev) { return [entry].concat(prev.slice(0, 19)); });
     if (addToast) addToast(action.label + ' — VPS actions require server-side integration', 'error');
   }
 
-  function doRefresh() {
+  var doRefresh = function() {
     setRefreshing(true);
     fetch('/api/health')
       .then(function(r) { return r.json(); })

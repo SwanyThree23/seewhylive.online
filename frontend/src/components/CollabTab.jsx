@@ -47,7 +47,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
   useEffect(function() {
     if (!socket) return;
 
-    function onCollabMsg(data) {
+    var onCollabMsg = function(data) {
       if (!data || !data.collabId) return;
       var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setChatMsgs(function(prev) {
@@ -58,7 +58,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
       });
     }
 
-    function onCollabRequest(data) {
+    var onCollabRequest = function(data) {
       if (!data || !data.from) return;
       // Ignore echoes of our own requests
       if (username && data.from === username) return;
@@ -81,7 +81,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
       if (addToast) addToast('📩 Collab request from ' + data.from + '!', 'info');
     }
 
-    function onCollabAccept(data) {
+    var onCollabAccept = function(data) {
       if (!data) return;
       if (data.collabId) {
         setRequests(function(prev) {
@@ -115,7 +115,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
   }, [chatMsgs]);
 
 
-  function sendChat(collabId, fromName) {
+  var sendChat = function(collabId, fromName) {
     var inputText = chatInputs[collabId] || '';
     if (!inputText) return;
     var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -136,7 +136,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
     }
   }
 
-  function acceptRequest(id) {
+  var acceptRequest = function(id) {
     var req = null;
     for (var i = 0; i < requests.length; i++) {
       if (requests[i].id === id) { req = requests[i]; break; }
@@ -155,18 +155,18 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
     }
   }
 
-  function declineRequest(id) {
+  var declineRequest = function(id) {
     setRequests(function(prev) {
       return prev.filter(function(r) { return r.id !== id; });
     });
   }
 
-  function handleDecline(id) {
+  var handleDecline = function(id) {
     declineRequest(id);
     addToast('👋 Collab declined', 'info');
   }
 
-  function sendInvite(creator) {
+  var sendInvite = function(creator) {
     if (!inviteMsg) return;
     if (socket && roomId) {
       socket.emit('collab-request', { roomId: roomId, fromUser: username || 'Host', toCreator: creator.n, type: inviteType, message: inviteMsg, split: inviteSplit });
@@ -178,7 +178,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
   var activeCollabs = requests.filter(function(r) { return r.status === 'accepted'; });
 
   /* ── Tab bar ── */
-  function TabBtn(props) {
+  var TabBtn = function(props) {
     var isActive = section === props.id;
     return (
       <button

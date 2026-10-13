@@ -72,7 +72,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
     return stopPreview;
   }, [camId, micId, quality, noiseSup, echoCan, autoGain, facingFront, tab]);
 
-  function stopPreview() {
+  var stopPreview = function() {
     if (animRef.current) cancelAnimationFrame(animRef.current);
     if (levelInterval.current) clearInterval(levelInterval.current);
     if (audioCtxRef.current) { audioCtxRef.current.close().catch(function(){}); audioCtxRef.current = null; }
@@ -83,7 +83,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
     }
   }
 
-  async function startPreview() {
+  var startPreview = async function() {
     stopPreview();
     setPreviewError('');
     setLoading(true);
@@ -125,7 +125,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
     }
   }
 
-  function startMicMeter(stream) {
+  var startMicMeter = function(stream) {
     try {
       var AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
@@ -150,7 +150,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
     }
   }
 
-  function handleApply() {
+  var handleApply = function() {
     var preset = QUALITY_PRESETS.find(function(p) { return p.id === quality; }) || QUALITY_PRESETS[2];
     // Stop the preview stream before closing — OctCell will acquire its own stream
     // using the config settings (passing the stream here causes it to be killed on unmount)

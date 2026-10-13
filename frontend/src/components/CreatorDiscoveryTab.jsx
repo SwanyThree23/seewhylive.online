@@ -58,7 +58,7 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
     return function() { clearInterval(pulseRef.current); };
   }, []);
 
-  function toggleFollow(id, name) {
+  var toggleFollow = function(id, name) {
     setFollowing(function(p) {
       var next = Object.assign({}, p, { [id]: !p[id] });
       if (addToast) addToast(next[id] ? 'Following ' + name : 'Unfollowed ' + name, 'info');

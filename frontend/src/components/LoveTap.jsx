@@ -38,7 +38,7 @@ export default function LoveTap(props) {
   useEffect(function() {
     if (!socket) return;
 
-    function onLoveUpdate(data) {
+    var onLoveUpdate = function(data) {
       if (!data) return;
       if (data.roomId && String(data.roomId) !== String(roomId)) return;
       setLoveTotal(data.total || 0);
@@ -51,7 +51,7 @@ export default function LoveTap(props) {
   }, [socket, roomId]);
 
   // ── Heart spawner ──────────────────────────────────────────
-  function spawnHearts(count) {
+  var spawnHearts = function(count) {
     var newHearts = [];
     for (var i = 0; i < count; i++) {
       var id  = ++heartIdRef.current;
@@ -68,7 +68,7 @@ export default function LoveTap(props) {
   }
 
   // ── Tap handler ────────────────────────────────────────────
-  function handleTap() {
+  var handleTap = function() {
     var now = Date.now();
     if (now - lastTapRef.current < 200) return; // 5 taps/sec max
     lastTapRef.current = now;

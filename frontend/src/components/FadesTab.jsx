@@ -34,7 +34,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
 
   useEffect(function() {
     if (!socket) return;
-    function onFades(data) {
+    var onFades = function(data) {
       if (!data) return;
       if (data.scores) setFadeScores(data.scores);
       if (data.roundWinner) setRoundWinner(data.roundWinner);
@@ -72,7 +72,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
   }, [matchWinner]);
 
 
-  function startFades() {
+  var startFades = function() {
     if (!socket) return;
     var t1 = team1.length > 0 ? team1 : (guests || []).slice(0, Math.floor((guests || []).length / 2));
     var t2 = team2.length > 0 ? team2 : (guests || []).slice(Math.floor((guests || []).length / 2));
@@ -87,7 +87,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
     socket.emit('fades-event', { roomId: roomId, type: 'fades-start', scores: { team1: 0, team2: 0 }, team1: t1, team2: t2 });
   }
 
-  function scorePoint(teamKey) {
+  var scorePoint = function(teamKey) {
     if (!socket || !fadesActive) return;
     var next = { team1: fadeScores.team1, team2: fadeScores.team2 };
     next[teamKey] = next[teamKey] + 1;
@@ -95,7 +95,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
     socket.emit('fades-event', { roomId: roomId, type: 'score', scores: next });
   }
 
-  function deductPoint(teamKey) {
+  var deductPoint = function(teamKey) {
     if (!socket || !fadesActive) return;
     var next = { team1: fadeScores.team1, team2: fadeScores.team2 };
     next[teamKey] = Math.max(0, next[teamKey] - 1);
@@ -103,7 +103,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
     socket.emit('fades-event', { roomId: roomId, type: 'score', scores: next });
   }
 
-  function endRound() {
+  var endRound = function() {
     var winner = fadeScores.team1 > fadeScores.team2 ? 'ALPHA' : fadeScores.team2 > fadeScores.team1 ? 'OMEGA' : 'TIE';
     setRoundWinner(winner);
     setRoundHistory(function(h) {
@@ -113,7 +113,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
     if (activeRound < ROUNDS.length - 1) setActiveRound(function(r) { return r + 1; });
   }
 
-  function endMatch() {
+  var endMatch = function() {
     if (tickRef.current) clearInterval(tickRef.current);
     var winner = fadeScores.team1 > fadeScores.team2 ? 'ALPHA' : fadeScores.team2 > fadeScores.team1 ? 'OMEGA' : 'TIE';
     setMatchWinner(winner);
@@ -121,7 +121,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
     if (socket) socket.emit('fades-event', { roomId: roomId, type: 'fades-end', scores: fadeScores, matchWinner: winner });
   }
 
-  function assignGuest(guest, team) {
+  var assignGuest = function(guest, team) {
     var gid = guest.guestId || guest.userId;
     setTeam1(function(t) { return t.filter(function(g) { return (g.guestId || g.userId) !== gid; }); });
     setTeam2(function(t) { return t.filter(function(g) { return (g.guestId || g.userId) !== gid; }); });

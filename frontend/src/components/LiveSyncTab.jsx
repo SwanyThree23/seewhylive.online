@@ -15,7 +15,7 @@ export default function LiveSyncTab({ socket, roomId, isLive, addToast }) {
 
   useEffect(function() {
     if (!socket) return;
-    function onSyncState(data) {
+    var onSyncState = function(data) {
       if (!data || data.roomId !== roomId) return;
       setSyncEnabled(Boolean(data.enabled));
       setSyncDelay(data.delayMs || 0);
@@ -25,7 +25,7 @@ export default function LiveSyncTab({ socket, roomId, isLive, addToast }) {
     return function() { socket.off('livesync-state', onSyncState); };
   }, [socket, roomId]);
 
-  function toggleSync() {
+  var toggleSync = function() {
     var next = !syncEnabled;
     setSyncEnabled(next);
     if (socket) socket.emit('livesync-toggle', { roomId: roomId, enabled: next });

@@ -105,7 +105,7 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
 
   useEffect(function() {
     if (!socket) return;
-    function onClipMarked(data) {
+    var onClipMarked = function(data) {
       if (!data) return;
       var markerId = data.id || ('m-' + Date.now());
       var marker = {
@@ -173,26 +173,26 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
     return function() { clearInterval(iv); };
   }, [previewPlaying, previewClip]);
 
-  function openPreview(clip) {
+  var openPreview = function(clip) {
     setPreviewClip(clip);
     setPreviewScrub(0.15);
     setPreviewTab('audio');
     setPreviewPlaying(false);
   }
 
-  function handleScrubClick(e) {
+  var handleScrubClick = function(e) {
     if (!scrubTrackRef.current) return;
     var rect = scrubTrackRef.current.getBoundingClientRect();
     var ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
     setPreviewScrub(ratio);
   }
 
-  function fmtScrubTime(ratio, totalSecs) {
+  var fmtScrubTime = function(ratio, totalSecs) {
     var t = Math.floor(ratio * totalSecs);
     return fmtDur(t);
   }
 
-  function startRec() {
+  var startRec = function() {
     if (!isLive) { addToast('Start your stream before recording a clip', 'error'); return; }
     setRecording(true);
     setRecSecs(0);
@@ -200,7 +200,7 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
     addToast('🔴 Recording clip...', 'info');
   }
 
-  function stopRec() {
+  var stopRec = function() {
     setRecording(false);
     var dur = recSecs;
     var sizeKB = Math.floor(dur * 260);
@@ -213,7 +213,7 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
     addToast('Clip saved: ' + fmtDur(dur), 'success');
   }
 
-  function startLiveClip() {
+  var startLiveClip = function() {
     if (!isLive || recording) return;
     setLiveClipping(true);
     setRecording(true);
@@ -232,7 +232,7 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
     }, 30000);
   }
 
-  function openEdit(clip) {
+  var openEdit = function(clip) {
     setSelected(clip);
     setTrimIn(0);
     setTrimOut(clip.duration);
@@ -241,13 +241,13 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
     setTab('edit');
   }
 
-  function deleteClip(id) {
+  var deleteClip = function(id) {
     setClips(function(p) { return p.filter(function(c) { return c.id !== id; }); });
     if (selected && selected.id === id) { setSelected(null); setTab('clips'); }
     addToast('Clip deleted', 'info');
   }
 
-  function exportClip() {
+  var exportClip = function() {
     setExporting(true);
     var thumbVal = editClip ? editClip.thumbnail : null;
     setTimeout(function() {
@@ -260,7 +260,7 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
     }, 1800 + Math.floor(Math.random() * 1200));
   }
 
-  function shareClip(pid) {
+  var shareClip = function(pid) {
     setSharing(function(prev) { return Object.assign({}, prev, { [pid]: true }); });
     setTimeout(function() {
       setSharing(function(prev) { return Object.assign({}, prev, { [pid]: false }); });
@@ -555,12 +555,12 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
                     style={{ position: 'absolute', top: 5, left: 'calc(' + (trimIn / editClip.duration * 100) + '% - 9px)', width: 18, height: 18, background: '#C9A84C', borderRadius: 4, cursor: 'ew-resize', border: '2px solid #F0E8D4', zIndex: 2 }}
                     onMouseDown={function(e) {
                       var bar = e.currentTarget.parentNode.getBoundingClientRect();
-                      function move(ev) {
+                      var move = function(ev) {
                         var pct = Math.max(0, Math.min(1, (ev.clientX - bar.left) / bar.width));
                         var newIn = Math.floor(pct * editClip.duration);
                         setTrimIn(Math.min(newIn, trimOut - 1));
                       }
-                      function up() { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); }
+                      var up = function() { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); }
                       window.addEventListener('mousemove', move);
                       window.addEventListener('mouseup', up);
                     }}
@@ -570,12 +570,12 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
                     style={{ position: 'absolute', top: 5, left: 'calc(' + (trimOut / editClip.duration * 100) + '% - 9px)', width: 18, height: 18, background: '#C9A84C', borderRadius: 4, cursor: 'ew-resize', border: '2px solid #F0E8D4', zIndex: 2 }}
                     onMouseDown={function(e) {
                       var bar = e.currentTarget.parentNode.getBoundingClientRect();
-                      function move(ev) {
+                      var move = function(ev) {
                         var pct = Math.max(0, Math.min(1, (ev.clientX - bar.left) / bar.width));
                         var newOut = Math.ceil(pct * editClip.duration);
                         setTrimOut(Math.max(newOut, trimIn + 1));
                       }
-                      function up() { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); }
+                      var up = function() { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); }
                       window.addEventListener('mousemove', move);
                       window.addEventListener('mouseup', up);
                     }}

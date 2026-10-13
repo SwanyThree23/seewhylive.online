@@ -578,7 +578,7 @@ export default function CreatorTipsTab({ addToast, username }) {
       });
   }, []);
 
-  function toggleExpand(id) {
+  var toggleExpand = function(id) {
     setExpanded(function(prev) {
       var next = Object.assign({}, prev);
       next[id] = !prev[id];
@@ -586,7 +586,7 @@ export default function CreatorTipsTab({ addToast, username }) {
     });
   }
 
-  function toggleCheck(id) {
+  var toggleCheck = function(id) {
     setChecked(function(prev) {
       var next = Object.assign({}, prev);
       next[id] = !prev[id];

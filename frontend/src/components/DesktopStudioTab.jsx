@@ -68,16 +68,16 @@ function DesktopStudioTab() {
     var socket = getSocket(token);
     socketRef.current = socket;
 
-    function onConnect() {
+    var onConnect = function() {
       socket.emit('join-room', { roomId: roomId, userId: userId, username: username, role: 'host', token: token });
       setStatus('connected');
     }
 
-    function onDisconnect() {
+    var onDisconnect = function() {
       setStatus('idle');
     }
 
-    function onGoLiveConfirmed() {
+    var onGoLiveConfirmed = function() {
       setIsLive(true);
       setStatus('live');
       var start = Date.now();
@@ -86,15 +86,15 @@ function DesktopStudioTab() {
       }, 1000);
     }
 
-    function onViewerCount(data) {
+    var onViewerCount = function(data) {
       if (data && typeof data.count === 'number') setViewerCount(data.count);
     }
 
-    function onBroadcastEnded() {
+    var onBroadcastEnded = function() {
       stopLive();
     }
 
-    function onJoinRoomAck(ackData) {
+    var onJoinRoomAck = function(ackData) {
       if (!ackData || !ackData.isLive) return;
       setIsLive(true);
       setStatus('live');
@@ -272,14 +272,14 @@ function DesktopStudioTab() {
   }, []);
 
   // ── Uptime formatter ──────────────────────────────────────────────────────
-  function fmtTime(secs) {
+  var fmtTime = function(secs) {
     var h = Math.floor(secs / 3600);
     var m = Math.floor((secs % 3600) / 60);
     var s = secs % 60;
     if (h > 0) return h + ':' + pad(m) + ':' + pad(s);
     return pad(m) + ':' + pad(s);
   }
-  function pad(n) { return n < 10 ? '0' + n : String(n); }
+  var pad = function(n) { return n < 10 ? '0' + n : String(n); }
 
   // ── Render ────────────────────────────────────────────────────────────────
   var statusColor = isLive ? RED : status === 'connecting' ? GOLD : MUTED;
