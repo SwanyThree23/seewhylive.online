@@ -18,9 +18,9 @@ async function sendInvitation({ tenantId, fromUserId, toUserId, roomId, message,
   const target = await db.query('SELECT id FROM users WHERE id = $1 AND tenant_id = $2', [toUserId, tenantId]);
   if (!target.rows[0]) { const e = new Error('user not found'); e.status = 404; throw e; }
   const result = await db.query(
-    `INSERT INTO guest_invitations (from_user_id, to_user_id, room_id, message, status, expires_at)
-     VALUES ($1, $2, $3, $4, 'pending', now() + ($5 * interval '1 hour')) RETURNING *`,
-    [fromUserId, toUserId, roomId, message || null, hours]
+    `INSERT INTO guest_invitations (from_user_id, to_user_id, room_id, message, status, expires_at, tenant_id)
+     VALUES ($1, $2, $3, $4, 'pending', now() + ($5 * interval '1 hour'), $6) RETURNING *`,
+    [fromUserId, toUserId, roomId, message || null, hours, tenantId]
   );
   return result.rows[0];
 }
