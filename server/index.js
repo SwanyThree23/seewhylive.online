@@ -2571,7 +2571,7 @@ io.on('connection', function(socket) {
           clientSecret:    piResult.clientSecret,
           paymentIntentId: piResult.paymentIntentId,
         });
-        _commitMerchOrder();
+        stripeModule.registerPaymentCallback(piResult.paymentIntentId, _commitMerchOrder);
       })
       .catch(function(err) {
         logger.error('[merch-order] createGiftCharge failed: ' + err.message);
@@ -2910,24 +2910,38 @@ io.on('connection', function(socket) {
     var platformCents = priceCents - creatorCents;
     if (!roomId) return;
     var _subTs = Math.floor(Date.now() / 1000);
-    io.to(roomId).emit('new-subscription', {
-      username:       fromUser,
-      tier:           tier,
-      price_cents:    priceCents,
-      creator_cents:  creatorCents,
-      platform_cents: platformCents,
-      ts:             _subTs
-    });
-    var _subRoom = rooms.get(roomId);
-    if (_subRoom && _subRoom.hostUserId) {
-      io.to('user:' + _subRoom.hostUserId).emit('notification', { type: 'subscription', message: '⭐ ' + fromUser + ' subscribed at ' + tier + ' tier!', ts: _subTs * 1000 });
+
+    var tierLabel = tier === 'gold' ? 'GOLD' : tier === 'silver' ? 'SILVER' : 'BRONZE';
+    function _broadcastSubscription() {
+      io.to(roomId).emit('new-subscription', {
+        username:       fromUser,
+        tier:           tier,
+        price_cents:    priceCents,
+        creator_cents:  creatorCents,
+        platform_cents: platformCents,
+        ts:             _subTs
+      });
+      var _subRoom = rooms.get(roomId);
+      if (_subRoom && _subRoom.hostUserId) {
+        io.to('user:' + _subRoom.hostUserId).emit('notification', { type: 'subscription', message: '⭐ ' + fromUser + ' subscribed at ' + tier + ' tier!', ts: _subTs * 1000 });
+      }
+      autoAura(roomId, function(cb) {
+        aura.triggerTip(roomId, fromUser, priceCents, tierLabel + ' subscriber — welcome to the family!', cb);
+      });
     }
 
-    // Auto-trigger AURA subscription celebration
-    var tierLabel = tier === 'gold' ? 'GOLD' : tier === 'silver' ? 'SILVER' : 'BRONZE';
-    autoAura(roomId, function(cb) {
-      aura.triggerTip(roomId, fromUser, priceCents, tierLabel + ' subscriber — welcome to the family!', cb);
-    });
+    // Paid subscriptions must supply a paymentIntentId so the broadcast is
+    // deferred until Stripe confirms the charge. Without this check any
+    // authenticated socket could trigger host notifications and AURA for free.
+    if (priceCents > 0) {
+      var _subPiId = String(data.paymentIntentId || '');
+      if (!_subPiId) return;
+      stripeModule.registerPaymentCallback(_subPiId, _broadcastSubscription);
+      return;
+    }
+
+    // Free follow/subscription (priceCents === 0): broadcast immediately
+    _broadcastSubscription();
   });
 
   // ── live polls (server-side vote tracking) ────────────────────────────
@@ -3790,7 +3804,7 @@ io.on('connection', function(socket) {
           if (expired.length === 0) return;
           try {
             var ph = expired.map(function() { return '?'; }).join(',');
-            db.prepare('DELETE FROM push_subscriptions WHERE endpoint IN (' + ph + ')').run(expired);
+            db.prepare('DELETE FROM push_subscriptions WHERE endpoint IN (' + ph + ')').run(...expired);
           } catch(e) {
             logger.warn('[push] batch delete failed: ' + e.message);
           }
@@ -4550,7 +4564,7 @@ io.on('connection', function(socket) {
     var _whNow = Date.now();
     if (_whNow - (watchHeartbeatThrottle.get(uid) || 0) < 25000) return;
     watchHeartbeatThrottle.set(uid, _whNow);
-    loyaltyService.awardPoints({ userId: uid, points: 1, source: 'watch_time' }).catch(function(e) {
+    loyaltyService.awardPoints({ userId: uid, tenantId: socket.data.tenantId, points: 1, source: 'watch_time' }).catch(function(e) {
       logger.warn('[watch-heartbeat] awardPoints: ' + e.message);
     });
   });
