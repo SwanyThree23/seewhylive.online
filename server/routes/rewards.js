@@ -78,7 +78,7 @@ router.post('/challenges/:id/complete', requireAuth, challengeCompleteRateLimit,
 
 router.get('/my-tier', requireAuth, async function(req, res) {
   try {
-    var data = await rewardsService.getSelectedTier(req.user.id);
+    var data = await rewardsService.getSelectedTier(req.user.id, req.tenantId);
     res.json({ tier: data });
   } catch (err) {
     console.error('[ROUTE ERROR]', err);
@@ -89,7 +89,7 @@ router.get('/my-tier', requireAuth, async function(req, res) {
 router.post('/my-tier', requireAuth, async function(req, res) {
   try {
     var tierId = req.body && req.body.tierId;
-    var data = await rewardsService.setSelectedTier(req.user.id, tierId);
+    var data = await rewardsService.setSelectedTier(req.user.id, tierId, req.tenantId);
     res.json({ tier: data });
   } catch (err) {
     console.error('[ROUTE ERROR]', err);

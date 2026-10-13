@@ -167,7 +167,7 @@ function doUpload(req, res, vodId) {
       var publicUrl = 'https://' + SB_HOST + '/storage/v1/object/public/' + bucket + '/' + storagePath;
       var patch = { storage_path: storagePath, playback_url: publicUrl };
 
-      sbReq('PATCH', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&tenant_id=eq.' + encodeURIComponent(req.tenantId), patch, function(err2, status2, data2) {
+      sbReq('PATCH', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&tenant_id=eq.' + encodeURIComponent(req.tenantId) + '&creator_id=eq.' + encodeURIComponent(req.user.id), patch, function(err2, status2, data2) {
         if (err2) return res.status(500).json({ error: 'Database error' });
         if (status2 >= 400) return res.status(500).json({ error: 'Internal server error' });
         var updated = Array.isArray(data2) ? data2[0] : data2;
@@ -188,10 +188,10 @@ router.post('/stop', requireAuth, function(req, res) {
     if (chkErr || chkStatus >= 400) return res.status(500).json({ error: 'Database error' });
     var vod = Array.isArray(chkData) ? chkData[0] : chkData;
     if (!vod || vod.creator_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
-    doStop(res, vodId, req.tenantId, durationSec, playbackUrl);
+    doStop(res, vodId, req.tenantId, req.user.id, durationSec, playbackUrl);
   });
 });
-function doStop(res, vodId, tenantId, durationSec, playbackUrl) {
+function doStop(res, vodId, tenantId, creatorId, durationSec, playbackUrl) {
   var patch = {
     duration_seconds: Math.max(0, Math.floor(durationSec)),
     is_public:        true,
@@ -208,7 +208,7 @@ function doStop(res, vodId, tenantId, durationSec, playbackUrl) {
     patch.playback_url = String(playbackUrl).slice(0, 2000);
   }
 
-  sbReq('PATCH', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&tenant_id=eq.' + encodeURIComponent(tenantId), patch, function(err, status, data) {
+  sbReq('PATCH', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&tenant_id=eq.' + encodeURIComponent(tenantId) + '&creator_id=eq.' + encodeURIComponent(creatorId), patch, function(err, status, data) {
     if (err) return res.status(500).json({ error: 'Database error' });
     if (status >= 400) return res.status(500).json({ error: 'Internal server error' });
     var updated = Array.isArray(data) ? data[0] : data;
@@ -243,7 +243,7 @@ router.delete('/:id', requireAuth, function(req, res) {
     if (chkErr || chkStatus >= 400) return res.status(500).json({ error: 'Database error' });
     var vod = Array.isArray(chkData) ? chkData[0] : chkData;
     if (!vod || vod.creator_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
-    sbReq('DELETE', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&tenant_id=eq.' + encodeURIComponent(req.tenantId), null, function(err, status, data) {
+    sbReq('DELETE', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&tenant_id=eq.' + encodeURIComponent(req.tenantId) + '&creator_id=eq.' + encodeURIComponent(req.user.id), null, function(err, status, data) {
       if (err) return res.status(500).json({ error: 'Database error' });
       if (status >= 400) return res.status(500).json({ error: 'Internal server error' });
       return res.json({ ok: true, deleted: vodId });
