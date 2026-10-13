@@ -38,7 +38,7 @@ router.get('/me', requireAuth, async function(req, res) {
   }
 });
 
-router.get('/tiers', async function(req, res) {
+router.get('/tiers', requireAuth, async function(req, res) {
   try {
     var tiers = await loyaltyService.getRewardTiers(req.tenantId);
     res.json(tiers);

@@ -1971,7 +1971,7 @@ io.on('connection', function(socket) {
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     if (socket.data.role !== 'host') return;
-    var producerIds = mediasoup.getProducerIdsByGuest(guestId);
+    var producerIds = mediasoup.getProducerIdsByGuest(guestId, roomId);
     producerIds.forEach(function(pid) { mediasoup.pauseProducer(pid); });
     io.to(roomId).emit('guest-muted', { guestId: guestId });
   });
@@ -1982,7 +1982,7 @@ io.on('connection', function(socket) {
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     if (socket.data.role !== 'host') return;
-    var producerIds = mediasoup.getProducerIdsByGuest(guestId);
+    var producerIds = mediasoup.getProducerIdsByGuest(guestId, roomId);
     producerIds.forEach(function(pid) { mediasoup.resumeProducer(pid); });
     io.to(roomId).emit('guest-unmuted', { guestId: guestId });
   });
@@ -1994,7 +1994,7 @@ io.on('connection', function(socket) {
     if (!roomId || !guestId || !/^[A-Za-z0-9_\-]{3,64}$/.test(guestId)) return;
     if (socket.data.role !== 'host') return;
 
-    var producerIds = mediasoup.getProducerIdsByGuest(guestId);
+    var producerIds = mediasoup.getProducerIdsByGuest(guestId, roomId);
     producerIds.forEach(function(pid) { mediasoup.closeProducer(pid); });
 
     var room = rooms.get(roomId);
@@ -2447,7 +2447,7 @@ io.on('connection', function(socket) {
         lb.sort(function(a, b) { return b.totalCents - a.totalCents; });
         if (lb.length > 500) lb = lb.slice(0, 500);
         giftLeaderboards.set(roomId, lb);
-        io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: lb.slice(0, 10) });
+        io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: lb.slice(0, 10).map(function(e) { return { username: e.username, totalCents: e.totalCents }; }) });
       } catch(lbErr) { logger.warn('[gift-lb] ' + lbErr.message); }
 
       if (pkVotes.has(roomId)) {
@@ -2891,8 +2891,11 @@ io.on('connection', function(socket) {
     viewerReactThrottle.set('fc:' + socket.data.userId, _fcNow);
     var roomId   = socket.data.roomId;
     var follower = socket.data.username || 'Viewer';
-    var creator  = String((data && data.username) || '').slice(0, 80);
-    if (!roomId || !creator) return;
+    if (!roomId) return;
+    var _fcRoom  = rooms.get(roomId);
+    var _fcHostSock = _fcRoom && _fcRoom.hostSocketId && _fcRoom.guests && _fcRoom.guests.get(_fcRoom.hostSocketId);
+    var creator  = (_fcHostSock && _fcHostSock.username) || (_fcRoom && _fcRoom.streamTitle) || 'Creator';
+    if (!creator) return;
     var _cfTs = Math.floor(Date.now() / 1000);
     io.to(roomId).emit('creator-followed', { follower: follower, creator: creator, ts: _cfTs });
     var _cfRoom = rooms.get(roomId);
@@ -3333,7 +3336,7 @@ io.on('connection', function(socket) {
         scLb.sort(function(a, b) { return b.totalCents - a.totalCents; });
         if (scLb.length > 500) scLb = scLb.slice(0, 500);
         giftLeaderboards.set(roomId, scLb);
-        io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: scLb.slice(0, 10) });
+        io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: scLb.slice(0, 10).map(function(e) { return { username: e.username, totalCents: e.totalCents }; }) });
       } catch(scLbErr) { logger.warn('[gift-lb-sc] ' + scLbErr.message); }
       var _scGoal = streamGoals.get(roomId);
       if (_scGoal && (_scGoal.type === 'revenue' || _scGoal.type === 'earnings')) {
@@ -3450,7 +3453,7 @@ io.on('connection', function(socket) {
         ttsLb.sort(function(a, b) { return b.totalCents - a.totalCents; });
         if (ttsLb.length > 500) ttsLb = ttsLb.slice(0, 500);
         giftLeaderboards.set(roomId, ttsLb);
-        io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: ttsLb.slice(0, 10) });
+        io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: ttsLb.slice(0, 10).map(function(e) { return { username: e.username, totalCents: e.totalCents }; }) });
       } catch(ttsLbErr) { logger.warn('[gift-lb-tts] ' + ttsLbErr.message); }
 
       var _ttsGoal = streamGoals.get(roomId);
@@ -3788,7 +3791,8 @@ io.on('connection', function(socket) {
     // Send push notifications to all subscribers (once per go-live, not on replay)
     if (wasAlreadyLive) return;
     try {
-      var pushSubs = db.prepare('SELECT endpoint, p256dh, auth FROM push_subscriptions LIMIT 5000').all();
+      var _pushTenantId = socket.data.tenantId || '';
+      var pushSubs = db.prepare('SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE tenant_id = ? LIMIT 5000').all(_pushTenantId);
       if (pushSubs && pushSubs.length > 0) {
         var pushTitle = room.streamTitle || 'SeeWhy LIVE';
         var pushPayload = JSON.stringify({ title: pushTitle + ' is LIVE!', body: 'Tap to watch now on SeeWhy LIVE', url: '/' });
@@ -3811,7 +3815,7 @@ io.on('connection', function(socket) {
           if (expired.length === 0) return;
           try {
             var ph = expired.map(function() { return '?'; }).join(',');
-            db.prepare('DELETE FROM push_subscriptions WHERE endpoint IN (' + ph + ')').run(...expired);
+            db.prepare('DELETE FROM push_subscriptions WHERE endpoint IN (' + ph + ') AND tenant_id = ?').run(...expired, _pushTenantId);
           } catch(e) {
             logger.warn('[push] batch delete failed: ' + e.message);
           }
@@ -4333,7 +4337,7 @@ io.on('connection', function(socket) {
       if (!_muteUuidRe.test(_muteId)) return;
     }
     var _muteReason = String(data.reason || '').slice(0, 200);
-    var _muteProducers = mediasoup.getProducerIdsByGuest(_muteId);
+    var _muteProducers = mediasoup.getProducerIdsByGuest(_muteId, sId);
     _muteProducers.forEach(function(pid) { mediasoup.pauseProducer(pid); });
     io.to(sId).emit('user-muted', { userId: _muteId, reason: _muteReason, ts: Math.floor(Date.now() / 1000) });
   });

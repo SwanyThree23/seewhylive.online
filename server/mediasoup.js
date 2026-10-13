@@ -221,10 +221,11 @@ function resumeProducer(producerId) {
   });
 }
 
-function getProducerIdsByGuest(guestId) {
+function getProducerIdsByGuest(guestId, roomId) {
   var ids = [];
   Object.keys(producers).forEach(function(pid) {
-    if (producers[pid].guestId === guestId) ids.push(pid);
+    var entry = producers[pid];
+    if (entry.guestId === guestId && (!roomId || entry.roomId === roomId)) ids.push(pid);
   });
   return ids;
 }
