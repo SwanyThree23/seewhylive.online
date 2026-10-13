@@ -17,7 +17,6 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import StreamGoals from '../components/live/StreamGoals';
 
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
@@ -26,24 +25,40 @@ var GOLD = '#D4AF37';
 var MAX_DURATION_SECONDS = 600; // 10 minutes
 
 export default function VideoPost() {
-  var fileInputRef = useRef(null);
-  var videoRef = useRef(null);
-  var videoUrlRef = useRef(null);
+  var fileInputRef  = useRef(null);
+  var videoRef      = useRef(null);
+  var videoUrlRef   = useRef(null);
 
   useEffect(function() {
     return function() { if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current); };
   }, []);
 
-  var [step, setStep] = useState('upload'); // upload | details | published
-  var [selectedFile, setSelectedFile] = useState(null);
-  var [videoUrl, setVideoUrl] = useState(null);
-  var [videoDuration, setVideoDuration] = useState(0);
-  var [uploading, setUploading] = useState(false);
-  var [uploadProgress, setUploadProgress] = useState(0);
-  var [shareOpen, setShareOpen] = useState(false);
-  var [publishedUrl, setPublishedUrl] = useState('');
+  var stepState = useState('upload');
+  var step    = stepState[0];
+  var setStep = stepState[1];
+  var selectedFileState = useState(null);
+  var selectedFile    = selectedFileState[0];
+  var setSelectedFile = selectedFileState[1];
+  var videoUrlState = useState(null);
+  var videoUrl    = videoUrlState[0];
+  var setVideoUrl = videoUrlState[1];
+  var videoDurationState = useState(0);
+  var videoDuration    = videoDurationState[0];
+  var setVideoDuration = videoDurationState[1];
+  var uploadingState = useState(false);
+  var uploading    = uploadingState[0];
+  var setUploading = uploadingState[1];
+  var uploadProgressState = useState(0);
+  var uploadProgress    = uploadProgressState[0];
+  var setUploadProgress = uploadProgressState[1];
+  var shareOpenState = useState(false);
+  var shareOpen    = shareOpenState[0];
+  var setShareOpen = shareOpenState[1];
+  var publishedUrlState = useState('');
+  var publishedUrl    = publishedUrlState[0];
+  var setPublishedUrl = publishedUrlState[1];
 
-  var [form, setForm] = useState({
+  var formState = useState({
     title: '',
     description: '',
     tags: '',
@@ -52,24 +67,31 @@ export default function VideoPost() {
     paywallPrice: '4.99',
     thumbnail: '',
   });
+  var form    = formState[0];
+  var setForm = formState[1];
 
-  var { data: user } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
     queryFn: function() { return base44.auth.me(); },
   });
-  var { data: activeRoom } = useQuery({
+  var user = userQuery.data;
+
+  var activeRoomQuery = useQuery({
     queryKey: ['activeRoom', user && user.id],
     queryFn: function() { return base44.entities.Room.filter({ host_id: user && user.id, status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom   = activeRoomQuery.data;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
-  var roomId = activeRoomId;
-  var { data: userCommunity } = useQuery({
+  var roomId       = activeRoomId;
+
+  var userCommunityQuery = useQuery({
     queryKey: ['userCommunity', user && user.id],
     queryFn: function() { return base44.entities.Community.filter({ owner_id: user && user.id }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
+  var userCommunity   = userCommunityQuery.data;
   var userCommunityId = (userCommunity && userCommunity.id) || null;
 
   var handleFileSelect = function(e) {
@@ -91,14 +113,14 @@ export default function VideoPost() {
     videoUrlRef.current = url;
     setSelectedFile(file);
     setVideoUrl(url);
-    setForm(function(prev) { return { ...prev, title: file.name.replace(/\.[^/.]+$/, '') }; });
+    setForm(function(prev) { return Object.assign({}, prev, { title: file.name.replace(/\.[^/.]+$/, '') }); });
   };
 
   var handleVideoLoad = function() {
-    var duration = (videoRef.current && videoRef.current.duration) || 0;
-    setVideoDuration(Math.round(duration));
-    if (duration > MAX_DURATION_SECONDS) {
-      toast.error('Video must be ' + (MAX_DURATION_SECONDS / 60) + ' minutes or less. Your video is ' + Math.round(duration / 60) + ' minutes.');
+    var dur = (videoRef.current && videoRef.current.duration) || 0;
+    setVideoDuration(Math.round(dur));
+    if (dur > MAX_DURATION_SECONDS) {
+      toast.error('Video must be ' + (MAX_DURATION_SECONDS / 60) + ' minutes or less. Your video is ' + Math.round(dur / 60) + ' minutes.');
       setSelectedFile(null);
       setVideoUrl(null);
     }
@@ -113,16 +135,15 @@ export default function VideoPost() {
     setUploadProgress(10);
 
     try {
-      // Simulate progress
       var progressInterval = setInterval(function() {
         setUploadProgress(function(p) { return Math.min(p + 15, 85); });
       }, 400);
 
-      var { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
+      var uploadResult = await base44.integrations.Core.UploadFile({ file: selectedFile });
+      var fileUrl = uploadResult.file_url;
       clearInterval(progressInterval);
       setUploadProgress(100);
 
-      // Save as a room of type "video"
       var post = await base44.entities.Room.create({
         title: form.title,
         description: form.description,
@@ -130,7 +151,7 @@ export default function VideoPost() {
         type: 'video',
         status: 'ended',
         is_public: !form.isPrivate,
-        recording_url: file_url,
+        recording_url: fileUrl,
         tags: form.tags ? form.tags.split(',').map(function(t) { return t.trim(); }).filter(Boolean) : [],
       });
 
@@ -147,161 +168,172 @@ export default function VideoPost() {
   };
 
   var formatDuration = function(s) {
-    var m = Math.floor(s / 60);
+    var m   = Math.floor(s / 60);
     var sec = s % 60;
     return m + ':' + String(sec).padStart(2, '0');
   };
 
+  var inputStyle = {
+    width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
+    border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
+    fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
+  };
+
+  var isSubmitDisabled = uploading || videoDuration > MAX_DURATION_SECONDS || !form.title.trim();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#080B18] py-8 px-4">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div style={{ minHeight: '100vh', background: '#080B18', padding: '32px 16px' }}>
+      <div style={{ maxWidth: 672, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Header */}
-        <div className="flex items-center gap-3">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <Link to={createPageUrl('Home')}>
-            <button style={{ padding:'6px 12px', borderRadius:8, background:'transparent', border:'none', color:'rgba(255,255,255,0.6)', fontSize:13, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>← Back</button>
+            <button style={{ padding: '6px 12px', borderRadius: 8, background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>← Back</button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Video className="w-6 h-6 text-[#d4af37]" />
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+              <Video style={{ width: 24, height: 24, color: '#d4af37' }} />
               Post a Video
             </h1>
-            <p className="text-white/40 text-sm">Short-form videos up to 10 minutes</p>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, margin: 0 }}>Short-form videos up to 10 minutes</p>
           </div>
         </div>
 
         {step === 'upload' && (
-          <div className="space-y-5">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Drop zone */}
             {!selectedFile ? (
               <div
                 onClick={function() { if (fileInputRef.current) fileInputRef.current.click(); }}
-                className="border-2 border-dashed border-[#d4af37]/30 rounded-2xl p-12 text-center cursor-pointer hover:border-[#d4af37]/60 hover:bg-[#d4af37]/5 transition-all"
+                style={{ border: '2px dashed rgba(212,175,55,0.3)', borderRadius: 24, padding: '48px 16px', textAlign: 'center', cursor: 'pointer' }}
               >
-                <Upload className="w-12 h-12 mx-auto mb-4 text-[#d4af37]/50" />
-                <p className="text-white font-semibold mb-1">Click to select video</p>
-                <p className="text-white/40 text-sm">MP4, MOV, WebM • Max 10 min • Max 500MB</p>
-                <span style={{ display:'inline-flex', alignItems:'center', gap:4, marginTop:12, fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(212,175,55,0.1)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.3)' }}>
-                  <Clock className="w-3 h-3" /> 10 min max
+                <Upload style={{ width: 48, height: 48, display: 'block', margin: '0 auto 16px', color: 'rgba(212,175,55,0.5)' }} />
+                <p style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>Click to select video</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>MP4, MOV, WebM • Max 10 min • Max 500MB</p>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 12, fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.1)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>
+                  <Clock style={{ width: 12, height: 12 }} /> 10 min max
                 </span>
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="video/*"
-                  className="hidden"
+                  style={{ display: 'none' }}
                   onChange={handleFileSelect}
                 />
               </div>
             ) : (
-              <div className="space-y-4">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {/* Preview */}
-                <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+                <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', background: '#000', aspectRatio: '16/9' }}>
                   <video
                     ref={videoRef}
                     src={videoUrl}
                     controls
-                    className="w-full h-full object-contain"
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                     onLoadedMetadata={handleVideoLoad}
                   />
                   <button
                     onClick={function() { setSelectedFile(null); setVideoUrl(null); }}
-                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 flex items-center justify-center hover:bg-black"
+                    style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
                   >
-                    <X className="w-4 h-4 text-white" />
+                    <X style={{ width: 16, height: 16, color: '#fff' }} />
                   </button>
                   {videoDuration > 0 && (
-                    <span style={{ position:'absolute', bottom:8, right:8, display:'inline-flex', alignItems:'center', gap:4, fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(0,0,0,0.7)', color:'#fff', border:'none' }}>
-                      <Clock className="w-3 h-3" />
+                    <span style={{ position: 'absolute', bottom: 8, right: 8, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none' }}>
+                      <Clock style={{ width: 12, height: 12 }} />
                       {formatDuration(videoDuration)} / {formatDuration(MAX_DURATION_SECONDS)}
                     </span>
                   )}
                 </div>
 
-                {/* Duration warning */}
+                {/* Duration progress */}
                 {videoDuration > 0 && (
-                  <div style={{ height:6, borderRadius:4, background: videoDuration > MAX_DURATION_SECONDS ? 'rgba(127,29,29,0.5)' : 'rgba(255,255,255,0.08)' }}>
-                    <div style={{ height:'100%', width:(Math.min((videoDuration / MAX_DURATION_SECONDS) * 100, 100)) + '%', background:'#D4AF37', borderRadius:4 }} />
+                  <div style={{ height: 6, borderRadius: 4, background: videoDuration > MAX_DURATION_SECONDS ? 'rgba(127,29,29,0.5)' : 'rgba(255,255,255,0.08)' }}>
+                    <div style={{ height: '100%', width: (Math.min((videoDuration / MAX_DURATION_SECONDS) * 100, 100)) + '%', background: '#D4AF37', borderRadius: 4 }} />
                   </div>
                 )}
 
                 {/* Form */}
-                <div className="space-y-3 bg-[rgba(255,255,255,0.04)] border border-[rgba(212,175,55,0.1)] rounded-xl p-5">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 12, padding: 20 }}>
                   <input
                     value={form.title}
-                    onChange={function(e) { setForm(function(prev) { return { ...prev, title: e.target.value }; }); }}
+                    onChange={function(e) { setForm(function(prev) { return Object.assign({}, prev, { title: e.target.value }); }); }}
                     placeholder="Video title *"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={inputStyle}
                   />
                   <textarea
                     value={form.description}
-                    onChange={function(e) { setForm(function(prev) { return { ...prev, description: e.target.value }; }); }}
+                    onChange={function(e) { setForm(function(prev) { return Object.assign({}, prev, { description: e.target.value }); }); }}
                     placeholder="Description (optional)"
                     rows={3}
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', resize:'none', height:80 }}
+                    style={Object.assign({}, inputStyle, { resize: 'none', height: 80 })}
                   />
                   <input
                     value={form.tags}
-                    onChange={function(e) { setForm(function(prev) { return { ...prev, tags: e.target.value }; }); }}
+                    onChange={function(e) { setForm(function(prev) { return Object.assign({}, prev, { tags: e.target.value }); }); }}
                     placeholder="Tags (comma-separated)"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={inputStyle}
                   />
 
                   {/* Privacy & Paywall */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     <button
-                      onClick={function() { setForm(function(prev) { return { ...prev, isPrivate: !prev.isPrivate }; }); }}
-                      className={'flex items-center gap-2 p-3 rounded-lg border transition-all ' + (form.isPrivate ? 'border-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 bg-white/5')}
+                      onClick={function() { setForm(function(prev) { return Object.assign({}, prev, { isPrivate: !prev.isPrivate }); }); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, borderRadius: 8, cursor: 'pointer', border: form.isPrivate ? '1px solid #d4af37' : '1px solid rgba(255,255,255,0.1)', background: form.isPrivate ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.05)' }}
                     >
-                      {form.isPrivate ? <Lock className="w-4 h-4 text-[#d4af37]" /> : <Globe className="w-4 h-4 text-white/50" />}
-                      <div className="text-left">
-                        <p className="text-xs font-semibold text-white">{form.isPrivate ? 'Private' : 'Public'}</p>
-                        <p className="text-[10px] text-white/40">{form.isPrivate ? 'Only you' : 'Everyone'}</p>
+                      {form.isPrivate
+                        ? <Lock style={{ width: 16, height: 16, color: '#d4af37' }} />
+                        : <Globe style={{ width: 16, height: 16, color: 'rgba(255,255,255,0.5)' }} />
+                      }
+                      <div style={{ textAlign: 'left' }}>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: '#fff', margin: 0 }}>{form.isPrivate ? 'Private' : 'Public'}</p>
+                        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{form.isPrivate ? 'Only you' : 'Everyone'}</p>
                       </div>
                     </button>
 
                     <button
-                      onClick={function() { setForm(function(prev) { return { ...prev, isPaywalled: !prev.isPaywalled }; }); }}
-                      className={'flex items-center gap-2 p-3 rounded-lg border transition-all ' + (form.isPaywalled ? 'border-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 bg-white/5')}
+                      onClick={function() { setForm(function(prev) { return Object.assign({}, prev, { isPaywalled: !prev.isPaywalled }); }); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, borderRadius: 8, cursor: 'pointer', border: form.isPaywalled ? '1px solid #d4af37' : '1px solid rgba(255,255,255,0.1)', background: form.isPaywalled ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.05)' }}
                     >
-                      <span className="text-lg">{form.isPaywalled ? '💰' : '🆓'}</span>
-                      <div className="text-left">
-                        <p className="text-xs font-semibold text-white">{form.isPaywalled ? 'Paywall' : 'Free'}</p>
-                        <p className="text-[10px] text-white/40">{form.isPaywalled ? '$' + form.paywallPrice : 'Open access'}</p>
+                      <span style={{ fontSize: 18 }}>{form.isPaywalled ? '💰' : '🆓'}</span>
+                      <div style={{ textAlign: 'left' }}>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: '#fff', margin: 0 }}>{form.isPaywalled ? 'Paywall' : 'Free'}</p>
+                        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{form.isPaywalled ? '$' + form.paywallPrice : 'Open access'}</p>
                       </div>
                     </button>
                   </div>
 
                   {form.isPaywalled && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-white/60 text-sm">$</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>$</span>
                       <input
                         value={form.paywallPrice}
-                        onChange={function(e) { setForm(function(prev) { return { ...prev, paywallPrice: e.target.value }; }); }}
+                        onChange={function(e) { setForm(function(prev) { return Object.assign({}, prev, { paywallPrice: e.target.value }); }); }}
                         placeholder="Price"
                         type="number"
                         min="0.99"
                         step="0.50"
-                        style={{ width:112, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                        style={Object.assign({}, inputStyle, { width: 112 })}
                       />
-                      <span className="text-white/40 text-xs">per view</span>
+                      <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>per view</span>
                     </div>
                   )}
                 </div>
 
                 {uploading && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-white/50 text-center">Uploading... {uploadProgress}%</p>
-                    <div style={{ height:8, borderRadius:4, background:'rgba(255,255,255,0.08)' }}>
-                      <div style={{ height:'100%', width:uploadProgress + '%', background:GOLD, borderRadius:4 }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textAlign: 'center', margin: 0 }}>Uploading... {uploadProgress}%</p>
+                    <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.08)' }}>
+                      <div style={{ height: '100%', width: uploadProgress + '%', background: GOLD, borderRadius: 4 }} />
                     </div>
                   </div>
                 )}
 
                 <button
-                  style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', padding:'14px 20px', borderRadius:8, background:GOLD, color:'#000', border:'none', fontSize:15, fontWeight:900, cursor: (uploading || videoDuration > MAX_DURATION_SECONDS || !form.title.trim()) ? 'not-allowed' : 'pointer', opacity: (uploading || videoDuration > MAX_DURATION_SECONDS || !form.title.trim()) ? 0.5 : 1, fontFamily:'Barlow Condensed, sans-serif' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '14px 20px', borderRadius: 8, background: GOLD, color: '#000', border: 'none', fontSize: 15, fontWeight: 900, cursor: isSubmitDisabled ? 'not-allowed' : 'pointer', opacity: isSubmitDisabled ? 0.5 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
                   onClick={handleUpload}
-                  disabled={uploading || videoDuration > MAX_DURATION_SECONDS || !form.title.trim()}
+                  disabled={isSubmitDisabled}
                 >
-                  <Video className="w-4 h-4" />
+                  <Video style={{ width: 16, height: 16 }} />
                   {uploading ? 'Uploading...' : 'Post Video'}
                 </button>
               </div>
@@ -310,27 +342,27 @@ export default function VideoPost() {
         )}
 
         {step === 'published' && (
-          <div className="text-center py-12 space-y-6">
-            <div className="w-20 h-20 rounded-full bg-[#0F1428]/30 flex items-center justify-center mx-auto">
-              <CheckCircle className="w-10 h-10 text-[#6DBF7E]" />
+          <div style={{ textAlign: 'center', padding: '48px 0', display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(15,20,40,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+              <CheckCircle style={{ width: 40, height: 40, color: '#6DBF7E' }} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Video Posted! 🎉</h2>
-              <p className="text-white/40">Your video is now live</p>
+              <h2 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Video Posted! 🎉</h2>
+              <p style={{ color: 'rgba(255,255,255,0.4)', margin: 0 }}>Your video is now live</p>
             </div>
-            <div className="flex flex-col gap-3 max-w-xs mx-auto">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 320, margin: '0 auto' }}>
               <button
-                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', padding:'10px 16px', borderRadius:8, background:GOLD, color:'#000', border:'none', fontSize:14, fontWeight:900, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '10px 16px', borderRadius: 8, background: GOLD, color: '#000', border: 'none', fontSize: 14, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
                 onClick={function() { setShareOpen(true); }}
               >
-                <Share2 className="w-4 h-4" />
+                <Share2 style={{ width: 16, height: 16 }} />
                 Share to Instagram, TikTok &amp; more
               </button>
-              <div className="flex justify-center">
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <ShareButtons url={publishedUrl} title={'Watch my video: ' + form.title} />
               </div>
               <Link to={createPageUrl('Home')}>
-                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', width:'100%', padding:'10px 16px', borderRadius:8, background:'transparent', color:'rgba(255,255,255,0.6)', border:'1px solid rgba(255,255,255,0.15)', fontSize:14, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
+                <button style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '10px 16px', borderRadius: 8, background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.15)', fontSize: 14, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   Back to Home
                 </button>
               </Link>
@@ -355,7 +387,7 @@ export default function VideoPost() {
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <DiscussionFeed communityId="video-posts" />
       </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
         <AnnouncementPanel communityId={userCommunityId} userId={user && user.id} />

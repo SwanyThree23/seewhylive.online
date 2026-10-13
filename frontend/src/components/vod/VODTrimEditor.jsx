@@ -1,19 +1,26 @@
-import React, { useState, useRef } from 'react';
-import { Scissors, Play, Pause, Save } from 'lucide-react';
+import React, { useState } from 'react';
+import { Scissors, Save } from 'lucide-react';
 
-export default function VODTrimEditor({ video, onSave, onCancel }) {
-  var [trimStart, setTrimStart] = useState(video.trim_start || 0);
-  var [trimEnd, setTrimEnd] = useState(video.trim_end || video.duration_seconds || 100);
-  var [playing, setPlaying] = useState(false);
+export default function VODTrimEditor(props) {
+  var video    = props.video;
+  var onSave   = props.onSave;
+  var onCancel = props.onCancel;
+
+  var trimStartState = useState(video.trim_start || 0);
+  var trimStart    = trimStartState[0];
+  var setTrimStart = trimStartState[1];
+  var trimEndState = useState(video.trim_end || video.duration_seconds || 100);
+  var trimEnd    = trimEndState[0];
+  var setTrimEnd = trimEndState[1];
   var duration = video.duration_seconds || 100;
 
   var pctStart = (trimStart / duration) * 100;
-  var pctEnd = (trimEnd / duration) * 100;
+  var pctEnd   = (trimEnd   / duration) * 100;
 
-  var fmt = (s) => {
-    var m = Math.floor(s / 60);
+  var fmt = function(s) {
+    var m   = Math.floor(s / 60);
     var sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, '0')}`;
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
   };
 
   var inputStyle = {
@@ -22,52 +29,53 @@ export default function VODTrimEditor({ video, onSave, onCancel }) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 text-sm text-white/70">
-        <Scissors className="w-4 h-4 text-[#d4af37]" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
+        <Scissors style={{ width: 16, height: 16, color: '#D4AF37' }} />
         <span>Trim Video</span>
-        <span className="ml-auto text-[#d4af37] font-mono text-xs">
-          {fmt(trimStart)} → {fmt(trimEnd)} ({fmt(trimEnd - trimStart)} kept)
+        <span style={{ marginLeft: 'auto', color: '#D4AF37', fontFamily: 'monospace', fontSize: 12 }}>
+          {fmt(trimStart)} {'→'} {fmt(trimEnd)} ({fmt(trimEnd - trimStart)} kept)
         </span>
       </div>
 
       {/* Timeline scrubber */}
-      <div className="relative h-12 bg-white/5 rounded-xl overflow-hidden">
+      <div style={{ position: 'relative', height: 48, background: 'rgba(255,255,255,0.05)', borderRadius: 12, overflow: 'hidden' }}>
         {/* Active region */}
-        <div
-          className="absolute top-0 bottom-0 bg-[#d4af37]/20 border-x-2 border-[#d4af37]"
-          style={{ left: `${pctStart}%`, width: `${pctEnd - pctStart}%` }}
-        />
-        {/* Start handle */}
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0,
+          background: 'rgba(212,175,55,0.2)',
+          borderLeft: '2px solid #D4AF37', borderRight: '2px solid #D4AF37',
+          left: pctStart + '%', width: (pctEnd - pctStart) + '%',
+        }} />
         <input
           type="range" min={0} max={trimEnd - 1} value={trimStart}
-          onChange={e => setTrimStart(Number(e.target.value))}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-col-resize z-10"
+          onChange={function(e) { setTrimStart(Number(e.target.value)); }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'col-resize', zIndex: 10 }}
         />
-        <div className="absolute top-1/2 -translate-y-1/2 text-[10px] text-white/50 left-2">Start</div>
-        <div className="absolute top-1/2 -translate-y-1/2 text-[10px] text-white/50 right-2">End</div>
+        <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'rgba(255,255,255,0.5)', left: 8 }}>Start</div>
+        <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'rgba(255,255,255,0.5)', right: 8 }}>End</div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <div>
-          <label className="text-[10px] text-white/40 uppercase">Start</label>
+          <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Start</label>
           <input
             type="number" min={0} max={trimEnd - 1} value={trimStart}
-            onChange={e => setTrimStart(Number(e.target.value))}
+            onChange={function(e) { setTrimStart(Number(e.target.value)); }}
             style={inputStyle}
           />
         </div>
         <div>
-          <label className="text-[10px] text-white/40 uppercase">End (seconds)</label>
+          <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>End (seconds)</label>
           <input
             type="number" min={trimStart + 1} max={duration} value={trimEnd}
-            onChange={e => setTrimEnd(Number(e.target.value))}
+            onChange={function(e) { setTrimEnd(Number(e.target.value)); }}
             style={inputStyle}
           />
         </div>
       </div>
 
-      <div className="flex gap-2 pt-2">
+      <div style={{ display: 'flex', gap: 8, paddingTop: 8 }}>
         <button
           onClick={onCancel}
           style={{
@@ -78,14 +86,14 @@ export default function VODTrimEditor({ video, onSave, onCancel }) {
           Cancel
         </button>
         <button
-          onClick={() => onSave({ trim_start: trimStart, trim_end: trimEnd, is_clipped: true })}
+          onClick={function() { onSave({ trim_start: trimStart, trim_end: trimEnd, is_clipped: true }); }}
           style={{
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
             fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
-            background: '#d4af37', color: '#000', border: 'none',
+            background: '#D4AF37', color: '#000', border: 'none',
           }}
         >
-          <Save className="w-3.5 h-3.5" /> Save Trim
+          <Save style={{ width: 14, height: 14 }} /> Save Trim
         </button>
       </div>
     </div>

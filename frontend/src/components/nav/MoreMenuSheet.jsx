@@ -40,7 +40,7 @@ export default function MoreMenuSheet({ items, onSelect, onClose }) {
       }}
     >
       <div
-        onClick={(e) => e.stopPropagation()}
+        onClick={function(e) { e.stopPropagation(); }}
         style={{
           width: '100%',
           background: BG,
@@ -53,10 +53,11 @@ export default function MoreMenuSheet({ items, onSelect, onClose }) {
         }}
       >
         <div style={{ width: 40, height: 4, background: '#444', borderRadius: 2, margin: '0 auto 16px' }} />
-        {items.map((item) => (
+        {items.map(function(item) {
+          return (
           <button
             key={item.key}
-            onClick={() => onSelect(item.route)}
+            onClick={function() { onSelect(item.route); }}
             style={{
               width: '100%',
               display: 'flex',
@@ -78,7 +79,8 @@ export default function MoreMenuSheet({ items, onSelect, onClose }) {
             <span style={{ fontSize: 22 }}>{item.icon}</span>
             {item.label}
           </button>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
