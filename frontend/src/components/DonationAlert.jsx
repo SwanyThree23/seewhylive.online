@@ -116,15 +116,13 @@ export default function DonationAlert(props) {
     };
   }, [socket, roomId, threshold]);
 
-  // ── Process queue ───────────────────────────────────────────────────────
+  // ── Process queue: dequeue + confetti only — no timers ──────────────────
   useEffect(function() {
     if (current || queue.length === 0) return;
     var next = queue[0];
     setQueue(function(q) { return q.slice(1); });
     setCurrent(next);
     setExiting(false);
-
-    // Spawn confetti
     if (next.tier && next.tier.confetti > 0) {
       var newConf = [];
       for (var i = 0; i < next.tier.confetti; i++) {
@@ -140,7 +138,11 @@ export default function DonationAlert(props) {
     } else {
       setConfetti([]);
     }
+  }, [current, queue]);
 
+  // ── Auto-dismiss timer — only `current` in deps so no self-cancel ────────
+  useEffect(function() {
+    if (!current) return;
     timerRef.current = setTimeout(function() {
       setExiting(true);
       fadeTimerRef.current = setTimeout(function() {
@@ -149,12 +151,11 @@ export default function DonationAlert(props) {
         setConfetti([]);
       }, 400);
     }, ALERT_DURATION);
-
     return function() {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
     };
-  }, [current, queue]);
+  }, [current]);
 
   if (!current) return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0, zIndex: -1 }}>

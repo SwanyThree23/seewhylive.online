@@ -64,8 +64,9 @@ export default function TriviaTab(props) {
   var [popScore,    setPopScore]    = useState(false);
   var [answerResult, setAnswerResult] = useState(null); // 'correct' | 'wrong' | null
 
-  var timerRef   = useRef(null);
-  var startTsRef = useRef(0);
+  var timerRef        = useRef(null);
+  var startTsRef      = useRef(0);
+  var selectedIdxRef  = useRef(null);
 
   // ── Socket listeners ────────────────────────────────────────────────────
   useEffect(function() {
@@ -75,6 +76,7 @@ export default function TriviaTab(props) {
       setAnswerResult(null);
       setActiveQ(data);
       setSelectedIdx(null);
+      selectedIdxRef.current = null;
       setResults(null);
       setShowScores(false);
       setTimeLeft(Math.ceil((data.durationMs || 20000) / 1000));
@@ -110,7 +112,7 @@ export default function TriviaTab(props) {
         }
         if (!myEntry) { myEntry = { username: username, correct: 0, wrong: 0 }; next.push(myEntry); }
         if (myCorrect) { myEntry.correct += 1; setPopScore(true); setTimeout(function() { setPopScore(false); }, 600); }
-        else if (selectedIdx !== null) { myEntry.wrong += 1; }
+        else if (selectedIdxRef.current !== null) { myEntry.wrong += 1; }
         next.sort(function(a, b) { return b.correct - a.correct; });
         return next;
       });
@@ -125,11 +127,12 @@ export default function TriviaTab(props) {
       socket.off('trivia-results',    onResults);
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [socket, username, selectedIdx]);
+  }, [socket, username]);
 
   var handleAnswer = function(idx) {
     if (selectedIdx !== null || !activeQ) return;
     setSelectedIdx(idx);
+    selectedIdxRef.current = idx;
     if (socket) socket.emit('trivia-answer', { roomId: roomId, answerIdx: idx, username: username });
   }
 
