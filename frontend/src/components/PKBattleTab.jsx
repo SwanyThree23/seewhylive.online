@@ -56,6 +56,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   var challengerRef      = useRef('');
   var defenderRef        = useRef('');
   var suddenDeathRef     = useRef(false);
+  var countdownValRef    = useRef(0);
   var clearAllIntervals = function() {
     if (countdownRef.current)  { clearInterval(countdownRef.current);  countdownRef.current  = null; }
   }
@@ -170,24 +171,25 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       socket.emit('pk-start', { roomId: roomId, challenger: cName, defender: dName, duration: selectedDuration });
     }
 
+    countdownValRef.current = selectedDuration;
     clearAllIntervals();
 
     countdownRef.current = setInterval(function() {
-      setCountdown(function(prev) {
-        if (prev <= 1) {
-          if (challengerScoreRef.current === defenderScoreRef.current && !suddenDeathRef.current) {
-            suddenDeathRef.current = true;
-            if (addToast) addToast('⚡ Sudden death! 30 more seconds!', 'success');
-            if (socket && roomId) socket.emit('pk-sudden-death', { roomId: roomId });
-            return 30;
-          }
+      countdownValRef.current -= 1;
+      setCountdown(countdownValRef.current);
+      if (countdownValRef.current <= 0) {
+        if (challengerScoreRef.current === defenderScoreRef.current && !suddenDeathRef.current) {
+          suddenDeathRef.current = true;
+          countdownValRef.current = 30;
+          setCountdown(30);
+          if (addToast) addToast('⚡ Sudden death! 30 more seconds!', 'success');
+          if (socket && roomId) socket.emit('pk-sudden-death', { roomId: roomId });
+        } else {
           clearInterval(countdownRef.current);
           countdownRef.current = null;
           endBattle();
-          return 0;
         }
-        return prev - 1;
-      });
+      }
     }, 1000);
 
     addToast('Battle started!', 'success');
@@ -197,21 +199,17 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     clearAllIntervals();
     setBattleState('ended');
 
-    setChallengerScore(function(cScore) {
-      setDefenderScore(function(dScore) {
-        var w = cScore >= dScore ? challengerRef.current : defenderRef.current;
-        setWinner(w);
-        setBattleLog(function(prev) {
-          return prev.concat([{ time: fmtTime(), text: '🏆 ' + w + ' wins the PK Battle!' }]);
-        });
-        if (socket && roomId) {
-          socket.emit('pk-end', { roomId: roomId, winner: w, challengerScore: cScore, defenderScore: dScore });
-        }
-        addToast(w + ' wins the battle!', 'success');
-        return dScore;
-      });
-      return cScore;
+    var cScore = challengerScoreRef.current;
+    var dScore = defenderScoreRef.current;
+    var w = cScore >= dScore ? challengerRef.current : defenderRef.current;
+    setWinner(w);
+    setBattleLog(function(prev) {
+      return prev.concat([{ time: fmtTime(), text: '🏆 ' + w + ' wins the PK Battle!' }]);
     });
+    if (socket && roomId) {
+      socket.emit('pk-end', { roomId: roomId, winner: w, challengerScore: cScore, defenderScore: dScore });
+    }
+    addToast(w + ' wins the battle!', 'success');
   }
 
   var castVote = function(side) {
@@ -249,24 +247,25 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       socket.emit('pk-start', { roomId: roomId, challenger: cName, defender: dName, duration: selectedDuration });
     }
 
+    countdownValRef.current = selectedDuration;
     clearAllIntervals();
 
     countdownRef.current = setInterval(function() {
-      setCountdown(function(prev) {
-        if (prev <= 1) {
-          if (challengerScoreRef.current === defenderScoreRef.current && !suddenDeathRef.current) {
-            suddenDeathRef.current = true;
-            if (addToast) addToast('⚡ Sudden death! 30 more seconds!', 'success');
-            if (socket && roomId) socket.emit('pk-sudden-death', { roomId: roomId });
-            return 30;
-          }
+      countdownValRef.current -= 1;
+      setCountdown(countdownValRef.current);
+      if (countdownValRef.current <= 0) {
+        if (challengerScoreRef.current === defenderScoreRef.current && !suddenDeathRef.current) {
+          suddenDeathRef.current = true;
+          countdownValRef.current = 30;
+          setCountdown(30);
+          if (addToast) addToast('⚡ Sudden death! 30 more seconds!', 'success');
+          if (socket && roomId) socket.emit('pk-sudden-death', { roomId: roomId });
+        } else {
           clearInterval(countdownRef.current);
           countdownRef.current = null;
           endBattle();
-          return 0;
         }
-        return prev - 1;
-      });
+      }
     }, 1000);
 
     addToast('⚔️ REMATCH started!', 'success');
