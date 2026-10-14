@@ -9,6 +9,7 @@ export default function Login(props) {
   var [loading, setLoading] = useState(false);
 
   var handleSubmit = function() {
+    if (loading) return;
     if (!email.trim() || !password) return;
     setLoading(true);
     setError('');
@@ -27,6 +28,7 @@ export default function Login(props) {
         localStorage.setItem('sw_token', result.data.token);
         localStorage.setItem('sw_role', result.data.role);
         localStorage.setItem('sw_userId', result.data.userId);
+        if (result.data.username) { localStorage.setItem('sw_username', result.data.username); }
         onSuccess(result.data.role, result.data.userId);
       })
       .catch(function() {

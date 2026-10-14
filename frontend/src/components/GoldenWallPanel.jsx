@@ -44,7 +44,7 @@ export default function GoldenWallPanel(props) {
 
   useEffect(function() {
     setVisible(items.slice(0, maxVisible));
-  }, [items]);
+  }, [items, maxVisible]);
 
   return React.createElement(
     'div',

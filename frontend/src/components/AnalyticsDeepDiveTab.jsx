@@ -126,7 +126,9 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
 
   var exportCSV = function() {
     var rows = ['id,type,note,amount_cents,creator_payout_cents'].concat(txns.map(function(tx) {
-      return [tx.id, tx.type, (tx.creator || tx.stream || ''), tx.amount, Math.floor(tx.amount * CREATOR)].join(',');
+      var rawNote = tx.creator || tx.stream || '';
+      var safeNote = '"' + rawNote.replace(/"/g, '""') + '"';
+      return [tx.id, tx.type, safeNote, tx.amount, Math.floor(tx.amount * CREATOR)].join(',');
     }));
     var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
     var url = URL.createObjectURL(blob);

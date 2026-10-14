@@ -119,6 +119,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
       a.href = url;
       a.download = (clip.title || 'seewhy-clip') + '.webm';
       a.click();
+      URL.revokeObjectURL(url);
     }).catch(function() { if (addToast) addToast('Download failed', 'error'); });
   }
 
