@@ -73,6 +73,9 @@ export default function AudioStageTab(props) {
   var micTimerRef   = useRef(null);
   var speakTimerRef = useRef(null);
   var hiddenAudioRef= useRef(null);
+  var speakersRef   = useRef([]);
+  var listenersRef  = useRef([]);
+  var micCancelledRef = useRef(false);
 
   var isHost = role === 'host' || role === 'cohost';
 
@@ -84,22 +87,27 @@ export default function AudioStageTab(props) {
 
     var onStageState = function(data) {
       if (!data) return;
-      setSpeakers(data.speakers || []);
-      setListeners(data.listeners || []);
-      var total = (data.speakers || []).length + (data.listeners || []).length;
+      var sp = data.speakers || [];
+      var li = data.listeners || [];
+      speakersRef.current = sp;
+      listenersRef.current = li;
+      setSpeakers(sp);
+      setListeners(li);
+      var total = sp.length + li.length;
       setMemberCount(total);
       setOnlineCount(data.onlineCount || total);
-      var speaking = (data.speakers || []).find(function(s) { return s.speaking; });
+      var speaking = sp.find(function(s) { return s.speaking; });
       setActiveSpeaker(speaking ? (speaking.username || '') : '');
     }
 
     var onStageUpdate = function(data) {
       if (!data) return;
-      if (data.speakers) setSpeakers(data.speakers);
-      if (data.listeners) setListeners(data.listeners);
-      var total = (data.speakers || speakers).length + (data.listeners || listeners).length;
-      setMemberCount(total);
-      var speaking = (data.speakers || speakers).find(function(s) { return s.speaking; });
+      if (data.speakers) { speakersRef.current = data.speakers; setSpeakers(data.speakers); }
+      if (data.listeners) { listenersRef.current = data.listeners; setListeners(data.listeners); }
+      var s = data.speakers || speakersRef.current;
+      var l = data.listeners || listenersRef.current;
+      setMemberCount(s.length + l.length);
+      var speaking = s.find(function(sp) { return sp.speaking; });
       setActiveSpeaker(speaking ? (speaking.username || '') : '');
     }
 
@@ -110,7 +118,8 @@ export default function AudioStageTab(props) {
 
     var onStagePin = function(data) {
       if (!data || !data.ytId) return;
-      setPinnedYtId(data.ytId);
+      var safeId = String(data.ytId).match(/^[A-Za-z0-9_-]{11}$/) ? data.ytId : '';
+      if (safeId) setPinnedYtId(safeId);
     }
 
     var onStageLock = function(data) {
@@ -130,6 +139,8 @@ export default function AudioStageTab(props) {
       if (addToast) addToast('🎙 You\'ve been invited to speak on stage!', 'success');
     }
 
+    var onReconnect = function() { setJoined(false); };
+
     socket.on('audio-stage-state',    onStageState);
     socket.on('audio-stage-update',   onStageUpdate);
     socket.on('love-update',          onLoveUpdate);
@@ -137,6 +148,7 @@ export default function AudioStageTab(props) {
     socket.on('stage-lock-update',    onStageLock);
     socket.on('stage-remove',         onStageRemove);
     socket.on('stage-invite',         onStageInvite);
+    socket.on('connect',              onReconnect);
 
     return function() {
       socket.off('audio-stage-state',    onStageState);
@@ -146,6 +158,7 @@ export default function AudioStageTab(props) {
       socket.off('stage-lock-update',    onStageLock);
       socket.off('stage-remove',         onStageRemove);
       socket.off('stage-invite',         onStageInvite);
+      socket.off('connect',              onReconnect);
     };
   }, [socket, roomId, userId, addToast]);
 
@@ -163,6 +176,7 @@ export default function AudioStageTab(props) {
 
   // ── Mic / WebAudio ─────────────────────────────────────────
   var stopMic = function() {
+    micCancelledRef.current = true;
     if (micTimerRef.current)   { clearInterval(micTimerRef.current);  micTimerRef.current = null; }
     if (speakTimerRef.current) { clearInterval(speakTimerRef.current); speakTimerRef.current = null; }
     if (analyserRef.current)   { try { analyserRef.current.disconnect(); } catch(e) {} analyserRef.current = null; }
@@ -175,7 +189,9 @@ export default function AudioStageTab(props) {
   }
 
   var startMic = function() {
+    micCancelledRef.current = false;
     navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(stream) {
+      if (micCancelledRef.current) { stream.getTracks().forEach(function(t) { t.stop(); }); return; }
       micStreamRef.current = stream;
       if (hiddenAudioRef.current) {
         hiddenAudioRef.current.srcObject = stream;

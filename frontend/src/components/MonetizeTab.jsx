@@ -17,8 +17,8 @@ var fD   = "'Bebas Neue',sans-serif";
 var fU   = "'Barlow Condensed',sans-serif";
 var fM   = "'DM Mono',monospace";
 
-var CREATOR_SHARE = 0.90;
-var PLATFORM_SHARE = 0.10;
+var CREATOR_SPLIT = 0.90;
+var PLATFORM_FEE = 0.10;
 
 var EARN_STREAMS = [
   { id: 'superchat',    label: 'Super Chat',     icon: '💬', desc: 'Highlighted messages · 6 tiers $1–$50',        color: '#C9A84C', action: 'SC in Quick Actions' },
@@ -79,14 +79,16 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
     if (tab !== 'rewards') return;
     var token = localStorage.getItem('sw_token');
     if (!token) return;
+    var mounted = true;
     fetch('/api/rewards/tiers', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function(r) { return r.json(); })
-      .then(function(d) { if (Array.isArray(d)) setRewardTiers(d); })
+      .then(function(d) { if (mounted && Array.isArray(d)) setRewardTiers(d); })
       .catch(function() {});
     fetch('/api/rewards/my-tier', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function(r) { return r.json(); })
-      .then(function(d) { if (d && d.tier) setMyTier(d.tier); })
+      .then(function(d) { if (mounted && d && d.tier) setMyTier(d.tier); })
       .catch(function() {});
+    return function() { mounted = false; };
   }, [tab]);
 
   var selectRewardTier = function(tierId) {
@@ -110,7 +112,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
   }
 
   var sessionCents = Math.floor(sessionEarningsCents || 0);
-  var creatorCents = Math.floor(sessionCents * CREATOR_SHARE);
+  var creatorCents = Math.floor(sessionCents * CREATOR_SPLIT);
   var platformCents = sessionCents - creatorCents;
 
   var sendTip = function() {

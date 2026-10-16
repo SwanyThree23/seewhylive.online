@@ -1024,7 +1024,7 @@ export default function LiveRoomPage({
       try { recog.stop(); } catch (ex) {}
       ccRecogRef.current = null;
     };
-  }, [ccEnabled, role, isLive]);
+  }, [ccEnabled, role, isLive, socket, addToast]);
 
   // ── Local mic level analyzer (for GlobalMicButtonV49) ──
   useEffect(function() {

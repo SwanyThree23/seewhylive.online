@@ -259,7 +259,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   useEffect(function() {
     if (!isOwnCell || !socket || !roomId) return;
     socket.emit('speaking', { roomId: roomId, guestId: userId, speaking: speaking });
-  }, [speaking]);
+  }, [speaking, socket, roomId, userId, isOwnCell]);
 
   var ringGlow = fill ? 'none'
     : fadesMode
@@ -451,7 +451,8 @@ function areOctCellPropsEqual(prev, next) {
     prev.isHost         === next.isHost        &&
     prev.fadesMode      === next.fadesMode     &&
     prev.branding       === next.branding      &&
-    prev.mediaConfig    === next.mediaConfig
+    prev.mediaConfig    === next.mediaConfig   &&
+    prev.onCameraTrack  === next.onCameraTrack
   );
 }
 
