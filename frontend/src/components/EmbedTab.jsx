@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
 
 var PPV_PRICE_USD = 4.99;
-var CREATOR_SHARE = 0.90;
+var CREATOR_SPLIT = 0.90;
 var PREVIEW_SECONDS = 120;
 
 function _authHeaders(extra) {
@@ -19,7 +19,8 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
   var error = errorState[0];
   var setError = errorState[1];
 
-  var creatorAmt = (PPV_PRICE_USD * CREATOR_SHARE).toFixed(2);
+  var creatorCents = Math.floor(Math.round(PPV_PRICE_USD * 100) * CREATOR_SPLIT);
+  var creatorAmt = (creatorCents / 100).toFixed(2);
 
   var handleSubmit = async function(e) {
     e.preventDefault();
@@ -164,6 +165,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
   var retrying = retryingState[0];
   var setRetrying = retryingState[1];
   var retryTimerRef = useRef(null);
+  var previewTimerRef = useRef(PREVIEW_SECONDS);
   var retryKeyState = useState(0);
   var retryKey = retryKeyState[0];
   var setRetryKey = retryKeyState[1];
@@ -210,21 +212,20 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
       });
     }
     return function() { hls.destroy(); if (retryTimerRef.current) clearTimeout(retryTimerRef.current); };
-  }, [isLive, ppvToken, retryKey]);
+  }, [isLive, ppvToken, retryKey, roomId]);
 
   useEffect(function() {
     if (ppvToken || !isLive) return;
+    previewTimerRef.current = PREVIEW_SECONDS;
     var interval = setInterval(function() {
-      setPreviewTimer(function(t) {
-        if (t <= 1) {
-          clearInterval(interval);
-          setPreviewExpired(true);
-          setShowPaywall(true);
-          if (hlsRef.current) hlsRef.current.stopLoad();
-          return 0;
-        }
-        return t - 1;
-      });
+      previewTimerRef.current -= 1;
+      setPreviewTimer(previewTimerRef.current);
+      if (previewTimerRef.current <= 0) {
+        clearInterval(interval);
+        setPreviewExpired(true);
+        setShowPaywall(true);
+        if (hlsRef.current) hlsRef.current.stopLoad();
+      }
     }, 1000);
     return function() { clearInterval(interval); };
   }, [ppvToken, isLive]);

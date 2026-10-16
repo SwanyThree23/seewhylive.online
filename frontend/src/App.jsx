@@ -340,6 +340,9 @@ export default function App() {
       })
       .catch(function() {});
   }
+  var refreshDiscoverData = function() {
+    refreshLiveRoomData();
+  }
   var [loveTotal, setLoveTotal] = useState(0);
   var [guests, setGuests] = useState([]);
   var [chat, setChat] = useState([]);
@@ -1315,6 +1318,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0E0C09', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif" }}>
+      <style dangerouslySetInnerHTML={{ __html: '@keyframes tabSlideIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}' }} />
       <BrandChyron isLive={isLive} streamTitle={streamInfo.title} />
       {/* Header HUD */}
       <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(15,12,20,.95)', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', padding: '6px 16px', gap: 12, height: 44, paddingTop: 'max(6px, env(safe-area-inset-top, 6px))' }}>
@@ -1776,6 +1780,7 @@ export default function App() {
           <DesktopStudioTab />
         )}
         {activeTab === 'discover' && (
+          <PullToRefresh onRefresh={refreshDiscoverData}>
           <DiscoverTab
             onGoLive={handleGoLive}
             addToast={addToast}
@@ -1784,6 +1789,7 @@ export default function App() {
             roomId={APP_ID}
             username={username}
           />
+          </PullToRefresh>
         )}
         {activeTab === 'rankings' && (
           <StateRankingsTab isLive={isLive} addToast={addToast} />

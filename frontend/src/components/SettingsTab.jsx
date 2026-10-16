@@ -567,6 +567,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
   }
 
   var [deleteInFlight, setDeleteInFlight] = useState(false);
+  var [showDeleteModal, setShowDeleteModal] = useState(false);
 
   var handleDeleteAccount = function() {
     setDeleteInFlight(true);
@@ -613,34 +614,11 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
           );
         })}
 
-        <div style={{ background: 'rgba(255,26,60,.05)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 10, padding: '12px 14px', marginTop: 8 }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C0392B', letterSpacing: 2, marginBottom: 6 }}>
-            &#x26A0; DELETE ACCOUNT
-          </div>
-          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', marginBottom: 10 }}>
-            This cannot be undone. Type DELETE to confirm.
-          </div>
-          <input
-            value={deleteConfirm}
-            onChange={function(e) { setDeleteConfirm(e.target.value); }}
-            placeholder="Type DELETE"
-            style={{ width: '100%', background: 'rgba(255,26,60,.05)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '7px 12px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10, boxSizing: 'border-box', marginBottom: 8 }}
-          />
+        <div style={{ borderTop: '1px solid rgba(255,26,60,.15)', paddingTop: 12, marginTop: 8 }}>
           <button
-            onClick={function() { if (deleteConfirm === 'DELETE') handleDeleteAccount(); }}
-            disabled={deleteConfirm !== 'DELETE'}
-            style={{
-              background: deleteConfirm === 'DELETE' ? 'rgba(255,26,60,.2)' : 'rgba(255,26,60,.05)',
-              border: '1px solid rgba(255,26,60,.4)',
-              borderRadius: 8,
-              padding: '8px 16px',
-              color: deleteConfirm === 'DELETE' ? '#C0392B' : '#8A7A62',
-              fontFamily: "'Bebas Neue',sans-serif",
-              fontSize: 13,
-              letterSpacing: 2,
-              cursor: deleteConfirm === 'DELETE' ? 'pointer' : 'not-allowed'
-            }}>
-            DELETE ACCOUNT
+            onClick={function() { setDeleteConfirm(''); setShowDeleteModal(true); }}
+            style={{ width: '100%', background: 'rgba(255,26,60,.07)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 8, padding: '10px 0', color: '#C0392B', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>
+            &#x26A0; DELETE ACCOUNT
           </button>
         </div>
       </div>
@@ -690,6 +668,45 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
       {activeTab === 'notifications' && renderNotificationsTab()}
       {activeTab === 'subscription'  && renderSubscriptionTab()}
       {activeTab === 'privacy'       && renderPrivacyTab()}
+
+      {showDeleteModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.88)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ background: '#1A1510', border: '1.5px solid rgba(255,26,60,.4)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C0392B', letterSpacing: 2 }}>&#x26A0; DELETE ACCOUNT</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4', lineHeight: 1.5 }}>
+              This action is <strong>permanent</strong> and cannot be undone. All your content, earnings history, followers, and settings will be permanently erased.
+            </div>
+            <ul style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', paddingLeft: 16, margin: 0, lineHeight: 2.2 }}>
+              <li>All stream history deleted</li>
+              <li>Pending payouts forfeited</li>
+              <li>Followers and profile removed</li>
+              <li>This cannot be reversed</li>
+            </ul>
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', marginBottom: 6, letterSpacing: 1 }}>TYPE DELETE TO CONFIRM</div>
+              <input
+                value={deleteConfirm}
+                onChange={function(e) { setDeleteConfirm(e.target.value); }}
+                placeholder="DELETE"
+                style={{ width: '100%', background: 'rgba(255,26,60,.05)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 8, padding: '9px 12px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 12, boxSizing: 'border-box', outline: 'none' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={function() { setShowDeleteModal(false); setDeleteConfirm(''); }}
+                style={{ flex: 1, background: 'transparent', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '10px 0', color: '#8A7A62', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>
+                CANCEL
+              </button>
+              <button
+                onClick={function() { if (deleteConfirm === 'DELETE' && !deleteInFlight) handleDeleteAccount(); }}
+                disabled={deleteConfirm !== 'DELETE' || deleteInFlight}
+                style={{ flex: 1, background: deleteConfirm === 'DELETE' ? 'rgba(255,26,60,.2)' : 'rgba(255,26,60,.05)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 8, padding: '10px 0', color: deleteConfirm === 'DELETE' ? '#C0392B' : '#6A5A52', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: (deleteConfirm === 'DELETE' && !deleteInFlight) ? 'pointer' : 'not-allowed' }}>
+                {deleteInFlight ? 'DELETING...' : 'DELETE'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

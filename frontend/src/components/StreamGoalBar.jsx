@@ -111,12 +111,15 @@ export default function StreamGoalBar(props) {
     if (pct >= 100 && prevPct.current < 100) {
       setCompleted(true);
       setBurst(true);
-      if (burstTimerRef.current) clearTimeout(burstTimerRef.current);
-      burstTimerRef.current = setTimeout(function() { setBurst(false); }, 1500);
     }
     prevPct.current = pct;
-    return function() { if (burstTimerRef.current) clearTimeout(burstTimerRef.current); };
   }, [pct, goal, completed]);
+
+  useEffect(function() {
+    if (!burst) return;
+    var id = setTimeout(function() { setBurst(false); }, 1500);
+    return function() { clearTimeout(id); };
+  }, [burst]);
 
   var handleSetGoal = function() {
     var t = parseInt(goalTarget, 10);
