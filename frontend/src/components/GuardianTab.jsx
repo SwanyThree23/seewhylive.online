@@ -124,11 +124,11 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
       });
       if (addToast) addToast('LOCKDOWN: Slow Mode auto-enabled (block rate ' + blockRate + '%)', 'error');
     }
-  }, [blockRate, guardOn, isLive]);
+  }, [blockRate, guardOn, isLive, addToast]);
 
   var lastChatLen = useRef(0);
   useEffect(function() {
-    if (!guardOn || !chat || chat.length === 0) return;
+    if (!guardOn || !chat || chat.length === 0) { lastChatLen.current = 0; return; }
     var newMsgs = chat.slice(lastChatLen.current);
     lastChatLen.current = chat.length;
     if (newMsgs.length === 0) return;
@@ -188,7 +188,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
         setAllowed(function(n) { return n + 1; });
       }
     });
-  }, [chat, guardOn, banned, socket, roomId, addToast]);
+  }, [chat, guardOn, banned, rules, socket, roomId, addToast]);
 
   var toggleRule = function(id) {
     setRules(function(prev) {
@@ -494,10 +494,10 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
           {bannedUsers.length === 0 && (
             <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '16px', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>No banned users</div>
           )}
-          {bannedUsers.map(function(u, i) {
+          {bannedUsers.map(function(u) {
             var isShadow = shadowBanned[u.userId];
             return (
-              <div key={i} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div key={u.userId} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
                   <AvatarPortrait username={u.username} size={34} />
                   <div>
@@ -539,7 +539,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
             var action = entry.indexOf('BLOCKED') !== -1 ? 'BLOCKED' : entry.indexOf('STRIPPED') !== -1 ? 'STRIPPED' : entry.indexOf('HELD') !== -1 ? 'HELD' : 'PASSED';
             var color = ACTION_COLORS[action.toLowerCase()] || '#8A7A62';
             return (
-              <div key={i} style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: color, marginBottom: 4, lineHeight: 1.6 }}>
+              <div key={entry + ':' + i} style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: color, marginBottom: 4, lineHeight: 1.6 }}>
                 {entry}
               </div>
             );

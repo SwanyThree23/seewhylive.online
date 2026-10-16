@@ -53,7 +53,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
 
   var fetchData = function() {
     fetch('/api/streams/live')
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function(d) {
         setData(d);
         setLoading(false);
@@ -75,12 +75,12 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
     if (tab !== 'leaders') return;
     setLeadersLoading(true);
     fetch('/api/battles/leaderboard?limit=20')
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function(rows) {
         setLeaders(Array.isArray(rows) ? rows : []);
         setLeadersLoading(false);
       })
-      .catch(function() { setLeadersLoading(false); });
+      .catch(function(e) { setLeadersLoading(false); if (addToast) addToast('Could not load leaderboard', 'error'); });
   }, [tab]);
 
   var streamsIn  = (data && data.streamsIn)  || [];

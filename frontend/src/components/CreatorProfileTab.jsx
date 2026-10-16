@@ -46,18 +46,17 @@ export default function CreatorProfileTab(props) {
 
   useEffect(function() {
     setProfile(null);
+    var mounted = true;
     fetch('/api/users/' + creatorUsername)
       .then(function(r) { return r.json(); })
       .then(function(d) {
-        if (d && d.username) {
-          setProfile(d);
-        } else {
-          setProfile(null);
-        }
+        if (!mounted) return;
+        setProfile((d && d.username) ? d : null);
       })
       .catch(function() {
-        setProfile(null);
+        if (mounted) setProfile(null);
       });
+    return function() { mounted = false; };
   }, [creatorUsername]);
 
   var handleFollow = function() {
@@ -237,12 +236,13 @@ export default function CreatorProfileTab(props) {
       React.createElement(
         'div',
         {
-          className: 'selectable-text',
           style: {
             fontFamily: "'Barlow Condensed',sans-serif",
             fontSize: 14,
             color: '#F0E8D4',
             lineHeight: 1.5,
+            userSelect: 'text',
+            WebkitUserSelect: 'text',
           }
         },
         profile.bio
@@ -514,12 +514,13 @@ export default function CreatorProfileTab(props) {
           React.createElement(
             'div',
             {
-              className: 'selectable-text',
               style: {
                 fontFamily: "'Barlow Condensed',sans-serif",
                 fontSize: 13,
                 color: '#8A7A62',
                 lineHeight: 1.4,
+                userSelect: 'text',
+                WebkitUserSelect: 'text',
               }
             },
             profile.bio

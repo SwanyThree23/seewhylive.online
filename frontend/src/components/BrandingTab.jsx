@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 var PRESETS = [
   { name: 'Washington Classic', gold: '#C9A84C', burg: '#800020', desc: 'Official tournament palette' },
@@ -35,6 +35,11 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
   var [logoFile, setLogoFile] = useState(null);
   var [logoUploading, setLogoUploading] = useState(false);
   var [cssCopied, setCssCopied] = useState(false);
+  var cssTimerRef = useRef(null);
+
+  useEffect(function() {
+    return function() { if (cssTimerRef.current) clearTimeout(cssTimerRef.current); };
+  }, []);
 
   var copyCssVars = function() {
     var g = branding.gold || '#C9A84C';
@@ -43,7 +48,8 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(css).then(function() {
         setCssCopied(true);
-        setTimeout(function() { setCssCopied(false); }, 2000);
+        if (cssTimerRef.current) clearTimeout(cssTimerRef.current);
+        cssTimerRef.current = setTimeout(function() { setCssCopied(false); }, 2000);
       }).catch(function() {});
     }
   }

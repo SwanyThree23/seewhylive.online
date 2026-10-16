@@ -52,6 +52,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
   var [triggerLoading, setTriggerLoading] = useState('');
   var [usageCount, setUsageCount]   = useState(0);
   var chatRef = useRef(null);
+  var callAuraRef = useRef(null);
 
   useEffect(function() {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -80,7 +81,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
   var fetchUsage = function() {
     if (!roomId) return;
     fetch('/api/aura/usage?streamId=' + roomId, { headers: _authHeaders() })
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function(data) {
         if (data && typeof data.callsThisHour === 'number') setUsageCount(data.callsThisHour);
       })
@@ -123,11 +124,13 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
       });
   }
 
+  callAuraRef.current = callAura;
+
   useEffect(function() {
     if (!autoHype || !isLive) return;
     var interval = setInterval(function() {
       var rnd = QUICK_PROMPTS[Math.floor(Math.random() * QUICK_PROMPTS.length)];
-      callAura(rnd.prompt, null);
+      callAuraRef.current(rnd.prompt, null);
     }, 45000);
     return function() { clearInterval(interval); };
   }, [autoHype, isLive]);
@@ -384,7 +387,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
           var isTrigger = m.role === 'trigger';
           var isUser = m.role === 'user';
           return (
-            <div key={i} style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+            <div key={m.time + ':' + m.role + ':' + i} style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
               <div style={{
                 maxWidth: '88%',
                 background: isTrigger
