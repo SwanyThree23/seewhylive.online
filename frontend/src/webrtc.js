@@ -22,37 +22,44 @@ class SeeWhyRTC {
     this.consumers = {};
     this.listeners = {};
     this.statsInterval = null;
+    this._connecting = false;
   }
 
   async connect(socket, roomId, userId, role) {
-    // Tear down any prior session so reconnect doesn't leak intervals/transports
-    if (this.statsInterval) { clearInterval(this.statsInterval); this.statsInterval = null; }
-    Object.values(this.producers).forEach(function(p) { p.close(); });
-    Object.values(this.consumers).forEach(function(c) { c.close(); });
-    if (this.sendTransport) { this.sendTransport.close(); this.sendTransport = null; }
-    if (this.recvTransport) { this.recvTransport.close(); this.recvTransport = null; }
-    this.producers = {};
-    this.consumers = {};
-    this.socket = socket;
-    this.roomId = roomId;
-    this.userId = userId;
-    this.role = role;
-    var mediasoupClient = await _getMediasoupClient();
-    this.device = new mediasoupClient.Device();
+    if (this._connecting) return;
+    this._connecting = true;
+    try {
+      if (this.statsInterval) { clearInterval(this.statsInterval); this.statsInterval = null; }
+      Object.values(this.producers).forEach(function(p) { p.close(); });
+      Object.values(this.consumers).forEach(function(c) { c.close(); });
+      if (this.sendTransport) { this.sendTransport.close(); this.sendTransport = null; }
+      if (this.recvTransport) { this.recvTransport.close(); this.recvTransport = null; }
+      this.producers = {};
+      this.consumers = {};
+      this.socket = socket;
+      this.roomId = roomId;
+      this.userId = userId;
+      this.role = role;
+      var mediasoupClient = await _getMediasoupClient();
+      this.device = new mediasoupClient.Device();
 
-    var rtpCapabilities = await new Promise(function(resolve, reject) {
-      socket.emit('get-rtp-capabilities', { roomId: roomId }, function(data) {
-        if (data && data.error) return reject(new Error(data.error));
-        if (!data) return reject(new Error('No RTP capabilities returned'));
-        var caps = data.routerRtpCapabilities ? data.routerRtpCapabilities : data;
-        resolve(caps);
+      var rtpCapabilities = await new Promise(function(resolve, reject) {
+        socket.emit('get-rtp-capabilities', { roomId: roomId }, function(data) {
+          if (data && data.error) return reject(new Error(data.error));
+          if (!data) return reject(new Error('No RTP capabilities returned'));
+          var caps = data.routerRtpCapabilities ? data.routerRtpCapabilities : data;
+          resolve(caps);
+        });
       });
-    });
 
-    await this.device.load({ routerRtpCapabilities: rtpCapabilities });
-    await this._createSendTransport();
-    await this._createRecvTransport();
-    this._startStatsMonitor();
+      await this.device.load({ routerRtpCapabilities: rtpCapabilities });
+      await this._createSendTransport();
+      this._emit('sendTransportReady');
+      await this._createRecvTransport();
+      this._startStatsMonitor();
+    } finally {
+      this._connecting = false;
+    }
   }
 
   async _createSendTransport() {
@@ -247,11 +254,11 @@ class SeeWhyRTC {
   }
 
   destroy() {
-    if (this.statsInterval) clearInterval(this.statsInterval);
+    if (this.statsInterval) { clearInterval(this.statsInterval); this.statsInterval = null; }
     Object.values(this.producers).forEach(function(p) { return p.close(); });
     Object.values(this.consumers).forEach(function(c) { return c.close(); });
-    if (this.sendTransport) this.sendTransport.close();
-    if (this.recvTransport) this.recvTransport.close();
+    if (this.sendTransport) { this.sendTransport.close(); this.sendTransport = null; }
+    if (this.recvTransport) { this.recvTransport.close(); this.recvTransport = null; }
     this.producers = {};
     this.consumers = {};
   }
