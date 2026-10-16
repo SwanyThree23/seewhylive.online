@@ -18,6 +18,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var [streamReady,  setStreamReady]  = useState(false);
   var [retryCount,   setRetryCount]   = useState(0);
   var [flyReactions, setFlyReactions] = useState([]);
+  var [sendTransportReady, setSendTransportReady] = useState(!!(rtcManager && rtcManager.sendTransport));
 
   var size      = fill ? null : (sz || 200);
   var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
@@ -118,7 +119,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     }).catch(function(e) {
       console.error('[OctCell] publishStream error:', e);
     });
-  }, [isOwnCell, streamReady, rtcManager]);
+  }, [isOwnCell, streamReady, rtcManager, sendTransportReady]);
 
   // Apply mute state to local audio tracks
   useEffect(function() {
@@ -156,7 +157,8 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     var onReaction = function(payload) {
       if (payload.guestId !== guestId) return;
       var id = Date.now() + Math.random();
-      setFlyReactions(function(prev) { return prev.concat([{ id: id, emoji: payload.emoji, offset: Math.round(Math.random() * 40 - 20) }]); });
+      var offset = Math.round(Math.random() * 40 - 20);
+      setFlyReactions(function(prev) { return prev.concat([{ id: id, emoji: payload.emoji, offset: offset }]); });
       flyTimersRef.current.add(setTimeout(function() {
         setFlyReactions(function(prev) { return prev.filter(function(r) { return r.id !== id; }); });
       }, 1500));
@@ -169,11 +171,19 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     };
   }, [socket, guestId]);
 
+  useEffect(function() {
+    if (!isOwnCell || !rtcManager) return;
+    var onReady = function() { setSendTransportReady(true); };
+    rtcManager.on('sendTransportReady', onReady);
+    return function() { rtcManager.off('sendTransportReady', onReady); };
+  }, [isOwnCell]);
+
   // Remote cell: subscribe to video + audio producers
   useEffect(function() {
     if (isOwnCell || !rtcManager || !guest) return;
     if (!guest.producerId) return;
     var cancelled = false;
+    var localStream = null;
 
     var subscribeRemote = async function() {
       try {
@@ -193,6 +203,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         }
 
         if (cancelled) return;
+        localStream = combined;
         streamRef.current = combined;
         if (videoRef.current) {
           videoRef.current.srcObject = combined;
@@ -207,7 +218,14 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     }
 
     subscribeRemote();
-    return function() { cancelled = true; };
+    return function() {
+      cancelled = true;
+      if (localStream) {
+        localStream.getTracks().forEach(function(t) { t.stop(); });
+        if (streamRef.current === localStream) streamRef.current = null;
+        localStream = null;
+      }
+    };
   }, [isOwnCell, rtcManager, guest && guest.producerId, guest && guest.audioProducerId]);
 
   var initAnalyser = function(stream) {
@@ -443,6 +461,9 @@ function areOctCellPropsEqual(prev, next) {
     pg.remoteMuted     === ng.remoteMuted     &&
     pg.remoteCamOff    === ng.remoteCamOff    &&
     pg.username        === ng.username        &&
+    pg.guestId         === ng.guestId         &&
+    pg.userId          === ng.userId          &&
+    prev.userId         === next.userId        &&
     prev.rtcManager     === next.rtcManager    &&
     prev.isMuted        === next.isMuted       &&
     prev.isCamOff       === next.isCamOff      &&
