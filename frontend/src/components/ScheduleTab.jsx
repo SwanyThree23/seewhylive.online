@@ -118,16 +118,19 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
 
   // Load from API on mount
   useEffect(function() {
+    var mounted = true;
     fetch('/api/schedule')
       .then(function(r) { return r.json(); })
       .then(function(data) {
+        if (!mounted) return;
         var rows = data && Array.isArray(data.events) ? data.events : [];
         setSchedule(rows.map(rowToEvent));
         setApiLoaded(true);
       })
       .catch(function() {
-        setApiLoaded(true);
+        if (mounted) setApiLoaded(true);
       });
+    return function() { mounted = false; };
   }, []);
 
   // 1-second tick for next-event countdown display
@@ -228,7 +231,14 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
     var ev = schedule.find(function(s) { return s.id === id; });
     if (ev && ev.fromApi) {
       var _delTok = localStorage.getItem('sw_token') || '';
-      fetch('/api/schedule/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + _delTok } }).catch(function() { if (addToast) addToast('Failed to delete event from server', 'error'); });
+      fetch('/api/schedule/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + _delTok } })
+        .then(function(r) {
+          if (!r.ok) {
+            if (addToast) addToast('Failed to delete event from server (' + r.status + ')', 'error');
+            setSchedule(function(p) { return p.concat([ev]); });
+          }
+        })
+        .catch(function() { if (addToast) addToast('Failed to delete event from server', 'error'); });
     }
     setSchedule(function(p) { return p.filter(function(s) { return s.id !== id; }); });
   }

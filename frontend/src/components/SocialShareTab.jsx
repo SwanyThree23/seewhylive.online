@@ -1,5 +1,5 @@
 'use strict';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
 
 var GOLD_H  = '#E8C46A';
@@ -124,6 +124,11 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
   var [view, setView] = useState('share');
   var [mainView, setMainView] = useState('share');
   var [invitedIds, setInvitedIds] = useState({});
+  var copyTimerRef = useRef(null);
+
+  useEffect(function() {
+    return function() { if (copyTimerRef.current) clearTimeout(copyTimerRef.current); };
+  }, []);
 
   var shareMsg = customMsg || defaultMsg;
 
@@ -132,7 +137,8 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
       navigator.clipboard.writeText(text).then(function() {
         setCopied(label);
         addToast('✓ ' + label + ' copied to clipboard', 'success');
-        setTimeout(function() { setCopied(''); }, 2000);
+        if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = setTimeout(function() { setCopied(''); }, 2000);
       }).catch(function() {
         addToast(text, 'info');
       });

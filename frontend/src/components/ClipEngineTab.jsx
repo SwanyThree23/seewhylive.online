@@ -249,13 +249,14 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
 
   var exportClip = function() {
     setExporting(true);
+    var capturedFormat = selectedFormat;
     var thumbVal = editClip ? editClip.thumbnail : null;
     setTimeout(function() {
       setExporting(false);
-      setExported(selectedFormat);
+      setExported(capturedFormat);
       setExportThumb(thumbVal);
-      var fmt = EXPORT_FORMATS.find(function(f) { return f.id === selectedFormat; });
-      addToast('Exported: ' + (fmt ? fmt.label : selectedFormat), 'success');
+      var fmt = EXPORT_FORMATS.find(function(f) { return f.id === capturedFormat; });
+      addToast('Exported: ' + (fmt ? fmt.label : capturedFormat), 'success');
       setTab('share');
     }, 1800 + Math.floor(Math.random() * 1200));
   }

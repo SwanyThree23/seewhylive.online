@@ -92,6 +92,11 @@ export default function DiscoverTab(props) {
   var unreadCount = notifs.filter(function(n) { return !n.read; }).length;
 
   var debounceRef = useRef(null);
+  var searchSeqRef = useRef(0);
+
+  useEffect(function() {
+    return function() { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, []);
 
   useEffect(function() {
     var fetchLiveRooms = function() {
@@ -241,12 +246,15 @@ export default function DiscoverTab(props) {
         return;
       }
       setLoading(true);
+      searchSeqRef.current += 1;
+      var seq = searchSeqRef.current;
       var streamsUrl = '/api/search?q=' + encodeURIComponent(val) + '&type=streams';
       var creatorsUrl = '/api/search?q=' + encodeURIComponent(val) + '&type=creators';
       Promise.all([
         fetch(streamsUrl).then(function(r) { return r.json(); }).catch(function() { return { results: [] }; }),
         fetch(creatorsUrl).then(function(r) { return r.json(); }).catch(function() { return { results: [] }; }),
       ]).then(function(results) {
+        if (seq !== searchSeqRef.current) return;
         setStreams(results[0].results || []);
         setCreators(results[1].results || []);
         setLoading(false);
@@ -382,7 +390,7 @@ export default function DiscoverTab(props) {
                 marginLeft: 4,
               }
             },
-            stream.viewerCount.toLocaleString()
+            (stream.viewerCount != null ? stream.viewerCount.toLocaleString() : '0')
           )
         ),
         React.createElement(
@@ -434,7 +442,8 @@ export default function DiscoverTab(props) {
   }
 
   var renderCreatorCard = function(creator) {
-    var bioCut = creator.bio.length > 60 ? creator.bio.slice(0, 60) + '...' : creator.bio;
+    var bio = creator.bio || '';
+    var bioCut = bio.length > 60 ? bio.slice(0, 60) + '...' : bio;
     return React.createElement(
       'div',
       {
