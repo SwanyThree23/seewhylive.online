@@ -1302,7 +1302,7 @@ app.post('/api/summarize-chat', requireAuth, function(req, res) {
 });
 
 var _liveStreamsCache = { data: null, ts: 0 };
-app.get('/api/streams/live', requireAuth, function(req, res) {
+app.get('/api/streams/live', requireAuth, async function(req, res) {
   var fsModule = require('fs');
   var pathModule = require('path');
   var HLS_DIR = '/var/www/html/hls';
@@ -1315,16 +1315,17 @@ app.get('/api/streams/live', requireAuth, function(req, res) {
   // Streams IN: scan HLS dir for active m3u8/ts files
   var streamsIn = [];
   try {
-    var entries = fsModule.readdirSync(HLS_DIR);
-    entries.forEach(function(name) {
+    var entries = await fsModule.promises.readdir(HLS_DIR);
+    for (var ei = 0; ei < entries.length; ei++) {
+      var name = entries[ei];
       var dirPath = pathModule.join(HLS_DIR, name);
       try {
-        var stat = fsModule.statSync(dirPath);
+        var stat = await fsModule.promises.stat(dirPath);
         if (stat.isDirectory()) {
           // sub-dir per roomId (from rtmp.js FFmpeg output)
           var m3u8 = pathModule.join(dirPath, 'index.m3u8');
           try {
-            var m3u8Stat = fsModule.statSync(m3u8);
+            var m3u8Stat = await fsModule.promises.stat(m3u8);
             var ageMs = now - m3u8Stat.mtimeMs;
             var room = rooms.get(name);
             streamsIn.push({
@@ -1338,20 +1339,20 @@ app.get('/api/streams/live', requireAuth, function(req, res) {
           } catch(e) { /* no m3u8 yet */ }
         } else if (name.endsWith('.m3u8')) {
           // flat layout: /hls/<key>.m3u8
-          var ageMs = now - stat.mtimeMs;
+          var flatAgeMs = now - stat.mtimeMs;
           var key = name.replace('.m3u8', '');
-          var room = rooms.get(key);
+          var flatRoom = rooms.get(key);
           streamsIn.push({
             roomId:    key,
-            active:    ageMs < STALE_MS,
-            ageMs:     Math.floor(ageMs),
+            active:    flatAgeMs < STALE_MS,
+            ageMs:     Math.floor(flatAgeMs),
             hlsUrl:    '/hls/' + name,
-            viewers:   room ? (room.viewers ? room.viewers.size : 0) : 0,
+            viewers:   flatRoom ? (flatRoom.viewers ? flatRoom.viewers.size : 0) : 0,
             startedAt: Math.floor(stat.birthtimeMs)
           });
         }
       } catch(e) { /* skip */ }
-    });
+    }
   } catch(e) {
     // HLS dir doesn't exist yet — no active streams
   }

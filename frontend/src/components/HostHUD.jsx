@@ -41,6 +41,8 @@ export default function HostHUD(props) {
   var superChatCount       = props.superChatCount;
   var giftCount            = props.giftCount;
   var addToast             = props.addToast;
+  var addToastRef          = useRef(addToast);
+  addToastRef.current      = addToast;
   var isVisible            = props.isVisible;
   var streamStats          = props.streamStats || null; // { bitratekbps, rttMs, lossPct }
   var onHypePeak           = props.onHypePeak || null;
@@ -130,12 +132,12 @@ export default function HostHUD(props) {
     var curr = viewerCount || 0;
     MILESTONES.forEach(function(m) {
       if (prev < m && curr >= m) {
-        if (addToast) addToast('🎉 ' + m + ' viewers in the room!', 'success');
+        if (addToastRef.current) addToastRef.current('🎉 ' + m + ' viewers in the room!', 'success');
       }
     });
     prevViewers.current = curr;
     setSpark(function(s) { return s.concat([curr]).slice(-20); });
-  }, [viewerCount, addToast]);
+  }, [viewerCount]);
 
   // ── Trivia launcher state ───────────────────────────────────────────────
   var showTriviaFormState = useState(false);
@@ -146,9 +148,10 @@ export default function HostHUD(props) {
   var triviaQ      = triviaQState[0];
   var setTriviaQ   = triviaQState[1];
 
-  var triviaOptsState = useState(['', '']);
+  var triviaOptsState = useState([{ id: 1, text: '' }, { id: 2, text: '' }]);
   var triviaOpts      = triviaOptsState[0];
   var setTriviaOpts   = triviaOptsState[1];
+  var nextOptIdRef    = useRef(3);
 
   var triviaCorrectState = useState(0);
   var triviaCorrect      = triviaCorrectState[0];
@@ -183,29 +186,29 @@ export default function HostHUD(props) {
 
   var launchTrivia = function() {
     var q         = triviaQ.trim();
-    var validOpts = triviaOpts.filter(function(o) { return o.trim().length > 0; });
+    var validOpts = triviaOpts.filter(function(o) { return o.text.trim().length > 0; });
     if (!q || validOpts.length < 2) {
-      if (addToast) addToast('Need a question and at least 2 options', 'error');
+      if (addToastRef.current) addToastRef.current('Need a question and at least 2 options', 'error');
       return;
     }
-    if (!socket) { if (addToast) addToast('Not connected', 'error'); return; }
+    if (!socket) { if (addToastRef.current) addToastRef.current('Not connected', 'error'); return; }
     var correctIdx = Math.min(triviaCorrect, validOpts.length - 1);
     socket.emit('trivia-start', {
       question:   q,
-      options:    validOpts.map(function(o) { return { text: o.trim() }; }),
+      options:    validOpts.map(function(o) { return { text: o.text.trim() }; }),
       correctIdx: correctIdx,
       durationMs: triviaDur * 1000
     });
     setTriviaActive(true);
     setShowTriviaForm(false);
-    if (addToast) addToast('🎯 Trivia launched!', 'success');
+    if (addToastRef.current) addToastRef.current('🎯 Trivia launched!', 'success');
   };
 
   var endTrivia = function() {
     if (socket) socket.emit('trivia-end', {});
     setTriviaActive(false);
     setTriviaSecsLeft(0);
-    if (addToast) addToast('Trivia ended', 'info');
+    if (addToastRef.current) addToastRef.current('Trivia ended', 'info');
   };
 
   var fmtTime = function(s) {
@@ -380,14 +383,15 @@ export default function HostHUD(props) {
 
                 {triviaOpts.map(function(opt, i) {
                   return (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+                    <div key={opt.id} style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
                       <input type="radio" name="triviaCorrect" checked={triviaCorrect === i}
                         onChange={function() { setTriviaCorrect(i); }}
                         style={{ accentColor: GOLD, flexShrink: 0 }} />
-                      <input value={opt}
+                      <input value={opt.text}
                         onChange={function(e) {
                           var val = e.target.value;
-                          setTriviaOpts(function(prev) { var n = prev.slice(); n[i] = val; return n; });
+                          var optId = opt.id;
+                          setTriviaOpts(function(prev) { return prev.map(function(o) { return o.id === optId ? { id: o.id, text: val } : o; }); });
                         }}
                         placeholder={'Option ' + (i + 1)}
                         style={{ flex: 1, background: CARD, border: '1px solid ' + (triviaCorrect === i ? 'rgba(201,168,76,.4)' : 'rgba(201,168,76,.1)'), borderRadius: 5, padding: '4px 6px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, outline: 'none' }} />
@@ -403,7 +407,11 @@ export default function HostHUD(props) {
                 })}
 
                 {triviaOpts.length < 4 && (
-                  <button onClick={function() { setTriviaOpts(function(prev) { return prev.concat(''); }); }}
+                  <button onClick={function() {
+                    var newId = nextOptIdRef.current;
+                    nextOptIdRef.current = nextOptIdRef.current + 1;
+                    setTriviaOpts(function(prev) { return prev.concat({ id: newId, text: '' }); });
+                  }}
                     style={{ background: 'none', border: '1px dashed rgba(201,168,76,.2)', borderRadius: 5, color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 8, padding: '3px 0', cursor: 'pointer', width: '100%', marginBottom: 5 }}>
                     + OPTION
                   </button>
