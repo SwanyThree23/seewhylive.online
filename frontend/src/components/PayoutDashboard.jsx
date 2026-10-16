@@ -54,7 +54,7 @@ export default function PayoutDashboard({ addToast, roomId }) {
       var pl = (sess.totalCents || 0) - cr;
       rows.push([
         fmtDate(sess.date),
-        '"' + (sess.label || '') + '"',
+        '"' + (sess.label || '').replace(/"/g, '""') + '"',
         fmtC(sess.totalCents),
         fmtC(cr),
         fmtC(pl),

@@ -95,7 +95,7 @@ export default function MobileNavBar(props) {
   }
 
   return (
-    <div>
+    <div style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
       <style>{ANIM}</style>
 
       {/* ── More drawer ── */}

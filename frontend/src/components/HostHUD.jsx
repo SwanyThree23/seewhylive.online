@@ -135,7 +135,7 @@ export default function HostHUD(props) {
     });
     prevViewers.current = curr;
     setSpark(function(s) { return s.concat([curr]).slice(-20); });
-  }, [viewerCount]);
+  }, [viewerCount, addToast]);
 
   // ── Trivia launcher state ───────────────────────────────────────────────
   var showTriviaFormState = useState(false);
