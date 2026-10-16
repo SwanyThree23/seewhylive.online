@@ -480,12 +480,19 @@ export default function LiveRoomPage({
     if (!triviaStartId) return;
     var id = setInterval(function() {
       setTriviaCountdown(function(prev) {
-        if (prev <= 100) { clearInterval(id); return 0; }
-        return prev - 100;
+        return prev <= 100 ? 0 : prev - 100;
       });
     }, 100);
     return function() { clearInterval(id); };
   }, [triviaStartId]);
+
+  useEffect(function() {
+    if (triviaCountdown === 0 && triviaStartId) setTriviaStartId(null);
+  }, [triviaCountdown, triviaStartId]);
+
+  useEffect(function() {
+    if (slowWaitSec === 0) clearInterval(slowWaitRef.current);
+  }, [slowWaitSec]);
 
   // ── Camera warm-up ──
   useEffect(function() {
@@ -692,10 +699,7 @@ export default function LiveRoomPage({
       setSlowWaitSec(wait);
       clearInterval(slowWaitRef.current);
       slowWaitRef.current = setInterval(function() {
-        setSlowWaitSec(function(w) {
-          if (w <= 1) { clearInterval(slowWaitRef.current); return 0; }
-          return w - 1;
-        });
+        setSlowWaitSec(function(w) { return w <= 1 ? 0 : w - 1; });
       }, 1000);
     });
 

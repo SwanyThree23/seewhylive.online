@@ -662,7 +662,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
 
   // ── ACTIVE BATTLE ───────────────────────────────────────────────────────────
   var countdownColor = countdown < 30 ? '#FF1A3C' : '#F0E8D4';
-  var lastLog = battleLog.slice(-5);
+  var lastLog = battleLog.slice(0, 5);
   var totalVotes = (challengerScore || 0) + (defenderScore || 0);
   var challPct = totalVotes > 0 ? Math.floor((challengerScore || 0) / totalVotes * 100) : 50;
   var defPct = 100 - challPct;
@@ -775,7 +775,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
               {cheerA.slice(0, 20).map(function(u, i) {
                 var initials = u.slice(0, 2).toUpperCase();
                 return (
-                  <div key={i} title={u} style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(128,0,32,.7)', border: '1px solid rgba(128,0,32,.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 7, color: '#F0E8D4' }}>
+                  <div key={u + ':a:' + i} title={u} style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(128,0,32,.7)', border: '1px solid rgba(128,0,32,.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 7, color: '#F0E8D4' }}>
                     {initials}
                   </div>
                 );
@@ -792,7 +792,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
               {cheerB.slice(0, 20).map(function(u, i) {
                 var initials = u.slice(0, 2).toUpperCase();
                 return (
-                  <div key={i} title={u} style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(201,168,76,.7)', border: '1px solid rgba(201,168,76,.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 7, color: '#0E0C09' }}>
+                  <div key={u + ':b:' + i} title={u} style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(201,168,76,.7)', border: '1px solid rgba(201,168,76,.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 7, color: '#0E0C09' }}>
                     {initials}
                   </div>
                 );
@@ -837,7 +837,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
             lastLog.map(function(entry, idx) {
               return (
                 <div
-                  key={idx}
+                  key={(entry.ts || entry.time || '') + ':' + idx}
                   style={{
                     display: 'flex',
                     gap: 10,
