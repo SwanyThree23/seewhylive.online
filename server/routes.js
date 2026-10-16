@@ -394,7 +394,7 @@ router.delete('/moderation/word-filters/:id', requireAuth, moderationRateLimit, 
   }
 });
 
-router.post('/moderation/subscriber-only', requireAuth, function(req, res) {
+router.post('/moderation/subscriber-only', requireAuth, moderationRateLimit, function(req, res) {
   if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
     var roomId = String(req.body.roomId || '');
@@ -847,7 +847,7 @@ router.post('/ppv/create', requireAuth, ppvCreateRateLimit, async function(req, 
   }
 });
 
-router.post('/ppv/verify', requireAuth, function(req, res) {
+router.post('/ppv/verify', requireAuth, moderationRateLimit, function(req, res) {
   try {
     var token = String(req.body.token || '');
     if (!token || !/^[0-9a-f]{32}$/i.test(token)) {
@@ -1241,7 +1241,11 @@ router.post('/fanout-start', requireAuth, fanoutStartRateLimit, async function(r
     var guestId  = req.user.id;
     var rtmpHost  = process.env.RTMP_INGEST_HOST || 'localhost';
     var rtmpPort  = process.env.RTMP_INGEST_PORT || '1935';
-    var ingestUrl = b.ingest_url || ('rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + (b.room_id || b.stream_key || 'stream'));
+    var rawPathSeg = b.room_id || b.stream_key || 'stream';
+    if (!/^[\w.\-]{1,128}$/.test(rawPathSeg)) {
+      return res.status(400).json({ ok: false, error: 'invalid room_id/stream_key' });
+    }
+    var ingestUrl = b.ingest_url || ('rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + rawPathSeg);
     if (b.ingest_url) {
       var parsedIngest;
       try { parsedIngest = new URL(b.ingest_url); } catch (_) { return res.status(400).json({ ok: false, error: 'ingest_url is not a valid URL' }); }
