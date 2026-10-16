@@ -31,6 +31,37 @@ var CANNED_LINES = [
   'This is going viral 📈'
 ];
 
+var TabBtn = function(props) {
+  return (
+    <button
+      onClick={props.onSelect}
+      style={{
+        flex: 1,
+        background: 'none',
+        border: 'none',
+        borderBottom: '2px solid ' + (props.active ? GOLD_H : 'transparent'),
+        padding: '11px 0 9px 0',
+        color: props.active ? GOLD_H : MUTED,
+        fontFamily: fU,
+        fontWeight: 700,
+        fontSize: 13,
+        letterSpacing: 1,
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        transition: 'color .15s'
+      }}>
+      {props.label}
+      {props.badge > 0 && (
+        <span style={{ background: BURG_H, color: '#fff', fontFamily: fM, fontSize: 8, fontWeight: 700, borderRadius: 999, padding: '1px 6px', minWidth: 16, textAlign: 'center' }}>
+          {props.badge}
+        </span>
+      )}
+    </button>
+  );
+}
 
 export default function CollabTab({ addToast, isLive, userId, username, socket, roomId }) {
   var [requests,    setRequests]    = useState([]);
@@ -177,40 +208,6 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
 
   var activeCollabs = requests.filter(function(r) { return r.status === 'accepted'; });
 
-  /* ── Tab bar ── */
-  var TabBtn = function(props) {
-    var isActive = section === props.id;
-    return (
-      <button
-        onClick={function() { setSection(props.id); }}
-        style={{
-          flex: 1,
-          background: 'none',
-          border: 'none',
-          borderBottom: '2px solid ' + (isActive ? GOLD_H : 'transparent'),
-          padding: '11px 0 9px 0',
-          color: isActive ? GOLD_H : MUTED,
-          fontFamily: fU,
-          fontWeight: 700,
-          fontSize: 13,
-          letterSpacing: 1,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 6,
-          transition: 'color .15s'
-        }}>
-        {props.label}
-        {props.badge > 0 && (
-          <span style={{ background: BURG_H, color: '#fff', fontFamily: fM, fontSize: 8, fontWeight: 700, borderRadius: 999, padding: '1px 6px', minWidth: 16, textAlign: 'center' }}>
-            {props.badge}
-          </span>
-        )}
-      </button>
-    );
-  }
-
   var pendingCount = requests.filter(function(r) { return r.status === 'pending'; }).length;
 
   return (
@@ -223,9 +220,9 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
 
         {/* Tab bar */}
         <div style={{ display: 'flex', borderBottom: '1px solid ' + BORDER }}>
-          <TabBtn id="requests" label="REQUESTS" badge={pendingCount} />
-          <TabBtn id="discover" label="DISCOVER" badge={0} />
-          <TabBtn id="active"   label="ACTIVE"   badge={activeCollabs.length} />
+          <TabBtn id="requests" label="REQUESTS" badge={pendingCount} active={section === 'requests'} onSelect={function() { setSection('requests'); }} />
+          <TabBtn id="discover" label="DISCOVER" badge={0} active={section === 'discover'} onSelect={function() { setSection('discover'); }} />
+          <TabBtn id="active"   label="ACTIVE"   badge={activeCollabs.length} active={section === 'active'} onSelect={function() { setSection('active'); }} />
         </div>
       </div>
 

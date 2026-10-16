@@ -115,7 +115,7 @@ export default function PushStreamTab({ isLive, addToast }) {
             {keyVisible ? '🙈' : '👁'}
           </button>
           <button
-            onClick={function() { copyText(STREAM_KEY_PLACEHOLDER, 'Stream Key'); }}
+            onClick={function() { if (addToast) addToast('This is a placeholder — enter your real stream key in the KEYS tab', 'info'); }}
             style={{ background: copied === 'Stream Key' ? 'rgba(201,168,76,.2)' : 'rgba(201,168,76,.1)', border: '1px solid ' + (copied === 'Stream Key' ? '#C9A84C' : '#C9A84C44'), borderRadius: 6, padding: '6px 10px', color: copied === 'Stream Key' ? '#C9A84C' : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>
             {copied === 'Stream Key' ? '✓' : 'COPY'}
           </button>
