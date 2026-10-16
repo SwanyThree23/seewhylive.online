@@ -114,12 +114,19 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
       headers: _authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ stream_id: streamId })
     })
-      .then(function(r) { return r.json(); })
-      .catch(function() { return {}; })
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
       .then(function() {
         setFanoutActive(false);
         setBitrates({});
         addToast('⏹ Fanout stopped', 'info');
+      })
+      .catch(function(e) {
+        setFanoutActive(false);
+        setBitrates({});
+        addToast('Fanout stop error: ' + e.message, 'error');
       });
   }
 
@@ -271,8 +278,9 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
       {customDests.map(function(dest, idx) {
         var cid     = 'custom_' + idx;
         var isOn    = Boolean(customEnabled[cid]);
+        var stableKey = dest.id || cid;
         return (
-          <div key={cid} style={{ background: isOn ? 'rgba(212,133,74,.06)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? 'rgba(212,133,74,.4)' : 'rgba(26,21,16,1)'), borderRadius: 10, padding: '10px 12px' }}>
+          <div key={stableKey} style={{ background: isOn ? 'rgba(212,133,74,.06)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? 'rgba(212,133,74,.4)' : 'rgba(26,21,16,1)'), borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(212,133,74,.15)', border: '1px solid rgba(212,133,74,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, color: '#C9A84C' }}>
                 📡
@@ -380,7 +388,7 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
                   onClick={function() {
                     if (!newCustom.name.trim()) { addToast('Enter a destination name', 'error'); return; }
                     if (!newCustom.url.trim()) { addToast('Enter an RTMP URL', 'error'); return; }
-                    setCustomDests(function(prev) { return prev.concat([{ name: newCustom.name.trim(), url: newCustom.url.trim(), key: newCustom.key }]); });
+                    setCustomDests(function(prev) { return prev.concat([{ name: newCustom.name.trim(), url: newCustom.url.trim(), key: newCustom.key, id: 'cdest_' + Date.now() }]); });
                     setNewCustom({ name: '', url: '', key: '' });
                     setShowAddCustom(false);
                     addToast('Custom RTMP destination added', 'success');

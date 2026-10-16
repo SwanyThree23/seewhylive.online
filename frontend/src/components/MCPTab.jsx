@@ -67,19 +67,22 @@ export default function MCPTab({ addToast, isLive }) {
 
   // Health polling every 30s
   useEffect(function() {
+    var mounted = true;
     var doHealthCheck = function() {
       fetch('/api/health').then(function(res) {
         return res.json();
       }).then(function(data) {
+        if (!mounted) return;
         setServerHealth(data);
         setHealthCheckedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
       }).catch(function() {
+        if (!mounted) return;
         setHealthCheckedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
       });
     }
     doHealthCheck();
     var id = setInterval(doHealthCheck, 30000);
-    return function() { clearInterval(id); };
+    return function() { mounted = false; clearInterval(id); };
   }, []);
 
   var copyEndpoint = function() {

@@ -117,29 +117,34 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
   useEffect(function() {
     if (!pollRunning) { if (pollTimerRef.current) clearInterval(pollTimerRef.current); return; }
     pollTimerRef.current = setInterval(function() {
-      setPollTimer(function(n) {
-        if (n <= 1) {
-          clearInterval(pollTimerRef.current);
-          setPollRunning(false);
-          setPollEnded(true);
-          return 0;
-        }
-        return n - 1;
-      });
+      setPollTimer(function(n) { return n <= 1 ? 0 : n - 1; });
     }, 1000);
     return function() { clearInterval(pollTimerRef.current); };
   }, [pollRunning]);
 
+  useEffect(function() {
+    if (pollRunning && pollTimer === 0) {
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      setPollRunning(false);
+      setPollEnded(true);
+    }
+  }, [pollTimer, pollRunning]);
+
 
   var toggleRule = function(id) {
+    var target = null;
+    for (var ri = 0; ri < rules.length; ri++) {
+      if (rules[ri].id === id) { target = rules[ri]; break; }
+    }
+    if (!target) return;
+    var nextEnabled = !target.enabled;
     setRules(function(prev) {
       return prev.map(function(r) {
         if (r.id !== id) return r;
-        var next = Object.assign({}, r, { enabled: !r.enabled });
-        if (socket) socket.emit('bot-rule-toggle', { roomId: roomId, rule: id, enabled: next.enabled });
-        return next;
+        return Object.assign({}, r, { enabled: nextEnabled });
       });
     });
+    if (socket) socket.emit('bot-rule-toggle', { roomId: roomId, rule: id, enabled: nextEnabled });
   }
 
   var sendManual = function() {
@@ -191,12 +196,13 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
   }
 
   var endPoll = function() {
+    var pollId = 'poll_' + Date.now();
     setPollRunning(false);
     setPollEnded(true);
     if (pollTimerRef.current) clearInterval(pollTimerRef.current);
     if (activePoll) {
       setPastPolls(function(prev) {
-        return [Object.assign({}, activePoll, { votes: Object.assign({}, pollVotes), ended: true })].concat(prev.slice(0, 4));
+        return [Object.assign({}, activePoll, { votes: Object.assign({}, pollVotes), ended: true, id: pollId })].concat(prev.slice(0, 4));
       });
       if (socket && roomId) {
         socket.emit('poll-end', { roomId: roomId, votes: Object.assign({}, pollVotes) });
@@ -499,7 +505,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                 var total = Object.values(p.votes).reduce(function(s, v) { return s + v; }, 0);
                 var maxVotes = Math.max.apply(null, Object.values(p.votes).concat([0]));
                 return (
-                  <div key={pi} style={{ background: 'rgba(26,21,16,.6)', border: '1px solid #3D3020', borderRadius: 9, padding: '9px 12px' }}>
+                  <div key={p.id || ('poll_' + pi)} style={{ background: 'rgba(26,21,16,.6)', border: '1px solid #3D3020', borderRadius: 9, padding: '9px 12px' }}>
                     <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#A89CC8', marginBottom: 6 }}>{p.question}</div>
                     {p.options.map(function(opt, oi) {
                       var v = p.votes[oi] || 0;
@@ -566,9 +572,9 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                 Waiting for events...
               </div>
             )}
-            {displayLogs.map(function(log) {
+            {displayLogs.map(function(log, li) {
               return (
-                <div key={log.id || Math.random()} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', background: 'rgba(26,21,16,.5)', borderRadius: 6, borderLeft: '2px solid rgba(201,168,76,.25)' }}>
+                <div key={log.id || (log.ts + ':' + li)} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', background: 'rgba(26,21,16,.5)', borderRadius: 6, borderLeft: '2px solid rgba(201,168,76,.25)' }}>
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3020', flexShrink: 0, marginTop: 2 }}>{formatTime(log.ts)}</span>
                   <span style={{ fontSize: 13, flexShrink: 0, lineHeight: 1.1 }}>{getLogIcon(log.event)}</span>
                   <div style={{ minWidth: 0 }}>

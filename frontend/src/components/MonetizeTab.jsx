@@ -81,9 +81,9 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
     if (!token) return;
     var mounted = true;
     fetch('/api/rewards/tiers', { headers: { 'Authorization': 'Bearer ' + token } })
-      .then(function(r) { return r.json(); })
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function(d) { if (mounted && Array.isArray(d)) setRewardTiers(d); })
-      .catch(function() {});
+      .catch(function(e) { if (mounted && addToast) addToast('Could not load reward tiers', 'error'); });
     fetch('/api/rewards/my-tier', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function(r) { return r.json(); })
       .then(function(d) { if (mounted && d && d.tier) setMyTier(d.tier); })
