@@ -274,7 +274,7 @@ function OverlayCountdown({ countdown }) {
     tick();
     var t = setInterval(tick, 1000);
     return function() { clearInterval(t); };
-  }, [countdown && countdown.targetTs, countdown && countdown.visible]);
+  }, [countdown]);
   if (!countdown || !countdown.visible) return null;
   var h   = Math.floor(rem / 3600);
   var m   = Math.floor((rem % 3600) / 60);
@@ -398,6 +398,7 @@ export default function LiveRoomPage({
   var mediaRecRef    = useRef(null);
   var recChunksRef   = useRef([]);
   var recSecondsRef  = useRef(0);
+  var recUrlRef      = useRef(null);
   var [scoreReveal,    setScoreReveal]    = useState(null); // { username, score, label } | null
   var [showSuperChatSheet, setShowSuperChatSheet] = useState(false);
   var [showTTSSheet,       setShowTTSSheet]       = useState(false);
@@ -707,7 +708,7 @@ export default function LiveRoomPage({
       if (!data || !data.username) return;
       var so = { username: String(data.username).slice(0, 60), by: String(data.by || '').slice(0, 60) };
       setShoutout(so);
-      setTimeout(function() { setShoutout(null); }, 5000);
+      floatTimersRef.current.add(setTimeout(function() { setShoutout(null); }, 5000));
     });
 
     socket.on('qa-answering', function(data) {
@@ -722,7 +723,7 @@ export default function LiveRoomPage({
     socket.on('viewer-milestone', function(data) {
       if (!data || !data.count) return;
       setViewerMilestone({ count: data.count });
-      setTimeout(function() { setViewerMilestone(null); }, 5000);
+      floatTimersRef.current.add(setTimeout(function() { setViewerMilestone(null); }, 5000));
     });
 
     socket.on('gift-leaderboard', function(data) {
@@ -736,9 +737,9 @@ export default function LiveRoomPage({
       if (!data || !data.follower) return;
       var alert = { id: Date.now() + Math.random(), follower: String(data.follower).slice(0, 60) };
       setFollowAlert(alert);
-      setTimeout(function() {
+      floatTimersRef.current.add(setTimeout(function() {
         setFollowAlert(function(cur) { return (cur && cur.id === alert.id) ? null : cur; });
-      }, 4000);
+      }, 4000));
     };
     socket.on('creator-followed', onCreatorFollowed);
 
@@ -787,7 +788,7 @@ export default function LiveRoomPage({
         wrong:      Array.isArray(data.wrong)   ? data.wrong   : [],
         total:      data.total || 0
       });
-      setTimeout(function() { setTriviaResults(null); setTriviaMyAnswer(-1); }, 10000);
+      floatTimersRef.current.add(setTimeout(function() { setTriviaResults(null); setTriviaMyAnswer(-1); }, 10000));
     });
 
     socket.on('chat-react-update', function(data) {
@@ -803,9 +804,9 @@ export default function LiveRoomPage({
       if (!data || !data.text) return;
       var line = { id: Date.now() + Math.random(), text: String(data.text).slice(0, 300) };
       setCcLines(function(prev) { return prev.concat(line).slice(-3); });
-      setTimeout(function() {
+      floatTimersRef.current.add(setTimeout(function() {
         setCcLines(function(prev) { return prev.filter(function(l) { return l.id !== line.id; }); });
-      }, 6000);
+      }, 6000));
     });
 
     socket.on('poll-update', function(data) {
@@ -842,14 +843,14 @@ export default function LiveRoomPage({
     socket.on('music-shared', function(data) {
       if (!data || !data.title) return;
       setMusicBanner({ title: data.title, style: data.style || '', emoji: data.emoji || '🎵', sharedBy: data.sharedBy || '' });
-      setTimeout(function() { setMusicBanner(null); }, 6000);
+      floatTimersRef.current.add(setTimeout(function() { setMusicBanner(null); }, 6000));
     });
 
     socket.on('vs-update', function(data) {
       if (!data) { setVsPoll(null); setVsVoted(null); return; }
       setVsPoll(data);
       if (!data.active) {
-        setTimeout(function() { setVsPoll(null); setVsVoted(null); }, 8000);
+        floatTimersRef.current.add(setTimeout(function() { setVsPoll(null); setVsVoted(null); }, 8000));
       }
     });
 
@@ -861,7 +862,7 @@ export default function LiveRoomPage({
     socket.on('judge-scored', function(data) {
       if (!data) return;
       setScoreReveal({ username: data.username || 'Judge', score: data.score, label: data.label || '' });
-      setTimeout(function() { setScoreReveal(null); }, 3200);
+      floatTimersRef.current.add(setTimeout(function() { setScoreReveal(null); }, 3200));
     });
 
     socket.on('screen-share-active', function(data) {
@@ -965,6 +966,7 @@ export default function LiveRoomPage({
         try { mediaRecRef.current.stop(); } catch(e) {}
       }
       clearInterval(recTimerRef.current);
+      if (recUrlRef.current) { URL.revokeObjectURL(recUrlRef.current); recUrlRef.current = null; }
       if (screenStreamRef.current) {
         screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
         screenStreamRef.current = null;
@@ -1233,7 +1235,9 @@ export default function LiveRoomPage({
       mr.ondataavailable = function(e) { if (e.data && e.data.size > 0) recChunksRef.current.push(e.data); };
       mr.onstop = function() {
         var blob = new Blob(recChunksRef.current, { type: 'video/webm' });
+        if (recUrlRef.current) URL.revokeObjectURL(recUrlRef.current);
         var url  = URL.createObjectURL(blob);
+        recUrlRef.current = url;
         setRecUrl(url);
         setRecState('done');
         stream.getTracks().forEach(function(t) { t.stop(); });
@@ -1254,12 +1258,13 @@ export default function LiveRoomPage({
       recSecondsRef.current = 0;
       setRecSeconds(0);
       recTimerRef.current = setInterval(function() {
-        setRecSeconds(function(s) {
-          var next = s + 1;
-          recSecondsRef.current = next;
-          if (next >= 600) { mr.stop(); }
-          return next;
-        });
+        recSecondsRef.current = recSecondsRef.current + 1;
+        var next = recSecondsRef.current;
+        setRecSeconds(next);
+        if (next >= 600) {
+          clearInterval(recTimerRef.current);
+          mr.stop();
+        }
       }, 1000);
     }).catch(function() {
       if (addToast) addToast('Camera access required to record', 'error');
