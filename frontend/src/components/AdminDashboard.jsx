@@ -179,7 +179,7 @@ export default function AdminDashboard({ addToast }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {txns.map(function(tx, i) {
                     return (
-                      <div key={i} style={{ background: SURF, border: '1px solid rgba(255,255,255,.05)', borderRadius: 8, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div key={tx.id || (tx.ts + ':' + tx.type + ':' + i)} style={{ background: SURF, border: '1px solid rgba(255,255,255,.05)', borderRadius: 8, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{ flexShrink: 0, fontFamily: "'DM Mono',monospace", fontSize: 8, color: typeColor(tx.type), background: typeColor(tx.type) + '18', border: '1px solid ' + typeColor(tx.type) + '33', borderRadius: 4, padding: '2px 6px', whiteSpace: 'nowrap' }}>
                           {typeLabel(tx.type)}
                         </div>
