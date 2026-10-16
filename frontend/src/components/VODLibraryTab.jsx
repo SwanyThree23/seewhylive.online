@@ -64,6 +64,11 @@ export default function VODLibraryTab({ addToast, isLive }) {
     setClips(listClips());
   }, [tab]);
 
+  var closePlayer = function() {
+    if (playingClip && playingClip.url) URL.revokeObjectURL(playingClip.url);
+    setPlayingClip(null);
+  }
+
   var openClip = function(meta) {
     setLoadingId(meta.id);
     loadClip(meta.id).then(function(blob) {
@@ -80,7 +85,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
   var removeClip = function(id) {
     deleteClip(id).then(function() {
       setClips(listClips());
-      if (playingClip && playingClip.meta.id === id) setPlayingClip(null);
+      if (playingClip && playingClip.meta.id === id) closePlayer();
       if (addToast) addToast('Clip deleted', 'info');
     }).catch(function() {
       if (addToast) addToast('Delete failed', 'error');
@@ -192,7 +197,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
                         style={{ flex: 1, background: 'none', border: 'none', borderRight: '1px solid ' + BORDER, padding: '10px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
                         ▶ PLAY
                       </button>
-                      <button onClick={function() { loadClip(meta.id).then(function(blob) { if (blob) { var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = 'seewhy-clip-' + meta.ts + '.webm'; a.click(); } }); }}
+                      <button onClick={function() { loadClip(meta.id).then(function(blob) { if (blob) { var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = 'seewhy-clip-' + meta.ts + '.webm'; a.click(); URL.revokeObjectURL(url); } }); }}
                         style={{ flex: 1, background: 'none', border: 'none', borderRight: '1px solid ' + BORDER, padding: '10px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
                         💾 SAVE
                       </button>
@@ -244,8 +249,8 @@ export default function VODLibraryTab({ addToast, isLive }) {
       {/* ── VIDEO PLAYER MODAL ── */}
       {playingClip && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.92)', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-          onClick={function(e) { if (e.target === e.currentTarget) setPlayingClip(null); }}>
-          <button onClick={function() { setPlayingClip(null); }} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: '#fff', fontSize: 26, cursor: 'pointer', lineHeight: 1, zIndex: 1001 }}>✕</button>
+          onClick={function(e) { if (e.target === e.currentTarget) closePlayer(); }}>
+          <button onClick={function() { closePlayer(); }} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: '#fff', fontSize: 26, cursor: 'pointer', lineHeight: 1, zIndex: 1001 }}>✕</button>
           <div style={{ width: '100%', maxWidth: 480, background: CARD, borderRadius: 16, overflow: 'hidden', border: '1px solid ' + BORDER }}>
             <div style={{ position: 'relative', paddingTop: '56.25%', background: '#000' }}>
               <video

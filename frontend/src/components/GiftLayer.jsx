@@ -101,7 +101,7 @@ export default function GiftLayer(props) {
       })}
 
       {/* Gift floats */}
-      {giftFloats.map(function(g) {
+      {giftFloats.map(function(g, gi) {
         var left        = Math.floor(Math.abs(g.floatId || 0) % 65) + 5;
         var valueCents  = Math.floor(g.value_cents || g.valueCents || 0);
         var isLegendary = valueCents >= 500;
@@ -112,7 +112,7 @@ export default function GiftLayer(props) {
         var amtColor    = isLegendary ? GOLD : isLarge ? TEAL : '#A89CC8';
         var animDur     = isLegendary ? '4.2s' : '3.5s';
         return (
-          <div key={g.floatId}
+          <div key={g.floatId != null ? g.floatId : ('gift_' + gi)}
             style={{
               position: 'absolute',
               left: left + '%',
