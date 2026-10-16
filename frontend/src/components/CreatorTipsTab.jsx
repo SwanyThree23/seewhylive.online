@@ -553,6 +553,8 @@ export default function CreatorTipsTab({ addToast, username }) {
   var [aiInput,     setAiInput]     = useState('');
   var [aiLoading,   setAiLoading]   = useState(false);
   var chatEndRef = useRef(null);
+  var aiMountedRef = useRef(true);
+  useEffect(function() { aiMountedRef.current = true; return function() { aiMountedRef.current = false; }; }, []);
 
   var callGuide = useCallback(function(prompt) {
     if (!prompt || !prompt.trim()) return;
@@ -567,12 +569,14 @@ export default function CreatorTipsTab({ addToast, username }) {
     })
       .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
       .then(function(data) {
+        if (!aiMountedRef.current) return;
         var reply = (data && data.text) ? data.text : 'Sorry, I couldn\'t get a response. Try again.';
         setAiMsgs(function(prev) { return prev.concat([{ role: 'guide', text: reply, time: fmtTime() }]); });
         setAiLoading(false);
         if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
       })
       .catch(function() {
+        if (!aiMountedRef.current) return;
         setAiMsgs(function(prev) { return prev.concat([{ role: 'guide', text: 'Connection error — check your internet and try again.', time: fmtTime() }]); });
         setAiLoading(false);
       });

@@ -199,13 +199,11 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
   }
 
   var toggleModRule = function(key) {
-    setModRules(function(prev) {
-      var next = Object.assign({}, prev);
-      next[key] = !prev[key];
-      if (socket) socket.emit('mod-rules', { roomId: roomId, rules: next });
-      if (addToast) addToast('Mod rule ' + key + (next[key] ? ' ON' : ' OFF'), 'info');
-      return next;
-    });
+    var next = Object.assign({}, modRules);
+    next[key] = !modRules[key];
+    setModRules(next);
+    if (socket) socket.emit('mod-rules', { roomId: roomId, rules: next });
+    if (addToast) addToast('Mod rule ' + key + (next[key] ? ' ON' : ' OFF'), 'info');
   }
 
   var addSegment = function() {
@@ -266,7 +264,9 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
   }
 
   var genCohostLink = function() {
-    var token = Math.floor(Math.random() * 999999999).toString(36) + Date.now().toString(36);
+    var arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    var token = Array.prototype.map.call(arr, function(b) { return b.toString(16).padStart(2, '0'); }).join('');
     setCohostToken(token);
     var link = 'https://seewhylive.online/join/' + (roomId || 'live') + '?role=cohost&token=' + token;
     if (navigator.clipboard) { navigator.clipboard.writeText(link).catch(function() {}); }

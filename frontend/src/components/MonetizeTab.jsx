@@ -142,7 +142,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
   }
 
   var projGross = Math.floor(parseInt(projV || '0', 10) * 0.03 * 1000); // 3% convert at $10 avg
-  var projCreator = Math.floor(projGross * CREATOR_SHARE);
+  var projCreator = Math.floor(projGross * CREATOR_SPLIT);
 
   var TABS = [
     { id: 'flywheel',    label: '🔄 FLYWHEEL' },
