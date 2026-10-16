@@ -392,6 +392,15 @@ export default function MusicStudioTab(props) {
   useEffect(function() { padVolumesRef.current = padVolumes; }, [padVolumes]);
 
   useEffect(function() {
+    return function() {
+      if (_beatCtx && _beatCtx.state !== 'closed') {
+        _beatCtx.close().catch(function() {});
+        _beatCtx = null;
+      }
+    };
+  }, []);
+
+  useEffect(function() {
     if (!isLive) { setWaveform([]); return; }
     var gen = function() { var b = []; for (var i = 0; i < 20; i++) b.push(10 + Math.floor(Math.random() * 91)); return b; }
     setWaveform(gen());
@@ -1497,7 +1506,6 @@ export default function MusicStudioTab(props) {
                 <div key={tool.id} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ background: 'rgba(255,255,255,.03)', border: '1px solid ' + BORD, borderRadius: 10, padding: '10px 12px' }}>
                     <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: tool.color }}>{tool.emoji} {tool.label}</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, marginTop: 3 }}>{tool.desc}</div>
                   </div>
 
                   <div>
