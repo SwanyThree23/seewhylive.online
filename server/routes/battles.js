@@ -6,6 +6,8 @@ var requireAuth   = require('../middleware/auth');
 var pool          = require('../db');
 var { rateLimit } = require('express-rate-limit');
 
+var VALID_GIFT_CENTS = new Set([100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000]);
+
 var battleVoteRateLimit = rateLimit({
   windowMs: 60 * 1000,
   max: 30,
@@ -100,6 +102,9 @@ router.post('/:id/vote', requireAuth, battleVoteRateLimit, validateId, async fun
     var giftValueCents = Math.floor(req.body.giftValueCents);
     if (!Number.isFinite(giftValueCents) || giftValueCents < 1 || giftValueCents > 50000) {
       return res.status(400).json({ error: 'giftValueCents must be between 1 and 50000' });
+    }
+    if (!VALID_GIFT_CENTS.has(giftValueCents)) {
+      return res.status(400).json({ error: 'giftValueCents is not a valid gift denomination' });
     }
     var battle = await battleService.castVote({
       tenantId: req.tenantId,

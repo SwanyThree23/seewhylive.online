@@ -35,6 +35,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
   var audioCtxRef      = useRef(null);
   var levelInterval    = useRef(null);
   var previewStreamRef = useRef(null);
+  var cancelPreviewRef = useRef(null);
 
   // Enumerate devices
   useEffect(function() {
@@ -73,6 +74,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
   }, [camId, micId, quality, noiseSup, echoCan, autoGain, facingFront, tab]);
 
   var stopPreview = function() {
+    if (cancelPreviewRef.current) { cancelPreviewRef.current(); cancelPreviewRef.current = null; }
     if (animRef.current) cancelAnimationFrame(animRef.current);
     if (levelInterval.current) clearInterval(levelInterval.current);
     if (audioCtxRef.current) { audioCtxRef.current.close().catch(function(){}); audioCtxRef.current = null; }
@@ -87,6 +89,8 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
     stopPreview();
     setPreviewError('');
     setLoading(true);
+    var cancelled = false;
+    cancelPreviewRef.current = function() { cancelled = true; };
     var preset = QUALITY_PRESETS.find(function(p) { return p.id === quality; }) || QUALITY_PRESETS[2];
     var videoConstraints = {
       width:     { ideal: preset.width },
@@ -110,6 +114,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
         video: videoConstraints,
         audio: audioConstraints,
       });
+      if (cancelled) { stream.getTracks().forEach(function(t) { t.stop(); }); setLoading(false); return; }
       previewStreamRef.current = stream;
       setPreviewStream(stream);
       setLoading(false);
@@ -117,11 +122,11 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
         videoRef.current.srcObject = stream;
         videoRef.current.muted = true;
       }
-      startMicMeter(stream); alert('DEBUG SUCCESS: stream acquired, tracks=' + stream.getTracks().length);
+      startMicMeter(stream);
     } catch(e) {
       setLoading(false);
       setPreviewError(e.name + ': ' + e.message);
-      if (addToast) addToast('Camera/mic error: ' + e.message, 'error'); alert('DEBUG getUserMedia error: ' + e.name + ': ' + e.message);
+      if (addToast) addToast('Camera/mic error: ' + e.message, 'error');
     }
   }
 
@@ -172,7 +177,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
     if (onClose) onClose();
   }
 
-  var levelColor = micLevel > 70 ? '#FF1A3C' : micLevel > 40 ? '#C9A84C' : '#C9A84C';
+  var levelColor = micLevel > 70 ? '#FF1A3C' : micLevel > 40 ? '#D4854A' : '#C9A84C';
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(14,12,9,.92)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
