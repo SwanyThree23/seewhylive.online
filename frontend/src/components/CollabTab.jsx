@@ -95,7 +95,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
       if (username && data.from === username) return;
       var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       var newReq = {
-        id: 'live-' + data.ts,
+        id: 'live-' + (data.from || '') + '-' + data.ts,
         from: data.from,
         flag: '🌐',
         color: TEAL_H,
@@ -464,7 +464,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                       {msgs.map(function(m, idx) {
                         var fromColor = m.from === 'you' ? TEAL_H : req.color;
                         return (
-                          <div key={idx} style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 5, lineHeight: 1.4 }}>
+                          <div key={(m.ts || '') + ':' + (m.from || '') + ':' + idx} style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 5, lineHeight: 1.4 }}>
                             <span style={{ fontFamily: fM, fontSize: 8, color: MUTED, flexShrink: 0 }}>{m.ts}</span>
                             <span style={{ fontFamily: fU, fontWeight: 700, fontSize: 11, color: fromColor, flexShrink: 0 }}>{m.from}</span>
                             <span style={{ fontFamily: fM, fontSize: 10, color: TEXT }}>{m.text}</span>

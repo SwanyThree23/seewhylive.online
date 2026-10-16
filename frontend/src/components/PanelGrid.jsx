@@ -68,7 +68,7 @@ export default function PanelGrid({
       {Array.from({ length: MAX_SEATS }).map(function(_, idx) {
         var g   = seats[idx] || null;
         var gid = g ? (g.guestId || g.userId || ('seat-' + idx)) : ('empty-' + idx);
-        var isOwn = g && gid === userId;
+        var isOwn = g && g.userId === userId;
 
         return (
           <div
