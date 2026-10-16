@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 var SOCKET_URL = import.meta.env.VITE_SOCKET_URL || window.location.origin;
 
 var socket = null;
+var heartbeatInterval = null;
 var _rejoinPayload = null;    // stored join-room payload for auto-rejoin on reconnect
 var _onReconnect = null;      // optional callback to notify App on reconnect
 
@@ -43,7 +44,6 @@ export function getSocket(token) {
   // Presence heartbeat — restart on every connect so it survives reconnects.
   // A plain setInterval at getSocket() time is killed by the first disconnect
   // and never restarted, so the server evicts the socket from the presence map.
-  var heartbeatInterval = null;
   socket.on('connect', function() {
     clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(function() {
@@ -60,6 +60,8 @@ export function getSocket(token) {
 }
 
 export function destroySocket() {
+  clearInterval(heartbeatInterval);
+  heartbeatInterval = null;
   if (socket) {
     socket.disconnect();
     socket = null;

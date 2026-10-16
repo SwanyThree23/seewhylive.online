@@ -229,13 +229,18 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
 
   var removeEvent = function(id) {
     var ev = schedule.find(function(s) { return s.id === id; });
+    var origIdx = schedule.indexOf(ev);
     if (ev && ev.fromApi) {
       var _delTok = localStorage.getItem('sw_token') || '';
       fetch('/api/schedule/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + _delTok } })
         .then(function(r) {
           if (!r.ok) {
             if (addToast) addToast('Failed to delete event from server (' + r.status + ')', 'error');
-            setSchedule(function(p) { return p.concat([ev]); });
+            setSchedule(function(p) {
+              var next = p.slice();
+              next.splice(Math.min(origIdx, next.length), 0, ev);
+              return next;
+            });
           }
         })
         .catch(function() { if (addToast) addToast('Failed to delete event from server', 'error'); });
