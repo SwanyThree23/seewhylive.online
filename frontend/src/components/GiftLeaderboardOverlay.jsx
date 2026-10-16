@@ -128,7 +128,7 @@ export default function GiftLeaderboardOverlay(props) {
         <div style={{ background: 'rgba(14,12,9,.92)', border: '1px solid ' + BORDER, borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '6px 10px', backdropFilter: 'blur(8px)' }}>
           {rest.map(function(entry, i) {
             return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', borderBottom: i < rest.length - 1 ? '1px solid rgba(201,168,76,.06)' : 'none' }}>
+              <div key={entry.username || i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', borderBottom: i < rest.length - 1 ? '1px solid rgba(201,168,76,.06)' : 'none' }}>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, width: 12, textAlign: 'right', flexShrink: 0 }}>{i + 4}</span>
                 <div style={{ width: 20, height: 20, borderRadius: '50%', background: DIM, border: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 8, color: TEXT, flexShrink: 0 }}>
                   {getInitials(entry.username)}
