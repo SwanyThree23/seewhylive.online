@@ -72,7 +72,7 @@ router.post('/challenges/:id/complete', requireAuth, challengeCompleteRateLimit,
     console.error('[ROUTE ERROR]', err);
     var USER_ERRS = ['challenge is not active', 'challenge has expired', 'already voted in this battle'];
     var isUserErr = USER_ERRS.includes(err.message) || (err.code === '23505');
-    res.status(isUserErr ? 400 : 500).json({ error: err.message || 'Internal server error' });
+    res.status(isUserErr ? 400 : 500).json({ error: isUserErr ? err.message : 'Internal server error' });
   }
 });
 

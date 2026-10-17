@@ -54,7 +54,7 @@ router.post('/', requireAuth, inviteRateLimit, async function(req, res) {
 
 var VALID_INVITE_STATUSES = ['accepted', 'declined'];
 
-router.post('/:id/respond', requireAuth, async function(req, res) {
+router.post('/:id/respond', requireAuth, inviteRateLimit, async function(req, res) {
   if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid invite id' });
   var status = req.body.status;
   if (!VALID_INVITE_STATUSES.includes(status)) {
@@ -109,7 +109,7 @@ router.post('/streams/:streamId/links', requireAuth, async function(req, res) {
   }
 });
 
-router.post('/links/:token/redeem', requireAuth, async function(req, res) {
+router.post('/links/:token/redeem', requireAuth, inviteRateLimit, async function(req, res) {
   var token = String(req.params.token || '');
   if (!/^[0-9a-f]{32}$/i.test(token)) return res.status(400).json({ error: 'invalid invite token' });
   var _rlKey = req.user.id + ':' + token;
