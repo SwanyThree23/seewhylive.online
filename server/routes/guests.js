@@ -36,7 +36,7 @@ router.patch('/guests/:guestId', requireAuth, async function(req, res) {
   try {
     var guest = isHostOp
       ? await guestService.updateGuestState(req.params.guestId, req.body, null, req.user.id, req.tenantId)
-      : await guestService.updateGuestState(req.params.guestId, req.body, req.user.id);
+      : await guestService.updateGuestState(req.params.guestId, req.body, req.user.id, null, req.tenantId);
     if (!guest) return res.status(403).json({ error: 'not found or forbidden' });
     res.json(guest);
   } catch (err) {
@@ -88,8 +88,8 @@ router.patch('/participants/:participantId', requireAuth, async function(req, re
   }
   try {
     var participant = isHostOp
-      ? await guestService.updateParticipantState(req.params.participantId, req.body, null, req.user.id)
-      : await guestService.updateParticipantState(req.params.participantId, req.body, req.user.id);
+      ? await guestService.updateParticipantState(req.params.participantId, req.body, null, req.user.id, req.tenantId)
+      : await guestService.updateParticipantState(req.params.participantId, req.body, req.user.id, null, req.tenantId);
     if (!participant) return res.status(403).json({ error: 'not found or forbidden' });
     res.json(participant);
   } catch (err) {
