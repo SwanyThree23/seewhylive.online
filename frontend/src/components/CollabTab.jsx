@@ -72,7 +72,9 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
   var [chatMsgs,    setChatMsgs]    = useState({});
   var [chatInputs,  setChatInputs]  = useState({});
 
-  var chatBoxRefs = useRef({});
+  var chatBoxRefs     = useRef({});
+  var addToastRef     = useRef(addToast);
+  addToastRef.current = addToast;
 
   /* ── Incoming collab-message / collab-request / collab-accept from socket ── */
   useEffect(function() {
@@ -109,7 +111,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
         if (prev.some(function(r) { return r.id === newReq.id; })) return prev;
         return [newReq].concat(prev);
       });
-      if (addToast) addToast('📩 Collab request from ' + data.from + '!', 'info');
+      if (addToastRef.current) addToastRef.current('📩 Collab request from ' + data.from + '!', 'info');
     }
 
     var onCollabAccept = function(data) {
@@ -121,7 +123,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
           });
         });
       }
-      if (addToast) addToast('🤝 ' + (data.partner || data.from || 'Creator') + ' accepted collab!', 'success');
+      if (addToastRef.current) addToastRef.current('🤝 ' + (data.partner || data.from || 'Creator') + ' accepted collab!', 'success');
     }
 
     socket.on('collab-message', onCollabMsg);
@@ -132,7 +134,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
       socket.off('collab-request', onCollabRequest);
       socket.off('collab-accept',  onCollabAccept);
     };
-  }, [socket, username, addToast]);
+  }, [socket, username]);
 
   /* ── Auto-scroll on new messages ── */
   useEffect(function() {

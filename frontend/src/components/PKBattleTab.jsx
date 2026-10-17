@@ -57,6 +57,8 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   var defenderRef        = useRef('');
   var suddenDeathRef     = useRef(false);
   var countdownValRef    = useRef(0);
+  var addToastRef        = useRef(addToast);
+  addToastRef.current    = addToast;
   var clearAllIntervals = function() {
     if (countdownRef.current)  { clearInterval(countdownRef.current);  countdownRef.current  = null; }
   }
@@ -85,14 +87,14 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       setWinner(null);
       setCheerA([]);
       setCheerB([]);
-      if (addToast) addToast('⚔️ PK Battle started!', 'success');
+      if (addToastRef.current) addToastRef.current('⚔️ PK Battle started!', 'success');
     }
     var onPkEnd = function(data) {
       if (!data) return;
       setWinner(data.winner || null);
       setBattleState('ended');
       clearAllIntervals();
-      if (addToast) addToast('🏆 ' + (data.winner || 'Battle') + ' wins the PK!', 'success');
+      if (addToastRef.current) addToastRef.current('🏆 ' + (data.winner || 'Battle') + ' wins the PK!', 'success');
     }
     var onPkVoteUpdate = function(data) {
       if (!data) return;
@@ -113,7 +115,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       setBattleLog(function(prev) {
         return [{ time: fmtTime(), text: boostMsg, ts: Date.now() }].concat(prev).slice(0, 50);
       });
-      if (addToast) addToast('🎁 Gift boost! +' + pts, 'success');
+      if (addToastRef.current) addToastRef.current('🎁 Gift boost! +' + pts, 'success');
     }
     var onPkCheerUpdate = function(data) {
       if (!data) return;
@@ -122,7 +124,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     }
     var onPkSuddenDeath = function() {
       setBattleLog(function(prev) { return [{ text: '⚡ SUDDEN DEATH — next point wins!', ts: Date.now() }].concat(prev).slice(0, 20); });
-      if (addToast) addToast('⚡ SUDDEN DEATH round!', 'error');
+      if (addToastRef.current) addToastRef.current('⚡ SUDDEN DEATH round!', 'error');
     }
 
     socket.on('pk-start',        onPkStart);
@@ -140,7 +142,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       socket.off('pk-cheer-update', onPkCheerUpdate);
       socket.off('pk-sudden-death', onPkSuddenDeath);
     };
-  }, [socket, addToast]);
+  }, [socket]);
 
   var startBattle = function() {
     suddenDeathRef.current = false;

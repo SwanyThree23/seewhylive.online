@@ -78,6 +78,8 @@ export default function AudioStageTab(props) {
   var micCancelledRef = useRef(false);
 
   var isHost = role === 'host' || role === 'cohost';
+  var addToastRef     = useRef(addToast);
+  addToastRef.current = addToast;
 
   var handRaisedCount = listeners.filter(function(l) { return l.handRaised; }).length;
 
@@ -128,7 +130,7 @@ export default function AudioStageTab(props) {
 
     var onStageRemove = function(data) {
       if (!data || !data.guestId || data.guestId !== userId) return;
-      if (addToast) addToast('You have been removed from the stage', 'error');
+      if (addToastRef.current) addToastRef.current('You have been removed from the stage', 'error');
       stopMic();
       setMyMicOn(false);
       setMyHandRaised(false);
@@ -136,7 +138,7 @@ export default function AudioStageTab(props) {
 
     var onStageInvite = function(data) {
       if (!data || data.guestId !== userId) return;
-      if (addToast) addToast('🎙 You\'ve been invited to speak on stage!', 'success');
+      if (addToastRef.current) addToastRef.current('🎙 You\'ve been invited to speak on stage!', 'success');
     }
 
     var onReconnect = function() { setJoined(false); };
@@ -160,7 +162,7 @@ export default function AudioStageTab(props) {
       socket.off('stage-invite',         onStageInvite);
       socket.off('connect',              onReconnect);
     };
-  }, [socket, roomId, userId, addToast]);
+  }, [socket, roomId, userId]);
 
   // ── Join on mount ──────────────────────────────────────────
   useEffect(function() {
