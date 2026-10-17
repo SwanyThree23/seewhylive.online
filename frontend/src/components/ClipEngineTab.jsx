@@ -50,10 +50,11 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
   var [previewScrub, setPreviewScrub] = useState(0.15);
   var [previewPlaying, setPreviewPlaying] = useState(false);
   var [scrubDragging, setScrubDragging]   = useState(false);
-  var waveCanvasRef = useRef(null);
-  var scrubTrackRef = useRef(null);
-  var recRef = useRef(null);
-  var liveClipRef = useRef(null);
+  var waveCanvasRef    = useRef(null);
+  var scrubTrackRef    = useRef(null);
+  var recRef           = useRef(null);
+  var liveClipRef      = useRef(null);
+  var previewScrubRef  = useRef(0.15);
 
   useEffect(function() {
     if (!recording) {
@@ -164,17 +165,20 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
     if (!previewPlaying || !previewClip) return;
     var total = previewClip.duration || 60;
     var iv = setInterval(function() {
-      setPreviewScrub(function(prev) {
-        var next = prev + 1 / total;
-        if (next >= 1) { clearInterval(iv); setPreviewPlaying(false); return 1; }
-        return next;
-      });
+      previewScrubRef.current += 1 / total;
+      setPreviewScrub(previewScrubRef.current);
+      if (previewScrubRef.current >= 1) {
+        clearInterval(iv);
+        previewScrubRef.current = 0;
+        setPreviewPlaying(false);
+      }
     }, 1000);
     return function() { clearInterval(iv); };
   }, [previewPlaying, previewClip]);
 
   var openPreview = function(clip) {
     setPreviewClip(clip);
+    previewScrubRef.current = 0.15;
     setPreviewScrub(0.15);
     setPreviewTab('audio');
     setPreviewPlaying(false);
@@ -184,6 +188,7 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
     if (!scrubTrackRef.current) return;
     var rect = scrubTrackRef.current.getBoundingClientRect();
     var ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    previewScrubRef.current = ratio;
     setPreviewScrub(ratio);
   }
 

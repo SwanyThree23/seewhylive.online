@@ -102,7 +102,8 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
   var [bracketMode,  setBracketMode]  = useState('list');
   var [editMode,     setEditMode]     = useState(false);
   var [editScores,   setEditScores]   = useState({});  // matchId -> { score, status, winner }
-  var autoRef = useRef(null);
+  var autoRef          = useRef(null);
+  var pendingToastRef  = useRef([]);
 
   // ── Socket: real-time bracket updates ─────────────────────────────────────
   useEffect(function() {
@@ -152,6 +153,7 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
       return;
     }
     autoRef.current = setInterval(function() {
+      pendingToastRef.current = [];
       setQf(function(prev) {
         return prev.map(function(b) {
           if (b.status !== 'LIVE') return b;
@@ -162,9 +164,14 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
           var newScore = a + '-' + bv;
           var newStatus = (a >= 5 || bv >= 5) ? 'DONE' : 'LIVE';
           var winner = newStatus === 'DONE' ? (a >= 5 ? b.p1 : b.p2) : null;
-          if (winner && addToast) addToast(winner + ' wins the match! &#x1F3C6;', 'success');
+          if (winner && pendingToastRef.current.indexOf(winner) < 0) {
+            pendingToastRef.current.push(winner);
+          }
           return Object.assign({}, b, { score: newScore, status: newStatus, winner: winner });
         });
+      });
+      pendingToastRef.current.forEach(function(w) {
+        if (addToast) addToast(w + ' wins the match! &#x1F3C6;', 'success');
       });
     }, 1800);
     return function() { if (autoRef.current) clearInterval(autoRef.current); };
