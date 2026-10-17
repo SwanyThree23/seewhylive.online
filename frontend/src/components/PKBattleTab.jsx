@@ -201,15 +201,16 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
 
     var cScore = challengerScoreRef.current;
     var dScore = defenderScoreRef.current;
-    var w = cScore >= dScore ? challengerRef.current : defenderRef.current;
+    var w = cScore > dScore ? challengerRef.current : cScore < dScore ? defenderRef.current : null;
     setWinner(w);
     setBattleLog(function(prev) {
-      return prev.concat([{ time: fmtTime(), text: '🏆 ' + w + ' wins the PK Battle!' }]);
+      var msg = w ? ('🏆 ' + w + ' wins the PK Battle!') : '🤝 PK Battle ends in a draw!';
+      return prev.concat([{ time: fmtTime(), text: msg }]);
     });
     if (socket && roomId) {
       socket.emit('pk-end', { roomId: roomId, winner: w, challengerScore: cScore, defenderScore: dScore });
     }
-    addToast(w + ' wins the battle!', 'success');
+    if (w) { addToast(w + ' wins the battle!', 'success'); } else { addToast('Battle ends in a draw!', 'info'); }
   }
 
   var castVote = function(side) {
