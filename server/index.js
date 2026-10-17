@@ -4861,6 +4861,15 @@ process.on('SIGINT', function() {
   process.emit('SIGTERM');
 });
 
+process.on('uncaughtException', function(err) {
+  logger.error('[uncaughtException] ' + err.message + '\n' + err.stack);
+});
+
+process.on('unhandledRejection', function(reason) {
+  var msg = reason instanceof Error ? reason.message + '\n' + reason.stack : String(reason);
+  logger.error('[unhandledRejection] ' + msg);
+});
+
 module.exports = { app, server, io, rooms };
 
 // ─── ZEGO Token 04 generation ────────────────────────────────────────────────
