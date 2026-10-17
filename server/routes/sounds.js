@@ -113,11 +113,15 @@ router.post('/upload', requireAuth, soundUploadRateLimit, upload.single('audio')
   var safeName = req.file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
   var storagePath = req.tenantId + '/' + req.user.id + '/' + Date.now() + '-' + safeName;
 
-  fs.readFile(req.file.path, function(readErr, buffer) {
-    if (readErr) return res.status(500).json({ error: 'Failed to read upload' });
+  var tmpPath = req.file.path;
+  fs.readFile(tmpPath, function(readErr, buffer) {
+    if (readErr) {
+      fs.unlink(tmpPath, function() {});
+      return res.status(500).json({ error: 'Failed to read upload' });
+    }
 
     sbUpload('sounds/' + storagePath, buffer, req.file.mimetype, function(upErr, status, data) {
-      fs.unlink(req.file.path, function() {});
+      fs.unlink(tmpPath, function() {});
       if (upErr || status >= 400) return res.status(500).json({ error: 'Upload failed' });
 
       var publicUrl = 'https://' + SB_HOST + '/storage/v1/object/public/sounds/' + storagePath;
