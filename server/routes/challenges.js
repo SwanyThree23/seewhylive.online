@@ -74,7 +74,8 @@ router.post('/:id/complete', requireAuth, challengeCompleteRateLimit, async func
     var completion = await challengeService.completeChallenge(req.params.id, req.user.id, req.tenantId);
     res.json(completion);
   } catch (err) {
-    var USER_MSGS = ['challenge is not active', 'challenge has expired'];
+    if (err.message === 'challenge not found') return res.status(404).json({ error: 'challenge not found' });
+    var USER_MSGS = ['challenge is not active', 'challenge has expired', 'challenge already completed'];
     var isUserErr = USER_MSGS.includes(err.message) || err.code === '23505';
     res.status(isUserErr ? 400 : 500).json({ error: isUserErr ? err.message : 'Internal server error' });
   }
