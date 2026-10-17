@@ -42,7 +42,10 @@ router.post('/checkout', signupRateLimit, async function(req, res) {
     var session = await tenantBilling.createTenantCheckoutSession({ planTier: planTier, desiredSubdomain: desiredSubdomain, email: email });
     res.json(session);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    var CHECKOUT_USER_ERRS = ['invalid plan tier'];
+    var isUserErr = CHECKOUT_USER_ERRS.includes(err.message) ||
+      (typeof err.message === 'string' && err.message.indexOf('subdomain not available:') === 0);
+    res.status(isUserErr ? 400 : 500).json({ error: isUserErr ? err.message : 'Internal server error' });
   }
 });
 

@@ -62,7 +62,7 @@ router.post('/', requireAuth, requireAdmin, async function(req, res) {
     });
     res.status(201).json(challenge);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -75,8 +75,8 @@ router.post('/:id/complete', requireAuth, challengeCompleteRateLimit, async func
     res.json(completion);
   } catch (err) {
     var USER_MSGS = ['challenge is not active', 'challenge has expired'];
-    var msg = USER_MSGS.includes(err.message) ? err.message : 'Unable to complete challenge';
-    res.status(400).json({ error: msg });
+    var isUserErr = USER_MSGS.includes(err.message) || err.code === '23505';
+    res.status(isUserErr ? 400 : 500).json({ error: isUserErr ? err.message : 'Internal server error' });
   }
 });
 
