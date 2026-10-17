@@ -11,12 +11,14 @@ async function awardPoints(userId, points, source, sourceId, tenantId) {
     await client.query('BEGIN');
     if (tenantId) {
       await client.query(
-        `INSERT INTO loyalty_point_events (user_id, tenant_id, points, source, source_id) VALUES ($1, $2, $3, $4, $5)`,
+        `INSERT INTO loyalty_point_events (user_id, tenant_id, points, source, source_id) VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (user_id, source, source_id) WHERE source_id IS NOT NULL DO NOTHING`,
         [userId, tenantId, points, source || null, sourceId || null]
       );
     } else {
       await client.query(
-        `INSERT INTO loyalty_point_events (user_id, points, source, source_id) VALUES ($1, $2, $3, $4)`,
+        `INSERT INTO loyalty_point_events (user_id, points, source, source_id) VALUES ($1, $2, $3, $4)
+         ON CONFLICT (user_id, source, source_id) WHERE source_id IS NOT NULL DO NOTHING`,
         [userId, points, source || null, sourceId || null]
       );
     }

@@ -4606,7 +4606,7 @@ io.on('connection', function(socket) {
     var _whNow = Date.now();
     if (_whNow - (watchHeartbeatThrottle.get(uid) || 0) < 25000) return;
     watchHeartbeatThrottle.set(uid, _whNow);
-    loyaltyService.awardPoints({ userId: uid, tenantId: socket.data.tenantId, points: 1, source: 'watch_time', sourceId: uid + ':' + Math.floor(_whNow / 25000) }).catch(function(e) {
+    loyaltyService.awardPoints({ userId: uid, tenantId: socket.data.tenantId, points: 1, source: 'watch_time', sourceId: null }).catch(function(e) {
       logger.warn('[watch-heartbeat] awardPoints: ' + e.message);
     });
   });
