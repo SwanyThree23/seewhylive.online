@@ -102,20 +102,20 @@ export default function TriviaTab(props) {
       if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
       setActiveQ(null);
       setResults(data);
-      // Update local scoreboard
+      var myCorrect = data.correct.indexOf(username) >= 0;
       setScores(function(prev) {
         var next = prev.slice();
-        var myCorrect = data.correct.indexOf(username) >= 0;
         var myEntry = null;
         for (var i = 0; i < next.length; i++) {
           if (next[i].username === username) { myEntry = next[i]; break; }
         }
         if (!myEntry) { myEntry = { username: username, correct: 0, wrong: 0 }; next.push(myEntry); }
-        if (myCorrect) { myEntry.correct += 1; setPopScore(true); setTimeout(function() { setPopScore(false); }, 600); }
+        if (myCorrect) { myEntry.correct += 1; }
         else if (selectedIdxRef.current !== null) { myEntry.wrong += 1; }
         next.sort(function(a, b) { return b.correct - a.correct; });
         return next;
       });
+      if (myCorrect) { setPopScore(true); setTimeout(function() { setPopScore(false); }, 600); }
     }
 
     socket.on('trivia-question',   onQuestion);
