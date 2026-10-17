@@ -776,6 +776,7 @@ function getRoom(roomId) {
 setInterval(function() {
   var ranked = [];
   rooms.forEach(function(room, roomId) {
+    if (roomPrivateMap.has(roomId)) return;
     var viewers = room.viewers.size;
     var guests  = room.guests.size;
     if (viewers + guests === 0) return;
