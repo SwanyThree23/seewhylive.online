@@ -57,7 +57,7 @@ router.post('/', requireAuth, battleCreateRateLimit, async function(req, res) {
     res.status(201).json(battle);
   } catch (err) {
     console.error('[ROUTE ERROR]', err);
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -73,7 +73,7 @@ router.post('/:id/accept', requireAuth, validateId, async function(req, res) {
     res.json(battle);
   } catch (err) {
     console.error('[ROUTE ERROR]', err);
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -92,7 +92,7 @@ router.post('/:id/start', requireAuth, validateId, async function(req, res) {
     res.json(battle);
   } catch (err) {
     console.error('[ROUTE ERROR]', err);
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -119,7 +119,9 @@ router.post('/:id/vote', requireAuth, battleVoteRateLimit, validateId, async fun
     res.json(battle);
   } catch (err) {
     console.error('[ROUTE ERROR]', err);
-    res.status(400).json({ error: err.message });
+    var VOTE_USER_ERRS = new Set(['battle not active', 'battle participants may not vote', 'already voted in this battle or battle no longer active', 'invalid side']);
+    var isVoteUserErr = VOTE_USER_ERRS.has(err.message);
+    res.status(isVoteUserErr ? 400 : 500).json({ error: isVoteUserErr ? err.message : 'Internal server error' });
   }
 });
 
