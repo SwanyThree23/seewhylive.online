@@ -20,7 +20,7 @@ function requireAuth(req, res, next) {
   }
 
   try {
-    var decoded = jwt.verify(token, process.env.JWT_SECRET);
+    var decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
     var uid = decoded.userId || decoded.sub || decoded.id;
 
     if (decoded.tenantId && req.tenantId && decoded.tenantId !== req.tenantId) {
