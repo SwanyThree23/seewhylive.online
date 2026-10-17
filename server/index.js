@@ -3514,7 +3514,7 @@ io.on('connection', function(socket) {
     if (!_cStr || _cStr.length > 8192) return;
     var safe; try { safe = JSON.parse(_cStr); } catch(e) { return; }
     Object.assign(safe, { roomId: roomId });
-    if (safe.text) { chyrons.set(roomId, safe); } else { chyrons.delete(roomId); }
+    if (typeof safe.text === 'string' && safe.text.trim()) { chyrons.set(roomId, safe); } else { chyrons.delete(roomId); }
     io.to(roomId).emit('chyron-update', safe);
   });
 
@@ -3543,7 +3543,7 @@ io.on('connection', function(socket) {
     if (!_pksStr || _pksStr.length > 4096) return;
     var _pksSafe; try { _pksSafe = JSON.parse(_pksStr); } catch(e) { return; }
     pkVotes.set(roomId, { voters: new Map(), challenger: 0, defender: 0 });
-    pkBattleState.set(roomId, { challenger: _pksSafe.challenger || '', defender: _pksSafe.defender || '', duration: _pksSafe.duration || 300, startTs: Date.now(), challengerVotes: 0, defenderVotes: 0 });
+    pkBattleState.set(roomId, { challenger: _pksSafe.challenger || '', defender: _pksSafe.defender || '', challengerId: String(_pksSafe.challengerId || ''), defenderId: String(_pksSafe.defenderId || ''), duration: _pksSafe.duration || 300, startTs: Date.now(), challengerVotes: 0, defenderVotes: 0 });
     io.to(roomId).emit('pk-start', _pksSafe);
   });
 
@@ -3556,6 +3556,8 @@ io.on('connection', function(socket) {
     if (!pkUserId || pkUserId.startsWith('anon')) return;
     if (votes.voters.has(pkUserId)) return;
     if (data.side !== 'challenger' && data.side !== 'defender') return;
+    var _pkSt = pkBattleState.get(roomId);
+    if (_pkSt && (pkUserId === _pkSt.challengerId || pkUserId === _pkSt.defenderId)) return;
     votes.voters.set(pkUserId, data.side);
     votes[data.side]++;
     var _pkState = pkBattleState.get(roomId);

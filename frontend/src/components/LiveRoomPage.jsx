@@ -394,6 +394,8 @@ export default function LiveRoomPage({
   var [recState,       setRecState]       = useState('idle');
   var [recSeconds,     setRecSeconds]     = useState(0);
   var [recUrl,         setRecUrl]         = useState(null);
+  var addToastRef    = useRef(addToast);
+  addToastRef.current = addToast;
   var recTimerRef    = useRef(null);
   var mediaRecRef    = useRef(null);
   var recChunksRef   = useRef([]);
@@ -519,7 +521,7 @@ export default function LiveRoomPage({
 
     var onJoinRoomAck = async function(data) {
       if (!data || data.error) {
-        if (addToast) addToast((data && data.error) || 'Room connect failed', 'error');
+        if (addToastRef.current) addToastRef.current((data && data.error) || 'Room connect failed', 'error');
         return;
       }
       // Pre-load chat history and room state
@@ -575,7 +577,7 @@ export default function LiveRoomPage({
         rtcManager.on('stats', onStatsUpdate);
       } catch(e) {
         if (!mounted) return;
-        console.error('[LiveRoomPage] connect() REJECTED', e); if (addToast) addToast('WebRTC: ' + e.message, 'error');
+        console.error('[LiveRoomPage] connect() REJECTED', e); if (addToastRef.current) addToastRef.current('WebRTC: ' + e.message, 'error');
       }
     };
     socket.on('join-room-ack', onJoinRoomAck);
@@ -594,7 +596,7 @@ export default function LiveRoomPage({
       var scEntry = Object.assign({ type: 'super' }, sc);
       setChat(function(prev) { return [...prev.slice(-200), scEntry]; });
       setSuperChatCount(function(c) { return c + 1; });
-      if (addToast && role !== 'host') addToast('💬 ' + sc.username + ' sent a $' + (Math.floor(sc.amountCents) / 100).toFixed(2) + ' Super Chat!', 'success');
+      if (addToastRef.current && role !== 'host') addToastRef.current('💬 ' + sc.username + ' sent a $' + (Math.floor(sc.amountCents) / 100).toFixed(2) + ' Super Chat!', 'success');
       playTone([523, 659, 784], 1.5); // C5 E5 G5 — bright chord
     };
     socket.on('super-chat', onSuperChat);
@@ -604,7 +606,7 @@ export default function LiveRoomPage({
       var ttsEntry = Object.assign({ type: 'tts-super' }, sc);
       setChat(function(prev) { return [...prev.slice(-200), ttsEntry]; });
       setSuperChatCount(function(c) { return c + 1; });
-      if (addToast && role !== 'host') addToast('🚀 ' + sc.username + ' sent a Voice SuperChat!', 'success');
+      if (addToastRef.current && role !== 'host') addToastRef.current('🚀 ' + sc.username + ' sent a Voice SuperChat!', 'success');
       if (window.speechSynthesis && sc.message && sc.voice) {
         window.speechSynthesis.cancel();
         var u = new window.SpeechSynthesisUtterance(sc.username + ' says: ' + sc.message);
@@ -650,7 +652,7 @@ export default function LiveRoomPage({
 
     socket.on('hand-raise', function(data) {
       if (!data) return;
-      if (role === 'host' && addToast) addToast('✋ ' + (data.username || data.guestId) + ' wants on stage', 'info');
+      if (role === 'host' && addToastRef.current) addToastRef.current('✋ ' + (data.username || data.guestId) + ' wants on stage', 'info');
       setRaisedHands(function(h) { var n = Object.assign({}, h); n[data.guestId] = true; return n; });
     });
 
@@ -661,7 +663,7 @@ export default function LiveRoomPage({
 
     socket.on('mute-all', function() {
       setIsMuted(true);
-      if (addToast) addToast('🔇 Host muted all participants', 'info');
+      if (addToastRef.current) addToastRef.current('🔇 Host muted all participants', 'info');
     });
 
     var onStageInvite = function(data) {
@@ -681,17 +683,17 @@ export default function LiveRoomPage({
     });
 
     socket.on('stage-invite-accepted', function(data) {
-      if (addToast) addToast('🎤 ' + (data.username || 'Viewer') + ' joined the stage!', 'success');
+      if (addToastRef.current) addToastRef.current('🎤 ' + (data.username || 'Viewer') + ' joined the stage!', 'success');
     });
 
     socket.on('stage-invite-declined', function(data) {
-      if (addToast) addToast((data.username || 'Viewer') + ' declined the stage invite', 'info');
+      if (addToastRef.current) addToastRef.current((data.username || 'Viewer') + ' declined the stage invite', 'info');
     });
 
     socket.on('slow-mode-update', function(data) {
       if (!data) return;
       setSlowModeSec(data.seconds || 0);
-      if (addToast) addToast(data.seconds > 0 ? ('🐌 Slow mode: ' + data.seconds + 's cooldown') : '🐌 Slow mode off', 'info');
+      if (addToastRef.current) addToastRef.current(data.seconds > 0 ? ('🐌 Slow mode: ' + data.seconds + 's cooldown') : '🐌 Slow mode off', 'info');
     });
 
     socket.on('chat-slow-mode', function(data) {
@@ -761,7 +763,7 @@ export default function LiveRoomPage({
       if (!data || !data.label) return;
       var entry = { id: data.id || String(Date.now()), label: String(data.label).slice(0, 120), ts: data.ts || Math.floor(Date.now() / 1000) };
       setClipLog(function(prev) { return [entry].concat(prev).slice(0, 50); });
-      if (addToast) addToast('✂️ ' + entry.label, 'info');
+      if (addToastRef.current) addToastRef.current('✂️ ' + entry.label, 'info');
     });
 
     socket.on('trivia-question', function(data) {
@@ -877,13 +879,13 @@ export default function LiveRoomPage({
     socket.on('room-audio-only', function(data) {
       if (!data) return;
       setAudioOnly(Boolean(data.enabled));
-      if (addToast) addToast(data.enabled ? '🎤 Host switched to audio-only mode' : '📹 Video mode re-enabled', 'info');
+      if (addToastRef.current) addToastRef.current(data.enabled ? '🎤 Host switched to audio-only mode' : '📹 Video mode re-enabled', 'info');
     });
 
     socket.on('room-private', function(data) {
       if (!data) return;
       setPrivateMode(Boolean(data.enabled));
-      if (addToast) addToast(data.enabled ? '🔒 Room is now invite-only' : '🔓 Room is now open to all', 'info');
+      if (addToastRef.current) addToastRef.current(data.enabled ? '🔒 Room is now invite-only' : '🔓 Room is now open to all', 'info');
     });
 
     socket.on('panel:audio_only_changed', function(data) {
@@ -894,20 +896,20 @@ export default function LiveRoomPage({
     socket.on('subscriber-only-changed', function(data) {
       if (!data) return;
       setSubscriberOnly(Boolean(data.enabled));
-      if (addToast) addToast(data.enabled ? '⭐ This room is now subscriber-only' : 'Room is now open to all viewers', 'info');
+      if (addToastRef.current) addToastRef.current(data.enabled ? '⭐ This room is now subscriber-only' : 'Room is now open to all viewers', 'info');
     });
 
     socket.on('user-banned', function(data) {
       if (!data) return;
       if (data.userId === userId) {
-        if (addToast) addToast('🚫 You have been removed from this room', 'error');
+        if (addToastRef.current) addToastRef.current('🚫 You have been removed from this room', 'error');
       }
     });
 
     socket.on('user-unbanned', function(data) {
       if (!data) return;
       if (data.username && username && data.username === username) {
-        if (addToast) addToast('✅ Your ban has been lifted — welcome back!', 'success');
+        if (addToastRef.current) addToastRef.current('✅ Your ban has been lifted — welcome back!', 'success');
       }
     });
 
