@@ -69,16 +69,17 @@ export default function ReplayTab({ addToast, isLive }) {
     }
     playRef.current = setInterval(function() {
       setPlayHead(function(p) {
-        if (p + 2 >= TOTAL_DURATION) {
-          setPlaying(false);
-          clearInterval(playRef.current);
-          return TOTAL_DURATION;
-        }
-        return p + 2;
+        return p + 2 >= TOTAL_DURATION ? TOTAL_DURATION : p + 2;
       });
     }, 80);
     return function() { clearInterval(playRef.current); };
   }, [playing]);
+
+  useEffect(function() {
+    if (playing && playHead >= TOTAL_DURATION) {
+      setPlaying(false);
+    }
+  }, [playHead, playing]);
 
   // Recording and live clip generation
   useEffect(function() {
