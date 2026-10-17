@@ -60,6 +60,7 @@ export default function ReplayTab({ addToast, isLive }) {
   var playRef                     = useRef(null);
   var recRef                      = useRef(null);
   var clipTimerRef                = useRef(null);
+  var recDurRef                   = useRef(0);
 
   useEffect(function() {
     if (!playing) {
@@ -84,28 +85,28 @@ export default function ReplayTab({ addToast, isLive }) {
     if (isLive) {
       setRecording(true);
       setRecDuration(0);
+      recDurRef.current = 0;
 
       // Tick rec duration every second
       recRef.current = setInterval(function() {
-        setRecDuration(function(prev) { return prev + 1; });
+        recDurRef.current += 1;
+        setRecDuration(recDurRef.current);
       }, 1000);
 
       // Auto-add a live clip every 20 seconds
       clipTimerRef.current = setInterval(function() {
-        setRecDuration(function(currentDur) {
-          setLiveClips(function(prevClips) {
-            var newClip = {
-              id: 'live_' + Date.now(),
-              title: 'Live Segment #' + (prevClips.length + 1),
-              start: currentDur - 20 < 0 ? 0 : currentDur - 20,
-              end: currentDur,
-              highlight: false,
-              live: true,
-              thumb: '🔴',
-            };
-            return prevClips.concat([newClip]);
-          });
-          return currentDur;
+        var currentDur = recDurRef.current;
+        setLiveClips(function(prevClips) {
+          var newClip = {
+            id: 'live_' + Date.now(),
+            title: 'Live Segment #' + (prevClips.length + 1),
+            start: currentDur - 20 < 0 ? 0 : currentDur - 20,
+            end: currentDur,
+            highlight: false,
+            live: true,
+            thumb: '🔴',
+          };
+          return prevClips.concat([newClip]);
         });
       }, 20000);
 
