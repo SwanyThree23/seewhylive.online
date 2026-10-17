@@ -95,7 +95,7 @@ router.post('/my-tier', requireAuth, async function(req, res) {
     console.error('[ROUTE ERROR]', err);
     var msg = err && err.message;
     var isUserErr = msg === 'invalid tier id' || msg === 'tierId is required';
-    res.status(isUserErr ? 400 : 500).json({ error: msg || 'Internal server error' });
+    res.status(isUserErr ? 400 : 500).json({ error: isUserErr ? msg : 'Internal server error' });
   }
 });
 
