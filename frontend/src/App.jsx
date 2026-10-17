@@ -425,6 +425,7 @@ export default function App() {
   var peakViewerRef = useRef(0);
   var passedMilestonesRef = useRef({});
   var sessionEarningsRef = useRef(0);
+  var viewerCountRef = useRef(0);
   var popstateNavRef = useRef(false);
   var streamRecapRef = useRef(null);
   var prevEarningsRef = useRef(0);
@@ -620,19 +621,18 @@ export default function App() {
     var viewerMilestones = [50, 100, 250, 500, 1000, 2500, 5000, 10000];
     socket.on('viewer-count', function(data) {
       if (!data || typeof data.count !== 'number') return;
-      // Use functional update to read non-stale prev without adding viewerCount to deps.
-      setViewerCount(function(prev) {
-        if (data.count > peakViewerRef.current) peakViewerRef.current = data.count;
-        viewerMilestones.forEach(function(m) {
-          if (data.count >= m && prev < m && !passedMilestonesRef.current[m]) {
-            passedMilestonesRef.current[m] = true;
-            addToast('🎉 ' + m.toLocaleString() + ' VIEWERS!', 'success');
-            var floatId = Date.now() + Math.random();
-            setGiftFloats(function(gf) { return gf.concat([{ floatId: floatId, emoji: '👁', name: m.toLocaleString() + ' viewers!', from_user: 'Milestone', value_cents: 0 }]); });
-            setTimeout(function() { setGiftFloats(function(gf) { return gf.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
-          }
-        });
-        return data.count;
+      var prevCount = viewerCountRef.current;
+      if (data.count > peakViewerRef.current) peakViewerRef.current = data.count;
+      viewerCountRef.current = data.count;
+      setViewerCount(data.count);
+      viewerMilestones.forEach(function(m) {
+        if (data.count >= m && prevCount < m && !passedMilestonesRef.current[m]) {
+          passedMilestonesRef.current[m] = true;
+          addToast('🎉 ' + m.toLocaleString() + ' VIEWERS!', 'success');
+          var floatId = Date.now() + Math.random();
+          setGiftFloats(function(gf) { return gf.concat([{ floatId: floatId, emoji: '👁', name: m.toLocaleString() + ' viewers!', from_user: 'Milestone', value_cents: 0 }]); });
+          setTimeout(function() { setGiftFloats(function(gf) { return gf.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
+        }
       });
     });
 
@@ -650,7 +650,9 @@ export default function App() {
       if (!sc) return;
       if (role === 'host') {
         var scCents = Math.floor(sc.amountCents || 0);
-        setSessionEarningsCents(function(prev) { sessionEarningsRef.current = prev + scCents; return prev + scCents; });
+        var _scNewEarnings = sessionEarningsRef.current + scCents;
+        sessionEarningsRef.current = _scNewEarnings;
+        setSessionEarningsCents(_scNewEarnings);
         addToast('💬 Super Chat $' + (scCents / 100).toFixed(2) + ' from ' + (sc.username || 'viewer'), 'success');
       }
     });
@@ -680,7 +682,9 @@ export default function App() {
       setGiftFloats(function(prev) { return prev.concat([{ floatId: floatId, emoji: '⭐', name: tierLabel + ' Sub', from_user: name, value_cents: data.price_cents || 0 }]); });
       setTimeout(function() { setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
       var subCents = Math.floor(data.price_cents || 0);
-      setSessionEarningsCents(function(prev) { sessionEarningsRef.current = prev + subCents; return prev + subCents; });
+      var _subNewEarnings = sessionEarningsRef.current + subCents;
+      sessionEarningsRef.current = _subNewEarnings;
+      setSessionEarningsCents(_subNewEarnings);
     });
 
     socket.on('gift-payment-intent', function(data) {
