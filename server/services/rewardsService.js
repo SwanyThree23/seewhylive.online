@@ -9,18 +9,25 @@ async function awardPoints(userId, points, source, sourceId, tenantId) {
   const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
+    var _eventRes;
     if (tenantId) {
-      await client.query(
+      _eventRes = await client.query(
         `INSERT INTO loyalty_point_events (user_id, tenant_id, points, source, source_id) VALUES ($1, $2, $3, $4, $5)
-         ON CONFLICT (user_id, source, source_id) WHERE source_id IS NOT NULL DO NOTHING`,
+         ON CONFLICT (user_id, source, source_id) WHERE source_id IS NOT NULL DO NOTHING
+         RETURNING id`,
         [userId, tenantId, points, source || null, sourceId || null]
       );
     } else {
-      await client.query(
+      _eventRes = await client.query(
         `INSERT INTO loyalty_point_events (user_id, points, source, source_id) VALUES ($1, $2, $3, $4)
-         ON CONFLICT (user_id, source, source_id) WHERE source_id IS NOT NULL DO NOTHING`,
+         ON CONFLICT (user_id, source, source_id) WHERE source_id IS NOT NULL DO NOTHING
+         RETURNING id`,
         [userId, points, source || null, sourceId || null]
       );
+    }
+    if (_eventRes.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return null;
     }
     const conflictKey = tenantId ? '(user_id, tenant_id)' : '(user_id)';
     const result = tenantId
