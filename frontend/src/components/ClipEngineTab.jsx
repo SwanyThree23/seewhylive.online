@@ -55,6 +55,8 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
   var recRef           = useRef(null);
   var liveClipRef      = useRef(null);
   var previewScrubRef  = useRef(0.15);
+  var addToastRef      = useRef(addToast);
+  addToastRef.current  = addToast;
 
   useEffect(function() {
     if (!recording) {
@@ -123,11 +125,11 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
       storePin(markerId, null, marker).then(function() {
         setGallery(storeList());
       }).catch(function() {});
-      if (addToast) addToast('📍 Clip marker auto-saved to gallery: ' + (data.label || 'Unmarked'), 'success');
+      if (addToastRef.current) addToastRef.current('📍 Clip marker auto-saved to gallery: ' + (data.label || 'Unmarked'), 'success');
     }
     socket.on('clip-marked', onClipMarked);
     return function() { socket.off('clip-marked', onClipMarked); };
-  }, [socket, addToast]);
+  }, [socket]);
 
   // Draw waveform on canvas whenever previewClip or previewScrub changes
   useEffect(function() {

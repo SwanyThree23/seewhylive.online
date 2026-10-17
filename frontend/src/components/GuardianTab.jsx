@@ -52,6 +52,8 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
   var [subscriberOnly, setSubscriberOnly] = useState(false);
   var logRef = useRef(null);
   var lockdownFiredRef = useRef(false);
+  var addToastRef      = useRef(addToast);
+  addToastRef.current  = addToast;
 
   var total = blocked + allowed;
   var blockRate = total > 0 ? Math.floor((blocked / total) * 100) : 0;
@@ -62,7 +64,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     var onUserUnbanned = function(data) {
       if (!data || !data.username) return;
       setBannedUsers(function(prev) { return prev.filter(function(u) { return u !== data.username; }); });
-      if (addToast) addToast('✅ ' + data.username + ' unbanned', 'success');
+      if (addToastRef.current) addToastRef.current('✅ ' + data.username + ' unbanned', 'success');
     }
     var onModRulesUpdated = function(data) {
       if (!data || !Array.isArray(data.rules)) return;
@@ -79,7 +81,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
       socket.off('user-unbanned',   onUserUnbanned);
       socket.off('mod-rules-updated', onModRulesUpdated);
     };
-  }, [socket, addToast]);
+  }, [socket]);
 
   useEffect(function() {
     try { localStorage.setItem('sw_guardian_rules', JSON.stringify(rules)); } catch(e) {}
@@ -122,9 +124,9 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
           return r.id === 'slow' ? Object.assign({}, r, { enabled: true }) : r;
         });
       });
-      if (addToast) addToast('LOCKDOWN: Slow Mode auto-enabled (block rate ' + blockRate + '%)', 'error');
+      if (addToastRef.current) addToastRef.current('LOCKDOWN: Slow Mode auto-enabled (block rate ' + blockRate + '%)', 'error');
     }
-  }, [blockRate, guardOn, isLive, addToast]);
+  }, [blockRate, guardOn, isLive]);
 
   var lastChatLen = useRef(0);
   useEffect(function() {
@@ -183,12 +185,12 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
         if (socket && roomId && violation.ruleId !== 'emoji') {
           socket.emit('mute-user', { roomId: roomId, targetUser: user, reason: violation.reason });
         }
-        if (addToast) addToast('Guardian: ' + violation.action + ' — ' + user + ' (' + violation.reason + ')', 'error');
+        if (addToastRef.current) addToastRef.current('Guardian: ' + violation.action + ' — ' + user + ' (' + violation.reason + ')', 'error');
       } else {
         setAllowed(function(n) { return n + 1; });
       }
     });
-  }, [chat, guardOn, banned, rules, socket, roomId, addToast]);
+  }, [chat, guardOn, banned, rules, socket, roomId]);
 
   var toggleRule = function(id) {
     setRules(function(prev) {

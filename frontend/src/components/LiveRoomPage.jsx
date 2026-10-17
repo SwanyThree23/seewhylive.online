@@ -995,7 +995,7 @@ export default function LiveRoomPage({
     if (!ccEnabled || role !== 'host' || !isLive || !socket) return;
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
-      if (addToast) addToast('CC: browser does not support speech recognition', 'error');
+      if (addToastRef.current) addToastRef.current('CC: browser does not support speech recognition', 'error');
       setCcEnabled(false);
       return;
     }
@@ -1032,7 +1032,7 @@ export default function LiveRoomPage({
       try { recog.stop(); } catch (ex) {}
       ccRecogRef.current = null;
     };
-  }, [ccEnabled, role, isLive, socket, addToast]);
+  }, [ccEnabled, role, isLive, socket]);
 
   // ── Local mic level analyzer (for GlobalMicButtonV49) ──
   useEffect(function() {
