@@ -59,11 +59,9 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
   }, []);
 
   var toggleFollow = function(id, name) {
-    setFollowing(function(p) {
-      var next = Object.assign({}, p, { [id]: !p[id] });
-      if (addToast) addToast(next[id] ? 'Following ' + name : 'Unfollowed ' + name, 'info');
-      return next;
-    });
+    var next = Object.assign({}, following, { [id]: !following[id] });
+    setFollowing(next);
+    if (addToast) addToast(next[id] ? 'Following ' + name : 'Unfollowed ' + name, 'info');
   }
 
   var visible = CREATORS.filter(function(c) {

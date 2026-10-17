@@ -707,11 +707,9 @@ export default function MusicStudioTab(props) {
   }
 
   var deletePreset = function(id) {
-    setSavedPresets(function(prev) {
-      var next = prev.filter(function(p) { return p.id !== id; });
-      try { localStorage.setItem('sw_beat_presets', JSON.stringify(next)); } catch(e) {}
-      return next;
-    });
+    var next = savedPresets.filter(function(p) { return p.id !== id; });
+    try { localStorage.setItem('sw_beat_presets', JSON.stringify(next)); } catch(e) {}
+    setSavedPresets(next);
   }
 
   var aiGenerateBeat = function() {
