@@ -59,10 +59,22 @@ async function updateGuestState(guestId, patch, userId, streamOwnerId, tenantId)
     );
   } else {
     values.push(guestId, userId);
-    result = await db.query(
-      `UPDATE stream_guests SET ${fields.join(', ')} WHERE id = $${i} AND user_id = $${i + 1} RETURNING *`,
-      values
-    );
+    if (tenantId) {
+      values.push(tenantId);
+      result = await db.query(
+        `UPDATE stream_guests SET ${fields.join(', ')}
+         FROM streams
+         WHERE stream_guests.id = $${i} AND stream_guests.user_id = $${i + 1}
+           AND stream_guests.stream_id = streams.id AND streams.tenant_id = $${i + 2}
+         RETURNING stream_guests.*`,
+        values
+      );
+    } else {
+      result = await db.query(
+        `UPDATE stream_guests SET ${fields.join(', ')} WHERE id = $${i} AND user_id = $${i + 1} RETURNING *`,
+        values
+      );
+    }
   }
   return result.rows[0] || null;
 }
@@ -113,7 +125,7 @@ async function joinRoomAsParticipant({ streamId, userId, role, tenantId }) {
 // Self-update: pass userId, omit streamOwnerId.
 // Host-controlled (e.g. isOnStage): pass streamOwnerId; scopes to participants
 // in streams owned by that user to prevent cross-stream IDOR.
-async function updateParticipantState(participantId, patch, userId, streamOwnerId) {
+async function updateParticipantState(participantId, patch, userId, streamOwnerId, tenantId) {
   const fields = [];
   const values = [];
   let i = 1;
@@ -141,10 +153,22 @@ async function updateParticipantState(participantId, patch, userId, streamOwnerI
     );
   } else {
     values.push(participantId, userId);
-    result = await db.query(
-      `UPDATE room_participants SET ${fields.join(', ')} WHERE id = $${i} AND user_id = $${i + 1} RETURNING *`,
-      values
-    );
+    if (tenantId) {
+      values.push(tenantId);
+      result = await db.query(
+        `UPDATE room_participants SET ${fields.join(', ')}
+         FROM streams
+         WHERE room_participants.id = $${i} AND room_participants.user_id = $${i + 1}
+           AND room_participants.stream_id = streams.id AND streams.tenant_id = $${i + 2}
+         RETURNING room_participants.*`,
+        values
+      );
+    } else {
+      result = await db.query(
+        `UPDATE room_participants SET ${fields.join(', ')} WHERE id = $${i} AND user_id = $${i + 1} RETURNING *`,
+        values
+      );
+    }
   }
   return result.rows[0] || null;
 }

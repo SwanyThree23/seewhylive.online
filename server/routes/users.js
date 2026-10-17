@@ -46,15 +46,15 @@ router.delete('/me', requireAuth, async function(req, res) {
     }
     await client.query('DELETE FROM users WHERE id = $1 AND tenant_id = $2', [userId, tenantId]);
     await client.query('COMMIT');
+    return res.json({ success: true });
   } catch (e) {
     await client.query('ROLLBACK');
     // Auth is already gone; orphaned local rows need manual remediation.
     console.error('[delete-account] local cleanup failed after auth delete — manual remediation needed userId=%s tenantId=%s err=%s', userId, tenantId, e.message);
+    return res.status(500).json({ success: false, error: 'Local cleanup failed' });
   } finally {
     client.release();
   }
-
-  return res.json({ success: true });
 });
 
 module.exports = router;
