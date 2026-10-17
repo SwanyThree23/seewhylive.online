@@ -72,7 +72,9 @@ async function completeChallenge(challengeId, userId, tenantId) {
     await db.query(
       `DELETE FROM challenge_completions WHERE challenge_id = $1 AND user_id = $2`,
       [challengeId, userId]
-    ).catch(function() {});
+    ).catch(function(delErr) {
+      console.error('[challengeService] compensating delete failed challengeId=%s userId=%s err=%s', challengeId, userId, delErr && delErr.message);
+    });
     throw err;
   }
 
