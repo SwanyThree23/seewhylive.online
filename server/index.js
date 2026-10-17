@@ -4863,6 +4863,7 @@ process.on('SIGINT', function() {
 
 process.on('uncaughtException', function(err) {
   logger.error('[uncaughtException] ' + err.message + '\n' + err.stack);
+  process.exit(1);
 });
 
 process.on('unhandledRejection', function(reason) {
