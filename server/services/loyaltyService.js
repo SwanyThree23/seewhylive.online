@@ -14,7 +14,8 @@ async function awardPoints({ userId, tenantId, points, source, sourceId }) {
     await client.query('BEGIN');
     await client.query(
       `INSERT INTO loyalty_point_events (user_id, tenant_id, points, source, source_id)
-       VALUES ($1, $2, $3, $4, $5)`,
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (user_id, source, source_id) WHERE source_id IS NOT NULL DO NOTHING`,
       [userId, tenantId, points, source, sourceId || null]
     );
     await client.query(
