@@ -23,7 +23,7 @@ router.post('/streams/:streamId/join', requireAuth, async function(req, res) {
     });
     res.status(201).json(guest);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -40,7 +40,7 @@ router.patch('/guests/:guestId', requireAuth, async function(req, res) {
     if (!guest) return res.status(403).json({ error: 'not found or forbidden' });
     res.json(guest);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -51,7 +51,7 @@ router.post('/streams/:streamId/leave', requireAuth, async function(req, res) {
     if (!result) return res.status(404).json({ error: 'not an active guest in this stream' });
     res.json(result);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -76,7 +76,7 @@ router.post('/streams/:streamId/participants', requireAuth, async function(req, 
     });
     res.status(201).json(participant);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -93,7 +93,7 @@ router.patch('/participants/:participantId', requireAuth, async function(req, re
     if (!participant) return res.status(403).json({ error: 'not found or forbidden' });
     res.json(participant);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -104,7 +104,7 @@ router.post('/streams/:streamId/participants/leave', requireAuth, async function
     if (!result) return res.status(404).json({ error: 'not an active participant in this stream' });
     res.json(result);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

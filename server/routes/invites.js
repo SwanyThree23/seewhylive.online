@@ -48,7 +48,7 @@ router.post('/', requireAuth, inviteRateLimit, async function(req, res) {
     });
     res.status(201).json(invite);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -65,7 +65,7 @@ router.post('/:id/respond', requireAuth, inviteRateLimit, async function(req, re
     if (!invite) return res.status(404).json({ error: 'invite not found, expired, or already responded' });
     res.json(invite);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -105,7 +105,7 @@ router.post('/streams/:streamId/links', requireAuth, async function(req, res) {
     });
     res.status(201).json(link);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -123,7 +123,8 @@ router.post('/links/:token/redeem', requireAuth, inviteRateLimit, async function
     res.json(link);
   } catch (err) {
     _redeemLog.delete(_rlKey);
-    res.status(400).json({ error: err.message });
+    var isRedeemUserErr = err.message === 'invite link not found, exhausted, or revoked';
+    res.status(isRedeemUserErr ? 400 : 500).json({ error: isRedeemUserErr ? err.message : 'Internal server error' });
   }
 });
 
@@ -134,7 +135,7 @@ router.post('/links/:id/revoke', requireAuth, async function(req, res) {
     if (!link) return res.status(404).json({ error: 'not found, not yours, or already revoked' });
     res.json(link);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
