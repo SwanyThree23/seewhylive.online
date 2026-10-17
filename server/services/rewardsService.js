@@ -24,10 +24,14 @@ async function awardPoints(userId, points, source, sourceId, tenantId) {
     const result = tenantId
       ? await client.query(
           `INSERT INTO user_loyalty (user_id, tenant_id, total_points, level, updated_at)
-           VALUES ($1, $3, $2, floor($2::numeric / 1000)::int + 1, now())
+           VALUES ($1, $3, $2,
+             (SELECT COALESCE(MAX(level),1) FROM reward_tiers WHERE points_required <= $2 AND tenant_id = $3),
+             now())
            ON CONFLICT (user_id, tenant_id) DO UPDATE SET
              total_points = user_loyalty.total_points + EXCLUDED.total_points,
-             level        = floor((user_loyalty.total_points + EXCLUDED.total_points)::numeric / 1000)::int + 1,
+             level        = (SELECT COALESCE(MAX(level),1) FROM reward_tiers
+                             WHERE points_required <= user_loyalty.total_points + EXCLUDED.total_points
+                               AND tenant_id = $3),
              updated_at   = now()
            RETURNING total_points, level`,
           [userId, points, tenantId]
@@ -90,28 +94,24 @@ async function getTiers(tenantId) {
   return data;
 }
 
-async function getSelectedTier(userId) {
-  const { data, error } = await supabase
-    .from('user_settings')
-    .select('setting_value')
-    .eq('user_id', userId)
-    .eq('setting_key', 'selected_tier')
-    .limit(1);
+async function getSelectedTier(userId, tenantId) {
+  let q = supabase.from('user_settings').select('setting_value')
+    .eq('user_id', userId).eq('setting_key', 'selected_tier').limit(1);
+  if (tenantId) q = q.eq('tenant_id', tenantId);
+  const { data, error } = await q;
   if (error) throw error;
   var row = Array.isArray(data) && data[0];
   return (row && row.setting_value) || null;
 }
 
-async function setSelectedTier(userId, tierId) {
+async function setSelectedTier(userId, tierId, tenantId) {
   if (!tierId || typeof tierId !== 'string' || tierId.length > 100) throw new Error('tierId is required');
   var payload = { tierId: tierId.trim() };
 
-  const { data: existing, error: selErr } = await supabase
-    .from('user_settings')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('setting_key', 'selected_tier')
-    .limit(1);
+  let selQ = supabase.from('user_settings').select('id')
+    .eq('user_id', userId).eq('setting_key', 'selected_tier').limit(1);
+  if (tenantId) selQ = selQ.eq('tenant_id', tenantId);
+  const { data: existing, error: selErr } = await selQ;
   if (selErr) throw selErr;
 
   if (existing && existing.length) {
@@ -121,9 +121,9 @@ async function setSelectedTier(userId, tierId) {
       .eq('id', existing[0].id);
     if (updErr) throw updErr;
   } else {
-    const { error: insErr } = await supabase
-      .from('user_settings')
-      .insert({ user_id: userId, setting_key: 'selected_tier', setting_value: payload });
+    var insRow = { user_id: userId, setting_key: 'selected_tier', setting_value: payload };
+    if (tenantId) insRow.tenant_id = tenantId;
+    const { error: insErr } = await supabase.from('user_settings').insert(insRow);
     if (insErr) throw insErr;
   }
   return payload;
@@ -158,7 +158,9 @@ async function completeChallenge(userId, challengeId, tenantId) {
   } catch (awardErr) {
     await supabase.from('challenge_completions')
       .delete().eq('challenge_id', challengeId).eq('user_id', userId)
-      .catch(function() {});
+      .catch(function(delErr) {
+        console.error('[rewardsService] compensating delete failed challengeId=%s userId=%s err=%s', challengeId, userId, delErr && delErr.message);
+      });
     throw awardErr;
   }
 }

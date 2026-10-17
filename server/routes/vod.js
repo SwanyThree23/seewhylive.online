@@ -193,7 +193,7 @@ router.post('/stop', requireAuth, function(req, res) {
 });
 function doStop(res, vodId, tenantId, creatorId, durationSec, playbackUrl) {
   var patch = {
-    duration_seconds: Math.max(0, Math.floor(durationSec)),
+    duration_seconds: Math.min(Math.max(0, Math.floor(durationSec)), 86400 * 30),
     is_public:        true,
   };
   if (playbackUrl) {
