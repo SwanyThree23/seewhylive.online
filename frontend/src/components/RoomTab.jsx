@@ -482,11 +482,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   }
 
   var inviteToStage = function(item) {
-    setStageGuests(function(s) {
-      if (s.indexOf(item.guestId) >= 0) return s;
-      if (s.length >= MAX_STAGE) { addToast('Stage full (' + MAX_STAGE + ' max)', 'error'); return s; }
-      return s.concat([item.guestId]);
-    });
+    if (stageGuests.indexOf(item.guestId) >= 0) return;
+    if (stageGuests.length >= MAX_STAGE) { addToast('Stage full (' + MAX_STAGE + ' max)', 'error'); return; }
+    setStageGuests(stageGuests.concat([item.guestId]));
     setHandQueue(function(q) { return q.filter(function(x) { return x.guestId !== item.guestId; }); });
     if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: item.guestId });
     addToast(item.username + ' invited to stage', 'success');

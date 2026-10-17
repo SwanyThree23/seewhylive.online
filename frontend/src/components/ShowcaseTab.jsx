@@ -93,7 +93,8 @@ export default function ShowcaseTab(p) {
   var [red,      setRed]      = useState(0);
   var [battleOn, setBattleOn] = useState(false);
   var [timer,    setTimer]    = useState(300);
-  var battleRef = useRef(null);
+  var battleRef   = useRef(null);
+  var timerValRef = useRef(300);
 
   // live clip capture
   var [liveClipCount,  setLiveClipCount]  = useState(0);
@@ -138,15 +139,13 @@ export default function ShowcaseTab(p) {
   useEffect(function() {
     if (!battleOn) { clearInterval(battleRef.current); return; }
     battleRef.current = setInterval(function() {
-      setTimer(function(t) {
-        if (t <= 1) {
-          clearInterval(battleRef.current);
-          setBattleOn(false);
-          if (addToast) addToast('State Battle complete! 🏆', 'success');
-          return 0;
-        }
-        return t - 1;
-      });
+      timerValRef.current -= 1;
+      setTimer(timerValRef.current);
+      if (timerValRef.current <= 0) {
+        clearInterval(battleRef.current);
+        setBattleOn(false);
+        if (addToast) addToast('State Battle complete! 🏆', 'success');
+      }
     }, 1000);
     return function() { clearInterval(battleRef.current); };
   }, [battleOn]);
@@ -163,6 +162,7 @@ export default function ShowcaseTab(p) {
     setBattleId(id);
     setBlue(0);
     setRed(0);
+    timerValRef.current = 300;
     setTimer(300);
     setBattleOn(false);
     setSub('battle');

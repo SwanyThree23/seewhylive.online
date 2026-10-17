@@ -1263,22 +1263,20 @@ export default function WatchPartyTab(props) {
                   onPause={function() { setPlaying(false); }}
                   onEnded={function() {
                     setPlaying(false);
-                    setQueue(function(q) {
-                      if (q.length === 0) return q;
-                      var next = q[0];
-                      var rest = q.slice(1);
-                      setCurrentTitle(next.title || next.url);
-                      setUrlInput(next.url || '');
-                      setPosition(0); posRef.current = 0;
-                      if (next.videoId) {
-                        setVideoId(next.videoId); setDirectUrl(''); setSourceType('youtube');
-                        if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: next.videoId, url: next.url, type: 'youtube' });
-                      } else {
-                        setDirectUrl(next.url); setVideoId(''); setSourceType('direct');
-                        if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: null, url: next.url, type: 'direct' });
-                      }
-                      return rest;
-                    });
+                    if (queue.length === 0) return;
+                    var next = queue[0];
+                    var rest = queue.slice(1);
+                    setQueue(rest);
+                    setCurrentTitle(next.title || next.url);
+                    setUrlInput(next.url || '');
+                    setPosition(0); posRef.current = 0;
+                    if (next.videoId) {
+                      setVideoId(next.videoId); setDirectUrl(''); setSourceType('youtube');
+                      if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: next.videoId, url: next.url, type: 'youtube' });
+                    } else {
+                      setDirectUrl(next.url); setVideoId(''); setSourceType('direct');
+                      if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: null, url: next.url, type: 'direct' });
+                    }
                   }}
                 />
                 {localFileUrl && directUrl === localFileUrl && (
