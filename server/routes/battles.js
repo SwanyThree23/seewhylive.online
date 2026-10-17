@@ -84,6 +84,9 @@ router.post('/:id/start', requireAuth, validateId, async function(req, res) {
     if (existing.challenger_id !== req.user.id && existing.defender_id !== req.user.id) {
       return res.status(403).json({ error: 'forbidden' });
     }
+    if (existing.status !== 'accepted') {
+      return res.status(400).json({ error: 'battle must be accepted before starting' });
+    }
     var battle = await battleService.startBattle(req.params.id, req.tenantId);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
