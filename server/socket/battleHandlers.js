@@ -224,24 +224,4 @@ function startCountdown(io, battle) {
   activeTimers.set(battle.id, interval);
 }
 
-async function endBattleAndBroadcast(io, room, battleId, tenantId) {
-  try {
-    const ended = await battleService.endBattle(battleId, tenantId);
-    io.to(room).emit('battle:end', ended);
-
-    // Rewards & Leaderboard integration: award points to the winner.
-    if (ended.winner_id) {
-      await loyaltyService.awardPoints({
-        userId: ended.winner_id,
-        tenantId: ended.tenant_id,
-        points: BATTLE_WIN_POINTS,
-        source: 'pk_battle_win',
-        sourceId: ended.id,
-      });
-    }
-  } catch (err) {
-    io.to(room).emit('battle:error', { message: 'Battle error' });
-  }
-}
-
 module.exports = { registerBattleHandlers };
