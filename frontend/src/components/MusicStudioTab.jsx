@@ -691,11 +691,9 @@ export default function MusicStudioTab(props) {
   var savePreset = function() {
     var name = presetName.trim() || ('Pattern ' + (savedPresets.length + 1));
     var preset = { id: 'p' + Date.now(), name: name, grid: grid, bpm: bpm };
-    setSavedPresets(function(prev) {
-      var next = prev.concat([preset]).slice(-12);
-      try { localStorage.setItem('sw_beat_presets', JSON.stringify(next)); } catch(e) {}
-      return next;
-    });
+    var next = savedPresets.concat([preset]).slice(-12);
+    try { localStorage.setItem('sw_beat_presets', JSON.stringify(next)); } catch(e) {}
+    setSavedPresets(next);
     setPresetName('');
     setShowSavePreset(false);
     if (addToast) addToast('Preset saved: ' + name, 'success');
