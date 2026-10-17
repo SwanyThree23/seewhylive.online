@@ -162,6 +162,7 @@ export default function WatchPartyTab(props) {
   var ytDivRef         = useRef(null);
   var sourceTypeRef    = useRef(sourceType);
   var floatTimersRef   = useRef(new Set());
+  var queueRef         = useRef(queue);
 
   var isHost     = role === 'host' || role === 'cohost';
   var liveGuests = (guests || []).filter(function(g) { return g.live !== false; });
@@ -170,8 +171,9 @@ export default function WatchPartyTab(props) {
   var prog      = duration > 0 ? Math.min(100, Math.floor((position / duration) * 100)) : 0;
   var remaining = duration > 0 ? Math.floor(duration - position) : 0;
 
-  // Keep sourceTypeRef current
+  // Keep sourceTypeRef and queueRef current
   useEffect(function() { sourceTypeRef.current = sourceType; }, [sourceType]);
+  useEffect(function() { queueRef.current = queue; }, [queue]);
 
   // ─────────────────────────────────────────────
   // YouTube URL auto-detection
@@ -239,20 +241,20 @@ export default function WatchPartyTab(props) {
               } else if (e.data === 0) {
                 // video ended — auto-advance queue
                 setPlaying(false);
-                setQueue(function(q) {
-                  if (q.length === 0) return q;
-                  var next = q[0];
-                  var rest = q.slice(1);
-                  setVideoId(next.videoId);
-                  setCurrentTitle(next.title || next.url);
-                  setUrlInput(next.url || '');
+                var _q = queueRef.current;
+                if (_q.length > 0) {
+                  var _next = _q[0];
+                  var _rest = _q.slice(1);
+                  setQueue(_rest);
+                  setVideoId(_next.videoId);
+                  setCurrentTitle(_next.title || _next.url);
+                  setUrlInput(_next.url || '');
                   setPosition(0);
                   posRef.current = 0;
                   if (socket && roomId) {
-                    socket.emit('watch-party-url', { roomId: roomId, videoId: next.videoId, url: next.url });
+                    socket.emit('watch-party-url', { roomId: roomId, videoId: _next.videoId, url: _next.url });
                   }
-                  return rest;
-                });
+                }
               } else if (e.data === 2) {
                 setPlaying(false);
               }
