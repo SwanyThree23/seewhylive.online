@@ -154,6 +154,10 @@ class SeeWhyRTC {
     var consumer = await this.recvTransport.consume(consumerParams);
     this.consumers[producerId] = consumer;
 
+    var self = this;
+    consumer.on('producerclose', function() { delete self.consumers[producerId]; });
+    consumer.on('transportclose', function() { delete self.consumers[producerId]; });
+
     var stream = new MediaStream([consumer.track]);
     return stream;
   }

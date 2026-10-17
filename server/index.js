@@ -2956,7 +2956,7 @@ io.on('connection', function(socket) {
     // authenticated socket could trigger host notifications and AURA for free.
     if (priceCents > 0) {
       var _subPiId = String(data.paymentIntentId || '');
-      if (!_subPiId) return;
+      if (!_subPiId || !/^pi_[A-Za-z0-9_]{10,100}$/.test(_subPiId)) return;
       stripeModule.registerPaymentCallback(_subPiId, _broadcastSubscription);
       return;
     }
@@ -4638,6 +4638,19 @@ io.on('connection', function(socket) {
     }
 
     var roomId = socket.data.roomId;
+
+    // Clean up audio stage presence so ghost speakers/listeners don't persist
+    var _stageOnDcId = socket.data.stageRoomId || roomId;
+    if (_stageOnDcId) {
+      var _stageOnDc = stageRooms.get(_stageOnDcId);
+      if (_stageOnDc) {
+        var _dcUId = String(socket.data.userId || socket.id);
+        _stageOnDc.speakers  = _stageOnDc.speakers.filter(function(s)  { return String(s.userId) !== _dcUId; });
+        _stageOnDc.listeners = _stageOnDc.listeners.filter(function(l) { return String(l.userId) !== _dcUId; });
+        io.to(_stageOnDcId).emit('audio-stage-update', { speakers: _stagePublic(_stageOnDc.speakers), listeners: _stagePublic(_stageOnDc.listeners) });
+      }
+    }
+
     if (!roomId) return;
 
     var room = rooms.get(roomId);
