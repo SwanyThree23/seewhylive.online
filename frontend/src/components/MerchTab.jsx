@@ -44,7 +44,8 @@ export default function MerchTab({ addToast, isLive, socket, roomId, username })
   var [section, setSection] = useState('shop');
   var [dropCountdown, setDropCountdown] = useState(null);
   var [filterCat, setFilterCat] = useState('all');
-  var cdRef = useRef(null);
+  var cdRef              = useRef(null);
+  var dropCountdownRef   = useRef(null);
 
   useEffect(function() {
     return function() { clearInterval(cdRef.current); };
@@ -87,19 +88,19 @@ export default function MerchTab({ addToast, isLive, socket, roomId, username })
 
   var initiateDrop = function(item) {
     setDropped(item);
+    dropCountdownRef.current = 30;
     setDropCountdown(30);
     clearInterval(cdRef.current);
     addToast('⚡ LIMITED DROP: ' + item.name + ' — 30s only!', 'error');
     cdRef.current = setInterval(function() {
-      setDropCountdown(function(prev) {
-        if (prev === null || prev <= 1) {
-          clearInterval(cdRef.current);
-          setDropped(null);
-          setDropCountdown(null);
-          return null;
-        }
-        return prev - 1;
-      });
+      dropCountdownRef.current -= 1;
+      setDropCountdown(dropCountdownRef.current);
+      if (dropCountdownRef.current <= 0) {
+        clearInterval(cdRef.current);
+        setDropped(null);
+        setDropCountdown(null);
+        dropCountdownRef.current = null;
+      }
     }, 1000);
   }
 

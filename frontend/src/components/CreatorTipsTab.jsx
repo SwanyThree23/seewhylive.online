@@ -591,12 +591,10 @@ export default function CreatorTipsTab({ addToast, username }) {
   }
 
   var toggleCheck = function(id) {
-    setChecked(function(prev) {
-      var next = Object.assign({}, prev);
-      next[id] = !prev[id];
-      try { localStorage.setItem('sw_checklist', JSON.stringify(next)); } catch(e) {}
-      return next;
-    });
+    var next = Object.assign({}, checked);
+    next[id] = !checked[id];
+    try { localStorage.setItem('sw_checklist', JSON.stringify(next)); } catch(e) {}
+    setChecked(next);
   }
 
   var filtered = useMemo(function() {
