@@ -33,15 +33,17 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
   var [newCustom,     setNewCustom]     = useState({ name: '', url: '', key: '' });
   var [customRevealed, setCustomRevealed] = useState({});
   var [customEnabled,  setCustomEnabled]  = useState({});
+  var addToastRef      = useRef(addToast);
+  addToastRef.current  = addToast;
 
   useEffect(function() {
     if (!socket) return;
     var onFanoutFailed = function(data) {
       setFanoutActive(false);
-      if (addToast) addToast('⚠️ Fanout failed' + (data && data.platform ? ': ' + data.platform : ''), 'error');
+      if (addToastRef.current) addToastRef.current('⚠️ Fanout failed' + (data && data.platform ? ': ' + data.platform : ''), 'error');
     }
     var onFanoutRestarted = function(data) {
-      if (addToast) addToast('♻️ Fanout restarted' + (data && data.platform ? ': ' + data.platform : ''), 'success');
+      if (addToastRef.current) addToastRef.current('♻️ Fanout restarted' + (data && data.platform ? ': ' + data.platform : ''), 'success');
     }
     socket.on('fanout-failed',    onFanoutFailed);
     socket.on('fanout-restarted', onFanoutRestarted);
@@ -49,7 +51,7 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
       socket.off('fanout-failed',    onFanoutFailed);
       socket.off('fanout-restarted', onFanoutRestarted);
     };
-  }, [socket, addToast]);
+  }, [socket]);
 
   useEffect(function() {
     if (!fanoutActive) setBitrates({});
