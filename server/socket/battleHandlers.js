@@ -86,6 +86,7 @@ function registerBattleHandlers(io, socket) {
         return;
       }
       const battle = await battleService.acceptChallenge(payload.battleId, payload.roomId, socket.data.tenantId);
+      if (!battle) { if (cb) cb({ ok: false, error: 'battle not found or already accepted' }); return; }
       socket.join(roomName(payload.battleId));
       // Notify challenger so they can join the battle room too.
       io.to(`user:${battle.challenger_id}`).emit('battle:accept', battle);
