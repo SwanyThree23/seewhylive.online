@@ -57,7 +57,8 @@ router.post('/', requireAuth, battleCreateRateLimit, async function(req, res) {
     res.status(201).json(battle);
   } catch (err) {
     console.error('[ROUTE ERROR]', err);
-    res.status(500).json({ error: 'Internal server error' });
+    var isUserErr = err.status === 409 || err.status === 400;
+    res.status(isUserErr ? err.status : 500).json({ error: isUserErr ? err.message : 'Internal server error' });
   }
 });
 
