@@ -145,8 +145,8 @@ function registerPanelHandlers(io, socket) {
       var userId = socket.data.userId;
       var roomId = socket.data.roomId;
       if (!userId || userId.startsWith('anon') || !roomId) return;
-      await panelService.releaseSlot({ roomId, userId });
-      io.to(roomId).emit('panel:slot_released', { roomId, userId });
+      var released = await panelService.releaseSlot({ roomId, userId });
+      if (released > 0) io.to(roomId).emit('panel:slot_released', { roomId, userId });
     } catch (err) {
       console.error('[panelHandlers] disconnect release error:', err);
     }

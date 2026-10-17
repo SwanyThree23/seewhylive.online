@@ -46,7 +46,8 @@ async function assignSlot({ roomId, userId, tenantId }) {
 }
 
 async function releaseSlot({ roomId, userId }) {
-  await db.query('DELETE FROM room_panel_slots WHERE stream_id = $1 AND user_id = $2', [roomId, userId]);
+  var result = await db.query('DELETE FROM room_panel_slots WHERE stream_id = $1 AND user_id = $2', [roomId, userId]);
+  return result.rowCount || 0;
 }
 
 async function checkJoinGate({ roomId, userId, inviteCode = null, tenantId = null }) {

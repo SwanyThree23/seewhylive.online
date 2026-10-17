@@ -1997,7 +1997,7 @@ io.on('connection', function(socket) {
   socket.on('kick-guest', function(data) {
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
-    if (!roomId || !guestId || !/^[A-Za-z0-9_\-]{3,64}$/.test(guestId)) return;
+    if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     if (socket.data.role !== 'host') return;
 
     var producerIds = mediasoup.getProducerIdsByGuest(guestId, roomId);
@@ -2034,7 +2034,7 @@ io.on('connection', function(socket) {
     var guestId = String(data.guestId || '');
     var newRole = data.role;
     if (!roomId || !guestId || !newRole) return;
-    if (!/^[A-Za-z0-9_\-]{3,64}$/.test(guestId)) return;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     if (socket.data.role !== 'host') return;
     var validRoles = ['cohost', 'guest', 'viewer'];
     if (validRoles.indexOf(newRole) === -1) return;
@@ -2365,6 +2365,7 @@ io.on('connection', function(socket) {
     var name                   = String(data.name || 'Gift').slice(0, 60);
     var valueCents             = Math.floor(data.valueCents || 0);
     if (valueCents > 50000) return;
+    if (valueCents > 0 && valueCents < 50) return;
     var _tgRaw = data.toGuestId || null;
     var toGuestId = (_tgRaw && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(_tgRaw))) ? String(_tgRaw) : null;
     var _rawSAId = String(data.creatorStripeAccountId || '');
@@ -3801,8 +3802,7 @@ io.on('connection', function(socket) {
     // Send push notifications to all subscribers (once per go-live, not on replay)
     if (wasAlreadyLive) return;
     try {
-      var _pushTenantId = socket.data.tenantId || '';
-      var pushSubs = db.prepare('SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE tenant_id = ? LIMIT 5000').all(_pushTenantId);
+      var pushSubs = db.prepare('SELECT endpoint, p256dh, auth FROM push_subscriptions LIMIT 5000').all();
       if (pushSubs && pushSubs.length > 0) {
         var pushTitle = room.streamTitle || 'SeeWhy LIVE';
         var pushPayload = JSON.stringify({ title: pushTitle + ' is LIVE!', body: 'Tap to watch now on SeeWhy LIVE', url: '/' });
@@ -3825,7 +3825,7 @@ io.on('connection', function(socket) {
           if (expired.length === 0) return;
           try {
             var ph = expired.map(function() { return '?'; }).join(',');
-            db.prepare('DELETE FROM push_subscriptions WHERE endpoint IN (' + ph + ') AND tenant_id = ?').run(...expired, _pushTenantId);
+            db.prepare('DELETE FROM push_subscriptions WHERE endpoint IN (' + ph + ')').run(...expired);
           } catch(e) {
             logger.warn('[push] batch delete failed: ' + e.message);
           }
@@ -4006,6 +4006,8 @@ io.on('connection', function(socket) {
     if (!data || !data.challengerId) return;
     var _baUserId = socket.data.userId;
     if (!_baUserId || _baUserId.startsWith('anon')) return;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(data.challengerId))) return;
+    if (String(data.challengerId) === String(_baUserId)) return;
     var defenderName = socket.data.username || _baUserId;
     io.sockets.sockets.forEach(function(s) {
       if (s.data.tenantId === socket.data.tenantId && String(s.data.userId) === String(data.challengerId)) {
@@ -4018,6 +4020,8 @@ io.on('connection', function(socket) {
     if (!data || !data.challengerId) return;
     var _bdUserId = socket.data.userId;
     if (!_bdUserId || _bdUserId.startsWith('anon')) return;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(data.challengerId))) return;
+    if (String(data.challengerId) === String(_bdUserId)) return;
     var defenderName = socket.data.username || _bdUserId;
     io.sockets.sockets.forEach(function(s) {
       if (s.data.tenantId === socket.data.tenantId && String(s.data.userId) === String(data.challengerId)) {
