@@ -200,37 +200,35 @@ export default function DiscoverTab(props) {
       if (!data) return;
       var entry = Object.assign({ id: Date.now(), ts: Date.now(), read: false }, data);
       setNotifs(function(prev) {
-        var next = [entry].concat(prev).slice(0, 50);
-        try { localStorage.setItem('sw_notifications', JSON.stringify(next)); } catch(e) {}
-        return next;
+        return [entry].concat(prev).slice(0, 50);
       });
     }
     socket.on('notification', onNotification);
     return function() { socket.off('notification', onNotification); };
   }, [socket]);
 
+  useEffect(function() {
+    try { localStorage.setItem('sw_notifications', JSON.stringify(notifs)); } catch(e) {}
+  }, [notifs]);
+
   var markAllRead = function() {
-    setNotifs(function(prev) {
-      var next = prev.map(function(n) { return Object.assign({}, n, { read: true }); });
-      try { localStorage.setItem('sw_notifications', JSON.stringify(next)); } catch(e) {}
-      return next;
-    });
+    var next = notifs.map(function(n) { return Object.assign({}, n, { read: true }); });
+    try { localStorage.setItem('sw_notifications', JSON.stringify(next)); } catch(e) {}
+    setNotifs(next);
   }
 
   var toggleFollow = function(username) {
-    setFollowing(function(prev) {
-      var idx = prev.indexOf(username);
-      var next;
-      if (idx >= 0) {
-        next = prev.filter(function(u) { return u !== username; });
-        if (addToast) addToast('Unfollowed @' + username, 'info');
-      } else {
-        next = prev.concat([username]);
-        if (addToast) addToast('Following @' + username, 'success');
-      }
-      try { localStorage.setItem('sw_following', JSON.stringify(next)); } catch(e) {}
-      return next;
-    });
+    var idx = following.indexOf(username);
+    var next;
+    if (idx >= 0) {
+      next = following.filter(function(u) { return u !== username; });
+      if (addToast) addToast('Unfollowed @' + username, 'info');
+    } else {
+      next = following.concat([username]);
+      if (addToast) addToast('Following @' + username, 'success');
+    }
+    try { localStorage.setItem('sw_following', JSON.stringify(next)); } catch(e) {}
+    setFollowing(next);
   }
 
   var handleQueryChange = function(e) {
