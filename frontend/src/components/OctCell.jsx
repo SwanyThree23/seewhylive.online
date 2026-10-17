@@ -176,7 +176,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     var onReady = function() { setSendTransportReady(true); };
     rtcManager.on('sendTransportReady', onReady);
     return function() { rtcManager.off('sendTransportReady', onReady); };
-  }, [isOwnCell]);
+  }, [isOwnCell, rtcManager]);
 
   // Remote cell: subscribe to video + audio producers
   useEffect(function() {
