@@ -47,6 +47,19 @@ async function getActiveBattlesForRoom(roomId, tenantId) {
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 
 async function createChallenge({ tenantId, challengerId, defenderId, challengerName, defenderName, roomId, durationMinutes }) {
+  const existing = await db.query(
+    `SELECT id FROM pk_battles
+     WHERE tenant_id = $1
+       AND ((challenger_id = $2 AND defender_id = $3) OR (challenger_id = $3 AND defender_id = $2))
+       AND status IN ('pending', 'accepted', 'active')
+     LIMIT 1`,
+    [tenantId, challengerId, defenderId]
+  );
+  if (existing.rows.length) {
+    const e = new Error('an active or pending battle already exists between these users');
+    e.status = 409;
+    throw e;
+  }
   const result = await db.query(
     `INSERT INTO pk_battles
       (tenant_id, room_id, challenger_id, defender_id, challenger_name, defender_name,
