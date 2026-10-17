@@ -48,6 +48,7 @@ router.post('/', requireAuth, inviteRateLimit, async function(req, res) {
     });
     res.status(201).json(invite);
   } catch (err) {
+    if (err.status === 400) return res.status(400).json({ error: err.message });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -93,7 +94,7 @@ router.post('/streams/:streamId/links', requireAuth, async function(req, res) {
     var maxUses = req.body.maxUses;
     var ALLOWED_ROLES = ['guest', 'cohost', 'viewer'];
     var safeRole = ALLOWED_ROLES.includes(role) ? role : 'guest';
-    var safeMaxUses = Math.min(Math.floor(maxUses || 1), 100);
+    var safeMaxUses = Math.min(Math.max(Math.floor(Number(maxUses) || 1), 1), 100);
     var safeDisplayName = displayName ? String(displayName).slice(0, 80) : null;
     var link = await inviteService.createInviteLink({
       tenantId: req.tenantId,
