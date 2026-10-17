@@ -1483,7 +1483,7 @@ io.use(async function(socket, next) {
     return next(new Error('server misconfigured'));
   }
   try {
-    var decoded = jwt.verify(token, process.env.JWT_SECRET);
+    var decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
     socket.data.role   = decoded.role || 'viewer';
     socket.data.userId = decoded.userId || decoded.sub || ('user-' + uuidv4());
     socket.data.decoded = decoded;
