@@ -139,19 +139,17 @@ export default function DirectPayTab({ addToast, username }) {
   var saveHandle = function(id) {
     var err = validateHandle(id, draftHandle);
     if (err) { setDraftError(err); return; }
-    setHandles(function(prev) {
-      var next = Object.assign({}, prev);
-      next[id] = draftHandle.trim();
-      var tok = localStorage.getItem('sw_token') || '';
-      if (tok) {
-        fetch('/api/creator/direct-pay', {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ handles: next })
-        }).catch(function() {});
-      }
-      return next;
-    });
+    var next = Object.assign({}, handles);
+    next[id] = draftHandle.trim();
+    setHandles(next);
+    var tok = localStorage.getItem('sw_token') || '';
+    if (tok) {
+      fetch('/api/creator/direct-pay', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ handles: next })
+      }).catch(function() {});
+    }
     setEditing(null);
     setDraftHandle('');
     setDraftError('');
