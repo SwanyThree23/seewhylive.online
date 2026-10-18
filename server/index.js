@@ -2190,7 +2190,7 @@ io.on('connection', function(socket) {
       }
     }
 
-    swanybot.onChatMessage(roomId, _swKey, message, { username: username, userId: _swKey, room: rooms.get(roomId) });
+    swanybot.onChatMessage(roomId, _swKey, message, { username: username, userId: _swKey, room: rooms.get(roomId), role: socket.data.role });
 
     // !so / !shoutout command — host/cohost only
     var _soMatch = /^\s*!(so|shoutout)\s+@?(\S+)/i.exec(message);

@@ -284,26 +284,29 @@ class SwanyBot extends EventEmitter {
       return;
     }
 
-    if (cmd === 'poll') {
-      var pollRaw   = message.slice(1 + cmd.length).trim();
-      var pollArgs  = [];
-      var pollRegex = /"([^"]+)"/g;
-      var pollMatch;
-      while ((pollMatch = pollRegex.exec(pollRaw)) !== null) {
-        pollArgs.push(pollMatch[1]);
-      }
-      if (pollArgs.length < 3) {
-        botSay('📊 Usage: !poll "Question" "Option A" "Option B" [up to 4 options]');
+    if (cmd === 'poll' || cmd === 'endpoll') {
+      if (context.role !== 'host' && context.role !== 'cohost') {
+        botSay('Only the host can use !' + cmd);
         return;
       }
-      self.emit('poll-request', roomId, { question: pollArgs[0], options: pollArgs.slice(1, 5) });
-      self.log('info', 'command', '!poll by ' + (context.username || socketId), null);
-      return;
-    }
-
-    if (cmd === 'endpoll') {
-      self.emit('poll-end-request', roomId);
-      self.log('info', 'command', '!endpoll by ' + (context.username || socketId), null);
+      if (cmd === 'poll') {
+        var pollRaw   = message.slice(1 + cmd.length).trim();
+        var pollArgs  = [];
+        var pollRegex = /"([^"]+)"/g;
+        var pollMatch;
+        while ((pollMatch = pollRegex.exec(pollRaw)) !== null) {
+          pollArgs.push(pollMatch[1]);
+        }
+        if (pollArgs.length < 3) {
+          botSay('📊 Usage: !poll "Question" "Option A" "Option B" [up to 4 options]');
+          return;
+        }
+        self.emit('poll-request', roomId, { question: pollArgs[0], options: pollArgs.slice(1, 5) });
+        self.log('info', 'command', '!poll by ' + (context.username || socketId), null);
+      } else {
+        self.emit('poll-end-request', roomId);
+        self.log('info', 'command', '!endpoll by ' + (context.username || socketId), null);
+      }
       return;
     }
 

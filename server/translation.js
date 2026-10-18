@@ -81,8 +81,20 @@ async function detectAndTranslate(text) {
   }
 }
 
+// DeepL-supported target language codes (as of 2024).
+var VALID_TARGET_LANGS = [
+  'BG','CS','DA','DE','EL','EN','EN-GB','EN-US','ES','ET','FI','FR','HU','ID',
+  'IT','JA','KO','LT','LV','NB','NL','PL','PT','PT-BR','PT-PT','RO','RU',
+  'SK','SL','SV','TR','UK','ZH'
+];
+
 async function translateTo(text, targetLang) {
-  var cacheKey = _cacheKey(text, targetLang);
+  var safeLang = String(targetLang || '').toUpperCase();
+  if (!VALID_TARGET_LANGS.includes(safeLang)) {
+    return { translated: text, targetLang: targetLang };
+  }
+
+  var cacheKey = _cacheKey(text, safeLang);
 
   if (translationCache.has(cacheKey)) {
     return translationCache.get(cacheKey);
@@ -90,7 +102,7 @@ async function translateTo(text, targetLang) {
 
   var apiKey = process.env.DEEPL_API_KEY;
   if (!apiKey) {
-    return { translated: text, targetLang: targetLang };
+    return { translated: text, targetLang: safeLang };
   }
 
   try {
@@ -99,7 +111,7 @@ async function translateTo(text, targetLang) {
       new URLSearchParams({
         auth_key: apiKey,
         text: text,
-        target_lang: targetLang
+        target_lang: safeLang
       }),
       {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -109,19 +121,19 @@ async function translateTo(text, targetLang) {
 
     var translations = response.data.translations;
     if (!translations || translations.length === 0) {
-      return { translated: text, targetLang: targetLang };
+      return { translated: text, targetLang: safeLang };
     }
 
-    var result = { translated: translations[0].text, targetLang: targetLang };
+    var result = { translated: translations[0].text, targetLang: safeLang };
     cacheSet(cacheKey, result);
     return result;
   } catch (err) {
     if (err.response && err.response.status === 456) {
       console.warn('[translation] DeepL quota exceeded; returning original.');
-      return { translated: text, targetLang: targetLang };
+      return { translated: text, targetLang: safeLang };
     }
     console.error('[translation] translateTo error:', err.message);
-    return { translated: text, targetLang: targetLang };
+    return { translated: text, targetLang: safeLang };
   }
 }
 
