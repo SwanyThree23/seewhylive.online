@@ -69,15 +69,22 @@ router.post('/encrypt-key', requireAuth, function (req, res) {
   }
 });
 
+var PLATFORM_RE = /^[a-zA-Z0-9_-]{1,64}$/;
 router.post('/add-destination', requireAuth, async function (req, res) {
   var body = req.body || {};
   if (!body.streamKey || !body.streamUrl) return res.status(400).json({ error: 'streamUrl and streamKey are required' });
   if (!isValidRtmpUrl(body.streamUrl)) return res.status(400).json({ error: 'streamUrl must start with rtmp:// or rtmps://' });
+  var safeStreamId = body.streamId ? String(body.streamId) : null;
+  if (safeStreamId && !STREAM_ID_RE.test(safeStreamId)) return res.status(400).json({ error: 'invalid streamId' });
+  var safePlatform = body.platform ? String(body.platform) : null;
+  if (safePlatform && !PLATFORM_RE.test(safePlatform)) return res.status(400).json({ error: 'invalid platform' });
+  var safeStreamKey = typeof body.streamKey === 'string' ? body.streamKey.slice(0, 500) : '';
+  if (!safeStreamKey) return res.status(400).json({ error: 'streamKey is required' });
   try {
-    var encryptedKey = encryptKey(body.streamKey);
+    var encryptedKey = encryptKey(safeStreamKey);
     var result = await db.query(
       'INSERT INTO stream_destinations (stream_id, platform, stream_url, stream_key, status, is_enabled, user_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
-      [body.streamId, body.platform, body.streamUrl, encryptedKey, 'disconnected', true, req.user.id]
+      [safeStreamId, safePlatform, body.streamUrl, encryptedKey, 'disconnected', true, req.user.id]
     );
     res.json({ success: true, destination: result.rows[0] });
   } catch (err) {
