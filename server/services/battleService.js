@@ -1,3 +1,4 @@
+'use strict';
 // server/services/battleService.js
 // PK Battle Arena — lifecycle logic, aligned to actual production schema:
 // pk_battles(id, room_id, challenger_id, defender_id, challenger_name, defender_name,
