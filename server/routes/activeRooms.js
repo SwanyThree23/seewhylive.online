@@ -8,7 +8,7 @@ var db = require('../db');
 // via a lazy require to avoid circular-require issues at module load time.
 // Never writes to rooms - purely reads Set/Map sizes for a safe refresh.
 // Tenant-scoped: only rooms whose stream record belongs to req.tenantId are returned.
-router.get('/', requireAuth, async function(req, res) {
+router.get('/', async function(req, res) {
   try {
     var rooms = require('../index').rooms;
     if (!rooms || typeof rooms.forEach !== 'function') {
