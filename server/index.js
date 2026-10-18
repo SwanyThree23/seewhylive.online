@@ -2953,10 +2953,31 @@ io.on('connection', function(socket) {
     // Paid subscriptions must supply a paymentIntentId so the broadcast is
     // deferred until Stripe confirms the charge. Without this check any
     // authenticated socket could trigger host notifications and AURA for free.
+    // The callback retrieves the real PI amount from Stripe rather than trusting
+    // the client-supplied priceCents — prevents spoofed inflation of revenue stats.
     if (priceCents > 0) {
       var _subPiId = String(data.paymentIntentId || '');
       if (!_subPiId || !/^pi_[A-Za-z0-9_]{10,100}$/.test(_subPiId)) return;
-      stripeModule.registerPaymentCallback(_subPiId, _broadcastSubscription);
+      stripeModule.registerPaymentCallback(_subPiId, function() {
+        stripeModule.getStripe().paymentIntents.retrieve(_subPiId).then(function(pi) {
+          if (!pi || pi.status !== 'succeeded') return;
+          var _vCents = Math.floor(pi.amount);
+          var _vCreatorCents = Math.floor(_vCents * CREATOR);
+          var _vPlatformCents = _vCents - _vCreatorCents;
+          io.to(roomId).emit('new-subscription', {
+            username: fromUser, tier: tier,
+            price_cents: _vCents, creator_cents: _vCreatorCents, platform_cents: _vPlatformCents,
+            ts: _subTs
+          });
+          var _subRoom2 = rooms.get(roomId);
+          if (_subRoom2 && _subRoom2.hostUserId) {
+            io.to('user:' + _subRoom2.hostUserId).emit('notification', { type: 'subscription', message: '⭐ ' + fromUser + ' subscribed at ' + tier + ' tier!', ts: _subTs * 1000 });
+          }
+          autoAura(roomId, function(cb) {
+            aura.triggerTip(roomId, fromUser, _vCents, tierLabel + ' subscriber — welcome to the family!', cb);
+          });
+        }).catch(function() {});
+      });
       return;
     }
 
