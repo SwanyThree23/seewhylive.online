@@ -2373,12 +2373,10 @@ io.on('connection', function(socket) {
     if (valueCents > 0 && valueCents < 50) return;
     var _tgRaw = data.toGuestId || null;
     var toGuestId = (_tgRaw && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(_tgRaw))) ? String(_tgRaw) : null;
-    var _rawSAId = String(data.creatorStripeAccountId || '');
-    var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawSAId) ? _rawSAId : '';
-
     if (!roomId || valueCents < 0) return;
-    // Monetary gifts require a Stripe account — fall back to the host's stored account
-    if (valueCents > 0 && !creatorStripeAccountId) {
+    // Always look up the creator's Stripe account from DB — never trust client-supplied account IDs
+    var creatorStripeAccountId = '';
+    if (valueCents > 0) {
       var _giftSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
       creatorStripeAccountId = (_giftSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_giftSaRow.stripe_account_id || '')) ? _giftSaRow.stripe_account_id : '';
     }
@@ -2525,12 +2523,8 @@ io.on('connection', function(socket) {
 
     if (!roomId || priceCents <= 0 || priceCents > 50000) return;
 
-    var _rawMoSAId = String(data.creatorStripeAccountId || '');
-    var _moCreatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawMoSAId) ? _rawMoSAId : '';
-    if (!_moCreatorStripeAccountId) {
-      var _moSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
-      _moCreatorStripeAccountId = (_moSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_moSaRow.stripe_account_id || '')) ? _moSaRow.stripe_account_id : '';
-    }
+    var _moSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
+    var _moCreatorStripeAccountId = (_moSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_moSaRow.stripe_account_id || '')) ? _moSaRow.stripe_account_id : '';
     if (!_moCreatorStripeAccountId) return;
 
     var creatorCents  = Math.floor(priceCents * CREATOR);
@@ -3282,12 +3276,8 @@ io.on('connection', function(socket) {
     var VALID_SC    = [100, 200, 500, 1000, 2000, 5000];
     if (!roomId || !message || VALID_SC.indexOf(amountCents) === -1) return;
 
-    var _rawScSAId = String(data.creatorStripeAccountId || '');
-    var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawScSAId) ? _rawScSAId : '';
-    if (!creatorStripeAccountId) {
-      var _scSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
-      creatorStripeAccountId = (_scSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_scSaRow.stripe_account_id || '')) ? _scSaRow.stripe_account_id : '';
-    }
+    var _scSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
+    var creatorStripeAccountId = (_scSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_scSaRow.stripe_account_id || '')) ? _scSaRow.stripe_account_id : '';
     if (!creatorStripeAccountId) return;
 
     var creatorCents  = Math.floor(amountCents * CREATOR);
@@ -3395,12 +3385,8 @@ io.on('connection', function(socket) {
     var VALID_SC    = [100, 200, 500, 1000, 2000, 5000];
     if (!roomId || !message || VALID_SC.indexOf(amountCents) === -1) return;
 
-    var _rawTtsSAId = String(data.creatorStripeAccountId || '');
-    var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawTtsSAId) ? _rawTtsSAId : '';
-    if (!creatorStripeAccountId) {
-      var _ttsSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
-      creatorStripeAccountId = (_ttsSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_ttsSaRow.stripe_account_id || '')) ? _ttsSaRow.stripe_account_id : '';
-    }
+    var _ttsSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
+    var creatorStripeAccountId = (_ttsSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_ttsSaRow.stripe_account_id || '')) ? _ttsSaRow.stripe_account_id : '';
     if (!creatorStripeAccountId) return;
 
     var rawVoice = data.voice || {};
