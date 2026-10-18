@@ -11,18 +11,19 @@ var supabaseAdmin = createClient(
   { auth: { autoRefreshToken: false, persistSession: false }, realtime: { transport: 'ws' } }
 );
 
-var CLEANUP_STEPS = [
-  { table: 'room_join_requests',    column: 'user_id' },
-  { table: 'room_panel_slots',      column: 'user_id' },
-  { table: 'challenge_completions', column: 'user_id' },
-  { table: 'loyalty_point_events',  column: 'user_id' },
-  { table: 'user_loyalty',          column: 'user_id' },
-  { table: 'battles',               column: 'creator_id' },
-  { table: 'streams',               column: 'creator_id' },
-  { table: 'direct_pay_handles',    column: 'user_id' },
-  { table: 'rewards_selected_tier', column: 'user_id' },
-  { table: 'reward_points',         column: 'user_id' },
-  { table: 'guest_requests',        column: 'user_id' },
+// Individual DELETE statements avoid dynamic SQL identifier concatenation.
+var CLEANUP_QUERIES = [
+  'DELETE FROM room_join_requests    WHERE user_id    = $1 AND tenant_id = $2',
+  'DELETE FROM room_panel_slots      WHERE user_id    = $1 AND tenant_id = $2',
+  'DELETE FROM challenge_completions WHERE user_id    = $1 AND tenant_id = $2',
+  'DELETE FROM loyalty_point_events  WHERE user_id    = $1 AND tenant_id = $2',
+  'DELETE FROM user_loyalty          WHERE user_id    = $1 AND tenant_id = $2',
+  'DELETE FROM battles               WHERE creator_id = $1 AND tenant_id = $2',
+  'DELETE FROM streams               WHERE creator_id = $1 AND tenant_id = $2',
+  'DELETE FROM direct_pay_handles    WHERE user_id    = $1 AND tenant_id = $2',
+  'DELETE FROM rewards_selected_tier WHERE user_id    = $1 AND tenant_id = $2',
+  'DELETE FROM reward_points         WHERE user_id    = $1 AND tenant_id = $2',
+  'DELETE FROM guest_requests        WHERE user_id    = $1 AND tenant_id = $2',
 ];
 
 router.delete('/me', requireAuth, async function(req, res) {
@@ -44,9 +45,8 @@ router.delete('/me', requireAuth, async function(req, res) {
   var client = await db.pool.connect();
   try {
     await client.query('BEGIN');
-    for (var i = 0; i < CLEANUP_STEPS.length; i++) {
-      var step = CLEANUP_STEPS[i];
-      await client.query('DELETE FROM ' + step.table + ' WHERE ' + step.column + ' = $1 AND tenant_id = $2', [userId, tenantId]);
+    for (var i = 0; i < CLEANUP_QUERIES.length; i++) {
+      await client.query(CLEANUP_QUERIES[i], [userId, tenantId]);
     }
     await client.query('DELETE FROM users WHERE id = $1 AND tenant_id = $2', [userId, tenantId]);
     await client.query('COMMIT');
