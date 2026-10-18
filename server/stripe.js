@@ -121,11 +121,12 @@ async function verifyPPVPayment(paymentIntentId, roomId, viewerId) {
   var now = Math.floor(Date.now() / 1000);
 
   // Atomically claim the pending row so concurrent calls cannot both succeed.
-  // SQLite's serialized write lock ensures exactly one UPDATE with AND status='pending' wins.
+  // SQLite's serialized write lock ensures exactly one UPDATE wins.
+  // Also allow re-claiming rows stuck in 'verifying' for >5 min (server crash recovery).
   var claimed = db.prepare(
     "UPDATE ppv_unlocks SET status = 'verifying', completed_at = ? " +
-    "WHERE payment_intent_id = ? AND status = 'pending'"
-  ).run(now, paymentIntentId);
+    "WHERE payment_intent_id = ? AND (status = 'pending' OR status = 'succeeded' OR (status = 'verifying' AND completed_at < ?))"
+  ).run(now, paymentIntentId, now - 300);
   if (claimed.changes === 0) {
     throw new Error('Payment already redeemed or not found');
   }

@@ -848,24 +848,28 @@ app.get('/api/metrics', requireAuth, function(req, res) {
 // POST /api/ppv/create
 app.post('/api/ppv/create', requireAuth, ppvRateLimit, function(req, res) {
   var body = req.body;
-  if (!body.roomId || !body.priceUsd || !body.creatorStripeAccountId) {
-    res.status(400).json({ error: 'Missing required fields: roomId, priceUsd, creatorStripeAccountId' });
+  if (!body.roomId || !body.priceUsd) {
+    res.status(400).json({ error: 'Missing required fields: roomId, priceUsd' });
     return;
   }
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(body.roomId))) {
     return res.status(400).json({ error: 'invalid roomId' });
   }
-  if (!/^acct_[a-zA-Z0-9]{16,}$/.test(String(body.creatorStripeAccountId))) {
-    return res.status(400).json({ error: 'invalid creatorStripeAccountId' });
-  }
   var priceUsd = parseFloat(body.priceUsd);
   if (!Number.isFinite(priceUsd) || priceUsd < 0.50 || priceUsd > 500) {
     return res.status(400).json({ error: 'priceUsd must be between 0.50 and 500' });
   }
+  var _ppvCreatorSAId;
   try {
-    var _ppvRoom = db.prepare('SELECT host_id FROM rooms WHERE room_id = ?').get(body.roomId);
-    if (!_ppvRoom) {
+    var _ppvSaRow = db.prepare(
+      'SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?'
+    ).get(body.roomId);
+    if (!_ppvSaRow) {
       return res.status(404).json({ error: 'room not found' });
+    }
+    _ppvCreatorSAId = (_ppvSaRow.stripe_account_id && /^acct_[A-Za-z0-9]{8,32}$/.test(_ppvSaRow.stripe_account_id)) ? _ppvSaRow.stripe_account_id : '';
+    if (!_ppvCreatorSAId) {
+      return res.status(400).json({ error: 'Creator has not set up payments' });
     }
   } catch (_ppvErr) {
     return res.status(500).json({ error: 'Internal server error' });
@@ -874,7 +878,7 @@ app.post('/api/ppv/create', requireAuth, ppvRateLimit, function(req, res) {
     body.roomId,
     req.user.id,
     body.priceUsd,
-    body.creatorStripeAccountId
+    _ppvCreatorSAId
   ).then(function(result) {
     res.json(result);
   }).catch(function(err) {
