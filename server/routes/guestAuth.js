@@ -1,10 +1,21 @@
 'use strict';
 var express = require('express');
 var jwt = require('jsonwebtoken');
+var { rateLimit } = require('express-rate-limit');
 var db = require('../db');
 var router = express.Router();
 
-router.post('/token', async function (req, res) {
+var guestTokenRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many token requests — please wait before trying again.' },
+});
+
+router.post('/token', guestTokenRateLimit, async function (req, res) {
   var inviteToken = req.body.inviteToken;
   if (!inviteToken) return res.status(400).json({ error: 'inviteToken is required' });
   if (typeof inviteToken !== 'string' || inviteToken.length > 200) {

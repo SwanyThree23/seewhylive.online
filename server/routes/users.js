@@ -13,6 +13,10 @@ var supabaseAdmin = createClient(
 
 var CLEANUP_STEPS = [
   { table: 'room_join_requests',    column: 'user_id' },
+  { table: 'room_panel_slots',      column: 'user_id' },
+  { table: 'challenge_completions', column: 'user_id' },
+  { table: 'loyalty_point_events',  column: 'user_id' },
+  { table: 'user_loyalty',          column: 'user_id' },
   { table: 'battles',               column: 'creator_id' },
   { table: 'streams',               column: 'creator_id' },
   { table: 'direct_pay_handles',    column: 'user_id' },
