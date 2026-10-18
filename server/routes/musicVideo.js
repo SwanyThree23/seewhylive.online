@@ -31,6 +31,8 @@ var ALLOWED_AUDIO_MIME = [
 ];
 
 var VALID_STYLES = ['lyric_visualizer', 'neon_pulse', 'urban_night', 'abstract_wave', 'fire_storm'];
+var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var VALID_OUTPUT_RE = /^mv_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.mp4$/i;
 
 var upload = multer({
   storage: multer.diskStorage({ destination: os.tmpdir() }),
@@ -83,9 +85,7 @@ router.post('/submit', requireAuth, mvSubmitRateLimit, upload.single('audio'), a
     );
     var musicVideoQueue = require('../queue/musicVideoQueue').musicVideoQueue;
     
-    await musicVideoQueue.add('render', { jobId: result.rows[0].id }).then(function(job) {
-      console.log('[DEBUG2] enqueued bull job id:', job && job.id);
-    }).catch(function(e) {
+    await musicVideoQueue.add('render', { jobId: result.rows[0].id }).catch(function(e) {
       console.error('[musicVideo] queue enqueue failed (worker orphan-sweep will catch it):', e && e.stack || e);
     });
     res.json({ jobId: result.rows[0].id, status: 'pending' });
@@ -115,6 +115,7 @@ router.get('/jobs', requireAuth, async function(req, res) {
 });
 
 router.get('/jobs/:id', requireAuth, async function(req, res) {
+  if (!UUID_RE.test(req.params.id)) return res.status(404).json({ error: 'Job not found' });
   var userId = req.user.userId || req.user.id;
   try {
     var result = await db.query(
@@ -132,7 +133,8 @@ router.get('/jobs/:id', requireAuth, async function(req, res) {
 });
 
 router.get('/output/:filename', requireAuth, async function(req, res) {
-  var name     = path.basename(req.params.filename);
+  var name = path.basename(req.params.filename);
+  if (!VALID_OUTPUT_RE.test(name)) return res.status(404).json({ error: 'Not found' });
   var filePath = path.join(MEDIA_DIR, name);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Not found' });
   // Verify the requesting user owns the job that produced this file
@@ -151,6 +153,7 @@ router.get('/output/:filename', requireAuth, async function(req, res) {
 });
 
 router.delete('/jobs/:id', requireAuth, async function(req, res) {
+  if (!UUID_RE.test(req.params.id)) return res.status(404).json({ error: 'Job not found' });
   var userId = req.user.userId || req.user.id;
   try {
     var existing = await db.query(
