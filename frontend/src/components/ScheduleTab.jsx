@@ -119,7 +119,8 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
   // Load from API on mount
   useEffect(function() {
     var mounted = true;
-    fetch('/api/schedule')
+    var tok = localStorage.getItem('sw_token') || '';
+    fetch('/api/schedule', tok ? { headers: { 'Authorization': 'Bearer ' + tok } } : {})
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (!mounted) return;
