@@ -29,9 +29,10 @@ export function usePushNotifications() {
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         }).then(function(sub) {
+          var _pushTok = localStorage.getItem('sw_token') || '';
           fetch('/api/push/subscribe', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: Object.assign({ 'Content-Type': 'application/json' }, _pushTok ? { 'Authorization': 'Bearer ' + _pushTok } : {}),
             body: JSON.stringify({ subscription: sub.toJSON(), username: username }),
           }).then(function(r) { return r.json(); })
             .then(function() { if (onSuccess) onSuccess(sub); })
