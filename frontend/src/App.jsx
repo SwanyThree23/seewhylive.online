@@ -504,9 +504,12 @@ export default function App() {
   useEffect(function() {
     var stored = localStorage.getItem('sw_reminders');
     if (!stored) return;
-    fetch('/api/schedule')
-      .then(function(r) { return r.json(); })
+    var _remTok = localStorage.getItem('sw_token') || '';
+    if (!_remTok) return;
+    fetch('/api/schedule', { headers: { 'Authorization': 'Bearer ' + _remTok } })
+      .then(function(r) { if (!r.ok) return null; return r.json(); })
       .then(function(data) {
+        if (!data) return;
         var events = data && data.events ? data.events : [];
         var reminders = [];
         try { reminders = JSON.parse(stored); } catch(e) {}
