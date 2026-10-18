@@ -4,7 +4,7 @@ var router = express.Router();
 var loyaltyService = require('../services/loyaltyService');
 var requireAuth    = require('../middleware/auth');
 
-router.get('/global', requireAuth, async function(req, res) {
+router.get('/global', async function(req, res) {
   try {
     var limit = req.query.limit ? parseInt(req.query.limit, 10) : 50;
     if (isNaN(limit) || limit < 1) limit = 50;
@@ -16,7 +16,7 @@ router.get('/global', requireAuth, async function(req, res) {
   }
 });
 
-router.get('/weekly', requireAuth, async function(req, res) {
+router.get('/weekly', async function(req, res) {
   try {
     var limit = req.query.limit ? parseInt(req.query.limit, 10) : 50;
     if (isNaN(limit) || limit < 1) limit = 50;

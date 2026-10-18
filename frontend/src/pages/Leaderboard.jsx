@@ -33,23 +33,23 @@ var Leaderboard = function (props) {
     var loader = activeTab === 'weekly'
       ? rewardsService.getWeeklyLeaderboard(50)
       : rewardsService.getGlobalLeaderboard(50);
-    loader.then(function (data) { setRows(data); });
+    loader.then(function (data) { if (Array.isArray(data)) setRows(data); }).catch(function () {});
   }, [activeTab]);
 
   useEffect(function () {
     rewardsService.getMyStanding().then(function (data) { setMyStanding(data); }).catch(function () {});
-    rewardsService.getActiveChallenges().then(function (data) { setChallenges(data); });
-    rewardsService.getMyCompletions().then(function (data) { setCompletions(data); }).catch(function () {});
+    rewardsService.getActiveChallenges().then(function (data) { if (Array.isArray(data)) setChallenges(data); }).catch(function () {});
+    rewardsService.getMyCompletions().then(function (data) { if (Array.isArray(data)) setCompletions(data); }).catch(function () {});
   }, []);
 
   function refreshLeaderboard() {
     var loader = activeTab === 'weekly'
       ? rewardsService.getWeeklyLeaderboard(50)
       : rewardsService.getGlobalLeaderboard(50);
-    loader.then(function (data) { setRows(data); });
+    loader.then(function (data) { if (Array.isArray(data)) setRows(data); }).catch(function () {});
     rewardsService.getMyStanding().then(function (data) { setMyStanding(data); }).catch(function () {});
-    rewardsService.getActiveChallenges().then(function (data) { setChallenges(data); });
-    rewardsService.getMyCompletions().then(function (data) { setCompletions(data); }).catch(function () {});
+    rewardsService.getActiveChallenges().then(function (data) { if (Array.isArray(data)) setChallenges(data); }).catch(function () {});
+    rewardsService.getMyCompletions().then(function (data) { if (Array.isArray(data)) setCompletions(data); }).catch(function () {});
   }
 
   var isCompleted = function (challengeId) {
