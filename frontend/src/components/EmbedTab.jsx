@@ -19,7 +19,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
   var error = errorState[0];
   var setError = errorState[1];
 
-  var creatorCents = Math.floor(Math.round(PPV_PRICE_USD * 100) * CREATOR_SPLIT);
+  var creatorCents = Math.floor(PPV_PRICE_USD * 100 * CREATOR_SPLIT);
   var creatorAmt = (creatorCents / 100).toFixed(2);
 
   var handleSubmit = async function(e) {
