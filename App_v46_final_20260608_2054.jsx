@@ -88,6 +88,13 @@ function tsNow() { return Date.now(); }
 function genStreamKey() { return STREAM_KEY_PREFIX + Math.random().toString(36).slice(2, 10); }
 var TAB_ROOTS = { home: 'home', battles: 'battles', live: 'live', aihub: 'aihub', wallet: 'wallet', more: 'more' };
 var PAGE_TO_TAB = { home: 'home', notifications: 'home', battles: 'battles', live: 'live', aihub: 'aihub', wallet: 'wallet', more: 'more', profile: 'more', analytics: 'more', schedule: 'more' };
+var __NAV_DIR = 'push';
+var KNOWN_PAGES = ['home','battles','live','aihub','wallet','more','profile','analytics','schedule','notifications'];
+function getInitialPage() {
+  if (typeof window === 'undefined') return 'home';
+  var p = window.location.pathname.slice(1).split('/')[0];
+  return KNOWN_PAGES.indexOf(p) !== -1 ? p : 'home';
+}
 
 // ─── REDUCER ──────────────────────────────────────────────────────────────────
 function appReducer(state, action) {
@@ -96,14 +103,15 @@ function appReducer(state, action) {
       var _np = action.payload;
       var _nt = PAGE_TO_TAB[_np] || state.activeTab || 'home';
       var _nth = Object.assign({}, state.tabHistory || TAB_ROOTS); _nth[_nt] = _np;
-      if (!__POP && typeof window !== 'undefined' && (!window.history.state || window.history.state.page !== _np)) window.history.pushState({ page: _np }, '', '');
+      var _nd = __NAV_DIR; __NAV_DIR = 'push';
+      if (!__POP && typeof window !== 'undefined' && (!window.history.state || window.history.state.page !== _np)) window.history.pushState({ page: _np }, '', '/' + _np);
       __POP = false;
-      return Object.assign({}, state, { page: _np, prevPage: state.page, activeTab: _nt, tabHistory: _nth });
+      return Object.assign({}, state, { page: _np, prevPage: state.page, activeTab: _nt, tabHistory: _nth, navDir: _nd });
     case 'RESET_TAB':
       var _rtp = TAB_ROOTS[action.payload] || action.payload;
       var _rth = Object.assign({}, state.tabHistory || TAB_ROOTS); _rth[action.payload] = _rtp;
-      if (typeof window !== 'undefined') window.history.pushState({ page: _rtp }, '', '');
-      return Object.assign({}, state, { page: _rtp, prevPage: state.page, activeTab: action.payload, tabHistory: _rth });
+      if (typeof window !== 'undefined') window.history.pushState({ page: _rtp }, '', '/' + _rtp);
+      return Object.assign({}, state, { page: _rtp, prevPage: state.page, activeTab: action.payload, tabHistory: _rth, navDir: 'pop' });
     case 'SET_LIVE_ROOM': return Object.assign({}, state, { liveRoom: action.payload });
     case 'SET_VIEWER_COUNT': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { viewers: action.payload }) });
     case 'SET_STREAM_DURATION': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { duration: action.payload }) });
@@ -144,7 +152,7 @@ function appReducer(state, action) {
 }
 
 var initialState = {
-  page: 'home',
+  page: getInitialPage(),
   prevPage: null,
   modal: null,
   toasts: [],
@@ -236,8 +244,9 @@ var initialState = {
     { id: 'sch2', title: 'AIverse Podcast Ep 92', date: '2026-06-10', time: '8:00 PM PST', recurring: 'weekly', reminder: true },
     { id: 'sch3', title: 'Domino Strategy Session', date: '2026-06-12', time: '6:00 PM PST', recurring: 'weekly', reminder: false },
   ],
-  activeTab: 'home',
+  activeTab: PAGE_TO_TAB[getInitialPage()] || 'home',
   tabHistory: { home: 'home', battles: 'battles', live: 'live', aihub: 'aihub', wallet: 'wallet', more: 'more' },
+  navDir: 'push',
 };
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
@@ -278,8 +287,9 @@ function Btn(props) {
       style={Object.assign({
         border: 'none', borderRadius: 8, cursor: props.disabled ? 'not-allowed' : 'pointer',
         fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif",
-        padding: props.small ? '6px 14px' : '11px 22px',
-        fontSize: props.small ? 12 : 14, letterSpacing: 0.5,
+        padding: props.small ? '8px 14px' : '11px 22px',
+        minHeight: 44, boxSizing: 'border-box',
+        fontSize: props.small ? 14 : 15, letterSpacing: 0.5,
         opacity: props.disabled ? 0.5 : 1, width: props.full ? '100%' : undefined,
         transition: 'opacity 0.15s, transform 0.1s', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none',
       }, variants[variant], props.style || {})}
@@ -323,7 +333,7 @@ function Modal(props) {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ color: C.gold, fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, letterSpacing: 2, userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>{props.title}</div>
-          <button onClick={props.onClose} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 24, cursor: 'pointer' }}>×</button>
+          <button onClick={props.onClose} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 24, cursor: 'pointer', minHeight: 44, minWidth: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, flexShrink: 0 }}>×</button>
         </div>
         {props.children}
       </div>
@@ -2557,7 +2567,9 @@ function InjectStyles() {
       '* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; -webkit-overflow-scrolling: touch; }',
       'input, textarea, select { font-family: inherit; outline: none; }',
       'button { font-family: inherit; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; } @keyframes sheetUp {from{transform:translateY(100%)}to{transform:translateY(0)}} @keyframes sheetFade{from{opacity:0}to{opacity:1}}',
-      '@keyframes pageEnter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }',
+      '@keyframes slideInRight { from { transform: translateX(100%); opacity: 0.85; } to { transform: translateX(0); opacity: 1; } }',
+      '@keyframes slideInLeft { from { transform: translateX(-40%); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }',
+      'input, textarea, select { font-size: 16px !important; }',
       '::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }',
     ].join('\n');
     document.head.appendChild(style);
@@ -2587,7 +2599,7 @@ export default function App() {
       dispatch({ type: 'SET_WATCH_SYNC', payload: rand(-MAX_DRIFT_MS, MAX_DRIFT_MS) });
     }, 8000);
     return function() { clearInterval(t); };
-  }, []);  useEffect(function(){var p=function(e){__POP=true;dispatch({type:'SET_PAGE',payload:(e.state&&e.state.page)||'home'});};window.addEventListener('popstate',p);return function(){window.removeEventListener('popstate',p);};},[]);
+  }, []);  useEffect(function(){var p=function(e){__POP=true;__NAV_DIR='pop';dispatch({type:'SET_PAGE',payload:(e.state&&e.state.page)||'home'});};window.addEventListener('popstate',p);return function(){window.removeEventListener('popstate',p);};},[]);
   var page = state.page;
 
   // V46 new page routing
@@ -2618,7 +2630,7 @@ export default function App() {
       <InjectStyles />
 
       {/* Page content */}
-      <div key={page} style={{ animation: 'pageEnter 0.22s ease' }}>
+      <div key={page} style={{ animation: (state.navDir === 'pop' ? 'slideInLeft' : 'slideInRight') + ' 0.25s ease', willChange: 'transform' }}>
         {page === 'home' && <HomePage state={state} dispatch={dispatch} />}
         {page === 'live' && <LiveRoom state={state} dispatch={dispatch} />}
         {page === 'battles' && <BattlesPage state={state} dispatch={dispatch} />}
