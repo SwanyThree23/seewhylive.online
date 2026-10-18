@@ -2160,7 +2160,7 @@ io.on('connection', function(socket) {
           return;
         }
       }
-      if (moderation.isShadowBanned(userId)) {
+      if (moderation.isShadowBanned(userId, socket.data.tenantId)) {
         var _sbTs = Math.floor(Date.now() / 1000);
         io.to(socket.id).emit('chat-message', {
           id: uuidv4(), username: username, message: message, translated: message,

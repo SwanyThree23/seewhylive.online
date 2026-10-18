@@ -57,12 +57,24 @@ db.exec(
 
 db.exec(
   'CREATE TABLE IF NOT EXISTS shadow_bans (' +
-  '  user_id TEXT PRIMARY KEY,' +
+  '  user_id TEXT NOT NULL,' +
+  '  tenant_id TEXT NOT NULL DEFAULT \'\',' +
   '  reason TEXT,' +
   '  banned_by TEXT,' +
-  '  created_at INTEGER NOT NULL' +
+  '  created_at INTEGER NOT NULL,' +
+  '  PRIMARY KEY (user_id, tenant_id)' +
   ');'
 );
+
+// Migrate existing rows: add tenant_id column if missing (idempotent)
+try {
+  db.exec('ALTER TABLE shadow_bans ADD COLUMN tenant_id TEXT NOT NULL DEFAULT \'\'');
+  // After adding column the PK is still user_id; recreate with composite PK requires
+  // a full table rebuild — instead we rely on the unique index below.
+} catch (e) { /* column already exists */ }
+try {
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS shadow_bans_user_tenant ON shadow_bans (user_id, tenant_id)');
+} catch (e) { /* already exists */ }
 
 var stmtInsertBan = db.prepare(
   'INSERT OR REPLACE INTO creator_bans (id, creator_id, banned_user_id, banned_username, reason, created_at)' +
@@ -112,15 +124,16 @@ var stmtIsSubscribed = db.prepare(
 );
 
 var stmtInsertShadowBan = db.prepare(
-  'INSERT OR REPLACE INTO shadow_bans (user_id, reason, banned_by, created_at) VALUES (?, ?, ?, ?)'
+  'INSERT INTO shadow_bans (user_id, tenant_id, reason, banned_by, created_at) VALUES (?, ?, ?, ?, ?)' +
+  ' ON CONFLICT(user_id, tenant_id) DO UPDATE SET reason = excluded.reason, banned_by = excluded.banned_by, created_at = excluded.created_at'
 );
 
 var stmtIsShadowBanned = db.prepare(
-  'SELECT 1 FROM shadow_bans WHERE user_id = ? LIMIT 1'
+  'SELECT 1 FROM shadow_bans WHERE user_id = ? AND tenant_id = ? LIMIT 1'
 );
 
 var stmtGetShadowBans = db.prepare(
-  'SELECT * FROM shadow_bans ORDER BY created_at DESC LIMIT 500'
+  'SELECT * FROM shadow_bans WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 500'
 );
 
 var stmtInsertSubscription = db.prepare(
@@ -202,18 +215,18 @@ function isSubscribed(subscriberId, creatorId) {
   return !!row;
 }
 
-function shadowBanUser(userId, reason, bannedBy) {
+function shadowBanUser(userId, tenantId, reason, bannedBy) {
   var now = Date.now();
-  stmtInsertShadowBan.run(userId, reason || null, bannedBy || null, now);
+  stmtInsertShadowBan.run(userId, tenantId || '', reason || null, bannedBy || null, now);
 }
 
-function isShadowBanned(userId) {
-  var row = stmtIsShadowBanned.get(userId);
+function isShadowBanned(userId, tenantId) {
+  var row = stmtIsShadowBanned.get(userId, tenantId || '');
   return !!row;
 }
 
-function getShadowBans() {
-  return stmtGetShadowBans.all();
+function getShadowBans(tenantId) {
+  return stmtGetShadowBans.all(tenantId || '');
 }
 
 function addSubscription(id, subscriberId, creatorId, tier, amountCents, stripeSubId) {

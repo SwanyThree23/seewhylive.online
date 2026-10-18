@@ -462,7 +462,7 @@ router.post('/moderation/shadow-ban', requireAuth, moderationRateLimit, function
     var reason = String(req.body.reason || '').slice(0, 200);
     var bannedBy = req.user.id;
     if (moderation) {
-      moderation.shadowBanUser(userId, reason, bannedBy);
+      moderation.shadowBanUser(userId, req.tenantId, reason, bannedBy);
     }
     return res.json({ success: true });
   } catch (err) {
