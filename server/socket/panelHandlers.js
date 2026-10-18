@@ -6,6 +6,7 @@
 const panelService = require('../services/panelService');
 const loyaltyService = require('../services/loyaltyService');
 
+const panelKickedUsers     = new Map(); // roomId -> Set<userId> (cleared when room ends or host approves)
 const panelJoinThrottle    = new Map(); // userId -> last join timestamp
 const panelRequestThrottle = new Map(); // userId -> last request timestamp
 const panelReactThrottle   = new Map(); // userId -> last react timestamp
@@ -24,6 +25,8 @@ setInterval(function() {
   panelReactThrottle.forEach(function(ts, k) { if (now - ts > THROTTLE_STALE_MS) panelReactThrottle.delete(k); });
   panelHandThrottle.forEach(function(ts, k) { if (now - ts > THROTTLE_STALE_MS) panelHandThrottle.delete(k); });
   panelLoyaltyThrottle.forEach(function(ts, k) { if (now - ts > LOYALTY_AWARD_COOLDOWN_MS) panelLoyaltyThrottle.delete(k); });
+  // panelKickedUsers is intentionally not pruned here — entries persist until
+  // the host explicitly approves the user or the process restarts.
 }, 5 * 60 * 1000).unref();
 
 const PANEL_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -46,6 +49,11 @@ function registerPanelHandlers(io, socket) {
         return;
       }
       panelJoinThrottle.set(userId, _pjNow);
+      var _kickedSet = panelKickedUsers.get(roomId);
+      if (_kickedSet && _kickedSet.has(userId)) {
+        ack?.({ ok: false, error: 'you have been removed from this panel' });
+        return;
+      }
       const gate = await panelService.checkJoinGate({ roomId, userId, inviteCode, tenantId: socket.data.tenantId });
       if (!gate.allowed) {
         ack?.({ ok: false, reason: gate.reason });
@@ -114,6 +122,10 @@ function registerPanelHandlers(io, socket) {
       if (!userId || !PANEL_UUID_RE.test(String(userId))) {
         ack?.({ ok: false, error: 'invalid userId' });
         return;
+      }
+      if (approve === true) {
+        var _kSet = panelKickedUsers.get(roomId);
+        if (_kSet) _kSet.delete(userId);
       }
       const resolved = await panelService.resolveJoinRequest({ roomId, userId, approve });
       // Emit only to the requesting user, not the entire room
@@ -205,6 +217,9 @@ function registerPanelHandlers(io, socket) {
         }
       }
       await panelService.releaseSlot({ roomId, userId: targetUserId });
+      var _kickMap = panelKickedUsers.get(roomId);
+      if (!_kickMap) { _kickMap = new Set(); panelKickedUsers.set(roomId, _kickMap); }
+      _kickMap.add(targetUserId);
       io.to(roomId).emit('panel:slot_released', { roomId, userId: targetUserId });
       const roomSockets = await io.in(roomId).fetchSockets();
       const kickedSocket = roomSockets.find(s => s.data && s.data.userId === targetUserId);
