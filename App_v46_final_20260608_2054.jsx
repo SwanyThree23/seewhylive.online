@@ -104,14 +104,22 @@ function appReducer(state, action) {
       var _nt = PAGE_TO_TAB[_np] || state.activeTab || 'home';
       var _nth = Object.assign({}, state.tabHistory || TAB_ROOTS); _nth[_nt] = _np;
       var _nd = __NAV_DIR; __NAV_DIR = 'push';
+      var _hs = !__POP ? (state.historyStack || []).concat([state.page]).slice(-20) : (state.historyStack || []);
       if (!__POP && typeof window !== 'undefined' && (!window.history.state || window.history.state.page !== _np)) window.history.pushState({ page: _np }, '', '/' + _np);
       __POP = false;
-      return Object.assign({}, state, { page: _np, prevPage: state.page, activeTab: _nt, tabHistory: _nth, navDir: _nd });
+      return Object.assign({}, state, { page: _np, prevPage: state.page, activeTab: _nt, tabHistory: _nth, navDir: _nd, historyStack: _hs });
+    case 'POP_PAGE':
+      var _hs2 = (state.historyStack || []).slice();
+      var _pp = _hs2.length > 0 ? _hs2.pop() : (state.prevPage || 'home');
+      var _pt = PAGE_TO_TAB[_pp] || state.activeTab || 'home';
+      var _pth = Object.assign({}, state.tabHistory || TAB_ROOTS); _pth[_pt] = _pp;
+      if (typeof window !== 'undefined' && (!window.history.state || window.history.state.page !== _pp)) window.history.replaceState({ page: _pp }, '', '/' + _pp);
+      return Object.assign({}, state, { page: _pp, prevPage: state.page, activeTab: _pt, tabHistory: _pth, navDir: 'pop', historyStack: _hs2 });
     case 'RESET_TAB':
       var _rtp = TAB_ROOTS[action.payload] || action.payload;
       var _rth = Object.assign({}, state.tabHistory || TAB_ROOTS); _rth[action.payload] = _rtp;
       if (typeof window !== 'undefined') window.history.pushState({ page: _rtp }, '', '/' + _rtp);
-      return Object.assign({}, state, { page: _rtp, prevPage: state.page, activeTab: action.payload, tabHistory: _rth, navDir: 'pop' });
+      return Object.assign({}, state, { page: _rtp, prevPage: state.page, activeTab: action.payload, tabHistory: _rth, navDir: 'pop', historyStack: [] });
     case 'SET_LIVE_ROOM': return Object.assign({}, state, { liveRoom: action.payload });
     case 'SET_VIEWER_COUNT': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { viewers: action.payload }) });
     case 'SET_STREAM_DURATION': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { duration: action.payload }) });
@@ -154,6 +162,7 @@ function appReducer(state, action) {
 var initialState = {
   page: getInitialPage(),
   prevPage: null,
+  historyStack: [],
   modal: null,
   toasts: [],
   messages: [],
@@ -333,7 +342,7 @@ function Modal(props) {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ color: C.gold, fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, letterSpacing: 2, userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>{props.title}</div>
-          <button onClick={props.onClose} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 24, cursor: 'pointer', minHeight: 44, minWidth: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, flexShrink: 0 }}>×</button>
+          <button aria-label="Close" onClick={props.onClose} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 24, cursor: 'pointer', minHeight: 44, minWidth: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, flexShrink: 0 }}>×</button>
         </div>
         {props.children}
       </div>
@@ -388,7 +397,7 @@ function ToastSystem(props) {
             boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
           }}>
             <span>{t.message}</span>
-            <button onClick={function() { dispatch({ type: 'SET_TOASTS', payload: toasts.filter(function(_, j) { return j !== i; }) }); }} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, marginLeft: 8 }}>×</button>
+            <button aria-label="Dismiss" onClick={function() { dispatch({ type: 'SET_TOASTS', payload: toasts.filter(function(_, j) { return j !== i; }) }); }} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, marginLeft: 8 }}>×</button>
           </div>
         );
       })}
@@ -1279,7 +1288,7 @@ function NotificationsPanel(props) {
   return (
     <div style={{ minHeight: '100vh', background: C.charcoal, paddingBottom: 80 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'calc(12px + env(safe-area-inset-top,0px)) 16px 12px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
+        <button aria-label="Go back" onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2, flex: 1 }}>🔔 NOTIFICATIONS</div>
         <button onClick={function() { dispatch({ type: 'MARK_NOTIFS_READ' }); }} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 12, cursor: 'pointer' }}>Mark all read</button>
       </div>
@@ -1317,7 +1326,7 @@ function WalletPage(props) {
   return (
     <div style={{ minHeight: '100vh', background: C.charcoal, paddingBottom: 80 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'calc(12px + env(safe-area-inset-top,0px)) 16px 12px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
+        <button aria-label="Go back" onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>💳 CREATOR WALLET</div>
       </div>
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
@@ -1405,7 +1414,7 @@ function AnalyticsDashboard(props) {
   return (
     <div style={{ minHeight: '100vh', background: C.charcoal, paddingBottom: 80 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'calc(12px + env(safe-area-inset-top,0px)) 16px 12px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
+        <button aria-label="Go back" onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>📊 ANALYTICS</div>
       </div>
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
@@ -1538,7 +1547,7 @@ function ScheduleManager(props) {
   return (
     <div style={{ minHeight: '100vh', background: C.charcoal, paddingBottom: 80 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'calc(12px + env(safe-area-inset-top,0px)) 16px 12px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
+        <button aria-label="Go back" onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2, flex: 1 }}>📅 SCHEDULE</div>
         <Btn onClick={function() { setShowAdd(true); }} variant="gold" small>+ NEW</Btn>
       </div>
@@ -1628,7 +1637,7 @@ function GuestCell(props) {
       </div>
       {guest.isMuted && <div style={{ position: 'absolute', bottom: 4, right: 4 }}><Badge color="rgba(0,0,0,0.7)">🔇</Badge></div>}
       {onAction && expanded && (
-        <button onClick={function(e) { e.stopPropagation(); onAction(guest); }} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: 4, color: '#fff', fontSize: 16, cursor: 'pointer', padding: '2px 8px' }}>⋮</button>
+        <button aria-label="Guest options" onClick={function(e) { e.stopPropagation(); onAction(guest); }} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: 4, color: '#fff', fontSize: 16, cursor: 'pointer', padding: '2px 8px' }}>⋮</button>
       )}
     </div>
   );
@@ -1722,7 +1731,7 @@ function LiveRoom(props) {
     <div style={{ minHeight: '100vh', background: C.charcoal, display: 'flex', flexDirection: 'column' }}>
       {/* Top bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 'calc(10px + env(safe-area-inset-top,0px)) 14px 10px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)' }}>
-        <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'home' }); }} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
+        <button aria-label="Go back" onClick={function() { dispatch({ type: 'POP_PAGE' }); }} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ color: C.white, fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{room.title}</div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2, flexWrap: 'wrap' }}>
@@ -1733,11 +1742,11 @@ function LiveRoom(props) {
             {state.greenroomReady && <Badge color={C.green}>🟢 LIVE</Badge>}
           </div>
         </div>
-        <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'notifications' }); }} style={{ background: 'none', border: 'none', color: unreadCount > 0 ? C.gold : C.muted, fontSize: 20, cursor: 'pointer', position: 'relative' }}>
+        <button aria-label="Notifications" onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'notifications' }); }} style={{ background: 'none', border: 'none', color: unreadCount > 0 ? C.gold : C.muted, fontSize: 20, cursor: 'pointer', position: 'relative' }}>
           🔔
           {unreadCount > 0 && <span style={{ position: 'absolute', top: -2, right: -2, background: C.red, color: '#fff', fontSize: 8, fontWeight: 800, borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unreadCount}</span>}
         </button>
-        <button onClick={function() { setShareOpen(true); }} style={{ background: 'none', border: 'none', color: C.gold, fontSize: 20, cursor: 'pointer' }}>📤</button>
+        <button aria-label="Share stream" onClick={function() { setShareOpen(true); }} style={{ background: 'none', border: 'none', color: C.gold, fontSize: 20, cursor: 'pointer' }}>📤</button>
         <button onClick={function() { setPayOpen(true); }} style={{ background: C.lime, border: 'none', borderRadius: 20, color: C.charcoal, fontWeight: 800, fontSize: 12, padding: '7px 14px', cursor: 'pointer' }}>💰 TIP</button>
       </div>
 
@@ -1968,12 +1977,12 @@ function HomePage(props) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'calc(14px + env(safe-area-inset-top,0px)) 16px 0' }}>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 4, color: C.gold }}>SeeWhy<span style={{ color: C.red }}>LIVE</span></div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'notifications' }); }} style={{ background: 'none', border: 'none', color: unreadCount > 0 ? C.gold : C.muted, fontSize: 22, cursor: 'pointer', position: 'relative' }}>
+          <button aria-label="Notifications" onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'notifications' }); }} style={{ background: 'none', border: 'none', color: unreadCount > 0 ? C.gold : C.muted, fontSize: 22, cursor: 'pointer', position: 'relative' }}>
             🔔
             {unreadCount > 0 && <span style={{ position: 'absolute', top: -2, right: -2, background: C.red, color: '#fff', fontSize: 8, fontWeight: 800, borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unreadCount}</span>}
           </button>
-          <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'wallet' }); }} style={{ background: 'none', border: 'none', color: C.lime, fontSize: 22, cursor: 'pointer' }}>💳</button>
-          <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'profile' }); }} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+          <button aria-label="Wallet" onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'wallet' }); }} style={{ background: 'none', border: 'none', color: C.lime, fontSize: 22, cursor: 'pointer' }}>💳</button>
+          <button aria-label="Profile" onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'profile' }); }} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
             <Avatar name={state.currentUser.name} size={32} isFM={state.currentUser.isFM} url={state.currentUser.avatar_url} />
           </button>
         </div>
@@ -2609,10 +2618,10 @@ export default function App() {
 
   // Full-page routes (no bottom nav, custom back)
   var fullPageRoutes = {
-    analytics: <AnalyticsDashboard analytics={state.analytics} onClose={function() { dispatch({ type: 'SET_PAGE', payload: state.prevPage || 'home' }); }} />,
-    schedule: <ScheduleManager schedule={state.schedule} dispatch={dispatch} onClose={function() { dispatch({ type: 'SET_PAGE', payload: state.prevPage || 'home' }); }} />,
-    wallet: <WalletPage wallet={state.wallet} dispatch={dispatch} onClose={function() { dispatch({ type: 'SET_PAGE', payload: state.prevPage || 'home' }); }} />,
-    notifications: <NotificationsPanel notifications={state.notifications} dispatch={dispatch} onClose={function() { dispatch({ type: 'SET_PAGE', payload: state.prevPage || 'home' }); }} />,
+    analytics: <AnalyticsDashboard analytics={state.analytics} onClose={function() { dispatch({ type: 'POP_PAGE' }); }} />,
+    schedule: <ScheduleManager schedule={state.schedule} dispatch={dispatch} onClose={function() { dispatch({ type: 'POP_PAGE' }); }} />,
+    wallet: <WalletPage wallet={state.wallet} dispatch={dispatch} onClose={function() { dispatch({ type: 'POP_PAGE' }); }} />,
+    notifications: <NotificationsPanel notifications={state.notifications} dispatch={dispatch} onClose={function() { dispatch({ type: 'POP_PAGE' }); }} />,
   };
 
   if (fullPageRoutes[page]) {
