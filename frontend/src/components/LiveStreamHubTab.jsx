@@ -52,7 +52,8 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
   var timerRef = useRef(null);
 
   var fetchData = function() {
-    fetch('/api/streams/live')
+    var token = localStorage.getItem('sw_token') || '';
+    fetch('/api/streams/live', { headers: token ? { 'Authorization': 'Bearer ' + token } : {} })
       .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function(d) {
         setData(d);
