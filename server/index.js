@@ -1588,6 +1588,30 @@ io.on('connection', function(socket) {
       }
     }
 
+    // PPV paywall gate — viewers must have a succeeded ppv_unlock to enter a paywalled room.
+    // Without this check any Socket.IO client could receive the live video without paying.
+    if (role !== 'host' && role !== 'guest' && role !== 'cohost' && roomPaywallMap.has(roomId)) {
+      var _pwEntry = roomPaywallMap.get(roomId);
+      if (_pwEntry && _pwEntry.amountCents > 0) {
+        var _pwUserId = guestId && !String(guestId).startsWith('anon') ? String(guestId) : null;
+        if (!_pwUserId) {
+          if (ack) ack({ error: 'PPV payment required', amountCents: _pwEntry.amountCents });
+          return;
+        }
+        try {
+          var _pwUnlock = db.prepare(
+            "SELECT id FROM ppv_unlocks WHERE room_id = ? AND user_id = ? AND status = 'succeeded' LIMIT 1"
+          ).get(roomId, _pwUserId);
+          if (!_pwUnlock) {
+            if (ack) ack({ error: 'PPV payment required', amountCents: _pwEntry.amountCents });
+            return;
+          }
+        } catch (_pwErr) {
+          logger.warn('[join-room] ppv check failed: ' + _pwErr.message);
+        }
+      }
+    }
+
     socket.join(roomId);
     socket.data.roomId   = roomId;
     socket.data.guestId  = guestId;
