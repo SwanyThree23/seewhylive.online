@@ -1,3 +1,4 @@
+'use strict';
 // server/socket/panelHandlers.js
 //
 // INTEGRATION: call registerPanelHandlers(io, socket) from the same place

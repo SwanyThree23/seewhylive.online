@@ -1,3 +1,4 @@
+'use strict';
 // server/socket/battleHandlers.js
 // INTEGRATION: call registerBattleHandlers(io, socket) from inside your existing
 // io.on('connection', socket => { ... }) block in index.js / your socket setup file.
@@ -21,6 +22,17 @@ const activeTimers       = new Map(); // battleId -> interval handle
 const voteThrottle       = new Map(); // userId -> last vote timestamp (2s)
 const challengeThrottle  = new Map(); // userId -> last challenge timestamp (10s)
 const startThrottle      = new Map(); // userId -> last battle:start timestamp (5s)
+
+// Prune stale throttle entries every 5 minutes so Maps don't grow unboundedly
+// on long-running PM2 processes. Window values are 2 s / 10 s / 5 s so any
+// entry older than 30 s is guaranteed to have expired.
+const BATTLE_THROTTLE_STALE_MS = 30000;
+setInterval(function() {
+  var now = Date.now();
+  voteThrottle.forEach(function(ts, k) { if (now - ts > BATTLE_THROTTLE_STALE_MS) voteThrottle.delete(k); });
+  challengeThrottle.forEach(function(ts, k) { if (now - ts > BATTLE_THROTTLE_STALE_MS) challengeThrottle.delete(k); });
+  startThrottle.forEach(function(ts, k) { if (now - ts > BATTLE_THROTTLE_STALE_MS) startThrottle.delete(k); });
+}, 5 * 60 * 1000).unref();
 const BATTLE_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function validBattleId(id) {
@@ -181,8 +193,8 @@ function registerBattleHandlers(io, socket) {
   });
 
   // Throttle entries are intentionally NOT cleared on disconnect — clearing them
-  // would allow bypass via rapid reconnect. Entries expire naturally once the
-  // throttle window passes (2-10 s), so memory impact is negligible.
+  // would allow bypass via rapid reconnect. The module-scope setInterval above
+  // prunes entries older than 30 s to keep Map sizes bounded.
 
 }
 
