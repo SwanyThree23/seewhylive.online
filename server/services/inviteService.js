@@ -1,4 +1,5 @@
 // server/services/inviteService.js
+'use strict';
 // Built against your REAL pre-existing tables — no new tables required.
 //   guest_invitations    — direct user-to-user invite (from_user_id -> to_user_id)
 //   stream_guest_invites — shareable token invite LINKS (VDO.Ninja-style)

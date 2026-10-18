@@ -1,4 +1,5 @@
 // server/services/challengeService.js
+'use strict';
 const db = require('../db'); // <-- verify this matches your actual db module
 const loyaltyService = require('./loyaltyService');
 

@@ -1,4 +1,5 @@
 // server/services/guestService.js
+'use strict';
 // Built against your REAL pre-existing tables — no new tables required.
 //   stream_guests     — active on-stream guests, mediasoup-wired
 //   room_participants — broader room roster (viewers + on-stage)

@@ -1,4 +1,5 @@
 // server/services/loyaltyService.js
+'use strict';
 // Points ledger + level computation. This is the integration point for other
 // features awarding points (PK Battle Arena wins, gifts, watch time, etc).
 const db = require('../db'); // <-- verify this matches your actual db module
