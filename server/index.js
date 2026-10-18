@@ -2482,6 +2482,13 @@ io.on('connection', function(socket) {
     }
 
     if (valueCents > 0 && creatorStripeAccountId) {
+      // Paid gift: validate (name, emoji, amount) against the server-side catalog.
+      // Without this check a client could send any valueCents and underpay for
+      // a Diamond/Trophy while still broadcasting it at the gift's real name.
+      var _paidGiftRow = db.prepare(
+        'SELECT id FROM gift_types WHERE name = ? AND icon = ? AND amount_cents = ? AND is_active = 1'
+      ).get(name, emoji, valueCents);
+      if (!_paidGiftRow) return;
       // Monetary gift: create PaymentIntent first; only commit on success
       stripeModule.createGiftCharge(
         socket.data.userId || fromUser,
