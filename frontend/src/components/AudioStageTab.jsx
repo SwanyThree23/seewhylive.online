@@ -267,12 +267,12 @@ export default function AudioStageTab(props) {
     }
   }
 
-  var promoteUser = function(targetUserId) {
-    if (socket) socket.emit('audio-stage-promote', { roomId: roomId, targetUserId: targetUserId });
+  var promoteUser = function(targetStageId) {
+    if (socket) socket.emit('audio-stage-promote', { roomId: roomId, targetStageId: targetStageId });
   }
 
-  var demoteUser = function(targetUserId) {
-    if (socket) socket.emit('audio-stage-demote', { roomId: roomId, targetUserId: targetUserId });
+  var demoteUser = function(targetStageId) {
+    if (socket) socket.emit('audio-stage-demote', { roomId: roomId, targetStageId: targetStageId });
   }
 
   var extractYtId = function(url) {
@@ -324,7 +324,7 @@ export default function AudioStageTab(props) {
           cursor: isHost && !isMe ? 'pointer' : 'default',
           transition: 'box-shadow .2s'
         }}
-          onClick={isHost && !isMe ? function() { demoteUser(spk.userId); } : undefined}
+          onClick={isHost && !isMe ? function() { demoteUser(spk.stageId); } : undefined}
           title={isHost && !isMe ? 'Click to remove from stage' : spk.username}
         >
           {initials}
@@ -356,7 +356,7 @@ export default function AudioStageTab(props) {
         {/* Host remove button */}
         {isHost && !isMe && (
           <button
-            onClick={function() { demoteUser(spk.userId); }}
+            onClick={function() { demoteUser(spk.stageId); }}
             style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 4, padding: '1px 5px', color: RED, fontSize: 7, fontFamily: "'DM Mono',monospace", cursor: 'pointer', lineHeight: 1.5 }}>
             RM
           </button>
@@ -398,7 +398,7 @@ export default function AudioStageTab(props) {
             boxShadow: lst.handRaised ? ('0 0 0 2px rgba(201,168,76,.4)') : 'none',
             cursor: isHost ? 'pointer' : 'default'
           }}
-            onClick={isHost ? function() { promoteUser(lst.userId); } : undefined}
+            onClick={isHost ? function() { promoteUser(lst.stageId); } : undefined}
             title={isHost ? 'Promote to stage' : lst.username}
           >
             {initials}
@@ -412,7 +412,7 @@ export default function AudioStageTab(props) {
         </div>
         {isHost && (
           <button
-            onClick={function() { promoteUser(lst.userId); }}
+            onClick={function() { promoteUser(lst.stageId); }}
             style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '1px 6px', color: GOLD, fontSize: 7, fontFamily: "'DM Mono',monospace", cursor: 'pointer', lineHeight: 1.5 }}>
             UP
           </button>
