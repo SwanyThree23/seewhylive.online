@@ -58,9 +58,12 @@ function getDb() {
         platform_cents  INTEGER NOT NULL,
         status          TEXT    NOT NULL DEFAULT 'pending',
         created_at      INTEGER NOT NULL,
-        completed_at    INTEGER
+        completed_at    INTEGER,
+        token_issued    INTEGER NOT NULL DEFAULT 0
       );
     `);
+    // Migrate tables created before token_issued column was added.
+    try { _db.exec('ALTER TABLE ppv_unlocks ADD COLUMN token_issued INTEGER NOT NULL DEFAULT 0'); } catch (e) {}
   }
   return _db;
 }
@@ -120,12 +123,25 @@ async function verifyPPVPayment(paymentIntentId, roomId, viewerId) {
 
   var now = Math.floor(Date.now() / 1000);
 
-  // Atomically claim the pending row so concurrent calls cannot both succeed.
-  // SQLite's serialized write lock ensures exactly one UPDATE wins.
-  // Also allow re-claiming rows stuck in 'verifying' for >5 min (server crash recovery).
+  // Fast path: Stripe webhook already confirmed the payment but the client hasn't
+  // received a token yet. Atomically claim the unissued succeeded row so this
+  // path can only fire once (token_issued = 0 → 1).
+  var webhookReady = db.prepare(
+    "UPDATE ppv_unlocks SET token_issued = 1 " +
+    "WHERE payment_intent_id = ? AND room_id = ? AND viewer_id = ? AND status = 'succeeded' AND token_issued = 0"
+  ).run(paymentIntentId, roomId, viewerId);
+  if (webhookReady.changes > 0) {
+    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET env var is required');
+    var exp1 = now + 86400;
+    var tok1 = jwt.sign({ roomId: roomId, viewerId: viewerId, unlocked: true, exp: exp1 }, process.env.JWT_SECRET);
+    return { token: tok1 };
+  }
+
+  // Normal path: atomically claim the pending row so concurrent calls cannot
+  // both succeed. Also recover rows stuck in 'verifying' for >5 min after a crash.
   var claimed = db.prepare(
     "UPDATE ppv_unlocks SET status = 'verifying', completed_at = ? " +
-    "WHERE payment_intent_id = ? AND (status = 'pending' OR status = 'succeeded' OR (status = 'verifying' AND completed_at < ?))"
+    "WHERE payment_intent_id = ? AND (status = 'pending' OR (status = 'verifying' AND completed_at < ?))"
   ).run(now, paymentIntentId, now - 300);
   if (claimed.changes === 0) {
     throw new Error('Payment already redeemed or not found');
@@ -160,17 +176,12 @@ async function verifyPPVPayment(paymentIntentId, roomId, viewerId) {
 
   var exp = now + 86400;
   var token = jwt.sign(
-    {
-      roomId: roomId,
-      viewerId: viewerId,
-      unlocked: true,
-      exp: exp
-    },
+    { roomId: roomId, viewerId: viewerId, unlocked: true, exp: exp },
     process.env.JWT_SECRET
   );
 
   try {
-    db.prepare("UPDATE ppv_unlocks SET status = 'succeeded' WHERE payment_intent_id = ?").run(paymentIntentId);
+    db.prepare("UPDATE ppv_unlocks SET status = 'succeeded', token_issued = 1 WHERE payment_intent_id = ?").run(paymentIntentId);
   } catch (dbErr) {
     console.error('[stripe] Failed to finalize PPV unlock status:', dbErr.message);
   }
