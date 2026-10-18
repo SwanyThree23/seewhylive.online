@@ -5,6 +5,7 @@ var router = express.Router();
 var uuidv4 = require('uuid').v4;
 var Database = require('better-sqlite3');
 var jwt = require('jsonwebtoken');
+var crypto = require('crypto');
 var requireAuth = require('./middleware/auth');
 var db = require('./db');
 var { rateLimit } = require('express-rate-limit');
@@ -1147,7 +1148,7 @@ router.post('/rtmp/authorize', async function(req, res) {
   if (!_rtmpSecret && process.env.NODE_ENV === 'production') {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
-  if (_rtmpSecret && req.headers['x-rtmp-secret'] !== _rtmpSecret) {
+  if (_rtmpSecret && !crypto.timingSafeEqual(Buffer.from(req.headers['x-rtmp-secret'] || ''), Buffer.from(_rtmpSecret))) {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
   try {
@@ -1193,7 +1194,7 @@ router.post('/rtmp/auth', async function(req, res) {
   if (!rtmpSecret && process.env.NODE_ENV === 'production') {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
-  if (rtmpSecret && req.headers['x-rtmp-secret'] !== rtmpSecret) {
+  if (rtmpSecret && !crypto.timingSafeEqual(Buffer.from(req.headers['x-rtmp-secret'] || ''), Buffer.from(rtmpSecret))) {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
   try {
@@ -1220,7 +1221,7 @@ router.post('/rtmp/done', async function(req, res) {
   if (!rtmpSecret && process.env.NODE_ENV === 'production') {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
-  if (rtmpSecret && req.headers['x-rtmp-secret'] !== rtmpSecret) {
+  if (rtmpSecret && !crypto.timingSafeEqual(Buffer.from(req.headers['x-rtmp-secret'] || ''), Buffer.from(rtmpSecret))) {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
   try {
