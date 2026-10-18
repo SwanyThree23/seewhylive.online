@@ -1,3 +1,4 @@
+'use strict';
 const { createClient } = require('@supabase/supabase-js');
 const ws = require('ws');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { realtime: { transport: ws } });
@@ -127,7 +128,8 @@ async function setSelectedTier(userId, tierId, tenantId) {
     const { error: updErr } = await supabase
       .from('user_settings')
       .update({ setting_value: payload, updated_at: new Date().toISOString() })
-      .eq('id', existing[0].id);
+      .eq('id', existing[0].id)
+      .eq('user_id', userId);
     if (updErr) throw updErr;
   } else {
     var insRow = { user_id: userId, setting_key: 'selected_tier', setting_value: payload };
