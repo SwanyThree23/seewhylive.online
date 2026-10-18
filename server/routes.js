@@ -612,11 +612,10 @@ router.post('/payments/subscribe', requireAuth, subscribePayRateLimit, function(
       return res.status(400).json({ success: false, error: 'amountCents must be between 1 and 50000' });
     }
 
-    if (moderation) {
-      try {
-        moderation.addSubscription(id, subscriberId, creatorId, tier, Math.floor(amountCents), null);
-      } catch (e) { /* ignore moderation error */ }
-    }
+    // Do NOT call moderation.addSubscription() here. Active subscription status must
+    // only be granted after Stripe confirms payment (invoice.payment_succeeded webhook).
+    // Calling addSubscription() without a verified stripeSubscriptionId lets any
+    // authenticated user claim subscriber-only access for any creator without paying.
 
     return res.json({ success: true, tier: tier, id: id });
   } catch (err) {
