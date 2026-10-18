@@ -3723,8 +3723,8 @@ io.on('connection', function(socket) {
       fadesScores = JSON.parse(_fStr);
     } catch(e) { fadesScores = null; }
     var _fadesEmit = { type: fadesType, scores: fadesScores, ts: Math.floor(Date.now() / 1000) };
-    if (Array.isArray(data.team1)) _fadesEmit.team1 = data.team1.slice(0, 20);
-    if (Array.isArray(data.team2)) _fadesEmit.team2 = data.team2.slice(0, 20);
+    if (Array.isArray(data.team1)) _fadesEmit.team1 = data.team1.slice(0, 20).map(function(e) { return String(e).slice(0, 80); });
+    if (Array.isArray(data.team2)) _fadesEmit.team2 = data.team2.slice(0, 20).map(function(e) { return String(e).slice(0, 80); });
     if (data.roundWinner) _fadesEmit.roundWinner = String(data.roundWinner).slice(0, 20);
     if (data.matchWinner) _fadesEmit.matchWinner = String(data.matchWinner).slice(0, 20);
     io.to(roomId).emit('fades-event', _fadesEmit);
@@ -4614,7 +4614,8 @@ io.on('connection', function(socket) {
     var lsRoomId = socket.data.roomId;
     if (!lsRoomId) return;
     var enabled = Boolean(data.enabled);
-    var delayMs = (data && typeof data.delayMs === 'number') ? data.delayMs : 0;
+    var _rawDelayMs = (data && typeof data.delayMs === 'number' && Number.isFinite(data.delayMs)) ? data.delayMs : 0;
+    var delayMs = Math.min(Math.max(Math.floor(_rawDelayMs), 0), 30000);
     if (enabled) {
       liveSyncState.set(lsRoomId, { enabled: true, delayMs: delayMs });
     } else {
