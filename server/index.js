@@ -1572,6 +1572,22 @@ io.on('connection', function(socket) {
       }
     }
 
+    // Subscriber-only gate — viewers must be subscribed when the room is in subscriber-only mode.
+    // subOnlyRooms is populated by the 'subscriber-only-changed' socket event (host/cohost only).
+    // Without this check any socket client could bypass the gate by emitting join-room directly.
+    if (role !== 'host' && subOnlyRooms.has(roomId)) {
+      var _soRoom   = rooms.get(roomId);
+      var _soHostId = _soRoom && _soRoom.hostUserId;
+      var _soAllowed = false;
+      if (_soHostId && moderation && guestId && !String(guestId).startsWith('anon')) {
+        _soAllowed = moderation.isSubscribed(guestId, _soHostId);
+      }
+      if (!_soAllowed) {
+        if (ack) ack({ error: 'This room is for subscribers only' });
+        return;
+      }
+    }
+
     socket.join(roomId);
     socket.data.roomId   = roomId;
     socket.data.guestId  = guestId;
