@@ -1062,7 +1062,7 @@ app.get('/api/admin/financial-summary', requireAuth, function(req, res) {
 app.get('/api/leaderboard', requireAuth, function(req, res) {
   try {
     var roomId = req.query.roomId || '';
-    if (roomId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roomId)) {
+    if (roomId && !/^[0-9a-f]{24}$|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roomId)) {
       return res.status(400).json({ error: 'invalid roomId' });
     }
     var rows;
