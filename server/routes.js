@@ -840,7 +840,7 @@ router.post('/ppv/create', requireAuth, ppvCreateRateLimit, async function(req, 
     });
     if (!ownerResp.ok) {
       var _ppvOwnerErr = await ownerResp.json().catch(function() { return {}; });
-      return res.status(502).json({ success: false, error: (_ppvOwnerErr && _ppvOwnerErr.message) || 'Supabase error' });
+      return res.status(502).json({ success: false, error: 'upstream error' });
     }
     var ownerData = await ownerResp.json();
     if (!Array.isArray(ownerData) || !ownerData[0] || ownerData[0].host_user_id !== req.user.id) {
@@ -977,7 +977,7 @@ router.post('/stream-sync', requireAuth, streamWriteRateLimit, async function(re
     });
     if (!resp.ok) {
       var errBody = await resp.json().catch(function() { return {}; });
-      return res.status(502).json({ ok: false, error: (errBody && errBody.message) || 'Supabase error' });
+      return res.status(502).json({ ok: false, error: 'upstream error' });
     }
     var data = await resp.json();
     res.json({ ok: true, stream: data });
@@ -995,7 +995,7 @@ router.post('/stream-end', requireAuth, streamWriteRateLimit, async function(req
     });
     if (!ownerResp.ok) {
       var _ownerErr = await ownerResp.json().catch(function() { return {}; });
-      return res.status(502).json({ ok: false, error: (_ownerErr && _ownerErr.message) || 'Supabase error' });
+      return res.status(502).json({ ok: false, error: 'upstream error' });
     }
     var ownerData = await ownerResp.json();
     if (!Array.isArray(ownerData) || !ownerData[0] || ownerData[0].host_user_id !== req.user.id) {
@@ -1008,7 +1008,7 @@ router.post('/stream-end', requireAuth, streamWriteRateLimit, async function(req
     });
     if (!endResp.ok) {
       var _endErr = await endResp.json().catch(function() { return {}; });
-      return res.status(502).json({ ok: false, error: (_endErr && _endErr.message) || 'Supabase error ending stream' });
+      return res.status(502).json({ ok: false, error: 'upstream error' });
     }
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
@@ -1075,7 +1075,7 @@ router.get('/vault/health', requireAuth, function(req, res) {
     if (testPlain !== '__vault_health_check__') throw new Error('round-trip mismatch');
     res.json({ ok: true, ready: true, reason: 'AES-256-GCM operational' });
   } catch(e) {
-    res.status(503).json({ ok: false, ready: false, reason: e.message });
+    res.status(503).json({ ok: false, ready: false, reason: 'vault health check failed' });
   }
 });
 
