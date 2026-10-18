@@ -163,6 +163,16 @@ var _usernameIndex = {}; // displayName → userId — lets GET /users/:username
 var _notificationPrefs = {};
 var _pushSubscriptions = {};
 
+// ─── SQLite helper (for user_profiles lookups) ───────────────────────────────
+var _routesSqliteDb = null;
+function getRoutesDb() {
+  if (!_routesSqliteDb) {
+    _routesSqliteDb = new Database(process.env.DB_PATH || '/opt/seewhy/data/seewhy.db');
+    _routesSqliteDb.pragma('journal_mode = WAL');
+  }
+  return _routesSqliteDb;
+}
+
 // ─── AURA routes ──────────────────────────────────────────────────────────────
 
 router.get('/aura/usage', requireAuth, function(req, res) {
@@ -516,8 +526,16 @@ router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
     var amountCents = req.body.amountCents || 0;
     var note = String(req.body.note || '').slice(0, 200);
     var fromUserId = req.user.id;
-    var _rawTipSAId = String(req.body.creatorStripeAccountId || '');
-    var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawTipSAId) ? _rawTipSAId : '';
+    var _tipSaRow;
+    try {
+      _tipSaRow = getRoutesDb().prepare('SELECT stripe_account_id FROM user_profiles WHERE user_id = ?').get(creatorId);
+    } catch (_tipDbErr) {
+      return res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+    var creatorStripeAccountId = (_tipSaRow && _tipSaRow.stripe_account_id && /^acct_[A-Za-z0-9]{8,32}$/.test(_tipSaRow.stripe_account_id)) ? _tipSaRow.stripe_account_id : '';
+    if (!creatorStripeAccountId) {
+      return res.status(400).json({ success: false, error: 'Creator has not set up payments' });
+    }
 
     if (!amountCents || Math.floor(amountCents) < 50) {
       return res.status(400).json({ success: false, error: 'Minimum tip amount is 50 cents' });
@@ -529,12 +547,6 @@ router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
     }
     var creatorCents = Math.floor(amtCents * CREATOR);
     var platformCents = amtCents - creatorCents;
-
-    // A valid Stripe account is required — without one there is no actual charge,
-    // so we must not record earnings (prevents fake analytics injection).
-    if (!creatorStripeAccountId) {
-      return res.status(400).json({ success: false, error: 'creatorStripeAccountId is required to process a tip' });
-    }
 
     if (stripe) {
       stripe.createGiftCharge(fromUserId, streamId, amtCents, creatorStripeAccountId)
