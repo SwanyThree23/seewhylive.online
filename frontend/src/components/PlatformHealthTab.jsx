@@ -44,7 +44,7 @@ export default function PlatformHealthTab({ socket, addToast }) {
   var runCheck = function() {
     setChecking(true);
     if (socket) socket.emit('platform-health-check', {});
-    fetch('/health', { credentials: 'include' })
+    fetch('/api/health', { credentials: 'include' })
       .then(function(r) { return r.ok ? 'ok' : 'error'; })
       .catch(function() { return 'error'; })
       .then(function(status) {
