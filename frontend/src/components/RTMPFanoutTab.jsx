@@ -390,7 +390,9 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
                   onClick={function() {
                     if (!newCustom.name.trim()) { addToast('Enter a destination name', 'error'); return; }
                     if (!newCustom.url.trim()) { addToast('Enter an RTMP URL', 'error'); return; }
-                    setCustomDests(function(prev) { return prev.concat([{ name: newCustom.name.trim(), url: newCustom.url.trim(), key: newCustom.key, id: 'cdest_' + Date.now() }]); });
+                    var _trimUrl = newCustom.url.trim();
+                    if (!_trimUrl.startsWith('rtmp://') && !_trimUrl.startsWith('rtmps://')) { addToast('URL must start with rtmp:// or rtmps://', 'error'); return; }
+                    setCustomDests(function(prev) { return prev.concat([{ name: newCustom.name.trim(), url: _trimUrl, key: newCustom.key, id: 'cdest_' + Date.now() }]); });
                     setNewCustom({ name: '', url: '', key: '' });
                     setShowAddCustom(false);
                     addToast('Custom RTMP destination added', 'success');
