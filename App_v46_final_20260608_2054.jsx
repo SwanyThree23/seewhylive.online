@@ -86,11 +86,24 @@ function avatarColor(name) {
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function tsNow() { return Date.now(); }
 function genStreamKey() { return STREAM_KEY_PREFIX + Math.random().toString(36).slice(2, 10); }
+var TAB_ROOTS = { home: 'home', battles: 'battles', live: 'live', aihub: 'aihub', wallet: 'wallet', more: 'more' };
+var PAGE_TO_TAB = { home: 'home', notifications: 'home', battles: 'battles', live: 'live', aihub: 'aihub', wallet: 'wallet', more: 'more', profile: 'more', analytics: 'more', schedule: 'more' };
 
 // ─── REDUCER ──────────────────────────────────────────────────────────────────
 function appReducer(state, action) {
   switch (action.type) {
-    case 'SET_PAGE': if (!__POP && typeof window !== 'undefined' && (!window.history.state || window.history.state.page !== action.payload)) window.history.pushState({ page: action.payload }, '', ''); __POP = false; return Object.assign({}, state, { page: action.payload, prevPage: state.page });
+    case 'SET_PAGE':
+      var _np = action.payload;
+      var _nt = PAGE_TO_TAB[_np] || state.activeTab || 'home';
+      var _nth = Object.assign({}, state.tabHistory || TAB_ROOTS); _nth[_nt] = _np;
+      if (!__POP && typeof window !== 'undefined' && (!window.history.state || window.history.state.page !== _np)) window.history.pushState({ page: _np }, '', '');
+      __POP = false;
+      return Object.assign({}, state, { page: _np, prevPage: state.page, activeTab: _nt, tabHistory: _nth });
+    case 'RESET_TAB':
+      var _rtp = TAB_ROOTS[action.payload] || action.payload;
+      var _rth = Object.assign({}, state.tabHistory || TAB_ROOTS); _rth[action.payload] = _rtp;
+      if (typeof window !== 'undefined') window.history.pushState({ page: _rtp }, '', '');
+      return Object.assign({}, state, { page: _rtp, prevPage: state.page, activeTab: action.payload, tabHistory: _rth });
     case 'SET_LIVE_ROOM': return Object.assign({}, state, { liveRoom: action.payload });
     case 'SET_VIEWER_COUNT': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { viewers: action.payload }) });
     case 'SET_STREAM_DURATION': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { duration: action.payload }) });
@@ -223,6 +236,8 @@ var initialState = {
     { id: 'sch2', title: 'AIverse Podcast Ep 92', date: '2026-06-10', time: '8:00 PM PST', recurring: 'weekly', reminder: true },
     { id: 'sch3', title: 'Domino Strategy Session', date: '2026-06-12', time: '6:00 PM PST', recurring: 'weekly', reminder: false },
   ],
+  activeTab: 'home',
+  tabHistory: { home: 'home', battles: 'battles', live: 'live', aihub: 'aihub', wallet: 'wallet', more: 'more' },
 };
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
@@ -1890,6 +1905,10 @@ function HomePage(props) {
   var state = props.state;
   var dispatch = props.dispatch;
   var [loading, setLoading] = useState(true);
+  var [pullY, setPullY] = useState(0);
+  var [isRefreshing, setIsRefreshing] = useState(false);
+  var touchStartRef = useRef(0);
+  var PULL_THRESHOLD = 60;
   var unreadCount = state.notifications.filter(function(n) { return !n.read; }).length;
 
   useEffect(function() {
@@ -1897,8 +1916,44 @@ function HomePage(props) {
     return function() { clearTimeout(t); };
   }, []);
 
+  var onTouchStart = function(e) {
+    touchStartRef.current = e.touches[0].clientY;
+  };
+
+  var onTouchMove = function(e) {
+    if (isRefreshing) return;
+    var dy = e.touches[0].clientY - touchStartRef.current;
+    if (dy > 0) {
+      setPullY(Math.min(dy * 0.5, PULL_THRESHOLD + 20));
+    } else {
+      setPullY(0);
+    }
+  };
+
+  var onTouchEnd = function() {
+    if (pullY >= PULL_THRESHOLD && !isRefreshing) {
+      setIsRefreshing(true);
+      setPullY(0);
+      setTimeout(function() {
+        setLoading(true);
+        setTimeout(function() {
+          setLoading(false);
+          setIsRefreshing(false);
+          dispatch({ type: 'ADD_TOAST', payload: { type: 'success', message: '✅ Feed refreshed!' } });
+        }, 800);
+      }, 300);
+    } else {
+      setPullY(0);
+    }
+  };
+
   return (
-    <div style={{ paddingBottom: 80 }}>
+    <div style={{ paddingBottom: 80 }} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      {(pullY > 0 || isRefreshing) && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: isRefreshing ? 44 : pullY, overflow: 'hidden', transition: isRefreshing ? 'none' : 'height 0.08s', color: C.gold, fontSize: 11, fontWeight: 800, letterSpacing: 1 }}>
+          {isRefreshing ? '⟳ REFRESHING...' : pullY >= PULL_THRESHOLD ? '↑ RELEASE TO REFRESH' : '↓ PULL TO REFRESH'}
+        </div>
+      )}
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'calc(14px + env(safe-area-inset-top,0px)) 16px 0' }}>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 4, color: C.gold }}>SeeWhy<span style={{ color: C.red }}>LIVE</span></div>
@@ -2140,6 +2195,9 @@ function ProfilePage(props) {
   var [tab, setTab] = useState('stream');
   var [editMode, setEditMode] = useState(false);
   var [editHandle, setEditHandle] = useState(Object.assign({}, user.handles));
+  var [deleteModal, setDeleteModal] = useState(false);
+  var [deleteConfirmText, setDeleteConfirmText] = useState('');
+  var [deleteLoading, setDeleteLoading] = useState(false);
 
   function saveHandles() {
     // In real app: PATCH to users table with updated handles
@@ -2279,11 +2337,54 @@ function ProfilePage(props) {
                   </div>
                 );
               })}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', cursor: 'pointer' }} onClick={function() { setDeleteModal(true); }}>
+                <span style={{ color: C.red, fontSize: 13, fontWeight: 800 }}>Delete Account</span>
+                <span style={{ color: C.red, fontSize: 16 }}>›</span>
+              </div>
             </div>
             <Btn variant="danger" full onClick={function() { dispatch({ type: 'ADD_TOAST', payload: { type: 'warn', message: 'Sign out confirmation required.' } }); }}>Sign Out</Btn>
           </div>
         )}
       </div>
+      {deleteModal && (
+        <Modal open title="⚠️ DELETE ACCOUNT" onClose={function() { setDeleteModal(false); setDeleteConfirmText(''); setDeleteLoading(false); }}>
+          <div style={{ color: C.muted, fontSize: 13, lineHeight: 1.6, marginBottom: 16 }}>
+            This action is permanent and cannot be undone. All your streams, wallet balance, and FM status will be permanently erased.
+          </div>
+          <div style={{ background: 'rgba(255,59,92,0.08)', border: '1px solid rgba(255,59,92,0.4)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, color: C.red, fontSize: 12, fontWeight: 800 }}>
+            Type DELETE to confirm — this cannot be undone.
+          </div>
+          <input
+            value={deleteConfirmText}
+            onChange={function(e) { setDeleteConfirmText(e.target.value); }}
+            placeholder="Type DELETE here"
+            autoCapitalize="none"
+            autoCorrect="off"
+            style={{ width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid ' + (deleteConfirmText === 'DELETE' ? C.red : 'rgba(255,255,255,0.15)'), borderRadius: 8, padding: '10px 14px', color: C.white, fontSize: 14, boxSizing: 'border-box', marginBottom: 16 }}
+          />
+          <Btn
+            variant="danger"
+            full
+            disabled={deleteConfirmText !== 'DELETE' || deleteLoading}
+            onClick={function() {
+              if (deleteConfirmText !== 'DELETE' || deleteLoading) return;
+              setDeleteLoading(true);
+              fetch('/api/users/me', { method: 'DELETE', headers: { 'Content-Type': 'application/json' } })
+                .then(function() {
+                  dispatch({ type: 'SET_AUTH', payload: { isSignedIn: false, user: null, loading: false, error: null } });
+                  dispatch({ type: 'SET_PAGE', payload: 'home' });
+                  dispatch({ type: 'ADD_TOAST', payload: { type: 'success', message: 'Account deleted.' } });
+                })
+                .catch(function() {
+                  setDeleteLoading(false);
+                  dispatch({ type: 'ADD_TOAST', payload: { type: 'error', message: 'Failed to delete account. Please try again.' } });
+                });
+            }}
+          >
+            {deleteLoading ? 'Deleting...' : 'Permanently Delete Account'}
+          </Btn>
+        </Modal>
+      )}
     </div>
   );
 }
@@ -2456,6 +2557,7 @@ function InjectStyles() {
       '* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; -webkit-overflow-scrolling: touch; }',
       'input, textarea, select { font-family: inherit; outline: none; }',
       'button { font-family: inherit; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; } @keyframes sheetUp {from{transform:translateY(100%)}to{transform:translateY(0)}} @keyframes sheetFade{from{opacity:0}to{opacity:1}}',
+      '@keyframes pageEnter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }',
       '::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }',
     ].join('\n');
     document.head.appendChild(style);
@@ -2516,10 +2618,12 @@ export default function App() {
       <InjectStyles />
 
       {/* Page content */}
-      {page === 'home' && <HomePage state={state} dispatch={dispatch} />}
-      {page === 'live' && <LiveRoom state={state} dispatch={dispatch} />}
-      {page === 'battles' && <BattlesPage state={state} dispatch={dispatch} />}
-      {page === 'profile' && <ProfilePage state={state} dispatch={dispatch} />}
+      <div key={page} style={{ animation: 'pageEnter 0.22s ease' }}>
+        {page === 'home' && <HomePage state={state} dispatch={dispatch} />}
+        {page === 'live' && <LiveRoom state={state} dispatch={dispatch} />}
+        {page === 'battles' && <BattlesPage state={state} dispatch={dispatch} />}
+        {page === 'profile' && <ProfilePage state={state} dispatch={dispatch} />}
+      </div>
 
       {/* Global modals */}
       <ModalDispatcher state={state} dispatch={dispatch} />
@@ -2528,7 +2632,7 @@ export default function App() {
       <ToastSystem toasts={state.toasts} dispatch={dispatch} />
 
       {/* Bottom navigation */}
-      <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications} />
+      <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications} activeTab={state.activeTab} tabHistory={state.tabHistory} />
     </div>
   );
 }
@@ -3651,6 +3755,8 @@ function BottomNavV46(props) {
   var page = props.page;
   var dispatch = props.dispatch;
   var notifications = props.notifications || [];
+  var activeTab = props.activeTab || PAGE_TO_TAB[page] || page;
+  var tabHistory = props.tabHistory || TAB_ROOTS;
   var unread = notifications.filter(function(n) { return !n.read; }).length;
   var TABS = [
     { id: 'home', icon: '🏠', label: 'Home' },
@@ -3663,11 +3769,18 @@ function BottomNavV46(props) {
   var HIDE_ON = ['analytics', 'schedule', 'notifications'];
   if (HIDE_ON.indexOf(page) !== -1) return null;
   return (
-    <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 430, background: 'rgba(5,3,10,0.97)', borderTop: '1px solid rgba(201,168,76,0.2)', display: 'flex', paddingBottom: 'env(safe-area-inset-bottom,0px)', zIndex: 500 }}>
+    <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 430, background: 'rgba(5,3,10,0.97)', borderTop: '1px solid rgba(201,168,76,0.2)', display: 'flex', paddingBottom: 'env(safe-area-inset-bottom,0px)', zIndex: 500, userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
       {TABS.map(function(t) {
-        var active = page === t.id;
+        var active = activeTab === t.id;
         return (
-          <button key={t.id} onClick={function() { dispatch({ type: 'SET_PAGE', payload: t.id }); }}
+          <button key={t.id} onClick={function() {
+            if (active) {
+              dispatch({ type: 'RESET_TAB', payload: t.id });
+            } else {
+              var dest = tabHistory[t.id] || TAB_ROOTS[t.id] || t.id;
+              dispatch({ type: 'SET_PAGE', payload: dest });
+            }
+          }}
             style={{ flex: 1, background: 'none', border: 'none', padding: '10px 0 8px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, position: 'relative' }}>
             {t.highlight ? (
               <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,' + C.red + ',' + C.burgundy + ')', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, marginTop: -14, boxShadow: '0 0 16px rgba(255,59,92,0.4)', border: '3px solid ' + C.charcoal }}>
@@ -3825,7 +3938,7 @@ function AppV46Router({ state, dispatch }) {
       {page === 'aihub' && <AIHubTab />}
       {page === 'wallet' && <WalletTabV2 />}
       {page === 'more' && <MoreTab user={user} dispatch={dispatch} />}
-      <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications || []} />
+      <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications || []} activeTab={state.activeTab} tabHistory={state.tabHistory} />
     </div>
   );
 }
