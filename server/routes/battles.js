@@ -136,7 +136,7 @@ router.get('/active', requireAuth, async function(req, res) {
   }
 });
 
-router.get('/leaderboard', requireAuth, async function(req, res) {
+router.get('/leaderboard', async function(req, res) {
   try {
     var limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
     var result = await pool.query(
