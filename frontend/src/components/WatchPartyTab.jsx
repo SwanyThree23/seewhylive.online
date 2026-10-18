@@ -394,6 +394,7 @@ export default function WatchPartyTab(props) {
         setDirectUrl('');
         setWatchPartyActive(true);
       } else if (data.url) {
+        if (!/^https:\/\//i.test(data.url)) return;
         setDirectUrl(data.url);
         setVideoId('');
         setWatchPartyActive(true);
@@ -802,6 +803,7 @@ export default function WatchPartyTab(props) {
     if (vid) {
       item = { id: Date.now() + Math.random(), title: raw, url: raw, videoId: vid, type: 'youtube', addedBy: 'host', duration: 0 };
     } else {
+      if (!/^https:\/\//i.test(raw)) { if (addToast) addToast('Only HTTPS URLs are allowed', 'error'); return; }
       item = { id: Date.now() + Math.random(), title: raw.split('/').pop() || raw, url: raw, videoId: null, type: 'direct', addedBy: 'host', duration: 0 };
     }
     setQueue(function(q) { return q.concat([item]); });
