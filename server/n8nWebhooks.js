@@ -1,3 +1,5 @@
+'use strict';
+
 var crypto = require('crypto');
 var express = require('express');
 var n8nRouter = express.Router();
@@ -81,7 +83,9 @@ n8nRouter.post('/battle-result', function(req, res) {
   var safeWinner = String(d.winner || '').slice(0, 80);
   var safeLoser  = String(d.loser  || '').slice(0, 80);
   var safeRound  = Math.floor(Math.min(Math.max(Number(d.round) || 1, 1), 999));
-  if (global.io) global.io.emit('battle-result', { winner:safeWinner, loser:safeLoser, round:safeRound, ts:Date.now() });
+  var brRoomId   = N8N_UUID_RE.test(String(d.roomId || '')) ? String(d.roomId) : null;
+  // Scope to room to prevent cross-tenant event leak; skip emit if no roomId provided.
+  if (global.io && brRoomId) global.io.to(brRoomId).emit('battle-result', { winner:safeWinner, loser:safeLoser, round:safeRound, ts:Date.now() });
   res.json({ ok: true, winner: safeWinner });
 });
 
