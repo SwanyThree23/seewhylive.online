@@ -1706,6 +1706,7 @@ export default function App() {
             gifts={gifts}
             isLive={isLive}
             addToast={addToast}
+            roomId={APP_ID}
           />
         )}
         {activeTab === 'schedule' && (

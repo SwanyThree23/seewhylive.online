@@ -11,7 +11,7 @@ var TYPE_COLORS = { tip: '#C9A84C', subscription: '#C0C0C0', fades_boost: '#FF1A
 
 var VALID_PERIODS = ['today', 'week', 'month'];
 
-export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addToast }) {
+export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addToast, roomId }) {
   var [engData, setEngData] = useState([]);
   var [revData, setRevData] = useState([]);
   var [typeFilter, setTypeFilter] = useState('all');
@@ -22,7 +22,11 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
   var [liveTxns, setLiveTxns] = useState([]);
 
   useEffect(function() {
-    fetch('/api/leaderboard')
+    var token = localStorage.getItem('sw_token') || '';
+    if (!token || !roomId) return;
+    fetch('/api/leaderboard?roomId=' + encodeURIComponent(roomId), {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
       .then(function(r) { if (!r.ok) throw new Error('API error ' + r.status); return r.json(); })
       .then(function(data) {
         if (data && data.leaderboard && data.leaderboard.length > 0) {
@@ -30,7 +34,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
         }
       })
       .catch(function() {});
-  }, []);
+  }, [roomId]);
 
   useEffect(function() {
     var token = localStorage.getItem('sw_token') || '';
