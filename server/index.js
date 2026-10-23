@@ -1523,6 +1523,41 @@ app.post('/api/push/send-to-device', requireAuth, function(req, res) {
   }
 });
 
+// DELETE /api/push/subscriptions/:deviceId — remove a registered device
+app.delete('/api/push/subscriptions/:deviceId', requireAuth, function(req, res) {
+  var deviceId = String(req.params.deviceId || '').slice(0, 64);
+  var userId = req.user.id || req.user.userId;
+  if (!deviceId) return res.status(400).json({ error: 'deviceId required' });
+  try {
+    var row = db.prepare('SELECT id FROM push_subscriptions WHERE device_id = ? AND user_id = ?').get(deviceId, userId);
+    if (!row) return res.status(404).json({ error: 'not found' });
+    db.prepare('DELETE FROM push_subscriptions WHERE device_id = ? AND user_id = ?').run(deviceId, userId);
+    res.json({ ok: true });
+  } catch (err) {
+    logger.error('[push/subscriptions DELETE] ' + err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /api/push/subscriptions/:deviceId — rename a device
+app.patch('/api/push/subscriptions/:deviceId', requireAuth, function(req, res) {
+  var deviceId = String(req.params.deviceId || '').slice(0, 64);
+  var userId = req.user.id || req.user.userId;
+  var deviceName = req.body.deviceName;
+  if (!deviceId) return res.status(400).json({ error: 'deviceId required' });
+  if (!deviceName || typeof deviceName !== 'string') return res.status(400).json({ error: 'deviceName required' });
+  try {
+    var result = db.prepare(
+      'UPDATE push_subscriptions SET device_name = ? WHERE device_id = ? AND user_id = ?'
+    ).run(deviceName.slice(0, 60), deviceId, userId);
+    if (result.changes === 0) return res.status(404).json({ error: 'not found' });
+    res.json({ ok: true });
+  } catch (err) {
+    logger.error('[push/subscriptions PATCH] ' + err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // POST /api/push/unsubscribe
 app.post('/api/push/unsubscribe', requireAuth, function(req, res) {
   var endpoint = String(req.body.endpoint || '').slice(0, 2000);
@@ -5225,6 +5260,34 @@ io.on('connection', function(socket) {
       role: socket.data.role || 'viewer',
       tab: (data.tab && typeof data.tab === 'string') ? data.tab.slice(0, 32) : null
     });
+  });
+
+  // ── user:kick-device ───────────────────────────────────────────────────
+  // Let a user force-disconnect one of their own devices (e.g. left logged in on a public computer).
+  socket.on('user:kick-device', function(data) {
+    var userId = socket.data.userId;
+    if (!userId || String(userId).startsWith('anon')) return;
+    if (!data || !data.socketId || typeof data.socketId !== 'string') return;
+    if (data.socketId === socket.id) return; // cannot kick yourself
+    // Verify the target socket belongs to the same userId
+    var targetIsOwn = false;
+    var targetSock = io.sockets.sockets.get(data.socketId);
+    if (targetSock && targetSock.data && String(targetSock.data.userId) === String(userId)) {
+      targetIsOwn = true;
+    }
+    if (!targetIsOwn) {
+      // Fallback: check userSockets in all rooms
+      rooms.forEach(function(r) {
+        var userSet = r.userSockets.get(userId);
+        if (userSet && userSet.has(data.socketId)) targetIsOwn = true;
+      });
+    }
+    if (!targetIsOwn) return;
+    io.to(data.socketId).emit('user-sync', { event: 'force_disconnect', reason: 'kicked_by_owner' });
+    setTimeout(function() {
+      var ts = io.sockets.sockets.get(data.socketId);
+      if (ts) ts.disconnect(true);
+    }, 500);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
