@@ -2105,12 +2105,15 @@ io.on('connection', function(socket) {
         // DB INSERT already handled in the transaction above.
       }
     } else {
+      var _wasAlreadyViewer = room.viewers.has(socket.id);
       room.viewers.add(socket.id);
       addUserSocket(room, guestId, socket.id);
-      try {
-        analytics.recordViewerSession(roomId, socket.data.userId || socket.id, Date.now());
-      } catch (aErr) {
-        logger.warn('[join-room] analytics viewer session failed: ' + aErr.message);
+      if (!_wasAlreadyViewer) {
+        try {
+          analytics.recordViewerSession(roomId, socket.id, Date.now());
+        } catch (aErr) {
+          logger.warn('[join-room] analytics viewer session failed: ' + aErr.message);
+        }
       }
     }
 
@@ -2128,6 +2131,14 @@ io.on('connection', function(socket) {
         .then(function(results) {
           var sendTransport = results[0];
           var recvTransport = results[1];
+          // If socket disconnected while transports were being created, close
+          // them immediately — otherwise they leak in mediasoup's transport map
+          // until the next cleanupRoom call.
+          if (!socket.connected) {
+            try { sendTransport.transport.close(); } catch (e) { /* ignore */ }
+            try { recvTransport.transport.close(); } catch (e) { /* ignore */ }
+            return;
+          }
           if (!socket.data.ownedTransportIds) socket.data.ownedTransportIds = [];
           socket.data.ownedTransportIds.push(sendTransport.params.id, recvTransport.params.id);
 
@@ -2183,6 +2194,7 @@ io.on('connection', function(socket) {
       // Create router so viewer can subscribe; emit join-room-ack as connection signal
       mediasoup.getOrCreateRouter(roomId)
         .then(function() {
+          if (!socket.connected) return;
           var routerCaps = mediasoup.getRouterRtpCapabilities(roomId);
           var existingProducers = mediasoup.getRoomProducers(roomId);
           var viewerAck = { joined: true, routerRtpCapabilities: routerCaps, existingProducers: existingProducers };
@@ -5402,9 +5414,12 @@ io.on('connection', function(socket) {
       }
     }
 
-    if (wasViewer && _isLastDevice) {
+    // End this socket's analytics session unconditionally — sessions are keyed
+    // by socket.id (one per connection), not by userId, so each tab's session
+    // must be closed independently regardless of how many other devices remain.
+    if (wasViewer) {
       try {
-        analytics.endViewerSession(roomId, _dcUserId || socket.id, Date.now());
+        analytics.endViewerSession(roomId, socket.id, Date.now());
       } catch (aErr) {
         logger.warn('[disconnect] analytics end session failed: ' + aErr.message);
       }
