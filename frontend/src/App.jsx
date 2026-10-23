@@ -922,7 +922,8 @@ export default function App() {
       addToast('A guest was removed from the room', 'info');
     });
 
-    socket.on('you-were-kicked', function() {
+    socket.on('you-were-kicked', function(data) {
+      if (data && data.roomId && data.roomId !== APP_ID) return;
       addToast('⚠ You were removed from this room by the host', 'error');
     });
 
