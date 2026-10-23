@@ -79,6 +79,7 @@ var DesktopStudioTab   = React.lazy(function() { return import('./components/Des
 var AdminDashboard     = React.lazy(function() { return import('./components/AdminDashboard.jsx'); });
 var ReferralTab        = React.lazy(function() { return import('./components/ReferralTab.jsx'); });
 var BlocksTab          = React.lazy(function() { return import('./components/BlocksTab.jsx'); });
+var DMTab              = React.lazy(function() { return import('./components/DMTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -140,6 +141,7 @@ var TABS = [
   { id: 'admin-dash', label: '🔐 ADMIN', roles: ['admin'] },
   { id: 'referral',  label: '🔗 REFERRAL' },
   { id: 'blocks',    label: '🚫 BLOCKS' },
+  { id: 'dms',       label: '💬 DMS' },
 ];
 
 function CountdownClock({ targetTs }) {
@@ -1621,6 +1623,9 @@ export default function App() {
         )}
         {activeTab === 'blocks' && (
           <BlocksTab addToast={addToast} />
+        )}
+        {activeTab === 'dms' && (
+          <DMTab addToast={addToast} />
         )}
         {activeTab === 'keys' && (
           <StreamKeysTab
