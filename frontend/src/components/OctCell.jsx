@@ -568,7 +568,9 @@ function areOctCellPropsEqual(prev, next) {
     prev.fadesMode      === next.fadesMode     &&
     prev.branding       === next.branding      &&
     prev.mediaConfig    === next.mediaConfig   &&
-    prev.onCameraTrack  === next.onCameraTrack
+    prev.onCameraTrack  === next.onCameraTrack &&
+    prev.activeEffect   === next.activeEffect  &&
+    prev.socket         === next.socket
   );
 }
 
