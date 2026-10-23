@@ -5249,16 +5249,16 @@ io.on('connection', function(socket) {
     if (!data || !data.targetSocketId) return;
     var userId = socket.data.userId;
     if (!userId) return;
+    var roomId = socket.data.roomId;
     // Verify the target socket belongs to the same user (security: no cross-user routing).
     // Check via io.sockets first (covers sockets not yet in a room), then fall back to
-    // room.userSockets for sockets tracked there.
+    // room.userSockets for sockets already tracked in a shared room.
     var targetIsOwn = false;
     var targetSock = io.sockets.sockets.get(data.targetSocketId);
     if (targetSock && targetSock.data && String(targetSock.data.userId) === String(userId)) {
       targetIsOwn = true;
     }
     if (!targetIsOwn) {
-      var roomId = socket.data.roomId;
       var room = roomId ? rooms.get(roomId) : null;
       var userSockets = room ? room.userSockets.get(userId) : null;
       if (userSockets && userSockets.has(data.targetSocketId)) targetIsOwn = true;
