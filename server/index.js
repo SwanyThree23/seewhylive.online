@@ -1984,7 +1984,7 @@ function _stagePublic(arr) {
 
 io.on('connection', function(socket) {
   registerBattleHandlers(io, socket);
-  registerPanelHandlers(io, socket);
+  registerPanelHandlers(io, socket, rooms);
   logger.info('[socket] Connected: ' + socket.id + ' role=' + socket.data.role);
   // Join a per-user room so battle:challenge / battle:accept / battle:decline reach this socket
   if (socket.data.userId && !String(socket.data.userId).startsWith('anon')) {
@@ -2186,9 +2186,19 @@ io.on('connection', function(socket) {
           var routerCaps = mediasoup.getRouterRtpCapabilities(roomId);
           var existingProducers = mediasoup.getRoomProducers(roomId);
           var viewerAck = { joined: true, routerRtpCapabilities: routerCaps, existingProducers: existingProducers };
-          // Send active watch party state so late-joiners auto-sync
+          // Send active watch party state so late-joiners auto-sync.
+          // Add elapsed drift for playing sessions so the position is current.
           if (room.watchParty) {
-            viewerAck.watchParty = room.watchParty;
+            var _wpJoin = room.watchParty;
+            var _wpElapsed = _wpJoin.playing ? (Date.now() - _wpJoin.ts) / 1000 : 0;
+            viewerAck.watchParty = {
+              videoId:  _wpJoin.videoId,
+              url:      _wpJoin.url || '',
+              type:     _wpJoin.type || 'youtube',
+              playing:  _wpJoin.playing,
+              position: (_wpJoin.position || 0) + _wpElapsed,
+              ts:       Date.now()
+            };
           }
           Object.assign(viewerAck, getJoinStateForRoom(roomId));
           viewerAck.mySocketId    = socket.id;
@@ -5365,18 +5375,6 @@ io.on('connection', function(socket) {
 
     var roomId = socket.data.roomId;
 
-    // Clean up audio stage presence so ghost speakers/listeners don't persist
-    var _stageOnDcId = socket.data.stageRoomId || roomId;
-    if (_stageOnDcId) {
-      var _stageOnDc = stageRooms.get(_stageOnDcId);
-      if (_stageOnDc) {
-        var _dcUId = String(socket.data.userId || socket.id);
-        _stageOnDc.speakers  = _stageOnDc.speakers.filter(function(s)  { return String(s.userId) !== _dcUId; });
-        _stageOnDc.listeners = _stageOnDc.listeners.filter(function(l) { return String(l.userId) !== _dcUId; });
-        io.to(_stageOnDcId).emit('audio-stage-update', { speakers: _stagePublic(_stageOnDc.speakers), listeners: _stagePublic(_stageOnDc.listeners) });
-      }
-    }
-
     if (!roomId) return;
 
     var room = rooms.get(roomId);
@@ -5388,6 +5386,21 @@ io.on('connection', function(socket) {
 
     var _dcUserId = socket.data.userId;
     var _isLastDevice = removeUserSocket(room, _dcUserId, socket.id);
+
+    // Clean up audio stage presence — only when the user's last device disconnects
+    // so closing one tab doesn't evict a user who still has other tabs open.
+    if (_isLastDevice) {
+      var _stageOnDcId = socket.data.stageRoomId || roomId;
+      if (_stageOnDcId) {
+        var _stageOnDc = stageRooms.get(_stageOnDcId);
+        if (_stageOnDc) {
+          var _dcUId = String(socket.data.userId || socket.id);
+          _stageOnDc.speakers  = _stageOnDc.speakers.filter(function(s)  { return String(s.userId) !== _dcUId; });
+          _stageOnDc.listeners = _stageOnDc.listeners.filter(function(l) { return String(l.userId) !== _dcUId; });
+          io.to(_stageOnDcId).emit('audio-stage-update', { speakers: _stagePublic(_stageOnDc.speakers), listeners: _stagePublic(_stageOnDc.listeners) });
+        }
+      }
+    }
 
     if (wasViewer && _isLastDevice) {
       try {
