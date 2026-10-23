@@ -25,6 +25,7 @@ import StreamerMonetizationCenter from '../components/monetization/StreamerMonet
 import RewardShop from '../components/loyalty/RewardShop';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import NativeSelect from '../components/ui/NativeSelect';
+import { isSafeUrl } from '@/lib/security';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -480,7 +481,7 @@ function PodcastPanel() {
   }
 
   function addNlm() {
-    if (!nlmUrl.trim() || !nlmUrl.includes('notebooklm.google.com')) { toast('Need a notebooklm.google.com URL', setToastMsg); return; }
+    if (!nlmUrl.trim() || !isSafeUrl(nlmUrl.trim()) || !nlmUrl.includes('notebooklm.google.com')) { toast('Need a notebooklm.google.com URL', setToastMsg); return; }
     const m = nlmUrl.match(/\/notebook\/([^/?#]+)(?:\/artifact\/([^/?#]+))?/);
     if (!m) { toast('Cannot parse NLM URL', setToastMsg); return; }
     const label = nlmLabel.trim() || `NLM ${nlmSources.length + 1}`;
@@ -580,7 +581,7 @@ function PodcastPanel() {
                   <div style={{ color: C.textM, fontSize: 10, marginTop: 4 }}>{s.notebookId.slice(0, 12)}… {s.artifactId ? `/ ${s.artifactId.slice(0, 8)}…` : ''}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <a href={s.url} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
+                  <a href={isSafeUrl(s.url) ? s.url : undefined} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
                   <button onClick={() => { const u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); base44.auth.updateMe({ v41_nlm_sources: u }).catch(() => {}); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
                 </div>
               </div>
