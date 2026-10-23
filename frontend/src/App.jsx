@@ -77,6 +77,7 @@ var PlatformHealthTab   = React.lazy(function() { return import('./components/Pl
 var CreatorDashboard    = React.lazy(function() { return import('./components/CreatorDashboard.jsx'); });
 var DesktopStudioTab   = React.lazy(function() { return import('./components/DesktopStudioTab.jsx'); });
 var AdminDashboard     = React.lazy(function() { return import('./components/AdminDashboard.jsx'); });
+var ReferralTab        = React.lazy(function() { return import('./components/ReferralTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -136,6 +137,7 @@ var TABS = [
   { id: "health", label: "Platform Health" },
   { id: 'desktop-studio', label: '🖥 DESKTOP STUDIO' },
   { id: 'admin-dash', label: '🔐 ADMIN', roles: ['admin'] },
+  { id: 'referral',  label: '🔗 REFERRAL' },
 ];
 
 function CountdownClock({ targetTs }) {
@@ -1611,6 +1613,9 @@ export default function App() {
         )}
         {activeTab === 'admin-dash' && role === 'admin' && (
           <AdminDashboard addToast={addToast} />
+        )}
+        {activeTab === 'referral' && (
+          <ReferralTab addToast={addToast} />
         )}
         {activeTab === 'keys' && (
           <StreamKeysTab
