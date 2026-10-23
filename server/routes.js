@@ -970,6 +970,20 @@ router.post('/stream-sync', requireAuth, streamWriteRateLimit, async function(re
     var safeTitle = String(b.title || '').slice(0, 120);
     var safeCategory = String(b.category || 'live').slice(0, 40);
     var safeViewerCount = Math.max(0, Math.min(Math.floor(Number(b.viewer_count) || 0), 1000000));
+    // PATCH any existing live row for this creator first — prevents duplicate rows on reconnect
+    var patchPayload = { title: safeTitle, viewer_count: safeViewerCount, category: safeCategory };
+    var patchResp = await fetch(SUPA_URL + '/rest/v1/streams?creator_id=eq.' + encodeURIComponent(creatorId) + '&status=eq.live', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Prefer': 'return=representation' },
+      body: JSON.stringify(patchPayload)
+    });
+    if (patchResp.ok) {
+      var patchData = await patchResp.json().catch(function() { return []; });
+      if (Array.isArray(patchData) && patchData.length > 0) {
+        return res.json({ ok: true, stream: patchData });
+      }
+    }
+    // No existing live row — insert a new one
     var payload = { title: safeTitle, status: safeStatus, viewer_count: safeViewerCount, started_at: new Date().toISOString(), category: safeCategory, is_live: true, host_user_id: creatorId, creator_id: creatorId, tenant_id: req.tenantId || null };
     var resp = await fetch(SUPA_URL + '/rest/v1/streams', {
       method: 'POST',
@@ -1148,8 +1162,12 @@ router.post('/rtmp/authorize', async function(req, res) {
   if (!_rtmpSecret && process.env.NODE_ENV === 'production') {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
-  if (_rtmpSecret && !crypto.timingSafeEqual(Buffer.from(req.headers['x-rtmp-secret'] || ''), Buffer.from(_rtmpSecret))) {
-    return res.status(401).json({ ok: false, error: 'unauthorized' });
+  if (_rtmpSecret) {
+    var _hdrBufA = Buffer.from(req.headers['x-rtmp-secret'] || '');
+    var _secBufA = Buffer.from(_rtmpSecret);
+    if (_hdrBufA.length !== _secBufA.length || !crypto.timingSafeEqual(_hdrBufA, _secBufA)) {
+      return res.status(401).json({ ok: false, error: 'unauthorized' });
+    }
   }
   try {
     var mtxPath = req.body.name || '';
@@ -1214,8 +1232,12 @@ router.post('/rtmp/auth', async function(req, res) {
   if (!rtmpSecret && process.env.NODE_ENV === 'production') {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
-  if (rtmpSecret && !crypto.timingSafeEqual(Buffer.from(req.headers['x-rtmp-secret'] || ''), Buffer.from(rtmpSecret))) {
-    return res.status(401).json({ ok: false, error: 'unauthorized' });
+  if (rtmpSecret) {
+    var _hdrBufB = Buffer.from(req.headers['x-rtmp-secret'] || '');
+    var _secBufB = Buffer.from(rtmpSecret);
+    if (_hdrBufB.length !== _secBufB.length || !crypto.timingSafeEqual(_hdrBufB, _secBufB)) {
+      return res.status(401).json({ ok: false, error: 'unauthorized' });
+    }
   }
   try {
     var mtxPath = req.body.name || '';
@@ -1241,8 +1263,12 @@ router.post('/rtmp/done', async function(req, res) {
   if (!rtmpSecret && process.env.NODE_ENV === 'production') {
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
-  if (rtmpSecret && !crypto.timingSafeEqual(Buffer.from(req.headers['x-rtmp-secret'] || ''), Buffer.from(rtmpSecret))) {
-    return res.status(401).json({ ok: false, error: 'unauthorized' });
+  if (rtmpSecret) {
+    var _hdrBufC = Buffer.from(req.headers['x-rtmp-secret'] || '');
+    var _secBufC = Buffer.from(rtmpSecret);
+    if (_hdrBufC.length !== _secBufC.length || !crypto.timingSafeEqual(_hdrBufC, _secBufC)) {
+      return res.status(401).json({ ok: false, error: 'unauthorized' });
+    }
   }
   try {
     var mtxPath = req.body.name || '';
@@ -1362,7 +1388,10 @@ router.post('/fanout-start', requireAuth, fanoutStartRateLimit, async function(r
     activeFanouts[streamId].destinations = resolvedDests.map(function(d) { return d.label || d.url || ''; });
     console.log('[fanout:%s] started → %d destinations (guest=%s)', streamId, resolvedDests.length, guestId);
     res.json({ ok: true, stream_id: streamId, destinations: resolvedDests.length });
-  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
+  } catch(e) {
+    if (activeFanouts[streamId] && !activeFanouts[streamId].process) delete activeFanouts[streamId];
+    res.status(500).json({ ok: false, error: 'Internal server error' });
+  }
 });
 
 router.post('/fanout-stop', requireAuth, function(req, res) {
