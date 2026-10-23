@@ -205,6 +205,13 @@ function closeProducer(producerId) {
   delete producers[producerId];
 }
 
+function closeTransport(transportId) {
+  var transport = transports[transportId];
+  if (!transport) return;
+  try { transport.close(); } catch (err) { /* ignore — mediasoup may have already closed it */ }
+  delete transports[transportId];
+}
+
 function pauseProducer(producerId) {
   var entry = producers[producerId];
   if (!entry) return;
@@ -408,6 +415,7 @@ module.exports = {
   createProducer: createProducer,
   createConsumer: createConsumer,
   closeProducer: closeProducer,
+  closeTransport: closeTransport,
   pauseProducer: pauseProducer,
   resumeProducer: resumeProducer,
   getProducerIdsByGuest: getProducerIdsByGuest,
