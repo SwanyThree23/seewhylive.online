@@ -2,7 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 
 var OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
-function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal }) {
+var _PP_ANIM =
+  '@keyframes ppSplat{0%{transform:scale(0) rotate(-20deg);opacity:1}60%{transform:scale(1.3) rotate(5deg);opacity:1}100%{transform:scale(1.1) rotate(0deg);opacity:.9}}' +
+  '@keyframes ppJailBar{0%{transform:scaleY(0)}100%{transform:scaleY(1)}}' +
+  '@keyframes ppFreeze{0%{opacity:0}100%{opacity:.7}}' +
+  '@keyframes ppHotSeat{0%,100%{box-shadow:0 0 24px #ff6a00}50%{box-shadow:0 0 48px #ff6a00,0 0 80px #ee0979}}' +
+  '@keyframes ppCrown{0%{transform:translateY(-8px) scale(.8);opacity:0}60%{transform:translateY(2px) scale(1.1);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}' +
+  '@keyframes ppEject{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-120%) scale(.4);opacity:0}}';
+
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay }) {
   var videoRef       = useRef(null);
   var analyserRef    = useRef(null);
   var animRef        = useRef(null);
@@ -373,6 +381,93 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
           <div style={{ position: 'absolute', bottom: 6, left: 6, background: 'rgba(201,168,76,.85)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09', zIndex: 5 }}>
             {'🎁 $' + (giftTotal / 100).toFixed(2)}
           </div>
+        )}
+
+        {/* Power play effect overlay */}
+        {activeEffect && (function() {
+          var pt = activeEffect.playType;
+          if (pt === 'tomato' || pt === 'egg') {
+            return (
+              <div key={activeEffect.id} style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, pointerEvents: 'none' }}>
+                <style dangerouslySetInnerHTML={{ __html: _PP_ANIM }} />
+                <span style={{ fontSize: 64, animation: 'ppSplat .4s cubic-bezier(.36,.07,.19,.97) forwards', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,.7))' }}>{pt === 'tomato' ? '🍅' : '🥚'}</span>
+              </div>
+            );
+          }
+          if (pt === 'freeze') {
+            return (
+              <div key={activeEffect.id} style={{ position: 'absolute', inset: 0, background: 'rgba(150,220,255,.18)', animation: 'ppFreeze .3s ease forwards', borderRadius: 'inherit', zIndex: 20, pointerEvents: 'none', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <style dangerouslySetInnerHTML={{ __html: _PP_ANIM }} />
+                <span style={{ fontSize: 36, opacity: .7 }}>🥶</span>
+              </div>
+            );
+          }
+          if (pt === 'jail') {
+            return (
+              <div key={activeEffect.id} style={{ position: 'absolute', inset: 0, zIndex: 20, pointerEvents: 'none', overflow: 'hidden' }}>
+                <style dangerouslySetInnerHTML={{ __html: _PP_ANIM }} />
+                {[0,1,2,3,4,5].map(function(i) {
+                  return <div key={i} style={{ position: 'absolute', top: 0, bottom: 0, left: (i * 16.6) + '%', width: 6, background: 'rgba(80,80,80,.85)', animation: 'ppJailBar .3s ease forwards', borderRadius: 2 }} />;
+                })}
+                <div style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,.8)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', whiteSpace: 'nowrap' }}>⛓ JAILED</div>
+              </div>
+            );
+          }
+          if (pt === 'crown') {
+            return (
+              <div key={activeEffect.id} style={{ position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)', zIndex: 22, pointerEvents: 'none', animation: 'ppCrown .5s ease forwards' }}>
+                <style dangerouslySetInnerHTML={{ __html: _PP_ANIM }} />
+                <span style={{ fontSize: 30, filter: 'drop-shadow(0 0 8px #C9A84C)' }}>🌟</span>
+              </div>
+            );
+          }
+          if (pt === 'hot_seat') {
+            return (
+              <div key={activeEffect.id} style={{ position: 'absolute', inset: 0, borderRadius: 'inherit', border: '3px solid #ff6a00', animation: 'ppHotSeat 1.5s ease infinite', zIndex: 20, pointerEvents: 'none', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 6 }}>
+                <style dangerouslySetInnerHTML={{ __html: _PP_ANIM }} />
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#ff6a00', background: 'rgba(0,0,0,.7)', borderRadius: 999, padding: '2px 8px' }}>🔥 HOT SEAT</div>
+              </div>
+            );
+          }
+          if (pt === 'shield') {
+            return (
+              <div key={activeEffect.id} style={{ position: 'absolute', inset: 0, borderRadius: 'inherit', border: '3px solid rgba(100,200,255,.7)', zIndex: 20, pointerEvents: 'none', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end', padding: 4 }}>
+                <span style={{ fontSize: 16, filter: 'drop-shadow(0 0 4px cyan)' }}>🛡</span>
+              </div>
+            );
+          }
+          if (pt === 'airhorn') {
+            return (
+              <div key={activeEffect.id} style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, pointerEvents: 'none' }}>
+                <span style={{ fontSize: 48, animation: 'ppSplat .3s ease forwards', filter: 'drop-shadow(0 0 8px rgba(255,200,0,.8))' }}>📣</span>
+              </div>
+            );
+          }
+          if (pt === 'helium') {
+            return (
+              <div key={activeEffect.id} style={{ position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)', zIndex: 22, pointerEvents: 'none' }}>
+                <span style={{ fontSize: 22, filter: 'drop-shadow(0 0 4px #C9A84C)' }}>🎈</span>
+              </div>
+            );
+          }
+          if (pt === 'eject') {
+            return (
+              <div key={activeEffect.id} style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, pointerEvents: 'none', background: 'rgba(14,12,9,.5)', animation: 'ppEject .8s ease forwards' }}>
+                <style dangerouslySetInnerHTML={{ __html: _PP_ANIM }} />
+                <span style={{ fontSize: 56 }}>🚀</span>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
+        {/* Power play button (non-host viewers only, on tap) */}
+        {onPowerPlay && !isHost && (
+          <button
+            onClick={function(e) { e.stopPropagation(); onPowerPlay(guest); }}
+            style={{ position: 'absolute', top: 4, right: fill ? 28 : 4, zIndex: 15, background: 'rgba(128,0,32,.75)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 999, width: 24, height: 24, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
+            title="Power Play"
+          >⚡</button>
         )}
 
         {/* Connection quality dot */}

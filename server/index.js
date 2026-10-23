@@ -236,6 +236,17 @@ vault.initDb();
 
 // Add to_guest_id to gifts for existing DBs created before this column existed
 try { db.exec('ALTER TABLE gifts ADD COLUMN to_guest_id TEXT'); } catch(_) {}
+// Add play_type to gift_types for power play identification
+try { db.exec('ALTER TABLE gift_types ADD COLUMN play_type TEXT'); } catch(_) {}
+
+// Power pass table
+db.exec(`CREATE TABLE IF NOT EXISTS power_passes (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL UNIQUE,
+  source TEXT NOT NULL DEFAULT 'purchase',
+  expires_at INTEGER NOT NULL,
+  created_at INTEGER NOT NULL
+)`);
 
 // Seed gift types if none exist
 var giftCount = db.prepare('SELECT COUNT(*) as c FROM gift_types').get();
@@ -256,6 +267,26 @@ if (giftCount.c === 0) {
   });
   seedTxn(seedGifts);
 }
+
+// Seed power play gift types (INSERT OR IGNORE — safe to re-run)
+db.exec(`CREATE TABLE IF NOT EXISTS power_play_gifts (id TEXT PRIMARY KEY)`);
+var _ppGiftStmt = db.prepare('INSERT OR IGNORE INTO gift_types (id, name, icon, amount_cents, aura_message, sort_order, is_active, play_type) VALUES (?, ?, ?, ?, ?, ?, 1, ?)');
+var _ppSeeds = [
+  ['pp_tomato',   'Tomato Splat', '🍅',  99,  'Splat!',            20, 'tomato'],
+  ['pp_egg',      'Egg Splat',    '🥚',  99,  'Egg!',              21, 'egg'],
+  ['pp_airhorn',  'Airhorn',      '📣', 149,  'AIRHORN!',          22, 'airhorn'],
+  ['pp_crown',    'Power Crown',  '🌟', 299,  'Crowned!',          23, 'crown'],
+  ['pp_helium',   'Helium',       '🎈', 199,  'Helium voice!',     24, 'helium'],
+  ['pp_shield',   'Shield',       '🛡', 299,  'Shielded!',         25, 'shield'],
+  ['pp_freeze',   'Freeze',       '🥶', 399,  'Frozen!',           26, 'freeze'],
+  ['pp_jail',     'Jail',         '⛓', 499,  'Jailed!',           27, 'jail'],
+  ['pp_hot_seat', 'Hot Seat',     '🔥', 499,  'Hot Seat!',         28, 'hot_seat'],
+  ['pp_eject',    'Eject',        '🚀', 999,  'Ejected!',          29, 'eject'],
+];
+var _ppSeedTxn = db.transaction(function(rows) {
+  rows.forEach(function(r) { _ppGiftStmt.run(r[0], r[1], r[2], r[3], r[4], r[5], r[6]); });
+});
+_ppSeedTxn(_ppSeeds);
 
 // ─── Express app ──────────────────────────────────────────────────────────
 var app    = express();
@@ -487,6 +518,9 @@ var loveEarnings        = new Map();  // roomId → { creator: microcents, platf
 var giftLeaderboards    = new Map();  // roomId → [{username, totalCents}] top 10
 var triviaRooms         = new Map();  // roomId → { question, options:[{text}], answers:Map<socketId,idx>, correctIdx, timer, active }
 var viewerAlertSnapshot = new Map();  // roomId → { count, ts } — baseline for host-alert engagement checks
+var shieldedGuests      = new Map();  // roomId+':'+guestId → expiresTs (unix sec)
+var pendingPowerPlays   = new Map();  // playId → { data, socketId, approvalTimer }
+var powerPlayThrottle   = new Map();  // userId → lastTs ms (2s throttle)
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -499,7 +533,7 @@ setInterval(function() {
    merchOrderThrottle, updateUsernameThrottle, handRaiseThrottle, speakingThrottle,
    chatMsgThrottle, pollVoteThrottle, vsVoteThrottle, qaUpvoteThrottle,
    judgeScoreThrottle, slowModeUserTs, pinChatThrottle,
-   _aiChatThrottle, _translateThrottle, _summarizeThrottle].forEach(function(m) {
+   _aiChatThrottle, _translateThrottle, _summarizeThrottle, powerPlayThrottle].forEach(function(m) {
     m.forEach(function(ts, k) { if (ts < _cut) m.delete(k); });
   });
 }, 5 * 60 * 1000).unref();
@@ -908,6 +942,36 @@ app.post('/api/ppv/verify', requireAuth, ppvRateLimit, function(req, res) {
       logger.error('[ppv/verify] ' + err.message);
       res.status(400).json({ error: 'Payment verification failed' });
     });
+});
+
+// ── Power Pass ─────────────────────────────────────────────────────────────
+// GET /api/power-pass/status
+app.get('/api/power-pass/status', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var now = Math.floor(Date.now() / 1000);
+    var row = db.prepare('SELECT expires_at, source FROM power_passes WHERE user_id = ? AND expires_at > ?').get(userId, now);
+    return res.json({ active: !!row, expiresAt: row ? row.expires_at : null, source: row ? row.source : null });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/power-pass/buy  — grants 30-day Power Pass (Stripe payment handled client-side before this call)
+app.post('/api/power-pass/buy', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var now = Math.floor(Date.now() / 1000);
+    var expiresAt = now + 30 * 24 * 3600;
+    var passId = require('crypto').randomUUID ? require('crypto').randomUUID() : uuidv4();
+    db.prepare('INSERT INTO power_passes (id, user_id, source, expires_at, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET expires_at = excluded.expires_at, source = excluded.source')
+      .run(passId, userId, 'purchase', expiresAt, now);
+    return res.json({ success: true, expiresAt: expiresAt });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // GET /api/schedule
@@ -2427,6 +2491,13 @@ io.on('connection', function(socket) {
     var giftId        = uuidv4();
     var ts            = Math.floor(Date.now() / 1000);
 
+    // Look up play_type so _commitGift can emit power-play effect if needed
+    var _giftPlayType = null;
+    try {
+      var _ptRow = db.prepare('SELECT play_type FROM gift_types WHERE name = ? AND icon = ? AND amount_cents = ? AND is_active = 1 LIMIT 1').get(name, emoji, valueCents);
+      if (_ptRow && _ptRow.play_type) _giftPlayType = _ptRow.play_type;
+    } catch(_) {}
+
     // All DB writes, analytics, and broadcasts are deferred until after Stripe
     // confirms PI creation for paid gifts. Free gifts (valueCents === 0) skip
     // Stripe entirely and record immediately.
@@ -2455,6 +2526,46 @@ io.on('connection', function(socket) {
         toGuestId:     toGuestId,
         ts:            ts
       });
+
+      // Power play visual effect — only when gift targets a specific panel
+      if (_giftPlayType && toGuestId) {
+        var _ppDefs = { tomato: 4000, egg: 4000, airhorn: 3000, crown: 10000, helium: 15000, shield: 30000, freeze: 10000, jail: 30000, hot_seat: 30000, eject: 0 };
+        var _ppDurMs = _ppDefs[_giftPlayType] || 5000;
+        var _ppEmoji = { tomato:'🍅', egg:'🥚', airhorn:'📣', crown:'🌟', helium:'🎈', shield:'🛡', freeze:'🥶', jail:'⛓', hot_seat:'🔥', eject:'🚀' }[_giftPlayType] || emoji;
+        // Shield tracking
+        if (_giftPlayType === 'shield') {
+          var _sk = roomId + ':' + toGuestId;
+          shieldedGuests.set(_sk, ts + 30);
+          setTimeout(function() { shieldedGuests.delete(_sk); }, 30000);
+        }
+        var _needsApproval = _giftPlayType === 'jail' || _giftPlayType === 'hot_seat' || _giftPlayType === 'eject';
+        if (_needsApproval) {
+          var _ppRoom = rooms.get(roomId);
+          if (_ppRoom && _ppRoom.hostSocketId) {
+            var _ppPlayId = giftId;
+            pendingPowerPlays.set(_ppPlayId, {
+              roomId: roomId, playType: _giftPlayType, emoji: _ppEmoji, fromUser: fromUser,
+              targetGuestId: toGuestId, durMs: _ppDurMs, socketId: socket.id,
+              approvalTimer: setTimeout(function() {
+                if (pendingPowerPlays.has(_ppPlayId)) {
+                  pendingPowerPlays.delete(_ppPlayId);
+                  socket.emit('power-play:rejected', { playId: _ppPlayId, reason: 'Host did not respond' });
+                }
+              }, 30000)
+            });
+            io.to(_ppRoom.hostSocketId).emit('power-play:pending', {
+              playId: _ppPlayId, playType: _giftPlayType, emoji: _ppEmoji, name: name,
+              fromUser: fromUser, targetGuestId: toGuestId, valueCents: valueCents
+            });
+            socket.emit('power-play:awaiting', { playId: _ppPlayId });
+          }
+        } else {
+          io.to(roomId).emit('power-play', {
+            id: giftId, playType: _giftPlayType, emoji: _ppEmoji, name: name,
+            fromUser: fromUser, targetGuestId: toGuestId, durMs: _ppDurMs, ts: ts
+          });
+        }
+      }
 
       try {
         var giftRoom = rooms.get(roomId);
@@ -2553,6 +2664,34 @@ io.on('connection', function(socket) {
       if (!_freeGiftRow) return;
       _commitGift();
     }
+  });
+
+  // ── power-play approval (host only) ────────────────────────────────────
+  socket.on('power-play:approve', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var playId = String(data.playId || '');
+    var pending = pendingPowerPlays.get(playId);
+    if (!pending || pending.roomId !== socket.data.roomId) return;
+    clearTimeout(pending.approvalTimer);
+    pendingPowerPlays.delete(playId);
+    io.to(pending.roomId).emit('power-play', {
+      id: playId, playType: pending.playType, emoji: pending.emoji,
+      fromUser: pending.fromUser, targetGuestId: pending.targetGuestId,
+      durMs: pending.durMs, ts: Math.floor(Date.now() / 1000)
+    });
+    var _pendSock = io.sockets.sockets.get(pending.socketId);
+    if (_pendSock) _pendSock.emit('power-play:approved', { playId: playId });
+  });
+
+  socket.on('power-play:reject', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var playId = String(data.playId || '');
+    var pending = pendingPowerPlays.get(playId);
+    if (!pending || pending.roomId !== socket.data.roomId) return;
+    clearTimeout(pending.approvalTimer);
+    pendingPowerPlays.delete(playId);
+    var _pendSock = io.sockets.sockets.get(pending.socketId);
+    if (_pendSock) _pendSock.emit('power-play:rejected', { playId: playId, reason: 'Host declined' });
   });
 
   // ── merch-order ────────────────────────────────────────────────────────
