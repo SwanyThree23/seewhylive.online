@@ -860,10 +860,49 @@ function getRoom(roomId) {
       hostSocketId: null,
       hostUserId:   null,
       watchParty:   null,
-      presence:     new Map()
+      presence:     new Map(),
+      userSockets:  new Map()   // userId → Set<socketId> — multi-device tracking
     });
   }
   return rooms.get(roomId);
+}
+
+// ── Multi-device helpers ───────────────────────────────────────────────────
+
+function addUserSocket(room, userId, socketId) {
+  if (!userId) return;
+  if (!room.userSockets) room.userSockets = new Map();
+  if (!room.userSockets.has(userId)) room.userSockets.set(userId, new Set());
+  room.userSockets.get(userId).add(socketId);
+}
+
+// Returns true when socketId was the last connection for this userId (user fully left).
+function removeUserSocket(room, userId, socketId) {
+  if (!userId || !room.userSockets) return true;
+  var _us = room.userSockets.get(userId);
+  if (!_us) return true;
+  _us.delete(socketId);
+  if (_us.size === 0) { room.userSockets.delete(userId); return true; }
+  return false;
+}
+
+// Builds a deduplicated guest list; guests on multiple devices appear once with deviceCount.
+function buildGuestList(room) {
+  var _seen = new Map();
+  room.guests.forEach(function(g) {
+    if (_seen.has(g.guestId)) {
+      _seen.get(g.guestId).deviceCount++;
+    } else {
+      _seen.set(g.guestId, { guestId: g.guestId, username: g.username, role: g.role, deviceCount: 1 });
+    }
+  });
+  return Array.from(_seen.values());
+}
+
+// Returns unique user count (deduplicates multi-device users).
+function getViewerCount(room) {
+  if (room.userSockets && room.userSockets.size > 0) return room.userSockets.size;
+  return room.viewers.size + room.guests.size;
 }
 
 // ─── Live Home trending push — broadcast ranked room list every 30 s ─────
@@ -872,14 +911,14 @@ setInterval(function() {
   var ranked = [];
   rooms.forEach(function(room, roomId) {
     if (roomPrivateMap.has(roomId)) return;
-    var viewers = room.viewers.size;
-    var guests  = room.guests.size;
-    if (viewers + guests === 0) return;
+    var uniqueUsers = getViewerCount(room);
+    if (uniqueUsers === 0) return;
+    var guests = room.guests.size;
     ranked.push({
       roomId:    roomId,
-      viewers:   viewers,
+      viewers:   uniqueUsers,
       guests:    guests,
-      score:     viewers * 2 + guests * 3,
+      score:     uniqueUsers * 2 + guests * 3,
     });
   });
   ranked.sort(function(a, b) { return b.score - a.score; });
@@ -898,13 +937,17 @@ setInterval(function() {
         room.presence.delete(sid);
         // Only clean up if the socket is not actually connected
         if (!io.sockets.sockets.has(sid)) {
+          var _evSock = io.sockets.sockets.get(sid); // always null here, used for userId lookup
+          var _evGuest = room.guests.get(sid);
+          var _evUserId = (_evGuest && _evGuest.guestId) || sid;
           room.viewers.delete(sid);
           room.guests.delete(sid);
+          removeUserSocket(room, _evUserId, sid);
         }
       }
     });
     // Emit refreshed viewer count after cleanup
-    var count = room.viewers.size + room.guests.size;
+    var count = getViewerCount(room);
     if (count >= 0) {
       io.to(roomId).emit('viewer-count', { count: count });
     }
@@ -2055,6 +2098,7 @@ io.on('connection', function(socket) {
 
     if (role === 'host' || role === 'guest') {
       room.guests.set(socket.id, { guestId: guestId, username: username, role: role });
+      addUserSocket(room, guestId, socket.id);
       if (role === 'host') {
         room.hostSocketId = socket.id;
         room.hostUserId   = guestId;
@@ -2062,6 +2106,7 @@ io.on('connection', function(socket) {
       }
     } else {
       room.viewers.add(socket.id);
+      addUserSocket(room, guestId, socket.id);
       try {
         analytics.recordViewerSession(roomId, socket.data.userId || socket.id, Date.now());
       } catch (aErr) {
@@ -2089,15 +2134,12 @@ io.on('connection', function(socket) {
           var existingProducers = mediasoup.getRoomProducers(roomId);
           var routerCaps = mediasoup.getRouterRtpCapabilities(roomId);
 
-          // Build roster
-          var guestList = [];
-          room.guests.forEach(function(g) {
-            guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
-          });
+          // Build deduplicated roster
+          var guestList = buildGuestList(room);
 
           io.to(roomId).emit('roster-update', { guests: guestList });
-          io.to(roomId).emit('viewer-count', { count: viewerCount });
-          checkHostAlerts(roomId, viewerCount);
+          io.to(roomId).emit('viewer-count', { count: getViewerCount(room) });
+          checkHostAlerts(roomId, getViewerCount(room));
 
           swanybot.onViewerJoin(roomId, username, socket.id);
           swanybot.onWelcomeVisitor(socket.id);
@@ -2109,11 +2151,18 @@ io.on('connection', function(socket) {
             existingProducers:     existingProducers
           };
           Object.assign(ackPayload, getJoinStateForRoom(roomId));
+          ackPayload.mySocketId    = socket.id;
+          ackPayload.hostPresent   = !!room.hostSocketId;
+          ackPayload.myDeviceCount = (room.userSockets && room.userSockets.get(guestId)) ? room.userSockets.get(guestId).size : 1;
 
           // Emit as socket event (for listeners like RoomTab) AND ack callback
           io.to(socket.id).emit('join-room-ack', ackPayload);
           seedEphemeralState(socket.id, roomId);
           if (ack) ack(ackPayload);
+          // Notify other devices of this user that a new device joined the room
+          if (guestId && !String(guestId).startsWith('anon')) {
+            io.to('user:' + guestId).emit('user-sync', { event: 'device_joined', roomId: roomId, socketId: socket.id, deviceCount: ackPayload.myDeviceCount });
+          }
         })
         .catch(function(err) {
           logger.error('[join-room] mediasoup setup failed: ' + err.message);
@@ -2122,14 +2171,11 @@ io.on('connection', function(socket) {
         });
     } else {
       // Viewer — ensure router exists so they can subscribe to producers
-      var guestList = [];
-      room.guests.forEach(function(g) {
-        guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
-      });
+      var guestList = buildGuestList(room);
 
       io.to(roomId).emit('roster-update', { guests: guestList });
-      io.to(roomId).emit('viewer-count', { count: viewerCount });
-      checkHostAlerts(roomId, viewerCount);
+      io.to(roomId).emit('viewer-count', { count: getViewerCount(room) });
+      checkHostAlerts(roomId, getViewerCount(room));
 
       swanybot.onViewerJoin(roomId, username, socket.id);
       swanybot.onWelcomeVisitor(socket.id);
@@ -2145,9 +2191,15 @@ io.on('connection', function(socket) {
             viewerAck.watchParty = room.watchParty;
           }
           Object.assign(viewerAck, getJoinStateForRoom(roomId));
+          viewerAck.mySocketId    = socket.id;
+          viewerAck.hostPresent   = !!room.hostSocketId;
+          viewerAck.myDeviceCount = (room.userSockets && room.userSockets.get(guestId)) ? room.userSockets.get(guestId).size : 1;
           io.to(socket.id).emit('join-room-ack', viewerAck);
           seedEphemeralState(socket.id, roomId);
           if (ack) ack(viewerAck);
+          if (guestId && !String(guestId).startsWith('anon')) {
+            io.to('user:' + guestId).emit('user-sync', { event: 'device_joined', roomId: roomId, socketId: socket.id, deviceCount: viewerAck.myDeviceCount });
+          }
         })
         .catch(function(err) {
           logger.warn('[join-room] viewer router setup error: ' + err.message);
@@ -2482,26 +2534,29 @@ io.on('connection', function(socket) {
 
     var room = rooms.get(roomId);
     if (room) {
+      // Remove all sockets for this user (handles multi-device)
+      var _kickSids = [];
       room.guests.forEach(function(g, sid) {
-        if (g.guestId === guestId) {
-          room.guests.delete(sid);
-          var targetSocket = io.sockets.sockets.get(sid);
-          if (targetSocket) {
-            targetSocket.leave(roomId);
-            targetSocket.emit('you-were-kicked', { roomId: roomId });
-          }
+        if (g.guestId === guestId) _kickSids.push(sid);
+      });
+      _kickSids.forEach(function(sid) {
+        room.guests.delete(sid);
+        var targetSocket = io.sockets.sockets.get(sid);
+        if (targetSocket) {
+          targetSocket.leave(roomId);
+          targetSocket.emit('you-were-kicked', { roomId: roomId });
         }
       });
+      if (room.userSockets) room.userSockets.delete(guestId);
     }
+
+    // Also kick via personal room so any viewer sockets for this user are notified
+    io.to('user:' + guestId).emit('you-were-kicked', { roomId: roomId });
 
     io.to(roomId).emit('guest-kicked', { guestId: guestId });
 
     if (room) {
-      var guestList = [];
-      room.guests.forEach(function(g) {
-        guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
-      });
-      io.to(roomId).emit('roster-update', { guests: guestList });
+      io.to(roomId).emit('roster-update', { guests: buildGuestList(room) });
     }
   });
 
@@ -2522,18 +2577,16 @@ io.on('connection', function(socket) {
     room.guests.forEach(function(g, sid) {
       if (g.guestId === guestId) {
         g.role = newRole;
-        // Sync socket.data.role on the live socket so per-event guards see the new role immediately
+        // Sync socket.data.role on all of this user's live sockets
         var targetSocket = io.sockets.sockets.get(sid);
         if (targetSocket) targetSocket.data.role = newRole;
         io.to(sid).emit('role-changed', { guestId: guestId, role: newRole });
       }
     });
+    // Notify other devices of this user via their personal room
+    io.to('user:' + guestId).emit('user-sync', { event: 'role_changed', guestId: guestId, role: newRole });
 
-    var guestList = [];
-    room.guests.forEach(function(g) {
-      guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
-    });
-    io.to(roomId).emit('roster-update', { guests: guestList });
+    io.to(roomId).emit('roster-update', { guests: buildGuestList(room) });
   });
 
   // ── update-username ────────────────────────────────────────────────────
@@ -5333,12 +5386,20 @@ io.on('connection', function(socket) {
     room.viewers.delete(socket.id);
     room.guests.delete(socket.id);
 
-    if (wasViewer) {
+    var _dcUserId = socket.data.userId;
+    var _isLastDevice = removeUserSocket(room, _dcUserId, socket.id);
+
+    if (wasViewer && _isLastDevice) {
       try {
-        analytics.endViewerSession(roomId, socket.data.userId || socket.id, Date.now());
+        analytics.endViewerSession(roomId, _dcUserId || socket.id, Date.now());
       } catch (aErr) {
         logger.warn('[disconnect] analytics end session failed: ' + aErr.message);
       }
+    }
+
+    // Notify other devices of this user that one device left
+    if (_dcUserId && !String(_dcUserId).startsWith('anon')) {
+      io.to('user:' + _dcUserId).emit('user-sync', { event: 'device_left', roomId: roomId, socketId: socket.id, isLast: _isLastDevice });
     }
 
     room.presence.delete(socket.id);
@@ -5371,13 +5432,8 @@ io.on('connection', function(socket) {
       }
     }
 
-    var viewerCount = room.viewers.size + room.guests.size;
-    var guestList   = [];
-    room.guests.forEach(function(g) {
-      guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
-    });
-
-    io.to(roomId).emit('roster-update', { guests: guestList });
+    var viewerCount = getViewerCount(room);
+    io.to(roomId).emit('roster-update', { guests: buildGuestList(room) });
     io.to(roomId).emit('viewer-count', { count: viewerCount });
     checkHostAlerts(roomId, viewerCount);
 
