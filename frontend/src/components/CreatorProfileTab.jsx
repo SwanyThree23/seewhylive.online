@@ -47,7 +47,7 @@ export default function CreatorProfileTab(props) {
   useEffect(function() {
     setProfile(null);
     var mounted = true;
-    fetch('/api/users/' + creatorUsername)
+    fetch('/api/users/' + encodeURIComponent(creatorUsername))
       .then(function(r) { return r.json(); })
       .then(function(d) {
         if (!mounted) return;
