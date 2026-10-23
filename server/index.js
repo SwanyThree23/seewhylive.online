@@ -2269,6 +2269,10 @@ io.on('connection', function(socket) {
       if (ack) ack({ error: 'Must join room before creating transport' });
       return;
     }
+    if (socket.data.role !== 'host' && socket.data.role !== 'guest') {
+      if (ack) ack({ error: 'forbidden' });
+      return;
+    }
     mediasoup.createWebRtcTransport(roomId)
       .then(function(transport) {
         if (!socket.data.ownedTransportIds) socket.data.ownedTransportIds = [];
@@ -2551,6 +2555,7 @@ io.on('connection', function(socket) {
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     if (socket.data.role !== 'host') return;
+    if (guestId === socket.data.userId) return;
 
     var producerIds = mediasoup.getProducerIdsByGuest(guestId, roomId);
     producerIds.forEach(function(pid) { mediasoup.closeProducer(pid); });
@@ -2600,15 +2605,19 @@ io.on('connection', function(socket) {
     var room = rooms.get(roomId);
     if (!room) return;
 
+    var _promoteChanged = false;
     room.guests.forEach(function(g, sid) {
       if (g.guestId === guestId) {
+        if (g.role === newRole) return;
         g.role = newRole;
+        _promoteChanged = true;
         // Sync socket.data.role on all of this user's live sockets
         var targetSocket = io.sockets.sockets.get(sid);
         if (targetSocket) targetSocket.data.role = newRole;
         io.to(sid).emit('role-changed', { guestId: guestId, role: newRole });
       }
     });
+    if (!_promoteChanged) return;
     // Notify other devices of this user via their personal room
     io.to('user:' + guestId).emit('user-sync', { event: 'role_changed', guestId: guestId, role: newRole });
 
