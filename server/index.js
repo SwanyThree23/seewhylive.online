@@ -2579,13 +2579,12 @@ io.on('connection', function(socket) {
           targetSocket.emit('you-were-kicked', { roomId: roomId });
         }
       });
+      // Notify via personal room BEFORE deleting from userSockets — the has()
+      // check below would always be false after the delete, making the emit dead code.
+      if (room.userSockets && room.userSockets.has(guestId)) {
+        io.to('user:' + guestId).emit('you-were-kicked', { roomId: roomId });
+      }
       if (room.userSockets) room.userSockets.delete(guestId);
-    }
-
-    // Only notify via personal room if the user was actually in this room —
-    // prevents a host from sending spurious you-were-kicked to an arbitrary userId.
-    if (room && room.userSockets && room.userSockets.has(guestId)) {
-      io.to('user:' + guestId).emit('you-were-kicked', { roomId: roomId });
     }
 
     io.to(roomId).emit('guest-kicked', { guestId: guestId });
@@ -3697,7 +3696,7 @@ io.on('connection', function(socket) {
 
   socket.on('poll-end', function(data) {
     var roomId = socket.data.roomId;
-    if (!roomId || socket.data.role !== 'host') return;
+    if (!roomId || (socket.data.role !== 'host' && socket.data.role !== 'cohost')) return;
     var poll = polls.get(roomId);
     if (!poll) return;
     poll.active = false;
@@ -5414,6 +5413,10 @@ io.on('connection', function(socket) {
     qaUpvoteThrottle.delete(_tKey);   qaUpvoteThrottle.delete(socket.id);
     judgeScoreThrottle.delete(_tKey);
     pinChatThrottle.delete(socket.id);
+    chyronThrottle.delete(socket.id);
+    overlayThrottle.delete(socket.id);
+    bracketThrottle.delete(socket.id);
+    triviaStartThrottle.delete(socket.id);
     swanybot.onSocketDisconnect(socket.id);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
