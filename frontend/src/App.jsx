@@ -2280,7 +2280,7 @@ function StreamKeysTab(props) {
   ];
 
   useEffect(function() {
-    fetch('/api/keys/meta/' + userId, { headers: _streamKeysAuthHeaders() })
+    fetch('/api/keys/meta/' + encodeURIComponent(userId), { headers: _streamKeysAuthHeaders() })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data && Array.isArray(data)) setSavedKeys(data);

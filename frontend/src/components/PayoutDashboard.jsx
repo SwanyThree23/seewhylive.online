@@ -33,7 +33,7 @@ export default function PayoutDashboard({ addToast, roomId }) {
 
   useEffect(function() {
     setLoading(true);
-    fetch('/api/payout-history' + (roomId ? '?roomId=' + roomId : ''), { headers: _authHeaders() })
+    fetch('/api/payout-history' + (roomId ? '?roomId=' + encodeURIComponent(roomId) : ''), { headers: _authHeaders() })
       .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(data) {
         if (data && data.sessions) setSessions(data.sessions);
