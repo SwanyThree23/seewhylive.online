@@ -227,9 +227,13 @@ db.exec(`CREATE TABLE IF NOT EXISTS push_subscriptions (
   p256dh TEXT,
   auth TEXT,
   user_id TEXT,
+  device_name TEXT,
+  device_id TEXT,
   created_at INTEGER DEFAULT (strftime('%s','now'))
 )`);
 try { db.exec('ALTER TABLE push_subscriptions ADD COLUMN user_id TEXT'); } catch(_) {}
+try { db.exec('ALTER TABLE push_subscriptions ADD COLUMN device_name TEXT'); } catch(_) {}
+try { db.exec('ALTER TABLE push_subscriptions ADD COLUMN device_id TEXT'); } catch(_) {}
 
 // Initialise vault with same db (vault.initDb() will open its own handle to the same file)
 vault.initDb();
@@ -1458,6 +1462,65 @@ app.get('/api/schedule/:id/rsvps', requireAuth, function(req, res) {
     var rows = db.prepare('SELECT user_id, created_at FROM schedule_rsvps WHERE schedule_id = ? ORDER BY created_at ASC LIMIT 500').all(id);
     return res.json({ rsvps: rows, count: rows.length });
   } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/push/subscribe
+app.post('/api/push/subscribe', requireAuth, function(req, res) {
+  var sub = req.body.subscription;
+  if (!sub || !sub.endpoint) return res.status(400).json({ error: 'Missing subscription' });
+  var endpoint = String(sub.endpoint).slice(0, 2000);
+  var username = String(req.body.username || '').slice(0, 100);
+  var keys = sub.keys || {};
+  var p256dh = String(keys.p256dh || '').slice(0, 200);
+  var auth = String(keys.auth || '').slice(0, 100);
+  var userId = req.user.id || req.user.userId || null;
+  var deviceName = String(req.body.deviceName || '').slice(0, 100) || null;
+  var deviceId = String(req.body.deviceId || '').slice(0, 64) || null;
+  try {
+    db.prepare(
+      'INSERT INTO push_subscriptions (endpoint, username, p256dh, auth, user_id, device_name, device_id) VALUES (?, ?, ?, ?, ?, ?, ?) ' +
+      'ON CONFLICT(endpoint) DO UPDATE SET username=excluded.username, p256dh=excluded.p256dh, auth=excluded.auth, user_id=excluded.user_id, device_name=excluded.device_name, device_id=excluded.device_id'
+    ).run(endpoint, username, p256dh, auth, userId, deviceName, deviceId);
+    res.json({ ok: true });
+  } catch (err) {
+    logger.error('[push/subscribe] ' + err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/push/subscriptions — list caller's registered devices
+app.get('/api/push/subscriptions', requireAuth, function(req, res) {
+  var userId = req.user.id || req.user.userId;
+  try {
+    var rows = db.prepare(
+      'SELECT id, device_name, device_id, created_at FROM push_subscriptions WHERE user_id = ? ORDER BY created_at DESC'
+    ).all(userId);
+    res.json({ subscriptions: rows });
+  } catch (err) {
+    logger.error('[push/subscriptions] ' + err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/push/send-to-device — send push to a specific device by device_id
+app.post('/api/push/send-to-device', requireAuth, function(req, res) {
+  var deviceId = String(req.body.deviceId || '').slice(0, 64);
+  var title = String(req.body.title || '').slice(0, 200);
+  var body = String(req.body.body || '').slice(0, 500);
+  var data = req.body.data || {};
+  if (!deviceId || !title) return res.status(400).json({ error: 'deviceId and title required' });
+  var userId = req.user.id || req.user.userId;
+  try {
+    var sub = db.prepare(
+      'SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE device_id = ? AND user_id = ?'
+    ).get(deviceId, userId);
+    if (!sub) return res.status(404).json({ error: 'device not found' });
+    sendPushNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, title, body, data);
+    res.json({ ok: true });
+  } catch (err) {
+    logger.error('[push/send-to-device] ' + err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // POST /api/push/unsubscribe
