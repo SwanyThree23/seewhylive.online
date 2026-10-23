@@ -131,10 +131,8 @@ function registerPanelHandlers(io, socket, rooms) {
         if (_kSet) _kSet.delete(userId);
       }
       const resolved = await panelService.resolveJoinRequest({ roomId, userId, approve });
-      // Emit only to the requesting user, not the entire room
-      const roomSockets = await io.in(roomId).fetchSockets();
-      const targetSocket = roomSockets.find(function(s) { return s.data && s.data.userId === userId; });
-      if (targetSocket) targetSocket.emit('panel:join_request_resolved', { roomId, userId, approve, resolved });
+      // Emit to personal room so all devices of the requesting user receive the decision
+      io.to('user:' + userId).emit('panel:join_request_resolved', { roomId, userId, approve, resolved });
       ack?.({ ok: true });
     } catch (err) {
       ack?.({ ok: false, error: 'Panel error' });
