@@ -74,6 +74,43 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
 
   var [rewardTiers, setRewardTiers] = useState([]);
   var [myTier, setMyTier] = useState(null);
+  var [passStatus,  setPassStatus]  = useState(null);
+  var [passBuying,  setPassBuying]  = useState(false);
+
+  useEffect(function() {
+    if (tab !== 'pass') return;
+    var token = localStorage.getItem('sw_token');
+    if (!token) return;
+    var mounted = true;
+    fetch('/api/power-pass/status', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) { if (mounted) setPassStatus(d); })
+      .catch(function() {});
+    return function() { mounted = false; };
+  }, [tab]);
+
+  var buyPass = function() {
+    var token = localStorage.getItem('sw_token');
+    if (!token) { if (addToast) addToast('Please log in first', 'error'); return; }
+    if (passBuying) return;
+    setPassBuying(true);
+    fetch('/api/power-pass/buy', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.active) {
+          setPassStatus(d);
+          if (addToast) addToast('⚡ Power Pass activated! Unlimited Power Plays for 30 days.', 'success');
+        } else {
+          if (addToast) addToast(d.error || 'Could not buy Power Pass', 'error');
+        }
+      })
+      .catch(function() { if (addToast) addToast('Network error', 'error'); })
+      .finally(function() { setPassBuying(false); });
+  };
 
   useEffect(function() {
     if (tab !== 'rewards') return;
@@ -151,6 +188,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
     { id: 'tiers',       label: '📈 TIERS' },
     { id: 'rewards', label: '🎁REWARDS' },
     { id: 'leaderboard', label: '🏆 TOP' },
+    { id: 'pass',        label: '⚡ PASS' },
   ];
 
   return (
@@ -447,6 +485,70 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
         )}
 
         {/* ══════════════ LEADERBOARD TAB ══════════════ */}
+        {tab === 'pass' && (
+          <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <div style={{ fontFamily: fD, fontSize: 22, color: GOLD, letterSpacing: 2 }}>⚡ POWER PASS</div>
+              <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, marginTop: 3, lineHeight: 1.6 }}>
+                Unlimited Power Plays for 30 days · 500 Fuel · one-time charge
+              </div>
+            </div>
+
+            {/* Status card */}
+            {passStatus && passStatus.active ? (
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 14, padding: '18px 16px', textAlign: 'center' }}>
+                <div style={{ fontFamily: fD, fontSize: 30, color: GOLD, letterSpacing: 2, marginBottom: 4 }}>✓ ACTIVE</div>
+                <div style={{ fontFamily: fM, fontSize: 9, color: MUTED }}>
+                  Expires {new Date(passStatus.expires_at * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </div>
+                <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, marginTop: 6 }}>
+                  You have unlimited Power Plays on any stream until then.
+                </div>
+              </div>
+            ) : (
+              <div style={{ background: SURF, border: '1px solid ' + BORDER, borderRadius: 14, padding: '18px 16px' }}>
+                <div style={{ fontFamily: fD, fontSize: 18, color: TEXT, letterSpacing: 1, marginBottom: 10 }}>WHAT YOU GET</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                  {[
+                    ['⚡', 'Unlimited Power Plays', 'Spotlight, Storm, Freeze, Hype — all of them'],
+                    ['🎯', 'Target any panel guest', 'Send effects to specific guests in real time'],
+                    ['🔄', 'No per-play Fuel cost', 'Normal plays cost 50 Fuel each — Pass removes that'],
+                    ['⏳', '30-day access', 'Rolls from purchase date, not calendar month'],
+                  ].map(function(row) {
+                    return (
+                      <div key={row[0]} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: 16, flexShrink: 0 }}>{row[0]}</span>
+                        <div>
+                          <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 13, color: TEXT }}>{row[1]}</div>
+                          <div style={{ fontFamily: fM, fontSize: 7.5, color: MUTED }}>{row[2]}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={buyPass}
+                  disabled={passBuying}
+                  style={{ width: '100%', padding: '12px', background: passBuying ? 'rgba(201,168,76,.08)' : 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,' + (passBuying ? '.2' : '.5') + ')', borderRadius: 10, color: GOLD, fontFamily: fD, fontSize: 16, letterSpacing: 2, cursor: passBuying ? 'not-allowed' : 'pointer', opacity: passBuying ? 0.6 : 1 }}>
+                  {passBuying ? 'PROCESSING…' : 'BUY POWER PASS · 500 FUEL'}
+                </button>
+                <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, textAlign: 'center', marginTop: 8 }}>
+                  500 Fuel deducted from your balance · requires active Fuel balance
+                </div>
+              </div>
+            )}
+
+            {/* Info card */}
+            <div style={{ background: CARD, borderRadius: 10, padding: '12px 14px' }}>
+              <div style={{ fontFamily: fM, fontSize: 7.5, color: MUTED, lineHeight: 1.7 }}>
+                💡 Power Plays without a Pass cost 50 Fuel each.<br />
+                A Power Pass pays for itself after just 10 plays.<br />
+                Fuel is earned by watching, gifting, and daily check-ins.
+              </div>
+            </div>
+          </div>
+        )}
+
         {tab === 'leaderboard' && (
           <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ fontFamily: fD, fontSize: 20, color: TEXT, letterSpacing: 2 }}>TOP SUPPORTERS</div>
