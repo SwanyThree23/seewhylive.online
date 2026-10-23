@@ -4503,7 +4503,6 @@ io.on('connection', function(socket) {
       }
     }
 
-    var wasAlreadyLive = !!room.isLive;
     room.isLive        = true;
     room.liveStartedAt = room.liveStartedAt || now;
     room.streamTitle   = (data && data.streamTitle) ? String(data.streamTitle).slice(0, 80) : '';
@@ -4513,19 +4512,21 @@ io.on('connection', function(socket) {
       ts:     now
     });
 
-    // Auto-trigger AURA stream start hype
-    peakViewers.set(roomId, room.viewers ? room.viewers.size : 0);
-    milestonesSeen.set(roomId, new Set());
-    sessionRevenue.set(roomId, 0);
-    swanybot.onStreamStart(roomId);
-    var streamTitle = room.streamTitle || 'SeeWhy LIVE';
-    var vcNow = room.viewers ? room.viewers.size : 0;
-    autoAura(roomId, function(cb) { aura.triggerStreamStart(roomId, streamTitle, vcNow, cb); });
+    if (!wasAlreadyLive) {
+      // Auto-trigger AURA stream start hype
+      peakViewers.set(roomId, room.viewers ? room.viewers.size : 0);
+      milestonesSeen.set(roomId, new Set());
+      sessionRevenue.set(roomId, 0);
+      swanybot.onStreamStart(roomId);
+      var streamTitle = room.streamTitle || 'SeeWhy LIVE';
+      var vcNow = room.viewers ? room.viewers.size : 0;
+      autoAura(roomId, function(cb) { aura.triggerStreamStart(roomId, streamTitle, vcNow, cb); });
 
-    try {
-      analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'start', room.viewers ? room.viewers.size : 0, 0);
-    } catch (aErr) {
-      logger.warn('[go-live] analytics record failed: ' + aErr.message);
+      try {
+        analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'start', room.viewers ? room.viewers.size : 0, 0);
+      } catch (aErr) {
+        logger.warn('[go-live] analytics record failed: ' + aErr.message);
+      }
     }
 
     if (ack) ack({ started: true });
