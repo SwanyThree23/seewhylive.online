@@ -250,3 +250,11 @@
   width: max(100%, 44px);
   height: max(100%, 44px);
 }
+
+/* iOS Safari zoom prevention — Safari auto-zooms on focus when font-size
+   < 16px. The !important beats Tailwind utility classes and inline styles. */
+@media (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}

@@ -186,7 +186,7 @@ function registerBattleHandlers(io, socket) {
       });
       if (cb) cb({ ok: true, battle });
     } catch (err) {
-      var _voteUserErrs = ['already voted in this battle', 'battle not active', 'battle no longer active', 'battle participants may not vote', 'invalid side'];
+      var _voteUserErrs = ['already voted in this battle or battle no longer active', 'battle not active', 'battle participants may not vote', 'invalid side'];
       var _voteMsg = _voteUserErrs.indexOf(err.message) !== -1 ? err.message : 'Battle error';
       if (cb) cb({ ok: false, error: _voteMsg });
     }
