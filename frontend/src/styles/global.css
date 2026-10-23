@@ -2781,3 +2781,15 @@ p, textarea, input, .selectable-text, .selectable-text * {
   user-select: text;
   -webkit-user-select: text;
 }
+
+/* ============================================================
+   iOS SAFARI ZOOM PREVENTION
+   Safari auto-zooms on focus when font-size < 16px. Override
+   applies on mobile widths and uses !important to beat inline
+   style={{ fontSize: '14px' }} declarations.
+   ============================================================ */
+@media (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
