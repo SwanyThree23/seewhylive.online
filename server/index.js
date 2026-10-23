@@ -557,6 +557,9 @@ var slowModeUserTs      = new Map();  // roomId+':'+userId → last message time
 var pinnedMessages      = new Map();  // roomId → { id, username, message, ts } | undefined
 var streamGoals         = new Map();  // roomId → { type, target, label } | undefined
 var chyronThrottle      = new Map();  // socketId → lastChyronTs ms (500ms throttle)
+var overlayThrottle     = new Map();  // socketId → lastOverlayTs ms (500ms throttle)
+var bracketThrottle     = new Map();  // socketId → lastBracketTs ms (500ms throttle)
+var triviaStartThrottle = new Map();  // socketId → lastTriviaStartTs ms (2000ms throttle)
 var chyrons             = new Map();  // roomId → chyron data object | undefined
 var overlays            = new Map();  // roomId → overlay config object | undefined
 var subOnlyRooms        = new Set();  // roomIds where subscriber-only mode is active
@@ -595,6 +598,7 @@ setInterval(function() {
    merchOrderThrottle, updateUsernameThrottle, handRaiseThrottle, speakingThrottle,
    chatMsgThrottle, pollVoteThrottle, vsVoteThrottle, qaUpvoteThrottle,
    judgeScoreThrottle, slowModeUserTs, pinChatThrottle, chyronThrottle,
+   overlayThrottle, bracketThrottle, triviaStartThrottle,
    _aiChatThrottle, _translateThrottle, _summarizeThrottle, powerPlayThrottle].forEach(function(m) {
     m.forEach(function(ts, k) { if (ts < _cut) m.delete(k); });
   });
@@ -3333,6 +3337,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.overlay) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var _ovNow = Date.now();
+    if (_ovNow - (overlayThrottle.get(socket.id) || 0) < 500) return;
+    overlayThrottle.set(socket.id, _ovNow);
     var safeOverlay;
     try {
       var _ovStr = JSON.stringify(data.overlay);
@@ -4170,6 +4177,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var _brNow = Date.now();
+    if (_brNow - (bracketThrottle.get(socket.id) || 0) < 500) return;
+    bracketThrottle.set(socket.id, _brNow);
     var _bStr; try { _bStr = JSON.stringify(data); } catch(e) { return; }
     if (!_bStr || _bStr.length > 8192) return;
     var safe; try { safe = JSON.parse(_bStr); } catch(e) { return; }
@@ -4436,23 +4446,27 @@ io.on('connection', function(socket) {
       logger.error('[go-live] DB update failed: ' + dbErr.message);
     }
 
-    try {
-      var _hostProducers = mediasoup.getRoomProducers(roomId).filter(function(p) {
-        return p.guestId === socket.data.guestId;
-      });
-      var _audioProducer = _hostProducers.find ? _hostProducers.find(function(p) { return p.kind === 'audio'; }) : null;
-      var _videoProducer = _hostProducers.find ? _hostProducers.find(function(p) { return p.kind === 'video'; }) : null;
-      if (_audioProducer || _videoProducer) {
-        await bridge.startBridge(roomId, {
-          audio: _audioProducer ? _audioProducer.producerId : null,
-          video: _videoProducer ? _videoProducer.producerId : null
+    var wasAlreadyLive = !!room.isLive;
+
+    if (!wasAlreadyLive) {
+      try {
+        var _hostProducers = mediasoup.getRoomProducers(roomId).filter(function(p) {
+          return p.guestId === socket.data.guestId;
         });
+        var _audioProducer = _hostProducers.find ? _hostProducers.find(function(p) { return p.kind === 'audio'; }) : null;
+        var _videoProducer = _hostProducers.find ? _hostProducers.find(function(p) { return p.kind === 'video'; }) : null;
+        if (_audioProducer || _videoProducer) {
+          await bridge.startBridge(roomId, {
+            audio: _audioProducer ? _audioProducer.producerId : null,
+            video: _videoProducer ? _videoProducer.producerId : null
+          });
+        }
+      } catch (bridgeErr) {
+        logger.error('[go-live] mediasoup->RTMP bridge failed: ' + bridgeErr.message);
       }
-    } catch (bridgeErr) {
-      logger.error('[go-live] mediasoup->RTMP bridge failed: ' + bridgeErr.message);
     }
 
-    if (destinations && destinations.length > 0) {
+    if (!wasAlreadyLive && destinations && destinations.length > 0) {
       var _PRIV_GL = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
       var _validDests = [];
       var _destList = Array.isArray(destinations) ? destinations.slice(0, 10) : [];
@@ -4489,7 +4503,6 @@ io.on('connection', function(socket) {
       }
     }
 
-    var wasAlreadyLive = !!room.isLive;
     room.isLive        = true;
     room.liveStartedAt = room.liveStartedAt || now;
     room.streamTitle   = (data && data.streamTitle) ? String(data.streamTitle).slice(0, 80) : '';
@@ -4499,19 +4512,21 @@ io.on('connection', function(socket) {
       ts:     now
     });
 
-    // Auto-trigger AURA stream start hype
-    peakViewers.set(roomId, room.viewers ? room.viewers.size : 0);
-    milestonesSeen.set(roomId, new Set());
-    sessionRevenue.set(roomId, 0);
-    swanybot.onStreamStart(roomId);
-    var streamTitle = room.streamTitle || 'SeeWhy LIVE';
-    var vcNow = room.viewers ? room.viewers.size : 0;
-    autoAura(roomId, function(cb) { aura.triggerStreamStart(roomId, streamTitle, vcNow, cb); });
+    if (!wasAlreadyLive) {
+      // Auto-trigger AURA stream start hype
+      peakViewers.set(roomId, room.viewers ? room.viewers.size : 0);
+      milestonesSeen.set(roomId, new Set());
+      sessionRevenue.set(roomId, 0);
+      swanybot.onStreamStart(roomId);
+      var streamTitle = room.streamTitle || 'SeeWhy LIVE';
+      var vcNow = room.viewers ? room.viewers.size : 0;
+      autoAura(roomId, function(cb) { aura.triggerStreamStart(roomId, streamTitle, vcNow, cb); });
 
-    try {
-      analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'start', room.viewers ? room.viewers.size : 0, 0);
-    } catch (aErr) {
-      logger.warn('[go-live] analytics record failed: ' + aErr.message);
+      try {
+        analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'start', room.viewers ? room.viewers.size : 0, 0);
+      } catch (aErr) {
+        logger.warn('[go-live] analytics record failed: ' + aErr.message);
+      }
     }
 
     if (ack) ack({ started: true });
@@ -4908,6 +4923,9 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var tRoomId = socket.data.roomId;
     if (!tRoomId) return;
+    var _tsNow = Date.now();
+    if (_tsNow - (triviaStartThrottle.get(socket.id) || 0) < 2000) return;
+    triviaStartThrottle.set(socket.id, _tsNow);
     var question = (data.question || '').trim().slice(0, 200);
     var options  = Array.isArray(data.options) ? data.options.slice(0, 4).map(function(o) { return { text: String(o.text || o).slice(0, 80) }; }) : [];
     var _rawCorrectIdx = parseInt(data.correctIdx, 10);

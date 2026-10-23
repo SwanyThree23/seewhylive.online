@@ -428,8 +428,9 @@ export default function App() {
   var [gifts, setGifts] = useState([]);
   var [giftPayIntent, setGiftPayIntent] = useState(null); // { clientSecret, paymentIntentId } | null
 
-  var socketRef = useRef(null);
-  var roleRef   = useRef(role);
+  var socketRef    = useRef(null);
+  var roleRef      = useRef(role);
+  var usernameRef  = useRef(username);
   var uptimeRef = useRef(null);
   var liveStartRef = useRef(null);
   var peakViewerRef = useRef(0);
@@ -558,17 +559,18 @@ export default function App() {
     return function() { window.removeEventListener('beforeinstallprompt', handleInstallPrompt); };
   }, []);
 
-  // Keep roleRef current so socket callbacks read the live role value without
-  // needing role in the socket useEffect deps (which would re-register all 60+
-  // listeners every time role changes — e.g. viewer → host).
-  roleRef.current = role;
+  // Keep roleRef and usernameRef current so socket callbacks read live values
+  // without needing role/username in the socket useEffect deps (which would
+  // re-register all 60+ listeners on every role or username change).
+  roleRef.current     = role;
+  usernameRef.current = username;
 
   useEffect(function() {
     var token = localStorage.getItem('sw_token') || '';
     var socket = getSocket(token);
     socketRef.current = socket;
 
-    var joinPayload = { roomId: APP_ID, userId: userId, username: username, role: roleRef.current, token: token };
+    var joinPayload = { roomId: APP_ID, userId: userId, username: usernameRef.current, role: roleRef.current, token: token };
     setRejoinPayload(joinPayload);
     onReconnectCallback(function() {
       setConnected(true);
@@ -1194,7 +1196,7 @@ export default function App() {
       socket.off('gem-send');
       socket.off('moderation-action');
     };
-  }, [userId, username, addToast]);
+  }, [userId, addToast]);
 
   useEffect(function() {
     uptimeRef.current = setInterval(function() {

@@ -224,9 +224,10 @@ function registerPanelHandlers(io, socket, rooms) {
       if (!_kickMap) { _kickMap = new Set(); panelKickedUsers.set(roomId, _kickMap); }
       _kickMap.add(targetUserId);
       io.to(roomId).emit('panel:slot_released', { roomId, userId: targetUserId });
-      const roomSockets = await io.in(roomId).fetchSockets();
-      const kickedSocket = roomSockets.find(s => s.data && s.data.userId === targetUserId);
-      if (kickedSocket) kickedSocket.emit('panel:kicked', { roomId });
+      // Emit to personal room so kick reaches all devices the target is connected from
+      var _room = rooms && rooms.get(roomId);
+      var _hasTarget = _room && _room.userSockets && _room.userSockets.has(targetUserId);
+      if (_hasTarget) io.to('user:' + targetUserId).emit('panel:kicked', { roomId });
       ack?.({ ok: true });
     } catch (err) {
       ack?.({ ok: false, error: 'Panel error' });
