@@ -282,6 +282,33 @@ try { db.exec('ALTER TABLE user_profiles ADD COLUMN referral_code TEXT'); } catc
 try { db.exec('ALTER TABLE user_profiles ADD COLUMN referred_by TEXT'); } catch(_) {}
 try { db.exec('ALTER TABLE user_profiles ADD COLUMN pro_until INTEGER DEFAULT 0'); } catch(_) {}
 
+// DM / Message Requests tables
+db.exec(`CREATE TABLE IF NOT EXISTS dm_threads (
+  id          TEXT PRIMARY KEY,
+  user_a      TEXT NOT NULL,
+  user_b      TEXT NOT NULL,
+  created_at  INTEGER NOT NULL,
+  UNIQUE(user_a, user_b)
+)`);
+db.exec(`CREATE TABLE IF NOT EXISTS dm_messages (
+  id          TEXT PRIMARY KEY,
+  thread_id   TEXT NOT NULL,
+  sender_id   TEXT NOT NULL,
+  body        TEXT NOT NULL,
+  type        TEXT NOT NULL DEFAULT 'text',
+  created_at  INTEGER NOT NULL
+)`);
+db.exec(`CREATE TABLE IF NOT EXISTS dm_requests (
+  id           TEXT PRIMARY KEY,
+  from_user    TEXT NOT NULL,
+  to_user      TEXT NOT NULL,
+  body         TEXT NOT NULL,
+  status       TEXT NOT NULL DEFAULT 'pending',
+  created_at   INTEGER NOT NULL,
+  UNIQUE(from_user, to_user)
+)`);
+try { db.exec('ALTER TABLE user_profiles ADD COLUMN dm_privacy TEXT DEFAULT \'everyone\''); } catch(_) {}
+
 // Seed gift types if none exist
 var giftCount = db.prepare('SELECT COUNT(*) as c FROM gift_types').get();
 if (giftCount.c === 0) {
@@ -1126,6 +1153,140 @@ app.get('/api/blocks/check/:targetId', requireAuth, function(req, res) {
     var theyBlocked = !!db.prepare('SELECT 1 FROM user_blocks WHERE blocker_id = ? AND blocked_id = ?').get(targetId, userId);
     return res.json({ iBlocked: iBlocked, theyBlocked: theyBlocked });
   } catch (e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── DM / Message Requests ────────────────────────────────────────────────
+
+// GET /api/dm/requests  — incoming pending message requests
+app.get('/api/dm/requests', requireAuth, function(req, res) {
+  try {
+    var userId = req.user.id;
+    var rows = db.prepare('SELECT * FROM dm_requests WHERE to_user = ? AND status = \'pending\' ORDER BY created_at DESC LIMIT 100').all(userId);
+    return res.json({ requests: rows });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/dm/requests  — send a message request to a user who hasn't accepted DMs from you
+app.post('/api/dm/requests', requireAuth, function(req, res) {
+  try {
+    var userId = req.user.id;
+    var toUser = String(req.body.toUser || '').trim().slice(0, 64);
+    var body   = String(req.body.body   || '').trim().slice(0, 500);
+    if (!toUser || !body) return res.status(400).json({ error: 'Missing toUser or body' });
+    if (toUser === userId) return res.status(400).json({ error: 'Cannot message yourself' });
+    // honour blocks
+    var blocked = db.prepare('SELECT 1 FROM user_blocks WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)').get(userId, toUser, toUser, userId);
+    if (blocked) return res.status(403).json({ error: 'Blocked' });
+    var privacy = (db.prepare('SELECT dm_privacy FROM user_profiles WHERE user_id = ?').get(toUser) || {}).dm_privacy || 'everyone';
+    var existingThread = db.prepare('SELECT 1 FROM dm_threads WHERE (user_a = ? AND user_b = ?) OR (user_a = ? AND user_b = ?)').get(userId, toUser, toUser, userId);
+    if (existingThread) return res.status(400).json({ error: 'Thread already exists' });
+    if (privacy === 'nobody') return res.status(403).json({ error: 'User does not accept DMs' });
+    if (privacy === 'everyone') {
+      // create thread directly
+      var threadId = uuidv4();
+      var now = Math.floor(Date.now() / 1000);
+      var ua = userId < toUser ? userId : toUser;
+      var ub = userId < toUser ? toUser : userId;
+      db.prepare('INSERT OR IGNORE INTO dm_threads (id, user_a, user_b, created_at) VALUES (?, ?, ?, ?)').run(threadId, ua, ub, now);
+      var msgId = uuidv4();
+      db.prepare('INSERT INTO dm_messages (id, thread_id, sender_id, body, type, created_at) VALUES (?, ?, ?, ?, \'text\', ?)').run(msgId, threadId, userId, body, now);
+      return res.json({ success: true, threadId: threadId });
+    }
+    // privacy === 'requests'
+    db.prepare('INSERT OR REPLACE INTO dm_requests (id, from_user, to_user, body, status, created_at) VALUES (?, ?, ?, ?, \'pending\', ?)').run(uuidv4(), userId, toUser, body, Math.floor(Date.now() / 1000));
+    return res.json({ success: true, requested: true });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/dm/requests/:id/accept
+app.post('/api/dm/requests/:id/accept', requireAuth, function(req, res) {
+  try {
+    var userId = req.user.id;
+    var reqId  = String(req.params.id || '').trim();
+    var row    = db.prepare('SELECT * FROM dm_requests WHERE id = ? AND to_user = ?').get(reqId, userId);
+    if (!row) return res.status(404).json({ error: 'Not found' });
+    db.prepare('UPDATE dm_requests SET status = \'accepted\' WHERE id = ?').run(reqId);
+    var now = Math.floor(Date.now() / 1000);
+    var ua  = row.from_user < userId ? row.from_user : userId;
+    var ub  = row.from_user < userId ? userId : row.from_user;
+    var threadId = uuidv4();
+    db.prepare('INSERT OR IGNORE INTO dm_threads (id, user_a, user_b, created_at) VALUES (?, ?, ?, ?)').run(threadId, ua, ub, now);
+    var thread = db.prepare('SELECT * FROM dm_threads WHERE (user_a = ? AND user_b = ?) OR (user_a = ? AND user_b = ?)').get(ua, ub, ub, ua);
+    var msgId = uuidv4();
+    db.prepare('INSERT INTO dm_messages (id, thread_id, sender_id, body, type, created_at) VALUES (?, ?, ?, ?, \'text\', ?)').run(msgId, thread.id, row.from_user, row.body, now);
+    return res.json({ success: true, threadId: thread.id });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/dm/requests/:id/decline
+app.post('/api/dm/requests/:id/decline', requireAuth, function(req, res) {
+  try {
+    var userId = req.user.id;
+    var reqId  = String(req.params.id || '').trim();
+    var row    = db.prepare('SELECT * FROM dm_requests WHERE id = ? AND to_user = ?').get(reqId, userId);
+    if (!row) return res.status(404).json({ error: 'Not found' });
+    db.prepare('UPDATE dm_requests SET status = \'declined\' WHERE id = ?').run(reqId);
+    return res.json({ success: true });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// GET /api/dm/threads  — list my DM threads
+app.get('/api/dm/threads', requireAuth, function(req, res) {
+  try {
+    var userId = req.user.id;
+    var rows = db.prepare('SELECT * FROM dm_threads WHERE user_a = ? OR user_b = ? ORDER BY created_at DESC LIMIT 100').all(userId, userId);
+    return res.json({ threads: rows });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// GET /api/dm/threads/:threadId/messages
+app.get('/api/dm/threads/:threadId/messages', requireAuth, function(req, res) {
+  try {
+    var userId   = req.user.id;
+    var threadId = String(req.params.threadId || '').trim();
+    var thread   = db.prepare('SELECT * FROM dm_threads WHERE id = ? AND (user_a = ? OR user_b = ?)').get(threadId, userId, userId);
+    if (!thread) return res.status(403).json({ error: 'Forbidden' });
+    var msgs = db.prepare('SELECT * FROM dm_messages WHERE thread_id = ? ORDER BY created_at ASC LIMIT 500').all(threadId);
+    return res.json({ messages: msgs });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/dm/threads/:threadId/messages  — send a message in an existing thread
+app.post('/api/dm/threads/:threadId/messages', requireAuth, function(req, res) {
+  try {
+    var userId   = req.user.id;
+    var threadId = String(req.params.threadId || '').trim();
+    var body     = String(req.body.body || '').trim().slice(0, 2000);
+    if (!body) return res.status(400).json({ error: 'Empty message' });
+    var thread   = db.prepare('SELECT * FROM dm_threads WHERE id = ? AND (user_a = ? OR user_b = ?)').get(threadId, userId, userId);
+    if (!thread) return res.status(403).json({ error: 'Forbidden' });
+    var otherId  = thread.user_a === userId ? thread.user_b : thread.user_a;
+    var blocked  = db.prepare('SELECT 1 FROM user_blocks WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)').get(userId, otherId, otherId, userId);
+    if (blocked) return res.status(403).json({ error: 'Blocked' });
+    var msgId = uuidv4();
+    var now   = Math.floor(Date.now() / 1000);
+    db.prepare('INSERT INTO dm_messages (id, thread_id, sender_id, body, type, created_at) VALUES (?, ?, ?, ?, \'text\', ?)').run(msgId, threadId, userId, body, now);
+    return res.json({ success: true, id: msgId });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// GET /api/dm/privacy  — get my DM privacy setting
+app.get('/api/dm/privacy', requireAuth, function(req, res) {
+  try {
+    var row = db.prepare('SELECT dm_privacy FROM user_profiles WHERE user_id = ?').get(req.user.id);
+    return res.json({ privacy: (row && row.dm_privacy) || 'everyone' });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/dm/privacy  — update my DM privacy setting
+app.post('/api/dm/privacy', requireAuth, function(req, res) {
+  try {
+    var userId  = req.user.id;
+    var privacy = String(req.body.privacy || '').trim();
+    if (!['everyone', 'requests', 'nobody'].includes(privacy)) return res.status(400).json({ error: 'Invalid privacy value' });
+    db.prepare('INSERT INTO user_profiles (user_id, dm_privacy) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET dm_privacy = excluded.dm_privacy').run(userId, privacy);
+    return res.json({ success: true });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
 });
 
 // GET /api/schedule
