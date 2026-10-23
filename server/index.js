@@ -4189,14 +4189,29 @@ io.on('connection', function(socket) {
     var _cNow = Date.now();
     if (_cNow - (collabThrottle.get(socket.data.userId) || 0) < 2000) return;
     collabThrottle.set(socket.data.userId, _cNow);
-    io.to(roomId).emit('collab-request', {
+    var payload = {
       from:    fromUser,
       to:      (data.toCreator || '').slice(0, 80),
       type:    (data.type || 'LIVE COLLAB').slice(0, 40),
       message: (data.message || '').slice(0, 300),
       split:   (data.split || '50/50').slice(0, 10),
       ts:      Math.floor(Date.now() / 1000)
-    });
+    };
+    // Send only to the target creator by username to avoid broadcasting to all viewers
+    var targetName = payload.to.toLowerCase();
+    var targetFound = false;
+    if (targetName) {
+      io.sockets.sockets.forEach(function(s) {
+        if (s.data.roomId === roomId && (s.data.username || '').toLowerCase() === targetName) {
+          s.emit('collab-request', payload);
+          targetFound = true;
+        }
+      });
+    }
+    // Fall back to room-wide broadcast only when no specific target named
+    if (!targetFound && !targetName) io.to(roomId).emit('collab-request', payload);
+    // Always echo to sender so they see their own outgoing request
+    socket.emit('collab-request', Object.assign({}, payload, { _echo: true }));
   });
 
   socket.on('collab-accept', function(data) {
@@ -4204,12 +4219,25 @@ io.on('connection', function(socket) {
     var roomId   = socket.data.roomId;
     var fromUser = socket.data.username || 'Host';
     if (!roomId) return;
-    io.to(roomId).emit('collab-accept', {
+    var payload = {
       from:      fromUser,
       collabId:  String(data.collabId || '').slice(0, 80),
       partner:   (data.partner || '').slice(0, 80),
       ts:        Math.floor(Date.now() / 1000)
-    });
+    };
+    // Scope to the original requester; fall back to room if partner not found
+    var partnerName = payload.partner.toLowerCase();
+    var found = false;
+    if (partnerName) {
+      io.sockets.sockets.forEach(function(s) {
+        if (s.data.roomId === roomId && (s.data.username || '').toLowerCase() === partnerName) {
+          s.emit('collab-accept', payload);
+          found = true;
+        }
+      });
+    }
+    if (!found) io.to(roomId).emit('collab-accept', payload);
+    socket.emit('collab-accept', payload);
   });
 
   socket.on('collab-message', function(data) {
@@ -4217,12 +4245,25 @@ io.on('connection', function(socket) {
     var roomId   = socket.data.roomId;
     var fromUser = socket.data.username || 'Host';
     if (!roomId) return;
-    io.to(roomId).emit('collab-message', {
+    var payload = {
       collabId: String(data.collabId || '').slice(0, 80),
       from:     fromUser,
       text:     (data.text || '').slice(0, 500),
       ts:       Math.floor(Date.now() / 1000)
-    });
+    };
+    // Scope to the collab partner by username; fall back to room if not found
+    var partnerName = (data.toCreator || '').slice(0, 80).toLowerCase();
+    var found = false;
+    if (partnerName) {
+      io.sockets.sockets.forEach(function(s) {
+        if (s.data.roomId === roomId && (s.data.username || '').toLowerCase() === partnerName) {
+          s.emit('collab-message', payload);
+          found = true;
+        }
+      });
+    }
+    if (!found) io.to(roomId).emit('collab-message', payload);
+    socket.emit('collab-message', payload);
   });
 
   socket.on('portal-share', function(data) {
