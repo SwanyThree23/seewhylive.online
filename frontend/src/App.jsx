@@ -80,6 +80,7 @@ var AdminDashboard     = React.lazy(function() { return import('./components/Adm
 var ReferralTab        = React.lazy(function() { return import('./components/ReferralTab.jsx'); });
 var BlocksTab          = React.lazy(function() { return import('./components/BlocksTab.jsx'); });
 var DMTab              = React.lazy(function() { return import('./components/DMTab.jsx'); });
+var ScheduledRoomsTab  = React.lazy(function() { return import('./components/ScheduledRoomsTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -142,6 +143,7 @@ var TABS = [
   { id: 'referral',  label: '🔗 REFERRAL' },
   { id: 'blocks',    label: '🚫 BLOCKS' },
   { id: 'dms',       label: '💬 DMS' },
+  { id: 'upcoming',  label: '📅 UPCOMING' },
 ];
 
 function CountdownClock({ targetTs }) {
@@ -1626,6 +1628,9 @@ export default function App() {
         )}
         {activeTab === 'dms' && (
           <DMTab addToast={addToast} />
+        )}
+        {activeTab === 'upcoming' && (
+          <ScheduledRoomsTab addToast={addToast} />
         )}
         {activeTab === 'keys' && (
           <StreamKeysTab

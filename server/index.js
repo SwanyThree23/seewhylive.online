@@ -1345,6 +1345,59 @@ app.delete('/api/schedule/:id', requireAuth, function(req, res) {
 });
 
 
+// ── Scheduled Rooms — RSVP ─────────────────────────────────────────────────
+// Ensure RSVP table exists (safe to run repeatedly)
+try {
+  db.exec(`CREATE TABLE IF NOT EXISTS schedule_rsvps (
+    schedule_id TEXT NOT NULL,
+    user_id     TEXT NOT NULL,
+    created_at  INTEGER NOT NULL,
+    PRIMARY KEY (schedule_id, user_id)
+  )`);
+} catch(_) {}
+
+// POST /api/schedule/:id/rsvp  — RSVP to an event
+app.post('/api/schedule/:id/rsvp', requireAuth, function(req, res) {
+  var id = String(req.params.id || '').trim();
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({ error: 'invalid id' });
+  try {
+    var ev = db.prepare('SELECT id FROM schedules WHERE id = ?').get(id);
+    if (!ev) return res.status(404).json({ error: 'Event not found' });
+    db.prepare('INSERT OR IGNORE INTO schedule_rsvps (schedule_id, user_id, created_at) VALUES (?, ?, ?)').run(id, req.user.id, Math.floor(Date.now() / 1000));
+    return res.json({ success: true });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// DELETE /api/schedule/:id/rsvp  — cancel RSVP
+app.delete('/api/schedule/:id/rsvp', requireAuth, function(req, res) {
+  var id = String(req.params.id || '').trim();
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({ error: 'invalid id' });
+  try {
+    db.prepare('DELETE FROM schedule_rsvps WHERE schedule_id = ? AND user_id = ?').run(id, req.user.id);
+    return res.json({ success: true });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// GET /api/schedule/public  — public event list (no auth) with RSVP counts
+app.get('/api/schedule/public', function(req, res) {
+  try {
+    db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL, recurring TEXT, creator_id TEXT)');
+    var rows = db.prepare('SELECT s.*, (SELECT COUNT(*) FROM schedule_rsvps r WHERE r.schedule_id = s.id) as rsvp_count FROM schedules s WHERE s.scheduled_at > ? ORDER BY s.scheduled_at ASC LIMIT 50').all(Math.floor(Date.now() / 1000));
+    return res.json({ events: rows });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// GET /api/schedule/:id/rsvps  — list RSVP'd users (host only)
+app.get('/api/schedule/:id/rsvps', requireAuth, function(req, res) {
+  var id = String(req.params.id || '').trim();
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({ error: 'invalid id' });
+  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  try {
+    var rows = db.prepare('SELECT user_id, created_at FROM schedule_rsvps WHERE schedule_id = ? ORDER BY created_at ASC LIMIT 500').all(id);
+    return res.json({ rsvps: rows, count: rows.length });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
 // POST /api/push/unsubscribe
 app.post('/api/push/unsubscribe', requireAuth, function(req, res) {
   var endpoint = String(req.body.endpoint || '').slice(0, 2000);
@@ -4349,6 +4402,32 @@ io.on('connection', function(socket) {
           }
         }
       } catch (_refErr) { logger.warn('[go-live] referral track: ' + _refErr.message); }
+    }
+
+    // Send RSVP notifications to users who RSVPd to an upcoming event for this host (within 15 min)
+    if (!wasAlreadyLive) {
+      try {
+        var _rsvpNow = Math.floor(Date.now() / 1000);
+        var _rsvpWindow = _rsvpNow + 900; // 15 minutes ahead
+        var _upcomingEvt = db.prepare('SELECT id, title FROM schedules WHERE creator_id = ? AND scheduled_at BETWEEN ? AND ? LIMIT 1').get(socket.data.userId, _rsvpNow - 300, _rsvpWindow);
+        if (_upcomingEvt) {
+          var _rsvpUsers = db.prepare('SELECT user_id FROM schedule_rsvps WHERE schedule_id = ? LIMIT 2000').all(_upcomingEvt.id);
+          var _rsvpTitle = _upcomingEvt.title || 'SeeWhy LIVE';
+          _rsvpUsers.forEach(function(_rsvpUser) {
+            io.to('user:' + _rsvpUser.user_id).emit('notification', { type: 'live_start', message: '🔴 ' + _rsvpTitle + ' is now LIVE! Tap to join.', scheduleId: _upcomingEvt.id, ts: Date.now() });
+          });
+          if (webpush) {
+            _rsvpUsers.forEach(function(_rsvpUser) {
+              var _rsvpSubs = db.prepare('SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = ? LIMIT 5').all(_rsvpUser.user_id);
+              _rsvpSubs.forEach(function(_rsvpSub) {
+                if (!_rsvpSub.endpoint) return;
+                var _sub = { endpoint: _rsvpSub.endpoint, keys: { p256dh: _rsvpSub.p256dh, auth: _rsvpSub.auth } };
+                webpush.sendNotification(_sub, JSON.stringify({ title: _rsvpTitle + ' is LIVE!', body: 'Your scheduled event is starting now', url: '/' })).catch(function() {});
+              });
+            });
+          }
+        }
+      } catch(_rsvpErr) { logger.warn('[go-live] rsvp notify: ' + _rsvpErr.message); }
     }
 
     // Send push notifications to all subscribers (once per go-live, not on replay)
