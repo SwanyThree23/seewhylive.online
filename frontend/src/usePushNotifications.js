@@ -20,6 +20,26 @@ export function usePushNotifications() {
     return Notification.permission;
   }
 
+  var _getDeviceId = function() {
+    var id = null;
+    try { id = localStorage.getItem('sw_device_id'); } catch(e) {}
+    if (!id) {
+      id = 'dev_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now();
+      try { localStorage.setItem('sw_device_id', id); } catch(e) {}
+    }
+    return id;
+  }
+
+  var _getDeviceName = function() {
+    var ua = navigator.userAgent || '';
+    var type = ua.indexOf('Mobile') !== -1 ? 'Mobile' : 'Desktop';
+    var browser = ua.indexOf('Chrome') !== -1 ? 'Chrome'
+      : ua.indexOf('Firefox') !== -1 ? 'Firefox'
+      : ua.indexOf('Safari') !== -1 ? 'Safari'
+      : 'Browser';
+    return type + ' ' + browser;
+  }
+
   var subscribe = function(username, onSuccess, onError) {
     if (!supported) { if (onError) onError('Push not supported'); return; }
     Notification.requestPermission().then(function(permission) {
@@ -33,7 +53,12 @@ export function usePushNotifications() {
           fetch('/api/push/subscribe', {
             method: 'POST',
             headers: Object.assign({ 'Content-Type': 'application/json' }, _pushTok ? { 'Authorization': 'Bearer ' + _pushTok } : {}),
-            body: JSON.stringify({ subscription: sub.toJSON(), username: username }),
+            body: JSON.stringify({
+              subscription: sub.toJSON(),
+              username: username,
+              deviceId: _getDeviceId(),
+              deviceName: _getDeviceName(),
+            }),
           }).then(function(r) { return r.json(); })
             .then(function() { if (onSuccess) onSuccess(sub); })
             .catch(function(e) { if (onError) onError(e); });
