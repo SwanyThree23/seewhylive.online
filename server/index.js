@@ -870,13 +870,14 @@ function checkHostAlerts(roomId, viewerCount) {
 function getRoom(roomId) {
   if (!rooms.has(roomId)) {
     rooms.set(roomId, {
-      viewers:      new Set(),
-      guests:       new Map(),
-      hostSocketId: null,
-      hostUserId:   null,
-      watchParty:   null,
-      presence:     new Map(),
-      userSockets:  new Map()   // userId → Set<socketId> — multi-device tracking
+      viewers:       new Set(),
+      guests:        new Map(),
+      hostSocketId:  null,       // primary (control) host socket
+      hostSocketIds: new Set(),  // all currently-connected host sockets
+      hostUserId:    null,
+      watchParty:    null,
+      presence:      new Map(),
+      userSockets:   new Map()   // userId → Set<socketId> — multi-device tracking
     });
   }
   return rooms.get(roomId);
@@ -2118,7 +2119,10 @@ io.on('connection', function(socket) {
       room.guests.set(socket.id, { guestId: guestId, username: username, role: role });
       addUserSocket(room, guestId, socket.id);
       if (role === 'host') {
-        room.hostSocketId = socket.id;
+        if (!room.hostSocketIds) room.hostSocketIds = new Set();
+        room.hostSocketIds.add(socket.id);
+        // Primary socket = first to join (or re-elected after primary disconnects)
+        if (!room.hostSocketId) room.hostSocketId = socket.id;
         room.hostUserId   = guestId;
         // DB INSERT already handled in the transaction above.
       }
@@ -5022,7 +5026,11 @@ io.on('connection', function(socket) {
     }
 
     var room = rooms.get(roomId);
-    if (!room || room.hostSocketId !== socket.id) {
+    var _isHostSocket = room && (
+      room.hostSocketId === socket.id ||
+      (room.hostSocketIds && room.hostSocketIds.has(socket.id))
+    );
+    if (!room || !_isHostSocket) {
       if (ack) ack({ error: 'Only the host can end the broadcast' });
       return;
     }
@@ -5110,6 +5118,50 @@ io.on('connection', function(socket) {
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
+  });
+
+  // ── host:set-primary ───────────────────────────────────────────────────
+  // Let a host device explicitly claim the "primary" (control) role so that
+  // go-live / end-broadcast operations are routed to the intended device.
+  socket.on('host:set-primary', function() {
+    if (socket.data.role !== 'host') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var room = rooms.get(roomId);
+    if (!room) return;
+    if (!room.hostSocketIds || !room.hostSocketIds.has(socket.id)) return;
+    room.hostSocketId = socket.id;
+    io.to(roomId).emit('host:primary-changed', { socketId: socket.id });
+  });
+
+  // ── user:request-state / user:respond-state ────────────────────────────
+  // A newly connected device asks its siblings for the current app state
+  // (active tab, room membership). Any sibling that has state responds
+  // directly to the requesting socket.
+  socket.on('user:request-state', function() {
+    var userId = socket.data.userId;
+    if (!userId || String(userId).startsWith('anon')) return;
+    socket.to('user:' + userId).emit('user-sync', {
+      event: 'state_requested',
+      requestingSocketId: socket.id
+    });
+  });
+
+  socket.on('user:respond-state', function(data) {
+    if (!data || !data.targetSocketId) return;
+    var userId = socket.data.userId;
+    if (!userId) return;
+    // Verify the target socket belongs to the same user (security: no cross-user routing)
+    var roomId = socket.data.roomId;
+    var room = roomId ? rooms.get(roomId) : null;
+    var userSockets = room ? room.userSockets.get(userId) : null;
+    if (!userSockets || !userSockets.has(data.targetSocketId)) return;
+    io.to(data.targetSocketId).emit('user-sync', {
+      event: 'state_response',
+      roomId: roomId || null,
+      role: socket.data.role || 'viewer',
+      tab: (data.tab && typeof data.tab === 'string') ? data.tab.slice(0, 32) : null
+    });
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
@@ -5534,14 +5586,43 @@ io.on('connection', function(socket) {
 
     // Notify other devices of this user that one device left
     if (_dcUserId && !String(_dcUserId).startsWith('anon')) {
-      io.to('user:' + _dcUserId).emit('user-sync', { event: 'device_left', roomId: roomId, socketId: socket.id, isLast: _isLastDevice });
+      var _remainingDevices = (room.userSockets && room.userSockets.get(_dcUserId)) ? room.userSockets.get(_dcUserId).size : 0;
+      io.to('user:' + _dcUserId).emit('user-sync', { event: 'device_left', roomId: roomId, socketId: socket.id, isLast: _isLastDevice, remainingDevices: _remainingDevices });
     }
 
     room.presence.delete(socket.id);
 
-    if (room.hostSocketId === socket.id) {
+    // Update host-socket tracking for multi-device host support
+    if (room.hostSocketIds) {
+      room.hostSocketIds.delete(socket.id);
+      // Re-elect primary when the primary device disconnects
+      if (room.hostSocketId === socket.id) {
+        var _nextHost = room.hostSocketIds.size > 0 ? room.hostSocketIds.values().next().value : null;
+        room.hostSocketId = _nextHost;
+        // Notify room of the new primary device (or null if all host devices left)
+        if (_nextHost) {
+          io.to(roomId).emit('host:primary-changed', { socketId: _nextHost });
+        }
+      }
+      // Only emit host-disconnected when ALL host devices have left
+      if (room.hostSocketIds.size === 0) {
+        room.hostSocketId = null;
+        // Pause the watch party if all host devices disconnect
+        if (room.watchParty && room.watchParty.playing) {
+          var elapsed = (Date.now() - room.watchParty.ts) / 1000;
+          room.watchParty.position += elapsed;
+          room.watchParty.playing = false;
+          room.watchParty.ts = Date.now();
+          io.to(roomId).emit('watch-party-pause', { position: room.watchParty.position, reason: 'host_disconnected' });
+        }
+        // Clear screen share indicator
+        io.to(roomId).emit('screen-share-ended', {});
+        // Notify room that host fully disconnected
+        io.to(roomId).emit('host-disconnected', { ts: Math.floor(Date.now() / 1000) });
+      }
+    } else if (room.hostSocketId === socket.id) {
+      // Fallback for rooms created before hostSocketIds was added
       room.hostSocketId = null;
-      // Pause the watch party if host disconnects
       if (room.watchParty && room.watchParty.playing) {
         var elapsed = (Date.now() - room.watchParty.ts) / 1000;
         room.watchParty.position += elapsed;
@@ -5549,22 +5630,18 @@ io.on('connection', function(socket) {
         room.watchParty.ts = Date.now();
         io.to(roomId).emit('watch-party-pause', { position: room.watchParty.position, reason: 'host_disconnected' });
       }
-      // Clear screen share indicator if host was sharing
       io.to(roomId).emit('screen-share-ended', {});
-      // Notify room that host disconnected
       io.to(roomId).emit('host-disconnected', { ts: Math.floor(Date.now() / 1000) });
     }
 
-    // Close any producers from this socket (scan by guestId)
-    var guestId = socket.data.guestId;
-    if (guestId) {
-      var roomProducers = mediasoup.getRoomProducers(roomId);
-      for (var i = 0; i < roomProducers.length; i++) {
-        if (roomProducers[i].guestId === guestId) {
-          mediasoup.closeProducer(roomProducers[i].producerId);
-          io.to(roomId).emit('producer-closed', { producerId: roomProducers[i].producerId });
-        }
-      }
+    // Close only this socket's producers (per-socket ownedProducerIds list).
+    // Do NOT scan by guestId — that would close producers from other devices of
+    // the same user, killing a multi-device stream when one device disconnects.
+    if (socket.data.ownedProducerIds) {
+      socket.data.ownedProducerIds.forEach(function(producerId) {
+        mediasoup.closeProducer(producerId);
+        io.to(roomId).emit('producer-closed', { producerId: producerId });
+      });
     }
 
     var viewerCount = getViewerCount(room);

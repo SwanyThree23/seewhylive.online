@@ -374,6 +374,7 @@ export default function App() {
   var [editingName,   setEditingName]   = useState(false);
   var [nameEditVal,   setNameEditVal]   = useState('');
   var [role, setRole] = useState(function() { return localStorage.getItem('sw_role') || 'viewer'; });
+  var [syncRejoinBanner, setSyncRejoinBanner] = useState(null); // { roomId, role, tab } from another device
 
   var handleGoLive = function() {
     var newRole = 'host';
@@ -428,9 +429,10 @@ export default function App() {
   var [gifts, setGifts] = useState([]);
   var [giftPayIntent, setGiftPayIntent] = useState(null); // { clientSecret, paymentIntentId } | null
 
-  var socketRef    = useRef(null);
-  var roleRef      = useRef(role);
-  var usernameRef  = useRef(username);
+  var socketRef      = useRef(null);
+  var roleRef        = useRef(role);
+  var usernameRef    = useRef(username);
+  var activeTabRef   = useRef(activeTab);
   var uptimeRef = useRef(null);
   var liveStartRef = useRef(null);
   var peakViewerRef = useRef(0);
@@ -564,6 +566,7 @@ export default function App() {
   // re-register all 60+ listeners on every role or username change).
   roleRef.current     = role;
   usernameRef.current = username;
+  activeTabRef.current = activeTab;
 
   useEffect(function() {
     var token = localStorage.getItem('sw_token') || '';
@@ -580,6 +583,8 @@ export default function App() {
     var onConnect = function() {
       setConnected(true);
       socket.emit('join-room', joinPayload);
+      // Ask other devices of this user to share their current state
+      socket.emit('user:request-state');
     };
     var onDisconnect = function() {
       setConnected(false);
@@ -949,9 +954,23 @@ export default function App() {
         if (data.deviceCount && data.deviceCount > 1) {
           addToast('📱 You joined this room on another device (' + data.deviceCount + ' connections)', 'info');
         }
+      } else if (data.event === 'device_left') {
+        if (data.remainingDevices > 0) {
+          addToast('📵 A device disconnected (' + data.remainingDevices + ' still connected)', 'info');
+        }
       } else if (data.event === 'role_changed' && data.role) {
         setRole(data.role);
         addToast('Your role was updated to ' + data.role, 'info');
+      } else if (data.event === 'state_requested' && data.requestingSocketId) {
+        // Another device of ours just connected — share our current state
+        socket.emit('user:respond-state', {
+          targetSocketId: data.requestingSocketId,
+          tab: activeTabRef.current,
+          roomId: APP_ID
+        });
+      } else if (data.event === 'state_response' && data.roomId) {
+        // Another device told us it's in a room — offer to sync
+        setSyncRejoinBanner({ roomId: data.roomId, role: data.role || 'viewer', tab: data.tab || 'room' });
       }
     });
 
@@ -2083,6 +2102,24 @@ export default function App() {
               CLOSE RECAP
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Cross-device rejoin banner */}
+      {syncRejoinBanner && (
+        <div style={{ position: 'fixed', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, background: '#1a1a2e', border: '1px solid #C9A84C', borderRadius: 8, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.5)', maxWidth: 340, width: '90vw' }}>
+          <span style={{ color: '#F0E8D4', fontSize: 13, flex: 1 }}>
+            📱 Another device is live as <strong style={{ color: '#C9A84C' }}>{syncRejoinBanner.role}</strong>. Switch to that tab?
+          </span>
+          <button
+            onClick={function() { setActiveTab(syncRejoinBanner.tab || 'room'); setSyncRejoinBanner(null); }}
+            style={{ background: '#C9A84C', color: '#0E0C09', border: 'none', borderRadius: 5, padding: '5px 12px', fontWeight: 700, cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }}
+          >Switch</button>
+          <button
+            onClick={function() { setSyncRejoinBanner(null); }}
+            aria-label="Dismiss cross-device sync banner"
+            style={{ background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', fontSize: 16, padding: '0 4px', lineHeight: 1 }}
+          >×</button>
         </div>
       )}
 
