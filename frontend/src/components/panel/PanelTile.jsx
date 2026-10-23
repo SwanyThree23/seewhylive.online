@@ -16,6 +16,7 @@ export default function PanelTile({
   role, isScreenSharing,
   isSpotlighted, onSpotlight,
   onExpand,
+  isSwapSource, onSwap,
 }) {
   var { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
   var videoRef = useRef(null);
@@ -279,6 +280,20 @@ export default function PanelTile({
             {is_muted ? '🔇' : '🎤'}
           </button>
         )}
+        {onSwap && (
+          <button
+            onClick={onSwap}
+            style={{
+              background: isSwapSource ? GOLD : 'rgba(0,0,0,0.75)',
+              border: isSwapSource ? ('1px solid ' + GOLD) : 'none',
+              borderRadius: 4, padding: '3px 6px', fontSize: 10,
+              color: isSwapSource ? '#111' : CREAM, cursor: 'pointer',
+            }}
+            title={isSwapSource ? 'Cancel swap' : 'Swap slot position'}
+          >
+            ⇄
+          </button>
+        )}
         <button
           onClick={onKick}
           style={{
@@ -314,11 +329,13 @@ export default function PanelTile({
         background: BG,
         borderRadius: 8,
         overflow: 'hidden',
-        border: effectiveSpeaking
+        border: isSwapSource
           ? ('2px solid ' + GOLD)
-          : slot_index === 0
+          : effectiveSpeaking
             ? ('2px solid ' + GOLD)
-            : '1px solid #333',
+            : slot_index === 0
+              ? ('2px solid ' + GOLD)
+              : '1px solid #333',
         animation: effectiveSpeaking ? 'panelSpeakPulse 1.4s ease-in-out infinite' : 'none',
         transition: 'border-color 0.2s, box-shadow 0.2s',
         cursor: 'pointer',
