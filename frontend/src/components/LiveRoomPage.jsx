@@ -10,6 +10,7 @@ import PollOverlay from './PollOverlay.jsx';
 import AudioOnlyToggle from './panel/AudioOnlyToggle.jsx';
 import JoinRequestQueue from './panel/JoinRequestQueue.jsx';
 import GiftLayer from './GiftLayer.jsx';
+import PowerPlayPanel from './PowerPlayPanel.jsx';
 import GoldenWallPanel from './GoldenWallPanel.jsx';
 import GlobalMicButtonV49 from './streaming/GlobalMicButtonV49.jsx';
 import ShareSheet from './share/ShareSheet.jsx';
@@ -411,6 +412,10 @@ export default function LiveRoomPage({
   var [giftCount,          setGiftCount]          = useState(0);
   var [superChatCount,     setSuperChatCount]     = useState(0);
   var [guestGiftTotals,    setGuestGiftTotals]    = useState({});  // { [guestId]: totalCents }
+  var [panelEffects,       setPanelEffects]       = useState({});  // { [guestId]: { id, playType, expiresAt } }
+  var [showPowerPlay,      setShowPowerPlay]       = useState(null); // target guest object
+  var [pendingPPId,        setPendingPPId]         = useState(null); // playId awaiting host approval
+  var [hostPendingPlays,   setHostPendingPlays]    = useState([]); // [{playId, playType, emoji, name, fromUser, targetGuestId, valueCents}]
   var [streamStats,        setStreamStats]        = useState(null); // { bitratekbps, rttMs, lossPct }
   var [theaterMode,        setTheaterMode]        = useState(false);
   var [theaterChatVisible, setTheaterChatVisible] = useState(true);
@@ -628,6 +633,44 @@ export default function LiveRoomPage({
           return next;
         });
       }
+    });
+
+    socket.on('power-play', function(pp) {
+      if (!pp || !pp.targetGuestId) return;
+      var ppId = pp.id || String(Date.now());
+      setPanelEffects(function(prev) {
+        var next = Object.assign({}, prev);
+        next[pp.targetGuestId] = { id: ppId, playType: pp.playType, durMs: pp.durMs || 4000 };
+        return next;
+      });
+      if (pp.durMs > 0) {
+        setTimeout(function() {
+          setPanelEffects(function(prev) {
+            if (!prev[pp.targetGuestId] || prev[pp.targetGuestId].id !== ppId) return prev;
+            var next = Object.assign({}, prev);
+            delete next[pp.targetGuestId];
+            return next;
+          });
+        }, pp.durMs);
+      }
+    });
+
+    socket.on('power-play:pending', function(pp) {
+      if (!pp) return;
+      setHostPendingPlays(function(prev) { return prev.concat([pp]); });
+    });
+
+    socket.on('power-play:awaiting', function(pp) {
+      if (pp && pp.playId) setPendingPPId(pp.playId);
+    });
+
+    socket.on('power-play:approved', function(pp) {
+      setPendingPPId(null);
+    });
+
+    socket.on('power-play:rejected', function(pp) {
+      setPendingPPId(null);
+      if (addToastRef.current) addToastRef.current('Power Play was declined', 'error');
     });
 
     socket.on('merch-order-received', function(order) {
@@ -936,6 +979,11 @@ export default function LiveRoomPage({
       socket.off('react-burst');
       socket.off('gift-received');
       socket.off('merch-order-received');
+      socket.off('power-play');
+      socket.off('power-play:pending');
+      socket.off('power-play:awaiting');
+      socket.off('power-play:approved');
+      socket.off('power-play:rejected');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
@@ -1727,6 +1775,8 @@ export default function LiveRoomPage({
                             onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; } : null}
                             handRaised={isHand}
                             giftTotal={guestGiftTotals[gid] || 0}
+                            activeEffect={panelEffects[gid] || null}
+                            onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                           />
                         )}
                       </div>
@@ -1866,6 +1916,8 @@ export default function LiveRoomPage({
                                 onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; } : null}
                                 handRaised={isHand}
                                 giftTotal={guestGiftTotals[gid] || 0}
+                                activeEffect={panelEffects[gid] || null}
+                                onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                               />
                             )}
                           </div>
@@ -1940,6 +1992,7 @@ export default function LiveRoomPage({
                     onMuteToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleMute : null}
                     onCamToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleCam : null}
                     giftTotal={guestGiftTotals[featuredGuest.guestId || featuredGuest.userId] || 0}
+                    activeEffect={panelEffects[featuredGuest.guestId || featuredGuest.userId] || null}
                   />
                   <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGuest.guestId || featuredGuest.userId} />
                 </div>
@@ -1987,6 +2040,8 @@ export default function LiveRoomPage({
                           onMuteToggle={null}
                           onCamToggle={null}
                           giftTotal={guestGiftTotals[gid] || 0}
+                          activeEffect={panelEffects[gid] || null}
+                          onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                         />
                         <div style={{ padding: '3px 5px 5px' }}>
                           <span style={{ fontSize: 10, color: MUTED, fontWeight: 500, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -2190,6 +2245,44 @@ export default function LiveRoomPage({
       })}
 
       <GiftLayer giftFloats={tipFeed} />
+
+      {/* ════════════════ POWER PLAY PANEL ════════════════ */}
+      {showPowerPlay && (
+        <PowerPlayPanel
+          targetGuest={showPowerPlay}
+          pendingPlayId={pendingPPId}
+          onClose={function() { setShowPowerPlay(null); }}
+          onSend={function(payload) {
+            if (socket) socket.emit('send-gift', payload);
+            setShowPowerPlay(null);
+          }}
+        />
+      )}
+
+      {/* ════════════════ HOST POWER PLAY APPROVAL ════════════════ */}
+      {role === 'host' && hostPendingPlays.length > 0 && (
+        <div style={{ position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 1100, display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 340, width: '92vw' }}>
+          {hostPendingPlays.map(function(pp) {
+            return (
+              <div key={pp.playId} style={{ background: '#1A1510', border: '1px solid rgba(201,168,76,.4)', borderRadius: 12, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 24 }}>{pp.emoji}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4' }}>{pp.fromUser} → {pp.name}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>target: {pp.targetGuestId}</div>
+                </div>
+                <button onClick={function() {
+                  if (socket) socket.emit('power-play:approve', { playId: pp.playId });
+                  setHostPendingPlays(function(prev) { return prev.filter(function(p) { return p.playId !== pp.playId; }); });
+                }} style={{ background: 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 8, padding: '4px 10px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>✓</button>
+                <button onClick={function() {
+                  if (socket) socket.emit('power-play:reject', { playId: pp.playId });
+                  setHostPendingPlays(function(prev) { return prev.filter(function(p) { return p.playId !== pp.playId; }); });
+                }} style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 8, padding: '4px 10px', color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>✕</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* ════════════════ AUDIO-ONLY BANNER ════════════════ */}
       {audioOnly && (
@@ -3409,6 +3502,8 @@ export default function LiveRoomPage({
                     onMuteToggle={isOwn ? toggleMute : null}
                     onCamToggle={isOwn ? toggleCam : null}
                     giftTotal={guestGiftTotals[gid] || 0}
+                    activeEffect={panelEffects[gid] || null}
+                    onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                   />
                 </div>
               )}
