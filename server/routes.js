@@ -1189,6 +1189,26 @@ router.get('/streams/:id/ingest', requireAuth, async function(req, res) {
   }
 });
 
+router.post('/streams/:id/rotate-key', requireAuth, async function(req, res) {
+  if (!ROUTES_UUID_RE.test(req.params.id)) return res.status(400).json({ ok: false, error: 'invalid stream id' });
+  try {
+    var check = await db.query('SELECT creator_id FROM streams WHERE id = $1 AND tenant_id = $2', [req.params.id, req.tenantId]);
+    if (!check.rows[0]) return res.status(404).json({ ok: false, error: 'not found' });
+    if (check.rows[0].creator_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
+    }
+    var newKey = crypto.randomBytes(16).toString('hex');
+    await db.query('UPDATE streams SET stream_key = $2 WHERE id = $1', [req.params.id, newKey]);
+    var rtmpHost = process.env.RTMP_INGEST_HOST || 'localhost';
+    var rtmpPort = process.env.RTMP_INGEST_PORT || '1935';
+    var ingestUrl = 'rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + req.params.id + '?key=' + newKey;
+    return res.status(200).json({ ok: true, stream_key: newKey, ingest_url: ingestUrl });
+  } catch (e) {
+    console.error('[streams/rotate-key] error:', e.message);
+    return res.status(500).json({ ok: false, error: 'server error' });
+  }
+});
+
 router.post('/rtmp/auth', async function(req, res) {
   var rtmpSecret = process.env.RTMP_CALLBACK_SECRET;
   if (!rtmpSecret && process.env.NODE_ENV === 'production') {

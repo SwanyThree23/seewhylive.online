@@ -33,6 +33,9 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
   var [newCustom,     setNewCustom]     = useState({ name: '', url: '', key: '' });
   var [customRevealed, setCustomRevealed] = useState({});
   var [customEnabled,  setCustomEnabled]  = useState({});
+  var [ingestInfo,    setIngestInfo]    = useState(null);
+  var [keyRevealed,   setKeyRevealed]   = useState(false);
+  var [rotatingKey,   setRotatingKey]   = useState(false);
   var addToastRef      = useRef(addToast);
   addToastRef.current  = addToast;
 
@@ -132,6 +135,38 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
       });
   }
 
+  useEffect(function() {
+    if (!roomId) return;
+    var tok = localStorage.getItem('sw_token') || '';
+    if (!tok) return;
+    fetch('/api/streams/' + roomId + '/ingest', { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) { if (d && d.ok) setIngestInfo(d); })
+      .catch(function() {});
+  }, [roomId]);
+
+  var rotateKey = function() {
+    if (!roomId || rotatingKey) return;
+    setRotatingKey(true);
+    var tok = localStorage.getItem('sw_token') || '';
+    fetch('/api/streams/' + roomId + '/rotate-key', {
+      method: 'POST',
+      headers: tok ? { 'Authorization': 'Bearer ' + tok } : {},
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        setRotatingKey(false);
+        if (d && d.ok) {
+          setIngestInfo(d);
+          setKeyRevealed(false);
+          addToast('Stream key rotated — old key is now invalid', 'success');
+        } else {
+          addToast('Rotate failed: ' + ((d && d.error) || 'unknown'), 'error');
+        }
+      })
+      .catch(function() { setRotatingKey(false); addToast('Rotate failed', 'error'); });
+  }
+
   var pingServer = function() {
     setPingingServer(true);
     var t0 = Date.now();
@@ -220,6 +255,54 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
           {copiedRtmp ? '✓ COPIED' : '📋 COPY RTMP URL'}
         </button>
       </div>
+
+      {/* Ingest URL / stream key card */}
+      {ingestInfo && (
+        <div style={{ background: 'rgba(201,168,76,.05)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>INGEST SETUP</div>
+            <button
+              onClick={rotateKey}
+              disabled={rotatingKey}
+              style={{ background: rotatingKey ? 'rgba(255,26,60,.05)' : 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,' + (rotatingKey ? '.2' : '.35') + ')', borderRadius: 6, padding: '3px 10px', color: '#FF6B81', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: rotatingKey ? 'not-allowed' : 'pointer', opacity: rotatingKey ? 0.6 : 1 }}>
+              {rotatingKey ? '⟳ ROTATING...' : '🔄 ROTATE KEY'}
+            </button>
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginBottom: 4 }}>RTMP INGEST URL</div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <div style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '6px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {ingestInfo.ingest_url}
+              </div>
+              <button
+                onClick={function() { if (navigator.clipboard) { navigator.clipboard.writeText(ingestInfo.ingest_url).catch(function() {}); } addToast('Ingest URL copied', 'success'); }}
+                style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '5px 10px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', flexShrink: 0 }}>
+                📋
+              </button>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginBottom: 4 }}>STREAM KEY</div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <div style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: 9, color: keyRevealed ? '#C9A84C' : '#555', background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 6, padding: '6px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: keyRevealed ? 1 : 2 }}>
+                {keyRevealed ? ingestInfo.stream_key : '••••••••••••••••'}
+              </div>
+              <button
+                onClick={function() { setKeyRevealed(function(v) { return !v; }); }}
+                style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '5px 10px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', flexShrink: 0 }}>
+                {keyRevealed ? '🙈' : '👁'}
+              </button>
+              {keyRevealed && (
+                <button
+                  onClick={function() { if (navigator.clipboard) { navigator.clipboard.writeText(ingestInfo.stream_key).catch(function() {}); } addToast('Stream key copied', 'success'); }}
+                  style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '5px 10px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', flexShrink: 0 }}>
+                  📋
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Platform rows */}
       {PLATFORMS.map(function(p) {
