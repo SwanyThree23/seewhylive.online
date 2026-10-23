@@ -584,8 +584,12 @@ var giftLeaderboards    = new Map();  // roomId → [{username, totalCents}] top
 var triviaRooms         = new Map();  // roomId → { question, options:[{text}], answers:Map<socketId,idx>, correctIdx, timer, active }
 var viewerAlertSnapshot = new Map();  // roomId → { count, ts } — baseline for host-alert engagement checks
 var shieldedGuests      = new Map();  // roomId+':'+guestId → expiresTs (unix sec)
-var pendingPowerPlays   = new Map();  // playId → { data, socketId, approvalTimer }
-var powerPlayThrottle   = new Map();  // userId → lastTs ms (2s throttle)
+var pendingPowerPlays      = new Map();  // playId → { data, socketId, approvalTimer }
+var powerPlayThrottle      = new Map();  // userId → lastTs ms (2s throttle)
+var streamCaptionThrottle  = new Map();  // socketId → lastStreamCaptionTs ms (500ms throttle)
+var soundFxThrottle        = new Map();  // socketId → lastSoundFxTs ms (500ms throttle)
+var pkStartThrottle        = new Map();  // socketId → lastPkStartTs ms (2000ms throttle)
+var watchPartyThrottle     = new Map();  // socketId → lastWatchPartyTs ms (250ms throttle)
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -599,7 +603,8 @@ setInterval(function() {
    chatMsgThrottle, pollVoteThrottle, vsVoteThrottle, qaUpvoteThrottle,
    judgeScoreThrottle, slowModeUserTs, pinChatThrottle, chyronThrottle,
    overlayThrottle, bracketThrottle, triviaStartThrottle,
-   _aiChatThrottle, _translateThrottle, _summarizeThrottle, powerPlayThrottle].forEach(function(m) {
+   _aiChatThrottle, _translateThrottle, _summarizeThrottle, powerPlayThrottle,
+   streamCaptionThrottle, soundFxThrottle, pkStartThrottle, watchPartyThrottle].forEach(function(m) {
     m.forEach(function(ts, k) { if (ts < _cut) m.delete(k); });
   });
 }, 5 * 60 * 1000).unref();
@@ -3403,8 +3408,11 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var _wpPlayNow = Date.now();
+    if (_wpPlayNow - (watchPartyThrottle.get(socket.id) || 0) < 250) return;
+    watchPartyThrottle.set(socket.id, _wpPlayNow);
     var room = getRoom(roomId);
-    var now = Date.now();
+    var now = _wpPlayNow;
     var _rawPos = Number(data.position);
     var position = (Number.isFinite(_rawPos) && _rawPos >= 0 && _rawPos <= 86400) ? _rawPos : 0;
     if (!room.watchParty) room.watchParty = {};
@@ -3418,6 +3426,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var _wpPauseNow = Date.now();
+    if (_wpPauseNow - (watchPartyThrottle.get(socket.id) || 0) < 250) return;
+    watchPartyThrottle.set(socket.id, _wpPauseNow);
     var room = getRoom(roomId);
     var _rawPausePos = Number(data.position);
     var position = (Number.isFinite(_rawPausePos) && _rawPausePos >= 0 && _rawPausePos <= 86400) ? _rawPausePos : 0;
@@ -3432,6 +3443,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var _wpSeekNow = Date.now();
+    if (_wpSeekNow - (watchPartyThrottle.get(socket.id) || 0) < 250) return;
+    watchPartyThrottle.set(socket.id, _wpSeekNow);
     var seekPos = Number(data.position);
     if (!Number.isFinite(seekPos) || seekPos < 0 || seekPos > 86400) return;
     var room = getRoom(roomId);
@@ -4214,7 +4228,10 @@ io.on('connection', function(socket) {
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     if (!data || !data.text) return;
-    socket.to(roomId).emit('stream-caption', { text: String(data.text).slice(0, 300), ts: Date.now() });
+    var _scCNow = Date.now();
+    if (_scCNow - (streamCaptionThrottle.get(socket.id) || 0) < 500) return;
+    streamCaptionThrottle.set(socket.id, _scCNow);
+    socket.to(roomId).emit('stream-caption', { text: String(data.text).slice(0, 300), ts: _scCNow });
   });
 
   // ── PK Battle v2 vote aggregation ──────────────────────────────────────
@@ -4222,6 +4239,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var _pksNow = Date.now();
+    if (_pksNow - (pkStartThrottle.get(socket.id) || 0) < 2000) return;
+    pkStartThrottle.set(socket.id, _pksNow);
     var _pksStr; try { _pksStr = JSON.stringify(data); } catch(e) { return; }
     if (!_pksStr || _pksStr.length > 4096) return;
     var _pksSafe; try { _pksSafe = JSON.parse(_pksStr); } catch(e) { return; }
@@ -4502,6 +4522,11 @@ io.on('connection', function(socket) {
       }
     }
 
+    // Re-check room wasn't ended by end-broadcast while we were awaiting bridge/DNS
+    if (!rooms.has(roomId)) {
+      if (ack) ack({ error: 'stream ended' });
+      return;
+    }
     room.isLive        = true;
     room.liveStartedAt = room.liveStartedAt || now;
     room.streamTitle   = (data && data.streamTitle) ? String(data.streamTitle).slice(0, 80) : '';
@@ -4912,6 +4937,9 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sfxRoomId = socket.data.roomId;
     if (!sfxRoomId) return;
+    var _sfxNow = Date.now();
+    if (_sfxNow - (soundFxThrottle.get(socket.id) || 0) < 500) return;
+    soundFxThrottle.set(socket.id, _sfxNow);
     var sfxId    = String(data.sfxId    || '').slice(0, 40);
     var sfxLabel = String(data.sfxLabel || '').slice(0, 80);
     io.to(sfxRoomId).emit('sound-fx', { sfxId: sfxId, sfxLabel: sfxLabel });
@@ -5417,6 +5445,10 @@ io.on('connection', function(socket) {
     overlayThrottle.delete(socket.id);
     bracketThrottle.delete(socket.id);
     triviaStartThrottle.delete(socket.id);
+    streamCaptionThrottle.delete(socket.id);
+    soundFxThrottle.delete(socket.id);
+    pkStartThrottle.delete(socket.id);
+    watchPartyThrottle.delete(socket.id);
     swanybot.onSocketDisconnect(socket.id);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
