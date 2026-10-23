@@ -498,10 +498,11 @@ export default function WebsiteGenerator() {
 </div>
 <script>
 function toggleChat(){var p=document.getElementById('chat-panel');p.style.display=p.style.display==='none'?'block':'none';}
+function _escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 async function sendChat(){
   var inp=document.getElementById('chat-input');var msg=inp.value.trim();if(!msg)return;
   var msgs=document.getElementById('chat-messages');
-  msgs.innerHTML+='<div style="align-self:flex-end;background:rgba(201,168,76,0.15);border-radius:10px;padding:8px 12px;font-size:13px;color:rgba(255,255,255,0.9);max-width:80%;text-align:right;">'+msg+'</div>';
+  msgs.innerHTML+='<div style="align-self:flex-end;background:rgba(201,168,76,0.15);border-radius:10px;padding:8px 12px;font-size:13px;color:rgba(255,255,255,0.9);max-width:80%;text-align:right;">'+_escHtml(msg)+'</div>';
   inp.value='';msgs.scrollTop=msgs.scrollHeight;
   msgs.innerHTML+='<div id="typing" style="background:rgba(255,255,255,0.05);border-radius:10px;padding:8px 12px;font-size:13px;color:rgba(255,255,255,0.5);">Thinking…</div>';
   msgs.scrollTop=msgs.scrollHeight;
