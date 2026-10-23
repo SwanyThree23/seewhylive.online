@@ -429,6 +429,7 @@ export default function App() {
   var [giftPayIntent, setGiftPayIntent] = useState(null); // { clientSecret, paymentIntentId } | null
 
   var socketRef = useRef(null);
+  var roleRef   = useRef(role);
   var uptimeRef = useRef(null);
   var liveStartRef = useRef(null);
   var peakViewerRef = useRef(0);
@@ -557,12 +558,17 @@ export default function App() {
     return function() { window.removeEventListener('beforeinstallprompt', handleInstallPrompt); };
   }, []);
 
+  // Keep roleRef current so socket callbacks read the live role value without
+  // needing role in the socket useEffect deps (which would re-register all 60+
+  // listeners every time role changes — e.g. viewer → host).
+  roleRef.current = role;
+
   useEffect(function() {
     var token = localStorage.getItem('sw_token') || '';
     var socket = getSocket(token);
     socketRef.current = socket;
 
-    var joinPayload = { roomId: APP_ID, userId: userId, username: username, role: role, token: token };
+    var joinPayload = { roomId: APP_ID, userId: userId, username: username, role: roleRef.current, token: token };
     setRejoinPayload(joinPayload);
     onReconnectCallback(function() {
       setConnected(true);
@@ -661,7 +667,7 @@ export default function App() {
 
     socket.on('super-chat', function(sc) {
       if (!sc) return;
-      if (role === 'host') {
+      if (roleRef.current === 'host') {
         var scCents = Math.floor(sc.amountCents || 0);
         var _scNewEarnings = sessionEarningsRef.current + scCents;
         sessionEarningsRef.current = _scNewEarnings;
@@ -671,7 +677,7 @@ export default function App() {
     });
 
     socket.on('earnings-update', function(data) {
-      if (!data || role !== 'host') return;
+      if (!data || roleRef.current !== 'host') return;
       var newTotal = Math.floor(data.sessionCents || 0);
       if (newTotal > sessionEarningsRef.current) {
         setSessionEarningsCents(newTotal);
@@ -1056,7 +1062,7 @@ export default function App() {
 
     socket.on('creator-followed', function(data) {
       if (!data || !data.follower) return;
-      if (role === 'host' || role === 'cohost') {
+      if (roleRef.current === 'host' || roleRef.current === 'cohost') {
         addToast('❤️ ' + data.follower + ' followed you!', 'success');
       }
     });
@@ -1188,7 +1194,7 @@ export default function App() {
       socket.off('gem-send');
       socket.off('moderation-action');
     };
-  }, [userId, username, role, addToast]);
+  }, [userId, username, addToast]);
 
   useEffect(function() {
     uptimeRef.current = setInterval(function() {
