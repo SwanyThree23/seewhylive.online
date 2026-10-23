@@ -49,6 +49,8 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
   var [streamCategory, setStreamCategory] = useState('Domino');
   var [streamDesc,     setStreamDesc]     = useState('');
   var [cohostToken,    setCohostToken]    = useState('');
+  var [cohostLinks,    setCohostLinks]    = useState([]);
+  var [linksLoading,   setLinksLoading]   = useState(false);
   var [modRules,       setModRules]       = useState({
     spamBurst:   true,
     toxicity:    true,
@@ -263,15 +265,58 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     if (addToast) addToast('Stream info saved', 'success');
   }
 
-  var genCohostLink = function() {
-    var arr = new Uint8Array(16);
-    crypto.getRandomValues(arr);
-    var token = Array.prototype.map.call(arr, function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-    setCohostToken(token);
-    var link = 'https://seewhylive.online/join/' + (roomId || 'live') + '?role=cohost&token=' + token;
-    if (navigator.clipboard) { navigator.clipboard.writeText(link).catch(function() {}); }
-    if (addToast) addToast('Co-host link copied', 'success');
+  var fetchCohostLinks = function() {
+    if (!roomId) return;
+    var tok = localStorage.getItem('sw_token') || '';
+    setLinksLoading(true);
+    fetch('/api/invites/streams/' + roomId + '/links', {
+      headers: tok ? { 'Authorization': 'Bearer ' + tok } : {},
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        setLinksLoading(false);
+        if (Array.isArray(data)) setCohostLinks(data);
+      })
+      .catch(function() { setLinksLoading(false); });
   }
+
+  var genCohostLink = function() {
+    if (!roomId) return;
+    var tok = localStorage.getItem('sw_token') || '';
+    fetch('/api/invites/streams/' + roomId + '/links', {
+      method: 'POST',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, tok ? { 'Authorization': 'Bearer ' + tok } : {}),
+      body: JSON.stringify({ role: 'cohost', maxUses: 1 }),
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data || !data.token) { if (addToast) addToast('Failed to generate link', 'error'); return; }
+        setCohostToken(data.token);
+        var link = 'https://seewhylive.online/join/' + roomId + '?role=cohost&token=' + data.token;
+        if (navigator.clipboard) { navigator.clipboard.writeText(link).catch(function() {}); }
+        if (addToast) addToast('Co-host link copied', 'success');
+        fetchCohostLinks();
+      })
+      .catch(function() { if (addToast) addToast('Failed to generate link', 'error'); });
+  }
+
+  var revokeCohostLink = function(linkId) {
+    if (!linkId) return;
+    var tok = localStorage.getItem('sw_token') || '';
+    fetch('/api/invites/links/' + linkId + '/revoke', {
+      method: 'POST',
+      headers: tok ? { 'Authorization': 'Bearer ' + tok } : {},
+    })
+      .then(function() {
+        setCohostLinks(function(prev) { return prev.filter(function(l) { return l.id !== linkId; }); });
+        if (addToast) addToast('Invite link revoked', 'info');
+      })
+      .catch(function() { if (addToast) addToast('Failed to revoke link', 'error'); });
+  }
+
+  useEffect(function() {
+    if (section === 'info' && isHost && roomId) fetchCohostLinks();
+  }, [section]);
 
   var SECTIONS = [
     { id: 'roster',   label: '👥 ROSTER'   },
@@ -783,19 +828,26 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
           {/* Co-host invite link — host only */}
           {isHost && (
             <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '12px 14px' }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 6 }}>CO-HOST INVITE LINK</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>CO-HOST INVITE LINKS</div>
+                <button
+                  onClick={fetchCohostLinks}
+                  style={{ background: 'none', border: '1px solid #3D3020', borderRadius: 5, padding: '2px 8px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer' }}>
+                  {linksLoading ? '…' : '↻'}
+                </button>
+              </div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', lineHeight: 1.5, marginBottom: 10 }}>
-                One-time link granting co-host privileges. Share privately.
+                Single-use links granting co-host privileges. Share privately.
               </div>
               {cohostToken ? (
                 <div style={{ marginBottom: 10 }}>
                   <div style={{ display: 'flex', gap: 6 }}>
                     <div style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '7px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {'seewhylive.online/join/' + (roomId || 'live') + '?role=cohost&token=' + cohostToken}
+                      {'seewhylive.online/join/' + roomId + '?role=cohost&token=' + cohostToken}
                     </div>
                     <button
                       onClick={function() {
-                        var link = 'https://seewhylive.online/join/' + (roomId || 'live') + '?role=cohost&token=' + cohostToken;
+                        var link = 'https://seewhylive.online/join/' + roomId + '?role=cohost&token=' + cohostToken;
                         if (navigator.clipboard) { navigator.clipboard.writeText(link).catch(function() {}); }
                         if (addToast) addToast('Co-host link copied', 'success');
                       }}
@@ -803,17 +855,41 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                       📋 COPY
                     </button>
                   </div>
-                  <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C9A84C' }} />
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>Single-use · expires when regenerated</span>
-                  </div>
                 </div>
               ) : null}
               <button
                 onClick={genCohostLink}
-                style={{ width: '100%', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 8, padding: '9px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
-                {cohostToken ? '🔄 REGENERATE LINK' : '🔗 GENERATE CO-HOST LINK'}
+                style={{ width: '100%', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 8, padding: '9px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1, marginBottom: cohostLinks.length > 0 ? 10 : 0 }}>
+                🔗 GENERATE CO-HOST LINK
               </button>
+              {cohostLinks.length > 0 && (
+                <div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginBottom: 6 }}>ACTIVE LINKS</div>
+                  {cohostLinks.filter(function(l) { return !l.revoked_at; }).map(function(l) {
+                    var link = 'https://seewhylive.online/join/' + roomId + '?role=cohost&token=' + l.token;
+                    return (
+                      <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                        <div style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 5, padding: '5px 8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {link}
+                        </div>
+                        <button
+                          onClick={function() { if (navigator.clipboard) { navigator.clipboard.writeText(link).catch(function() {}); } if (addToast) addToast('Copied', 'success'); }}
+                          style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 5, padding: '4px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', flexShrink: 0 }}>
+                          📋
+                        </button>
+                        <button
+                          onClick={function() { revokeCohostLink(l.id); }}
+                          style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 5, padding: '4px 8px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', flexShrink: 0 }}>
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {cohostLinks.filter(function(l) { return !l.revoked_at; }).length === 0 && (
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', textAlign: 'center', padding: 6 }}>No active links.</div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

@@ -13,6 +13,8 @@ const panelRequestThrottle = new Map(); // userId -> last request timestamp
 const panelReactThrottle   = new Map(); // userId -> last react timestamp
 const panelHandThrottle    = new Map(); // userId -> last hand-raise timestamp
 const panelLoyaltyThrottle = new Map(); // `userId:roomId` -> last award timestamp
+const panelSpotlight       = new Map(); // roomId -> spotlitUserId (null = cleared)
+const panelInviteThrottle  = new Map(); // `hostId:targetId` -> last invite timestamp
 
 const LOYALTY_AWARD_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour per user per room
 const THROTTLE_STALE_MS = 30000; // 30 s >> any window (max 3 s) — safe to prune
@@ -172,7 +174,7 @@ function registerPanelHandlers(io, socket) {
         return;
       }
       const _si = Math.floor(Number(slotIndex));
-      if (!Number.isFinite(_si) || _si < 0 || _si > 7) {
+      if (!Number.isFinite(_si) || _si < 0 || _si > 19) {
         ack?.({ ok: false, error: 'invalid slotIndex' });
         return;
       }
@@ -302,6 +304,89 @@ function registerPanelHandlers(io, socket) {
       io.to(roomId).emit('panel:reaction', { roomId: roomId, guestId: userId, emoji: emoji });
     } catch (err) {
       console.error('[panelHandlers] panel:react error:', err);
+    }
+  });
+
+  // panel:spotlight — host/cohost pins one guest to the 70% spotlight view for all viewers
+  socket.on('panel:spotlight', async function(payload, ack) {
+    try {
+      var roomId = payload && payload.roomId;
+      var targetUserId = payload && payload.targetUserId; // null = clear spotlight
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) {
+        if (ack) ack({ ok: false, error: 'forbidden' });
+        return;
+      }
+      if (targetUserId && !PANEL_UUID_RE.test(String(targetUserId))) {
+        if (ack) ack({ ok: false, error: 'invalid targetUserId' });
+        return;
+      }
+      var current = panelSpotlight.get(roomId);
+      var next = (targetUserId && current !== targetUserId) ? targetUserId : null;
+      if (next) panelSpotlight.set(roomId, next);
+      else panelSpotlight.delete(roomId);
+      io.to(roomId).emit('panel:spotlight_changed', { roomId: roomId, spotlitUserId: next });
+      if (ack) ack({ ok: true, spotlitUserId: next });
+    } catch (err) {
+      if (ack) ack({ ok: false, error: 'Panel error' });
+    }
+  });
+
+  // panel:swap_slots — host/cohost reorders two guests without kicking
+  socket.on('panel:swap_slots', async function(payload, ack) {
+    try {
+      var roomId = payload && payload.roomId;
+      var userA  = payload && payload.userA;
+      var userB  = payload && payload.userB;
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) {
+        if (ack) ack({ ok: false, error: 'forbidden' });
+        return;
+      }
+      if (!userA || !PANEL_UUID_RE.test(String(userA)) || !userB || !PANEL_UUID_RE.test(String(userB)) || userA === userB) {
+        if (ack) ack({ ok: false, error: 'invalid userA or userB' });
+        return;
+      }
+      var newSlots = await panelService.swapSlots({ roomId: roomId, userA: userA, userB: userB });
+      io.to(roomId).emit('panel:slots_swapped', { roomId: roomId, slots: newSlots });
+      if (ack) ack({ ok: true, slots: newSlots });
+    } catch (err) {
+      if (ack) ack({ ok: false, error: 'Panel error' });
+    }
+  });
+
+  // panel:invite — host directly invites a viewer to the panel (they get a popup)
+  socket.on('panel:invite', async function(payload, ack) {
+    try {
+      var roomId = payload && payload.roomId;
+      var targetUserId = payload && payload.targetUserId;
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) {
+        if (ack) ack({ ok: false, error: 'forbidden' });
+        return;
+      }
+      if (!targetUserId || !PANEL_UUID_RE.test(String(targetUserId))) {
+        if (ack) ack({ ok: false, error: 'invalid targetUserId' });
+        return;
+      }
+      var _piKey = socket.data.userId + ':' + targetUserId;
+      var _piNow = Date.now();
+      if (_piNow - (panelInviteThrottle.get(_piKey) || 0) < 5000) {
+        if (ack) ack({ ok: false, error: 'too many invites' });
+        return;
+      }
+      panelInviteThrottle.set(_piKey, _piNow);
+      var roomSockets = await io.in(roomId).fetchSockets();
+      var targetSocket = roomSockets.find(function(s) { return s.data && s.data.userId === targetUserId; });
+      if (!targetSocket) {
+        if (ack) ack({ ok: false, error: 'user not in room' });
+        return;
+      }
+      targetSocket.emit('panel:invite_received', {
+        roomId: roomId,
+        fromUserId: socket.data.userId,
+        fromUsername: socket.data.username || null,
+      });
+      if (ack) ack({ ok: true });
+    } catch (err) {
+      if (ack) ack({ ok: false, error: 'Panel error' });
     }
   });
 

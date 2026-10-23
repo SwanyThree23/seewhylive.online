@@ -171,6 +171,26 @@ async function setMuted({ roomId, userId, isMuted }) {
   );
 }
 
+async function swapSlots({ roomId, userA, userB }) {
+  // Atomically swap slot_index values between two occupants using a CTE
+  await db.query(
+    `WITH indices AS (
+       SELECT user_id, slot_index FROM room_panel_slots
+       WHERE stream_id = $1 AND user_id = ANY(ARRAY[$2,$3]::text[])
+     )
+     UPDATE room_panel_slots rps
+     SET slot_index = (
+       CASE rps.user_id
+         WHEN $2 THEN (SELECT slot_index FROM indices WHERE user_id = $3)
+         WHEN $3 THEN (SELECT slot_index FROM indices WHERE user_id = $2)
+       END
+     )
+     WHERE rps.stream_id = $1 AND rps.user_id = ANY(ARRAY[$2,$3]::text[])`,
+    [roomId, userA, userB]
+  );
+  return getPanelState(roomId);
+}
+
 async function getPanelState(roomId) {
   const slots = await db.query(
     `SELECT s.*, u.display_name, u.avatar_url
@@ -184,4 +204,5 @@ async function getPanelState(roomId) {
 module.exports = {
   assignSlot, releaseSlot, checkJoinGate, requestJoin, resolveJoinRequest,
   generateInviteCode, setExpandedSlot, setAudioOnly, setPrivacy, getPanelState, setMuted,
+  swapSlots,
 };
