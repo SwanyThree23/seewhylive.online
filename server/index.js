@@ -1445,12 +1445,15 @@ app.get('/api/schedule/public', function(req, res) {
   } catch(e) { return res.status(500).json({ error: 'Server error' }); }
 });
 
-// GET /api/schedule/:id/rsvps  — list RSVP'd users (host only)
+// GET /api/schedule/:id/rsvps  — list RSVP'd users (owner or admin only)
 app.get('/api/schedule/:id/rsvps', requireAuth, function(req, res) {
   var id = String(req.params.id || '').trim();
   if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({ error: 'invalid id' });
   if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
+    var ev = db.prepare('SELECT creator_id FROM schedules WHERE id = ?').get(id);
+    if (!ev) return res.status(404).json({ error: 'Event not found' });
+    if (req.user.role !== 'admin' && ev.creator_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
     var rows = db.prepare('SELECT user_id, created_at FROM schedule_rsvps WHERE schedule_id = ? ORDER BY created_at ASC LIMIT 500').all(id);
     return res.json({ rsvps: rows, count: rows.length });
   } catch(e) { return res.status(500).json({ error: 'Server error' }); }
