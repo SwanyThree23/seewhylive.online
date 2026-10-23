@@ -417,6 +417,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                         {g.username || id}
                       </span>
                       {isSelf && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>(you)</span>}
+                      {g.deviceCount > 1 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 3, padding: '1px 5px' }}>{'📱×' + g.deviceCount}</span>}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3, flexWrap: 'wrap' }}>
                       <RoleBadge role={gRole} />

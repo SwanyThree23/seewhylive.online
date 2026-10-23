@@ -36,6 +36,8 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
   var [ingestInfo,    setIngestInfo]    = useState(null);
   var [keyRevealed,   setKeyRevealed]   = useState(false);
   var [rotatingKey,   setRotatingKey]   = useState(false);
+  var [fanoutStatus,  setFanoutStatus]  = useState(null);
+  var [uptimeSec,     setUptimeSec]     = useState(0);
   var addToastRef      = useRef(addToast);
   addToastRef.current  = addToast;
 
@@ -103,8 +105,11 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
       .then(function(r) { return r.json(); })
       .then(function(d) {
         if (d && d.ok) {
+          var destCount = d.destinations || dests.length;
+          var destLabels = dests.map(function(x) { return x.label || ''; });
           setFanoutActive(true);
-          addToast('🔴 RTMP Fanout started — ' + (d.destinations || dests.length) + ' destinations', 'success');
+          setFanoutStatus({ stream_id: streamId, started_at: Date.now(), dest_count: destCount, destinations: destLabels, running: true });
+          addToast('🔴 RTMP Fanout started — ' + destCount + ' destinations', 'success');
         } else {
           addToast('Fanout error: ' + ((d && d.error) || 'unknown'), 'error');
         }
@@ -126,11 +131,13 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
       .then(function() {
         setFanoutActive(false);
         setBitrates({});
+        setFanoutStatus(null);
         addToast('⏹ Fanout stopped', 'info');
       })
       .catch(function(e) {
         setFanoutActive(false);
         setBitrates({});
+        setFanoutStatus(null);
         addToast('Fanout stop error: ' + e.message, 'error');
       });
   }
@@ -144,6 +151,47 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
       .then(function(d) { if (d && d.ok) setIngestInfo(d); })
       .catch(function() {});
   }, [roomId]);
+
+  // Sync fanout active state on mount — restores live indicator after page reload
+  useEffect(function() {
+    if (!roomId) return;
+    var tok = localStorage.getItem('sw_token') || '';
+    if (!tok) return;
+    fetch('/api/fanout-active', { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d || !d.ok || !d.fanouts) return;
+        var mine = d.fanouts.filter(function(f) { return f.stream_id === roomId && f.running; });
+        if (mine.length > 0) {
+          setFanoutActive(true);
+          setFanoutStatus(mine[0]);
+        }
+      })
+      .catch(function() {});
+  }, [roomId]);
+
+  // Uptime ticker
+  useEffect(function() {
+    if (!fanoutActive || !fanoutStatus || !fanoutStatus.started_at) {
+      setUptimeSec(0);
+      return;
+    }
+    var tick = function() { setUptimeSec(Math.floor((Date.now() - fanoutStatus.started_at) / 1000)); };
+    tick();
+    var iv = setInterval(tick, 1000);
+    return function() { clearInterval(iv); };
+  }, [fanoutActive, fanoutStatus]);
+
+  var formatUptime = function(sec) {
+    if (!sec) return '';
+    var h = Math.floor(sec / 3600);
+    var m = Math.floor((sec % 3600) / 60);
+    var s = sec % 60;
+    var mm = m < 10 ? '0' + m : '' + m;
+    var ss = s < 10 ? '0' + s : '' + s;
+    if (h > 0) { var hh = h < 10 ? '0' + h : '' + h; return hh + ':' + mm + ':' + ss; }
+    return mm + ':' + ss;
+  }
 
   var rotateKey = function() {
     if (!roomId || rotatingKey) return;
@@ -230,6 +278,24 @@ export default function RTMPFanoutTab({ isLive, addToast, socket, roomId }) {
           ⏹ STOP ALL
         </button>
       </div>
+
+      {/* Live uptime strip */}
+      {fanoutActive && fanoutStatus && fanoutStatus.started_at && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,26,60,.06)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '6px 12px' }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 6px #FF1A3C', flexShrink: 0 }} />
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#FF6B81', flex: 1 }}>
+            FANOUT LIVE
+          </div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#FF1A3C', letterSpacing: 1 }}>
+            {formatUptime(uptimeSec)}
+          </div>
+          {fanoutStatus.dest_count > 0 && (
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', flexShrink: 0 }}>
+              {fanoutStatus.dest_count + ' DEST'}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Server status row: PING SERVER + COPY RTMP URL */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

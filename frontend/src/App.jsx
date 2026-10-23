@@ -924,6 +924,18 @@ export default function App() {
       addToast('⚠ You were removed from this room by the host', 'error');
     });
 
+    socket.on('user-sync', function(data) {
+      if (!data || !data.event) return;
+      if (data.event === 'device_joined' && data.socketId && data.socketId !== socket.id) {
+        if (data.deviceCount && data.deviceCount > 1) {
+          addToast('📱 You joined this room on another device (' + data.deviceCount + ' connections)', 'info');
+        }
+      } else if (data.event === 'role_changed' && data.role) {
+        setRole(data.role);
+        addToast('Your role was updated to ' + data.role, 'info');
+      }
+    });
+
     socket.on('role-changed', function(data) {
       if (!data || !data.guestId) return;
       setGuests(function(prev) {
@@ -1126,6 +1138,7 @@ export default function App() {
       socket.off('guest-unmuted');
       socket.off('guest-kicked');
       socket.off('you-were-kicked');
+      socket.off('user-sync');
       socket.off('role-changed');
       socket.off('overlay-update');
       socket.off('stream-info');
