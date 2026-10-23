@@ -3196,7 +3196,9 @@ io.on('connection', function(socket) {
     var _moTgRaw = data.toGuestId || null;
     var toGuestId = (_moTgRaw && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(_moTgRaw))) ? String(_moTgRaw) : null;
 
-    if (!roomId || priceCents <= 0 || priceCents > 50000) return;
+    // No server-side merch catalog exists; enforce Stripe's USD minimum (50 cents)
+    // to prevent PaymentIntent creation errors for sub-minimum amounts.
+    if (!roomId || priceCents < 50 || priceCents > 50000) return;
 
     var _moSaRow = db.prepare('SELECT up.stripe_account_id FROM rooms r JOIN user_profiles up ON up.user_id = r.host_id WHERE r.room_id = ?').get(roomId);
     var _moCreatorStripeAccountId = (_moSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_moSaRow.stripe_account_id || '')) ? _moSaRow.stripe_account_id : '';
