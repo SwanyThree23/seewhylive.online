@@ -91,7 +91,7 @@ async function startBattle(battleId, tenantId) {
     `UPDATE pk_battles
      SET status = 'active',
          started_at = now(),
-         ends_at = now() + (duration_minutes || ' minutes')::interval
+         ends_at = now() + (duration_minutes::text || ' minutes')::interval
      WHERE id = $1 AND status IN ('pending', 'accepted') AND tenant_id = $2
      RETURNING *`,
     [battleId, tenantId]
