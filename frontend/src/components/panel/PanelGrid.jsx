@@ -44,6 +44,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   var [screenSharingIds, setScreenSharingIds] = useState({});
   var [spotlightUserId, setSpotlightUserId] = useState(null);
   var [exitingIds, setExitingIds] = useState(new Set());
+  var [panelInvite, setPanelInvite] = useState(null); // { fromUserId, fromUsername } when invite received
   var [pkBattle, setPkBattle] = useState(null);
   var exitTimersRef = useRef({});
   var localStreamRef = useRef(null);
@@ -141,11 +142,31 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
 
       var onKicked = function(payload) {
         if (payload.roomId !== roomId) return;
-        // If this client was kicked, remove their slot from local state
         setSlots(function(prev) { return prev.filter(function(s) { return s.user_id !== userId; }); });
       }
       socket.on('panel:kicked', onKicked);
       unsubs.push(function() { socket.off('panel:kicked', onKicked); });
+
+      var onSpotlightChanged = function(payload) {
+        if (payload.roomId !== roomId) return;
+        setSpotlightUserId(payload.spotlitUserId || null);
+      }
+      socket.on('panel:spotlight_changed', onSpotlightChanged);
+      unsubs.push(function() { socket.off('panel:spotlight_changed', onSpotlightChanged); });
+
+      var onSlotsSwapped = function(payload) {
+        if (payload.roomId !== roomId) return;
+        if (Array.isArray(payload.slots)) setSlots(payload.slots);
+      }
+      socket.on('panel:slots_swapped', onSlotsSwapped);
+      unsubs.push(function() { socket.off('panel:slots_swapped', onSlotsSwapped); });
+
+      var onInviteReceived = function(payload) {
+        if (payload.roomId !== roomId) return;
+        setPanelInvite({ fromUserId: payload.fromUserId, fromUsername: payload.fromUsername || 'the host' });
+      }
+      socket.on('panel:invite_received', onInviteReceived);
+      unsubs.push(function() { socket.off('panel:invite_received', onInviteReceived); });
 
       var onHandUpdate = function(payload) {
         if (payload.roomId !== roomId) return;
@@ -284,7 +305,10 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       role: guest ? (guest.role || null) : null,
       isScreenSharing: !!(screenSharingIds[slot.user_id]),
       isSpotlighted: !!(spotlightUserId && slot.user_id === spotlightUserId),
-      onSpotlight: function() { setSpotlightUserId(function(cur) { return cur === slot.user_id ? null : slot.user_id; }); },
+      onSpotlight: function() {
+        var next = (spotlightUserId && spotlightUserId === slot.user_id) ? null : slot.user_id;
+        socket.emit('panel:spotlight', { roomId: roomId, targetUserId: next });
+      },
       isExpanded: !!slot.is_expanded,
       onExpand: spotlightUserId ? null : function() { panelService.expandTile(socket, roomId, slot.slot_index, !slot.is_expanded); },
     };
@@ -481,6 +505,29 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
           onJoined={handleJoined}
           onCancel={function() { setShowJoinModal(false); }}
         />
+      )}
+
+      {panelInvite && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+          <div style={{ background: '#1A1510', border: '1px solid rgba(201,168,76,.45)', borderRadius: 14, padding: '24px 22px', maxWidth: 300, width: '90%', textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: GOLD, marginBottom: 6, letterSpacing: 1 }}>PANEL INVITE</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: CREAM, marginBottom: 18, lineHeight: 1.5 }}>
+              <strong>{panelInvite.fromUsername}</strong> is inviting you to join the panel
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button
+                onClick={function() { setShowJoinModal(true); setPanelInvite(null); }}
+                style={{ background: 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 8, padding: '9px 18px', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                JOIN PANEL
+              </button>
+              <button
+                onClick={function() { setPanelInvite(null); }}
+                style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 8, padding: '9px 18px', color: RED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                DECLINE
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
