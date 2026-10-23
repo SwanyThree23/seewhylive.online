@@ -590,6 +590,10 @@ var streamCaptionThrottle  = new Map();  // socketId → lastStreamCaptionTs ms 
 var soundFxThrottle        = new Map();  // socketId → lastSoundFxTs ms (500ms throttle)
 var pkStartThrottle        = new Map();  // socketId → lastPkStartTs ms (2000ms throttle)
 var watchPartyThrottle     = new Map();  // socketId → lastWatchPartyTs ms (250ms throttle)
+var auraTriggerThrottle    = new Map();  // socketId → lastAuraTriggerTs ms (2000ms throttle)
+var botMsgThrottle         = new Map();  // socketId → lastBotMsgTs ms (500ms throttle)
+var streamInfoThrottle     = new Map();  // socketId → lastStreamInfoTs ms (1000ms throttle)
+var analyticsPingThrottle  = new Map();  // userId   → lastAnalyticsPingTs ms (5000ms throttle)
 
 // Prune stale throttle map entries every 5 minutes to prevent unbounded growth
 // from unauthenticated connections (each reconnect gets a fresh anon key).
@@ -604,7 +608,8 @@ setInterval(function() {
    judgeScoreThrottle, slowModeUserTs, pinChatThrottle, chyronThrottle,
    overlayThrottle, bracketThrottle, triviaStartThrottle,
    _aiChatThrottle, _translateThrottle, _summarizeThrottle, powerPlayThrottle,
-   streamCaptionThrottle, soundFxThrottle, pkStartThrottle, watchPartyThrottle].forEach(function(m) {
+   streamCaptionThrottle, soundFxThrottle, pkStartThrottle, watchPartyThrottle,
+   auraTriggerThrottle, botMsgThrottle, streamInfoThrottle, analyticsPingThrottle].forEach(function(m) {
     m.forEach(function(ts, k) { if (ts < _cut) m.delete(k); });
   });
 }, 5 * 60 * 1000).unref();
@@ -3512,6 +3517,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.message) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var _bmNow = Date.now();
+    if (_bmNow - (botMsgThrottle.get(socket.id) || 0) < 500) return;
+    botMsgThrottle.set(socket.id, _bmNow);
     var msg = String(data.message).substring(0, 300);
     io.to(roomId).emit('chat-message', {
       userId:  'swanybot',
@@ -4404,6 +4412,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var _siNow = Date.now();
+    if (_siNow - (streamInfoThrottle.get(socket.id) || 0) < 1000) return;
+    streamInfoThrottle.set(socket.id, _siNow);
     var room = rooms.get(roomId);
     if (room) {
       if (data.title)    room.streamTitle    = String(data.title).slice(0, 120);
@@ -5122,6 +5133,9 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sId = socket.data.roomId;
     if (!sId || !aura) return;
+    var _atNow = Date.now();
+    if (_atNow - (auraTriggerThrottle.get(socket.id) || 0) < 2000) return;
+    auraTriggerThrottle.set(socket.id, _atNow);
     var triggerFn = null;
     var _at_st  = String(data.streamTitle  || '').slice(0, 120);
     var _at_vn  = String(data.viewerName   || '').slice(0, 80);
@@ -5263,6 +5277,10 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var pingRoomId = socket.data.roomId;
     if (!pingRoomId) return;
+    var _apKey = socket.data.userId || socket.id;
+    var _apNow = Date.now();
+    if (_apNow - (analyticsPingThrottle.get(_apKey) || 0) < 5000) return;
+    analyticsPingThrottle.set(_apKey, _apNow);
     var a = getAnalytics(pingRoomId);
     var pingRoom = io.sockets.adapter.rooms.get(pingRoomId);
     var pingViewers = pingRoom ? pingRoom.size : 0;
@@ -5449,6 +5467,10 @@ io.on('connection', function(socket) {
     soundFxThrottle.delete(socket.id);
     pkStartThrottle.delete(socket.id);
     watchPartyThrottle.delete(socket.id);
+    auraTriggerThrottle.delete(socket.id);
+    botMsgThrottle.delete(socket.id);
+    streamInfoThrottle.delete(socket.id);
+    analyticsPingThrottle.delete(_tKey);
     swanybot.onSocketDisconnect(socket.id);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
