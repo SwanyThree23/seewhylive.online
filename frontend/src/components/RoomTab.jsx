@@ -1094,7 +1094,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 <iframe
                   src={(function() {
                     var m = watchPartyUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?\/]+)/);
-                    return m ? 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1&rel=0' : watchPartyUrl;
+                    return m ? 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1&rel=0' : (watchPartyUrl.startsWith('https://') ? watchPartyUrl : '');
                   })()}
                   style={{ width: '100%', height: '100%', border: 'none' }}
                   allow="autoplay; fullscreen"
