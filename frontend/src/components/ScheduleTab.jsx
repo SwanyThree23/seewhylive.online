@@ -93,6 +93,7 @@ function rowToEvent(row) {
   return {
     id:        row.id,
     title:     row.title,
+    desc:      row.desc || '',
     time:      new Date(row.scheduled_at * 1000).toISOString(),
     status:    'SCHED',
     category:  row.category || 'Domino',
@@ -107,6 +108,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
   var [apiLoaded,    setApiLoaded]    = useState(false);
   var [saving,       setSaving]       = useState(false);
   var [newTitle,     setNewTitle]     = useState('');
+  var [newDesc,      setNewDesc]      = useState('');
   var [newTime,      setNewTime]      = useState('');
   var [newCat,       setNewCat]       = useState('Domino');
   var [newRecur,     setNewRecur]     = useState('none');
@@ -194,6 +196,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _tok },
         body: JSON.stringify({
           title:        newTitle + occ.suffix,
+          desc:         newDesc.trim() || '',
           category:     newCat,
           scheduled_at: Math.floor(occ.date.getTime() / 1000),
           recurring:    newRecur,
@@ -208,6 +211,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
         return {
           id:        data.id || ('s' + Date.now() + i),
           title:     newTitle + occurrences[i].suffix,
+          desc:      newDesc.trim(),
           time:      occurrences[i].date.toISOString(),
           status:    'SCHED',
           category:  newCat,
@@ -218,6 +222,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
       });
       setSchedule(function(p) { return p.concat(newEvents); });
       setNewTitle('');
+      setNewDesc('');
       setNewTime('');
       setNewRecur('none');
       setSaving(false);
@@ -408,6 +413,10 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
                     )}
                   </div>
 
+                  {ev.desc ? (
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#8A7A62', marginTop: 4, lineHeight: 1.4 }}>{ev.desc}</div>
+                  ) : null}
+
                   {/* Reminder button */}
                   {ev.status !== 'LIVE' && ev.status !== 'ENDED' && (
                     <button
@@ -458,9 +467,16 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
           <input
             value={newTitle}
             onChange={function(e) { setNewTitle(e.target.value); }}
-            onKeyDown={function(e) { if (e.key === 'Enter' && newTitle && newTime) addEvent(); }}
             placeholder="Stream title..."
             style={{ background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
+          />
+          <textarea
+            value={newDesc}
+            onChange={function(e) { setNewDesc(e.target.value); }}
+            placeholder="Description (optional) — shown on the UPCOMING tab so viewers know what to expect…"
+            rows={2}
+            maxLength={400}
+            style={{ background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, resize: 'vertical' }}
           />
           <div style={{ display: 'flex', gap: 8 }}>
             <input
