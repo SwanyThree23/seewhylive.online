@@ -34,7 +34,7 @@ var RED = '#FF1A3C';
  * and the rest collapse into a scrollable strip. Works for any count up to
  * the platform's MAX_PANEL_GUESTS=20 ceiling.
  */
-export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, guests, addToast }) {
+export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, guests, addToast, panelInvite, setPanelInvite }) {
   var [slots, setSlots] = useState([]);
   var [gatingMode, setGatingMode] = useState(null);
   var [isAudioOnlyRoom, setIsAudioOnlyRoom] = useState(false);
@@ -44,7 +44,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   var [screenSharingIds, setScreenSharingIds] = useState({});
   var [spotlightUserId, setSpotlightUserId] = useState(null);
   var [exitingIds, setExitingIds] = useState(new Set());
-  var [panelInvite, setPanelInvite] = useState(null); // { fromUserId, fromUsername } when invite received
+  // panelInvite / setPanelInvite are lifted to App.jsx so the invite fires on all tabs
   var [swapSourceId, setSwapSourceId] = useState(null); // userId selected for swap (host only)
   var [pkBattle, setPkBattle] = useState(null);
   var exitTimersRef = useRef({});
@@ -162,12 +162,6 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       socket.on('panel:slots_swapped', onSlotsSwapped);
       unsubs.push(function() { socket.off('panel:slots_swapped', onSlotsSwapped); });
 
-      var onInviteReceived = function(payload) {
-        if (payload.roomId !== roomId) return;
-        setPanelInvite({ fromUserId: payload.fromUserId, fromUsername: payload.fromUsername || 'the host' });
-      }
-      socket.on('panel:invite_received', onInviteReceived);
-      unsubs.push(function() { socket.off('panel:invite_received', onInviteReceived); });
 
       var onHandUpdate = function(payload) {
         if (payload.roomId !== roomId) return;
