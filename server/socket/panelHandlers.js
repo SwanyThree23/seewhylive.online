@@ -28,6 +28,7 @@ setInterval(function() {
   panelReactThrottle.forEach(function(ts, k) { if (now - ts > THROTTLE_STALE_MS) panelReactThrottle.delete(k); });
   panelHandThrottle.forEach(function(ts, k) { if (now - ts > THROTTLE_STALE_MS) panelHandThrottle.delete(k); });
   panelLoyaltyThrottle.forEach(function(ts, k) { if (now - ts > LOYALTY_AWARD_COOLDOWN_MS) panelLoyaltyThrottle.delete(k); });
+  panelInviteThrottle.forEach(function(ts, k) { if (now - ts > THROTTLE_STALE_MS) panelInviteThrottle.delete(k); });
   // panelKickedUsers is intentionally not pruned here — entries persist until
   // the host explicitly approves the user or the process restarts.
 }, 5 * 60 * 1000).unref();
@@ -208,11 +209,12 @@ function registerPanelHandlers(io, socket, rooms) {
         ack?.({ ok: false, error: 'invalid targetUserId' });
         return;
       }
-      // Cohosts may not kick the room's host
+      // Cohosts may not kick the room's host.
+      // Use the rooms map (hostUserId) rather than fetchSockets() so the check
+      // is correct even when the host is temporarily disconnected.
       if (socket.data.role === 'cohost') {
-        const _roomSockets = await io.in(roomId).fetchSockets();
-        const _targetSock = _roomSockets.find(function(s) { return s.data && s.data.userId === targetUserId; });
-        if (_targetSock && _targetSock.data.role === 'host') {
+        var _kickRoomData = rooms && rooms.get(roomId);
+        if (_kickRoomData && _kickRoomData.hostUserId === targetUserId) {
           ack?.({ ok: false, error: 'forbidden' });
           return;
         }
