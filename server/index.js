@@ -4636,9 +4636,14 @@ io.on('connection', function(socket) {
             .filter(function(r) { return r.status === 'fulfilled' && r.value; })
             .map(function(r) { return r.value; });
           if (expired.length === 0) return;
+          // SQLite max params is 999; chunk to stay under the limit.
           try {
-            var ph = expired.map(function() { return '?'; }).join(',');
-            db.prepare('DELETE FROM push_subscriptions WHERE endpoint IN (' + ph + ')').run(...expired);
+            var CHUNK = 999;
+            for (var _ei = 0; _ei < expired.length; _ei += CHUNK) {
+              var _chunk = expired.slice(_ei, _ei + CHUNK);
+              var ph = _chunk.map(function() { return '?'; }).join(',');
+              db.prepare('DELETE FROM push_subscriptions WHERE endpoint IN (' + ph + ')').run(_chunk);
+            }
           } catch(e) {
             logger.warn('[push] batch delete failed: ' + e.message);
           }
@@ -5474,6 +5479,12 @@ io.on('connection', function(socket) {
     swanybot.onSocketDisconnect(socket.id);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
+    }
+    // Close WebRTC transports owned by this socket so they don't accumulate
+    // until end-broadcast. cleanupRoom only runs on end-broadcast; for guests
+    // and hosts who leave mid-stream, transports must be freed individually.
+    if (socket.data.ownedTransportIds) {
+      socket.data.ownedTransportIds.forEach(function(tid) { mediasoup.closeTransport(tid); });
     }
 
     var roomId = socket.data.roomId;
