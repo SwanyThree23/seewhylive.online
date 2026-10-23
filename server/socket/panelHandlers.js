@@ -34,7 +34,7 @@ setInterval(function() {
 
 const PANEL_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function registerPanelHandlers(io, socket) {
+function registerPanelHandlers(io, socket, rooms) {
   socket.on('panel:join', async ({ roomId, inviteCode }, ack) => {
     try {
       const userId = socket.data.userId;
@@ -373,13 +373,14 @@ function registerPanelHandlers(io, socket) {
         return;
       }
       panelInviteThrottle.set(_piKey, _piNow);
-      var roomSockets = await io.in(roomId).fetchSockets();
-      var targetSocket = roomSockets.find(function(s) { return s.data && s.data.userId === targetUserId; });
-      if (!targetSocket) {
+      // Check presence via userSockets map (populated by join-room) so the
+      // invite reaches ALL of the target user's devices, not just the first one.
+      var _piRoom = rooms && rooms.get(roomId);
+      if (!_piRoom || !_piRoom.userSockets || !_piRoom.userSockets.has(targetUserId)) {
         if (ack) ack({ ok: false, error: 'user not in room' });
         return;
       }
-      targetSocket.emit('panel:invite_received', {
+      io.to('user:' + targetUserId).emit('panel:invite_received', {
         roomId: roomId,
         fromUserId: socket.data.userId,
         fromUsername: socket.data.username || null,
