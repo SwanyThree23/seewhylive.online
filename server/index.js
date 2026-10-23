@@ -270,6 +270,14 @@ db.exec(`CREATE TABLE IF NOT EXISTS referral_earnings (
   source_type   TEXT NOT NULL,
   created_at    INTEGER NOT NULL
 )`);
+// Universal blocks table
+db.exec(`CREATE TABLE IF NOT EXISTS user_blocks (
+  blocker_id  TEXT NOT NULL,
+  blocked_id  TEXT NOT NULL,
+  created_at  INTEGER NOT NULL,
+  PRIMARY KEY (blocker_id, blocked_id)
+)`);
+
 try { db.exec('ALTER TABLE user_profiles ADD COLUMN referral_code TEXT'); } catch(_) {}
 try { db.exec('ALTER TABLE user_profiles ADD COLUMN referred_by TEXT'); } catch(_) {}
 try { db.exec('ALTER TABLE user_profiles ADD COLUMN pro_until INTEGER DEFAULT 0'); } catch(_) {}
@@ -1069,6 +1077,55 @@ app.get('/api/referral/stats', requireAuth, function(req, res) {
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }
+});
+
+// ── Universal Blocks ────────────────────────────────────────────────────────
+// GET /api/blocks — list users I've blocked
+app.get('/api/blocks', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var rows = db.prepare('SELECT b.blocked_id, up.username, b.created_at FROM user_blocks b LEFT JOIN user_profiles up ON up.user_id = b.blocked_id WHERE b.blocker_id = ? ORDER BY b.created_at DESC').all(userId);
+    return res.json({ blocks: rows });
+  } catch (e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/blocks  — block a user
+app.post('/api/blocks', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var blockedId = String((req.body && req.body.blockedId) || '').trim().slice(0, 64);
+    if (!blockedId || blockedId === userId) return res.status(400).json({ error: 'Invalid blockedId' });
+    var now = Math.floor(Date.now() / 1000);
+    db.prepare('INSERT OR IGNORE INTO user_blocks (blocker_id, blocked_id, created_at) VALUES (?, ?, ?)').run(userId, blockedId, now);
+    return res.json({ success: true });
+  } catch (e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// DELETE /api/blocks/:blockedId  — unblock
+app.delete('/api/blocks/:blockedId', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var blockedId = String(req.params.blockedId || '').trim().slice(0, 64);
+    if (!blockedId) return res.status(400).json({ error: 'Invalid blockedId' });
+    db.prepare('DELETE FROM user_blocks WHERE blocker_id = ? AND blocked_id = ?').run(userId, blockedId);
+    return res.json({ success: true });
+  } catch (e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// GET /api/blocks/check/:userId  — check if I've blocked or been blocked by a user
+app.get('/api/blocks/check/:targetId', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var targetId = String(req.params.targetId || '').trim().slice(0, 64);
+    if (!targetId) return res.status(400).json({ error: 'Invalid targetId' });
+    var iBlocked  = !!db.prepare('SELECT 1 FROM user_blocks WHERE blocker_id = ? AND blocked_id = ?').get(userId, targetId);
+    var theyBlocked = !!db.prepare('SELECT 1 FROM user_blocks WHERE blocker_id = ? AND blocked_id = ?').get(targetId, userId);
+    return res.json({ iBlocked: iBlocked, theyBlocked: theyBlocked });
+  } catch (e) { return res.status(500).json({ error: 'Server error' }); }
 });
 
 // GET /api/schedule
