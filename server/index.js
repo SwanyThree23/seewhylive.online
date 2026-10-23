@@ -556,6 +556,7 @@ var slowModeSeconds     = new Map();  // roomId → seconds (0 = off)
 var slowModeUserTs      = new Map();  // roomId+':'+userId → last message timestamp ms
 var pinnedMessages      = new Map();  // roomId → { id, username, message, ts } | undefined
 var streamGoals         = new Map();  // roomId → { type, target, label } | undefined
+var chyronThrottle      = new Map();  // socketId → lastChyronTs ms (500ms throttle)
 var chyrons             = new Map();  // roomId → chyron data object | undefined
 var overlays            = new Map();  // roomId → overlay config object | undefined
 var subOnlyRooms        = new Set();  // roomIds where subscriber-only mode is active
@@ -593,7 +594,7 @@ setInterval(function() {
    audioChunkThrottle, collabThrottle, superChatThrottle, subscribeThrottle,
    merchOrderThrottle, updateUsernameThrottle, handRaiseThrottle, speakingThrottle,
    chatMsgThrottle, pollVoteThrottle, vsVoteThrottle, qaUpvoteThrottle,
-   judgeScoreThrottle, slowModeUserTs, pinChatThrottle,
+   judgeScoreThrottle, slowModeUserTs, pinChatThrottle, chyronThrottle,
    _aiChatThrottle, _translateThrottle, _summarizeThrottle, powerPlayThrottle].forEach(function(m) {
     m.forEach(function(ts, k) { if (ts < _cut) m.delete(k); });
   });
@@ -2572,8 +2573,11 @@ io.on('connection', function(socket) {
       if (room.userSockets) room.userSockets.delete(guestId);
     }
 
-    // Also kick via personal room so any viewer sockets for this user are notified
-    io.to('user:' + guestId).emit('you-were-kicked', { roomId: roomId });
+    // Only notify via personal room if the user was actually in this room —
+    // prevents a host from sending spurious you-were-kicked to an arbitrary userId.
+    if (room && room.userSockets && room.userSockets.has(guestId)) {
+      io.to('user:' + guestId).emit('you-were-kicked', { roomId: roomId });
+    }
 
     io.to(roomId).emit('guest-kicked', { guestId: guestId });
 
@@ -4168,6 +4172,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var _cyNow = Date.now();
+    if (_cyNow - (chyronThrottle.get(socket.id) || 0) < 500) return;
+    chyronThrottle.set(socket.id, _cyNow);
     var _cStr; try { _cStr = JSON.stringify(data); } catch(e) { return; }
     if (!_cStr || _cStr.length > 8192) return;
     var safe; try { safe = JSON.parse(_cStr); } catch(e) { return; }
