@@ -45,6 +45,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   var [spotlightUserId, setSpotlightUserId] = useState(null);
   var [exitingIds, setExitingIds] = useState(new Set());
   var [panelInvite, setPanelInvite] = useState(null); // { fromUserId, fromUsername } when invite received
+  var [swapSourceId, setSwapSourceId] = useState(null); // userId selected for swap (host only)
   var [pkBattle, setPkBattle] = useState(null);
   var exitTimersRef = useRef({});
   var localStreamRef = useRef(null);
@@ -311,6 +312,17 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       },
       isExpanded: !!slot.is_expanded,
       onExpand: spotlightUserId ? null : function() { panelService.expandTile(socket, roomId, slot.slot_index, !slot.is_expanded); },
+      isSwapSource: !!(swapSourceId && swapSourceId === slot.user_id),
+      onSwap: isHost ? function() {
+        if (!swapSourceId) {
+          setSwapSourceId(slot.user_id);
+        } else if (swapSourceId === slot.user_id) {
+          setSwapSourceId(null);
+        } else {
+          socket.emit('panel:swap_slots', { roomId: roomId, userA: swapSourceId, userB: slot.user_id });
+          setSwapSourceId(null);
+        }
+      } : null,
     };
   }
 

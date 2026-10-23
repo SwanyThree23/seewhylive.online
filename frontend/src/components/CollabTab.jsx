@@ -64,13 +64,14 @@ var TabBtn = function(props) {
 }
 
 export default function CollabTab({ addToast, isLive, userId, username, socket, roomId }) {
-  var [requests,    setRequests]    = useState([]);
-  var [section,     setSection]     = useState('requests');
-  var [inviteMsg,   setInviteMsg]   = useState('');
-  var [inviteType,  setInviteType]  = useState('LIVE COLLAB');
-  var [inviteSplit, setInviteSplit] = useState('50/50');
-  var [chatMsgs,    setChatMsgs]    = useState({});
-  var [chatInputs,  setChatInputs]  = useState({});
+  var [requests,      setRequests]      = useState([]);
+  var [section,       setSection]       = useState('requests');
+  var [inviteMsg,     setInviteMsg]     = useState('');
+  var [inviteType,    setInviteType]    = useState('LIVE COLLAB');
+  var [inviteSplit,   setInviteSplit]   = useState('50/50');
+  var [inviteTarget,  setInviteTarget]  = useState('');
+  var [chatMsgs,      setChatMsgs]      = useState({});
+  var [chatInputs,    setChatInputs]    = useState({});
 
   var chatBoxRefs     = useRef({});
   var addToastRef     = useRef(addToast);
@@ -165,7 +166,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
       return next;
     });
     if (socket && roomId) {
-      socket.emit('collab-message', { roomId: roomId, collabId: collabId, fromUser: username || 'Host', text: inputText });
+      socket.emit('collab-message', { roomId: roomId, collabId: collabId, fromUser: username || 'Host', toCreator: fromName || '', text: inputText });
     }
   }
 
@@ -200,12 +201,15 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
   }
 
   var sendInvite = function(creator) {
-    if (!inviteMsg) return;
+    var target = creator ? creator.n : inviteTarget.trim();
+    if (!target) { addToast('Enter a creator username to invite', 'error'); return; }
+    if (!inviteMsg) { addToast('Add an invite message first', 'error'); return; }
     if (socket && roomId) {
-      socket.emit('collab-request', { roomId: roomId, fromUser: username || 'Host', toCreator: creator.n, type: inviteType, message: inviteMsg, split: inviteSplit });
+      socket.emit('collab-request', { roomId: roomId, fromUser: username || 'Host', toCreator: target, type: inviteType, message: inviteMsg, split: inviteSplit });
     }
-    addToast('📨 Collab invite sent to ' + creator.n + '!', 'success');
+    addToast('📨 Collab invite sent to ' + target + '!', 'success');
     setInviteMsg('');
+    if (!creator) setInviteTarget('');
   }
 
   var activeCollabs = requests.filter(function(r) { return r.status === 'accepted'; });
@@ -348,6 +352,28 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                 rows={3}
                 style={{ width: '100%', background: 'rgba(255,255,255,.04)', border: '1px solid ' + BORDER, borderRadius: 8, padding: '10px 12px', color: TEXT, fontFamily: fM, fontSize: 11, resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.5 }}
               />
+            </div>
+
+            {/* Direct invite by username */}
+            <div style={{ background: FAINT, border: '1px solid ' + BORDER, borderRadius: 12, padding: '14px 16px' }}>
+              <div style={{ fontFamily: fD, fontSize: 13, color: MUTED, letterSpacing: 3, marginBottom: 10 }}>DIRECT INVITE</div>
+              <div style={{ fontFamily: fM, fontSize: 9, color: MUTED, marginBottom: 10, lineHeight: 1.5 }}>
+                Know the creator's username? Send them a collab invite directly.
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  value={inviteTarget}
+                  onChange={function(e) { setInviteTarget(e.target.value); }}
+                  onKeyDown={function(e) { if (e.key === 'Enter') sendInvite(null); }}
+                  placeholder="@username"
+                  style={{ flex: 1, background: 'rgba(255,255,255,.04)', border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: fM, fontSize: 11, outline: 'none' }}
+                />
+                <button
+                  onClick={function() { sendInvite(null); }}
+                  style={{ background: (inviteTarget.trim() && inviteMsg) ? 'linear-gradient(135deg,' + BURG + ',' + BURG_H + ')' : 'rgba(255,255,255,.04)', border: '1px solid ' + ((inviteTarget.trim() && inviteMsg) ? BURG_H + '88' : BORDER), borderRadius: 8, padding: '9px 16px', color: (inviteTarget.trim() && inviteMsg) ? GOLD_H : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 12, cursor: (inviteTarget.trim() && inviteMsg) ? 'pointer' : 'default', letterSpacing: 1, flexShrink: 0 }}>
+                  SEND
+                </button>
+              </div>
             </div>
 
             {/* Creator list */}
