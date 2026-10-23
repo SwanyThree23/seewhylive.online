@@ -353,6 +353,7 @@ export default function App() {
   }
   var [loveTotal, setLoveTotal] = useState(0);
   var [guests, setGuests] = useState([]);
+  var [panelInvite, setPanelInvite] = useState(null);
   var [chat, setChat] = useState([]);
   var [botLogs, setBotLogs] = useState([]);
   var [toasts, setToasts] = useState([]);
@@ -611,8 +612,9 @@ export default function App() {
           }
           if (!existing) return g;
           var merged = Object.assign({}, g);
-          if (existing.producerId)      merged.producerId      = existing.producerId;
-          if (existing.audioProducerId) merged.audioProducerId = existing.audioProducerId;
+          if (existing.producerId)               merged.producerId      = existing.producerId;
+          if (existing.audioProducerId)          merged.audioProducerId = existing.audioProducerId;
+          if (existing.remoteMuted !== undefined) merged.remoteMuted    = existing.remoteMuted;
           return merged;
         });
       });
@@ -924,6 +926,14 @@ export default function App() {
       addToast('⚠ You were removed from this room by the host', 'error');
     });
 
+    socket.on('panel:invite_received', function(payload) {
+      if (!payload || payload.roomId !== APP_ID) return;
+      setPanelInvite({ fromUserId: payload.fromUserId, fromUsername: payload.fromUsername || 'the host' });
+      if (activeTab !== 'panel') {
+        addToast('🎙 ' + (payload.fromUsername || 'The host') + ' invited you to the panel — open the Panel tab', 'info');
+      }
+    });
+
     socket.on('user-sync', function(data) {
       if (!data || !data.event) return;
       if (data.event === 'device_joined' && data.socketId && data.socketId !== socket.id) {
@@ -1138,6 +1148,7 @@ export default function App() {
       socket.off('guest-unmuted');
       socket.off('guest-kicked');
       socket.off('you-were-kicked');
+      socket.off('panel:invite_received');
       socket.off('user-sync');
       socket.off('role-changed');
       socket.off('overlay-update');
@@ -1950,6 +1961,8 @@ export default function App() {
             rtcManager={rtcManager}
             guests={guests}
             addToast={addToast}
+            panelInvite={panelInvite}
+            setPanelInvite={setPanelInvite}
           />
         )}
         {activeTab === 'watchparty' && (

@@ -5475,6 +5475,7 @@ io.on('connection', function(socket) {
     // Remove empty rooms
     if (room.viewers.size === 0 && room.guests.size === 0) {
       rooms.delete(roomId);
+      stageRooms.delete(roomId);
       viewerAlertSnapshot.delete(roomId);
     }
 
