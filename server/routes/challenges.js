@@ -52,6 +52,9 @@ router.post('/', requireAuth, requireAdmin, async function(req, res) {
     if (endsAt && isNaN(Date.parse(endsAt))) {
       return res.status(400).json({ error: 'endsAt must be a valid date string' });
     }
+    if (startsAt && endsAt && new Date(startsAt) >= new Date(endsAt)) {
+      return res.status(400).json({ error: 'startsAt must be before endsAt' });
+    }
     var challenge = await challengeService.createChallenge({
       tenantId: req.tenantId,
       title: title.trim(),

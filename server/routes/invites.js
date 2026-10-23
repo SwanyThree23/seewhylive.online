@@ -34,6 +34,7 @@ router.post('/', requireAuth, inviteRateLimit, async function(req, res) {
   var message = req.body.message;
   var expiryHours = req.body.expiryHours;
   if (!toUserId || !UUID_RE.test(toUserId)) return res.status(400).json({ error: 'invalid toUserId' });
+  if (toUserId === req.user.id) return res.status(400).json({ error: 'cannot invite yourself' });
   if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
   try {
     var safeExpiryHours = Math.min(Math.max(parseInt(expiryHours, 10) || 24, 1), 168);
