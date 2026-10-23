@@ -1359,6 +1359,7 @@ router.post('/fanout-start', requireAuth, fanoutStartRateLimit, async function(r
 
     spawnFanout(streamId, ingestUrl, resolvedDests, 0);
     activeFanouts[streamId] = activeFanouts[streamId] || { ownerId: req.user.id };
+    activeFanouts[streamId].destinations = resolvedDests.map(function(d) { return d.label || d.url || ''; });
     console.log('[fanout:%s] started → %d destinations (guest=%s)', streamId, resolvedDests.length, guestId);
     res.json({ ok: true, stream_id: streamId, destinations: resolvedDests.length });
   } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
@@ -1398,6 +1399,26 @@ router.post('/fanout-stop-all', requireAuth, function(req, res) {
   });
   console.log('[fanout] stop-all: killed %d processes', killed);
   res.json({ ok: true, killed: killed, stream_ids: ids });
+});
+
+// Returns active fanout sessions visible to the caller (own sessions, or all for admin).
+router.get('/fanout-active', requireAuth, function(req, res) {
+  var isAdmin = req.user.role === 'admin';
+  var result = [];
+  Object.keys(activeFanouts).forEach(function(sid) {
+    var entry = activeFanouts[sid];
+    if (!entry) return;
+    if (!isAdmin && entry.ownerId !== req.user.id) return;
+    result.push({
+      stream_id: sid,
+      dest_count: entry.destCount || (entry.destinations ? entry.destinations.length : 0),
+      destinations: entry.destinations || [],
+      restarts: entry.restarts || 0,
+      started_at: entry.startedAt || null,
+      running: !!(entry.process && !entry.process.killed),
+    });
+  });
+  return res.json({ ok: true, fanouts: result });
 });
 
 router.get('/fanout-status', requireAuth, function(req, res) {
