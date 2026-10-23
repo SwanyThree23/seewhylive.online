@@ -137,6 +137,7 @@ const EmbedPlayer              = lazy(() => import('./pages/EmbedPlayer'));
 const OpenRouterHub            = lazy(() => import('./pages/OpenRouterHub'));
 const LLMLinguaStudio          = lazy(() => import('./pages/LLMLinguaStudio'));
 const VDONinjaManager          = lazy(() => import('./pages/VDONinjaManager'));
+const DeviceManager            = lazy(() => import('./pages/DeviceManager'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -268,6 +269,7 @@ export const PAGES = {
     "OpenRouterHub": OpenRouterHub,
     "LLMLinguaStudio": LLMLinguaStudio,
     "VDONinjaManager": VDONinjaManager,
+    "DeviceManager": DeviceManager,
 }
 
 export const pagesConfig = {

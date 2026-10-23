@@ -971,6 +971,9 @@ export default function App() {
       } else if (data.event === 'state_response' && data.roomId) {
         // Another device told us it's in a room — offer to sync
         setSyncRejoinBanner({ roomId: data.roomId, role: data.role || 'viewer', tab: data.tab || 'room' });
+      } else if (data.event === 'force_disconnect') {
+        addToast('🔒 This device was signed out remotely.', 'info');
+        socket.disconnect();
       }
     });
 
