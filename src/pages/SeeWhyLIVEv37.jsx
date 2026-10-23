@@ -31,6 +31,7 @@ import GlobalSearch from '../components/shared/GlobalSearch';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -293,13 +294,23 @@ function SVSPanel() {
       <Card style={{ marginBottom: 16 }}>
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 12, fontWeight: 600 }}>Set Up Battle</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 10, alignItems: 'center' }}>
-          <select value={s1} onChange={e => setS1(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '8px 10px', fontSize: 14 }}>
-            {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <Select value={s1} onValueChange={setS1}>
+            <SelectTrigger aria-label="Battle side 1" style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, fontSize: 14 }}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
           <span style={{ color: C.gold, fontWeight: 900, fontSize: 18 }}>VS</span>
-          <select value={s2} onChange={e => setS2(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '8px 10px', fontSize: 14 }}>
-            {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <Select value={s2} onValueChange={setS2}>
+            <SelectTrigger aria-label="Battle side 2" style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, fontSize: 14 }}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </Card>
 
@@ -388,7 +399,7 @@ function TributePanel() {
         )}
         {tributes.map(t => (
           <Card key={t.id} style={{ borderColor: C.tribute, position: 'relative' }}>
-            <button onClick={() => removeTribute(t.id)} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 16 }}>×</button>
+            <button aria-label="Remove tribute" onClick={() => removeTribute(t.id)} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 16 }}>×</button>
             <div style={{ color: C.tribL, fontWeight: 700, fontSize: 16, marginBottom: 4 }}>🕊 {t.name}</div>
             {t.era && <div style={{ color: C.textM, fontSize: 11, marginBottom: 6 }}>{t.era}</div>}
             {t.msg && <div style={{ color: C.textD, fontSize: 13, lineHeight: 1.5 }}>{t.msg}</div>}
@@ -498,7 +509,7 @@ function PodcastPanel() {
           {sources.map((s, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', background: C.bg2, borderRadius: 6, padding: '6px 10px', fontSize: 12, color: C.textD }}>
               <span>{s.label}</span>
-              <button onClick={() => setSources(prev => prev.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer' }}>×</button>
+              <button aria-label="Remove source" onClick={() => setSources(prev => prev.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer' }}>×</button>
             </div>
           ))}
           <Btn onClick={generate} disabled={loading || !topic.trim()} color={C.ruby} style={{ alignSelf: 'flex-start' }}>
@@ -527,7 +538,7 @@ function PodcastPanel() {
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <a href={isSafeUrl(s.url) ? s.url : undefined} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
-                  <button onClick={() => { const u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); base44.auth.updateMe({ v37_nlm_sources: u }).catch(() => {}); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
+                  <button aria-label="Remove news source" onClick={() => { const u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); base44.auth.updateMe({ v37_nlm_sources: u }).catch(() => {}); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
                 </div>
               </div>
             </Card>
@@ -631,9 +642,14 @@ function MusicPanel() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>Genre</p>
-            <select value={genre} onChange={e => setGenre(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '6px 8px', fontSize: 12, width: '100%' }}>
-              {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
-            </select>
+            <Select value={genre} onValueChange={setGenre}>
+              <SelectTrigger aria-label="Genre" style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, fontSize: 12, width: '100%' }}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {GENRES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>BPM</p>
@@ -641,9 +657,14 @@ function MusicPanel() {
           </div>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>Key</p>
-            <select value={keyV} onChange={e => setKeyV(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '6px 8px', fontSize: 12, width: '100%' }}>
-              {KEYS.map(k => <option key={k} value={k}>{k}</option>)}
-            </select>
+            <Select value={keyV} onValueChange={setKeyV}>
+              <SelectTrigger aria-label="Key" style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, fontSize: 12, width: '100%' }}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {KEYS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <Btn onClick={gen} disabled={loading} color={C.ruby}>{loading ? '⏳ Composing…' : '🎵 Generate Track'}</Btn>

@@ -22,6 +22,7 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
@@ -977,17 +978,25 @@ function MusicStudioPanel() {
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
               <div>
                 <div style={{fontSize:10,color:C.textM,fontWeight:700,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Genre</div>
-                <select value={genre} onChange={e=>setGenre(e.target.value)}
-                  style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,padding:"8px 10px",fontFamily:F.body,fontSize:12,outline:"none"}}>
-                  {GENRES.map(g=><option key={g}>{g}</option>)}
-                </select>
+                <Select value={genre} onValueChange={setGenre}>
+                  <SelectTrigger aria-label="Genre" style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,fontFamily:F.body,fontSize:12}}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GENRES.map(g=><SelectItem key={g} value={g}>{g}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <div style={{fontSize:10,color:C.textM,fontWeight:700,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Key</div>
-                <select value={keyVal} onChange={e=>setKeyVal(e.target.value)}
-                  style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,padding:"8px 10px",fontFamily:F.body,fontSize:12,outline:"none"}}>
-                  {KEYS_LIST.map(k=><option key={k}>{k}</option>)}
-                </select>
+                <Select value={keyVal} onValueChange={setKeyVal}>
+                  <SelectTrigger aria-label="Key" style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,fontFamily:F.body,fontSize:12}}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {KEYS_LIST.map(k=><SelectItem key={k} value={k}>{k}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div style={{marginBottom:14}}>
@@ -2066,7 +2075,7 @@ export default function SeeWhyLIVEv36() {
           display:"flex",alignItems:"center",gap:10,
           padding:"10px 14px",
         }}>
-          <button onClick={()=>setDrawerOpen(!drawerOpen)}
+          <button aria-label={drawerOpen ? "Close menu" : "Open menu"} aria-expanded={drawerOpen} onClick={()=>setDrawerOpen(!drawerOpen)}
             style={{background:"transparent",border:"none",cursor:"pointer",padding:4,display:"flex",flexDirection:"column",gap:4}}>
             <div style={{width:20,height:2,background:drawerOpen?C.gold:C.textD,borderRadius:1,transformOrigin:"center",transform:drawerOpen?"rotate(45deg) translate(4px,4px)":"none",transition:"all .2s"}}/>
             <div style={{width:20,height:2,background:drawerOpen?C.gold:C.textD,borderRadius:1,opacity:drawerOpen?0:1,transition:"all .2s"}}/>
