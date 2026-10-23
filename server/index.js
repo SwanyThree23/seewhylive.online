@@ -248,6 +248,32 @@ db.exec(`CREATE TABLE IF NOT EXISTS power_passes (
   created_at INTEGER NOT NULL
 )`);
 
+// Referral program tables
+db.exec(`CREATE TABLE IF NOT EXISTS referrals (
+  id           TEXT PRIMARY KEY,
+  referrer_id  TEXT NOT NULL,
+  referred_id  TEXT,
+  code         TEXT NOT NULL UNIQUE,
+  status       TEXT NOT NULL DEFAULT 'pending',
+  lives_count  INTEGER NOT NULL DEFAULT 0,
+  unlocked_at  INTEGER,
+  expires_at   INTEGER,
+  created_at   INTEGER NOT NULL
+)`);
+db.exec(`CREATE TABLE IF NOT EXISTS referral_earnings (
+  id            TEXT PRIMARY KEY,
+  referral_id   TEXT NOT NULL,
+  referrer_id   TEXT NOT NULL,
+  referred_id   TEXT NOT NULL,
+  source_cents  INTEGER NOT NULL,
+  bonus_cents   INTEGER NOT NULL,
+  source_type   TEXT NOT NULL,
+  created_at    INTEGER NOT NULL
+)`);
+try { db.exec('ALTER TABLE user_profiles ADD COLUMN referral_code TEXT'); } catch(_) {}
+try { db.exec('ALTER TABLE user_profiles ADD COLUMN referred_by TEXT'); } catch(_) {}
+try { db.exec('ALTER TABLE user_profiles ADD COLUMN pro_until INTEGER DEFAULT 0'); } catch(_) {}
+
 // Seed gift types if none exist
 var giftCount = db.prepare('SELECT COUNT(*) as c FROM gift_types').get();
 if (giftCount.c === 0) {
@@ -969,6 +995,77 @@ app.post('/api/power-pass/buy', requireAuth, function(req, res) {
     db.prepare('INSERT INTO power_passes (id, user_id, source, expires_at, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET expires_at = excluded.expires_at, source = excluded.source')
       .run(passId, userId, 'purchase', expiresAt, now);
     return res.json({ success: true, expiresAt: expiresAt });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── Referral Program ────────────────────────────────────────────────────────
+// GET /api/referral/code  — get or create this user's referral code
+app.get('/api/referral/code', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    // Ensure user_profiles row exists
+    var profile = db.prepare('SELECT referral_code FROM user_profiles WHERE user_id = ?').get(userId);
+    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+    var code = profile.referral_code;
+    if (!code) {
+      code = userId.replace(/-/g, '').slice(0, 8).toUpperCase() + Math.floor(Math.random() * 1000);
+      db.prepare('UPDATE user_profiles SET referral_code = ? WHERE user_id = ?').run(code, userId);
+      // Also create referrals row for this referrer
+      var now = Math.floor(Date.now() / 1000);
+      db.prepare('INSERT OR IGNORE INTO referrals (id, referrer_id, code, status, lives_count, created_at) VALUES (?, ?, ?, ?, 0, ?)').run(uuidv4(), userId, code, 'pending', now);
+    }
+    var stats = db.prepare('SELECT COUNT(*) as total, SUM(CASE WHEN status=\'unlocked\' THEN 1 ELSE 0 END) as unlocked FROM referrals WHERE referrer_id = ?').get(userId);
+    return res.json({ code: code, total: stats.total || 0, unlocked: stats.unlocked || 0 });
+  } catch (e) {
+    logger.error('[referral/code] ' + e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/referral/register  — referred creator registers with a code
+app.post('/api/referral/register', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var code = String((req.body && req.body.code) || '').trim().toUpperCase().slice(0, 20);
+    if (!code) return res.status(400).json({ error: 'code required' });
+    // Prevent self-referral
+    var myProfile = db.prepare('SELECT referral_code, referred_by FROM user_profiles WHERE user_id = ?').get(userId);
+    if (myProfile && myProfile.referral_code === code) return res.status(400).json({ error: 'Cannot use your own code' });
+    if (myProfile && myProfile.referred_by) return res.status(400).json({ error: 'Already registered with a referral code' });
+    // Find the referral row
+    var referral = db.prepare('SELECT * FROM referrals WHERE code = ? AND referred_id IS NULL').get(code);
+    if (!referral) return res.status(404).json({ error: 'Invalid or already-used referral code' });
+    if (referral.referrer_id === userId) return res.status(400).json({ error: 'Cannot use your own code' });
+    var now = Math.floor(Date.now() / 1000);
+    // Link referred user to referral
+    db.prepare('UPDATE referrals SET referred_id = ?, expires_at = ? WHERE id = ?').run(userId, now + 30 * 24 * 3600, referral.id);
+    db.prepare('UPDATE user_profiles SET referred_by = ? WHERE user_id = ?').run(referral.referrer_id, userId);
+    // Grant 30-day Pro and 500 loyalty points to referred creator
+    db.prepare('UPDATE user_profiles SET tier = \'pro\', pro_until = ? WHERE user_id = ?').run(now + 30 * 24 * 3600, userId);
+    // Grant 500 loyalty points (best-effort via Postgres loyaltyService)
+    try {
+      var { loyaltyService } = require('./services/loyaltyService');
+      if (loyaltyService && loyaltyService.addPoints) loyaltyService.addPoints(userId, null, 500, 'referral_bonus', referral.id);
+    } catch(_) {}
+    return res.json({ success: true, message: '30 days Pro + 500 Fuel granted! Go live 3 times in 30 days to unlock your referrer\'s bonus.' });
+  } catch (e) {
+    logger.error('[referral/register] ' + e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/referral/stats  — referrer's earnings summary
+app.get('/api/referral/stats', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var earnings = db.prepare('SELECT COALESCE(SUM(bonus_cents),0) as total FROM referral_earnings WHERE referrer_id = ?').get(userId);
+    var referrals = db.prepare('SELECT r.code, r.status, r.lives_count, r.unlocked_at, up.username as referred_username FROM referrals r LEFT JOIN user_profiles up ON up.user_id = r.referred_id WHERE r.referrer_id = ? ORDER BY r.created_at DESC LIMIT 50').all(userId);
+    return res.json({ totalBonusCents: Math.floor(earnings.total || 0), referrals: referrals });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }
@@ -2577,6 +2674,23 @@ io.on('connection', function(socket) {
 
       swanybot.onGiftReceived(roomId, fromUser, name, valueCents);
 
+      // Referral bonus — 10% of creator's earnings, paid by platform, recorded for referrer
+      if (valueCents > 0) {
+        try {
+          var _giftRoom2 = rooms.get(roomId);
+          var _hostId2   = _giftRoom2 ? _giftRoom2.hostUserId : null;
+          if (_hostId2) {
+            var _refBonusRow = db.prepare('SELECT r.id, r.referrer_id FROM referrals r WHERE r.referred_id = ? AND r.status = \'unlocked\' AND r.created_at > ? LIMIT 1').get(_hostId2, Math.floor(Date.now() / 1000) - 365 * 24 * 3600);
+            if (_refBonusRow) {
+              var _bonusCents = Math.floor(creatorCents * 0.10);
+              if (_bonusCents > 0) {
+                db.prepare('INSERT INTO referral_earnings (id, referral_id, referrer_id, referred_id, source_cents, bonus_cents, source_type, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(uuidv4(), _refBonusRow.id, _refBonusRow.referrer_id, _hostId2, creatorCents, _bonusCents, 'gift', Math.floor(Date.now() / 1000));
+              }
+            }
+          }
+        } catch (_refBErr) { logger.warn('[gift-commit] referral bonus: ' + _refBErr.message); }
+      }
+
       var prevRevenue = sessionRevenue.get(roomId) || 0;
       var newRevenue  = prevRevenue + valueCents;
       sessionRevenue.set(roomId, newRevenue);
@@ -3998,6 +4112,26 @@ io.on('connection', function(socket) {
     }
 
     if (ack) ack({ started: true });
+
+    // Referral: track lives for referred creators — unlock after 3 lives in 30 days
+    if (!wasAlreadyLive) {
+      try {
+        var _refHostId = socket.data.userId;
+        if (_refHostId) {
+          var _refRow = db.prepare('SELECT id, lives_count, expires_at, referrer_id FROM referrals WHERE referred_id = ? AND status = \'pending\'').get(_refHostId);
+          if (_refRow && _refRow.expires_at > Math.floor(Date.now() / 1000)) {
+            var _newLives = (_refRow.lives_count || 0) + 1;
+            db.prepare('UPDATE referrals SET lives_count = ? WHERE id = ?').run(_newLives, _refRow.id);
+            if (_newLives >= 3) {
+              var _unlockTs = Math.floor(Date.now() / 1000);
+              db.prepare('UPDATE referrals SET status = \'unlocked\', unlocked_at = ? WHERE id = ?').run(_unlockTs, _refRow.id);
+              // Notify referrer
+              io.to('user:' + _refRow.referrer_id).emit('notification', { type: 'referral', message: '🎉 Your referral unlocked! You\'ll earn 10% of their earnings for 12 months.', ts: Date.now() });
+            }
+          }
+        }
+      } catch (_refErr) { logger.warn('[go-live] referral track: ' + _refErr.message); }
+    }
 
     // Send push notifications to all subscribers (once per go-live, not on replay)
     if (wasAlreadyLive) return;
