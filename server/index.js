@@ -2264,6 +2264,7 @@ io.on('connection', function(socket) {
 
   // ── join-room ──────────────────────────────────────────────────────────
   socket.on('join-room', function(data, ack) {
+    if (!data) { if (ack) ack({ error: 'data required' }); return; }
     var roomId   = data.roomId;
     var guestId  = socket.data.userId;
     var username = String(data.username || 'Guest').slice(0, 32);
@@ -2910,6 +2911,7 @@ io.on('connection', function(socket) {
 
   // ── update-username ────────────────────────────────────────────────────
   socket.on('update-username', function(data) {
+    if (!data) return;
     var roomId   = socket.data.roomId;
     var newName  = String(data.username || '').trim().slice(0, 32);
     if (/^[🛡✂🎤📡]/u.test(newName)) {
@@ -2941,6 +2943,7 @@ io.on('connection', function(socket) {
 
   // ── chat-message ───────────────────────────────────────────────────────
   socket.on('chat-message', function(data) {
+    if (!data) return;
     var roomId   = socket.data.roomId;
     var username = socket.data.username || 'Guest';
     var message  = String(data.message || '').slice(0, 500);
@@ -3425,6 +3428,7 @@ io.on('connection', function(socket) {
 
   // ── power-play approval (host only) ────────────────────────────────────
   socket.on('power-play:approve', function(data) {
+    if (!data) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var playId = String(data.playId || '');
     var pending = pendingPowerPlays.get(playId);
@@ -3441,6 +3445,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('power-play:reject', function(data) {
+    if (!data) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var playId = String(data.playId || '');
     var pending = pendingPowerPlays.get(playId);
@@ -3617,6 +3622,7 @@ io.on('connection', function(socket) {
 
   // ── overlay-update ────────────────────────────────────────────────────
   socket.on('overlay-update', function(data) {
+    if (!data) return;
     var roomId = socket.data.roomId;
     if (!roomId || !data.overlay) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -3651,6 +3657,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('watch-party-url', function(data) {
+    if (!data) return;
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (!data.videoId && !data.url) return;
@@ -3684,6 +3691,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('watch-party-play', function(data) {
+    if (!data) return;
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -3702,6 +3710,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('watch-party-pause', function(data) {
+    if (!data) return;
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -3719,6 +3728,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('watch-party-seek', function(data) {
+    if (!data) return;
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -3736,6 +3746,7 @@ io.on('connection', function(socket) {
 
   // Host pushes a full sync to all room viewers
   socket.on('watch-party-sync', function(data) {
+    if (!data) return;
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -3788,6 +3799,7 @@ io.on('connection', function(socket) {
 
   // ── bot-manual-message ─────────────────────────────────────────────────
   socket.on('bot-manual-message', function(data) {
+    if (!data) return;
     var roomId = socket.data.roomId;
     if (!roomId || !data.message) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
@@ -3810,6 +3822,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('bot-add-trigger', function(data) {
+    if (!data) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = socket.data.roomId;
     if (!roomId || !data.trigger) return;
@@ -3829,6 +3842,7 @@ io.on('connection', function(socket) {
 
   // ── room settings (audio-only, private, paywall) ──────────────────────
   socket.on('room-audio-only', function(data) {
+    if (!data) return;
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
