@@ -3849,7 +3849,7 @@ io.on('connection', function(socket) {
     if (!roomId || !data.trigger) return;
     var _trig = data.trigger;
     if (!_trig || typeof _trig !== 'object' || !_trig.id || !_trig.keyword) return;
-    io.to(roomId).emit('bot-trigger-added', { trigger: { id: String(_trig.id).slice(0, 64), keyword: String(_trig.keyword).slice(0, 100), response: String(_trig.response || '').slice(0, 300) } });
+    io.to(roomId).emit('bot-trigger-added', { trigger: { id: String(_trig.id).slice(0, 64), keyword: String(_trig.keyword).slice(0, 50), response: String(_trig.response || '').slice(0, 500) } });
   });
 
   socket.on('bot-remove-trigger', function(data) {
