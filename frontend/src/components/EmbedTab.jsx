@@ -11,7 +11,7 @@ function _authHeaders(extra) {
   return Object.assign(h, extra || {});
 }
 
-function PaywallForm({ onUnlock, roomId, addToast }) {
+function PaywallForm({ onUnlock, roomId, addToast, ppvPriceCents }) {
   var processingState = useState(false);
   var processing = processingState[0];
   var setProcessing = processingState[1];
@@ -19,7 +19,8 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
   var error = errorState[0];
   var setError = errorState[1];
 
-  var creatorCents = Math.floor(PPV_PRICE_USD * 100 * CREATOR_SPLIT);
+  var actualCents = ppvPriceCents && ppvPriceCents > 0 ? ppvPriceCents : 499;
+  var creatorCents = Math.floor(actualCents * CREATOR_SPLIT);
   var creatorAmt = (creatorCents / 100).toFixed(2);
 
   var handleSubmit = async function(e) {
@@ -31,7 +32,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
       var res = await fetch('/api/ppv/create', {
         method: 'POST',
         headers: _authHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ streamId: roomId, viewerId: 'viewer-' + Date.now(), priceCents: 499 })
+        body: JSON.stringify({ streamId: roomId, priceCents: actualCents })
       });
       if (!res.ok) { var errD = await res.json(); throw new Error((errD && errD.error) || 'Payment initiation failed'); }
       var data = await res.json();
@@ -90,7 +91,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
           letterSpacing: '1px'
         }}
       >
-        ${PPV_PRICE_USD.toFixed(2)}
+        ${(actualCents / 100).toFixed(2)}
       </div>
       <div
         style={{
@@ -141,7 +142,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
   );
 }
 
-export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
+export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive, ppvEnabled, ppvPrice }) {
   var videoRef = useRef(null);
   var hlsRef = useRef(null);
   var showPaywallState = useState(false);
@@ -215,7 +216,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
   }, [isLive, ppvToken, retryKey, roomId]);
 
   useEffect(function() {
-    if (ppvToken || !isLive) return;
+    if (ppvToken || !isLive || !ppvEnabled) return;
     previewTimerRef.current = PREVIEW_SECONDS;
     var interval = setInterval(function() {
       previewTimerRef.current -= 1;
@@ -228,7 +229,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
       }
     }, 1000);
     return function() { clearInterval(interval); };
-  }, [ppvToken, isLive]);
+  }, [ppvToken, isLive, ppvEnabled]);
 
   useEffect(function() {
     var code = '<iframe src="https://srv1581658.hstgr.cloud/embed/' + roomId + '" width="640" height="360" frameborder="0" allowfullscreen></iframe>';
@@ -325,7 +326,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
                 style={{ width: '100%', maxHeight: 360, background: '#07050A', display: 'block' }}
               />
 
-              {!ppvToken && !previewExpired && isLive && (
+              {!ppvToken && !previewExpired && isLive && ppvEnabled && (
                 <div
                   style={{
                     position: 'absolute',
@@ -352,7 +353,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
                 </div>
               )}
 
-              {showPaywall && !ppvToken && (
+              {showPaywall && !ppvToken && ppvEnabled && (
                 <div
                   style={{
                     position: 'absolute',
@@ -369,7 +370,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
                     boxSizing: 'border-box'
                   }}
                 >
-                  <PaywallForm onUnlock={handleUnlock} roomId={roomId} />
+                  <PaywallForm onUnlock={handleUnlock} roomId={roomId} ppvPriceCents={ppvPrice} />
                 </div>
               )}
             </div>

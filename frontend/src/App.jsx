@@ -1700,6 +1700,8 @@ export default function App() {
             ppvToken={ppvToken}
             setPpvToken={setPpvToken}
             isLive={isLive}
+            ppvEnabled={paidRoom.enabled}
+            ppvPrice={paidRoom.priceCents}
           />
         )}
         {activeTab === 'bot' && (
