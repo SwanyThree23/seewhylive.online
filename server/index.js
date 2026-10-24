@@ -515,6 +515,9 @@ var io = new Server(server, {
   }
 });
 
+// Make io accessible to routes mounted via app.use (e.g. on_done RTMP webhook)
+app.set('io', io);
+
 // ─── SwanyBot instance ────────────────────────────────────────────────────
 var swanybot = new SwanyBot(io);
 
@@ -5409,6 +5412,14 @@ io.on('connection', function(socket) {
     rooms.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
+    // Remove stale HLS segments left on disk by nginx-rtmp
+    if (/^[0-9a-f-]{36}$/i.test(roomId)) {
+      require('child_process').exec(
+        'rm -rf /var/www/html/hls/' + roomId,
+        function(err) { if (err) logger.warn('[end-broadcast] HLS cleanup failed: ' + err.message); }
+      );
+    }
+
     if (ack) ack({ ended: true });
   });
 
@@ -6088,6 +6099,16 @@ app.use(function(err, req, res, next) {
 mediasoup.createWorkers()
   .then(function() {
     logger.info('mediasoup workers ready');
+    // Clear stale is_live flags left by a previous crash or unclean shutdown
+    return db.query(
+      "UPDATE streams SET is_live = false, ended_at = NOW() WHERE is_live = true AND ended_at IS NULL"
+    ).then(function(r) {
+      if (r.rowCount > 0) logger.info('[startup] cleared ' + r.rowCount + ' stale live stream(s)');
+    }).catch(function(e) {
+      logger.warn('[startup] is_live reset failed: ' + e.message);
+    });
+  })
+  .then(function() {
     server.listen(PORT, '0.0.0.0', function() {
       logger.info('SeeWhy LIVE v33.0 server listening on port ' + PORT);
     });
