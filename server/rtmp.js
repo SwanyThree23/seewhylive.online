@@ -268,10 +268,18 @@ function getAllFanouts() {
   return result;
 }
 
+function stopAllFanouts() {
+  var roomIds = Array.from(fanouts.keys());
+  roomIds.forEach(function(roomId) {
+    try { stopFanout(roomId); } catch (e) { /* ignore */ }
+  });
+}
+
 // ─── Exports ──────────────────────────────────────────────────────────────
 module.exports = {
   startFanout:    startFanout,
   stopFanout:     stopFanout,
+  stopAllFanouts: stopAllFanouts,
   getFanoutStatus: getFanoutStatus,
   getAllFanouts:   getAllFanouts,
   on:   emitter.on.bind(emitter),

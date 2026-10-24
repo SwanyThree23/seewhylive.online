@@ -6096,7 +6096,10 @@ process.on('SIGTERM', function() {
 
   // Give clients 1s to receive the notification, then close everything
   setTimeout(function() {
-    // Stop all FFmpeg processes
+    // Kill any FFmpeg processes not tracked under a live room (orphan guard)
+    try { rtmp.stopAllFanouts(); } catch (e) { /* ignore */ }
+
+    // Stop all FFmpeg processes per room
     rooms.forEach(function(room, roomId) {
       try {
         rtmp.stopFanout(roomId);
