@@ -83,6 +83,18 @@
     touch-action: pan-y;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    /* Prevent accidental highlight-selection on UI chrome for native app feel */
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Opt back in for readable text and form controls */
+  p, li, article, blockquote, .select-text,
+  .chat-bubble, .chat-message, .message-body, .message-content,
+  .clip-title, .stream-title, .bio-text,
+  input, textarea, [contenteditable="true"], [contenteditable=""] {
+    -webkit-user-select: text;
+    user-select: text;
   }
   /* Hide all scrollbars globally for native app feel */
   * {
