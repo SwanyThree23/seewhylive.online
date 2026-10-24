@@ -2860,9 +2860,6 @@ p, textarea, input, .selectable-text, .selectable-text * {
     width: 360px;
     max-width: 400px;
   }
-  .stats-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
   .stage-panel-cell {
     border-radius: 10px;
   }
