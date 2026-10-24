@@ -206,17 +206,32 @@ function sendPushNotification(subscription, title, body, data) {
   });
 }
 
+// LEGACY — single-subscription-per-user. This table was superseded by the
+// multi-device push_subscriptions schema defined in server/index.js, which is
+// the authoritative schema (keyed on endpoint with separate device_id/device_name
+// columns). index.js runs CREATE TABLE IF NOT EXISTS first; the upsert below
+// will silently no-op if a row with this user_id already exists in the new table
+// (the new table has no UNIQUE(user_id) constraint). New code should use the
+// push_subscriptions rows from index.js instead of calling this function.
+// @deprecated — use index.js /api/push/subscriptions routes instead.
 var stmtUpsertPushSub = db.prepare(
-  'INSERT INTO push_subscriptions (user_id, subscription_json, updated_at)' +
-  ' VALUES (?, ?, ?)' +
-  ' ON CONFLICT(user_id) DO UPDATE SET subscription_json = excluded.subscription_json, updated_at = excluded.updated_at'
+  'INSERT OR IGNORE INTO push_subscriptions (endpoint, user_id, p256dh, auth, created_at)' +
+  ' VALUES (?, ?, ?, ?, ?)'
 );
 
 function subscribeToNotifications(userId, pushSubscription) {
   _pushSubscriptions[userId] = pushSubscription;
-  var now = Date.now();
+  var now = Math.floor(Date.now() / 1000);
   try {
-    stmtUpsertPushSub.run(userId, JSON.stringify(pushSubscription), now);
+    var sub = pushSubscription || {};
+    var keys = sub.keys || {};
+    stmtUpsertPushSub.run(
+      String(sub.endpoint || ''),
+      String(userId || ''),
+      String(keys.p256dh || ''),
+      String(keys.auth || ''),
+      now
+    );
   } catch (e) {
     console.error('[notifications] DB push subscription save error: ' + e.message);
   }

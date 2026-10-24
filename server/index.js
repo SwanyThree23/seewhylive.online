@@ -260,6 +260,22 @@ db.exec(`CREATE TABLE IF NOT EXISTS power_passes (
 )`);
 db.prepare('CREATE INDEX IF NOT EXISTS idx_power_passes_user ON power_passes(user_id)').run();
 
+// FUEL currency tables
+db.exec(`CREATE TABLE IF NOT EXISTS fuel_balances (
+  user_id    TEXT    PRIMARY KEY,
+  balance    INTEGER NOT NULL DEFAULT 0,
+  updated_at INTEGER NOT NULL
+)`);
+db.exec(`CREATE TABLE IF NOT EXISTS fuel_transactions (
+  id         TEXT    PRIMARY KEY,
+  user_id    TEXT    NOT NULL,
+  amount     INTEGER NOT NULL,
+  type       TEXT    NOT NULL,
+  ref_id     TEXT,
+  created_at INTEGER NOT NULL
+)`);
+db.prepare('CREATE INDEX IF NOT EXISTS idx_fuel_tx_user ON fuel_transactions(user_id)').run();
+
 // Referral program tables
 db.exec(`CREATE TABLE IF NOT EXISTS referrals (
   id           TEXT PRIMARY KEY,
@@ -1127,17 +1143,95 @@ app.get('/api/power-pass/status', requireAuth, function(req, res) {
   }
 });
 
-// POST /api/power-pass/buy  — grants 30-day Power Pass (Stripe payment handled client-side before this call)
+// POST /api/power-pass/buy  — grants 30-day Power Pass; deducts 500 FUEL atomically
 app.post('/api/power-pass/buy', requireAuth, function(req, res) {
   try {
     var userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Not authenticated' });
     var now = Math.floor(Date.now() / 1000);
     var expiresAt = now + 30 * 24 * 3600;
-    var passId = require('crypto').randomUUID ? require('crypto').randomUUID() : uuidv4();
-    db.prepare('INSERT INTO power_passes (id, user_id, source, expires_at, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET expires_at = excluded.expires_at, source = excluded.source')
-      .run(passId, userId, 'purchase', expiresAt, now);
+    var passId = uuidv4();
+    var txId   = uuidv4();
+    var buyPass = db.transaction(function() {
+      var balRow = db.prepare('SELECT balance FROM fuel_balances WHERE user_id = ?').get(userId);
+      var currentBalance = (balRow && balRow.balance) || 0;
+      if (currentBalance < 500) throw Object.assign(new Error('insufficient_fuel'), { code: 'insufficient_fuel' });
+      db.prepare('UPDATE fuel_balances SET balance = balance - 500, updated_at = ? WHERE user_id = ?').run(now, userId);
+      db.prepare('INSERT INTO fuel_transactions (id, user_id, amount, type, ref_id, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(txId, userId, -500, 'power_pass', passId, now);
+      db.prepare('INSERT INTO power_passes (id, user_id, source, expires_at, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET expires_at = excluded.expires_at, source = excluded.source').run(passId, userId, 'purchase', expiresAt, now);
+    });
+    buyPass();
     return res.json({ success: true, expiresAt: expiresAt });
+  } catch (e) {
+    if (e.code === 'insufficient_fuel') return res.status(402).json({ error: 'Insufficient FUEL — 500 FUEL required' });
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── FUEL Currency ─────────────────────────────────────────────────────────────
+// GET /api/fuel/balance
+app.get('/api/fuel/balance', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var row = db.prepare('SELECT balance FROM fuel_balances WHERE user_id = ?').get(userId);
+    return res.json({ balance: (row && row.balance) || 0 });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/fuel/purchase  — credit FUEL after Stripe payment confirmed client-side
+app.post('/api/fuel/purchase', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var amountFuel = parseInt(req.body && req.body.amountFuel, 10);
+    if (!amountFuel || amountFuel <= 0 || amountFuel > 100000) return res.status(400).json({ error: 'Invalid amountFuel' });
+    var now = Math.floor(Date.now() / 1000);
+    var txId = uuidv4();
+    var credit = db.transaction(function() {
+      var existing = db.prepare('SELECT balance FROM fuel_balances WHERE user_id = ?').get(userId);
+      if (existing) {
+        db.prepare('UPDATE fuel_balances SET balance = balance + ?, updated_at = ? WHERE user_id = ?').run(amountFuel, now, userId);
+      } else {
+        db.prepare('INSERT INTO fuel_balances (user_id, balance, updated_at) VALUES (?, ?, ?)').run(userId, amountFuel, now);
+      }
+      db.prepare('INSERT INTO fuel_transactions (id, user_id, amount, type, ref_id, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(txId, userId, amountFuel, 'purchase', String((req.body && req.body.paymentIntentId) || ''), now);
+    });
+    credit();
+    var newRow = db.prepare('SELECT balance FROM fuel_balances WHERE user_id = ?').get(userId);
+    return res.json({ success: true, balance: (newRow && newRow.balance) || 0 });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/fuel/confirm  — idempotent credit with paymentIntentId dedup
+app.post('/api/fuel/confirm', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var paymentIntentId = req.body && req.body.paymentIntentId;
+    if (!paymentIntentId || typeof paymentIntentId !== 'string') return res.status(400).json({ error: 'paymentIntentId required' });
+    var amountFuel = parseInt(req.body.amountFuel, 10);
+    if (!amountFuel || amountFuel <= 0 || amountFuel > 100000) return res.status(400).json({ error: 'Invalid amountFuel' });
+    var dup = db.prepare('SELECT id FROM fuel_transactions WHERE type = ? AND ref_id = ?').get('purchase', paymentIntentId);
+    if (dup) return res.status(409).json({ error: 'Payment already applied' });
+    var now = Math.floor(Date.now() / 1000);
+    var txId = uuidv4();
+    var credit = db.transaction(function() {
+      var existing = db.prepare('SELECT balance FROM fuel_balances WHERE user_id = ?').get(userId);
+      if (existing) {
+        db.prepare('UPDATE fuel_balances SET balance = balance + ?, updated_at = ? WHERE user_id = ?').run(amountFuel, now, userId);
+      } else {
+        db.prepare('INSERT INTO fuel_balances (user_id, balance, updated_at) VALUES (?, ?, ?)').run(userId, amountFuel, now);
+      }
+      db.prepare('INSERT INTO fuel_transactions (id, user_id, amount, type, ref_id, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(txId, userId, amountFuel, 'purchase', paymentIntentId, now);
+    });
+    credit();
+    var newRow = db.prepare('SELECT balance FROM fuel_balances WHERE user_id = ?').get(userId);
+    return res.json({ success: true, balance: (newRow && newRow.balance) || 0 });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }
