@@ -4,20 +4,29 @@ import { MobileSelect } from '@/components/ui/MobileSelect';
 import { Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp, Music, Radio, Zap, Headphones } from 'lucide-react';
 
 const BG_MUSIC = [
-  { id: 'none', label: 'No Music' },
-  { id: 'lofi', label: '🎵 Lo-Fi Chill' },
-  { id: 'upbeat', label: '🎶 Upbeat Pop' },
-  { id: 'ambient', label: '🌌 Ambient Space' },
-  { id: 'jazz', label: '🎷 Smooth Jazz' },
-  { id: 'edm', label: '⚡ Electronic' },
-  { id: 'acoustic', label: '🎸 Acoustic' },
+  { id: 'none',      label: 'No Music' },
+  { id: 'lofi',      label: '🎵 Lo-Fi Chill' },
+  { id: 'upbeat',    label: '🎶 Upbeat Pop' },
+  { id: 'ambient',   label: '🌌 Ambient Space' },
+  { id: 'jazz',      label: '🎷 Smooth Jazz' },
+  { id: 'edm',       label: '⚡ Electronic' },
+  { id: 'acoustic',  label: '🎸 Acoustic' },
+  { id: 'rnb',       label: '🎤 R&B / Soul' },
+  { id: 'hiphop',    label: '🔊 Hip-Hop' },
+  { id: 'classical', label: '🎻 Classical' },
+  { id: 'nature',    label: '🌿 Nature Sounds' },
+  { id: 'trap',      label: '🥁 Trap / Bass' },
+  { id: 'deephouse', label: '🏠 Deep House' },
 ];
 
 const AUDIO_PRESETS = [
-  { id: 'normal', label: 'Normal', settings: { gain: 100, noiseFilter: true, echo: true } },
-  { id: 'music', label: 'Music', settings: { gain: 120, noiseFilter: false, echo: true } },
-  { id: 'podcast', label: 'Podcast', settings: { gain: 110, noiseFilter: true, echo: false } },
-  { id: 'voice', label: 'Voice Enhance', settings: { gain: 130, noiseFilter: true, echo: false } },
+  { id: 'normal',      label: 'Normal',      settings: { gain: 100, noiseFilter: true,  echo: true  } },
+  { id: 'music',       label: 'Music',       settings: { gain: 120, noiseFilter: false, echo: true  } },
+  { id: 'podcast',     label: 'Podcast',     settings: { gain: 110, noiseFilter: true,  echo: false } },
+  { id: 'voice',       label: 'Voice+',      settings: { gain: 130, noiseFilter: true,  echo: false } },
+  { id: 'gaming',      label: 'Gaming',      settings: { gain: 105, noiseFilter: true,  echo: true  } },
+  { id: 'interview',   label: 'Interview',   settings: { gain: 115, noiseFilter: true,  echo: false } },
+  { id: 'broadcast',   label: 'Broadcast',   settings: { gain: 125, noiseFilter: true,  echo: false } },
 ];
 
 export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSettingsChange, stream }) {
@@ -26,10 +35,14 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
   const [gain, setGain] = useState([100]);
   const [noiseSuppression, setNoiseSuppression] = useState(true);
   const [echoCancellation, setEchoCancellation] = useState(true);
-  const [speakerMuted, setSpeakerMuted] = useState(false);
-  const [bgMusic, setBgMusic] = useState('none');
-  const [vuLevels, setVuLevels] = useState([0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02]);
-  const [mono, setMono] = useState(false);
+  const [speakerMuted,   setSpeakerMuted]   = useState(false);
+  const [bgMusic,        setBgMusic]        = useState('none');
+  const [bgMusicVol,     setBgMusicVol]     = useState([70]);
+  const [vuLevels,       setVuLevels]       = useState([0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02]);
+  const [mono,           setMono]           = useState(false);
+  const [reverb,         setReverb]         = useState(false);
+  const [stereoEnhance,  setStereoEnhance]  = useState(false);
+  const [showAdvanced,   setShowAdvanced]   = useState(false);
 
   // Real AudioContext VU analysis from the mic stream
   useEffect(() => {
@@ -76,9 +89,12 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
       noiseSuppression,
       echoCancellation,
       bgMusic,
+      bgMusicVol: bgMusicVol[0],
       monoMode: mono,
+      reverb,
+      stereoEnhance,
     });
-  }, [gain, noiseSuppression, echoCancellation, bgMusic, mono]);
+  }, [gain, noiseSuppression, echoCancellation, bgMusic, bgMusicVol, mono, reverb, stereoEnhance]);
 
   const avgLevel = vuLevels.reduce((a, b) => a + b) / vuLevels.length;
   const levelColor = avgLevel > 0.8 ? '#C0392B' : avgLevel > 0.5 ? '#C9A84C' : '#6DBF7E';
@@ -203,7 +219,39 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               options={BG_MUSIC.map(m => ({ value: m.id, label: m.label }))}
               placeholder="Select music"
             />
+            {bgMusic !== 'none' && (
+              <div className="space-y-1">
+                <div className="flex justify-between">
+                  <p className="text-[10px] text-white/40">Music Volume</p>
+                  <p className="text-[10px] font-mono text-[#d4af37]">{bgMusicVol[0]}%</p>
+                </div>
+                <input type="range" value={bgMusicVol[0]} onChange={e => setBgMusicVol([+e.target.value])} min={0} max={100} step={5} style={{ width: '100%', accentColor: '#D4AF37' }} />
+              </div>
+            )}
           </div>
+
+          {/* Advanced section toggle */}
+          <button
+            onClick={() => setShowAdvanced(v => !v)}
+            className="w-full text-left text-[10px] text-white/30 flex items-center gap-1 hover:text-white/50 transition-colors"
+          >
+            <Zap className="w-3 h-3" />
+            <span>Advanced</span>
+            {showAdvanced ? <ChevronUp className="w-3 h-3 ml-auto" /> : <ChevronDown className="w-3 h-3 ml-auto" />}
+          </button>
+
+          {showAdvanced && (
+            <div className="space-y-2 border-t border-white/5 pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-white/60 flex items-center gap-1"><Radio className="w-3 h-3" /> Reverb</span>
+                <div onClick={() => setReverb(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: reverb ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: reverb ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-white/60 flex items-center gap-1"><Headphones className="w-3 h-3" /> Stereo Enhance</span>
+                <div onClick={() => setStereoEnhance(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: stereoEnhance ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: stereoEnhance ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
     </div>

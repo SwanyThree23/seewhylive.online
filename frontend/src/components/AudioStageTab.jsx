@@ -66,6 +66,9 @@ export default function AudioStageTab(props) {
   var [activeSpeaker,setActiveSpeaker]= useState('');
   var [pinInput,     setPinInput]     = useState('');
   var [pinnedYtId,   setPinnedYtId]   = useState('');
+  var [speakerVols,  setSpeakerVols]  = useState({});
+  var [stageElapsed, setStageElapsed] = useState(0);
+  var [stageStats,   setStageStats]   = useState({ peakSpeakers: 0, totalHands: 0 });
 
   var micStreamRef  = useRef(null);
   var audioCtxRef   = useRef(null);
@@ -75,7 +78,9 @@ export default function AudioStageTab(props) {
   var hiddenAudioRef= useRef(null);
   var speakersRef   = useRef([]);
   var listenersRef  = useRef([]);
-  var micCancelledRef = useRef(false);
+  var micCancelledRef  = useRef(false);
+  var stageStartRef    = useRef(null);
+  var myVolRef         = useRef(0);
 
   var isHost = role === 'host' || role === 'cohost';
   var addToastRef     = useRef(addToast);
@@ -176,6 +181,23 @@ export default function AudioStageTab(props) {
     };
   }, [socket]);
 
+  // ── Stage elapsed timer ────────────────────────────────────
+  useEffect(function() {
+    if (!joined) return;
+    if (!stageStartRef.current) stageStartRef.current = Date.now();
+    var t = setInterval(function() {
+      setStageElapsed(Math.floor((Date.now() - stageStartRef.current) / 1000));
+    }, 1000);
+    return function() { clearInterval(t); };
+  }, [joined]);
+
+  // ── Track peak speaker count ───────────────────────────────
+  useEffect(function() {
+    setStageStats(function(prev) {
+      return { peakSpeakers: Math.max(prev.peakSpeakers, speakers.length), totalHands: prev.totalHands };
+    });
+  }, [speakers.length]);
+
   // ── Mic / WebAudio ─────────────────────────────────────────
   var stopMic = function() {
     micCancelledRef.current = true;
@@ -219,6 +241,12 @@ export default function AudioStageTab(props) {
         var sum = 0;
         for (var i = 0; i < buf.length; i++) { sum += buf[i]; }
         var avg = sum / buf.length;
+        myVolRef.current = avg;
+        setSpeakerVols(function(prev) {
+          var next = Object.assign({}, prev);
+          next[String(userId)] = avg;
+          return next;
+        });
         var isSpeaking = avg > 12;
         if (isSpeaking !== prevSpeaking) {
           prevSpeaking = isSpeaking;
@@ -350,6 +378,28 @@ export default function AudioStageTab(props) {
           return (
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: badgeColor, background: 'rgba(0,0,0,.35)', borderRadius: 3, padding: '1px 5px', letterSpacing: 0.5, lineHeight: 1.5 }}>
               {badgeLabel}
+            </div>
+          );
+        })()}
+        {/* Mini VU bars */}
+        {(function() {
+          var vol = speakerVols[String(spk.userId)] || 0;
+          var pct = Math.min(1, vol / 48);
+          if (!isSpeaking && pct < 0.05) return null;
+          return (
+            <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 10, marginTop: 1 }}>
+              {[0, 1, 2].map(function(b) {
+                var lit = pct > (b + 1) / 3;
+                return (
+                  <div key={b} style={{
+                    width: 5,
+                    height: (b + 1) * 3 + 1,
+                    background: lit ? (b === 2 ? RED : b === 1 ? AMBER : GOLD) : DIM,
+                    borderRadius: 1,
+                    transition: 'background .08s'
+                  }} />
+                );
+              })}
             </div>
           );
         })()}
@@ -495,6 +545,29 @@ export default function AudioStageTab(props) {
           </div>
         )}
 
+        {/* ── STATS STRIP ── */}
+        <div style={{ display: 'flex', gap: 6, margin: '8px 10px 0', flexWrap: 'wrap' }}>
+          {[
+            { label: 'ON STAGE', value: speakers.length + '/20' },
+            { label: 'ONLINE', value: onlineCount },
+            { label: '✋ QUEUE', value: handRaisedCount },
+            { label: 'PEAK', value: stageStats.peakSpeakers },
+            { label: 'TIME', value: (function() {
+              var h = Math.floor(stageElapsed / 3600);
+              var m = Math.floor((stageElapsed % 3600) / 60);
+              var s = stageElapsed % 60;
+              return (h ? h + ':' : '') + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            })() }
+          ].map(function(stat) {
+            return (
+              <div key={stat.label} style={{ flex: 1, background: CARD, borderRadius: 8, border: '1px solid ' + BORDER, padding: '5px 6px', textAlign: 'center', minWidth: 48 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: MUTED, letterSpacing: 0.8 }}>{stat.label}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: GOLD, letterSpacing: 0.5, lineHeight: 1.1 }}>{stat.value}</div>
+              </div>
+            );
+          })}
+        </div>
+
         {/* ── STAGE SECTION ── */}
         <div style={{ background: CARD, margin: '10px 10px 0', borderRadius: 10, border: '1px solid ' + BORDER, padding: '12px' }}>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: 1, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -527,21 +600,49 @@ export default function AudioStageTab(props) {
 
       {/* ── FEATURE ICONS ROW ── */}
       <div style={{ position: 'absolute', bottom: 62, left: 0, right: 0, background: CARD, borderTop: '1px solid ' + BORDER, padding: '6px 12px', display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'center', zIndex: 48 }}>
-        {[
-          { icon: '🔗', label: 'Share',    action: function() { if (addToast) addToast('Link copied!', 'success'); } },
-          { icon: '📋', label: 'Queue',    action: function() { if (addToast) addToast('Queue — coming soon', 'info'); } },
-          { icon: '🎵', label: 'Music',    action: function() { if (addToast) addToast('Music — coming soon', 'info'); } },
-          { icon: '⚙',  label: 'Settings', action: function() { if (addToast) addToast('Settings — coming soon', 'info'); } }
-        ].map(function(item) {
-          return (
-            <button key={item.label} onClick={item.action}
-              title={item.label}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'rgba(255,255,255,.04)', border: '1px solid ' + BORDER, borderRadius: 8, padding: '5px 10px', cursor: 'pointer', flex: 1 }}>
-              <span style={{ fontSize: 14, lineHeight: 1 }}>{item.icon}</span>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 0.5 }}>{item.label}</span>
-            </button>
-          );
-        })}
+        {(function() {
+          var shareAction = function() {
+            var url = window.location.origin + '/room/' + roomId;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(url).then(function() {
+                if (addToast) addToast('Room link copied!', 'success');
+              }).catch(function() {
+                if (addToast) addToast('Copy not available', 'error');
+              });
+            } else {
+              if (addToast) addToast('Room link: ' + url, 'info');
+            }
+          };
+          var lockAction = function() {
+            var newLocked = !stageLocked;
+            setStageLocked(newLocked);
+            if (socket) socket.emit('stage-lock', { roomId: roomId, locked: newLocked });
+            if (addToast) addToast(newLocked ? '🔒 Stage locked — no new speakers' : '🔓 Stage unlocked', 'success');
+          };
+          var items = [
+            { icon: '🔗', label: 'Share', active: false, action: shareAction },
+            { icon: '📋', label: 'Queue', active: false, action: function() { if (addToast) addToast('Queue — coming soon', 'info'); } },
+            { icon: '🎵', label: 'Music', active: false, action: function() { if (addToast) addToast('Music — coming soon', 'info'); } },
+            isHost
+              ? { icon: stageLocked ? '🔒' : '🔓', label: stageLocked ? 'Unlock' : 'Lock', active: stageLocked, action: lockAction }
+              : { icon: '⚙', label: 'Settings', active: false, action: function() { if (addToast) addToast('Settings — coming soon', 'info'); } }
+          ];
+          return items.map(function(item) {
+            return (
+              <button key={item.label} onClick={item.action}
+                title={item.label}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                  background: item.active ? 'rgba(255,26,60,.12)' : 'rgba(255,255,255,.04)',
+                  border: '1px solid ' + (item.active ? 'rgba(255,26,60,.4)' : BORDER),
+                  borderRadius: 8, padding: '5px 10px', cursor: 'pointer', flex: 1
+                }}>
+                <span style={{ fontSize: 14, lineHeight: 1 }}>{item.icon}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: item.active ? RED : MUTED, letterSpacing: 0.5 }}>{item.label}</span>
+              </button>
+            );
+          });
+        })()}
       </div>
 
       {/* ── BOTTOM ACTION BAR ── */}
