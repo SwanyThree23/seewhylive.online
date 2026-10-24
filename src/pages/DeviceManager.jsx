@@ -35,7 +35,10 @@ export default function DeviceManager() {
     fetch('/api/push/subscriptions', {
       headers: { Authorization: 'Bearer ' + (localStorage.getItem('auth_token') || '') }
     })
-      .then(function(r) { return r.json(); })
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
       .then(function(data) {
         setDevices(data.subscriptions || []);
         setLoading(false);
