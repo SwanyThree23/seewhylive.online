@@ -100,11 +100,18 @@ router.post('/start-stream', requireAuth, async function (req, res) {
   if (!destinationId) return res.status(400).json({ error: 'destinationId is required' });
   if (!streamId || !STREAM_ID_RE.test(String(streamId))) return res.status(400).json({ error: 'invalid streamId' });
   if (activeProcesses.has(destinationId)) {
-    return res.json({ success: true, message: 'already running', pid: activeProcesses.get(destinationId).process.pid });
+    var _existing = activeProcesses.get(destinationId);
+    return res.json({ success: true, message: 'already running', pid: _existing.process ? _existing.process.pid : null });
   }
+  // Sentinel prevents a concurrent request from spawning a second process for the
+  // same destination while the DB query and spawn are in flight (TOCTOU gap).
+  activeProcesses.set(destinationId, { process: null, startedAt: Date.now(), destination: null });
   try {
     var result = await db.query('SELECT * FROM stream_destinations WHERE id = $1 AND user_id = $2', [destinationId, req.user.id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'destination not found' });
+    if (result.rows.length === 0) {
+      activeProcesses.delete(destinationId);
+      return res.status(404).json({ error: 'destination not found' });
+    }
     var destination = result.rows[0];
     var plainKey = decryptKey(destination.stream_key);
     var inputUrl = RTMP_INGEST_BASE + '/' + streamId;
@@ -123,6 +130,7 @@ router.post('/start-stream', requireAuth, async function (req, res) {
     await db.query('UPDATE stream_destinations SET status = $1 WHERE id = $2', ['live', destinationId]);
     res.json({ success: true, pid: ffmpegProcess.pid });
   } catch (err) {
+    activeProcesses.delete(destinationId);
     console.error('start-stream failed', err);
     res.status(500).json({ error: 'could not start stream' });
   }
