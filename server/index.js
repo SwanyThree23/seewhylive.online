@@ -480,6 +480,15 @@ var fuelRateLimit = rateLimit({
   validate: { xForwardedForHeader: false },
   message: { error: 'Too many FUEL requests — please wait before trying again.' }
 });
+var referralRegisterLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many referral attempts — please wait before trying again.' }
+});
 // NOTE: stripeOnboardRateLimit is applied on the route itself (after requireAuth)
 // so req.user.id is available for per-user keying.
 app.use(express.json({ limit: '2mb' }));
@@ -1267,7 +1276,7 @@ app.get('/api/referral/code', requireAuth, function(req, res) {
     if (!profile) return res.status(404).json({ error: 'Profile not found' });
     var code = profile.referral_code;
     if (!code) {
-      code = userId.replace(/-/g, '').slice(0, 8).toUpperCase() + Math.floor(Math.random() * 1000);
+      code = require('crypto').randomBytes(5).toString('hex').toUpperCase();
       db.prepare('UPDATE user_profiles SET referral_code = ? WHERE user_id = ?').run(code, userId);
       // Also create referrals row for this referrer
       var now = Math.floor(Date.now() / 1000);
@@ -1282,7 +1291,7 @@ app.get('/api/referral/code', requireAuth, function(req, res) {
 });
 
 // POST /api/referral/register  — referred creator registers with a code
-app.post('/api/referral/register', requireAuth, function(req, res) {
+app.post('/api/referral/register', requireAuth, referralRegisterLimit, function(req, res) {
   try {
     var userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Not authenticated' });
