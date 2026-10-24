@@ -46,10 +46,17 @@ const SUPPORTED_LANGS = [
   { code: 'pt', label: 'Português',  flag: '🇧🇷', voice: 'pt-BR' },
   { code: 'zh', label: '中文',        flag: '🇨🇳', voice: 'zh-CN' },
   { code: 'ar', label: 'العربية',    flag: '🇸🇦', voice: 'ar-SA' },
+  { code: 'de', label: 'Deutsch',    flag: '🇩🇪', voice: 'de-DE' },
+  { code: 'hi', label: 'हिन्दी',    flag: '🇮🇳', voice: 'hi-IN' },
+  { code: 'ja', label: '日本語',     flag: '🇯🇵', voice: 'ja-JP' },
+  { code: 'ko', label: '한국어',     flag: '🇰🇷', voice: 'ko-KR' },
+  { code: 'ru', label: 'Русский',    flag: '🇷🇺', voice: 'ru-RU' },
+  { code: 'it', label: 'Italiano',   flag: '🇮🇹', voice: 'it-IT' },
 ];
 
 const EXPORT_FORMATS = [
   { key: 'srt',  label: 'SRT',  mime: 'text/plain', ext: 'srt' },
+  { key: 'vtt',  label: 'VTT',  mime: 'text/vtt',   ext: 'vtt' },
   { key: 'txt',  label: 'TXT',  mime: 'text/plain', ext: 'txt' },
   { key: 'json', label: 'JSON', mime: 'application/json', ext: 'json' },
 ];
@@ -61,7 +68,8 @@ const GLOBAL_CSS = `
 `;
 
 
-const LANGS = ['English', 'Spanish', 'French', 'Portuguese', 'Mandarin'];
+// LANGS derived from SUPPORTED_LANGS so selector and Deepgram mode stay in sync
+const LANGS = SUPPORTED_LANGS.map(l => l.label);
 
 function buildSRT(lines) {
   return lines.map((l, i) => {
@@ -109,6 +117,9 @@ export default function TranscriptionStudio() {
   const [showOverlay, setShowOverlay] = useState(true);
   const [autoScroll, setAutoScroll]  = useState(true);
   const [tab, setTab]             = useState('transcript');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [translateTarget, setTranslateTarget] = useState('');  // target lang code for translation tab
+  const [translationMap, setTranslationMap] = useState({});    // { lineId: translated text }
   const bottomRef = useRef(null);
   const tickRef   = useRef(null);
   const idRef     = useRef(1);
@@ -116,6 +127,23 @@ export default function TranscriptionStudio() {
   const [captionHistory, setCaptionHistory] = useState([]);
   const [demoText, setDemoText] = useState('');
   const activeLang = SUPPORTED_LANGS.find(l => l.label === lang)?.code || 'en';
+
+  const tsTranslationCache = useRef(new Map());
+
+  async function tsTranslate(text, targetLang) {
+    const key = `${text}|${targetLang}`;
+    if (tsTranslationCache.current.has(key)) return tsTranslationCache.current.get(key);
+    try {
+      const res = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=${activeLang}|${targetLang}`
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      const result = data.responseData?.translatedText || null;
+      if (result) tsTranslationCache.current.set(key, result);
+      return result;
+    } catch { return null; }
+  }
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -186,7 +214,8 @@ export default function TranscriptionStudio() {
           const isFinal = d.is_final;
           if (isFinal && alt.transcript.trim()) {
             const now = Date.now() - startMsRef.current;
-            setDgLines(prev => [...prev, { text: alt.transcript.trim(), startMs: now, endMs: now + 3000, lang: activeLang }]);
+            const confidence = alt.confidence != null ? Math.round(alt.confidence * 100) : null;
+            setDgLines(prev => [...prev, { text: alt.transcript.trim(), startMs: now, endMs: now + 3000, lang: activeLang, confidence }]);
             setCaptionHistory(prev => [...prev, { text: alt.transcript.trim(), startMs: now, endMs: now + 3000, lang: activeLang }]);
             setDemoText(alt.transcript.trim());
             setTimeout(() => setDemoText(''), 4000);
@@ -236,15 +265,37 @@ export default function TranscriptionStudio() {
 
   useEffect(() => () => stopDeepgram(), []);
 
+  // Auto-translate lines when a target language is selected
+  useEffect(() => {
+    if (!translateTarget) return;
+    let cancelled = false;
+    const pending = lines.filter(l => !translationMap[l.id]);
+    pending.slice(-15).forEach(async l => {
+      const result = await tsTranslate(l.text, translateTarget);
+      if (!cancelled && result) setTranslationMap(prev => ({ ...prev, [l.id]: result }));
+    });
+    return () => { cancelled = true; };
+  }, [lines, translateTarget]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Export helpers ────────────────────────────────────────────────────────────
+  function toSrtTime(ms) {
+    const pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
+    const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10);
+    return `${pad(h)}:${pad(m)}:${pad(s)},${pad(cs)}`;
+  }
+
+  function toVttTime(ms) {
+    const pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
+    const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10);
+    return `${pad(h)}:${pad(m)}:${pad(s)}.${pad(cs)}`;
+  }
+
   function handleExport(fmt) {
     let content = '';
     if (fmt.key === 'srt') {
-      content = captionHistory.map((c, i) => {
-        const pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
-        const toSrtTime = ms => { const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10); return `${pad(h)}:${pad(m)}:${pad(s)},${pad(cs)}`; };
-        return `${i+1}\n${toSrtTime(c.startMs)} --> ${toSrtTime(c.endMs)}\n${c.text}\n`;
-      }).join('\n');
+      content = captionHistory.map((c, i) => `${i+1}\n${toSrtTime(c.startMs)} --> ${toSrtTime(c.endMs)}\n${c.text}\n`).join('\n');
+    } else if (fmt.key === 'vtt') {
+      content = 'WEBVTT\n\n' + captionHistory.map((c, i) => `${i+1}\n${toVttTime(c.startMs)} --> ${toVttTime(c.endMs)}\n${c.text}\n`).join('\n');
     } else if (fmt.key === 'json') {
       content = JSON.stringify(captionHistory, null, 2);
     } else {
@@ -262,6 +313,8 @@ export default function TranscriptionStudio() {
     setCaptionHistory([]);
     setDgLines([]);
     setDemoText('');
+    setTranslationMap({});
+    tsTranslationCache.current.clear();
     startMsRef.current = Date.now();
   }
 
@@ -276,7 +329,7 @@ export default function TranscriptionStudio() {
           <div style={{ width: 40, height: 40, borderRadius: '50%', background: `linear-gradient(135deg, #4A7C59, #2A5C39)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>📝</div>
           <div>
             <div style={{ ...T, fontSize: 22, fontWeight: 900, color: TEXT, letterSpacing: '0.08em', lineHeight: 1 }}>TRANSCRIPTION STUDIO</div>
-            <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>DEEPGRAM NATIVE · CAPTION.NINJA · 6 LANGUAGES · AI TRANSLATION</div>
+            <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>DEEPGRAM NATIVE · CAPTION.NINJA · {SUPPORTED_LANGS.length} LANGUAGES · AI TRANSLATION · VTT/SRT/JSON</div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -323,23 +376,23 @@ export default function TranscriptionStudio() {
       </AnimatePresence>
 
       {/* Tab strip */}
-      <div style={{ display: 'flex', background: BG2, borderBottom: `1px solid rgba(255,255,255,0.07)` }}>
-        {[['transcript', '📄 Transcript'], ['srt', '🎞 SRT File']].map(([key, label]) => (
+      <div style={{ display: 'flex', background: BG2, borderBottom: `1px solid rgba(255,255,255,0.07)`, overflowX: 'auto' }}>
+        {[['transcript', '📄 Transcript'], ['srt', '🎞 SRT'], ['translate', '🌐 Translate'], ['export', '💾 Export']].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)} style={{
-            flex: 1, padding: '10px 0', border: 'none', background: 'none', cursor: 'pointer',
-            ...T, fontSize: 13, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
+            flex: '0 0 auto', padding: '10px 16px', border: 'none', background: 'none', cursor: 'pointer',
+            ...T, fontSize: 12, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
             color: tab === key ? GOLD : TEXTM,
             borderBottom: tab === key ? `2px solid ${GOLD}` : '2px solid transparent',
-            transition: 'all .2s',
+            transition: 'all .2s', whiteSpace: 'nowrap',
           }}>{label}</button>
         ))}
       </div>
 
       {/* Content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
-        {tab === 'transcript' ? (
+        {tab === 'transcript' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, gap: 8, flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 {live && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4, ...MONO, fontSize: 9, color: GREEN, background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.3)', borderRadius: 99, padding: '2px 8px' }}>
@@ -349,23 +402,24 @@ export default function TranscriptionStudio() {
                 )}
                 <span style={{ ...MONO, fontSize: 9, color: TEXTM }}>{lines.length} lines · {lang}</span>
               </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search…"
+                  style={{ ...MONO, fontSize: 11, padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: TEXT, outline: 'none', width: 120 }} />
                 <CopyBtn value={fullText} />
-                <button onClick={downloadSRT} style={{ background: 'none', border: 'none', cursor: 'pointer', color: TEXTM, padding: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Download size={13} />
-                  <span style={{ ...MONO, fontSize: 9, letterSpacing: '0.06em' }}>SRT</span>
-                </button>
               </div>
             </div>
-            {lines.map(l => (
+            {lines.filter(l => !searchQuery || l.text.toLowerCase().includes(searchQuery.toLowerCase())).map(l => (
               <div key={l.id} className="ts-line" style={{ display: 'flex', gap: 10, padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8 }}>
                 <span style={{ ...MONO, fontSize: 10, color: GOLD, flexShrink: 0, minWidth: 60 }}>{l.time}</span>
                 <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: TEXTD, lineHeight: 1.5, flex: 1 }}>{l.text}</span>
               </div>
             ))}
+            {lines.length === 0 && <div style={{ ...MONO, fontSize: 11, color: TEXTM, textAlign: 'center', padding: '40px 0' }}>Press GO LIVE to start transcribing…</div>}
             <div ref={bottomRef} />
           </div>
-        ) : (
+        )}
+
+        {tab === 'srt' && (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{ ...T, fontSize: 13, fontWeight: 700, color: TEXTM, letterSpacing: '0.06em' }}>SRT FORMAT · READY TO IMPORT</span>
@@ -377,8 +431,63 @@ export default function TranscriptionStudio() {
               </div>
             </div>
             <pre style={{ ...MONO, fontSize: 10, color: TEXTD, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: BG3, border: `1px solid rgba(255,255,255,0.07)`, borderRadius: 10, padding: '14px 16px', overflowX: 'auto' }}>
-              {srtText}
+              {srtText || '(no lines yet — start transcribing first)'}
             </pre>
+          </div>
+        )}
+
+        {tab === 'translate' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <span style={{ ...T, fontSize: 13, fontWeight: 700, color: TEXTM, letterSpacing: '0.06em' }}>TRANSLATE TRANSCRIPT</span>
+              <select value={translateTarget} onChange={e => { setTranslateTarget(e.target.value); setTranslationMap({}); }}
+                style={{ ...MONO, fontSize: 11, padding: '5px 10px', borderRadius: 8, border: `1px solid rgba(212,175,55,0.3)`, background: BG3, color: TEXT, cursor: 'pointer', outline: 'none' }}>
+                <option value="">— select target language —</option>
+                {SUPPORTED_LANGS.filter(l => l.code !== activeLang).map(l => (
+                  <option key={l.code} value={l.code}>{l.flag} {l.label}</option>
+                ))}
+              </select>
+              {translateTarget && <span style={{ ...MONO, fontSize: 9, color: TEXTM }}>{Object.keys(translationMap).length}/{lines.length} translated</span>}
+            </div>
+            {translateTarget ? lines.map(l => (
+              <div key={l.id} style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10 }}>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
+                  <span style={{ ...MONO, fontSize: 9, color: GOLD, minWidth: 55 }}>{l.time}</span>
+                  <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: 'rgba(255,255,255,0.45)', flex: 1 }}>{l.text}</span>
+                </div>
+                <div style={{ paddingLeft: 63, fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: TEXT, lineHeight: 1.5 }}>
+                  {translationMap[l.id] ? (
+                    <span style={{ color: '#6DBF7E' }}>{SUPPORTED_LANGS.find(x => x.code === translateTarget)?.flag} {translationMap[l.id]}</span>
+                  ) : (
+                    <span style={{ color: TEXTM, ...MONO, fontSize: 9 }}>translating…</span>
+                  )}
+                </div>
+              </div>
+            )) : (
+              <div style={{ ...MONO, fontSize: 11, color: TEXTM, textAlign: 'center', padding: '40px 0' }}>Select a target language above to see translated lines</div>
+            )}
+          </div>
+        )}
+
+        {tab === 'export' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ ...T, fontSize: 13, fontWeight: 700, color: TEXTM, letterSpacing: '0.06em', marginBottom: 4 }}>EXPORT TRANSCRIPT</div>
+            <div style={{ ...MONO, fontSize: 10, color: TEXTM }}>{captionHistory.length} caption segments available</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+              {EXPORT_FORMATS.map(fmt => (
+                <button key={fmt.key} onClick={() => handleExport(fmt)} disabled={captionHistory.length === 0}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '16px 12px', borderRadius: 12, cursor: captionHistory.length ? 'pointer' : 'not-allowed', opacity: captionHistory.length ? 1 : 0.4,
+                    background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.2)`, transition: 'all .15s' }}>
+                  <Download size={18} style={{ color: GOLD }} />
+                  <span style={{ ...T, fontSize: 15, fontWeight: 900, color: GOLD, letterSpacing: '0.08em' }}>{fmt.label}</span>
+                  <span style={{ ...MONO, fontSize: 9, color: TEXTM }}>transcript.{fmt.ext}</span>
+                </button>
+              ))}
+            </div>
+            <button onClick={clearHistory} disabled={captionHistory.length === 0}
+              style={{ marginTop: 8, padding: '10px 0', borderRadius: 10, border: `1px solid rgba(192,57,43,0.25)`, background: 'rgba(192,57,43,0.06)', color: SCARL, cursor: 'pointer', ...T, fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', opacity: captionHistory.length ? 1 : 0.4 }}>
+              🗑 Clear Session
+            </button>
           </div>
         )}
       </div>
@@ -417,9 +526,16 @@ export default function TranscriptionStudio() {
             </div>
           )}
           {dgLines.length > 0 && (
-            <div style={{ marginTop: 10, maxHeight: 120, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {dgLines.slice(-10).reverse().map((l, i) => (
-                <div key={i} style={{ fontSize: 13, color: TEXTD, padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.4 }}>{l.text}</div>
+            <div style={{ marginTop: 10, maxHeight: 140, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {dgLines.slice(-12).reverse().map((l, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: TEXTD, padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.4 }}>
+                  <span style={{ flex: 1 }}>{l.text}</span>
+                  {l.confidence != null && (
+                    <span style={{ ...MONO, fontSize: 9, color: l.confidence >= 90 ? GREEN : l.confidence >= 70 ? GOLD : SCARL, flexShrink: 0 }}>
+                      {l.confidence}%
+                    </span>
+                  )}
+                </div>
               ))}
             </div>
           )}

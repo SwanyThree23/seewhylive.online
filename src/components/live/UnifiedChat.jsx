@@ -12,27 +12,46 @@ import { Drawer } from 'vaul';
 const EMOJIS = ['😂','❤️','🔥','👏','😮','🎉','💯','🤩','😍','💪','🙏','👀','✨','🎶','😭','🤣','😊','🥳','💰','⭐'];
 
 const LANGUAGES = [
-  { code: 'es', label: 'Español',    flag: '🇪🇸' },
-  { code: 'fr', label: 'Français',   flag: '🇫🇷' },
-  { code: 'pt', label: 'Português',  flag: '🇧🇷' },
-  { code: 'de', label: 'Deutsch',    flag: '🇩🇪' },
-  { code: 'ar', label: 'العربية',    flag: '🇸🇦' },
-  { code: 'zh', label: '中文',       flag: '🇨🇳' },
-  { code: 'hi', label: 'हिन्दी',    flag: '🇮🇳' },
-  { code: 'ja', label: '日本語',     flag: '🇯🇵' },
-  { code: 'ko', label: '한국어',     flag: '🇰🇷' },
-  { code: 'ru', label: 'Русский',    flag: '🇷🇺' },
-  { code: 'sw', label: 'Kiswahili',  flag: '🇰🇪' },
+  { code: 'es', label: 'Español',     flag: '🇪🇸' },
+  { code: 'fr', label: 'Français',    flag: '🇫🇷' },
+  { code: 'pt', label: 'Português',   flag: '🇧🇷' },
+  { code: 'de', label: 'Deutsch',     flag: '🇩🇪' },
+  { code: 'ar', label: 'العربية',     flag: '🇸🇦' },
+  { code: 'zh', label: '中文',        flag: '🇨🇳' },
+  { code: 'hi', label: 'हिन्दी',     flag: '🇮🇳' },
+  { code: 'ja', label: '日本語',      flag: '🇯🇵' },
+  { code: 'ko', label: '한국어',      flag: '🇰🇷' },
+  { code: 'ru', label: 'Русский',     flag: '🇷🇺' },
+  { code: 'sw', label: 'Kiswahili',   flag: '🇰🇪' },
+  { code: 'it', label: 'Italiano',    flag: '🇮🇹' },
+  { code: 'tr', label: 'Türkçe',      flag: '🇹🇷' },
+  { code: 'vi', label: 'Tiếng Việt',  flag: '🇻🇳' },
+  { code: 'th', label: 'ภาษาไทย',    flag: '🇹🇭' },
+  { code: 'pl', label: 'Polski',      flag: '🇵🇱' },
+  { code: 'nl', label: 'Nederlands',  flag: '🇳🇱' },
+  { code: 'id', label: 'Bahasa',      flag: '🇮🇩' },
+  { code: 'el', label: 'Ελληνικά',   flag: '🇬🇷' },
+  { code: 'ro', label: 'Română',      flag: '🇷🇴' },
+  { code: 'uk', label: 'Українська', flag: '🇺🇦' },
 ];
 
 // ── Guardian AI moderation ────────────────────────────────────────────────
-const OFFENSIVE = ['spam', 'scam', 'hack', 'inappropriate', 'offensive', 'violence', 'hate', 'abuse', 'exploit'];
-const SPAM_RX = [
-  /(.)\1{5,}/g,
-  /(?:visit|click|buy|now|free\s*\$)[^\s]*/gi,
-  /https?:\/\/(?!(?:youtube|youtu\.be|twitch\.tv))[^\s]+/gi, // block non-whitelisted links
+const OFFENSIVE = [
+  'spam', 'scam', 'hack', 'inappropriate', 'offensive', 'violence', 'hate', 'abuse', 'exploit',
+  'racist', 'sexist', 'harassment', 'doxx', 'doxxing', 'swat', 'threat', 'kill', 'bomb',
 ];
-const EMOTES = { ':)':'😊', ':(':'😢', ':D':'😄', ':O':'😲', 'PogU':'🎉', 'Kappa':'😏', 'GG':'👏', 'LUL':'😂', 'FIRE':'🔥', 'EZ':'💪' };
+const SPAM_RX = [
+  /(.)\1{6,}/g,
+  /(?:visit|click|buy|now|free\s*\$)[^\s]*/gi,
+  /https?:\/\/(?!(?:youtube|youtu\.be|twitch\.tv|seewhylive\.online|app\.seewhylive\.online))[^\s]+/gi,
+  /\b(?:dm\s*me|follow\s*me|check\s*bio|link\s*in\s*bio)\b/gi,
+];
+const EMOTES = {
+  ':)':'😊', ':(':'😢', ':D':'😄', ':O':'😲', ':P':'😛', ':/':'😕', ';)':'😉', 'B)':'😎',
+  'PogU':'🎉', 'Pog':'😲', 'OMEGALUL':'😂', 'Kappa':'😏', 'GG':'👏', 'LUL':'😂',
+  'FIRE':'🔥', 'EZ':'💪', 'HYPE':'🙌', 'W':'🏆', 'L':'😬', 'RIP':'🪦', 'GOAT':'🐐',
+  'BASED':'💯', 'FROG':'🐸', 'COPIUM':'🤡', 'MonkaS':'😰', 'PepeLaugh':'😆',
+};
 
 function guardianFilter(text) {
   let out = text;
@@ -51,18 +70,28 @@ function userColor(uid = '') {
   return `hsl(${h % 360}, 65%, 62%)`;
 }
 
+// In-memory translation cache keyed by "text|lang" to avoid redundant API calls
+const _translationCache = new Map();
+
 async function translateText(text, targetLang) {
+  const key = `${text}|${targetLang}`;
+  if (_translationCache.has(key)) return _translationCache.get(key);
   try {
     const res = await fetch(
-      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=en|${targetLang}`
     );
     if (!res.ok) return null;
     const data = await res.json();
-    return data.responseData?.translatedText || null;
+    const result = data.responseData?.translatedText || null;
+    if (result) _translationCache.set(key, result);
+    return result;
   } catch {
     return null;
   }
 }
+
+const REACTION_EMOJIS = ['❤️', '🔥', '😂', '😮', '👏', '💯'];
+function getReactionKey(msgId) { return `rxn_${msgId}`; }
 
 const MSG_BG = {
   poll: { background: 'rgba(109,191,126,0.15)' },
@@ -106,6 +135,10 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   const [translateLang, setTranslateLang] = useState(null);
   const [translationMap, setTranslationMap] = useState({});
   const [langSheetOpen, setLangSheetOpen] = useState(false);
+  const [reactions, setReactions] = useState({});   // { [msgId]: { [emoji]: count } }
+  const [reactionPickerFor, setReactionPickerFor] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const qc = useQueryClient();
@@ -144,7 +177,8 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
     const pending = messages.filter(
       m => !translationMap[m.id] && m.content && m.message_type !== 'moderation'
     );
-    pending.slice(-8).forEach(async msg => {
+    // Translate up to 20 pending messages per tick
+    pending.slice(-20).forEach(async msg => {
       const translated = await translateText(msg.content, translateLang);
       if (!cancelled && translated && translated.toLowerCase() !== msg.content.toLowerCase()) {
         setTranslationMap(prev => ({ ...prev, [msg.id]: translated }));
@@ -197,16 +231,55 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
     }
   };
 
+  const addReaction = (msgId, emoji) => {
+    setReactions(prev => {
+      const cur = prev[msgId] || {};
+      return { ...prev, [msgId]: { ...cur, [emoji]: (cur[emoji] || 0) + 1 } };
+    });
+    setReactionPickerFor(null);
+  };
+
+  const displayedMessages = searchQuery.trim()
+    ? messages.filter(m => m.content && m.content.toLowerCase().includes(searchQuery.toLowerCase()))
+    : messages;
+
+  const activeLang = LANGUAGES.find(l => l.code === translateLang);
+
   return (
     <div className="flex flex-col h-full" style={{ background: 'rgba(8,11,24,0.97)' }}>
 
-      {/* Guardian AI badge — always visible */}
+      {/* Guardian AI badge + search */}
       <div className="flex items-center gap-1.5 px-3 pt-2 pb-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
         <Shield className="w-2.5 h-2.5 text-[#6DBF7E]" />
-        <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: 'rgba(109,191,126,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-          Guardian AI active
+        <span className="text-[9px] font-black uppercase tracking-wider flex-1" style={{ color: 'rgba(109,191,126,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          Guardian AI active · {messages.length} msgs
         </span>
+        <button onClick={() => { setShowSearch(s => !s); if (showSearch) setSearchQuery(''); }}
+          className="text-[10px] px-2 py-0.5 rounded-lg transition-all"
+          style={{ color: showSearch ? '#D4AF37' : 'rgba(255,255,255,0.3)', background: showSearch ? 'rgba(212,175,55,0.1)' : 'transparent', border: `1px solid ${showSearch ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.08)'}` }}>
+          🔍
+        </button>
       </div>
+
+      {/* Search bar */}
+      <AnimatePresence>
+        {showSearch && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <div className="px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+              <input
+                autoFocus
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search messages..."
+                className="w-full rounded-lg px-3 py-1.5 text-xs text-white outline-none"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+              />
+              {searchQuery && <p className="text-[9px] mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>{displayedMessages.length} result{displayedMessages.length !== 1 ? 's' : ''}</p>}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Host controls toggle */}
       {isHost && (
@@ -276,9 +349,10 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
 
       {/* Messages feed */}
       <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5"
-        style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
+        style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+        onClick={() => setReactionPickerFor(null)}>
         <AnimatePresence initial={false}>
-          {messages.map((msg) => (
+          {displayedMessages.map((msg) => (
             <motion.div key={msg.id}
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.12 }}
@@ -303,17 +377,49 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                   </div>
                   <p className="text-xs text-white/80 break-words leading-relaxed mt-0.5">{msg.content}</p>
                   {translateLang && translationMap[msg.id] && (
-                    <p className="text-xs text-white/40 italic break-words leading-relaxed mt-0.5">
-                      {translationMap[msg.id]}
+                    <p className="text-xs italic break-words leading-relaxed mt-0.5" style={{ color: activeLang ? activeLang.flag + ' ' : '', color: 'rgba(109,191,126,0.7)' }}>
+                      {activeLang?.flag} {translationMap[msg.id]}
                     </p>
                   )}
+                  {/* Reactions display */}
+                  {reactions[msg.id] && Object.keys(reactions[msg.id]).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {Object.entries(reactions[msg.id]).map(([emoji, count]) => (
+                        <button key={emoji} onClick={() => addReaction(msg.id, emoji)}
+                          className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] transition-all active:scale-90"
+                          style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: 'rgba(255,255,255,0.7)' }}>
+                          {emoji} <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 9 }}>{count}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {/* Reaction picker popup */}
+                  {reactionPickerFor === msg.id && (
+                    <div className="flex gap-1 mt-1 p-1.5 rounded-xl z-20"
+                      style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', width: 'fit-content' }}
+                      onClick={e => e.stopPropagation()}>
+                      {REACTION_EMOJIS.map(e => (
+                        <button key={e} onClick={() => addReaction(msg.id, e)}
+                          className="text-base rounded-lg p-1 active:scale-90 transition-transform hover:bg-white/5">
+                          {e}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                {/* Touch-friendly action button */}
-                <button onClick={() => setReplyTo(msg)}
-                  className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity"
-                  style={{ background: 'rgba(255,255,255,0.06)' }}>
-                  <Reply className="w-3 h-3 text-white/50" />
-                </button>
+                {/* Touch-friendly actions */}
+                <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity">
+                  <button onClick={() => setReplyTo(msg)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <Reply className="w-3 h-3 text-white/50" />
+                  </button>
+                  <button onClick={e => { e.stopPropagation(); setReactionPickerFor(reactionPickerFor === msg.id ? null : msg.id); }}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px]"
+                    style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    😊
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -367,13 +473,22 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
 
           {/* Language translate toggle */}
           <button onClick={() => setLangSheetOpen(true)}
-            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90"
-            title={translateLang ? `Translating to ${LANGUAGES.find(l => l.code === translateLang)?.label}` : 'Translate chat'}
+            className="rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90"
+            title={translateLang ? `Translating to ${activeLang?.label}` : 'Translate chat'}
             style={{
               background: translateLang ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
               border: `1px solid ${translateLang ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.08)'}`,
+              width: translateLang ? 'auto' : 40, height: 40, padding: translateLang ? '0 10px' : 0,
+              gap: 4,
             }}>
-            <Languages className="w-4 h-4" style={{ color: translateLang ? '#6DBF7E' : 'rgba(255,255,255,0.4)' }} />
+            {translateLang ? (
+              <>
+                <span className="text-base leading-none">{activeLang?.flag}</span>
+                <span className="text-[10px] font-bold" style={{ color: '#6DBF7E' }}>{activeLang?.label?.split(' ')[0]}</span>
+              </>
+            ) : (
+              <Languages className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
+            )}
           </button>
 
           <div className="flex-1 relative">
@@ -415,7 +530,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
             <Drawer.Handle className="mx-auto mt-3 mb-4 w-10 h-1 rounded-full bg-white/15" />
             <div className="px-4 pb-4 space-y-2">
               <p className="text-sm font-black text-white mb-3" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
-                Translate Chat <span className="text-white/30 font-normal text-xs">— powered by MyMemory</span>
+                Translate Chat <span className="text-white/30 font-normal text-xs">— {LANGUAGES.length} languages · powered by MyMemory</span>
               </p>
 
               {/* Off option */}
