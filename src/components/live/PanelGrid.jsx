@@ -43,6 +43,15 @@ function reducer(state, action) {
     case 'TOGGLE_CAM':  return { ...state, guests: state.guests.map(g => g.id === action.id ? { ...g, camOff: !g.camOff } : g) };
     case 'SET_SPOTLIGHT': return { ...state, spotlight: state.spotlight === action.id ? null : action.id };
     case 'SET_EXPANDED':  return { ...state, expanded: state.expanded === action.id ? null : action.id };
+    case 'PROMOTE_GUEST': {
+      const ORDER = ['VIEWER', 'GUEST', 'FEATURED', 'COHOST'];
+      return { ...state, guests: state.guests.map(g => {
+        if (g.id !== action.id) return g;
+        const idx = ORDER.indexOf(g.role);
+        const next = ORDER[Math.min(idx + 1, ORDER.length - 1)];
+        return { ...g, role: next };
+      })};
+    }
     default: return state;
   }
 }
@@ -64,7 +73,7 @@ function VideoOctInner({ stream }) {
 }
 
 // ── Single octagonal guest cell ───────────────────────────────────────────
-function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking, stream, highlightStyle = 'glow', anySpeaking = false, quickOpen = false, onLongPress, onQuickMute, onQuickPin, onQuickRemove }) {
+function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking, stream, highlightStyle = 'glow', anySpeaking = false, quickOpen = false, onLongPress, onQuickMute, onQuickPin, onQuickRemove, quality = 'good' }) {
   const role = ROLE_CONFIG[guest.role] || ROLE_CONFIG.GUEST;
   const initials = (guest.name || 'G').slice(0, 2).toUpperCase();
   const pressTimer = useRef(null);
@@ -124,6 +133,18 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking,
       <div style={{ position: 'absolute', bottom: size * 0.12, left: '50%', transform: 'translateX(-50%)', width: size * 0.22, height: size * 0.22, borderRadius: '50%', background: guest.micMuted ? 'rgba(239,68,68,0.9)' : 'rgba(109,191,126,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
         {guest.micMuted ? <MicOff size={size * 0.1} color="#fff" /> : <Mic size={size * 0.1} color="#fff" />}
       </div>
+      {/* Connection quality dot */}
+      <div style={{ position: 'absolute', top: size * 0.14, right: size * 0.14, width: size * 0.11, height: size * 0.11, borderRadius: '50%', background: quality === 'good' ? '#6DBF7E' : quality === 'ok' ? '#D4AF37' : '#C0392B', zIndex: 3, boxShadow: '0 0 3px rgba(0,0,0,0.7)' }} />
+      {/* Hand-raise badge */}
+      {guest.handRaised && (
+        <motion.div
+          animate={{ scale: [1, 1.25, 1], rotate: [0, 18, -12, 0] }}
+          transition={{ duration: 1.1, repeat: Infinity }}
+          style={{ position: 'absolute', top: size * 0.03, right: size * 0.03, fontSize: size * 0.19, zIndex: 4, filter: 'drop-shadow(0 0 5px rgba(212,175,55,0.95))', lineHeight: 1, pointerEvents: 'none' }}
+        >
+          🖐
+        </motion.div>
+      )}
       {/* Role badge */}
       <div style={{ position: 'absolute', top: size * 0.06, left: '50%', transform: 'translateX(-50%)', background: role.color, borderRadius: 99, padding: '1px 5px', fontSize: size * 0.09, fontWeight: 900, color: role.textColor, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.04em', whiteSpace: 'nowrap', zIndex: 2 }}>
         {role.label}
@@ -267,7 +288,7 @@ function SpotlightView({ spotlightGuest, allGuests, streams, isSpeaking, dispatc
 }
 
 // ── Director "manage guest" modal ─────────────────────────────────────────
-function DirectorModal({ guest, onClose, onMuteMic, onToggleCam, onRemove, onSpotlight }) {
+function DirectorModal({ guest, onClose, onMuteMic, onToggleCam, onRemove, onSpotlight, onPromote }) {
   const role = ROLE_CONFIG[guest.role] || ROLE_CONFIG.GUEST;
   return (
     <motion.div
@@ -290,6 +311,16 @@ function DirectorModal({ guest, onClose, onMuteMic, onToggleCam, onRemove, onSpo
           <button onClick={onSpotlight} style={{ padding: '8px 16px', borderRadius: 9, border: `1px solid ${GOLD}60`, background: `${GOLD}15`, color: GOLD, cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
             <Star size={12} /> SPOTLIGHT
           </button>
+          {guest.role !== 'HOST' && guest.role !== 'COHOST' && (
+            <button onClick={onPromote} style={{ padding: '8px 16px', borderRadius: 9, border: '1px solid rgba(109,191,126,0.4)', background: 'rgba(109,191,126,0.1)', color: '#6DBF7E', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+              ↑ PROMOTE
+            </button>
+          )}
+          {guest.handRaised && (
+            <div style={{ padding: '6px 14px', borderRadius: 9, border: `1px solid ${GOLD}50`, background: `${GOLD}12`, color: GOLD, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5 }}>
+              🖐 HAND RAISED
+            </div>
+          )}
           <button onClick={onMuteMic} style={{ padding: '8px 16px', borderRadius: 9, border: guest.micMuted ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(109,191,126,0.5)', background: guest.micMuted ? 'rgba(239,68,68,0.12)' : 'rgba(109,191,126,0.1)', color: guest.micMuted ? '#ef4444' : '#6DBF7E', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
             {guest.micMuted ? <MicOff size={12} /> : <Mic size={12} />} {guest.micMuted ? 'UNMUTE' : 'MUTE'}
           </button>
@@ -390,6 +421,12 @@ export default function PanelGrid({
               dispatch({ type: 'TOGGLE_CAM', id: expandedGuest.id });
               base44.entities.Participant.update(expandedGuest.id, { is_video_enabled: !!expandedGuest.camOff }).catch(() => {});
             }}
+            onPromote={() => {
+              dispatch({ type: 'PROMOTE_GUEST', id: expandedGuest.id });
+              const nextRole = expandedGuest.role === 'VIEWER' ? 'guest' : expandedGuest.role === 'GUEST' ? 'featured' : 'co-host';
+              base44.entities.Participant.update(expandedGuest.id, { role: nextRole }).catch(() => {});
+              dispatch({ type: 'SET_EXPANDED', id: expandedGuest.id });
+            }}
             onRemove={() => {
               dispatch({ type: 'REMOVE_GUEST', id: expandedGuest.id });
               base44.entities.Participant.update(expandedGuest.id, { role: 'viewer', is_streaming: false }).catch(() => {});
@@ -457,7 +494,7 @@ export default function PanelGrid({
       {!compact && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, gap: 8 }}>
           <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
-            {guests.length}/{MAX_PANEL_GUESTS} · Tap = Spotlight · Double-tap = Director{isHost ? ' · Hold = Quick Actions' : ''}
+            {guests.length}/{MAX_PANEL_GUESTS} · Tap = Spotlight · Double-tap = Director{isHost ? ' · Hold = Quick Actions · Director ↑ = Promote' : ''}
           </div>
           {isHost && <SpeakerHighlightSettings value={highlightStyle} onChange={setHighlightStyle} />}
         </div>

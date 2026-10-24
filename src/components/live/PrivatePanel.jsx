@@ -9,6 +9,8 @@ const PANEL_TYPES = [
   { id: 'custom', label: 'Custom Group', icon: '🔒', desc: 'Manually invite users', color: '#D4AF37' },
 ];
 
+const PANEL_CAPS = { vip: 5, backstage: 10, subscriber: 20, custom: 15 };
+
 function PanelChat({ panel, currentUser, onSend }) {
   const [text, setText] = useState('');
   const bottomRef = useRef(null);
@@ -104,6 +106,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
   const [panelName, setPanelName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [expandedPanel, setExpandedPanel] = useState(null);
+  const [membersOpenId, setMembersOpenId] = useState(null);
 
   const createPanel = () => {
     if (!selectedType || !panelName.trim()) return;
@@ -128,10 +131,12 @@ export default function PrivatePanel({ isHost, currentUser }) {
   const joinPanel = () => {
     const panel = activePanels.find(p => p.code === inviteCode.toUpperCase());
     if (!panel) return;
+    const cap = PANEL_CAPS[panel.type?.id || panel.type] || 10;
+    if (panel.members.length >= cap) return;
     const name = currentUser?.full_name || 'Guest';
     setActivePanels(prev => prev.map(p =>
       p.id === panel.id && !p.members.includes(name)
-        ? { ...p, members: [...p.members, name] }
+        ? { ...p, members: [...p.members, name], lastJoined: name }
         : p
     ));
     setExpandedPanel(panel.id);
@@ -199,6 +204,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
                     <span className="text-base">{type.icon}</span>
                     <p className="text-[10px] font-semibold text-white mt-0.5">{type.label}</p>
                     <p className="text-[11px] text-white/40">{type.desc}</p>
+                    <p className="text-[10px] font-mono mt-0.5" style={{ color: type.color, opacity: 0.7 }}>max {PANEL_CAPS[type.id]}</p>
                   </button>
                 ))}
               </div>
@@ -264,10 +270,22 @@ export default function PrivatePanel({ isHost, currentUser }) {
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-white/40 flex items-center gap-1">
-                    <Users className="w-2.5 h-2.5" /> {panel.members.length} member{panel.members.length !== 1 ? 's' : ''}
-                    <span className="ml-2 font-mono text-[#d4af37]">#{panel.code}</span>
-                  </p>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <button
+                      onClick={e => { e.stopPropagation(); setMembersOpenId(membersOpenId === panel.id ? null : panel.id); }}
+                      className="text-[10px] text-white/40 flex items-center gap-1 hover:text-white/60"
+                    >
+                      <Users className="w-2.5 h-2.5" />
+                      {panel.members.length}/{PANEL_CAPS[panel.type?.id || panel.type] || 10}
+                      {panel.members.length >= (PANEL_CAPS[panel.type?.id || panel.type] || 10) && (
+                        <span className="ml-1 text-[9px] text-[#C0392B]">FULL</span>
+                      )}
+                    </button>
+                    <span className="ml-1 font-mono text-[#d4af37] text-[10px]">#{panel.code}</span>
+                    {panel.lastJoined && (
+                      <span className="ml-1 text-[9px] text-[#6DBF7E] animate-pulse">+{panel.lastJoined.split(' ')[0]} joined</span>
+                    )}
+                  </div>
                 </div>
                 {isHost && (
                   <button onClick={e => { e.stopPropagation(); removePanel(panel.id); }}>
@@ -276,6 +294,22 @@ export default function PrivatePanel({ isHost, currentUser }) {
                 )}
               </div>
 
+              <AnimatePresence>
+                {membersOpenId === panel.id && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-3 py-2 border-t border-white/5 flex flex-wrap gap-1.5">
+                      {panel.members.map((m, i) => (
+                        <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)' }}>{m}</span>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
