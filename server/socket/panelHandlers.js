@@ -101,7 +101,7 @@ function registerPanelHandlers(io, socket, rooms) {
       const request = await panelService.requestJoin({ roomId, userId, tenantId: socket.data.tenantId });
       // Emit only to host sockets in this room — not all viewers
       const roomSockets = await io.in(roomId).fetchSockets();
-      const hostSockets = roomSockets.filter(function(s) { return s.data && s.data.role === 'host'; });
+      const hostSockets = roomSockets.filter(function(s) { return s.data && (s.data.role === 'host' || s.data.role === 'cohost'); });
       hostSockets.forEach(function(hs) {
         hs.emit('panel:join_request_received', {
           roomId,
@@ -295,7 +295,7 @@ function registerPanelHandlers(io, socket, rooms) {
       var _prNow = Date.now();
       if (_prNow - (panelHandThrottle.get(userId) || 0) < 1000) return;
       panelHandThrottle.set(userId, _prNow);
-      io.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: userId, raised: raised });
+      io.volatile.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: userId, raised: raised });
     } catch (err) {
       console.error('[panelHandlers] panel:raise_hand error:', err);
     }
@@ -311,7 +311,7 @@ function registerPanelHandlers(io, socket, rooms) {
       var _preNow = Date.now();
       if (_preNow - (panelReactThrottle.get(userId) || 0) < 1000) return;
       panelReactThrottle.set(userId, _preNow);
-      io.to(roomId).emit('panel:reaction', { roomId: roomId, guestId: userId, emoji: emoji });
+      io.volatile.to(roomId).emit('panel:reaction', { roomId: roomId, guestId: userId, emoji: emoji });
     } catch (err) {
       console.error('[panelHandlers] panel:react error:', err);
     }
