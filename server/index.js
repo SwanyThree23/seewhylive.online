@@ -275,6 +275,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS fuel_transactions (
   created_at INTEGER NOT NULL
 )`);
 db.prepare('CREATE INDEX IF NOT EXISTS idx_fuel_tx_user ON fuel_transactions(user_id)').run();
+db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS idx_fuel_tx_ref ON fuel_transactions(type, ref_id) WHERE ref_id IS NOT NULL').run();
 
 // Referral program tables
 db.exec(`CREATE TABLE IF NOT EXISTS referrals (
@@ -1188,13 +1189,17 @@ app.get('/api/fuel/balance', requireAuth, function(req, res) {
   }
 });
 
+// Valid FUEL packages: { amountCents -> fuelGrant }
+var FUEL_PACKAGES = { 499: 500, 999: 1100, 1999: 2500, 4999: 7000 };
+
 // POST /api/fuel/purchase  — credit FUEL after Stripe payment confirmed client-side
 app.post('/api/fuel/purchase', requireAuth, function(req, res) {
   try {
     var userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Not authenticated' });
-    var amountFuel = parseInt(req.body && req.body.amountFuel, 10);
-    if (!amountFuel || amountFuel <= 0 || amountFuel > 100000) return res.status(400).json({ error: 'Invalid amountFuel' });
+    var amountCents = parseInt(req.body && req.body.amountCents, 10);
+    var amountFuel = FUEL_PACKAGES[amountCents];
+    if (!amountFuel) return res.status(400).json({ error: 'Invalid package — use a valid amountCents' });
     var now = Math.floor(Date.now() / 1000);
     var txId = uuidv4();
     var credit = db.transaction(function() {
