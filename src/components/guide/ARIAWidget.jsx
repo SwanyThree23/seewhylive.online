@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Send, Mic, MicOff, MessageSquare, ChevronDown, Sparkles, Volume2, Clock, Trash2 } from 'lucide-react';
+import { X, Send, Mic, ChevronDown, Sparkles, Volume2, Clock, Trash2, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 const G = '#D4AF37';
@@ -24,18 +24,51 @@ const ARIA_PROMPTS = [
   'How do I create a community? 🌍',
 ];
 
-const getQuickPrompts = (prefs) => {
-  const basePrompts = ARIA_PROMPTS;
+const PAGE_PROMPTS = {
+  TranscriptionStudio: [
+    'How do I use Deepgram transcription? 🎙',
+    'How do I export my transcript? 💾',
+    'What languages are supported? 🌐',
+    'How do I translate my transcript? 🔄',
+  ],
+  ControlRoom: [
+    'How do I start my stream? 📡',
+    'What is the RTMP ingest key? 🔑',
+    'How do I set up OBS? 🎬',
+    'How do SwanyBot rules work? 🤖',
+  ],
+  Leaderboard: [
+    'How do I climb the leaderboard? 🏆',
+    'How are points calculated? 📊',
+    'What rewards do top creators get? 🎁',
+    'How do battles affect rankings? ⚔️',
+  ],
+  MonetizeTab: [
+    'How do I set up PPV? 💰',
+    'What is the creator revenue split? 🤑',
+    'How do subscriptions work? ⭐',
+    'How do I withdraw earnings? 🏦',
+  ],
+};
+
+const TOPIC_PILLS = [
+  { label: '🎙 Going Live',   q: 'Walk me through how to start a live stream step by step' },
+  { label: '💰 Earning',      q: 'What are all the ways I can earn money on SeeWhy LIVE?' },
+  { label: '⚔️ PK Battles',  q: 'How do PK battles work and how do I win?' },
+  { label: '🤖 SwanyBot',     q: 'What can SwanyBot do for my stream?' },
+  { label: '📊 Analytics',    q: 'How do I grow my audience using the analytics?' },
+  { label: '🎁 Gifting',      q: 'How does the gifting and Aura system work?' },
+];
+
+const getQuickPrompts = (prefs, pageName) => {
+  const pageSpecific = PAGE_PROMPTS[pageName] || [];
   const personalized = [];
-  
-  // Add personalized prompts based on preferences
   prefs?.forEach(pref => {
     if (pref.preference_type === 'favorite_topic') {
       personalized.push(`🌟 Tell me more about ${pref.preference_value}`);
     }
   });
-  
-  return [...personalized, ...basePrompts].slice(0, 8);
+  return [...pageSpecific, ...personalized, ...ARIA_PROMPTS].slice(0, 8);
 };
 
 function TypingDots() {
@@ -66,6 +99,9 @@ export default function SwanyBotWidget({ pageName }) {
   const [pulse, setPulse] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const [feedback, setFeedback] = useState({});       // { [msgIndex]: 'up' | 'down' }
+  const [copiedIdx, setCopiedIdx] = useState(null);   // index of last copied message
+  const [showTopics, setShowTopics] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -357,6 +393,22 @@ export default function SwanyBotWidget({ pageName }) {
 
   const quickAsk = (q) => sendMessage(q);
 
+  const clearConversation = () => {
+    setMessages([]);
+    convRef.current = null;
+    setConversation(null);
+    setHasGreeted(false);
+    setFeedback({});
+    setCopiedIdx(null);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  };
+
+  const copyMessage = (text, idx) => {
+    navigator.clipboard.writeText(text).catch(() => {});
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 1600);
+  };
+
   return (
     <>
       {/* FAB Button */}
@@ -427,29 +479,39 @@ export default function SwanyBotWidget({ pageName }) {
                   <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>Your SeeWhy Guide 🔥</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                {/* Audio toggle */}
                 <button
                   onClick={e => {
                     e.stopPropagation();
                     setAudioEnabled(!audioEnabled);
                     if (audioEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
                   }}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
                   title={audioEnabled ? 'Mute SwanyBot' : 'Unmute SwanyBot'}
-                  aria-label={audioEnabled ? 'Mute SwanyBot' : 'Unmute SwanyBot'}
                 >
-                  <Volume2 className="w-3.5 h-3.5" style={{ color: audioEnabled ? G : 'rgba(255,255,255,0.2)' }} />
+                  <Volume2 className="w-3 h-3" style={{ color: audioEnabled ? G : 'rgba(255,255,255,0.2)' }} />
                 </button>
+                {/* Clear conversation */}
+                {messages.length > 0 && (
+                  <button
+                    onClick={e => { e.stopPropagation(); if (window.confirm('Clear this conversation?')) clearConversation(); }}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
+                    title="Clear conversation"
+                  >
+                    <RefreshCw className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.25)' }} />
+                  </button>
+                )}
                 <ChevronDown
                   className="w-4 h-4 transition-transform"
                   style={{ color: 'rgba(255,255,255,0.35)', transform: minimized ? 'rotate(180deg)' : 'rotate(0deg)' }}
                 />
                 <button
                   onClick={e => { e.stopPropagation(); setOpen(false); setMinimized(false); if (window.speechSynthesis) window.speechSynthesis.cancel(); }}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
                   aria-label="Close chat"
                 >
-                  <X className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.35)' }} />
+                  <X className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.35)' }} />
                 </button>
               </div>
             </div>
@@ -514,8 +576,28 @@ export default function SwanyBotWidget({ pageName }) {
                          </div>
                        )}
 
+                       {/* Topic pills */}
+                       <div>
+                         <button onClick={() => setShowTopics(t => !t)}
+                           className="text-[10px] font-bold px-2 py-1 rounded-lg mb-2 flex items-center gap-1"
+                           style={{ color: showTopics ? G : 'rgba(255,255,255,0.3)', background: showTopics ? `${G}12` : 'transparent', border: `1px solid ${showTopics ? G + '30' : 'transparent'}` }}>
+                           🗂 Topics {showTopics ? '▲' : '▼'}
+                         </button>
+                         {showTopics && (
+                           <div className="flex flex-wrap gap-1.5 mb-2">
+                             {TOPIC_PILLS.map(tp => (
+                               <button key={tp.label} onClick={() => { quickAsk(tp.q); setShowTopics(false); }}
+                                 className="text-[10px] font-bold px-2.5 py-1 rounded-full transition-all active:scale-95"
+                                 style={{ background: `${G}10`, border: `1px solid ${G}25`, color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                                 {tp.label}
+                               </button>
+                             ))}
+                           </div>
+                         )}
+                       </div>
+
                        <div className="grid grid-cols-2 gap-1.5">
-                         {getQuickPrompts(userPreferences).map(q => (
+                         {getQuickPrompts(userPreferences, pageName).map(q => (
                            <button key={q} onClick={() => quickAsk(q)}
                              className="text-left px-2.5 py-2 rounded-lg text-[10px] font-bold transition-all active:scale-95 leading-tight"
                              style={{
@@ -547,25 +629,47 @@ export default function SwanyBotWidget({ pageName }) {
                             <Sparkles className="w-3 h-3" style={{ color: G }} />
                           </div>
                         )}
-                        <div
-                          className="max-w-[82%] rounded-2xl px-3 py-2 text-[11px] leading-relaxed"
-                          style={isUser
-                            ? { background: 'rgba(212,175,55,0.12)', border: `1px solid ${G}25`, color: CREAM }
-                            : { background: PANEL, border: `1px solid rgba(255,255,255,0.07)`, color: 'rgba(255,255,255,0.8)' }
-                          }
-                        >
-                          {isUser ? msg.content : (
-                            <ReactMarkdown
-                              components={{
-                                p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
-                                ul: ({ children }) => <ul className="ml-3 list-disc space-y-0.5">{children}</ul>,
-                                li: ({ children }) => <li>{children}</li>,
-                                strong: ({ children }) => <strong style={{ color: G }}>{children}</strong>,
-                                a: ({ children, href }) => <a href={href} target="_blank" rel="noreferrer" style={{ color: G, textDecoration: 'underline' }}>{children}</a>,
-                              }}
-                            >
-                              {msg.content}
-                            </ReactMarkdown>
+                        <div className="flex flex-col gap-1 max-w-[82%]">
+                          <div
+                            className="rounded-2xl px-3 py-2 text-[11px] leading-relaxed"
+                            style={isUser
+                              ? { background: 'rgba(212,175,55,0.12)', border: `1px solid ${G}25`, color: CREAM }
+                              : { background: PANEL, border: `1px solid rgba(255,255,255,0.07)`, color: 'rgba(255,255,255,0.8)' }
+                            }
+                          >
+                            {isUser ? msg.content : (
+                              <ReactMarkdown
+                                components={{
+                                  p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+                                  ul: ({ children }) => <ul className="ml-3 list-disc space-y-0.5">{children}</ul>,
+                                  li: ({ children }) => <li>{children}</li>,
+                                  strong: ({ children }) => <strong style={{ color: G }}>{children}</strong>,
+                                  a: ({ children, href }) => <a href={href} target="_blank" rel="noreferrer" style={{ color: G, textDecoration: 'underline' }}>{children}</a>,
+                                }}
+                              >
+                                {msg.content}
+                              </ReactMarkdown>
+                            )}
+                          </div>
+                          {/* Per-message actions for AI replies */}
+                          {!isUser && (
+                            <div className="flex items-center gap-1 px-1">
+                              <button onClick={() => copyMessage(msg.content, i)}
+                                className="w-6 h-6 rounded-lg flex items-center justify-center transition-all hover:bg-white/10"
+                                title="Copy response">
+                                {copiedIdx === i ? <Check className="w-3 h-3" style={{ color: G }} /> : <Copy className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.25)' }} />}
+                              </button>
+                              <button onClick={() => setFeedback(prev => ({ ...prev, [i]: prev[i] === 'up' ? null : 'up' }))}
+                                className="w-6 h-6 rounded-lg flex items-center justify-center transition-all hover:bg-white/10"
+                                title="Helpful">
+                                <ThumbsUp className="w-3 h-3" style={{ color: feedback[i] === 'up' ? G : 'rgba(255,255,255,0.25)' }} />
+                              </button>
+                              <button onClick={() => setFeedback(prev => ({ ...prev, [i]: prev[i] === 'down' ? null : 'down' }))}
+                                className="w-6 h-6 rounded-lg flex items-center justify-center transition-all hover:bg-white/10"
+                                title="Not helpful">
+                                <ThumbsDown className="w-3 h-3" style={{ color: feedback[i] === 'down' ? '#C0392B' : 'rgba(255,255,255,0.25)' }} />
+                              </button>
+                            </div>
                           )}
                         </div>
                       </motion.div>

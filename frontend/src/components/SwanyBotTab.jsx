@@ -1,17 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 var DEFAULT_RULES = [
-  { id: 'viewer_join',        icon: '👋', label: 'Greet New Viewers',  enabled: true },
-  { id: 'gift_received',      icon: '🎁', label: 'Hype Gifts',         enabled: true },
-  { id: 'spam_detected',      icon: '🛡', label: 'Spam Guard',         enabled: true },
-  { id: 'viewers_drop_20pct', icon: '⚠️', label: 'Drop Alert',         enabled: true },
-  { id: 'new_subscription',   icon: '🎉', label: 'Sub Shoutout',       enabled: true },
+  { id: 'viewer_join',        icon: '👋', label: 'Greet New Viewers',     desc: 'Auto-welcome every new viewer with a personalized message',  enabled: true  },
+  { id: 'gift_received',      icon: '🎁', label: 'Hype Gifts',            desc: 'Post a hype message whenever a gift is received',             enabled: true  },
+  { id: 'spam_detected',      icon: '🛡', label: 'Spam Guard',            desc: 'Automatically remove spam and bot-like chat messages',        enabled: true  },
+  { id: 'viewers_drop_20pct', icon: '⚠️', label: 'Drop Alert',            desc: 'Warn when viewer count drops more than 20% in 2 minutes',    enabled: true  },
+  { id: 'new_subscription',   icon: '🎉', label: 'Sub Shoutout',          desc: 'Shoutout new subscribers by name in chat',                   enabled: true  },
+  { id: 'milestone_100',      icon: '🔥', label: '100 Viewer Milestone',  desc: 'Fire a celebration message when 100 concurrent viewers hit',  enabled: true  },
+  { id: 'engagement_surge',   icon: '🚀', label: 'Engagement Surge',      desc: 'Announce when chat activity spikes above 30 msg/min',        enabled: false },
+  { id: 'clip_marker',        icon: '📎', label: 'Auto Clip Marker',      desc: 'Drop a clip marker when chat says "clip that" or "!clip"',   enabled: false },
+  { id: 'retention_coach',    icon: '💡', label: 'Retention Coach',       desc: 'Suggest talking points when viewers start leaving',          enabled: false },
+  { id: 'revenue_milestone',  icon: '💰', label: 'Revenue Milestone',     desc: 'Celebrate when tips cross $10, $25, $50, $100 thresholds',   enabled: false },
 ];
 
 var DEFAULT_TRIGGERS = [
-  { id: 'trig_1', keyword: '!hype',    response: '🔥 Let\'s go! SeeWhy LIVE is in the building!' },
-  { id: 'trig_2', keyword: '!score',   response: '🎲 Check the live scoreboard for current standings!' },
-  { id: 'trig_3', keyword: '!discord', response: '💬 Join the community!' },
+  { id: 'trig_1', keyword: '!hype',     response: '🔥 Let\'s go! SeeWhy LIVE is in the building!' },
+  { id: 'trig_2', keyword: '!score',    response: '🎲 Check the live scoreboard for current standings!' },
+  { id: 'trig_3', keyword: '!discord',  response: '💬 Join the SeeWhy community — link in profile!' },
+  { id: 'trig_4', keyword: '!tip',      response: '💰 Drop a tip to show love — creator keeps 90%!' },
+  { id: 'trig_5', keyword: '!socials',  response: '📲 Follow the creator for updates and highlights!' },
+  { id: 'trig_6', keyword: '!sub',      response: '⭐ Subscribe to unlock exclusive perks and emotes!' },
+];
+
+var TRIGGER_TEMPLATES = [
+  { keyword: '!giveaway', response: '🎉 Giveaway in progress! Follow and drop a tip to enter!' },
+  { keyword: '!merch',    response: '👕 Merch available — link in profile!' },
+  { keyword: '!schedule', response: '📅 Stream schedule: check profile for next session dates!' },
+  { keyword: '!goal',     response: '🎯 Stream goal: help us reach the milestone!' },
+  { keyword: '!clip',     response: '📎 Clip marker set — check VODs for the highlight!' },
+  { keyword: '!gg',       response: '👏 GG everyone! Great game, great vibes!' },
 ];
 
 
@@ -51,15 +68,21 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
   var [eventsPerMin, setEventsPerMin] = useState(0);
   var logEndRef = useRef(null);
 
-  var [activePoll,   setActivePoll]   = useState(null);
-  var [pollQuestion, setPollQuestion] = useState('');
-  var [pollOptions,  setPollOptions]  = useState(['', '']);
-  var [pollVotes,    setPollVotes]    = useState({});
-  var [pollEnded,    setPollEnded]    = useState(false);
-  var [pollTimer,    setPollTimer]    = useState(60);
-  var [pollRunning,  setPollRunning]  = useState(false);
+  var [activePoll,     setActivePoll]     = useState(null);
+  var [pollQuestion,   setPollQuestion]   = useState('');
+  var [pollOptions,    setPollOptions]    = useState(['', '']);
+  var [pollVotes,      setPollVotes]      = useState({});
+  var [pollEnded,      setPollEnded]      = useState(false);
+  var [pollDuration,   setPollDuration]   = useState(60);
+  var [pollTimer,      setPollTimer]      = useState(60);
+  var [pollRunning,    setPollRunning]    = useState(false);
   var pollTimerRef = useRef(null);
-  var [pastPolls,    setPastPolls]    = useState([]);
+  var [pastPolls,      setPastPolls]      = useState([]);
+  var [scheduledMsgs,  setScheduledMsgs]  = useState([]);
+  var [schedMsg,       setSchedMsg]       = useState('');
+  var [schedDelay,     setSchedDelay]     = useState(5);
+  var [showSchedForm,  setShowSchedForm]  = useState(false);
+  var [showTplPicker,  setShowTplPicker]  = useState(false);
 
   useEffect(function() {
     if (logEndRef.current) {
@@ -187,12 +210,32 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     setActivePoll(poll);
     setPollVotes({});
     setPollEnded(false);
-    setPollTimer(60);
+    setPollTimer(pollDuration);
     setPollRunning(true);
     if (socket && roomId) {
-      socket.emit('poll-start', { roomId: roomId, question: poll.question, options: poll.options, durationSec: 60 });
+      socket.emit('poll-start', { roomId: roomId, question: poll.question, options: poll.options, durationSec: pollDuration });
     }
-    if (addToast) addToast('📊 Poll started!', 'success');
+    if (addToast) addToast('📊 Poll started! (' + pollDuration + 's)', 'success');
+  }
+
+  var scheduleMessage = function() {
+    if (!schedMsg.trim()) return;
+    var id = 'sched_' + Date.now();
+    var fireAt = Date.now() + schedDelay * 60 * 1000;
+    var msg = schedMsg.trim();
+    setScheduledMsgs(function(prev) { return prev.concat([{ id: id, msg: msg, fireAt: fireAt, fired: false }]); });
+    setTimeout(function() {
+      if (socket) socket.emit('bot-manual-message', { roomId: roomId, message: msg });
+      setScheduledMsgs(function(prev) { return prev.map(function(s) { return s.id === id ? Object.assign({}, s, { fired: true }) : s; }); });
+      if (addToast) addToast('⏰ Scheduled bot message sent!', 'success');
+    }, schedDelay * 60 * 1000);
+    setSchedMsg('');
+    setShowSchedForm(false);
+    if (addToast) addToast('⏰ Scheduled in ' + schedDelay + ' min', 'success');
+  }
+
+  var cancelScheduled = function(id) {
+    setScheduledMsgs(function(prev) { return prev.filter(function(s) { return s.id !== id; }); });
   }
 
   var endPoll = function() {
@@ -225,14 +268,20 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
   }
 
   var BUILT_IN_COMMANDS = [
-    { cmd: '!hype',     desc: 'Triggers AURA to fire a live hype message into chat',         icon: '🔥' },
-    { cmd: '!info',     desc: 'SWANYBOT posts stream title, category and on-air duration',   icon: '📡' },
-    { cmd: '!score',    desc: 'SWANYBOT announces current live viewer count',                icon: '👁' },
-    { cmd: '!commands', desc: 'Lists all available chat commands in chat',                   icon: '🤖' },
+    { cmd: '!hype',      desc: 'Triggers AURA to fire a live hype message into chat',              icon: '🔥' },
+    { cmd: '!info',      desc: 'SWANYBOT posts stream title, category and on-air duration',        icon: '📡' },
+    { cmd: '!score',     desc: 'SWANYBOT announces current live viewer count',                     icon: '👁' },
+    { cmd: '!commands',  desc: 'Lists all available chat commands in chat',                        icon: '🤖' },
+    { cmd: '!clip',      desc: 'Drops a timestamp clip marker and notifies the host',              icon: '📎' },
+    { cmd: '!tip',       desc: 'Bot explains how tipping works and shows current tip total',       icon: '💰' },
+    { cmd: '!sub',       desc: 'Bot posts subscription CTA with benefits and pricing',             icon: '⭐' },
+    { cmd: '!socials',   desc: 'Bot posts creator\'s social handles (set in Profile)',             icon: '📲' },
+    { cmd: '!donate',    desc: 'Bot posts the tip/donation link for this stream',                  icon: '🎁' },
+    { cmd: '!shoutout',  desc: '!shoutout @user — gives a shoutout to a specific viewer',         icon: '📢' },
   ];
 
   var activeCount = rules.filter(function(r) { return r.enabled; }).length;
-  var SECTIONS = [['rules', '⚙ RULES'], ['triggers', '⚡ TRIGGERS'], ['polls', '📊 POLLS'], ['cmds', '💬 CMDS'], ['log', '📜 LOG']];
+  var SECTIONS = [['rules', '⚙ RULES'], ['triggers', '⚡ TRIGGERS'], ['polls', '📊 POLLS'], ['cmds', '💬 CMDS'], ['sched', '⏰ SCHED'], ['log', '📜 LOG']];
   var displayLogs = botLogs;
 
   return (
@@ -273,19 +322,23 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
       {/* ── RULES ── */}
       {section === 'rules' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1 }}>
+            {activeCount}/{rules.length} rules active · hover for description
+          </div>
           {rules.map(function(r) {
             return (
-              <div key={r.id} style={{ background: r.enabled ? 'rgba(201,168,76,.04)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (r.enabled ? 'rgba(201,168,76,.2)' : '#3D3020'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div key={r.id} title={r.desc} style={{ background: r.enabled ? 'rgba(201,168,76,.04)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (r.enabled ? 'rgba(201,168,76,.2)' : '#3D3020'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 7, background: r.enabled ? 'rgba(201,168,76,.1)' : 'rgba(26,21,16,.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>
                   {r.icon}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: r.enabled ? '#F0E8D4' : '#8A7A62' }}>{r.label}</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: r.enabled ? '#C9A84C' : '#3D3020', letterSpacing: 1 }}>{r.enabled ? 'ACTIVE' : 'DISABLED'}</div>
+                  {r.desc && <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: '#5A4A32', marginTop: 2, lineHeight: 1.3 }}>{r.desc}</div>}
                 </div>
                 <div
                   onClick={function() { toggleRule(r.id); }}
-                  style={{ width: 36, height: 20, borderRadius: 999, background: r.enabled ? 'rgba(201,168,76,.7)' : '#3D3020', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0 }}>
+                  style={{ width: 36, height: 20, borderRadius: 999, background: r.enabled ? 'rgba(201,168,76,.7)' : '#3D3020', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0, marginTop: 2 }}>
                   <div style={{ position: 'absolute', top: 3, left: r.enabled ? 18 : 3, width: 14, height: 14, borderRadius: '50%', background: r.enabled ? '#07050A' : '#8A7A62', transition: 'left .18s' }} />
                 </div>
               </div>
@@ -342,11 +395,45 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
             <div style={{ textAlign: 'center', padding: 20, fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3020' }}>No triggers yet — add one below</div>
           )}
 
-          <button
-            onClick={function() { setShowAddTrig(function(v) { return !v; }); }}
-            style={{ padding: '9px', background: showAddTrig ? 'rgba(200,255,0,.1)' : 'rgba(26,21,16,.7)', border: '1px dashed ' + (showAddTrig ? 'rgba(200,255,0,.4)' : 'rgba(200,255,0,.2)'), borderRadius: 8, color: showAddTrig ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
-            {showAddTrig ? '✕ CANCEL' : '+ ADD TRIGGER'}
-          </button>
+          <div style={{ display: 'flex', gap: 5 }}>
+            <button
+              onClick={function() { setShowAddTrig(function(v) { return !v; }); setShowTplPicker(false); }}
+              style={{ flex: 2, padding: '9px', background: showAddTrig ? 'rgba(200,255,0,.1)' : 'rgba(26,21,16,.7)', border: '1px dashed ' + (showAddTrig ? 'rgba(200,255,0,.4)' : 'rgba(200,255,0,.2)'), borderRadius: 8, color: showAddTrig ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+              {showAddTrig ? '✕ CANCEL' : '+ ADD TRIGGER'}
+            </button>
+            <button
+              onClick={function() { setShowTplPicker(function(v) { return !v; }); setShowAddTrig(false); }}
+              style={{ flex: 1, padding: '9px', background: showTplPicker ? 'rgba(201,168,76,.12)' : 'rgba(26,21,16,.7)', border: '1px dashed rgba(201,168,76,.3)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+              📋 TEMPLATES
+            </button>
+          </div>
+
+          {showTplPicker && (
+            <div style={{ background: 'rgba(201,168,76,.04)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 2 }}>TRIGGER TEMPLATES — click to add</div>
+              {TRIGGER_TEMPLATES.map(function(tpl) {
+                var alreadyAdded = triggers.some(function(t) { return t.keyword === tpl.keyword; });
+                return (
+                  <div key={tpl.keyword} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ background: 'rgba(200,255,0,.08)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', flexShrink: 0 }}>{tpl.keyword}</div>
+                    <div style={{ flex: 1, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: '#8A7A62', lineHeight: 1.3 }}>{tpl.response}</div>
+                    <button
+                      onClick={function() {
+                        if (alreadyAdded) return;
+                        var t = { id: 'trig_' + Date.now(), keyword: tpl.keyword, response: tpl.response };
+                        setTriggers(function(prev) { return prev.concat([t]); });
+                        if (socket) socket.emit('bot-add-trigger', { roomId: roomId, trigger: t });
+                        if (addToast) addToast('Added: ' + tpl.keyword, 'success');
+                      }}
+                      disabled={alreadyAdded}
+                      style={{ background: alreadyAdded ? 'rgba(26,21,16,.8)' : 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 5, padding: '3px 9px', color: alreadyAdded ? '#3D3020' : '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: alreadyAdded ? 'not-allowed' : 'pointer' }}>
+                      {alreadyAdded ? '✓' : '+ ADD'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {showAddTrig && (
             <div style={{ background: 'rgba(200,255,0,.04)', border: '1px solid rgba(200,255,0,.15)', borderRadius: 10, padding: '12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -484,6 +571,20 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                   );
                 })}
               </div>
+              {/* Duration selector */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1, flexShrink: 0 }}>DURATION</div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {[30, 60, 90, 120, 300].map(function(dur) {
+                    return (
+                      <button key={dur} onClick={function() { setPollDuration(dur); }}
+                        style={{ padding: '3px 7px', background: pollDuration === dur ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (pollDuration === dur ? 'rgba(201,168,76,.5)' : '#3D3020'), borderRadius: 5, color: pollDuration === dur ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                        {dur < 60 ? dur + 's' : (dur / 60) + 'm'}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={addOption} disabled={pollOptions.length >= 4}
                   style={{ flex: 1, padding: '7px', background: 'rgba(26,21,16,.8)', border: '1px dashed #3D3020', borderRadius: 7, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: pollOptions.length >= 4 ? 'not-allowed' : 'pointer', opacity: pollOptions.length >= 4 ? 0.4 : 1 }}>
@@ -491,7 +592,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                 </button>
                 <button onClick={launchPoll}
                   style={{ flex: 2, padding: '7px', background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 7, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
-                  📊 LAUNCH POLL
+                  📊 LAUNCH ({pollDuration < 60 ? pollDuration + 's' : (pollDuration / 60) + 'm'})
                 </button>
               </div>
             </div>
@@ -557,6 +658,75 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
         </div>
       )}
 
+      {/* ── SCHEDULED ── */}
+      {section === 'sched' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2 }}>
+            SCHEDULED BOT MESSAGES — fire a message after a delay
+          </div>
+
+          {/* Existing scheduled messages */}
+          {scheduledMsgs.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {scheduledMsgs.map(function(s) {
+                var minsLeft = Math.max(0, Math.ceil((s.fireAt - Date.now()) / 60000));
+                return (
+                  <div key={s.id} style={{ background: s.fired ? 'rgba(26,21,16,.4)' : 'rgba(201,168,76,.04)', border: '1px solid ' + (s.fired ? '#3D3020' : 'rgba(201,168,76,.2)'), borderRadius: 9, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 14, flexShrink: 0 }}>{s.fired ? '✅' : '⏰'}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: s.fired ? '#8A7A62' : '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.msg}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: s.fired ? '#3D3020' : '#C9A84C', letterSpacing: 1 }}>{s.fired ? 'FIRED' : minsLeft + ' min remaining'}</div>
+                    </div>
+                    {!s.fired && (
+                      <button onClick={function() { cancelScheduled(s.id); }} style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 5, padding: '3px 7px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>✕</button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {scheduledMsgs.length === 0 && !showSchedForm && (
+            <div style={{ textAlign: 'center', padding: 20, fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3020' }}>No scheduled messages — add one below</div>
+          )}
+
+          <button onClick={function() { setShowSchedForm(function(v) { return !v; }); }}
+            style={{ padding: '9px', background: showSchedForm ? 'rgba(200,255,0,.1)' : 'rgba(26,21,16,.7)', border: '1px dashed rgba(200,255,0,.2)', borderRadius: 8, color: showSchedForm ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+            {showSchedForm ? '✕ CANCEL' : '+ SCHEDULE MESSAGE'}
+          </button>
+
+          {showSchedForm && (
+            <div style={{ background: 'rgba(201,168,76,.04)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#C9A84C', letterSpacing: 2 }}>NEW SCHEDULED MESSAGE</div>
+              <textarea
+                value={schedMsg}
+                onChange={function(e) { setSchedMsg(e.target.value); }}
+                placeholder="Message to send later..."
+                rows={2}
+                style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }}
+              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', flexShrink: 0 }}>DELAY</div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {[1, 2, 5, 10, 15, 30].map(function(m) {
+                    return (
+                      <button key={m} onClick={function() { setSchedDelay(m); }}
+                        style={{ padding: '3px 7px', background: schedDelay === m ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (schedDelay === m ? 'rgba(201,168,76,.5)' : '#3D3020'), borderRadius: 5, color: schedDelay === m ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                        {m}m
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <button onClick={scheduleMessage} disabled={!schedMsg.trim()}
+                style={{ padding: '8px', background: schedMsg.trim() ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 7, color: schedMsg.trim() ? '#C9A84C' : '#3D3020', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: schedMsg.trim() ? 'pointer' : 'not-allowed', letterSpacing: 1 }}>
+                ⏰ SCHEDULE IN {schedDelay}m
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── LOG ── */}
       {section === 'log' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -589,19 +759,20 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
 
           {/* Aura AI stat strip */}
           <div style={{ background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>AURA AI STATUS</div>
-            <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>SWANYBOT AI STATUS</div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               {[
-                ['MODEL',    'claude-sonnet-4'],
-                ['RATE',     '1 / 8s'],
-                ['MESSAGES', String(botLogs.filter(function(l) {
-                  return l.event === 'viewer_join' || l.event === 'gift_received' || l.event === 'new_subscription';
-                }).length)]
+                ['MODEL',    'sonnet-4'],
+                ['RATE',     '1/8s'],
+                ['RULES',    activeCount + '/' + rules.length],
+                ['TRIGGERS', String(triggers.length)],
+                ['AI MSGS',  String(botLogs.filter(function(l) { return l.event === 'viewer_join' || l.event === 'gift_received' || l.event === 'new_subscription'; }).length)],
+                ['EVENTS',   String(botLogs.length)],
               ].map(function(item) {
                 return (
-                  <div key={item[0]} style={{ flex: 1, background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 7, padding: '6px 8px', textAlign: 'center' }}>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginBottom: 2 }}>{item[0]}</div>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4' }}>{item[1]}</div>
+                  <div key={item[0]} style={{ flex: '1 1 60px', background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 7, padding: '5px 6px', textAlign: 'center' }}>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#8A7A62', letterSpacing: 1, marginBottom: 1 }}>{item[0]}</div>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#C9A84C' }}>{item[1]}</div>
                   </div>
                 );
               })}
