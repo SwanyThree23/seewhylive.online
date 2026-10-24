@@ -279,6 +279,10 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
       if (animRef.current) cancelAnimationFrame(animRef.current);
       if (audioCtxRef.current) audioCtxRef.current.close().catch(function(){});
       if (streamRef.current) streamRef.current.getTracks().forEach(function(t) { t.stop(); });
+      if (isOwnCell && rtcManager) {
+        rtcManager.closeProducer('video');
+        rtcManager.closeProducer('audio');
+      }
     };
   }, []);
 
