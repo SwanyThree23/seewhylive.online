@@ -621,8 +621,8 @@ setInterval(function() {
    audioChunkThrottle, collabThrottle, superChatThrottle, subscribeThrottle,
    merchOrderThrottle, updateUsernameThrottle, handRaiseThrottle, speakingThrottle,
    chatMsgThrottle, pollVoteThrottle, vsVoteThrottle, qaUpvoteThrottle,
-   judgeScoreThrottle, slowModeUserTs, pinChatThrottle, chyronThrottle,
-   overlayThrottle, bracketThrottle, triviaStartThrottle,
+   judgeScoreThrottle, slowModeUserTs, pinChatThrottle, watchHeartbeatThrottle,
+   chyronThrottle, overlayThrottle, bracketThrottle, triviaStartThrottle,
    _aiChatThrottle, _translateThrottle, _summarizeThrottle, powerPlayThrottle,
    streamCaptionThrottle, soundFxThrottle, pkStartThrottle, watchPartyThrottle,
    auraTriggerThrottle, botMsgThrottle, streamInfoThrottle, analyticsPingThrottle].forEach(function(m) {
@@ -1418,9 +1418,6 @@ app.post('/api/schedule', requireAuth, function(req, res) {
     return;
   }
   try {
-    db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL, recurring TEXT)');
-    try { db.exec('ALTER TABLE schedules ADD COLUMN recurring TEXT'); } catch(e) { /* column already exists */ }
-    try { db.exec('ALTER TABLE schedules ADD COLUMN creator_id TEXT'); } catch(e) { /* column already exists */ }
     var id  = uuidv4();
     var now = Math.floor(Date.now() / 1000);
     var _schedAt = Math.floor(Number(body.scheduled_at));
@@ -1453,8 +1450,25 @@ app.delete('/api/schedule/:id', requireAuth, function(req, res) {
 });
 
 
-// ── Scheduled Rooms — RSVP ─────────────────────────────────────────────────
-// Ensure RSVP table exists (safe to run repeatedly)
+// ── Scheduled Rooms — schema init (runs once at startup, not per-request) ──
+try {
+  db.exec(`CREATE TABLE IF NOT EXISTS schedules (
+    id           TEXT    PRIMARY KEY,
+    title        TEXT    NOT NULL,
+    category     TEXT,
+    desc         TEXT,
+    scheduled_at INTEGER NOT NULL,
+    created_at   INTEGER NOT NULL,
+    recurring    TEXT,
+    creator_id   TEXT
+  )`);
+} catch(_) {}
+// Add missing columns to older DBs
+try { db.exec('ALTER TABLE schedules ADD COLUMN recurring TEXT');  } catch(_) {}
+try { db.exec('ALTER TABLE schedules ADD COLUMN creator_id TEXT'); } catch(_) {}
+try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedules_creator ON schedules(creator_id)').run();  } catch(_) {}
+try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedules_time    ON schedules(scheduled_at)').run(); } catch(_) {}
+
 try {
   db.exec(`CREATE TABLE IF NOT EXISTS schedule_rsvps (
     schedule_id TEXT NOT NULL,
@@ -1464,7 +1478,7 @@ try {
   )`);
 } catch(_) {}
 try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedule_rsvps_schedule ON schedule_rsvps(schedule_id)').run(); } catch(_) {}
-try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedule_rsvps_user ON schedule_rsvps(user_id)').run(); } catch(_) {}
+try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedule_rsvps_user    ON schedule_rsvps(user_id)').run();     } catch(_) {}
 
 // POST /api/schedule/:id/rsvp  — RSVP to an event
 app.post('/api/schedule/:id/rsvp', requireAuth, function(req, res) {
@@ -1491,9 +1505,6 @@ app.delete('/api/schedule/:id/rsvp', requireAuth, function(req, res) {
 // GET /api/schedule/public  — public event list (no auth) with RSVP counts
 app.get('/api/schedule/public', function(req, res) {
   try {
-    db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL, recurring TEXT, creator_id TEXT)');
-    try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedules_creator ON schedules(creator_id)').run(); } catch(_) {}
-    try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedules_time ON schedules(scheduled_at)').run(); } catch(_) {}
     var rows = db.prepare('SELECT s.*, (SELECT COUNT(*) FROM schedule_rsvps r WHERE r.schedule_id = s.id) as rsvp_count FROM schedules s WHERE s.scheduled_at > ? ORDER BY s.scheduled_at ASC LIMIT 50').all(Math.floor(Date.now() / 1000));
     return res.json({ events: rows });
   } catch(e) { return res.status(500).json({ error: 'Server error' }); }
@@ -2455,6 +2466,7 @@ io.on('connection', function(socket) {
 
   // ── transport-connect ──────────────────────────────────────────────────
   socket.on('transport-connect', function(data, ack) {
+    if (!data) { if (ack) ack({ error: 'data required' }); return; }
     var transportId    = data.transportId;
     var dtlsParameters = data.dtlsParameters;
 
@@ -2479,6 +2491,7 @@ io.on('connection', function(socket) {
 
   // ── produce ────────────────────────────────────────────────────────────
   socket.on('produce', function(data, ack) {
+    if (!data) { if (ack) ack({ error: 'data required' }); return; }
     var transportId    = data.transportId;
     var rtpParameters  = data.rtpParameters;
     var kind           = data.kind;
@@ -2526,6 +2539,7 @@ io.on('connection', function(socket) {
 
   // ── consume ────────────────────────────────────────────────────────────
   socket.on('consume', function(data, ack) {
+    if (!data) { if (ack) ack({ error: 'data required' }); return; }
     var transportId    = data.transportId;
     var producerId     = data.producerId;
     var rtpCapabilities = data.rtpCapabilities;
@@ -2552,6 +2566,7 @@ io.on('connection', function(socket) {
 
   // ── producer-closed ────────────────────────────────────────────────────
   socket.on('producer-closed', function(data) {
+    if (!data) return;
     var producerId = data.producerId;
     var roomId     = socket.data.roomId;
     if (!producerId) return;
@@ -2567,6 +2582,7 @@ io.on('connection', function(socket) {
 
   // ── producer-pause ─────────────────────────────────────────────────────
   socket.on('producer-pause', function(data) {
+    if (!data) return;
     var producerId = data.producerId;
     var roomId     = socket.data.roomId;
     if (!producerId) return;
@@ -2577,6 +2593,7 @@ io.on('connection', function(socket) {
 
   // ── producer-resume ────────────────────────────────────────────────────
   socket.on('producer-resume', function(data) {
+    if (!data) return;
     var producerId = data.producerId;
     var roomId     = socket.data.roomId;
     if (!producerId) return;
@@ -2588,6 +2605,7 @@ io.on('connection', function(socket) {
   // ── stage-invite ───────────────────────────────────────────────────────
   socket.on('stage-invite', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
@@ -2614,10 +2632,10 @@ io.on('connection', function(socket) {
     var roomId  = socket.data.roomId;
     var guestId = socket.data.userId;
     if (!roomId || !guestId || guestId.startsWith('anon')) return;
-    io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: data.hostSocketId || '' });
+    io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: (data && data.hostSocketId) || '' });
     io.to(roomId).emit('hand-lower',   { guestId: guestId });
     // Notify the host
-    if (data.hostSocketId) {
+    if (data && data.hostSocketId) {
       var hostSock = io.sockets.sockets.get(data.hostSocketId);
       if (hostSock) hostSock.emit('stage-invite-accepted', { username: socket.data.username || guestId });
     }
@@ -2626,7 +2644,7 @@ io.on('connection', function(socket) {
   socket.on('stage-invite-decline', function(data) {
     var guestId = socket.data.userId;
     if (!guestId || guestId.startsWith('anon')) return;
-    if (data.hostSocketId) {
+    if (data && data.hostSocketId) {
       var hostSock = io.sockets.sockets.get(data.hostSocketId);
       if (hostSock) hostSock.emit('stage-invite-declined', { username: socket.data.username || guestId });
     }
@@ -2689,6 +2707,7 @@ io.on('connection', function(socket) {
   // ── stage-remove ───────────────────────────────────────────────────────
   socket.on('stage-remove', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
@@ -2697,6 +2716,7 @@ io.on('connection', function(socket) {
 
   // ── mute-guest ─────────────────────────────────────────────────────────
   socket.on('mute-guest', function(data) {
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
@@ -2708,6 +2728,7 @@ io.on('connection', function(socket) {
 
   // ── unmute-guest ───────────────────────────────────────────────────────
   socket.on('unmute-guest', function(data) {
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
@@ -2719,6 +2740,7 @@ io.on('connection', function(socket) {
 
   // ── kick-guest ─────────────────────────────────────────────────────────
   socket.on('kick-guest', function(data) {
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
@@ -2760,6 +2782,7 @@ io.on('connection', function(socket) {
 
   // ── promote-guest ──────────────────────────────────────────────────────
   socket.on('promote-guest', function(data) {
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     var newRole = data.role;
@@ -3434,10 +3457,11 @@ io.on('connection', function(socket) {
     var _spNow = Date.now();
     if (_spNow - (speakingThrottle.get(socket.data.userId) || 0) < 250) return;
     speakingThrottle.set(socket.data.userId, _spNow);
-    io.to(roomId).emit('speaking', { guestId: guestId, speaking: data.speaking });
+    var _isSpeaking = data && !!data.speaking;
+    io.to(roomId).emit('speaking', { guestId: guestId, speaking: _isSpeaking });
     // Upgrade active-speaker video to r2 (900 kbps) while speaking;
     // drop back to r0 (100 kbps) when silent — O(subscribers) but fine for ≤20 seats.
-    mediasoup.setPreferredLayersByGuestId(guestId, data.speaking ? 2 : 0).catch(function() {});
+    mediasoup.setPreferredLayersByGuestId(guestId, _isSpeaking ? 2 : 0).catch(function() {});
   });
 
   // ── hand-raise ─────────────────────────────────────────────────────────
