@@ -1521,7 +1521,7 @@ app.post('/api/schedule', requireAuth, function(req, res) {
     var _schedAt = Math.floor(Number(body.scheduled_at));
     if (!Number.isFinite(_schedAt) || _schedAt <= 0) return res.status(400).json({ error: 'scheduled_at must be a positive integer (Unix ms)' });
     db.prepare('INSERT INTO schedules (id,title,category,desc,scheduled_at,created_at,recurring,creator_id) VALUES (?,?,?,?,?,?,?,?)')
-      .run(id, String(body.title).slice(0,120), String(body.category||'').slice(0,40), String(body.desc||'').slice(0,400), _schedAt, now, String(body.recurring||'none').slice(0,20), req.user.id);
+      .run(id, String(body.title).trim().slice(0,120), String(body.category||'').trim().slice(0,40), String(body.desc||'').trim().slice(0,400), _schedAt, now, String(body.recurring||'none').trim().slice(0,20), req.user.id);
     res.json({ id: id, saved: true });
   } catch (err) {
     logger.error('[schedule/post] ' + err.message);
@@ -2926,7 +2926,7 @@ io.on('connection', function(socket) {
   socket.on('update-username', function(data) {
     if (!data) return;
     var roomId   = socket.data.roomId;
-    var newName  = String(data.username || '').trim().slice(0, 32);
+    var newName  = String(data.username || '').replace(/[\x00-\x1F\x7F]/g, '').trim().slice(0, 32);
     if (/^[🛡✂🎤📡]/u.test(newName)) {
       newName = newName.replace(/^[🛡✂🎤📡\s]+/u, '').trim();
     }
