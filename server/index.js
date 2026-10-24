@@ -1418,9 +1418,6 @@ app.post('/api/schedule', requireAuth, function(req, res) {
     return;
   }
   try {
-    db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL, recurring TEXT)');
-    try { db.exec('ALTER TABLE schedules ADD COLUMN recurring TEXT'); } catch(e) { /* column already exists */ }
-    try { db.exec('ALTER TABLE schedules ADD COLUMN creator_id TEXT'); } catch(e) { /* column already exists */ }
     var id  = uuidv4();
     var now = Math.floor(Date.now() / 1000);
     var _schedAt = Math.floor(Number(body.scheduled_at));
@@ -1453,8 +1450,25 @@ app.delete('/api/schedule/:id', requireAuth, function(req, res) {
 });
 
 
-// ── Scheduled Rooms — RSVP ─────────────────────────────────────────────────
-// Ensure RSVP table exists (safe to run repeatedly)
+// ── Scheduled Rooms — schema init (runs once at startup, not per-request) ──
+try {
+  db.exec(`CREATE TABLE IF NOT EXISTS schedules (
+    id           TEXT    PRIMARY KEY,
+    title        TEXT    NOT NULL,
+    category     TEXT,
+    desc         TEXT,
+    scheduled_at INTEGER NOT NULL,
+    created_at   INTEGER NOT NULL,
+    recurring    TEXT,
+    creator_id   TEXT
+  )`);
+} catch(_) {}
+// Add missing columns to older DBs
+try { db.exec('ALTER TABLE schedules ADD COLUMN recurring TEXT');  } catch(_) {}
+try { db.exec('ALTER TABLE schedules ADD COLUMN creator_id TEXT'); } catch(_) {}
+try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedules_creator ON schedules(creator_id)').run();  } catch(_) {}
+try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedules_time    ON schedules(scheduled_at)').run(); } catch(_) {}
+
 try {
   db.exec(`CREATE TABLE IF NOT EXISTS schedule_rsvps (
     schedule_id TEXT NOT NULL,
@@ -1464,7 +1478,7 @@ try {
   )`);
 } catch(_) {}
 try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedule_rsvps_schedule ON schedule_rsvps(schedule_id)').run(); } catch(_) {}
-try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedule_rsvps_user ON schedule_rsvps(user_id)').run(); } catch(_) {}
+try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedule_rsvps_user    ON schedule_rsvps(user_id)').run();     } catch(_) {}
 
 // POST /api/schedule/:id/rsvp  — RSVP to an event
 app.post('/api/schedule/:id/rsvp', requireAuth, function(req, res) {
@@ -1491,9 +1505,6 @@ app.delete('/api/schedule/:id/rsvp', requireAuth, function(req, res) {
 // GET /api/schedule/public  — public event list (no auth) with RSVP counts
 app.get('/api/schedule/public', function(req, res) {
   try {
-    db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL, recurring TEXT, creator_id TEXT)');
-    try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedules_creator ON schedules(creator_id)').run(); } catch(_) {}
-    try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedules_time ON schedules(scheduled_at)').run(); } catch(_) {}
     var rows = db.prepare('SELECT s.*, (SELECT COUNT(*) FROM schedule_rsvps r WHERE r.schedule_id = s.id) as rsvp_count FROM schedules s WHERE s.scheduled_at > ? ORDER BY s.scheduled_at ASC LIMIT 50').all(Math.floor(Date.now() / 1000));
     return res.json({ events: rows });
   } catch(e) { return res.status(500).json({ error: 'Server error' }); }
