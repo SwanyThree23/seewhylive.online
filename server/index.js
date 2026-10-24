@@ -1528,7 +1528,7 @@ app.get('/api/schedule', requireAuth, function(req, res) {
 
 // POST /api/schedule
 app.post('/api/schedule', requireAuth, function(req, res) {
-  if (req.user.role !== 'owner' && req.user.role !== 'admin') {
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'forbidden' });
   }
   var body = req.body;
@@ -1555,7 +1555,7 @@ app.post('/api/schedule', requireAuth, function(req, res) {
 
 // DELETE /api/schedule/:id
 app.delete('/api/schedule/:id', requireAuth, function(req, res) {
-  if (req.user.role !== 'owner' && req.user.role !== 'admin') {
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'forbidden' });
   }
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.id)) {
@@ -1636,7 +1636,7 @@ app.get('/api/schedule/public', function(req, res) {
 app.get('/api/schedule/:id/rsvps', requireAuth, function(req, res) {
   var id = String(req.params.id || '').trim();
   if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({ error: 'invalid id' });
-  if (req.user.role !== 'owner' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
     var ev = db.prepare('SELECT creator_id FROM schedules WHERE id = ?').get(id);
     if (!ev) return res.status(404).json({ error: 'Event not found' });
@@ -1883,7 +1883,7 @@ app.get('/api/clips/:roomId', requireAuth, function(req, res) {
   if (!roomId || roomId.length > 128 || !/^[\w\-.]+$/.test(roomId)) {
     return res.status(400).json({ error: 'invalid roomId' });
   }
-  if (req.user.role !== 'owner' && req.user.role !== 'admin') {
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'forbidden' });
   }
   var roomRow = db.prepare('SELECT host_id FROM rooms WHERE room_id = ?').get(roomId);
