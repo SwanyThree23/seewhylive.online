@@ -209,14 +209,23 @@ function registerPanelHandlers(io, socket, rooms) {
         ack?.({ ok: false, error: 'invalid targetUserId' });
         return;
       }
-      // Cohosts may not kick the room's host.
-      // Use the rooms map (hostUserId) rather than fetchSockets() so the check
-      // is correct even when the host is temporarily disconnected.
+      // Cohosts may not kick the room's host or other cohosts.
       if (socket.data.role === 'cohost') {
         var _kickRoomData = rooms && rooms.get(roomId);
-        if (_kickRoomData && _kickRoomData.hostUserId === targetUserId) {
-          ack?.({ ok: false, error: 'forbidden' });
-          return;
+        if (_kickRoomData) {
+          if (_kickRoomData.hostUserId === targetUserId) {
+            ack?.({ ok: false, error: 'forbidden' });
+            return;
+          }
+          // Prevent cohost kicking another cohost
+          var _targetIsCohost = false;
+          _kickRoomData.guests.forEach(function(g) {
+            if (g.guestId === targetUserId && g.role === 'cohost') _targetIsCohost = true;
+          });
+          if (_targetIsCohost) {
+            ack?.({ ok: false, error: 'forbidden' });
+            return;
+          }
         }
       }
       await panelService.releaseSlot({ roomId, userId: targetUserId });

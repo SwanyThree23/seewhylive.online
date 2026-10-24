@@ -5631,6 +5631,9 @@ io.on('connection', function(socket) {
         if (s.data.roomId === sId && s.data.userId === bannedId) _bannedUsername = s.data.username || '';
       });
     }
+    // Prevent banning the room's host
+    var _banRoom = rooms.get(sId);
+    if (_banRoom && _banRoom.hostUserId === bannedId) return;
     io.to(sId).emit('user-banned', { userId: bannedId, username: _bannedUsername, ts: Math.floor(Date.now() / 1000) });
     // Disconnect every socket in this room whose userId matches the ban target
     var room = rooms.get(sId);
