@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, Radio } from 'lucide-react';
+import { Bell, Radio, Share2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 function FlipUnit({ value, label }) {
@@ -112,17 +112,38 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
           <FlipUnit value={seconds} label="sec" />
         </div>
 
-        {/* CTA */}
-        {currentUser && (
-          <button
-            onClick={() => !reminderSet && reminderMutation.mutate()}
-            disabled={reminderSet}
-            style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, border:'none', background: reminderSet ? '#4A9B5E' : '#d4af37', color: reminderSet ? '#fff' : '#000', fontWeight:700, cursor: reminderSet ? 'default' : 'pointer', fontSize:14, fontFamily:'Barlow Condensed, sans-serif' }}
-          >
-            <Bell className="w-4 h-4" />
-            {reminderSet ? 'Reminder Set ✓' : 'Set Reminder'}
-          </button>
+        {/* Viewer queue */}
+        {(room?.viewer_count > 0) && (
+          <div className="flex items-center gap-1.5 text-xs text-white/50">
+            <Users className="w-3.5 h-3.5" />
+            <span><span style={{ color: '#d4af37', fontWeight: 700 }}>{room.viewer_count}</span> viewers waiting</span>
+          </div>
         )}
+
+        {/* CTA row */}
+        <div className="flex items-center gap-3 flex-wrap justify-center">
+          {currentUser && (
+            <button
+              onClick={() => !reminderSet && reminderMutation.mutate()}
+              disabled={reminderSet}
+              style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, border:'none', background: reminderSet ? '#4A9B5E' : '#d4af37', color: reminderSet ? '#fff' : '#000', fontWeight:700, cursor: reminderSet ? 'default' : 'pointer', fontSize:14, fontFamily:'Barlow Condensed, sans-serif' }}
+            >
+              <Bell className="w-4 h-4" />
+              {reminderSet ? 'Reminder Set ✓' : 'Set Reminder'}
+            </button>
+          )}
+          <button
+            onClick={() => {
+              navigator.clipboard?.writeText(window.location.href)
+                .then(() => toast.success('Link copied!'))
+                .catch(() => toast.error('Copy failed.'));
+            }}
+            style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, border:'1px solid rgba(212,175,55,0.4)', background:'rgba(212,175,55,0.1)', color:'#d4af37', fontWeight:700, cursor:'pointer', fontSize:14, fontFamily:'Barlow Condensed, sans-serif' }}
+          >
+            <Share2 className="w-4 h-4" />
+            Share
+          </button>
+        </div>
 
         <p className="text-xs text-white/30">Chat is active while you wait 👇</p>
       </motion.div>
