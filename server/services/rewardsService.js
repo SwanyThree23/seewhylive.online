@@ -38,9 +38,9 @@ async function awardPoints(userId, points, source, sourceId, tenantId) {
              (SELECT COALESCE(MAX(level),1) FROM reward_tiers WHERE points_required <= $2 AND tenant_id = $3),
              now())
            ON CONFLICT (user_id, tenant_id) DO UPDATE SET
-             total_points = user_loyalty.total_points + EXCLUDED.total_points,
+             total_points = LEAST(user_loyalty.total_points + EXCLUDED.total_points, 10000000),
              level        = (SELECT COALESCE(MAX(level),1) FROM reward_tiers
-                             WHERE points_required <= user_loyalty.total_points + EXCLUDED.total_points
+                             WHERE points_required <= LEAST(user_loyalty.total_points + EXCLUDED.total_points, 10000000)
                                AND tenant_id = $3),
              updated_at   = now()
            RETURNING total_points, level`,
@@ -50,8 +50,8 @@ async function awardPoints(userId, points, source, sourceId, tenantId) {
           `INSERT INTO user_loyalty (user_id, total_points, level, updated_at)
            VALUES ($1, $2, floor($2::numeric / 1000)::int + 1, now())
            ON CONFLICT (user_id) DO UPDATE SET
-             total_points = user_loyalty.total_points + EXCLUDED.total_points,
-             level        = floor((user_loyalty.total_points + EXCLUDED.total_points)::numeric / 1000)::int + 1,
+             total_points = LEAST(user_loyalty.total_points + EXCLUDED.total_points, 10000000),
+             level        = floor(LEAST(user_loyalty.total_points + EXCLUDED.total_points, 10000000)::numeric / 1000)::int + 1,
              updated_at   = now()
            RETURNING total_points, level`,
           [userId, points]

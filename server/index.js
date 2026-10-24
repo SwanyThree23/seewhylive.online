@@ -480,6 +480,15 @@ var fuelRateLimit = rateLimit({
   validate: { xForwardedForHeader: false },
   message: { error: 'Too many FUEL requests — please wait before trying again.' }
 });
+var referralRegisterLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many referral attempts — please wait before trying again.' }
+});
 // NOTE: stripeOnboardRateLimit is applied on the route itself (after requireAuth)
 // so req.user.id is available for per-user keying.
 app.use(express.json({ limit: '2mb' }));
@@ -1008,7 +1017,7 @@ setInterval(function() {
     // Emit refreshed viewer count after cleanup
     var count = getViewerCount(room);
     if (count >= 0) {
-      io.to(roomId).emit('viewer-count', { count: count });
+      io.volatile.to(roomId).emit('viewer-count', { count: count });
     }
   });
 }, 60000);
@@ -1267,7 +1276,7 @@ app.get('/api/referral/code', requireAuth, function(req, res) {
     if (!profile) return res.status(404).json({ error: 'Profile not found' });
     var code = profile.referral_code;
     if (!code) {
-      code = userId.replace(/-/g, '').slice(0, 8).toUpperCase() + Math.floor(Math.random() * 1000);
+      code = require('crypto').randomBytes(5).toString('hex').toUpperCase();
       db.prepare('UPDATE user_profiles SET referral_code = ? WHERE user_id = ?').run(code, userId);
       // Also create referrals row for this referrer
       var now = Math.floor(Date.now() / 1000);
@@ -1282,7 +1291,7 @@ app.get('/api/referral/code', requireAuth, function(req, res) {
 });
 
 // POST /api/referral/register  — referred creator registers with a code
-app.post('/api/referral/register', requireAuth, function(req, res) {
+app.post('/api/referral/register', requireAuth, referralRegisterLimit, function(req, res) {
   try {
     var userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Not authenticated' });
@@ -1302,11 +1311,8 @@ app.post('/api/referral/register', requireAuth, function(req, res) {
     db.prepare('UPDATE user_profiles SET referred_by = ? WHERE user_id = ?').run(referral.referrer_id, userId);
     // Grant 30-day Pro and 500 loyalty points to referred creator
     db.prepare('UPDATE user_profiles SET tier = \'pro\', pro_until = ? WHERE user_id = ?').run(now + 30 * 24 * 3600, userId);
-    // Grant 500 loyalty points (best-effort via Postgres loyaltyService)
-    try {
-      var { loyaltyService } = require('./services/loyaltyService');
-      if (loyaltyService && loyaltyService.addPoints) loyaltyService.addPoints(userId, null, 500, 'referral_bonus', referral.id);
-    } catch(_) {}
+    // Grant 500 loyalty points best-effort (fire-and-forget, async Postgres)
+    loyaltyService.awardPoints({ userId: userId, tenantId: req.tenantId || null, points: 500, source: 'referral_bonus', sourceId: referral.id }).catch(function() {});
     return res.json({ success: true, message: '30 days Pro + 500 Fuel granted! Go live 3 times in 30 days to unlock your referrer\'s bonus.' });
   } catch (e) {
     logger.error('[referral/register] ' + e.message);
@@ -1522,7 +1528,7 @@ app.get('/api/schedule', requireAuth, function(req, res) {
 
 // POST /api/schedule
 app.post('/api/schedule', requireAuth, function(req, res) {
-  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+  if (req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'forbidden' });
   }
   var body = req.body;
@@ -1549,7 +1555,7 @@ app.post('/api/schedule', requireAuth, function(req, res) {
 
 // DELETE /api/schedule/:id
 app.delete('/api/schedule/:id', requireAuth, function(req, res) {
-  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+  if (req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'forbidden' });
   }
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.id)) {
@@ -1630,7 +1636,7 @@ app.get('/api/schedule/public', function(req, res) {
 app.get('/api/schedule/:id/rsvps', requireAuth, function(req, res) {
   var id = String(req.params.id || '').trim();
   if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({ error: 'invalid id' });
-  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  if (req.user.role !== 'owner' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
     var ev = db.prepare('SELECT creator_id FROM schedules WHERE id = ?').get(id);
     if (!ev) return res.status(404).json({ error: 'Event not found' });
@@ -1877,7 +1883,7 @@ app.get('/api/clips/:roomId', requireAuth, function(req, res) {
   if (!roomId || roomId.length > 128 || !/^[\w\-.]+$/.test(roomId)) {
     return res.status(400).json({ error: 'invalid roomId' });
   }
-  if (req.user.role !== 'host' && req.user.role !== 'cohost' && req.user.role !== 'admin') {
+  if (req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'forbidden' });
   }
   var roomRow = db.prepare('SELECT host_id FROM rooms WHERE room_id = ?').get(roomId);
@@ -2455,7 +2461,7 @@ io.on('connection', function(socket) {
           var guestList = buildGuestList(room);
 
           io.to(roomId).emit('roster-update', { guests: guestList });
-          io.to(roomId).emit('viewer-count', { count: getViewerCount(room) });
+          io.volatile.to(roomId).emit('viewer-count', { count: getViewerCount(room) });
           checkHostAlerts(roomId, getViewerCount(room));
 
           swanybot.onViewerJoin(roomId, username, socket.id);
@@ -2491,7 +2497,7 @@ io.on('connection', function(socket) {
       var guestList = buildGuestList(room);
 
       io.to(roomId).emit('roster-update', { guests: guestList });
-      io.to(roomId).emit('viewer-count', { count: getViewerCount(room) });
+      io.volatile.to(roomId).emit('viewer-count', { count: getViewerCount(room) });
       checkHostAlerts(roomId, getViewerCount(room));
 
       swanybot.onViewerJoin(roomId, username, socket.id);
@@ -3588,7 +3594,7 @@ io.on('connection', function(socket) {
     if (_spNow - (speakingThrottle.get(socket.data.userId) || 0) < 250) return;
     speakingThrottle.set(socket.data.userId, _spNow);
     var _isSpeaking = data && !!data.speaking;
-    io.to(roomId).emit('speaking', { guestId: guestId, speaking: _isSpeaking });
+    io.volatile.to(roomId).emit('speaking', { guestId: guestId, speaking: _isSpeaking });
     // Upgrade active-speaker video to r2 (900 kbps) while speaking;
     // drop back to r0 (100 kbps) when silent — O(subscribers) but fine for ≤20 seats.
     mediasoup.setPreferredLayersByGuestId(guestId, _isSpeaking ? 2 : 0).catch(function() {});
@@ -6010,7 +6016,7 @@ io.on('connection', function(socket) {
 
     var viewerCount = getViewerCount(room);
     io.to(roomId).emit('roster-update', { guests: buildGuestList(room) });
-    io.to(roomId).emit('viewer-count', { count: viewerCount });
+    io.volatile.to(roomId).emit('viewer-count', { count: viewerCount });
     checkHostAlerts(roomId, viewerCount);
 
     swanybot.onViewerCountChange(roomId, viewerCount);

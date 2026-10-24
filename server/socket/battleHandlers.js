@@ -227,7 +227,7 @@ function startCountdown(io, battle) {
       }
       return;
     }
-    io.to(room).emit('battle:tick', {
+    io.volatile.to(room).emit('battle:tick', {
       battleId: battle.id,
       remainingSeconds: Math.max(0, Math.round(remainingMs / 1000)),
     });
