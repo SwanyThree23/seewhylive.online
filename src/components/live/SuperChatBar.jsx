@@ -283,21 +283,30 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
               </div>
 
               {/* Message input */}
-              <div className="flex gap-1.5">
-                <input
-                  value={message}
-                  onChange={e => setMessage(e.target.value.slice(0, 100))}
-                  placeholder="Add a message..."
-                  className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder-white/20 focus:outline-none focus:border-[#D4AF37]/40"
-                  style={msgStyle === 'hype' ? { background: 'rgba(192,57,43,0.15)', borderColor: 'rgba(192,57,43,0.4)' } : {}}
-                />
-                <button
-                  onClick={handleSuperChat}
-                  disabled={sendMutation.isPending}
-                  style={{ height: 28, padding: '0 8px', borderRadius: 6, border: 'none', background: effectiveAmount.color, color: '#000', fontWeight: 700, fontSize: 10, cursor: sendMutation.isPending ? 'not-allowed' : 'pointer' }}
-                >
-                  {sendMutation.isPending ? '...' : `${effectiveAmount.emoji} Send`}
-                </button>
+              <div className="space-y-0.5">
+                <div className="flex gap-1.5">
+                  <input
+                    value={message}
+                    onChange={e => setMessage(e.target.value.slice(0, 100))}
+                    placeholder="Add a message..."
+                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder-white/20 focus:outline-none focus:border-[#D4AF37]/40"
+                    style={msgStyle === 'hype' ? { background: 'rgba(192,57,43,0.15)', borderColor: 'rgba(192,57,43,0.4)' } : {}}
+                  />
+                  <button
+                    onClick={handleSuperChat}
+                    disabled={sendMutation.isPending}
+                    style={{ height: 28, padding: '0 8px', borderRadius: 6, border: 'none', background: effectiveAmount.color, color: '#000', fontWeight: 700, fontSize: 10, cursor: sendMutation.isPending ? 'not-allowed' : 'pointer' }}
+                  >
+                    {sendMutation.isPending ? '...' : `${effectiveAmount.emoji} Send`}
+                  </button>
+                </div>
+                {message.length > 0 && (
+                  <div className="flex justify-end">
+                    <span style={{ fontSize: 9, color: message.length > 90 ? '#C0392B' : 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      {message.length}/100
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
@@ -320,9 +329,12 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
             >
               <div className="text-3xl mb-2">{effectiveAmount.emoji}</div>
               <p className="text-sm font-black text-white mb-1">Confirm Super Chat</p>
-              <p className="text-xs text-white/60 mb-4">
+              <p className="text-xs text-white/60 mb-1">
                 Send <span style={{ color: effectiveAmount.color }} className="font-bold">${effectiveAmount.value}</span>
                 {recipientName ? ` to ${recipientName}` : ''}?
+              </p>
+              <p className="text-[10px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                Creator receives <span style={{ color: '#6DBF7E', fontWeight: 700 }}>${(Math.floor(effectiveAmount.value * 0.9 * 100) / 100).toFixed(2)}</span> (90%)
               </p>
               <div className="flex gap-2">
                 <button

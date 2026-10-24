@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -46,9 +46,20 @@ const PRIORITY_BORDERS = {
   urgent: 'rgba(192,57,43,0.4)',
 };
 
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
 export default function NotificationHub() {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState('all');
+  const [ringing, setRinging] = useState(false);
+  const prevUnread = useRef(0);
   const queryClient = useQueryClient();
 
   // Fetch current user
@@ -74,11 +85,20 @@ export default function NotificationHub() {
 
   // Mark as read
   const markReadMutation = useMutation({
-    mutationFn: async (id) => {
-      await base44.entities.Notification.update(id, { is_read: true });
-      queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
+    mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['notifications', user?.id] });
+      const prev = queryClient.getQueryData(['notifications', user?.id]);
+      queryClient.setQueryData(['notifications', user?.id], (old) =>
+        (old || []).map(n => n.id === id ? { ...n, is_read: true } : n)
+      );
+      return { prev };
     },
-    onError: () => toast.error('Failed to mark notification as read.'),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] }),
+    onError: (_err, _id, context) => {
+      if (context?.prev !== undefined) queryClient.setQueryData(['notifications', user?.id], context.prev);
+      toast.error('Failed to mark notification as read.');
+    },
   });
 
   // Delete notification
@@ -95,12 +115,32 @@ export default function NotificationHub() {
     mutationFn: async () => {
       const unread = notifications?.filter(n => !n.is_read) || [];
       await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
-      queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
-    onError: () => toast.error('Failed to mark all as read.'),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['notifications', user?.id] });
+      const prev = queryClient.getQueryData(['notifications', user?.id]);
+      queryClient.setQueryData(['notifications', user?.id], (old) =>
+        (old || []).map(n => ({ ...n, is_read: true }))
+      );
+      return { prev };
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] }),
+    onError: (_err, _vars, context) => {
+      if (context?.prev !== undefined) queryClient.setQueryData(['notifications', user?.id], context.prev);
+      toast.error('Failed to mark all as read.');
+    },
   });
 
   const unreadCount = notifications?.filter(n => !n.is_read).length || 0;
+
+  // Bell shake on new notifications
+  useEffect(() => {
+    if ((unreadCount || 0) > (prevUnread.current || 0) && !open) {
+      setRinging(true);
+      setTimeout(() => setRinging(false), 800);
+    }
+    prevUnread.current = unreadCount || 0;
+  }, [unreadCount, open]);
 
   const filtered = notifications?.filter(n => {
     if (category === 'all') return true;
@@ -128,6 +168,8 @@ export default function NotificationHub() {
           background: open ? `${G}15` : 'rgba(255,255,255,0.05)',
           border: `1px solid ${open ? G + '30' : 'rgba(255,255,255,0.08)'}`,
         }}
+        animate={ringing ? { rotate: [0, -15, 15, -10, 10, -5, 5, 0] } : {}}
+        transition={ringing ? { duration: 0.6 } : {}}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -221,6 +263,7 @@ export default function NotificationHub() {
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-white">{notif.title}</p>
                         <p className="text-[10px] text-white/60 mt-0.5 leading-snug">{notif.message}</p>
+                        <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{timeAgo(notif.created_date)}</p>
                         {notif.metadata?.amount && (
                           <p className="text-[10px] text-[#D4AF37]/80 mt-1">
                             {notif.metadata.amount}

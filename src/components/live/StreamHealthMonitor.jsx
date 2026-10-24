@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wifi, WifiOff, ChevronDown, ChevronUp, AlertTriangle, Volume2, Monitor } from 'lucide-react';
+import { Wifi, WifiOff, ChevronDown, ChevronUp, AlertTriangle, Volume2, Monitor, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 
 const QUALITY_LABELS = [
   { min: 80, label: 'Excellent', color: '#6DBF7E' },
@@ -18,6 +19,15 @@ const SUGGESTIONS = {
 
 function getQuality(health) {
   return QUALITY_LABELS.find(q => health >= q.min) || QUALITY_LABELS[QUALITY_LABELS.length - 1];
+}
+
+function fmtUptime(s) {
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+    : `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
 function Stat({ label, value, color }) {
@@ -55,6 +65,10 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
   const [resolution, setResolution]     = useState('1080p');
   const [alerts, setAlerts]             = useState([]);
   const prevDropped = useRef(0);
+  const [uptime, setUptime] = useState(0);
+  const uptimeTimer = useRef(null);
+  const [bitrateSparkline, setBitrateSparkline] = useState([]);
+  const bitrateHistory = useRef([]);
 
   // If real WebRTC stats are passed in, consume them
   useEffect(() => {
@@ -66,6 +80,10 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
     if (webrtcStats.packetLoss !== undefined) setPacketLoss(webrtcStats.packetLoss);
     if (webrtcStats.resolution !== undefined) setResolution(webrtcStats.resolution);
     if (webrtcStats.audioLevel !== undefined) setAudioLevel(webrtcStats.audioLevel);
+    if (webrtcStats.bitrate !== undefined) {
+      bitrateHistory.current = [...bitrateHistory.current.slice(-19), webrtcStats.bitrate];
+      setBitrateSparkline([...bitrateHistory.current]);
+    }
     // Recompute composite health
     const h = Math.round(
       Math.min(100, Math.max(0,
@@ -80,10 +98,14 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
 
   // Push alert if a threshold is crossed
   const pushAlert = useCallback((message, level = 'warn') => {
-    setAlerts(prev => [
-      { id: Date.now(), message, level, time: new Date().toLocaleTimeString() },
-      ...prev.slice(0, 4),
-    ]);
+    setAlerts(prev => {
+      const now = Date.now();
+      if (prev.some(a => a.message === message && now - a.ts < 30000)) return prev;
+      return [
+        { id: now, ts: now, message, level, time: new Date().toLocaleTimeString() },
+        ...prev.slice(0, 4),
+      ];
+    });
   }, []);
 
   useEffect(() => {
@@ -101,6 +123,17 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
       prevDropped.current = droppedFrames;
     }
   }, [droppedFrames]);
+
+  // Uptime timer
+  useEffect(() => {
+    if (isLive) {
+      uptimeTimer.current = setInterval(() => setUptime(u => u + 1), 1000);
+    } else {
+      setUptime(0);
+      clearInterval(uptimeTimer.current);
+    }
+    return () => clearInterval(uptimeTimer.current);
+  }, [isLive]);
 
   const quality      = getQuality(health);
   const latencyColor = latency < 200 ? '#6DBF7E' : latency < 400 ? '#C9A84C' : '#C0392B';
@@ -144,7 +177,7 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
               {quality.label}
             </span>
           </div>
-          <p className="text-[10px] text-white/50">{(bitrate / 1000).toFixed(1)} Mbps · {resolution}</p>
+          <p className="text-[10px] text-white/50">{(bitrate / 1000).toFixed(1)} Mbps · {resolution}{isLive && uptime > 0 ? ` · ${fmtUptime(uptime)}` : ''}</p>
         </div>
         <div className="flex items-center gap-0.5">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -196,6 +229,46 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
                 />
               </div>
             </div>
+
+            {/* Bitrate sparkline */}
+            {bitrateSparkline.length > 2 && (
+              <div>
+                <p className="text-[9px] text-white/30 uppercase tracking-wide mb-1">Bitrate trend</p>
+                <svg width="100%" height="20" viewBox={`0 0 ${bitrateSparkline.length - 1} 20`} preserveAspectRatio="none" style={{ display: 'block' }}>
+                  <polyline
+                    points={bitrateSparkline.map((v, i) => {
+                      const max = Math.max(...bitrateSparkline, 1);
+                      return `${i},${(20 - (v / max) * 18).toFixed(1)}`;
+                    }).join(' ')}
+                    fill="none"
+                    stroke={quality.color}
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            )}
+
+            {/* Copy stats */}
+            <button
+              onClick={() => {
+                const lines = [
+                  `Stream Health: ${health}% (${quality.label})`,
+                  `Bitrate: ${(bitrate / 1000).toFixed(1)} Mbps`,
+                  `FPS: ${fps}`,
+                  `Latency: ${latency} ms`,
+                  `Dropped: ${droppedFrames}`,
+                  `Packet Loss: ${packetLoss.toFixed(1)}%`,
+                  `Resolution: ${resolution}`,
+                ];
+                if (isLive && uptime > 0) lines.push(`Uptime: ${fmtUptime(uptime)}`);
+                navigator.clipboard?.writeText(lines.join('\n')).then(() => toast.success('Stats copied!'));
+              }}
+              className="w-full text-[10px] py-1 rounded transition-all"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+            >
+              <Copy className="w-3 h-3" /> Copy Stats
+            </button>
 
             {/* Alerts toggle */}
             {alerts.length > 0 && (

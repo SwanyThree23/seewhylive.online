@@ -5,13 +5,28 @@ import { base44 } from '@/api/base44Client';
 const EMOJIS = ['🔥','❤️','😂','👏','🎉','😮','💪','🤩','🙌','😍','🤯','💯','👀','💀','🫶','⚡'];
 const COOLDOWN_MS = 600;
 const COUNT_TTL_MS = 5000;
+const STREAK_THRESHOLD = 3;  // taps within window to trigger burst
 
 export default function EmojiReactionBar({ roomId, userId, userName }) {
   const [floaters, setFloaters] = useState([]);
   const [recentCounts, setRecentCounts] = useState({});
   const [cooldown, setCooldown] = useState({});
+  const [streakEmoji, setStreakEmoji] = useState(null);   // shows STREAK! badge
+  const [hotEmoji, setHotEmoji] = useState(null);          // most-tapped this session
   const idRef = useRef(0);
   const countTimers = useRef({});
+  const streakTimers = useRef({});
+  const streakCounts = useRef({});             // consecutive tap counter per emoji
+  const sessionTotals = useRef({});            // all-time session counts
+
+  const spawnFloaters = useCallback((emoji, count = 1) => {
+    const ids = Array.from({ length: count }, () => ++idRef.current);
+    setFloaters(prev => [
+      ...prev,
+      ...ids.map(id => ({ id, emoji, x: Math.random() * 80 - 40, scale: count > 1 ? 1.2 + Math.random() * 0.5 : 1 })),
+    ]);
+    ids.forEach(id => setTimeout(() => setFloaters(prev => prev.filter(f => f.id !== id)), 1200));
+  }, []);
 
   const send = useCallback(async (emoji) => {
     if (cooldown[emoji]) return;
@@ -20,10 +35,25 @@ export default function EmojiReactionBar({ roomId, userId, userName }) {
     setCooldown(prev => ({ ...prev, [emoji]: true }));
     setTimeout(() => setCooldown(prev => ({ ...prev, [emoji]: false })), COOLDOWN_MS);
 
-    // Floater animation
-    const id = ++idRef.current;
-    setFloaters(prev => [...prev, { id, emoji, x: Math.random() * 60 - 30 }]);
-    setTimeout(() => setFloaters(prev => prev.filter(f => f.id !== id)), 1100);
+    // Track streak — reset timer on each tap
+    streakCounts.current[emoji] = (streakCounts.current[emoji] || 0) + 1;
+    if (streakTimers.current[emoji]) clearTimeout(streakTimers.current[emoji]);
+    streakTimers.current[emoji] = setTimeout(() => { streakCounts.current[emoji] = 0; }, 1800);
+
+    const streak = streakCounts.current[emoji];
+    const isBurst = streak >= STREAK_THRESHOLD && streak % STREAK_THRESHOLD === 0;
+
+    // Floater animation — burst on streak milestone
+    spawnFloaters(emoji, isBurst ? 6 : 1);
+    if (isBurst) {
+      setStreakEmoji(emoji);
+      setTimeout(() => setStreakEmoji(null), 1200);
+    }
+
+    // Session totals → update hot emoji
+    sessionTotals.current[emoji] = (sessionTotals.current[emoji] || 0) + 1;
+    const top = Object.entries(sessionTotals.current).sort((a, b) => b[1] - a[1])[0];
+    setHotEmoji(top?.[0] || null);
 
     // Bump recent count, clear after TTL
     setRecentCounts(prev => ({ ...prev, [emoji]: (prev[emoji] || 0) + 1 }));
@@ -61,6 +91,7 @@ export default function EmojiReactionBar({ roomId, userId, userName }) {
                 count={recentCounts[emoji] || 0}
                 disabled={!!cooldown[emoji]}
                 onSend={send}
+                isHot={emoji === hotEmoji}
               />
             ))}
           </div>
@@ -74,6 +105,7 @@ export default function EmojiReactionBar({ roomId, userId, userName }) {
             count={recentCounts[emoji] || 0}
             disabled={!!cooldown[emoji]}
             onSend={send}
+            isHot={emoji === hotEmoji}
           />
         ))}
       </div>
@@ -88,18 +120,36 @@ export default function EmojiReactionBar({ roomId, userId, userName }) {
               animate={{ y: -60, opacity: 0 }}
               transition={{ duration: 1, ease: 'easeOut' }}
               className="absolute bottom-1 text-xl"
-              style={{ left: `calc(50% + ${f.x}px)` }}
+              style={{ left: `calc(50% + ${f.x}px)`, fontSize: `${((f.scale || 1) * 1.25).toFixed(2)}rem` }}
             >
               {f.emoji}
             </motion.div>
           ))}
         </AnimatePresence>
       </div>
+      {/* Streak badge */}
+      <AnimatePresence>
+        {streakEmoji && (
+          <motion.div
+            key="streak"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+          >
+            <div className="flex items-center gap-1 px-3 py-1 rounded-full"
+              style={{ background: 'rgba(212,175,55,0.25)', border: '1px solid rgba(212,175,55,0.6)', backdropFilter: 'blur(4px)' }}>
+              <span className="text-lg">{streakEmoji}</span>
+              <span style={{ fontSize: 11, fontWeight: 900, color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>STREAK!</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function EmojiButton({ emoji, count, disabled, onSend }) {
+function EmojiButton({ emoji, count, disabled, onSend, isHot }) {
   return (
     <div className="relative shrink-0">
       {count > 0 && (
@@ -128,13 +178,14 @@ function EmojiButton({ emoji, count, disabled, onSend }) {
         disabled={disabled}
         className="w-8 h-8 rounded-lg flex items-center justify-center text-lg transition-all"
         style={{
-          background: disabled ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${disabled ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)'}`,
+          background: isHot ? 'rgba(212,175,55,0.08)' : disabled ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${isHot ? 'rgba(212,175,55,0.5)' : disabled ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)'}`,
           opacity: disabled ? 0.4 : 1,
           cursor: disabled ? 'not-allowed' : 'pointer',
+          boxShadow: isHot ? '0 0 8px rgba(212,175,55,0.3)' : undefined,
         }}
         onMouseEnter={e => { if (!disabled) e.currentTarget.style.borderColor = 'rgba(212,175,55,0.5)'; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = disabled ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = disabled ? 'rgba(255,255,255,0.04)' : isHot ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.08)'; }}
       >
         {emoji}
       </motion.button>
