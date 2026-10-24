@@ -1279,6 +1279,16 @@ router.post('/rtmp/done', async function(req, res) {
       "UPDATE streams SET is_live = false, status = 'ended', end_time = now() WHERE id = $1",
       [streamId]
     );
+    // Notify connected clients that the RTMP feed dropped
+    var ioInst = req.app.get('io');
+    if (ioInst) {
+      ioInst.to(streamId).emit('broadcast-ended', { roomId: streamId, ts: Math.floor(Date.now() / 1000), reason: 'rtmp_done' });
+    }
+    // Remove stale HLS segments (streamId already validated by UUID regex above)
+    require('child_process').exec(
+      'rm -rf /var/www/html/hls/' + streamId,
+      function(err) { if (err) console.warn('[rtmp/done] HLS cleanup failed:', err.message); }
+    );
     return res.status(200).json({ ok: true });
   } catch (e) {
     console.error('[rtmp/done] error:', e.message);
