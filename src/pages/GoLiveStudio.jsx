@@ -146,6 +146,7 @@ export default function GoLiveStudio() {
   const healthRef = useRef(null);
   const countdownRef = useRef(null);
   const [showCamSettings, setShowCamSettings] = useState(false);
+  const [wizardStep, setWizardStep] = useState(1);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
@@ -382,98 +383,189 @@ export default function GoLiveStudio() {
         {/* RIGHT COLUMN */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-          {/* Pre-flight Checklist */}
+          {/* ── PREFLIGHT: 3-step wizard ── */}
           {state.phase === 'preflight' && (
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
-              <div style={{ fontSize: 13, fontWeight: 900, color: '#d4af37', letterSpacing: '0.1em', marginBottom: 12, fontFamily: 'Barlow Condensed, sans-serif' }}>PRE-FLIGHT CHECKLIST</div>
-              {[
-                { key: 'camera', label: '📷 Camera Ready' },
-                { key: 'mic', label: '🎙 Microphone Ready' },
-                { key: 'rtmp', label: '📡 RTMP Connection' },
-                { key: 'streamKey', label: '🔑 Stream Key Set' },
-                { key: 'network', label: '🌐 Upload Speed OK' },
-                { key: 'guardian', label: '🛡 Guardian AI Armed' },
-                { key: 'overlay', label: '🎨 Overlay Package' },
-              ].map(item => (
-                <CheckRow
-                  key={item.key}
-                  label={item.label}
-                  checked={state.checklist[item.key]}
-                  onCheck={() => dispatch({ type: 'CHECK_ITEM', payload: item.key })}
-                  onUncheck={() => dispatch({ type: 'UNCHECK_ITEM', payload: item.key })}
-                />
-              ))}
-              <div style={{ marginTop: 12, padding: '8px 10px', background: allChecked ? 'rgba(109,191,126,0.08)' : 'rgba(212,133,74,0.08)', border: '1px solid ' + (allChecked ? 'rgba(109,191,126,0.25)' : 'rgba(212,133,74,0.25)'), borderRadius: 8, fontSize: 12, color: allChecked ? '#6DBF7E' : '#D4854A', fontFamily: 'Barlow Condensed, sans-serif', textAlign: 'center' }}>
-                {allChecked ? '✓ All systems ready' : `${Object.values(state.checklist).filter(Boolean).length}/7 checks complete`}
+            <>
+              {/* Step indicator */}
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                {[{ n: 1, label: 'Setup' }, { n: 2, label: 'Destinations' }, { n: 3, label: 'Launch' }].map(function(s, i) {
+                  return (
+                    <React.Fragment key={s.n}>
+                      <div
+                        onClick={function() { if (s.n < wizardStep) setWizardStep(s.n); }}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: s.n < wizardStep ? 'pointer' : 'default' }}
+                      >
+                        <div style={{
+                          width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: wizardStep === s.n ? '#d4af37' : wizardStep > s.n ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.07)',
+                          border: '2px solid ' + (wizardStep === s.n ? '#d4af37' : wizardStep > s.n ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.15)'),
+                          color: wizardStep === s.n ? '#000' : wizardStep > s.n ? '#d4af37' : 'rgba(255,255,255,0.35)',
+                          fontSize: 13, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif',
+                        }}>
+                          {wizardStep > s.n ? '✓' : s.n}
+                        </div>
+                        <span style={{ fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', color: wizardStep === s.n ? '#d4af37' : 'rgba(255,255,255,0.3)', fontWeight: 700, letterSpacing: '0.06em' }}>{s.label}</span>
+                      </div>
+                      {i < 2 && <div style={{ flex: 1, height: 2, background: wizardStep > s.n ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.08)', marginBottom: 18 }} />}
+                    </React.Fragment>
+                  );
+                })}
               </div>
-            </div>
+
+              {/* Step 1: Check your setup */}
+              {wizardStep === 1 && (
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: '#d4af37', marginBottom: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>Check Your Setup</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 14, fontFamily: 'Barlow Condensed, sans-serif' }}>Make sure your camera, mic, and internet are ready before you go live.</div>
+                  <CheckRow label="📷 Camera Ready" checked={state.checklist.camera} onCheck={function() { dispatch({ type: 'CHECK_ITEM', payload: 'camera' }); }} onUncheck={function() { dispatch({ type: 'UNCHECK_ITEM', payload: 'camera' }); }} />
+                  <CheckRow label="🎙 Microphone Ready" checked={state.checklist.mic} onCheck={function() { dispatch({ type: 'CHECK_ITEM', payload: 'mic' }); }} onUncheck={function() { dispatch({ type: 'UNCHECK_ITEM', payload: 'mic' }); }} />
+                  <CheckRow label="🌐 Upload Speed OK" checked={state.checklist.network} onCheck={function() { dispatch({ type: 'CHECK_ITEM', payload: 'network' }); }} onUncheck={function() { dispatch({ type: 'UNCHECK_ITEM', payload: 'network' }); }} />
+                  <div style={{ marginTop: 8, padding: '8px 10px', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, fontSize: 11, color: 'rgba(212,175,55,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    💡 Tip: Use the camera preview in the left panel to verify your framing.
+                  </div>
+                  <button
+                    onClick={function() { setWizardStep(2); }}
+                    style={{ marginTop: 14, width: '100%', padding: '12px', borderRadius: 10, border: 'none', background: 'rgba(212,175,55,0.2)', color: '#d4af37', fontSize: 14, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                  >
+                    Continue <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+
+              {/* Step 2: Destinations & stream key */}
+              {wizardStep === 2 && (
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 16 }}>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: '#d4af37', marginBottom: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>Stream Key & Destinations</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 12, fontFamily: 'Barlow Condensed, sans-serif' }}>Paste your stream key into OBS, then choose where to broadcast.</div>
+                  <div style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, padding: '10px 12px', marginBottom: 12 }}>
+                    <div style={{ fontSize: 10, color: '#d4af37', marginBottom: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.12em' }}>RTMP SERVER</div>
+                    <div style={{ fontSize: 11, color: '#d4af37', fontFamily: 'Share Tech Mono, monospace', wordBreak: 'break-all', marginBottom: 4 }}>{RTMP_URL}</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Your stream key: Settings → Stream Keys</div>
+                  </div>
+                  <CheckRow label="🔑 Stream Key Set in OBS" checked={state.checklist.streamKey} onCheck={function() { dispatch({ type: 'CHECK_ITEM', payload: 'streamKey' }); }} onUncheck={function() { dispatch({ type: 'UNCHECK_ITEM', payload: 'streamKey' }); }} />
+                  <CheckRow label="📡 RTMP Connection Tested" checked={state.checklist.rtmp} onCheck={function() { dispatch({ type: 'CHECK_ITEM', payload: 'rtmp' }); }} onUncheck={function() { dispatch({ type: 'UNCHECK_ITEM', payload: 'rtmp' }); }} />
+                  <CheckRow label="🎨 Overlay Package Ready" checked={state.checklist.overlay} onCheck={function() { dispatch({ type: 'CHECK_ITEM', payload: 'overlay' }); }} onUncheck={function() { dispatch({ type: 'UNCHECK_ITEM', payload: 'overlay' }); }} />
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', margin: '12px 0 8px', fontFamily: 'Barlow Condensed, sans-serif' }}>STREAM TO</div>
+                  {DESTINATIONS.map(function(dest) {
+                    return (
+                      <div key={dest.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: dest.color }} />
+                          <span style={{ fontSize: 13, color: state.destinations[dest.id] ? '#fff' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{dest.label}</span>
+                          {dest.required && <span style={{ fontSize: 9, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>PRIMARY</span>}
+                        </div>
+                        <button
+                          onClick={function() { dispatch({ type: 'TOGGLE_DESTINATION', payload: dest.id }); }}
+                          disabled={dest.required}
+                          style={{ width: 36, height: 20, borderRadius: 10, border: 'none', background: state.destinations[dest.id] ? dest.color : 'rgba(255,255,255,0.15)', cursor: dest.required ? 'default' : 'pointer', position: 'relative', flexShrink: 0 }}
+                        >
+                          <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: state.destinations[dest.id] ? 19 : 3, transition: 'left 0.2s' }} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                    <button onClick={function() { setWizardStep(1); }} style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>← Back</button>
+                    <button onClick={function() { setWizardStep(3); }} style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: 'rgba(212,175,55,0.2)', color: '#d4af37', fontSize: 13, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>Continue <ChevronRight size={14} /></button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Launch */}
+              {wizardStep === 3 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 12, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <Shield size={20} color="#C0392B" />
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 900, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>GUARDIAN AI</div>
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{state.guardianStatus} · Auto-moderating your stream</div>
+                    </div>
+                    <div style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#6DBF7E', boxShadow: '0 0 8px #6DBF7E' }} />
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', marginBottom: 8, fontFamily: 'Barlow Condensed, sans-serif' }}>READINESS CHECK</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                      {[
+                        { key: 'camera', label: '📷 Camera' }, { key: 'mic', label: '🎙 Mic' },
+                        { key: 'network', label: '🌐 Network' }, { key: 'streamKey', label: '🔑 Key' },
+                        { key: 'rtmp', label: '📡 RTMP' }, { key: 'guardian', label: '🛡 Guardian' },
+                        { key: 'overlay', label: '🎨 Overlay' },
+                      ].map(function(item) {
+                        return (
+                          <span key={item.key} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, background: state.checklist[item.key] ? 'rgba(109,191,126,0.12)' : 'rgba(255,255,255,0.05)', color: state.checklist[item.key] ? '#6DBF7E' : 'rgba(255,255,255,0.3)', border: '1px solid ' + (state.checklist[item.key] ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.08)'), fontFamily: 'Barlow Condensed, sans-serif' }}>
+                            {item.label} {state.checklist[item.key] ? '✓' : '○'}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <div style={{ marginTop: 8, fontSize: 12, color: allChecked ? '#6DBF7E' : '#D4854A', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textAlign: 'center' }}>
+                      {allChecked ? '✓ All systems ready — go for it!' : Object.values(state.checklist).filter(Boolean).length + '/7 checks complete · go back to finish'}
+                    </div>
+                  </div>
+                  <div style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 10, padding: '10px 14px', fontSize: 11, color: 'rgba(212,175,55,0.8)', fontFamily: 'Barlow Condensed, sans-serif', textAlign: 'center', letterSpacing: '0.05em' }}>
+                    🔒 CREATOR_SPLIT = 0.90 · IMMUTABLE · You keep 90% of all revenue
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={function() { setWizardStep(2); }} style={{ padding: '14px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>← Back</button>
+                    <button
+                      onClick={startGoLive}
+                      disabled={!allChecked}
+                      style={{ flex: 1, padding: '14px', borderRadius: 12, border: 'none', background: allChecked ? 'linear-gradient(135deg, #b91c1c, #d4af37)' : 'rgba(255,255,255,0.08)', color: allChecked ? '#fff' : 'rgba(255,255,255,0.3)', fontSize: 18, fontWeight: 900, cursor: allChecked ? 'pointer' : 'not-allowed', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, opacity: allChecked ? 1 : 0.5, transition: 'all 0.2s' }}
+                    >
+                      <Radio size={18} /> GO LIVE
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
-          {/* RTMP Info */}
-          <div style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 12, padding: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#d4af37', letterSpacing: '0.12em', marginBottom: 10, fontFamily: 'Barlow Condensed, sans-serif' }}>RTMP INGEST</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>SERVER</div>
-            <div style={{ fontSize: 12, color: '#d4af37', background: 'rgba(0,0,0,0.3)', borderRadius: 6, padding: '6px 10px', marginBottom: 8, wordBreak: 'break-all', fontFamily: 'Share Tech Mono, monospace' }}>{RTMP_URL}</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>STREAM KEY</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', background: 'rgba(0,0,0,0.3)', borderRadius: 6, padding: '6px 10px', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.05em' }}>••••••••••••••</div>
-            <div style={{ marginTop: 8, fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', textAlign: 'center' }}>
-              Find your stream key in Settings → Stream Keys
-            </div>
-          </div>
-
-          {/* Multi-Destination */}
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', marginBottom: 10, fontFamily: 'Barlow Condensed, sans-serif' }}>MULTI-DESTINATION</div>
-            {DESTINATIONS.map(dest => (
-              <div key={dest.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: dest.color }} />
-                  <span style={{ fontSize: 13, color: state.destinations[dest.id] ? '#fff' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{dest.label}</span>
-                  {dest.required && <span style={{ fontSize: 9, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>PRIMARY</span>}
-                </div>
-                <button
-                  onClick={() => dispatch({ type: 'TOGGLE_DESTINATION', payload: dest.id })}
-                  disabled={dest.required}
-                  style={{ width: 36, height: 20, borderRadius: 10, border: 'none', background: state.destinations[dest.id] ? dest.color : 'rgba(255,255,255,0.15)', cursor: dest.required ? 'default' : 'pointer', position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}
-                >
-                  <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: state.destinations[dest.id] ? 19 : 3, transition: 'left 0.2s' }} />
-                </button>
+          {/* Non-preflight right-column content */}
+          {state.phase !== 'preflight' && (
+            <>
+              <div style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 12, padding: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#d4af37', letterSpacing: '0.12em', marginBottom: 10, fontFamily: 'Barlow Condensed, sans-serif' }}>RTMP INGEST</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>SERVER</div>
+                <div style={{ fontSize: 12, color: '#d4af37', background: 'rgba(0,0,0,0.3)', borderRadius: 6, padding: '6px 10px', marginBottom: 8, wordBreak: 'break-all', fontFamily: 'Share Tech Mono, monospace' }}>{RTMP_URL}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>STREAM KEY</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', background: 'rgba(0,0,0,0.3)', borderRadius: 6, padding: '6px 10px', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.05em' }}>••••••••••••••</div>
               </div>
-            ))}
-          </div>
 
-          {/* Guardian Status */}
-          <div style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 12, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Shield size={20} color="#C0392B" />
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 900, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>GUARDIAN AI</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{state.guardianStatus} · Thresholds: 0.50 / 0.75 / 0.95</div>
-            </div>
-            <div style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#6DBF7E', boxShadow: '0 0 8px #6DBF7E' }} />
-          </div>
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', marginBottom: 10, fontFamily: 'Barlow Condensed, sans-serif' }}>MULTI-DESTINATION</div>
+                {DESTINATIONS.map(function(dest) {
+                  return (
+                    <div key={dest.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: dest.color }} />
+                        <span style={{ fontSize: 13, color: state.destinations[dest.id] ? '#fff' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{dest.label}</span>
+                        {dest.required && <span style={{ fontSize: 9, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>PRIMARY</span>}
+                      </div>
+                      <button
+                        onClick={function() { dispatch({ type: 'TOGGLE_DESTINATION', payload: dest.id }); }}
+                        disabled={dest.required}
+                        style={{ width: 36, height: 20, borderRadius: 10, border: 'none', background: state.destinations[dest.id] ? dest.color : 'rgba(255,255,255,0.15)', cursor: dest.required ? 'default' : 'pointer', position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}
+                      >
+                        <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: state.destinations[dest.id] ? 19 : 3, transition: 'left 0.2s' }} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
 
-          {/* 90/10 Split Notice */}
-          <div style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 10, padding: '10px 14px', fontSize: 11, color: 'rgba(212,175,55,0.8)', fontFamily: 'Barlow Condensed, sans-serif', textAlign: 'center', letterSpacing: '0.05em' }}>
-            🔒 CREATOR_SPLIT = 0.90 · IMMUTABLE · You keep 90% of all revenue
-          </div>
+              <div style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 12, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Shield size={20} color="#C0392B" />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 900, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>GUARDIAN AI</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{state.guardianStatus} · Thresholds: 0.50 / 0.75 / 0.95</div>
+                </div>
+                <div style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#6DBF7E', boxShadow: '0 0 8px #6DBF7E' }} />
+              </div>
 
-          {/* Go Live / End Stream Button */}
-          {state.phase === 'preflight' && (
-            <button
-              onClick={startGoLive}
-              disabled={!allChecked}
-              style={{
-                width: '100%', padding: '16px', borderRadius: 12, border: 'none',
-                background: allChecked ? 'linear-gradient(135deg, #b91c1c, #d4af37)' : 'rgba(255,255,255,0.08)',
-                color: allChecked ? '#fff' : 'rgba(255,255,255,0.3)',
-                fontSize: 20, fontWeight: 900, cursor: allChecked ? 'pointer' : 'not-allowed',
-                fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                opacity: allChecked ? 1 : 0.5, transition: 'all 0.2s',
-              }}
-            >
-              <Radio size={20} /> GO LIVE
-            </button>
+              <div style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 10, padding: '10px 14px', fontSize: 11, color: 'rgba(212,175,55,0.8)', fontFamily: 'Barlow Condensed, sans-serif', textAlign: 'center', letterSpacing: '0.05em' }}>
+                🔒 CREATOR_SPLIT = 0.90 · IMMUTABLE · You keep 90% of all revenue
+              </div>
+            </>
           )}
 
           {state.phase === 'ended' && (
@@ -481,7 +573,7 @@ export default function GoLiveStudio() {
               <div style={{ fontSize: 32, marginBottom: 8 }}>🎬</div>
               <div style={{ fontSize: 18, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>Stream Ended</div>
               <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 16 }}>Duration: {formatUptime(state.uptime)} · Peak: {state.peakViewers} viewers</div>
-              <button onClick={() => window.location.reload()} style={{ padding: '10px 24px', background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)', borderRadius: 8, color: '#d4af37', fontWeight: 700, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}>
+              <button onClick={function() { window.location.reload(); }} style={{ padding: '10px 24px', background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)', borderRadius: 8, color: '#d4af37', fontWeight: 700, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}>
                 New Stream
               </button>
             </div>
