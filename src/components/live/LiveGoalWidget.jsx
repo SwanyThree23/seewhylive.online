@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Target, Check, Edit2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Target, Check, Edit2, Flame } from 'lucide-react';
 import { MobileSelect } from '@/components/ui/MobileSelect';
 
 const F = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -33,12 +33,23 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
 
   const pct = goal ? Math.min(100, (current / goal.target) * 100) : 0;
   const done = goal && current >= goal.target;
+  const [milestone, setMilestone] = useState(null);
+  const prevPct = useRef(0);
 
   useEffect(() => {
-    if (done && !celebrated) {
-      setCelebrated(true);
-    }
+    if (done && !celebrated) setCelebrated(true);
   }, [done, celebrated]);
+
+  useEffect(() => {
+    if (!goal) return;
+    const milestones = [25, 50, 75];
+    const crossed = milestones.find(m => prevPct.current < m && pct >= m && !done);
+    if (crossed) {
+      setMilestone(crossed);
+      setTimeout(() => setMilestone(null), 2000);
+    }
+    prevPct.current = pct;
+  }, [pct, goal, done]);
 
   const setPreset = (p) => {
     setGoal({ ...p });
@@ -141,18 +152,37 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
       </div>
 
       {/* Progress bar */}
-      <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', marginBottom: 2 }}>
         <motion.div
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
           style={{ height: '100%', borderRadius: 99, background: done ? '#6DBF7E' : 'linear-gradient(90deg, #D4AF37, #C0392B)' }}
         />
       </div>
+      <div style={{ textAlign: 'right', fontSize: 9, color: 'rgba(255,255,255,0.25)', ...F }}>{Math.round(pct)}%</div>
+
+      {/* Milestone flash */}
+      <AnimatePresence>
+        {milestone && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            style={{ marginTop: 4, fontSize: 10, color: '#D4AF37', fontWeight: 900, textAlign: 'center', ...F }}
+          >
+            🔥 {milestone}% reached!
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {done && (
-        <div style={{ marginTop: 6, fontSize: 10, color: '#6DBF7E', fontWeight: 900, textAlign: 'center', ...F }}>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          style={{ marginTop: 6, fontSize: 10, color: '#6DBF7E', fontWeight: 900, textAlign: 'center', ...F }}
+        >
           🎉 Goal reached! Set a new one!
-        </div>
+        </motion.div>
       )}
     </div>
   );

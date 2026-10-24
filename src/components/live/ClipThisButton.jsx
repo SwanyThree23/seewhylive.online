@@ -19,6 +19,8 @@ const SOCIALS = [
 export default function ClipThisButton({ roomId, sessionId, creatorId, elapsedSeconds = 0 }) {
   const [savedClip, setSavedClip] = useState(null);
   const [tags, setTags] = useState([]);
+  const [editTitle, setEditTitle] = useState('');
+  const [editingTitle, setEditingTitle] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -28,6 +30,14 @@ export default function ClipThisButton({ roomId, sessionId, creatorId, elapsedSe
   const startSec = Math.max(0, Math.round(elapsedSeconds) - CLIP_SECONDS);
   const endSec = Math.max(CLIP_SECONDS, Math.round(elapsedSeconds));
 
+  const autoTitle = `Quick clip — ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+
+  function fmtSec(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${String(sec).padStart(2, '0')}`;
+  }
+
   const saveClip = useMutation({
     mutationFn: () => base44.entities.StreamClip.create({
       room_id: roomId,
@@ -35,7 +45,7 @@ export default function ClipThisButton({ roomId, sessionId, creatorId, elapsedSe
       creator_id: creatorId,
       clipped_by_id: currentUser?.id,
       clipped_by_username: currentUser?.full_name || currentUser?.email,
-      title: `Quick clip — ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`,
+      title: autoTitle,
       start_timestamp_seconds: startSec,
       end_timestamp_seconds: endSec,
       duration_seconds: CLIP_SECONDS,
@@ -44,11 +54,18 @@ export default function ClipThisButton({ roomId, sessionId, creatorId, elapsedSe
     }),
     onSuccess: (clip) => {
       setSavedClip(clip);
+      setEditTitle(clip.title || autoTitle);
       setTags([]);
       navigator.vibrate?.([40, 30, 60]);
       toast.success('Last 30s saved to your Vault');
     },
     onError: () => toast.error('Could not save clip'),
+  });
+
+  const renameClip = useMutation({
+    mutationFn: (title) => base44.entities.StreamClip.update(savedClip.id, { title }),
+    onSuccess: (_r, title) => { setSavedClip(c => ({ ...c, title })); setEditingTitle(false); },
+    onError: () => toast.error('Could not rename clip'),
   });
 
   const tagMutation = useMutation({
@@ -101,6 +118,37 @@ export default function ClipThisButton({ roomId, sessionId, creatorId, elapsedSe
                 <X className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.35)' }} />
               </button>
             </div>
+
+            {/* Time range */}
+            <p className="text-[10px] mb-2" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>
+              {fmtSec(startSec)} – {fmtSec(endSec)} · {CLIP_SECONDS}s
+            </p>
+
+            {/* Editable title */}
+            {editingTitle ? (
+              <div className="flex gap-1 mb-2">
+                <input
+                  autoFocus
+                  value={editTitle}
+                  onChange={e => setEditTitle(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') renameClip.mutate(editTitle); if (e.key === 'Escape') setEditingTitle(false); }}
+                  className="flex-1 text-[11px] bg-white/5 border border-white/15 rounded px-2 py-1 text-white outline-none"
+                  style={T}
+                />
+                <button onClick={() => renameClip.mutate(editTitle)}
+                  className="text-[10px] font-black px-2 rounded"
+                  style={{ background: G + '22', color: G, border: `1px solid ${G}44`, ...T }}>
+                  Save
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setEditingTitle(true)}
+                className="flex items-center gap-1 text-[10px] mb-2 hover:opacity-80"
+                style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
+                <span className="truncate max-w-[160px]">{savedClip.title}</span>
+                <span style={{ opacity: 0.4 }}>✏️</span>
+              </button>
+            )}
 
             <p className="text-[10px] uppercase font-black tracking-widest mb-1.5"
               style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>
