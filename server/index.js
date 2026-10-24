@@ -1090,6 +1090,11 @@ app.get('/api/metrics', requireAuth, function(req, res) {
 
 // POST /api/ppv/create
 app.post('/api/ppv/create', requireAuth, ppvRateLimit, function(req, res) {
+  // PPV requires pro or studio plan
+  var _ppvTier = req.tenant && req.tenant.plan_tier;
+  if (_ppvTier !== 'pro' && _ppvTier !== 'studio') {
+    return res.status(403).json({ error: 'PPV requires a Pro or Studio plan' });
+  }
   var body = req.body;
   if (!body.roomId || !body.priceUsd) {
     res.status(400).json({ error: 'Missing required fields: roomId, priceUsd' });
