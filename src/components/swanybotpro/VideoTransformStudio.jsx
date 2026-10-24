@@ -14,14 +14,33 @@ const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 const MIRAGE_THEMES = [
-  { id: 'pirate', name: 'Pirate World', emoji: '🏴‍☠️', prompt: 'pirate world, swashbuckling adventure, wooden ships, ocean mist, cinematic pirate aesthetic' },
-  { id: 'vangogh', name: 'Van Gogh', emoji: '🎨', prompt: 'Van Gogh painting style, thick painterly brushstrokes, swirling sky, post-impressionist oil texture' },
-  { id: 'warzone', name: 'War Zone', emoji: '💥', prompt: 'gritty war zone, smoke and debris, desaturated cinematic combat aesthetic, dramatic battlefield lighting' },
-  { id: 'zombie', name: 'Zombie', emoji: '🧟', prompt: 'zombie apocalypse, decaying horror aesthetic, pale green pallor, fog, undead cinematic style' },
-  { id: 'wildwest', name: 'Wild West', emoji: '🤠', prompt: 'Wild West frontier, dusty saloon, sepia western film aesthetic, cowboy cinematic grade' },
-  { id: 'scifi', name: 'Sci-Fi Anime', emoji: '🚀', prompt: 'sci-fi anime, neon city, cel-shaded futuristic aesthetic, vibrant cyber anime style' },
-  { id: 'footballer', name: 'Footballer', emoji: '⚽', prompt: 'professional footballer on stadium pitch, dynamic sports broadcast aesthetic, cinematic athletic lighting' },
-  { id: 'picasso', name: 'Picasso', emoji: '🖼️', prompt: 'Picasso cubist style, fragmented geometric portrait, bold abstract cubism, oil painting texture' },
+  { id: 'pirate',     name: 'Pirate World',  emoji: '🏴‍☠️', prompt: 'pirate world, swashbuckling adventure, wooden ships, ocean mist, cinematic pirate aesthetic' },
+  { id: 'vangogh',    name: 'Van Gogh',      emoji: '🎨', prompt: 'Van Gogh painting style, thick painterly brushstrokes, swirling sky, post-impressionist oil texture' },
+  { id: 'warzone',    name: 'War Zone',      emoji: '💥', prompt: 'gritty war zone, smoke and debris, desaturated cinematic combat aesthetic, dramatic battlefield lighting' },
+  { id: 'zombie',     name: 'Zombie',        emoji: '🧟', prompt: 'zombie apocalypse, decaying horror aesthetic, pale green pallor, fog, undead cinematic style' },
+  { id: 'wildwest',   name: 'Wild West',     emoji: '🤠', prompt: 'Wild West frontier, dusty saloon, sepia western film aesthetic, cowboy cinematic grade' },
+  { id: 'scifi',      name: 'Sci-Fi Anime',  emoji: '🚀', prompt: 'sci-fi anime, neon city, cel-shaded futuristic aesthetic, vibrant cyber anime style' },
+  { id: 'footballer', name: 'Footballer',    emoji: '⚽', prompt: 'professional footballer on stadium pitch, dynamic sports broadcast aesthetic, cinematic athletic lighting' },
+  { id: 'picasso',    name: 'Picasso',       emoji: '🖼️', prompt: 'Picasso cubist style, fragmented geometric portrait, bold abstract cubism, oil painting texture' },
+  { id: 'cyberpunk',  name: 'Cyberpunk',     emoji: '🌆', prompt: 'cyberpunk megacity, neon rain, holographic billboards, dark dystopian cinematic grade, blade runner aesthetic' },
+  { id: 'neonoir',    name: 'Neo Noir',      emoji: '🕵️', prompt: 'neo noir, moody shadows, high-contrast black and white with neon accents, detective film aesthetic, rain-slick streets' },
+  { id: 'fantasy',    name: 'Fantasy',       emoji: '🧙', prompt: 'epic high fantasy, magical forest, glowing runes, cinematic fantasy film lighting, mystical fog' },
+  { id: 'kpop',       name: 'K-Pop Idol',    emoji: '🎤', prompt: 'K-Pop idol on stage, vibrant stage lighting, colorful LED backdrop, glossy k-pop music video aesthetic' },
+  { id: 'retro80s',   name: 'Retro 80s',     emoji: '📼', prompt: 'retro 1980s aesthetic, VHS grain, synthwave neon purple-pink palette, retro-futurist cinematic style' },
+  { id: 'anime',      name: 'Anime',         emoji: '✨', prompt: 'anime character portrait, dramatic sakura background, cel-shaded illustration, vibrant Japanese animation style' },
+];
+
+const ASPECT_RATIOS = [
+  { id: '9:16', label: '9:16', hint: 'Vertical / Story' },
+  { id: '16:9', label: '16:9', hint: 'Widescreen' },
+  { id: '1:1',  label: '1:1',  hint: 'Square' },
+  { id: '4:5',  label: '4:5',  hint: 'Portrait' },
+];
+
+const CLIP_DURATIONS = [
+  { id: 4,  label: '4s',  credits: '~8 credits' },
+  { id: 8,  label: '8s',  credits: '~16 credits' },
+  { id: 15, label: '15s', credits: '~30 credits' },
 ];
 
 const INPUT_MODES = [
@@ -53,6 +72,9 @@ export default function VideoTransformStudio() {
   const [copied, setCopied] = useState(false);
   const [camError, setCamError] = useState(null);
   const [captureBusy, setCaptureBusy] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState('9:16');
+  const [clipDuration, setClipDuration] = useState(4);
+  const [styleStrength, setStyleStrength] = useState(75);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -160,10 +182,11 @@ export default function VideoTransformStudio() {
 
   const clipMutation = useMutation({
     mutationFn: async ({ prompt }) => {
+      const strengthTag = styleStrength >= 90 ? 'maximum style fidelity, ' : styleStrength >= 60 ? '' : 'subtle style, preserve subject detail, ';
       const res = await base44.integrations.Core.GenerateVideo({
-        prompt,
-        duration: 4,
-        aspect_ratio: '9:16',
+        prompt: strengthTag + prompt,
+        duration: clipDuration,
+        aspect_ratio: aspectRatio,
         generate_audio: false,
       });
       return res.url;
@@ -210,7 +233,10 @@ export default function VideoTransformStudio() {
       '── In-app generated clip ──',
       clipUrl || '(not generated yet)',
       '',
-      `Credit estimate: 2 credits/sec · 30s clip ≈ 60 credits`,
+      `Aspect ratio:    ${aspectRatio}`,
+      `Clip duration:   ${clipDuration}s`,
+      `Style strength:  ${styleStrength}%`,
+      `Credit estimate: 2 credits/sec · ${clipDuration}s clip ≈ ${clipDuration * 2} credits`,
       '═══════════════════════════════════════════',
     ];
     return lines.join('\n');
@@ -286,7 +312,7 @@ export default function VideoTransformStudio() {
 
         {/* STYLE + PROMPT */}
         <Section title="2 · Style & Prompt">
-          <div className="grid grid-cols-4 gap-2 mb-3">
+          <div className="grid grid-cols-4 gap-1.5 mb-3" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(68px,1fr))' }}>
             {MIRAGE_THEMES.map((t) => {
               const active = theme?.id === t.id && !customPrompt.trim();
               return (
@@ -326,6 +352,43 @@ export default function VideoTransformStudio() {
           {copied ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy Decart Pack</>}
         </button>
       }>
+        {/* Aspect ratio + duration + strength */}
+        <div className="grid grid-cols-3 gap-3 mb-4 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }}>
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Aspect Ratio</p>
+            <div className="flex flex-wrap gap-1">
+              {ASPECT_RATIOS.map(a => (
+                <button key={a.id} onClick={() => setAspectRatio(a.id)}
+                  className="text-[9px] px-1.5 py-0.5 rounded transition-all"
+                  title={a.hint}
+                  style={{ background: aspectRatio === a.id ? 'rgba(212,175,55,0.18)' : 'rgba(255,255,255,0.05)', border: `1px solid ${aspectRatio === a.id ? G + '88' : 'transparent'}`, color: aspectRatio === a.id ? G : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Duration</p>
+            <div className="flex flex-wrap gap-1">
+              {CLIP_DURATIONS.map(d => (
+                <button key={d.id} onClick={() => setClipDuration(d.id)}
+                  className="text-[9px] px-1.5 py-0.5 rounded transition-all"
+                  title={d.credits}
+                  style={{ background: clipDuration === d.id ? 'rgba(123,93,166,0.18)' : 'rgba(255,255,255,0.05)', border: `1px solid ${clipDuration === d.id ? PURPLE + '88' : 'transparent'}`, color: clipDuration === d.id ? PURPLE : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="flex justify-between mb-1">
+              <p className="text-[9px] font-black uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Style</p>
+              <p className="text-[9px] font-mono" style={{ color: G }}>{styleStrength}%</p>
+            </div>
+            <input type="range" min={10} max={100} step={5} value={styleStrength} onChange={e => setStyleStrength(+e.target.value)} style={{ width: '100%', accentColor: G }} />
+          </div>
+        </div>
+
         <div className="flex flex-wrap gap-2 mb-4">
           <button onClick={handleGenerateAll} disabled={!activePrompt || busy}
             className="rounded-xl px-4 py-2.5 text-[12px] font-black uppercase tracking-wider flex items-center gap-2 transition-all disabled:opacity-40"
