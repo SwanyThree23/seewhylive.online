@@ -1669,7 +1669,16 @@ app.post('/api/push/send-to-device', requireAuth, function(req, res) {
       'SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE device_id = ? AND user_id = ?'
     ).get(deviceId, userId);
     if (!sub) return res.status(404).json({ error: 'device not found' });
-    sendPushNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, title, body, data);
+    var _pushSub = { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } };
+    sendPushNotification(_pushSub, title, body, data).catch(function(pushErr) {
+      if (pushErr && (pushErr.statusCode === 410 || pushErr.statusCode === 404)) {
+        try {
+          db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').run(sub.endpoint);
+        } catch (delErr) {
+          logger.warn('[push/send-to-device] 410 prune failed: ' + delErr.message);
+        }
+      }
+    });
     res.json({ ok: true });
   } catch (err) {
     logger.error('[push/send-to-device] ' + err.message);
