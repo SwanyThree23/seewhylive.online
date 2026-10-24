@@ -2580,7 +2580,7 @@ io.on('connection', function(socket) {
       if (ack) ack({ error: 'Must join room before creating transport' });
       return;
     }
-    if (socket.data.role !== 'host' && socket.data.role !== 'guest') {
+    if (socket.data.role !== 'host' && socket.data.role !== 'guest' && socket.data.role !== 'cohost') {
       if (ack) ack({ error: 'forbidden' });
       return;
     }
