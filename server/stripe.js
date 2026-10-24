@@ -225,6 +225,24 @@ async function handleStripeWebhook(rawBody, signature) {
     }
   }
 
+  if (event.type === 'charge.refunded') {
+    var charge = event.data.object;
+    var piId = charge.payment_intent;
+    if (piId) {
+      try {
+        var txRow = db.prepare("SELECT user_id, amount FROM fuel_transactions WHERE type = 'purchase' AND ref_id = ?").get(String(piId));
+        if (txRow) {
+          db.prepare('UPDATE fuel_balances SET balance = MAX(0, balance - ?), updated_at = ? WHERE user_id = ?')
+            .run(txRow.amount, Math.floor(Date.now() / 1000), txRow.user_id);
+          db.prepare('INSERT OR IGNORE INTO fuel_transactions (id, user_id, amount, type, ref_id, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+            .run(require('crypto').randomUUID(), txRow.user_id, -txRow.amount, 'refund', String(piId), Math.floor(Date.now() / 1000));
+        }
+      } catch (refundErr) {
+        console.error('[stripe] FUEL refund deduction failed for PI ' + piId + ':', refundErr.message);
+      }
+    }
+  }
+
   if (event.type === 'checkout.session.completed') {
     var tenantBilling = require('./tenantBilling');
     try {
