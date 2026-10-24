@@ -6145,7 +6145,7 @@ mediasoup.createWorkers()
   .then(function() {
     logger.info('mediasoup workers ready');
     // Clear stale is_live flags left by a previous crash or unclean shutdown
-    return db.query(
+    return pgDb.query(
       "UPDATE streams SET is_live = false, ended_at = NOW() WHERE is_live = true AND ended_at IS NULL"
     ).then(function(r) {
       if (r.rowCount > 0) logger.info('[startup] cleared ' + r.rowCount + ' stale live stream(s)');
