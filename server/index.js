@@ -621,8 +621,8 @@ setInterval(function() {
    audioChunkThrottle, collabThrottle, superChatThrottle, subscribeThrottle,
    merchOrderThrottle, updateUsernameThrottle, handRaiseThrottle, speakingThrottle,
    chatMsgThrottle, pollVoteThrottle, vsVoteThrottle, qaUpvoteThrottle,
-   judgeScoreThrottle, slowModeUserTs, pinChatThrottle, chyronThrottle,
-   overlayThrottle, bracketThrottle, triviaStartThrottle,
+   judgeScoreThrottle, slowModeUserTs, pinChatThrottle, watchHeartbeatThrottle,
+   chyronThrottle, overlayThrottle, bracketThrottle, triviaStartThrottle,
    _aiChatThrottle, _translateThrottle, _summarizeThrottle, powerPlayThrottle,
    streamCaptionThrottle, soundFxThrottle, pkStartThrottle, watchPartyThrottle,
    auraTriggerThrottle, botMsgThrottle, streamInfoThrottle, analyticsPingThrottle].forEach(function(m) {
@@ -2466,6 +2466,7 @@ io.on('connection', function(socket) {
 
   // ── transport-connect ──────────────────────────────────────────────────
   socket.on('transport-connect', function(data, ack) {
+    if (!data) { if (ack) ack({ error: 'data required' }); return; }
     var transportId    = data.transportId;
     var dtlsParameters = data.dtlsParameters;
 
@@ -2490,6 +2491,7 @@ io.on('connection', function(socket) {
 
   // ── produce ────────────────────────────────────────────────────────────
   socket.on('produce', function(data, ack) {
+    if (!data) { if (ack) ack({ error: 'data required' }); return; }
     var transportId    = data.transportId;
     var rtpParameters  = data.rtpParameters;
     var kind           = data.kind;
@@ -2537,6 +2539,7 @@ io.on('connection', function(socket) {
 
   // ── consume ────────────────────────────────────────────────────────────
   socket.on('consume', function(data, ack) {
+    if (!data) { if (ack) ack({ error: 'data required' }); return; }
     var transportId    = data.transportId;
     var producerId     = data.producerId;
     var rtpCapabilities = data.rtpCapabilities;
@@ -2563,6 +2566,7 @@ io.on('connection', function(socket) {
 
   // ── producer-closed ────────────────────────────────────────────────────
   socket.on('producer-closed', function(data) {
+    if (!data) return;
     var producerId = data.producerId;
     var roomId     = socket.data.roomId;
     if (!producerId) return;
@@ -2578,6 +2582,7 @@ io.on('connection', function(socket) {
 
   // ── producer-pause ─────────────────────────────────────────────────────
   socket.on('producer-pause', function(data) {
+    if (!data) return;
     var producerId = data.producerId;
     var roomId     = socket.data.roomId;
     if (!producerId) return;
@@ -2588,6 +2593,7 @@ io.on('connection', function(socket) {
 
   // ── producer-resume ────────────────────────────────────────────────────
   socket.on('producer-resume', function(data) {
+    if (!data) return;
     var producerId = data.producerId;
     var roomId     = socket.data.roomId;
     if (!producerId) return;
@@ -2599,6 +2605,7 @@ io.on('connection', function(socket) {
   // ── stage-invite ───────────────────────────────────────────────────────
   socket.on('stage-invite', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
@@ -2625,10 +2632,10 @@ io.on('connection', function(socket) {
     var roomId  = socket.data.roomId;
     var guestId = socket.data.userId;
     if (!roomId || !guestId || guestId.startsWith('anon')) return;
-    io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: data.hostSocketId || '' });
+    io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: (data && data.hostSocketId) || '' });
     io.to(roomId).emit('hand-lower',   { guestId: guestId });
     // Notify the host
-    if (data.hostSocketId) {
+    if (data && data.hostSocketId) {
       var hostSock = io.sockets.sockets.get(data.hostSocketId);
       if (hostSock) hostSock.emit('stage-invite-accepted', { username: socket.data.username || guestId });
     }
@@ -2637,7 +2644,7 @@ io.on('connection', function(socket) {
   socket.on('stage-invite-decline', function(data) {
     var guestId = socket.data.userId;
     if (!guestId || guestId.startsWith('anon')) return;
-    if (data.hostSocketId) {
+    if (data && data.hostSocketId) {
       var hostSock = io.sockets.sockets.get(data.hostSocketId);
       if (hostSock) hostSock.emit('stage-invite-declined', { username: socket.data.username || guestId });
     }
@@ -2700,6 +2707,7 @@ io.on('connection', function(socket) {
   // ── stage-remove ───────────────────────────────────────────────────────
   socket.on('stage-remove', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
@@ -2708,6 +2716,7 @@ io.on('connection', function(socket) {
 
   // ── mute-guest ─────────────────────────────────────────────────────────
   socket.on('mute-guest', function(data) {
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
@@ -2719,6 +2728,7 @@ io.on('connection', function(socket) {
 
   // ── unmute-guest ───────────────────────────────────────────────────────
   socket.on('unmute-guest', function(data) {
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
@@ -2730,6 +2740,7 @@ io.on('connection', function(socket) {
 
   // ── kick-guest ─────────────────────────────────────────────────────────
   socket.on('kick-guest', function(data) {
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
@@ -2771,6 +2782,7 @@ io.on('connection', function(socket) {
 
   // ── promote-guest ──────────────────────────────────────────────────────
   socket.on('promote-guest', function(data) {
+    if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     var newRole = data.role;
@@ -3445,10 +3457,11 @@ io.on('connection', function(socket) {
     var _spNow = Date.now();
     if (_spNow - (speakingThrottle.get(socket.data.userId) || 0) < 250) return;
     speakingThrottle.set(socket.data.userId, _spNow);
-    io.to(roomId).emit('speaking', { guestId: guestId, speaking: data.speaking });
+    var _isSpeaking = data && !!data.speaking;
+    io.to(roomId).emit('speaking', { guestId: guestId, speaking: _isSpeaking });
     // Upgrade active-speaker video to r2 (900 kbps) while speaking;
     // drop back to r0 (100 kbps) when silent — O(subscribers) but fine for ≤20 seats.
-    mediasoup.setPreferredLayersByGuestId(guestId, data.speaking ? 2 : 0).catch(function() {});
+    mediasoup.setPreferredLayersByGuestId(guestId, _isSpeaking ? 2 : 0).catch(function() {});
   });
 
   // ── hand-raise ─────────────────────────────────────────────────────────
