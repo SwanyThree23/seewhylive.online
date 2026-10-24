@@ -93,12 +93,22 @@ export default function GiftAnimation({ event, onDone }) {
 
   if (!event) return null;
 
-  const { gift, senderName } = event;
+  const { gift, senderName, combo } = event;
   const isLegendary = gift.price >= 49.99;
   const isMega      = gift.price >= 99.99;
+  const comboCount  = combo || event.combo || 1;
 
   return (
     <AnimatePresence>
+      {visible && isMega && (
+        <motion.div
+          key="flash"
+          initial={{ opacity: 0.7 }}
+          animate={{ opacity: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 79, background: '#fff', pointerEvents: 'none' }}
+        />
+      )}
       {visible && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -171,6 +181,21 @@ export default function GiftAnimation({ event, onDone }) {
             }}>
               from <span style={{ color: '#fff', fontWeight: 900 }}>{senderName || 'Guest'}</span>
             </div>
+            {gift.price > 0 && (
+              <div style={{ fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
+                ${gift.price.toFixed(2)}
+              </div>
+            )}
+            {comboCount > 1 && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.5, type: 'spring', stiffness: 500 }}
+                style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 14px', borderRadius: 999, background: '#C0392B', fontSize: 14, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}
+              >
+                ×{comboCount} COMBO!
+              </motion.div>
+            )}
             {isLegendary && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Trophy, TrendingUp } from 'lucide-react';
@@ -9,6 +9,8 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
   const [leaderboard, setLeaderboard] = useState([]);
   const [timeRange, setTimeRange] = useState('live');
   const [loading, setLoading] = useState(false);
+  const [rankDeltas, setRankDeltas] = useState({});
+  const prevRanks = useRef({});
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -16,9 +18,18 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
       try {
         const sortField = timeRange === 'all-time' ? '-lifetime_points' : '-points';
         const entries = await base44.entities.ViewerPoints.filter({}, sortField, 10);
-        setLeaderboard(entries || []);
-      } catch (error) {
-      }
+        const newEntries = entries || [];
+        const deltas = {};
+        newEntries.forEach((e, idx) => {
+          const prev = prevRanks.current[e.user_id];
+          if (prev !== undefined && prev !== idx) {
+            deltas[e.user_id] = prev > idx ? 'up' : 'down';
+          }
+          prevRanks.current[e.user_id] = idx;
+        });
+        setRankDeltas(deltas);
+        setLeaderboard(newEntries);
+      } catch (error) {}
       setLoading(false);
     };
 
@@ -68,10 +79,12 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
                 borderLeft: idx === 0 ? `2px solid ${G}` : '2px solid transparent',
               }}
             >
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="font-black w-5" style={{ color: idx === 0 ? G : 'rgba(255,255,255,0.5)' }}>
-                  {idx + 1}
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                <span className="font-black shrink-0" style={{ color: idx === 0 ? G : 'rgba(255,255,255,0.5)', minWidth: 20, fontSize: idx < 3 ? 14 : 11 }}>
+                  {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
                 </span>
+                {rankDeltas[entry.user_id] === 'up' && <span style={{ fontSize: 9, color: '#6DBF7E', fontWeight: 900 }}>↑</span>}
+                {rankDeltas[entry.user_id] === 'down' && <span style={{ fontSize: 9, color: '#C0392B', fontWeight: 900 }}>↓</span>}
                 <span className="text-white/70 truncate">{entry.user_name || `User ${entry.user_id.slice(0, 4)}`}</span>
               </div>
               <motion.span

@@ -3,16 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign } from 'lucide-react';
 
 const TIER_COLORS = {
-  1:  { bg: 'rgba(201,168,76,0.12)',  border: 'rgba(201,168,76,0.3)',  text: '#C9A84C'  },
-  5:  { bg: 'rgba(212,175,55,0.15)', border: 'rgba(212,175,55,0.4)', text: '#D4AF37'  },
-  10: { bg: 'rgba(128,0,32,0.25)',   border: 'rgba(192,57,43,0.5)', text: '#C0392B'  },
-  20: { bg: 'rgba(212,175,55,0.25)', border: 'rgba(212,175,55,0.5)', text: '#D4AF37'  },
+  1:   { bg: 'rgba(201,168,76,0.12)',  border: 'rgba(201,168,76,0.3)',  text: '#C9A84C', badge: null },
+  5:   { bg: 'rgba(212,175,55,0.15)', border: 'rgba(212,175,55,0.4)', text: '#D4AF37', badge: null },
+  10:  { bg: 'rgba(128,0,32,0.25)',   border: 'rgba(192,57,43,0.5)', text: '#C0392B', badge: null },
+  20:  { bg: 'rgba(212,175,55,0.25)', border: 'rgba(212,175,55,0.5)', text: '#D4AF37', badge: null },
+  50:  { bg: 'rgba(212,133,74,0.28)', border: 'rgba(212,133,74,0.6)', text: '#D4854A', badge: '🔥' },
+  100: { bg: 'rgba(192,57,43,0.32)',  border: 'rgba(192,57,43,0.75)', text: '#C0392B', badge: '👑' },
 };
 
 function getTierStyle(amount) {
-  if (amount >= 20) return TIER_COLORS[20];
-  if (amount >= 10) return TIER_COLORS[10];
-  if (amount >= 5)  return TIER_COLORS[5];
+  if (amount >= 100) return TIER_COLORS[100];
+  if (amount >= 50)  return TIER_COLORS[50];
+  if (amount >= 20)  return TIER_COLORS[20];
+  if (amount >= 10)  return TIER_COLORS[10];
+  if (amount >= 5)   return TIER_COLORS[5];
   return TIER_COLORS[1];
 }
 
@@ -64,9 +68,12 @@ export default function SuperChatRail({ superchats = [] }) {
               <motion.div
                 key={sc.id || i}
                 initial={{ opacity: 0, scale: 0.7, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
+                animate={(sc.amount || 0) >= 100
+                  ? { opacity: 1, scale: 1, y: 0, boxShadow: [`0 0 6px ${tier.border}`, `0 0 18px ${tier.border}`, `0 0 6px ${tier.border}`] }
+                  : { opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.7 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25,
+                  boxShadow: (sc.amount || 0) >= 100 ? { duration: 1.5, repeat: Infinity } : undefined }}
                 style={{
                   flexShrink: 0,
                   display: 'flex',
@@ -76,9 +83,11 @@ export default function SuperChatRail({ superchats = [] }) {
                   borderRadius: 99,
                   background: tier.bg,
                   border: `1px solid ${tier.border}`,
-                  maxWidth: 200,
+                  maxWidth: sc.message ? 240 : 200,
                 }}
               >
+                {/* Tier badge */}
+                {tier.badge && <span style={{ fontSize: 12, flexShrink: 0 }}>{tier.badge}</span>}
                 {/* Avatar */}
                 <div style={{
                   width: 20,
@@ -96,7 +105,7 @@ export default function SuperChatRail({ superchats = [] }) {
                 }}>
                   {(sc.senderName || '?')[0].toUpperCase()}
                 </div>
-                {/* Name + amount */}
+                {/* Name + amount + message */}
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 10, fontWeight: 900, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 80, ...F }}>
                     {sc.senderName || 'Someone'}
@@ -104,6 +113,11 @@ export default function SuperChatRail({ superchats = [] }) {
                   {(sc.amount || 0) > 0 && (
                     <div style={{ fontSize: 11, fontWeight: 900, color: tier.text, ...F }}>
                       ${sc.amount}
+                    </div>
+                  )}
+                  {sc.message && (
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120, marginTop: 1, ...F }}>
+                      {sc.message.slice(0, 40)}{sc.message.length > 40 ? '…' : ''}
                     </div>
                   )}
                 </div>
