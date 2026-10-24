@@ -529,9 +529,22 @@ export default function LiveRoomPage({
         if (addToastRef.current) addToastRef.current((data && data.error) || 'Room connect failed', 'error');
         return;
       }
-      // Pre-load chat history and room state
+      // Pre-load chat history and room state.
+      // On reconnect, merge server history so messages missed during the disconnect
+      // gap appear rather than being silently lost.
       if (Array.isArray(data.chatHistory) && data.chatHistory.length > 0) {
-        setChat(function(prev) { return prev.length > 0 ? prev : data.chatHistory; });
+        setChat(function(prev) {
+          if (!prev.length) return data.chatHistory;
+          var seenIds = {};
+          for (var _ci = 0; _ci < prev.length; _ci++) { if (prev[_ci].id) seenIds[prev[_ci].id] = true; }
+          var merged = prev.slice();
+          for (var _si = 0; _si < data.chatHistory.length; _si++) {
+            var _sm = data.chatHistory[_si];
+            if (_sm.id && !seenIds[_sm.id]) merged.push(_sm);
+          }
+          merged.sort(function(a, b) { return (a.ts || 0) - (b.ts || 0); });
+          return merged.slice(-200);
+        });
       }
       if (data.activePoll) {
         var _ap = data.activePoll;
