@@ -3147,6 +3147,10 @@ io.on('connection', function(socket) {
         }
       }
       if (_banUserId) {
+        // Persist ban so join-room's isUserBanned() gate blocks reconnects.
+        if (moderation) {
+          try { moderation.banUser(socket.data.userId, _banUserId, _banTarget, null); } catch (e) {}
+        }
         io.to(roomId).emit('user-banned', { username: _banTarget, ts: _banTs });
       }
       io.to(roomId).emit('chat-message', {
@@ -5641,6 +5645,10 @@ io.on('connection', function(socket) {
     // Prevent banning the room's host
     var _banRoom = rooms.get(sId);
     if (_banRoom && _banRoom.hostUserId === bannedId) return;
+    // Persist ban so join-room's isUserBanned() gate blocks reconnects.
+    if (moderation && _banRoom && _banRoom.hostUserId) {
+      try { moderation.banUser(_banRoom.hostUserId, bannedId, _bannedUsername, null); } catch (e) {}
+    }
     io.to(sId).emit('user-banned', { userId: bannedId, username: _bannedUsername, ts: Math.floor(Date.now() / 1000) });
     // Disconnect every socket in this room whose userId matches the ban target
     var room = rooms.get(sId);
