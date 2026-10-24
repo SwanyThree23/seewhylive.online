@@ -18,7 +18,7 @@ router.get('/', async function(req, res) {
     if (!allRoomIds.length) return res.json({ rooms: [] });
     // Use the DB as the source of truth for tenant ownership
     var tenantResult = await db.query(
-      'SELECT id FROM streams WHERE id = ANY($1) AND tenant_id = $2',
+      "SELECT id FROM streams WHERE id = ANY($1) AND tenant_id = $2 AND (privacy IS NULL OR privacy != 'private')",
       [allRoomIds, req.tenantId]
     );
     var tenantRoomIds = new Set(tenantResult.rows.map(function(r) { return r.id; }));
