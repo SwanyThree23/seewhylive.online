@@ -441,9 +441,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
                   <button
                     onClick={function() {
                       if (!isCurrent) {
-                        setPlan(plan.id);
-                        localStorage.setItem('sw_saas_tier', plan.id);
-                        if (addToast) addToast('Plan updated to ' + plan.label + '!', 'success');
+                        if (addToast) addToast('Contact support to upgrade your plan', 'info');
                       }
                     }}
                     style={{ width: '100%', padding: '9px', background: isCurrent ? 'rgba(201,168,76,.1)' : 'linear-gradient(135deg,#800020,#C01838)', border: '1px solid ' + (isCurrent ? 'rgba(201,168,76,.3)' : 'transparent'), borderRadius: 8, color: isCurrent ? plan.color : '#C9A84C', fontFamily: fD, fontSize: 13, letterSpacing: 2, cursor: isCurrent ? 'default' : 'pointer' }}>
