@@ -1,0 +1,33 @@
+# Supabase project configuration for SeeWhy LIVE
+# Run `supabase db push` to apply migrations to the remote project.
+# Run `supabase db diff` to compare local vs remote schema.
+
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = false
+
+[auth]
+enabled = true
+site_url = "https://app.seewhylive.online"
+additional_redirect_urls = ["https://seewhylive.online"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true

@@ -3,6 +3,7 @@ var express = require('express');
 var router = express.Router();
 var guestService = require('../services/guestService');
 var requireAuth  = require('../middleware/auth');
+var requireRole  = requireAuth.requireRole;
 
 var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -83,7 +84,8 @@ router.post('/streams/:streamId/participants', requireAuth, async function(req, 
 router.patch('/participants/:participantId', requireAuth, async function(req, res) {
   if (!UUID_RE.test(req.params.participantId)) return res.status(400).json({ error: 'invalid participant id' });
   var isHostOp = req.body.isOnStage !== undefined;
-  if (isHostOp && req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') {
+  var ROLE_RANK = requireAuth.ROLE_RANK;
+  if (isHostOp && (ROLE_RANK[req.user.role] || 0) < ROLE_RANK['host']) {
     return res.status(403).json({ error: 'only hosts may move participants on stage' });
   }
   try {

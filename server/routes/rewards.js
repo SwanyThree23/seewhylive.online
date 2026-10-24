@@ -4,6 +4,8 @@ var router = express.Router();
 var { rateLimit } = require('express-rate-limit');
 var rewardsService = require('../services/rewardsService');
 var requireAuth    = require('../middleware/auth');
+var requireRole    = requireAuth.requireRole;
+var requireOwnerOrSelf = requireAuth.requireOwnerOrSelf;
 
 var challengeCompleteRateLimit = rateLimit({
   windowMs: 60 * 1000,
@@ -29,12 +31,9 @@ router.get('/leaderboard', requireAuth, async function(req, res) {
 
 var REWARDS_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-router.get('/me/:userId', requireAuth, async function(req, res) {
+router.get('/me/:userId', requireAuth, requireOwnerOrSelf('userId'), async function(req, res) {
   if (!REWARDS_UUID_RE.test(req.params.userId)) return res.status(400).json({ error: 'invalid userId' });
   try {
-    if (req.user.id !== req.params.userId && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'forbidden' });
-    }
     var data = await rewardsService.getUserPoints(req.params.userId, req.tenantId);
     res.json(data);
   } catch (err) {

@@ -4,6 +4,8 @@ var https       = require('https');
 var db          = require('../db');
 var router      = express.Router();
 var requireAuth = require('../middleware/auth');
+var requireRole  = requireAuth.requireRole;
+var requireOwnerOrSelf = requireAuth.requireOwnerOrSelf;
 var { rateLimit } = require('express-rate-limit');
 
 var directPayLimit = rateLimit({
@@ -169,11 +171,8 @@ router.get('/', requireAuth, function(req, res) {
 });
 
 var UUID_RE_DP = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-router.get('/:userId', requireAuth, function(req, res) {
+router.get('/:userId', requireAuth, requireOwnerOrSelf('userId'), function(req, res) {
   if (!UUID_RE_DP.test(req.params.userId)) return res.status(400).json({ error: 'invalid userId' });
-  if (req.params.userId !== req.user.id && req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'forbidden' });
-  }
   loadAndDecryptHandles(req.params.userId, req.tenantId, res);
 });
 
