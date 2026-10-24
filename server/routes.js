@@ -331,7 +331,7 @@ router.get('/creator/analytics', requireAuth, function(req, res) {
     }
     var period = _rawPeriod;
     if (analytics) {
-      var result = analytics.getCreatorAnalytics(creatorId, period, req.tenantId);
+      var result = analytics.getCreatorAnalytics(creatorId, period, null);
       return res.json(result);
     }
     return res.json({
@@ -781,7 +781,7 @@ router.get('/metrics', requireAuth, function(req, res) {
       return res.status(400).json({ error: 'invalid roomId' });
     }
     if (analytics) {
-      var result = analytics.getCreatorAnalytics(roomId, 'month', req.tenantId);
+      var result = analytics.getCreatorAnalytics(roomId, 'month', null);
       return res.json({
         roomId: roomId,
         viewerCount: 0,
