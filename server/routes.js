@@ -11,7 +11,7 @@ var db = require('./db');
 var { rateLimit } = require('express-rate-limit');
 
 // ─── Revenue split constants (immutable) ──────────────────────────────────────
-var CREATOR  = 0.90;
+var CREATOR_SPLIT = 0.90;
 
 var ROUTES_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -552,7 +552,7 @@ router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
     if (!Number.isFinite(amtCents) || amtCents > 50000) {
       return res.status(400).json({ success: false, error: 'Tip amount exceeds maximum of $500.00' });
     }
-    var creatorCents = Math.floor(amtCents * CREATOR);
+    var creatorCents = Math.floor(amtCents * CREATOR_SPLIT);
     var platformCents = amtCents - creatorCents;
 
     if (stripe) {

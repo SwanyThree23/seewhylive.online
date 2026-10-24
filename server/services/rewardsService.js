@@ -78,7 +78,7 @@ async function getLeaderboard(period, tenantId) {
   if (!tenantId) throw Object.assign(new Error('tenantId is required'), { status: 400 });
   if (period === 'weekly') {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    let q = supabase.from('loyalty_point_events').select('user_id, points').gte('created_at', since).eq('tenant_id', tenantId);
+    let q = supabase.from('loyalty_point_events').select('user_id, points').gte('created_at', since).eq('tenant_id', tenantId).limit(10000);
     const { data, error } = await q;
     if (error) throw error;
     const totals = {};
