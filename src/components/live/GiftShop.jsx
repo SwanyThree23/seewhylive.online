@@ -174,6 +174,8 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
   const [qty,        setQty]        = useState(1);
   const [activeTab,  setActiveTab]  = useState('gifts'); // 'gifts' | 'bundles'
   const [recentSent, setRecentSent] = useState([]);
+  const [rarityFilter, setRarityFilter] = useState('all');
+  const [giftMessage, setGiftMessage] = useState('');
 
   const featuredGift = GIFTS.find(g => g.featured);
   const totalPrice   = selected ? (selected.price * qty).toFixed(2) : null;
@@ -194,7 +196,7 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
           sender_name: user.full_name || user.email || 'Guest',
           creator_id:  creatorId,
           amount_usd:  selected.price,
-          message:     `${selected.emoji} ${selected.name}`,
+          message:     giftMessage.trim() ? `${selected.emoji} ${selected.name} — ${giftMessage.trim()}` : `${selected.emoji} ${selected.name}`,
         }),
         base44.entities.GemTransaction?.create({
           sender_id:    user.id,
@@ -213,6 +215,7 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
       onClose();
       setSelected(null);
       setQty(1);
+      setGiftMessage('');
     } catch {
       toast.error('Failed to send gift');
     } finally {
@@ -335,8 +338,29 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
                     ))}
                   </div>
 
+                  {/* Rarity filter */}
+                  <div style={{ display: 'flex', gap: 4, padding: '8px 16px 0', flexWrap: 'wrap' }}>
+                    {[
+                      { id: 'all',       label: 'All',       color: 'rgba(255,255,255,0.4)' },
+                      { id: 'common',    label: 'Common',    color: 'rgba(255,255,255,0.5)' },
+                      { id: 'rare',      label: 'Rare',      color: GOLD },
+                      { id: 'epic',      label: 'Epic',      color: '#D4854A' },
+                      { id: 'legendary', label: 'Legendary', color: '#C084FC' },
+                    ].map(f => (
+                      <button key={f.id} onClick={() => setRarityFilter(f.id)}
+                        style={{ padding: '3px 9px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif',
+                          fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em',
+                          border: `1px solid ${rarityFilter === f.id ? f.color : 'rgba(255,255,255,0.1)'}`,
+                          background: rarityFilter === f.id ? `${f.color}18` : 'transparent',
+                          color: rarityFilter === f.id ? f.color : 'rgba(255,255,255,0.35)',
+                          cursor: 'pointer' }}>
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, padding: 16 }}>
-                    {GIFTS.map(gift => (
+                    {GIFTS.filter(g => rarityFilter === 'all' || g.rarity === rarityFilter).map(gift => (
                       <GiftCard key={gift.id} gift={gift} selected={selected?.id === gift.id} onSelect={setSelected} />
                     ))}
                   </div>
@@ -410,6 +434,27 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
               borderTop: '1px solid rgba(255,255,255,0.06)',
               flexShrink: 0,
             }}>
+              {/* Gift message input */}
+              {selected && (
+                <input
+                  value={giftMessage}
+                  onChange={e => setGiftMessage(e.target.value.slice(0, 80))}
+                  placeholder="Add a message… (optional)"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: 10,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.05)',
+                    color: '#fff',
+                    fontSize: 13,
+                    fontFamily: 'Barlow Condensed, sans-serif',
+                    outline: 'none',
+                    marginBottom: 8,
+                    boxSizing: 'border-box',
+                  }}
+                />
+              )}
               <motion.button
                 whileTap={{ scale: selected ? 0.97 : 1 }}
                 onClick={handleSend}

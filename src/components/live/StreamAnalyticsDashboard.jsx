@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area, ResponsiveContainer, ReferenceLine } from 'recharts';
 import SafeResponsiveContainer from '@/components/shared/SafeChart';
 import { TrendingUp, TrendingDown, Users, MessageSquare, Zap, Heart, Eye, Download, RefreshCw, DollarSign } from 'lucide-react';
 
@@ -70,7 +70,10 @@ function StatCard({ icon: Icon, label, value, unit, color, previous }) {
   );
 }
 
-const CHART_TABS = ['viewers', 'chat', 'revenue'];
+const CREATOR_SPLIT = 0.90;
+const PLATFORM_FEE  = 0.10;
+
+const CHART_TABS = ['viewers', 'chat', 'revenue', 'engagement'];
 
 export default function StreamAnalyticsDashboard({ roomId }) {
   const [chartTab, setChartTab] = useState('viewers');
@@ -106,8 +109,13 @@ export default function StreamAnalyticsDashboard({ roomId }) {
     messages:    a.chat_messages      || 0,
   }));
 
-  const totalTips = sorted.reduce((s, a) => s + (a.tips_received || 0), 0);
-  const avgWatch  = sorted.length ? Math.round(sorted.reduce((s, a) => s + (a.average_watch_time || 0), 0) / sorted.length) : 0;
+  const totalTips       = sorted.reduce((s, a) => s + (a.tips_received || 0), 0);
+  const avgWatch        = sorted.length ? Math.round(sorted.reduce((s, a) => s + (a.average_watch_time || 0), 0) / sorted.length) : 0;
+  const totalMessages   = sorted.reduce((s, a) => s + (a.chat_messages || 0), 0);
+  const durationMinutes = sorted.length;
+  const chatRatePerMin  = durationMinutes > 0 ? (totalMessages / durationMinutes).toFixed(1) : 0;
+  const creatorPayout   = Math.floor(totalTips * CREATOR_SPLIT * 100) / 100;
+  const platformCut     = Math.floor(totalTips * PLATFORM_FEE * 100) / 100;
   const retentionRate = latestAnalytics && latestAnalytics.peak_viewers
     ? Math.round(((latestAnalytics.viewer_count || 0) / latestAnalytics.peak_viewers) * 100)
     : null;
@@ -213,6 +221,25 @@ export default function StreamAnalyticsDashboard({ roomId }) {
           </motion.div>
         )}
 
+        {chartTab === 'engagement' && (
+          <motion.div key="engagement" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="rounded-lg p-4" style={{ background: BG, border: `1px solid ${BORDER}` }}>
+            <h3 className="text-xs font-bold mb-3" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              ❤️ Engagement Rate
+            </h3>
+            <SafeResponsiveContainer width="100%" height={200}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(109,191,126,0.08)" />
+                <XAxis dataKey="time" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} width={30} tickFormatter={v => `${v}%`} />
+                <Tooltip {...tooltipStyle} formatter={v => [`${v}%`, 'Engagement']} />
+                <ReferenceLine y={50} stroke="rgba(212,175,55,0.3)" strokeDasharray="4 4" />
+                <Line type="monotone" dataKey="engagement" stroke="#6DBF7E" strokeWidth={2} dot={false} />
+              </LineChart>
+            </SafeResponsiveContainer>
+          </motion.div>
+        )}
+
         {chartTab === 'revenue' && (
           <motion.div key="revenue" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="rounded-lg p-4" style={{ background: BG, border: `1px solid ${BORDER}` }}>
@@ -254,6 +281,9 @@ export default function StreamAnalyticsDashboard({ roomId }) {
             { label: 'New Followers',   value: (latestAnalytics?.new_followers || 0).toLocaleString(), color: '#6DBF7E' },
             { label: 'Engagement',      value: `${Math.round(latestAnalytics?.engagement_rate || 0)}%`,color: '#D4854A' },
             { label: 'Retention',       value: retentionRate != null ? `${retentionRate}%` : '—',       color: retentionRate >= 60 ? '#6DBF7E' : retentionRate >= 30 ? '#D4AF37' : '#C0392B' },
+            { label: 'Chat/min',        value: chatRatePerMin,                                          color: '#7B5DA6' },
+            { label: 'Your Payout',     value: `$${creatorPayout.toFixed(2)}`,                         color: '#6DBF7E' },
+            { label: 'Platform (10%)',  value: `$${platformCut.toFixed(2)}`,                            color: 'rgba(255,255,255,0.3)' },
           ].map(({ label, value, color }) => (
             <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }} className="p-2.5 rounded">
               <p className="text-white/50 mb-1">{label}</p>
