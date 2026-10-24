@@ -471,6 +471,15 @@ var ppvRateLimit = rateLimit({
   validate: { xForwardedForHeader: false },
   message: { error: 'Too many payment requests — please wait before trying again.' }
 });
+var fuelRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many FUEL requests — please wait before trying again.' }
+});
 // NOTE: stripeOnboardRateLimit is applied on the route itself (after requireAuth)
 // so req.user.id is available for per-user keying.
 app.use(express.json({ limit: '2mb' }));
@@ -1176,7 +1185,7 @@ app.post('/api/power-pass/buy', requireAuth, function(req, res) {
 
 // ── FUEL Currency ─────────────────────────────────────────────────────────────
 // GET /api/fuel/balance
-app.get('/api/fuel/balance', requireAuth, function(req, res) {
+app.get('/api/fuel/balance', requireAuth, fuelRateLimit, function(req, res) {
   try {
     var userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Not authenticated' });
@@ -1191,7 +1200,7 @@ app.get('/api/fuel/balance', requireAuth, function(req, res) {
 var FUEL_PACKAGES = { 499: 500, 999: 1100, 1999: 2500, 4999: 7000 };
 
 // POST /api/fuel/purchase  — credit FUEL after Stripe payment confirmed client-side
-app.post('/api/fuel/purchase', requireAuth, function(req, res) {
+app.post('/api/fuel/purchase', requireAuth, fuelRateLimit, function(req, res) {
   try {
     var userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Not authenticated' });
@@ -1218,7 +1227,7 @@ app.post('/api/fuel/purchase', requireAuth, function(req, res) {
 });
 
 // POST /api/fuel/confirm  — idempotent credit with paymentIntentId dedup
-app.post('/api/fuel/confirm', requireAuth, function(req, res) {
+app.post('/api/fuel/confirm', requireAuth, fuelRateLimit, function(req, res) {
   try {
     var userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Not authenticated' });
