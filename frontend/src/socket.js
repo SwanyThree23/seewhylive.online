@@ -26,7 +26,7 @@ export function getSocket(token) {
   socket = io(SOCKET_URL, {
     auth: { token: token || '' },
     transports: ['websocket', 'polling'],
-    reconnectionDelay: 1000,
+    reconnectionDelay: 2000,
     reconnectionDelayMax: 30000,
     reconnectionAttempts: Infinity,
     timeout: 20000
