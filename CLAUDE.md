@@ -104,7 +104,7 @@ PLATFORM_FEE   = 0.10   // 10% to platform
 // Always Math.floor() for money — never round() or ceil()
 ```
 
-- In `server/`: defined in `analytics.js`, `battleService.js` (`CREATOR_SPLIT`)
+- In `server/`: every file that computes a money split defines `CREATOR_SPLIT = 0.90` locally (`index.js`, `analytics.js`, `routes.js`, `stripe.js`, `n8nWebhooks.js`, `services/battleService.js`)
 - In `frontend/`: `platformConfig.js` exports `creatorCents()` and `platformCents()`
 - The string **"You keep 100%"** must never appear anywhere in the codebase
 
