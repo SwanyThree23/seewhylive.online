@@ -988,13 +988,46 @@ setInterval(function() {
 
 // ─── REST API Routes ──────────────────────────────────────────────────────
 
+var _isShuttingDown = false;
+
 app.use('/api/tts', ttsRouter);
 
 // GET /api/health
 app.get('/api/health', function(req, res) {
   var dbOk = true;
   try { db.prepare('SELECT 1').get(); } catch(e) { dbOk = false; }
-  res.json({ status: dbOk ? 'ok' : 'degraded', timestamp: Date.now() });
+
+  var guestCount = 0;
+  var viewerCount = 0;
+  rooms.forEach(function(room) {
+    guestCount  += (room.guests  ? room.guests.size  : 0);
+    viewerCount += (room.viewers ? room.viewers.size : 0);
+  });
+
+  // Non-blocking Postgres ping
+  pgDb.query('SELECT 1').then(function() {
+    res.json({
+      status: (dbOk ? 'ok' : 'degraded'),
+      shuttingDown: _isShuttingDown,
+      uptime: process.uptime(),
+      rooms: rooms.size,
+      guests: guestCount,
+      viewers: viewerCount,
+      db: { sqlite: dbOk, postgres: true },
+      timestamp: Date.now()
+    });
+  }).catch(function() {
+    res.json({
+      status: (dbOk ? 'degraded' : 'degraded'),
+      shuttingDown: _isShuttingDown,
+      uptime: process.uptime(),
+      rooms: rooms.size,
+      guests: guestCount,
+      viewers: viewerCount,
+      db: { sqlite: dbOk, postgres: false },
+      timestamp: Date.now()
+    });
+  });
 });
 
 // GET /api/metrics
@@ -5911,41 +5944,54 @@ mediasoup.createWorkers()
 
 // ─── Graceful shutdown ─────────────────────────────────────────────────────
 process.on('SIGTERM', function() {
+  if (_isShuttingDown) return;
+  _isShuttingDown = true;
   logger.info('SIGTERM received, shutting down gracefully...');
 
-  // Stop all FFmpeg processes
-  rooms.forEach(function(room, roomId) {
-    try {
-      rtmp.stopFanout(roomId);
-    } catch (err) {
-      logger.error('[shutdown] stopFanout error for ' + roomId + ': ' + err.message);
-    }
-    bridge.stopBridge(roomId).catch(function(err) {
-      logger.error('[shutdown] stopBridge error for ' + roomId + ': ' + err.message);
-    });
-    mediasoup.cleanupRoom(roomId);
-  });
-
-  // Close DB
+  // Notify all connected clients so they can display a reconnect banner
   try {
-    db.close();
-  } catch (err) {
-    logger.error('[shutdown] DB close error: ' + err.message);
+    io.emit('server:restarting', { countdown: 5, reason: 'maintenance' });
+  } catch (e) {
+    logger.error('[shutdown] broadcast error: ' + e.message);
   }
 
-  io.close(function() {
-    logger.info('Socket.IO server closed');
-    server.close(function() {
-      logger.info('HTTP server closed');
-      process.exit(0);
-    });
-  });
-
   // Force exit after 10s if clean shutdown stalls
-  setTimeout(function() {
+  var forceExit = setTimeout(function() {
     logger.error('[shutdown] Forced exit after timeout');
     process.exit(1);
   }, 10000);
+  if (forceExit.unref) forceExit.unref();
+
+  // Give clients 1s to receive the notification, then close everything
+  setTimeout(function() {
+    // Stop all FFmpeg processes
+    rooms.forEach(function(room, roomId) {
+      try {
+        rtmp.stopFanout(roomId);
+      } catch (err) {
+        logger.error('[shutdown] stopFanout error for ' + roomId + ': ' + err.message);
+      }
+      bridge.stopBridge(roomId).catch(function(err) {
+        logger.error('[shutdown] stopBridge error for ' + roomId + ': ' + err.message);
+      });
+      mediasoup.cleanupRoom(roomId);
+    });
+
+    // Close DB
+    try {
+      db.close();
+    } catch (err) {
+      logger.error('[shutdown] DB close error: ' + err.message);
+    }
+
+    io.close(function() {
+      logger.info('Socket.IO server closed');
+      server.close(function() {
+        logger.info('HTTP server closed');
+        process.exit(0);
+      });
+    });
+  }, 1000);
 });
 
 process.on('SIGINT', function() {

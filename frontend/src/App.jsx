@@ -1042,6 +1042,11 @@ export default function App() {
       addToast('Host lost connection — watch party paused', 'error');
     });
 
+    socket.on('server:restarting', function(data) {
+      var secs = (data && data.countdown) ? data.countdown : 5;
+      addToast('Server restarting in ' + secs + 's — reconnecting automatically…', 'info');
+    });
+
     socket.on('notification', function(data) {
       if (!data || !data.message) return;
       var kind = data.type || '';
@@ -1218,6 +1223,7 @@ export default function App() {
       socket.off('love-update');
       socket.off('new-subscription');
       socket.off('host-disconnected');
+      socket.off('server:restarting');
       socket.off('stream-alert');
       socket.off('battle-result');
       socket.off('gem-send');
