@@ -582,6 +582,11 @@ export default function App() {
 
     var onConnect = function() {
       setConnected(true);
+      // Destroy stale client-side mediasoup transports so nothing can use them
+      // during the reconnect window. LiveRoomPage's join-room-ack handler calls
+      // rtcManager.connect() which rebuilds fresh transports against the new
+      // server-side socket session.
+      rtcManager.destroy();
       socket.emit('join-room', joinPayload);
       // Ask other devices of this user to share their current state
       socket.emit('user:request-state');
