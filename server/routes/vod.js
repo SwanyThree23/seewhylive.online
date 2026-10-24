@@ -35,7 +35,7 @@ var upload = multer({
   }
 });
 
-var SB_HOST = 'xlrcibziouffgxciecvc.supabase.co';
+var SB_HOST = (function() { try { return new URL(process.env.SUPABASE_URL || '').hostname || 'xlrcibziouffgxciecvc.supabase.co'; } catch(e) { return 'xlrcibziouffgxciecvc.supabase.co'; } }());
 
 function sbReq(method, path, body, cb) {
   var key     = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -68,7 +68,7 @@ function sbReq(method, path, body, cb) {
   req.end();
 }
 
-function sbUpload(bucketPath, buffer, contentType, cb) {
+function sbUploadStream(bucketPath, filePath, fileSize, contentType, cb) {
   var key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   var opts = {
     hostname: SB_HOST,
@@ -79,9 +79,9 @@ function sbUpload(bucketPath, buffer, contentType, cb) {
       'apikey': key,
       'Authorization': 'Bearer ' + key,
       'Content-Type': contentType,
-      'Content-Length': buffer.length,
-      'x-upsert': 'true'
-    }
+      'Content-Length': fileSize,
+      'x-upsert': 'true',
+    },
   };
   var req = https.request(opts, function(res) {
     var chunks = [];
@@ -94,8 +94,7 @@ function sbUpload(bucketPath, buffer, contentType, cb) {
     });
   });
   req.on('error', function(e) { cb(e); });
-  req.write(buffer);
-  req.end();
+  fs.createReadStream(filePath).pipe(req);
 }
 
 router.post('/start', requireAuth, function(req, res) {
@@ -156,23 +155,20 @@ function doUpload(req, res, vodId) {
   var contentType = req.file.mimetype || 'video/mp4';
   var tmpPath = req.file.path;
 
-  fs.readFile(tmpPath, function(readErr, buffer) {
+  var fileSize = req.file.size;
+  sbUploadStream(bucket + '/' + storagePath, tmpPath, fileSize, contentType, function(err, status, data) {
     fs.unlink(tmpPath, function() {});
-    if (readErr) return res.status(500).json({ error: 'Failed to read upload' });
+    if (err) return res.status(500).json({ error: 'Upload error' });
+    if (status >= 400) return res.status(500).json({ error: 'Internal server error' });
 
-    sbUpload(bucket + '/' + storagePath, buffer, contentType, function(err, status, data) {
-      if (err) return res.status(500).json({ error: 'Upload error' });
-      if (status >= 400) return res.status(500).json({ error: 'Internal server error' });
+    var publicUrl = 'https://' + SB_HOST + '/storage/v1/object/public/' + bucket + '/' + storagePath;
+    var patch = { storage_path: storagePath, playback_url: publicUrl };
 
-      var publicUrl = 'https://' + SB_HOST + '/storage/v1/object/public/' + bucket + '/' + storagePath;
-      var patch = { storage_path: storagePath, playback_url: publicUrl };
-
-      sbReq('PATCH', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&tenant_id=eq.' + encodeURIComponent(req.tenantId) + '&creator_id=eq.' + encodeURIComponent(req.user.id), patch, function(err2, status2, data2) {
-        if (err2) return res.status(500).json({ error: 'Database error' });
-        if (status2 >= 400) return res.status(500).json({ error: 'Internal server error' });
-        var updated = Array.isArray(data2) ? data2[0] : data2;
-        return res.json(updated || { ok: true, storage_path: storagePath, playback_url: publicUrl });
-      });
+    sbReq('PATCH', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&tenant_id=eq.' + encodeURIComponent(req.tenantId) + '&creator_id=eq.' + encodeURIComponent(req.user.id), patch, function(err2, status2, data2) {
+      if (err2) return res.status(500).json({ error: 'Database error' });
+      if (status2 >= 400) return res.status(500).json({ error: 'Internal server error' });
+      var updated = Array.isArray(data2) ? data2[0] : data2;
+      return res.json(updated || { ok: true, storage_path: storagePath, playback_url: publicUrl });
     });
   });
 }
@@ -200,7 +196,7 @@ function doStop(res, vodId, tenantId, creatorId, durationSec, playbackUrl) {
     var parsedPb;
     try { parsedPb = new URL(String(playbackUrl)); } catch (e) { return res.status(400).json({ error: 'invalid playback_url' }); }
     if (parsedPb.protocol !== 'https:') return res.status(400).json({ error: 'playback_url must begin with https://' });
-    if (parsedPb.hostname !== 'xlrcibziouffgxciecvc.supabase.co') return res.status(400).json({ error: 'playback_url host not allowed' });
+    if (parsedPb.hostname !== SB_HOST) return res.status(400).json({ error: 'playback_url host not allowed' });
     var _expectedPrefix = '/storage/v1/object/public/vods/' + tenantId + '/';
     if (!parsedPb.pathname.startsWith(_expectedPrefix)) {
       return res.status(400).json({ error: 'playback_url path not within your storage namespace' });

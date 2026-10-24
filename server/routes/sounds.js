@@ -34,7 +34,7 @@ var upload = multer({
   }
 });
 
-var SB_HOST = 'xlrcibziouffgxciecvc.supabase.co';
+var SB_HOST = (function() { try { return new URL(process.env.SUPABASE_URL || '').hostname || 'xlrcibziouffgxciecvc.supabase.co'; } catch(e) { return 'xlrcibziouffgxciecvc.supabase.co'; } }());
 
 function sbReq(method, path, body, cb) {
   var key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -67,7 +67,7 @@ function sbReq(method, path, body, cb) {
   req.end();
 }
 
-function sbUpload(bucketPath, buffer, contentType, cb) {
+function sbUploadStream(bucketPath, filePath, fileSize, contentType, cb) {
   var key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   var opts = {
     hostname: SB_HOST,
@@ -78,9 +78,9 @@ function sbUpload(bucketPath, buffer, contentType, cb) {
       'apikey': key,
       'Authorization': 'Bearer ' + key,
       'Content-Type': contentType,
-      'Content-Length': buffer.length,
-      'x-upsert': 'true'
-    }
+      'Content-Length': fileSize,
+      'x-upsert': 'true',
+    },
   };
   var req = https.request(opts, function(res) {
     var chunks = [];
@@ -93,8 +93,7 @@ function sbUpload(bucketPath, buffer, contentType, cb) {
     });
   });
   req.on('error', function(e) { cb(e); });
-  req.write(buffer);
-  req.end();
+  fs.createReadStream(filePath).pipe(req);
 }
 
 router.get('/', requireAuth, function(req, res) {
@@ -114,28 +113,22 @@ router.post('/upload', requireAuth, soundUploadRateLimit, upload.single('audio')
   var storagePath = req.tenantId + '/' + req.user.id + '/' + Date.now() + '-' + safeName;
 
   var tmpPath = req.file.path;
-  fs.readFile(tmpPath, function(readErr, buffer) {
-    if (readErr) {
-      fs.unlink(tmpPath, function() {});
-      return res.status(500).json({ error: 'Failed to read upload' });
-    }
+  var fileSize = req.file.size;
+  sbUploadStream('sounds/' + storagePath, tmpPath, fileSize, req.file.mimetype, function(upErr, status, data) {
+    fs.unlink(tmpPath, function() {});
+    if (upErr || status >= 400) return res.status(500).json({ error: 'Upload failed' });
 
-    sbUpload('sounds/' + storagePath, buffer, req.file.mimetype, function(upErr, status, data) {
-      fs.unlink(tmpPath, function() {});
-      if (upErr || status >= 400) return res.status(500).json({ error: 'Upload failed' });
+    var publicUrl = 'https://' + SB_HOST + '/storage/v1/object/public/sounds/' + storagePath;
 
-      var publicUrl = 'https://' + SB_HOST + '/storage/v1/object/public/sounds/' + storagePath;
-
-      sbReq('POST', '/rest/v1/custom_sounds', {
-        tenant_id: req.tenantId,
-        creator_id: req.user.id,
-        label: label,
-        storage_path: storagePath,
-        playback_url: publicUrl
-      }, function(insErr, insStatus, insData) {
-        if (insErr || insStatus >= 400) return res.status(500).json({ error: 'Failed to save sound record' });
-        res.json((insData && insData[0]) || { label: label, playback_url: publicUrl });
-      });
+    sbReq('POST', '/rest/v1/custom_sounds', {
+      tenant_id: req.tenantId,
+      creator_id: req.user.id,
+      label: label,
+      storage_path: storagePath,
+      playback_url: publicUrl
+    }, function(insErr, insStatus, insData) {
+      if (insErr || insStatus >= 400) return res.status(500).json({ error: 'Failed to save sound record' });
+      res.json((insData && insData[0]) || { label: label, playback_url: publicUrl });
     });
   });
 });

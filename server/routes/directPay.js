@@ -16,7 +16,7 @@ var directPayLimit = rateLimit({
   message: { error: 'Too many requests, try again shortly.' },
 });
 
-var SB_HOST = 'xlrcibziouffgxciecvc.supabase.co';
+var SB_HOST = (function() { try { return new URL(process.env.SUPABASE_URL || '').hostname || 'xlrcibziouffgxciecvc.supabase.co'; } catch(e) { return 'xlrcibziouffgxciecvc.supabase.co'; } }());
 
 function sbReq(method, path, body, cb) {
   var key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -168,7 +168,9 @@ router.get('/', requireAuth, function(req, res) {
   loadAndDecryptHandles(req.user.id, req.tenantId, res);
 });
 
+var UUID_RE_DP = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 router.get('/:userId', requireAuth, function(req, res) {
+  if (!UUID_RE_DP.test(req.params.userId)) return res.status(400).json({ error: 'invalid userId' });
   if (req.params.userId !== req.user.id && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'forbidden' });
   }
