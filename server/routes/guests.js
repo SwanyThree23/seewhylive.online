@@ -30,7 +30,7 @@ router.post('/streams/:streamId/join', requireAuth, async function(req, res) {
 router.patch('/guests/:guestId', requireAuth, async function(req, res) {
   if (!UUID_RE.test(req.params.guestId)) return res.status(400).json({ error: 'invalid guest id' });
   var isHostOp = req.body.isSpotlighted !== undefined;
-  if (isHostOp && req.user.role !== 'host' && req.user.role !== 'admin') {
+  if (isHostOp && req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'only hosts may set spotlight' });
   }
   try {
@@ -83,7 +83,7 @@ router.post('/streams/:streamId/participants', requireAuth, async function(req, 
 router.patch('/participants/:participantId', requireAuth, async function(req, res) {
   if (!UUID_RE.test(req.params.participantId)) return res.status(400).json({ error: 'invalid participant id' });
   var isHostOp = req.body.isOnStage !== undefined;
-  if (isHostOp && req.user.role !== 'host' && req.user.role !== 'admin') {
+  if (isHostOp && req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'only hosts may move participants on stage' });
   }
   try {

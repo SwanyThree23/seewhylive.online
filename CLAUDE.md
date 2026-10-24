@@ -92,6 +92,8 @@ Socket.IO auth: `socket.auth.token` verified on `connection`; populates `socket.
 
 Admin check: `req.user.role !== 'admin'` (string, not a boolean field). Role is embedded in the JWT.
 
+Valid JWT roles: `host`, `cohost`, `guest`, `viewer`, `admin`, `owner`, `standard`. The `owner` role is assigned by `server/routes/login.js` when a tenant owner first claims ownership (stored as `account_type = 'owner'` in `users`). HTTP endpoints that restrict to hosts must check for **both** `'host'` and `'owner'` (plus `'admin'`): `req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin'`. Socket-level role checks use `socket.data.role`, which is set from the `join-room` event's requested role, not the JWT role, so socket guards for `'host'` are correct as-is.
+
 ## Immutable Revenue Constants
 
 These values must never be changed and must never appear as anything other than these exact numbers:
