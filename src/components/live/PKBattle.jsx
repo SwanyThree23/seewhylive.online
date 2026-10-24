@@ -5,7 +5,12 @@ import { Swords, Trophy, X, Zap, Users, Flame } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
-const BATTLE_DURATION = 120; // seconds
+const DURATION_OPTIONS = [
+  { secs: 60,  label: '1 min' },
+  { secs: 120, label: '2 min' },
+  { secs: 180, label: '3 min' },
+  { secs: 300, label: '5 min' },
+];
 const GOLD = '#D4AF37';
 const BURG = '#800020';
 const RED  = '#C0392B';
@@ -24,10 +29,13 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
   const [active, setActive] = useState(false);
   const [opponentName, setOpponentName] = useState('');
   const [opponentUrl, setOpponentUrl] = useState('');
-  const [timeLeft, setTimeLeft] = useState(BATTLE_DURATION);
+  const [selectedDuration, setSelectedDuration] = useState(120);
+  const [timeLeft, setTimeLeft] = useState(120);
   const [myScore, setMyScore] = useState(0);
   const [theirScore, setTheirScore] = useState(0);
+  const [comebackFlash, setComebackFlash] = useState(null);
   const timerRef = useRef(null);
+  const prevGapRef = useRef(0);
 
   useEffect(() => () => clearInterval(timerRef.current), []);
 
@@ -38,13 +46,14 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
     setActive(true);
     setMyScore(0);
     setTheirScore(0);
-    setTimeLeft(BATTLE_DURATION);
+    setTimeLeft(selectedDuration);
+    prevGapRef.current = 0;
     setOpen(false);
     base44.entities.Message.create({
       room_id: roomId,
       user_id: 'bot',
       user_name: '🤖 SeeWhyBot',
-      content: `⚔️ PK BATTLE STARTED! ${hostName} vs ${opponentName}! Send gifts to support your favorite! Battle ends in ${BATTLE_DURATION / 60} minutes!`,
+      content: `⚔️ PK BATTLE STARTED! ${hostName} vs ${opponentName}! Send gifts to support your favorite! Battle ends in ${selectedDuration / 60} minutes!`,
       message_type: 'cohost',
     });
     if (currentUser?.id) {
@@ -68,7 +77,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
 
   const endBattle = () => {
     setActive(false);
-    setTimeLeft(BATTLE_DURATION);
+    setTimeLeft(selectedDuration);
     const winner = myScore >= theirScore ? hostName : opponentName;
     base44.entities.Message.create({
       room_id: roomId,
@@ -80,7 +89,32 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
     toast.success(`Battle over! Winner: ${winner}`);
   };
 
-  const addPoint = (pts = 1) => setMyScore(s => s + pts);
+  const addPoint = (pts = 1) => {
+    setMyScore(s => {
+      const next = s + pts;
+      const gap = Math.abs(next - theirScore);
+      const prevGap = prevGapRef.current;
+      if (prevGap > 20 && gap <= 10 && theirScore > next) {
+        setComebackFlash(hostName);
+        setTimeout(() => setComebackFlash(null), 2500);
+      }
+      prevGapRef.current = gap;
+      return next;
+    });
+  };
+  const addOpponentPoint = (pts = 1) => {
+    setTheirScore(s => {
+      const next = s + pts;
+      const gap = Math.abs(myScore - next);
+      const prevGap = prevGapRef.current;
+      if (prevGap > 20 && gap <= 10 && myScore > next) {
+        setComebackFlash(opponentName);
+        setTimeout(() => setComebackFlash(null), 2500);
+      }
+      prevGapRef.current = gap;
+      return next;
+    });
+  };
 
   const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
@@ -95,6 +129,23 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
 
   return (
     <>
+      {/* Comeback flash */}
+      <AnimatePresence>
+        {comebackFlash && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+          >
+            <div className="px-6 py-3 rounded-2xl font-black uppercase text-xl text-center"
+              style={{ background: 'rgba(8,11,24,0.95)', border: `2px solid ${GOLD}`, color: GOLD, fontFamily: FONT, boxShadow: `0 0 40px rgba(212,175,55,0.4)` }}>
+              🔥 COMEBACK! {comebackFlash}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Host launcher button */}
       {isHost && !active && (
         <button
@@ -216,26 +267,48 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
 
             {/* ── Gift buttons (host only) ── */}
             {isHost && (
-              <div className="grid grid-cols-3 gap-1.5 px-2 pb-2">
-                {[
-                  { label: '+1',  pts: 1,  emoji: '🌹', sub: 'Rose' },
-                  { label: '+5',  pts: 5,  emoji: '💎', sub: 'Diamond' },
-                  { label: '+10', pts: 10, emoji: '🔥', sub: 'Fire' },
-                ].map(btn => (
-                  <button
-                    key={btn.pts}
-                    onClick={() => addPoint(btn.pts)}
-                    className="flex flex-col items-center py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95"
-                    style={{
-                      background: 'rgba(212,175,55,0.08)',
-                      border: '1px solid rgba(212,175,55,0.22)',
-                    }}
-                  >
-                    <span className="text-base leading-none">{btn.emoji}</span>
-                    <span className="text-[9px] font-black mt-0.5" style={{ color: GOLD }}>{btn.label}</span>
-                    <span className="text-[7px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{btn.sub}</span>
-                  </button>
-                ))}
+              <div className="px-2 pb-2 space-y-1.5">
+                <p className="text-[8px] uppercase tracking-widest font-black text-center" style={{ color: `${GOLD}66` }}>
+                  {hostName}
+                </p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    { label: '+1',  pts: 1,  emoji: '🌹', sub: 'Rose' },
+                    { label: '+5',  pts: 5,  emoji: '💎', sub: 'Diamond' },
+                    { label: '+10', pts: 10, emoji: '🔥', sub: 'Fire' },
+                  ].map(btn => (
+                    <button
+                      key={btn.pts}
+                      onClick={() => addPoint(btn.pts)}
+                      className="flex flex-col items-center py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95"
+                      style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.22)' }}
+                    >
+                      <span className="text-base leading-none">{btn.emoji}</span>
+                      <span className="text-[9px] font-black mt-0.5" style={{ color: GOLD }}>{btn.label}</span>
+                      <span className="text-[7px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{btn.sub}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[8px] uppercase tracking-widest font-black text-center mt-1" style={{ color: `${RED}99` }}>
+                  {opponentName}
+                </p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    { label: '+1',  pts: 1,  emoji: '🌹' },
+                    { label: '+5',  pts: 5,  emoji: '💎' },
+                    { label: '+10', pts: 10, emoji: '🔥' },
+                  ].map(btn => (
+                    <button
+                      key={btn.pts}
+                      onClick={() => addOpponentPoint(btn.pts)}
+                      className="flex flex-col items-center py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95"
+                      style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.22)' }}
+                    >
+                      <span className="text-base leading-none">{btn.emoji}</span>
+                      <span className="text-[9px] font-black mt-0.5" style={{ color: RED }}>{btn.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </motion.div>
@@ -278,8 +351,22 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#d4af37]/40"
                   />
                 </div>
-                <div className="bg-white/5 rounded-xl p-3 space-y-1">
-                  <p className="text-[11px] text-white/50">⏱ Duration: <strong className="text-white">{BATTLE_DURATION / 60} minutes</strong></p>
+                <div className="bg-white/5 rounded-xl p-3 space-y-2">
+                  <p className="text-[11px] text-white/50">⏱ Duration</p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {DURATION_OPTIONS.map(d => (
+                      <button key={d.secs} onClick={() => setSelectedDuration(d.secs)}
+                        className="px-3 py-1 rounded-lg text-[11px] font-black uppercase transition-all"
+                        style={{
+                          background: selectedDuration === d.secs ? `rgba(212,175,55,0.2)` : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${selectedDuration === d.secs ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                          color: selectedDuration === d.secs ? GOLD : 'rgba(255,255,255,0.4)',
+                          fontFamily: FONT,
+                        }}>
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
                   <p className="text-[11px] text-white/50">🎁 Viewers gift points to their favourite streamer</p>
                   <p className="text-[11px] text-white/50">🏆 Highest score at the end wins!</p>
                 </div>

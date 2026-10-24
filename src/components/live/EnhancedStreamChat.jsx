@@ -170,6 +170,8 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
   const messagesEndRef = useRef(null);
   const scrollBoxRef = useRef(null);
   const [scrolledUp, setScrolledUp] = useState(false);
+  const unreadCount = useRef(0);
+  const [unreadDisplay, setUnreadDisplay] = useState(0);
   const queryClient = useQueryClient();
 
   // Fetch existing messages
@@ -214,7 +216,12 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
   // Auto-scroll to latest — but not if user has scrolled up to read history
   useEffect(() => {
     if (!scrolledUp) {
+      unreadCount.current = 0;
+      setUnreadDisplay(0);
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      unreadCount.current++;
+      setUnreadDisplay(unreadCount.current);
     }
   }, [messages, scrolledUp]);
 
@@ -331,20 +338,29 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
       {scrolledUp && (
         <button
           onClick={() => {
+            unreadCount.current = 0;
+            setUnreadDisplay(0);
             setScrolledUp(false);
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
           }}
           className="mx-auto mb-1 flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-all"
           style={{ background: 'rgba(212,175,55,0.18)', border: '1px solid rgba(212,175,55,0.35)', color: '#d4af37' }}
         >
-          ↓ Latest
+          ↓ {unreadDisplay > 0 ? `${unreadDisplay} new` : 'Latest'}
         </button>
       )}
 
       {/* Input */}
       <div className="px-2 py-2 border-t border-white/10 space-y-1.5">
-        <div className="text-[11px] text-white/40 px-1">
-          Emotes: {Object.keys(EMOTES).slice(0, 5).join(' ')}...
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[11px] text-white/40">
+            Emotes: {Object.keys(EMOTES).slice(0, 5).join(' ')}...
+          </span>
+          {input.length > 160 && (
+            <span className="text-[10px] font-mono" style={{ color: input.length > 190 ? '#FF4444' : '#D4AF37' }}>
+              {200 - input.length}
+            </span>
+          )}
         </div>
         <div className="flex items-end gap-2">
           <input

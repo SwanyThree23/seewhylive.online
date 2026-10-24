@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -65,8 +65,12 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
   const [multiplier, setMultiplier] = useState(1);
   const [giftStreak, setGiftStreak] = useState(0);
   const [showCombo, setShowCombo] = useState(false);
-  const lastGiftRef = React.useRef(null);
-  const lastGiftTimeRef = React.useRef(null);
+  const lastGiftRef = useRef(null);
+  const lastGiftTimeRef = useRef(null);
+  const sessionTotalRef = useRef(0);
+  const [sessionTotal, setSessionTotal] = useState(0);
+  const recentSentRef = useRef([]);
+  const [recentSent, setRecentSent] = useState([]);
   const qc = useQueryClient();
 
   const { data: gifts = [] } = useQuery({
@@ -122,6 +126,13 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
       setShowCombo(isCombo);
       lastGiftRef.current = gift.id;
       lastGiftTimeRef.current = now;
+
+      // Track session total and recent gifts
+      sessionTotalRef.current += gift.price * multiplier;
+      setSessionTotal(sessionTotalRef.current);
+      const updated = [gift, ...recentSentRef.current.filter(g => g.id !== gift.id)].slice(0, 3);
+      recentSentRef.current = updated;
+      setRecentSent(updated);
 
       setSending(gift);
       setGiftStreak(prev => prev + 1);
@@ -204,7 +215,15 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
                     </span>
                   )}
                 </div>
-                <button onClick={() => setOpen(false)}><X className="w-4 h-4 text-white/40" /></button>
+                <div className="flex items-center gap-2">
+                  {sessionTotal > 0 && (
+                    <span className="text-[9px] font-black font-mono px-2 py-0.5 rounded-full"
+                      style={{ background: 'rgba(212,175,55,0.1)', color: G, border: '1px solid rgba(212,175,55,0.2)' }}>
+                      ${sessionTotal.toFixed(0)} sent
+                    </span>
+                  )}
+                  <button onClick={() => setOpen(false)}><X className="w-4 h-4 text-white/40" /></button>
+                </div>
               </div>
 
               {/* Multiplier selector */}
@@ -223,6 +242,22 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
                   </button>
                 ))}
               </div>
+
+              {/* Quick re-send row */}
+              {recentSent.length > 0 && (
+                <div className="flex items-center gap-2 px-4 py-2 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <span className="text-[9px] uppercase tracking-widest font-black shrink-0" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>Again</span>
+                  {recentSent.map(g => (
+                    <button key={g.id} onClick={() => sendGift.mutate(g)}
+                      disabled={sendGift.isPending}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-xl active:scale-95 transition-all"
+                      style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                      <span className="text-base leading-none">{g.emoji || '🎁'}</span>
+                      <span className="text-[9px] font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>${g.price}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Category filter */}
               <div className="flex overflow-x-auto gap-1.5 px-4 py-2 shrink-0 scrollbar-hide" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>

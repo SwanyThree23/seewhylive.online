@@ -9,6 +9,8 @@ export default function LiveAudiencePulse({ roomId, isHost, viewerCount }) {
   const [chatVelocity, setChatVelocity] = useState(0);
   const [trend, setTrend] = useState('stable');
   const prevScoreRef = useRef(50);
+  const peakScoreRef = useRef(50);
+  const [peakScore, setPeakScore] = useState(50);
 
   const { data: recentMessages = [] } = useQuery({
     queryKey: ['pulse-messages', roomId],
@@ -32,6 +34,10 @@ export default function LiveAudiencePulse({ roomId, isHost, viewerCount }) {
     const prev = prevScoreRef.current;
     setTrend(newScore > prev + 5 ? 'up' : newScore < prev - 5 ? 'down' : 'stable');
     prevScoreRef.current = newScore;
+    if (newScore > peakScoreRef.current) {
+      peakScoreRef.current = newScore;
+      setPeakScore(newScore);
+    }
     setEngagementScore(newScore);
     setChatVelocity(last60s);
   }, [recentMessages.length, viewerCount]);
@@ -49,6 +55,7 @@ export default function LiveAudiencePulse({ roomId, isHost, viewerCount }) {
         style={{ background: `${scoreColor}0D`, border: `1px solid ${scoreColor}25` }}>
         <span style={{ fontSize: 10 }}>⚡</span>
         <span className="text-[10px] font-black font-mono" style={{ color: scoreColor }}>{engagementScore}</span>
+        {engagementScore >= 70 && <span className="text-[9px] font-black" style={{ color: '#6DBF7E' }}>🔥</span>}
       </div>
     );
   }
@@ -85,7 +92,15 @@ export default function LiveAudiencePulse({ roomId, isHost, viewerCount }) {
         </div>
         <TrendIcon className="w-2.5 h-2.5" style={{ color: scoreColor }} />
         <span className="text-[9px] font-black font-mono" style={{ color: scoreColor }}>{engagementScore}</span>
+        {engagementScore >= 70 && <span className="text-[8px] font-black" style={{ color: '#6DBF7E' }}>HOT</span>}
       </div>
+      {peakScore > engagementScore + 5 && (
+        <div className="flex items-center gap-1 px-2 py-1 rounded-lg"
+          style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}>
+          <span style={{ fontSize: 9 }}>↑</span>
+          <span className="text-[9px] font-black font-mono" style={{ color: 'rgba(212,175,55,0.6)' }}>{peakScore}</span>
+        </div>
+      )}
     </div>
   );
 }
