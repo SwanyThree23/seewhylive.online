@@ -21,7 +21,7 @@ setInterval(function() {
 }, 5 * 60 * 1000).unref();
 
 // ─── Immutable revenue split ──────────────────────────────────────────────
-var CREATOR = 0.90;
+var CREATOR_SPLIT = 0.90;
 
 // ─── Stripe client ────────────────────────────────────────────────────────
 var stripeClient = null;
@@ -73,7 +73,7 @@ async function createPPVPaymentIntent(roomId, viewerId, priceUsd, creatorStripeA
   var db = getDb();
 
   var amountCents = Math.floor(priceUsd * 100);
-  var creatorCents = Math.floor(amountCents * CREATOR);
+  var creatorCents = Math.floor(amountCents * CREATOR_SPLIT);
   var platformCents = amountCents - creatorCents;
 
   var paymentIntent;
@@ -300,7 +300,7 @@ async function createGiftCharge(fromViewerId, roomId, giftValueCents, creatorStr
   var stripe = getStripe();
 
   var amountCents = Math.floor(giftValueCents);
-  var creatorCents = Math.floor(amountCents * CREATOR);
+  var creatorCents = Math.floor(amountCents * CREATOR_SPLIT);
   var platformCents = amountCents - creatorCents;
 
   var paymentIntent;
