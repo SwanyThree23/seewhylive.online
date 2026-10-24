@@ -23,6 +23,7 @@ import LoveTap from './components/LoveTap.jsx';
 import GiftLeaderboardOverlay from './components/GiftLeaderboardOverlay.jsx';
 import StreamGoalBar from './components/StreamGoalBar.jsx';
 import DonationAlert from './components/DonationAlert.jsx';
+import GoLiveWizard from './components/GoLiveWizard.jsx';
 
 /* Lazy-loaded tabs — each splits into its own chunk */
 var FadesTab            = React.lazy(function() { return import('./components/FadesTab.jsx'); });
@@ -376,6 +377,9 @@ export default function App() {
   var [nameEditVal,   setNameEditVal]   = useState('');
   var [role, setRole] = useState(function() { return localStorage.getItem('sw_role') || 'viewer'; });
   var [syncRejoinBanner, setSyncRejoinBanner] = useState(null); // { roomId, role, tab } from another device
+  var [showWizard, setShowWizard] = useState(function() {
+    try { return role === 'host' && !localStorage.getItem('swlv_wizard_done'); } catch(e) { return false; }
+  });
 
   var handleGoLive = function() {
     var newRole = 'host';
@@ -1420,6 +1424,16 @@ export default function App() {
   return (
     <div style={{ minHeight: '100dvh', background: '#0E0C09', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: '@keyframes tabSlideIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}' }} />
+      {showWizard && role === 'host' && (
+        <GoLiveWizard
+          onComplete={function(title, priv) {
+            setShowWizard(false);
+            if (title) setStreamInfo(function(s) { return Object.assign({}, s, { title: title }); });
+            if (priv) { if (socketRef.current) socketRef.current.emit('room-privacy', { roomId: roomId, isPrivate: true }); }
+          }}
+          onDismiss={function() { setShowWizard(false); }}
+        />
+      )}
       <BrandChyron isLive={isLive} streamTitle={streamInfo.title} />
       {/* Header HUD */}
       <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(15,12,20,.95)', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', padding: '6px 16px', gap: 12, height: 44, paddingTop: 'max(6px, env(safe-area-inset-top, 6px))' }}>

@@ -5,6 +5,7 @@ import MediaConfigPanel from './MediaConfigPanel.jsx';
 import { saveClip } from '../clipStore.js';
 import { getPlatformHandles } from '../platformConfig.js';
 import HostHUD from './HostHUD.jsx';
+import HostQuickActions from './HostQuickActions.jsx';
 import ChyronOverlay from './ChyronOverlay.jsx';
 import PollOverlay from './PollOverlay.jsx';
 import AudioOnlyToggle from './panel/AudioOnlyToggle.jsx';
@@ -1452,6 +1453,29 @@ export default function LiveRoomPage({
 
       {(role === 'host' || role === 'cohost') && (
         <JoinRequestQueue socket={socket} roomId={roomId} />
+      )}
+
+      {role === 'host' && (
+        <HostQuickActions
+          socket={socket}
+          roomId={roomId}
+          isLive={isLive}
+          isMuted={isMuted}
+          isCamOff={isCamOff}
+          addToast={addToast}
+          onToggleMic={function() {
+            var next = !isMuted;
+            setIsMuted(next);
+            if (socket) socket.emit('toggle-mic', { roomId: roomId, muted: next });
+          }}
+          onToggleCam={function() {
+            var next = !isCamOff;
+            setIsCamOff(next);
+            if (socket) socket.emit('toggle-cam', { roomId: roomId, camOff: next });
+          }}
+          onToggleChat={function() { setChatOpen(function(o) { return !o; }); }}
+          onGoLive={function() { setShowLiveModal(true); }}
+        />
       )}
 
       {/* ════════════════ ROOM HEADER ════════════════ */}
