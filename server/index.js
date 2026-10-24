@@ -68,7 +68,7 @@ var whisper      = require('./whisper');
 var analytics    = require('./analytics');
 
 // ─── Revenue split constants (immutable) ─────────────────────────────────
-var CREATOR  = 0.90;
+var CREATOR_SPLIT = 0.90;
 
 // ─── Logger ───────────────────────────────────────────────────────────────
 var logger = winston.createLogger({
@@ -3266,7 +3266,7 @@ io.on('connection', function(socket) {
     }
     if (valueCents > 0 && !creatorStripeAccountId) return;
 
-    var creatorCents  = Math.floor(valueCents * CREATOR);
+    var creatorCents  = Math.floor(valueCents * CREATOR_SPLIT);
     var platformCents = valueCents - creatorCents;
     var giftId        = uuidv4();
     var ts            = Math.floor(Date.now() / 1000);
@@ -3514,7 +3514,7 @@ io.on('connection', function(socket) {
     var _moCreatorStripeAccountId = (_moSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_moSaRow.stripe_account_id || '')) ? _moSaRow.stripe_account_id : '';
     if (!_moCreatorStripeAccountId) return;
 
-    var creatorCents  = Math.floor(priceCents * CREATOR);
+    var creatorCents  = Math.floor(priceCents * CREATOR_SPLIT);
     var platformCents = priceCents - creatorCents;
     var orderId       = uuidv4();
     var ts            = Math.floor(Date.now() / 1000);
@@ -3938,7 +3938,7 @@ io.on('connection', function(socket) {
     var tier        = VALID_TIERS.includes(String(data.tier || '')) ? String(data.tier) : 'bronze';
     var priceCents = Math.floor(data.price_cents || 0);
     if (!Number.isFinite(priceCents) || priceCents < 0 || priceCents > 50000) return;
-    var creatorCents  = Math.floor(priceCents * CREATOR);
+    var creatorCents  = Math.floor(priceCents * CREATOR_SPLIT);
     var platformCents = priceCents - creatorCents;
     if (!roomId) return;
     var _subTs = Math.floor(Date.now() / 1000);
@@ -3974,7 +3974,7 @@ io.on('connection', function(socket) {
         stripeModule.getStripe().paymentIntents.retrieve(_subPiId).then(function(pi) {
           if (!pi || pi.status !== 'succeeded') return;
           var _vCents = Math.floor(pi.amount);
-          var _vCreatorCents = Math.floor(_vCents * CREATOR);
+          var _vCreatorCents = Math.floor(_vCents * CREATOR_SPLIT);
           var _vPlatformCents = _vCents - _vCreatorCents;
           io.to(roomId).emit('new-subscription', {
             username: fromUser, tier: tier,
@@ -4313,7 +4313,7 @@ io.on('connection', function(socket) {
     var creatorStripeAccountId = (_scSaRow && /^acct_[A-Za-z0-9]{8,32}$/.test(_scSaRow.stripe_account_id || '')) ? _scSaRow.stripe_account_id : '';
     if (!creatorStripeAccountId) return;
 
-    var creatorCents  = Math.floor(amountCents * CREATOR);
+    var creatorCents  = Math.floor(amountCents * CREATOR_SPLIT);
     var platformCents = amountCents - creatorCents;
     var scId          = uuidv4();
     var ts            = Math.floor(Date.now() / 1000);
@@ -4431,7 +4431,7 @@ io.on('connection', function(socket) {
       rate:  Math.min(2, Math.max(0.5, parseFloat(rawVoice.rate) || 1)),
     };
 
-    var creatorCents  = Math.floor(amountCents * CREATOR);
+    var creatorCents  = Math.floor(amountCents * CREATOR_SPLIT);
     var platformCents = amountCents - creatorCents;
     var ttsId         = uuidv4();
     var ts            = Math.floor(Date.now() / 1000);
