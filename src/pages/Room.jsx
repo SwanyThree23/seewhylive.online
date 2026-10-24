@@ -1075,7 +1075,7 @@ export default function RoomPage() {
       <YouTubeDiscovery />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       {showGlobalSearch && <GlobalSearch onClose={() => setShowGlobalSearch(false)} />}
-      {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => toast.success('Content unlocked!')} />}
+      {roomId && !isHost && room?.ppv_price > 0 && <PayPerViewGate roomId={roomId} ppvPrice={room.ppv_price} currentUserId={user?.id} onPurchase={() => toast.success('Content unlocked!')} />}
       <PaywallGate isHost={isHost} streamTitle={room?.title || ''} onUnlock={() => {}} isUnlocked={true} />
       {roomId && <SubscriptionGate creatorId={room?.host_id || user?.id} roomId={roomId} />}
       {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => setShowModerationAppeal(false)} />}

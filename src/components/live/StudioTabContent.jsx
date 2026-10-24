@@ -82,6 +82,7 @@ import AudioPanel from '../live/AudioPanel';
 import PanelMusicPlayer from '../live/PanelMusicPlayer';
 import ShareToSocial from '../social/ShareToSocial';
 import RTMPFanoutPanel from '../live/RTMPFanoutPanel';
+import AccessibilityPanel from '../live/AccessibilityPanel';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -1120,6 +1121,13 @@ export default function StudioTabContent({ s }) {
             )}
 
           </div>
+        </div>
+      )}
+
+      {/* ♿ ACCESSIBILITY TAB */}
+      {activeTab === 'a11y' && (
+        <div className="space-y-4 p-3">
+          <AccessibilityPanel />
         </div>
       )}
 
