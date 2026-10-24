@@ -7,6 +7,9 @@ const pool = new Pool({
   ssl: process.env.SUPABASE_CA_CERT
     ? { rejectUnauthorized: true, ca: fs.readFileSync(process.env.SUPABASE_CA_CERT).toString() }
     : { rejectUnauthorized: true },
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
 });
 
 pool.on('error', (err) => {
