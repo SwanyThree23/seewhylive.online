@@ -1526,7 +1526,8 @@ app.post('/api/schedule', requireAuth, function(req, res) {
     return res.status(403).json({ error: 'forbidden' });
   }
   var body = req.body;
-  if (!body.title || !body.scheduled_at) {
+  var _schedTitle = body.title ? String(body.title).trim() : '';
+  if (!_schedTitle || !body.scheduled_at) {
     res.status(400).json({ error: 'title and scheduled_at required' });
     return;
   }
@@ -1535,8 +1536,10 @@ app.post('/api/schedule', requireAuth, function(req, res) {
     var now = Math.floor(Date.now() / 1000);
     var _schedAt = Math.floor(Number(body.scheduled_at));
     if (!Number.isFinite(_schedAt) || _schedAt <= 0) return res.status(400).json({ error: 'scheduled_at must be a positive integer (Unix ms)' });
+    var _conflict = db.prepare('SELECT id FROM schedules WHERE creator_id = ? AND ABS(scheduled_at - ?) < 3600 LIMIT 1').get(req.user.id, _schedAt);
+    if (_conflict) return res.status(409).json({ error: 'You already have a scheduled stream within 1 hour of this time' });
     db.prepare('INSERT INTO schedules (id,title,category,desc,scheduled_at,created_at,recurring,creator_id) VALUES (?,?,?,?,?,?,?,?)')
-      .run(id, String(body.title).trim().slice(0,120), String(body.category||'').trim().slice(0,40), String(body.desc||'').trim().slice(0,400), _schedAt, now, String(body.recurring||'none').trim().slice(0,20), req.user.id);
+      .run(id, _schedTitle.slice(0,100), String(body.category||'').trim().slice(0,40), String(body.desc||'').trim().slice(0,400), _schedAt, now, String(body.recurring||'none').trim().slice(0,20), req.user.id);
     res.json({ id: id, saved: true });
   } catch (err) {
     logger.error('[schedule/post] ' + err.message);
@@ -4732,14 +4735,17 @@ io.on('connection', function(socket) {
     if (_siNow - (streamInfoThrottle.get(socket.id) || 0) < 1000) return;
     streamInfoThrottle.set(socket.id, _siNow);
     var room = rooms.get(roomId);
+    var _siTitle    = data.title    ? String(data.title).trim().slice(0, 100)    : null;
+    var _siCategory = data.category ? String(data.category).trim().slice(0, 40)  : null;
+    var _siDesc     = data.desc     ? String(data.desc).trim().slice(0, 400)     : null;
     if (room) {
-      if (data.title)    room.streamTitle    = String(data.title).slice(0, 120);
-      if (data.category) room.streamCategory = String(data.category).slice(0, 40);
+      if (_siTitle    !== null && _siTitle.length > 0)    room.streamTitle    = _siTitle;
+      if (_siCategory !== null && _siCategory.length > 0) room.streamCategory = _siCategory;
     }
     io.to(roomId).emit('stream-info', {
-      title:    (data.title    || '').slice(0, 120),
-      category: (data.category || '').slice(0, 40),
-      desc:     (data.desc     || '').slice(0, 400),
+      title:    _siTitle    || '',
+      category: _siCategory || '',
+      desc:     _siDesc     || '',
       ts:       Math.floor(Date.now() / 1000)
     });
   });
