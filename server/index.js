@@ -26,8 +26,6 @@ const tenantSignupRoutes = require('./routes/tenantSignup');
  * Express + Socket.io + mediasoup SFU + Stripe + SwanyBot
  */
 
-require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: true });
-
 var express       = require('express');
 var { createServer } = require('http');
 var { Server }    = require('socket.io');
@@ -6084,7 +6082,7 @@ app.post('/api/webhooks/deploy', function(req, res) {
 var PORT = parseInt(process.env.PORT || '3001', 10);
 
 // Validate required environment variables before binding the port.
-var REQUIRED_ENVS = ['JWT_SECRET', 'SUPABASE_URL', 'SUPABASE_KEY'];
+var REQUIRED_ENVS = ['JWT_SECRET', 'SUPABASE_URL', 'SUPABASE_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'VAULT_SECRET'];
 var _missingEnvs = REQUIRED_ENVS.filter(function(k) { return !process.env[k]; });
 if (_missingEnvs.length) {
   _missingEnvs.forEach(function(k) { logger.error('Missing required env var: ' + k); });
