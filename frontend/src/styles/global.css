@@ -2900,6 +2900,85 @@ p, textarea, input, .selectable-text, .selectable-text * {
 }
 
 /* ============================================================
+   ACCESSIBILITY MODES
+   ============================================================ */
+
+/* High contrast */
+body.a11y-high-contrast {
+  --bg0: #000;
+  --bg1: #0a0a0a;
+  --bg2: #111;
+  --bg3: #1a1a1a;
+  --gold: #FFD700;
+  --border-gold: rgba(255,215,0,0.6);
+}
+body.a11y-high-contrast .glass-card,
+body.a11y-high-contrast .stage-panel-cell {
+  background: #0a0a0a !important;
+  border-color: rgba(255,215,0,0.5) !important;
+}
+body.a11y-high-contrast .chat-msg {
+  background: #111 !important;
+  color: #fff !important;
+}
+
+/* Reduce motion */
+body.a11y-reduce-motion *,
+body.a11y-reduce-motion *::before,
+body.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Keyboard navigation focus rings */
+body.a11y-keyboard-nav *:focus,
+body.a11y-keyboard-nav *:focus-visible {
+  outline: 3px solid #FFD700 !important;
+  outline-offset: 3px !important;
+}
+
+/* Enhanced focus highlight */
+body.a11y-focus-highlight *:focus {
+  outline: 3px solid #FFD700 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px rgba(255,215,0,0.25) !important;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Visual sound alert pulse ring — added by JS when speech detected */
+.a11y-sound-ring {
+  outline: 3px solid #C9A84C;
+  outline-offset: 4px;
+  animation: a11y-ring-pulse 0.5s ease-out forwards;
+}
+@keyframes a11y-ring-pulse {
+  0%   { outline-color: #C9A84C; outline-width: 3px; }
+  100% { outline-color: transparent; outline-width: 8px; }
+}
+
+/* Flash on event */
+.a11y-flash-event {
+  animation: a11y-flash 0.4s ease-out forwards;
+}
+@keyframes a11y-flash {
+  0%   { box-shadow: inset 0 0 0 3px rgba(201,168,76,0.9); }
+  100% { box-shadow: none; }
+}
+
+/* ============================================================
    iOS SAFARI ZOOM PREVENTION
    Safari auto-zooms on focus when font-size < 16px. Override
    applies on mobile widths and uses !important to beat inline
