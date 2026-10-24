@@ -219,6 +219,11 @@ db.exec(`
     ts              INTEGER NOT NULL
   );
 `);
+db.prepare('CREATE INDEX IF NOT EXISTS idx_rooms_host ON rooms(host_id)').run();
+db.prepare('CREATE INDEX IF NOT EXISTS idx_chat_history_room ON chat_history(room_id)').run();
+db.prepare('CREATE INDEX IF NOT EXISTS idx_gifts_room ON gifts(room_id)').run();
+db.prepare('CREATE INDEX IF NOT EXISTS idx_clip_markers_room ON clip_markers(room_id)').run();
+db.prepare('CREATE INDEX IF NOT EXISTS idx_super_chats_room ON super_chats(room_id)').run();
 
 db.exec(`CREATE TABLE IF NOT EXISTS push_subscriptions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -234,6 +239,8 @@ db.exec(`CREATE TABLE IF NOT EXISTS push_subscriptions (
 try { db.exec('ALTER TABLE push_subscriptions ADD COLUMN user_id TEXT'); } catch(_) {}
 try { db.exec('ALTER TABLE push_subscriptions ADD COLUMN device_name TEXT'); } catch(_) {}
 try { db.exec('ALTER TABLE push_subscriptions ADD COLUMN device_id TEXT'); } catch(_) {}
+db.prepare('CREATE INDEX IF NOT EXISTS idx_push_subs_user ON push_subscriptions(user_id)').run();
+db.prepare('CREATE INDEX IF NOT EXISTS idx_push_subs_device ON push_subscriptions(device_id)').run();
 
 // Initialise vault with same db (vault.initDb() will open its own handle to the same file)
 vault.initDb();
@@ -251,6 +258,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS power_passes (
   expires_at INTEGER NOT NULL,
   created_at INTEGER NOT NULL
 )`);
+db.prepare('CREATE INDEX IF NOT EXISTS idx_power_passes_user ON power_passes(user_id)').run();
 
 // Referral program tables
 db.exec(`CREATE TABLE IF NOT EXISTS referrals (
@@ -264,6 +272,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS referrals (
   expires_at   INTEGER,
   created_at   INTEGER NOT NULL
 )`);
+db.prepare('CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id)').run();
 db.exec(`CREATE TABLE IF NOT EXISTS referral_earnings (
   id            TEXT PRIMARY KEY,
   referral_id   TEXT NOT NULL,
@@ -274,6 +283,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS referral_earnings (
   source_type   TEXT NOT NULL,
   created_at    INTEGER NOT NULL
 )`);
+db.prepare('CREATE INDEX IF NOT EXISTS idx_ref_earnings_referrer ON referral_earnings(referrer_id)').run();
 // Universal blocks table
 db.exec(`CREATE TABLE IF NOT EXISTS user_blocks (
   blocker_id  TEXT NOT NULL,
@@ -281,6 +291,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS user_blocks (
   created_at  INTEGER NOT NULL,
   PRIMARY KEY (blocker_id, blocked_id)
 )`);
+db.prepare('CREATE INDEX IF NOT EXISTS idx_user_blocks_blocker ON user_blocks(blocker_id)').run();
 
 try { db.exec('ALTER TABLE user_profiles ADD COLUMN referral_code TEXT'); } catch(_) {}
 try { db.exec('ALTER TABLE user_profiles ADD COLUMN referred_by TEXT'); } catch(_) {}
@@ -302,6 +313,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS dm_messages (
   type        TEXT NOT NULL DEFAULT 'text',
   created_at  INTEGER NOT NULL
 )`);
+db.prepare('CREATE INDEX IF NOT EXISTS idx_dm_messages_thread ON dm_messages(thread_id)').run();
 db.exec(`CREATE TABLE IF NOT EXISTS dm_requests (
   id           TEXT PRIMARY KEY,
   from_user    TEXT NOT NULL,
@@ -1418,6 +1430,8 @@ try {
     PRIMARY KEY (schedule_id, user_id)
   )`);
 } catch(_) {}
+try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedule_rsvps_schedule ON schedule_rsvps(schedule_id)').run(); } catch(_) {}
+try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedule_rsvps_user ON schedule_rsvps(user_id)').run(); } catch(_) {}
 
 // POST /api/schedule/:id/rsvp  — RSVP to an event
 app.post('/api/schedule/:id/rsvp', requireAuth, function(req, res) {
@@ -1445,6 +1459,8 @@ app.delete('/api/schedule/:id/rsvp', requireAuth, function(req, res) {
 app.get('/api/schedule/public', function(req, res) {
   try {
     db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL, recurring TEXT, creator_id TEXT)');
+    try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedules_creator ON schedules(creator_id)').run(); } catch(_) {}
+    try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedules_time ON schedules(scheduled_at)').run(); } catch(_) {}
     var rows = db.prepare('SELECT s.*, (SELECT COUNT(*) FROM schedule_rsvps r WHERE r.schedule_id = s.id) as rsvp_count FROM schedules s WHERE s.scheduled_at > ? ORDER BY s.scheduled_at ASC LIMIT 50').all(Math.floor(Date.now() / 1000));
     return res.json({ events: rows });
   } catch(e) { return res.status(500).json({ error: 'Server error' }); }
