@@ -32,7 +32,7 @@ async function awardPoints({ userId, tenantId, points, source, sourceId }) {
       `INSERT INTO user_loyalty (user_id, tenant_id, total_points, level, updated_at)
        VALUES ($1, $2, $3, 1, now())
        ON CONFLICT (user_id, tenant_id) DO UPDATE
-         SET total_points = user_loyalty.total_points + $3, updated_at = now()`,
+         SET total_points = LEAST(user_loyalty.total_points + $3, 10000000), updated_at = now()`,
       [userId, tenantId, points]
     );
     const _totals = await client.query(
