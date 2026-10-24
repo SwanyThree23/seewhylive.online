@@ -258,3 +258,62 @@
     font-size: 16px !important;
   }
 }
+
+/* ============================================================
+   ACCESSIBILITY MODES
+   ============================================================ */
+
+/* High contrast mode */
+body.a11y-high-contrast {
+  --go: #FFD700;
+  --bg-card: #000000;
+  --bg-panel: #000000;
+}
+body.a11y-high-contrast .bg-black\/20,
+body.a11y-high-contrast .bg-white\/5,
+body.a11y-high-contrast .bg-white\/10 {
+  background: #111 !important;
+}
+body.a11y-high-contrast * {
+  border-color: rgba(255, 215, 0, 0.6) !important;
+}
+
+/* Reduce motion */
+body.a11y-reduce-motion *,
+body.a11y-reduce-motion *::before,
+body.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Keyboard navigation — stronger focus rings */
+body.a11y-keyboard-nav *:focus,
+body.a11y-keyboard-nav *:focus-visible {
+  outline: 3px solid #FFD700 !important;
+  outline-offset: 3px !important;
+}
+
+/* Focus highlight */
+body.a11y-focus-highlight *:focus {
+  outline: 3px solid #FFD700 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px rgba(255, 215, 0, 0.3) !important;
+}
+
+/* Cursor size classes */
+body.a11y-cursor-large * { cursor: zoom-in !important; }
+body.a11y-cursor-xlarge * { cursor: zoom-out !important; }
+
+/* Screen reader only utility (visually hidden but readable by assistive tech) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
