@@ -5901,6 +5901,7 @@ io.on('connection', function(socket) {
     // and hosts who leave mid-stream, transports must be freed individually.
     if (socket.data.ownedTransportIds) {
       socket.data.ownedTransportIds.forEach(function(tid) { mediasoup.closeTransport(tid); });
+      socket.data.ownedTransportIds = null;
     }
 
     var roomId = socket.data.roomId;
@@ -6001,6 +6002,7 @@ io.on('connection', function(socket) {
         mediasoup.closeProducer(producerId);
         io.to(roomId).emit('producer-closed', { producerId: producerId });
       });
+      socket.data.ownedProducerIds = null;
     }
 
     var viewerCount = getViewerCount(room);
@@ -6030,8 +6032,10 @@ io.on('connection', function(socket) {
       }
     }
 
-    // Remove empty rooms
+    // Remove empty rooms and free mediasoup router so it doesn't leak when
+    // a room ends without an explicit end-broadcast (e.g. host just disconnects).
     if (room.viewers.size === 0 && room.guests.size === 0) {
+      mediasoup.cleanupRoom(roomId);
       rooms.delete(roomId);
       stageRooms.delete(roomId);
       viewerAlertSnapshot.delete(roomId);
