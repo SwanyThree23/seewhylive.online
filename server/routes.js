@@ -961,8 +961,8 @@ router.post('/n8n/test', requireAuth, webhookTestRateLimit, async function(req, 
 
 
 // ── STREAM SYNC → Supabase ────────────────────────────────────
-var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-var SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+var SUPA_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+var SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 router.post('/stream-sync', requireAuth, streamWriteRateLimit, async function(req, res) {
   try {

@@ -5008,6 +5008,7 @@ io.on('connection', function(socket) {
     if (uRole === 'host') {
       stage.speakers.push({ stageId: _asjStageId, userId: uId, username: uName, speaking: false, muted: false });
     } else {
+      if (stage.listeners.length >= 200) return; // cap: prevent unbounded listener array
       stage.listeners.push({ stageId: _asjStageId, userId: uId, username: uName, handRaised: false });
     }
     socket.data.stageRoomId = sRoomId;
@@ -5027,7 +5028,7 @@ io.on('connection', function(socket) {
     var uId = String(socket.data.userId || socket.id);
     stage.speakers  = stage.speakers.filter(function(s)  { return String(s.userId) !== uId; });
     stage.listeners = stage.listeners.filter(function(l) { return String(l.userId) !== uId; });
-    io.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
+    io.volatile.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
   });
 
   socket.on('audio-stage-hand-raise', function(data) {
@@ -5043,7 +5044,7 @@ io.on('connection', function(socket) {
     var uId = String(socket.data.userId || socket.id);
     var lst = stage.listeners.find(function(l) { return String(l.userId) === uId; });
     if (lst) { lst.handRaised = !!data.raised; }
-    io.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
+    io.volatile.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
   });
 
   socket.on('audio-stage-speaking', function(data) {
@@ -5059,7 +5060,7 @@ io.on('connection', function(socket) {
     var uId = String(socket.data.userId || socket.id);
     var spk = stage.speakers.find(function(s) { return String(s.userId) === uId; });
     if (spk) { spk.speaking = !!data.speaking; }
-    io.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
+    io.volatile.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
   });
 
   socket.on('audio-stage-promote', function(data) {
@@ -5075,7 +5076,7 @@ io.on('connection', function(socket) {
     if (stage.speakers.length >= 20) return;
     var lst = stage.listeners.splice(lstIdx, 1)[0];
     stage.speakers.push({ stageId: lst.stageId, userId: lst.userId, username: lst.username, speaking: false, muted: false });
-    io.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
+    io.volatile.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
   });
 
   socket.on('audio-stage-demote', function(data) {
@@ -5090,7 +5091,7 @@ io.on('connection', function(socket) {
     if (spkIdx === -1) return;
     var spk = stage.speakers.splice(spkIdx, 1)[0];
     stage.listeners.push({ stageId: spk.stageId, userId: spk.userId, username: spk.username, handRaised: false });
-    io.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
+    io.volatile.to(sRoomId).emit('audio-stage-update', { speakers: _stagePublic(stage.speakers), listeners: _stagePublic(stage.listeners) });
   });
 
   // ── Screen share handlers ──────────────────────────────────────────────
@@ -5937,7 +5938,7 @@ io.on('connection', function(socket) {
           var _dcUId = String(socket.data.userId || socket.id);
           _stageOnDc.speakers  = _stageOnDc.speakers.filter(function(s)  { return String(s.userId) !== _dcUId; });
           _stageOnDc.listeners = _stageOnDc.listeners.filter(function(l) { return String(l.userId) !== _dcUId; });
-          io.to(_stageOnDcId).emit('audio-stage-update', { speakers: _stagePublic(_stageOnDc.speakers), listeners: _stagePublic(_stageOnDc.listeners) });
+          io.volatile.to(_stageOnDcId).emit('audio-stage-update', { speakers: _stagePublic(_stageOnDc.speakers), listeners: _stagePublic(_stageOnDc.listeners) });
         }
       }
     }
