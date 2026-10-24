@@ -100,6 +100,48 @@ function StatTile({ label, value, sub, color = GOLD, icon: Icon }) {
   );
 }
 
+/* ═══════════════ QUICK START CARD ═══════════════ */
+function QuickStartCard() {
+  const [visible, setVisible] = useState(function() {
+    try { return localStorage.getItem('swlv_first_visit') !== 'done'; } catch(e) { return true; }
+  });
+
+  function dismiss() {
+    try { localStorage.setItem('swlv_first_visit', 'done'); } catch(e) {}
+    setVisible(false);
+  }
+
+  if (!visible) return null;
+
+  return (
+    <div className="rounded-xl mb-5 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(128,0,32,0.25), rgba(212,175,55,0.08))', border: '1px solid rgba(212,175,55,0.3)' }}>
+      <button onClick={dismiss} className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)' }}>
+        <X className="w-3.5 h-3.5" />
+      </button>
+      <div className="p-4 pb-4">
+        <p className="font-black text-sm uppercase mb-0.5" style={{ color: GOLD, ...T }}>Quick Start</p>
+        <p className="text-[11px] mb-4" style={{ color: CREAM + '55' }}>Welcome! Here are your first steps as a creator.</p>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { emoji: '📡', label: 'Go Live Now', href: createPageUrl('GoLive'), bg: BURGUNDY },
+            { emoji: '📅', label: 'Schedule Stream', href: createPageUrl('StreamScheduler'), bg: 'rgba(212,175,55,0.12)' },
+            { emoji: '👥', label: 'Invite Guests', href: createPageUrl('InviteUsers'), bg: 'rgba(212,175,55,0.08)' },
+          ].map(function(tile) {
+            return (
+              <Link key={tile.label} to={tile.href}>
+                <div className="rounded-xl p-3 text-center cursor-pointer" style={{ background: tile.bg, border: '1px solid rgba(212,175,55,0.22)' }}>
+                  <div className="text-2xl mb-1">{tile.emoji}</div>
+                  <p className="text-[10px] font-black uppercase leading-tight" style={{ color: GOLD, ...T }}>{tile.label}</p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════ OVERVIEW TAB ═══════════════ */
 function OverviewTab({ user }) {
   const { data: payout } = useQuery({
@@ -141,6 +183,7 @@ function OverviewTab({ user }) {
 
   return (
     <div className="space-y-5">
+      <QuickStartCard />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatTile label="Pending Balance" value={`$${Math.floor(payout?.pending_balance || 0)}`} icon={DollarSign} color={GOLD} />
         <StatTile label="Subscribers" value={(profile?.subscriber_count || 0).toLocaleString()} icon={Users} color="#C9A84C" />
