@@ -147,7 +147,13 @@ try { search = require('./search'); } catch (e) { console.warn('[routes] search 
 
 var notifications = null;
 try { notifications = require('./notifications'); } catch (e) { console.warn('[routes] notifications module unavailable'); }
-if (notifications) { notifications.setVAPIDKeys(process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY, process.env.VAPID_SUBJECT); }
+if (notifications) {
+  var _vapidSubject = process.env.VAPID_SUBJECT;
+  if (!_vapidSubject || !_vapidSubject.startsWith('mailto:')) {
+    _vapidSubject = 'mailto:admin@seewhylive.online';
+  }
+  notifications.setVAPIDKeys(process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY, _vapidSubject);
+}
 
 var vault = null;
 try { vault = require('./vault'); } catch (e) { console.warn('[routes] vault module unavailable — stream keys will not be encrypted at rest'); }
