@@ -38,7 +38,7 @@ router.post('/', requireAuth, inviteRateLimit, async function(req, res) {
   if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
   try {
     var safeExpiryHours = Math.min(Math.max(parseInt(expiryHours, 10) || 24, 1), 168);
-    var safeMessage = message ? String(message).slice(0, 500) : null;
+    var safeMessage = message ? String(message).trim().slice(0, 500) : null;
     var invite = await inviteService.sendInvitation({
       tenantId: req.tenantId,
       fromUserId: req.user.id,
