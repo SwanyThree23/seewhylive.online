@@ -357,6 +357,7 @@ export default function App() {
   var [chat, setChat] = useState([]);
   var [botLogs, setBotLogs] = useState([]);
   var [toasts, setToasts] = useState([]);
+  var [isOffline, setIsOffline] = useState(false);
   var [uptime, setUptime] = useState(0);
   var [connected, setConnected] = useState(false);
   var [apiHealth, setApiHealth] = useState('unknown');
@@ -444,9 +445,13 @@ export default function App() {
   var prevEarningsRef = useRef(0);
   var prevGuestIdsRef = useRef(null);
 
+  var lastToastRef = useRef({ msg: '', ts: 0 });
   var addToast = useCallback(function(msg, type) {
-    var id = Date.now() + Math.random();
-    setToasts(function(prev) { return [...prev, { id, msg, type: type || 'info' }]; });
+    var now = Date.now();
+    if (msg === lastToastRef.current.msg && now - lastToastRef.current.ts < 3000) return;
+    lastToastRef.current = { msg: msg, ts: now };
+    var id = now + Math.random();
+    setToasts(function(prev) { return [...prev, { id: id, msg: msg, type: type || 'info' }]; });
     setTimeout(function() { setToasts(function(prev) { return prev.filter(function(t) { return t.id !== id; }); }); }, 4000);
   }, []);
 
@@ -512,6 +517,21 @@ export default function App() {
 
   useEffect(function() {
     setCanGoBack(window.history.length > 1);
+  }, []);
+
+  useEffect(function() {
+    var onOffline = function() { setIsOffline(true); };
+    var onOnline = function() {
+      setIsOffline(false);
+      var s = socketRef.current;
+      if (s && !s.connected) s.connect();
+    };
+    window.addEventListener('offline', onOffline);
+    window.addEventListener('online', onOnline);
+    return function() {
+      window.removeEventListener('offline', onOffline);
+      window.removeEventListener('online', onOnline);
+    };
   }, []);
 
   useEffect(function() {
@@ -1596,6 +1616,12 @@ export default function App() {
             </div>
           );
         })()
+      )}
+
+      {isOffline && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9800, background: '#1A0A00', borderBottom: '2px solid #FF1A3C', padding: '10px 16px', fontFamily: "'DM Mono',monospace", fontSize: 12, color: '#F0E8D4', textAlign: 'center', letterSpacing: 1 }}>
+          You are offline — reconnecting when connection restores
+        </div>
       )}
 
       {/* Tab Content */}
