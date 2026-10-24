@@ -1020,6 +1020,8 @@ app.get('/api/health', function(req, res) {
     viewerCount += (room.viewers ? room.viewers.size : 0);
   });
 
+  var workerCount = mediasoup.getWorkerCount();
+
   // Non-blocking Postgres ping
   pgDb.query('SELECT 1').then(function() {
     res.json({
@@ -1029,17 +1031,19 @@ app.get('/api/health', function(req, res) {
       rooms: rooms.size,
       guests: guestCount,
       viewers: viewerCount,
+      mediasoupWorkers: workerCount,
       db: { sqlite: dbOk, postgres: true },
       timestamp: Date.now()
     });
   }).catch(function() {
     res.json({
-      status: (dbOk ? 'degraded' : 'degraded'),
+      status: 'degraded',
       shuttingDown: _isShuttingDown,
       uptime: process.uptime(),
       rooms: rooms.size,
       guests: guestCount,
       viewers: viewerCount,
+      mediasoupWorkers: workerCount,
       db: { sqlite: dbOk, postgres: false },
       timestamp: Date.now()
     });
@@ -6070,6 +6074,16 @@ if (_missingEnvs.length) {
   _missingEnvs.forEach(function(k) { logger.error('Missing required env var: ' + k); });
   process.exit(1);
 }
+
+// ─── Global Express error handler ────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
+app.use(function(err, req, res, next) {
+  logger.error('[express] ' + req.method + ' ' + req.path +
+    ' uid=' + (req.user && req.user.id || 'anon') +
+    ' ' + err.message + '\n' + err.stack);
+  if (res.headersSent) return;
+  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
+});
 
 mediasoup.createWorkers()
   .then(function() {
