@@ -183,7 +183,7 @@ function getRoutesDb() {
 // ─── AURA routes ──────────────────────────────────────────────────────────────
 
 router.get('/aura/usage', requireAuth, function(req, res) {
-  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ success: false, error: 'forbidden' });
   }
   try {
@@ -204,7 +204,7 @@ router.get('/aura/usage', requireAuth, function(req, res) {
 });
 
 router.post('/aura/mode', requireAuth, function(req, res) {
-  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ success: false, error: 'forbidden' });
   }
   try {
@@ -220,7 +220,7 @@ router.post('/aura/mode', requireAuth, function(req, res) {
 });
 
 router.post('/aura/trigger', requireAuth, auraTriggerRateLimit, async function(req, res) {
-  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ success: false, error: 'forbidden' });
   }
   try {
@@ -412,7 +412,7 @@ router.delete('/moderation/word-filters/:id', requireAuth, moderationRateLimit, 
 });
 
 router.post('/moderation/subscriber-only', requireAuth, moderationRateLimit, function(req, res) {
-  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
     var roomId = String(req.body.roomId || '');
     if (!ROUTES_UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
@@ -428,7 +428,7 @@ router.post('/moderation/subscriber-only', requireAuth, moderationRateLimit, fun
 });
 
 router.post('/moderation/ban', requireAuth, moderationRateLimit, function(req, res) {
-  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
     var creatorId = req.user.id;
     var bannedUserId = String(req.body.bannedUserId || '');
@@ -446,7 +446,7 @@ router.post('/moderation/ban', requireAuth, moderationRateLimit, function(req, r
 });
 
 router.delete('/moderation/ban/:userId', requireAuth, moderationRateLimit, function(req, res) {
-  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   if (!ROUTES_UUID_RE.test(req.params.userId)) return res.status(400).json({ error: 'invalid userId' });
   try {
     var creatorId = req.user.id;
@@ -961,12 +961,12 @@ router.post('/n8n/test', requireAuth, webhookTestRateLimit, async function(req, 
 
 
 // ── STREAM SYNC → Supabase ────────────────────────────────────
-var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-var SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+var SUPA_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+var SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 router.post('/stream-sync', requireAuth, streamWriteRateLimit, async function(req, res) {
   try {
-    if (req.user.role !== 'host' && req.user.role !== 'admin') {
+    if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') {
       return res.status(403).json({ ok: false, error: 'forbidden' });
     }
     var b = req.body;
@@ -1303,7 +1303,7 @@ router.post('/rtmp/done', async function(req, res) {
 });
 
 router.post('/fanout-start', requireAuth, fanoutStartRateLimit, async function(req, res) {
-  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'admin') {
     return res.status(403).json({ ok: false, error: 'only hosts may start a fanout' });
   }
   try {
