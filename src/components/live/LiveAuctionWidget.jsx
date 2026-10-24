@@ -105,12 +105,17 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
         amount,
         is_buyout: false,
       });
-      await base44.entities.LiveAuction.update(auction.id, {
+      const secsLeft = Math.max(0, Math.floor((new Date(auction.ends_at).getTime() - Date.now()) / 1000));
+      const updates = {
         current_bid: amount,
         current_winner_id: currentUser.id,
         current_winner_name: currentUser.full_name || currentUser.email,
         bid_count: (auction.bid_count || 0) + 1,
-      });
+      };
+      if (secsLeft < 30) {
+        updates.ends_at = new Date(Date.now() + 30000).toISOString();
+      }
+      await base44.entities.LiveAuction.update(auction.id, updates);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['auctions', auction.room_id] }); setBidAmount(''); toast.success('Bid placed!'); },
     onError: () => toast.error('Could not place bid'),
@@ -199,26 +204,37 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
 
         {/* Bid input */}
         {currentUser && auction.status !== 'ended' && (
-          <div className="flex gap-1.5">
-            <input
-              type="number"
-              placeholder={`Min $${minBid}`}
-              value={bidAmount}
-              onChange={e => setBidAmount(e.target.value)}
-              style={{ width: '100%', padding: '0 8px', height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'white', fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', flex: 1 }}
-            />
-            <button
-              onClick={() => {
-                const amt = parseFloat(bidAmount);
-                if (isNaN(amt) || amt < minBid) { toast.error(`Minimum bid is $${minBid}`); return; }
-                bidMut.mutate(amt);
-              }}
-              disabled={bidMut.isPending}
-              className="px-3 h-8 rounded-lg font-black uppercase text-[11px] shrink-0"
-              style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-              BID
-            </button>
-          </div>
+          <>
+            <div className="flex gap-1">
+              {[minBid, minBid + 5, minBid + 10].map((inc, i) => (
+                <button key={i} onClick={() => setBidAmount(String(inc))}
+                  className="flex-1 py-1 rounded text-[10px] font-black uppercase"
+                  style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', color: 'rgba(212,175,55,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  +${inc}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1.5">
+              <input
+                type="number"
+                placeholder={`Min $${minBid}`}
+                value={bidAmount}
+                onChange={e => setBidAmount(e.target.value)}
+                style={{ width: '100%', padding: '0 8px', height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'white', fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', flex: 1 }}
+              />
+              <button
+                onClick={() => {
+                  const amt = parseFloat(bidAmount);
+                  if (isNaN(amt) || amt < minBid) { toast.error(`Minimum bid is $${minBid}`); return; }
+                  bidMut.mutate(amt);
+                }}
+                disabled={bidMut.isPending}
+                className="px-3 h-8 rounded-lg font-black uppercase text-[11px] shrink-0"
+                style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                BID
+              </button>
+            </div>
+          </>
         )}
         {auction.buyout_price && auction.status !== 'ended' && (
           <button onClick={() => buyoutMut.mutate()} disabled={buyoutMut.isPending}

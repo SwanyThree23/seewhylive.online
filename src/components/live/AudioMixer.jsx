@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp, Music } from 'lucide-react';
 import SoundboardWidget from './SoundboardWidget';
@@ -31,20 +31,26 @@ const AUDIO_PRESETS = [
 
 export default function AudioMixer({ micMuted, onMicToggle, stream }) {
   const [collapsed, setCollapsed] = useState(false);
-  const [preset, setPreset] = useState('normal');
-  const [gain, setGain] = useState([100]);
-  const [noiseSuppression, setNoiseSuppression] = useState(true);
-  const [echoCancellation, setEchoCancellation] = useState(true);
+  const [preset, setPreset] = useState(() => {
+    try { return localStorage.getItem('audiomixer_preset') || 'normal'; } catch { return 'normal'; }
+  });
+  const savedPreset = AUDIO_PRESETS.find(p => p.id === preset) || AUDIO_PRESETS[0];
+  const [gain, setGain] = useState([savedPreset.gain]);
+  const [noiseSuppression, setNoiseSuppression] = useState(savedPreset.noise);
+  const [echoCancellation, setEchoCancellation] = useState(savedPreset.echo);
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [bgMusic, setBgMusic] = useState('none');
   const [mono, setMono] = useState(false);
   const [vuLevels, setVuLevels] = useState(Array(8).fill(0.02));
+  const [clipping, setClipping] = useState(false);
+  const clipTimer = useRef(null);
 
   const handlePresetChange = (p) => {
     setPreset(p.id);
     setGain([p.gain]);
     setNoiseSuppression(p.noise);
     setEchoCancellation(p.echo);
+    try { localStorage.setItem('audiomixer_preset', p.id); } catch {}
   };
 
   useEffect(() => {
@@ -61,10 +67,16 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
         analyser.getByteFrequencyData(buf);
         const bands = 8;
         const size = Math.floor(buf.length / bands);
-        setVuLevels(Array.from({ length: bands }, (_, i) => {
+        const levels = Array.from({ length: bands }, (_, i) => {
           const slice = buf.slice(i * size, i * size + size);
           return slice.reduce((a, b) => a + b, 0) / (size * 255);
-        }));
+        });
+        setVuLevels(levels);
+        if (levels.some(l => l > 0.9)) {
+          setClipping(true);
+          clearTimeout(clipTimer.current);
+          clipTimer.current = setTimeout(() => setClipping(false), 500);
+        }
         raf = requestAnimationFrame(tick);
       };
       tick();
@@ -89,7 +101,15 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
         <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="overflow-hidden px-3 pb-3 space-y-3">
           {/* VU Meter */}
           <div className="space-y-1">
-            <p className="text-[10px] text-white/40 uppercase">Mic Level</p>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-white/40 uppercase">Mic Level</p>
+              {clipping && (
+                <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded animate-pulse"
+                  style={{ background: 'rgba(192,57,43,0.3)', color: '#FF4444', border: '1px solid rgba(192,57,43,0.5)' }}>
+                  CLIP
+                </span>
+              )}
+            </div>
             <div className="flex items-end gap-0.5 h-8 bg-black/30 rounded px-2">
               {vuLevels.map((level, i) => (
                 <motion.div
@@ -97,7 +117,7 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
                   animate={{ height: `${(micMuted ? 0.02 : level) * 100}%` }}
                   transition={{ duration: 0.08 }}
                   className="flex-1 rounded-sm"
-                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#C9A84C' : '#6DBF7E' }}
+                  style={{ background: level > 0.9 ? '#FF4444' : level > 0.8 ? '#C0392B' : level > 0.5 ? '#C9A84C' : '#6DBF7E' }}
                 />
               ))}
             </div>
@@ -126,7 +146,7 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
               }`}
             >
               {speakerMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
-              Monitor
+              Monitor (S)
             </button>
           </div>
 
