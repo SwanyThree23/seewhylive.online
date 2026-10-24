@@ -3,7 +3,7 @@
 var Database = require('better-sqlite3');
 var { v4: uuidv4 } = require('uuid');
 
-var CREATOR = 0.90;
+var CREATOR_SPLIT = 0.90;
 
 var DB_PATH = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
 
@@ -85,7 +85,7 @@ function recordEarning(creatorId, streamId, paymentType, amountCents, note) {
   }
   var id = uuidv4();
   var now = Date.now();
-  var creatorCents = Math.floor(amountCents * CREATOR);
+  var creatorCents = Math.floor(amountCents * CREATOR_SPLIT);
   var platformCents = amountCents - creatorCents;
   stmtInsertEarning.run(id, creatorId, streamId || null, paymentType, amountCents, creatorCents, platformCents, note || null, now);
 }
