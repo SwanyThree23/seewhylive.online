@@ -1398,7 +1398,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0E0C09', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif" }}>
+    <div style={{ minHeight: '100dvh', background: '#0E0C09', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: '@keyframes tabSlideIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}' }} />
       <BrandChyron isLive={isLive} streamTitle={streamInfo.title} />
       {/* Header HUD */}
