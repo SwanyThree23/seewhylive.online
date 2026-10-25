@@ -43,8 +43,8 @@ function CopyRow({ label, value, secret = false }) {
 }
 
 export default function RTMPIngestPanel({ roomId, streamKey }) {
-  const [expanded, setExpanded] = useState(false);
-  const [appIdx, setAppIdx] = useState(0);
+  const [expanded, setExpanded] = useState(() => { try { return localStorage.getItem('rtmp_ingest_expanded') === 'true'; } catch { return false; } });
+  const [appIdx, setAppIdx] = useState(() => { try { const s = localStorage.getItem('rtmp_ingest_app_idx'); return s ? Number(s) : 0; } catch { return 0; } });
 
   const ingestUrl = `rtmp://ingest.seewhylive.online/live`;
   const ingestKey = streamKey || (roomId ? `sw_ingest_${roomId.slice(0, 12)}` : 'sw_ingest_demo');
@@ -53,7 +53,7 @@ export default function RTMPIngestPanel({ roomId, streamKey }) {
     <div className="space-y-1">
       {/* Header toggle */}
       <button
-        onClick={() => setExpanded(e => !e)}
+        onClick={() => { const n = !expanded; setExpanded(n); try { localStorage.setItem('rtmp_ingest_expanded', String(n)); } catch {} }}
         className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all"
         style={{
           background: expanded ? 'rgba(128,0,32,0.12)' : 'rgba(255,255,255,0.03)',
@@ -98,7 +98,7 @@ export default function RTMPIngestPanel({ roomId, streamKey }) {
                   {INGEST_APPS.map((app, i) => (
                     <button
                       key={app.name}
-                      onClick={() => setAppIdx(i)}
+                      onClick={() => { setAppIdx(i); try { localStorage.setItem('rtmp_ingest_app_idx', String(i)); } catch {} }}
                       className="px-2 py-1 rounded text-[10px] transition-all"
                       style={{
                         background: appIdx === i ? `${G}15` : 'rgba(255,255,255,0.04)',
