@@ -57,7 +57,7 @@ function timeAgo(dateStr) {
 
 export default function NotificationHub() {
   const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState('all');
+  const [category, setCategory] = useState(() => { try { return localStorage.getItem('notif_category') || 'all'; } catch { return 'all'; } });
   const [ringing, setRinging] = useState(false);
   const prevUnread = useRef(0);
   const queryClient = useQueryClient();
@@ -222,7 +222,7 @@ export default function NotificationHub() {
             {/* Category filter tabs */}
             <div className="flex border-b" style={{ borderColor: BORDER, background: '#08080F' }}>
               {[['all','All'], ['tips','Tips'], ['subs','Subs'], ['live','Live'], ['system','System']].map(([id, label]) => (
-                <button key={id} onClick={() => setCategory(id)}
+                <button key={id} onClick={() => { setCategory(id); try { localStorage.setItem('notif_category', id); } catch {} }}
                   className="flex-1 py-1.5 text-[11px] font-black uppercase transition-all"
                   style={{
                     fontFamily: 'Barlow Condensed, sans-serif',
