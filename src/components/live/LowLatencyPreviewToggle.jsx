@@ -36,6 +36,12 @@ export default function LowLatencyPreviewToggle({ enabled, onToggle, network }) 
         }}>
         Low Latency
       </span>
+      {(network?.saveData || network?.mobile) && (
+        <span className="text-[8px] font-black px-1 py-0.5 rounded"
+          style={{ background: 'rgba(212,175,55,0.12)', color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          {network?.saveData ? 'SAVE' : '📶'}
+        </span>
+      )}
     </button>
   );
 }
