@@ -158,7 +158,7 @@ function TipAnimation({ senderName, amount, emoji, tier, onDone }) {
 export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
   const resolvedHostId = hostId || recipient?.id;
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(5);
+  const [selected, setSelected] = useState(() => { try { const s = localStorage.getItem('tip_selected_amount'); return s ? Number(s) : 5; } catch { return 5; } });
   const [custom, setCustom] = useState('');
   const [useCustom, setUseCustom] = useState(false);
   const [message, setMessage] = useState('');
@@ -352,7 +352,7 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
                         <motion.button
                           key={tier.amount}
                           whileTap={{ scale: 0.9 }}
-                          onClick={() => { setSelected(tier.amount); setUseCustom(false); }}
+                          onClick={() => { setSelected(tier.amount); setUseCustom(false); try { localStorage.setItem('tip_selected_amount', String(tier.amount)); } catch {} }}
                           className="flex flex-col items-center py-2.5 rounded-xl transition-all"
                           style={{
                             background: active ? `${tier.color}18` : 'rgba(255,255,255,0.04)',

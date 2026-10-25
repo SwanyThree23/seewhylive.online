@@ -13,12 +13,12 @@ var C = {
 };
 
 export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
-  var [quality, setQuality] = useState("720p");
-  var [volume, setVolume] = useState(80);
-  var [muted, setMuted] = useState(false);
-  var [layout, setLayout] = useState("grid");
+  var [quality, setQuality] = useState(function () { try { return localStorage.getItem('viewer_quality') || '720p'; } catch { return '720p'; } });
+  var [volume, setVolume] = useState(function () { try { const s = localStorage.getItem('viewer_volume'); return s ? Number(s) : 80; } catch { return 80; } });
+  var [muted, setMuted] = useState(function () { try { return localStorage.getItem('viewer_muted') === 'true'; } catch { return false; } });
+  var [layout, setLayout] = useState(function () { try { return localStorage.getItem('viewer_layout') || 'grid'; } catch { return 'grid'; } });
   var [handRaised, setHandRaised] = useState(false);
-  var [ccOn, setCcOn] = useState(false);
+  var [ccOn, setCcOn] = useState(function () { try { return localStorage.getItem('viewer_cc_on') === 'true'; } catch { return false; } });
   var [showReport, setShowReport] = useState(false);
   var [reportReason, setReportReason] = useState("spam");
   var qc = useQueryClient();
@@ -79,7 +79,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
             <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>VIDEO QUALITY</div>
             <div style={{ display: "flex", gap: 6 }}>
               {["360p", "480p", "720p", "1080p"].map(q => (
-                <button key={q} onClick={() => setQuality(q)} style={{
+                <button key={q} onClick={() => { setQuality(q); try { localStorage.setItem('viewer_quality', q); } catch {} }} style={{
                   flex: 1, padding: "6px 0", borderRadius: 6,
                   border: "1px solid " + (quality === q ? C.gold : "#333"),
                   background: quality === q ? "rgba(212,175,55,0.15)" : C.surface,
@@ -94,10 +94,10 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1 }}>VOLUME</span>
-              <button onClick={() => setMuted(m => !m)} style={{ background: "none", border: "none", color: muted ? C.burgundy : C.green, cursor: "pointer", fontSize: 14 }}>{muted ? "🔇" : "🔊"}</button>
+              <button onClick={() => { const n = !muted; setMuted(n); try { localStorage.setItem('viewer_muted', String(n)); } catch {} }} style={{ background: "none", border: "none", color: muted ? C.burgundy : C.green, cursor: "pointer", fontSize: 14 }}>{muted ? "🔇" : "🔊"}</button>
             </div>
             <input type="range" min={0} max={100} value={muted ? 0 : volume}
-              onChange={e => { setVolume(+e.target.value); setMuted(false); }}
+              onChange={e => { const v = +e.target.value; setVolume(v); setMuted(false); try { localStorage.setItem('viewer_volume', String(v)); localStorage.setItem('viewer_muted', 'false'); } catch {} }}
               style={{ width: "100%", accentColor: C.gold }} />
           </div>
 
@@ -106,7 +106,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
             <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>LAYOUT</div>
             <div style={{ display: "flex", gap: 6 }}>
               {[{ id: "grid", label: "▦ Grid" }, { id: "spotlight", label: "◉ Spotlight" }, { id: "theater", label: "▬ Theater" }].map(l => (
-                <button key={l.id} onClick={() => setLayout(l.id)} style={{
+                <button key={l.id} onClick={() => { setLayout(l.id); try { localStorage.setItem('viewer_layout', l.id); } catch {} }} style={{
                   flex: 1, padding: "6px 4px", borderRadius: 6,
                   border: "1px solid " + (layout === l.id ? C.volt : "#333"),
                   background: layout === l.id ? "rgba(212,175,55,0.08)" : C.surface,
@@ -142,7 +142,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
             </button>
 
             {/* CC */}
-            <button onClick={() => setCcOn(c => !c)} style={{
+            <button onClick={() => { const n = !ccOn; setCcOn(n); try { localStorage.setItem('viewer_cc_on', String(n)); } catch {} }} style={{
               padding: "10px", borderRadius: 8,
               border: "1px solid " + (ccOn ? C.cyan : "#333"),
               background: ccOn ? "rgba(109,191,126,0.08)" : C.surface,
