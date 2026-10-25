@@ -291,6 +291,9 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
             Live Chat
           </h3>
           <span className="text-[11px] text-white/40">({messages.length})</span>
+          {(userRole === 'admin' || userRole === 'moderator') && (
+            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase" style={{ background: 'rgba(107,92,246,0.2)', color: '#6B5CF6', border: '1px solid rgba(107,92,246,0.35)' }}>MOD</span>
+          )}
         </div>
         <Shield className="w-3 h-3 text-[#6DBF7E]" title="Automated moderation active" />
       </div>

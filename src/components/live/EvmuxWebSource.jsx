@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Volume2, VolumeX, Link, ChevronDown, Globe, Plus, Trash2 } from 'lucide-react';
 
@@ -77,8 +77,19 @@ export default function EvmuxWebSource({ isActive, onClose }) {
   const [isMuted, setIsMuted] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [customUrl, setCustomUrl]   = useState('');
-  const [activeSource, setActiveSource] = useState(BUILTIN_SOURCES[0]);
+  const [activeSource, setActiveSource] = useState(() => {
+    try {
+      const id = localStorage.getItem('evmux_source_id');
+      return BUILTIN_SOURCES.find(s => s.id === id) || BUILTIN_SOURCES[0];
+    } catch { return BUILTIN_SOURCES[0]; }
+  });
   const iframeRef = useRef(null);
+
+  useEffect(() => {
+    if (activeSource?.id) {
+      try { localStorage.setItem('evmux_source_id', activeSource.id); } catch {}
+    }
+  }, [activeSource?.id]);
 
   // Build the iframe src or srcdoc
   function getIframeProps() {

@@ -35,7 +35,7 @@ function SpecRow({ icon: Icon, label, value, valueColor }) {
 }
 
 export default function FanoutEnginePanel({ members = [], isHost = false, roomId = null }) {
-  var [expanded, setExpanded] = useState(false);
+  var [expanded, setExpanded] = useState(function() { try { return localStorage.getItem('fanout_expanded') === 'true'; } catch(_) { return false; } });
 
   // Derived metrics — based on spec: avg 5 platforms per guest
   var guestCount    = members.length;
@@ -58,7 +58,7 @@ export default function FanoutEnginePanel({ members = [], isHost = false, roomId
     }}>
       {/* ── Header ── */}
       <button
-        onClick={function() { setExpanded(function(v) { return !v; }); }}
+        onClick={function() { setExpanded(function(v) { var next = !v; try { localStorage.setItem('fanout_expanded', String(next)); } catch(_) {} return next; }); }}
         style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
         className="hover:bg-white/[0.03] transition-colors"
       >
