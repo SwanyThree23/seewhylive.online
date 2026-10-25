@@ -12,7 +12,7 @@ const SCENES = [
 ];
 
 export default function SceneSwitcher({ activeScene, onSceneChange }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem('scene_switcher_collapsed') === 'true'; } catch { return false; } });
   const [brbMessage, setBrbMessage] = useState(() => {
     try { return localStorage.getItem('swl_brb_msg') || 'Be Right Back!'; } catch { return 'Be Right Back!'; }
   });
@@ -24,7 +24,7 @@ export default function SceneSwitcher({ activeScene, onSceneChange }) {
   return (
     <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => { const n = !collapsed; setCollapsed(n); try { localStorage.setItem('scene_switcher_collapsed', String(n)); } catch {} }}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
         <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Scene Switcher</span>
