@@ -272,7 +272,7 @@ function Overlay({ layers = [] }) {
 }
 
 export default function NewsBlockOverlay({ onLayersChange, collapsed: initCollapsed = false }) {
-  const [collapsed, setCollapsed]   = useState(initCollapsed);
+  const [collapsed, setCollapsed]   = useState(() => { try { return localStorage.getItem('newsblock_collapsed') === 'true'; } catch { return initCollapsed; } });
   const [layers, setLayers]         = useState([]);
   const [showPresets, setShowPresets] = useState(false);
 
@@ -318,7 +318,7 @@ export default function NewsBlockOverlay({ onLayersChange, collapsed: initCollap
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.18)', backdropFilter: 'blur(12px)' }}>
       {/* Header */}
-      <button onClick={() => setCollapsed(c => !c)} className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5 transition-colors">
+      <button onClick={() => setCollapsed(c => { const n = !c; try { localStorage.setItem('newsblock_collapsed', String(n)); } catch {} return n; })} className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5 transition-colors">
         <div className="flex items-center gap-2">
           <AlignLeft className="w-3 h-3" style={{ color: G }} />
           <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: G }}>News Block</span>

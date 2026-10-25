@@ -52,8 +52,8 @@ function MiniPreview({ colors }) {
 }
 
 export default function OverlayThemeBuilder({ creatorId }) {
-  const [selectedPreset, setSelectedPreset] = useState(0);
-  const [colors, setColors]                 = useState(PRESETS[0].colors);
+  const [selectedPreset, setSelectedPreset] = useState(() => { try { const s = localStorage.getItem('overlay_preset_idx'); return s !== null ? Number(s) : 0; } catch { return 0; } });
+  const [colors, setColors]                 = useState(() => { try { const s = localStorage.getItem('overlay_theme_colors'); return s ? JSON.parse(s) : PRESETS[0].colors; } catch { return PRESETS[0].colors; } });
   const [themeName, setThemeName]           = useState('');
   const [editingName, setEditingName]       = useState(false);
   const [copiedKey, setCopiedKey]           = useState(null);
@@ -128,7 +128,7 @@ export default function OverlayThemeBuilder({ creatorId }) {
           {PRESETS.map((preset, idx) => (
             <motion.button
               key={preset.name}
-              onClick={() => { setSelectedPreset(idx); setColors(preset.colors); }}
+              onClick={() => { setSelectedPreset(idx); setColors(preset.colors); try { localStorage.setItem('overlay_preset_idx', String(idx)); localStorage.setItem('overlay_theme_colors', JSON.stringify(preset.colors)); } catch {} }}
               whileHover={{ scale: 1.04 }}
               className="p-2 rounded-lg transition-all text-left"
               style={{
@@ -156,7 +156,7 @@ export default function OverlayThemeBuilder({ creatorId }) {
             <input
               type="color"
               value={colors[key]}
-              onChange={e => setColors(prev => ({ ...prev, [key]: e.target.value }))}
+              onChange={e => setColors(prev => { const n = { ...prev, [key]: e.target.value }; try { localStorage.setItem('overlay_theme_colors', JSON.stringify(n)); } catch {} return n; })}
               className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
               style={{ padding: 0 }}
             />

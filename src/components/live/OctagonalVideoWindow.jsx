@@ -162,7 +162,7 @@ export default function OctagonalVideoWindow({
         </div>
 
         {/* Control buttons - bottom corners */}
-        <div className="absolute bottom-2 left-2 right-2 flex gap-1 justify-center">
+        {showControls && <div className="absolute bottom-2 left-2 right-2 flex gap-1 justify-center">
           <motion.button
             whileHover={{ scale: 1.1 }}
             onClick={onMicToggle}
@@ -209,7 +209,7 @@ export default function OctagonalVideoWindow({
               <Pin className="w-3.5 h-3.5" />
             </motion.button>
           )}
-        </div>
+        </div>}
       </div>
     </motion.div>
   );
