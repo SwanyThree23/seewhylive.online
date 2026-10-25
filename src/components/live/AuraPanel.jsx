@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Zap, Heart, BarChart2, Smile, Volume2, VolumeX, RefreshCw } from 'lucide-react';
+import { Sparkles, Zap, Heart, BarChart2, Smile, Volume2, VolumeX, RefreshCw, Copy, CheckCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MODES = [
@@ -24,6 +24,7 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
   const [isGenerating, setIsGenerating] = useState(false);
   const [enabled, setEnabled] = useState(true);
   const [callCount, setCallCount] = useState(0);
+  const [copiedId, setCopiedId] = useState(null);
   const CAP = 20;
   const bottomRef = useRef(null);
 
@@ -127,7 +128,12 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
           </div>
         )}
         <div className="ml-auto flex items-center gap-1.5">
-          <span className="text-[11px] text-white/30 font-mono">{callCount}/{CAP}/hr</span>
+          <div className="flex flex-col items-end gap-0.5">
+            <span className="text-[9px] text-white/30 font-mono">{callCount}/{CAP}/hr</span>
+            <div className="w-12 h-0.5 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (callCount / CAP) * 100)}%`, background: callCount >= CAP ? '#C0392B' : '#D4AF37' }} />
+            </div>
+          </div>
           <button
             onClick={() => setEnabled(v => !v)}
             className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
@@ -170,10 +176,16 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
                 key={msg.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex gap-2 text-xs"
+                className="group flex gap-2 text-xs"
               >
                 <span className="text-[#D4AF37] shrink-0">✦</span>
-                <p className="text-white/70 leading-relaxed">{msg.text}</p>
+                <p className="text-white/70 leading-relaxed flex-1">{msg.text}</p>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(msg.text).catch(() => {}); setCopiedId(msg.id); setTimeout(() => setCopiedId(null), 1500); }}
+                  className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Copy">
+                  {copiedId === msg.id ? <CheckCheck className="w-2.5 h-2.5 text-[#6DBF7E]" /> : <Copy className="w-2.5 h-2.5 text-white/30" />}
+                </button>
               </motion.div>
             ))}
           </AnimatePresence>

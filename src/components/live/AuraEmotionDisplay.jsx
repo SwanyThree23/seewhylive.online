@@ -8,6 +8,7 @@ const G = '#d4af37';
 export default function AuraEmotionDisplay({ roomId, sessionId, auraPersona = 'hype' }) {
   const [emotion, setEmotion] = useState(null);
   const [energy, setEnergy] = useState(0.5);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
     const detectEmotion = async () => {
@@ -32,6 +33,7 @@ export default function AuraEmotionDisplay({ roomId, sessionId, auraPersona = 'h
         if (result) {
           setEmotion(result.detected_emotion);
           setEnergy(result.energy_level ?? 0.5);
+          setLastUpdated(new Date());
         }
       } catch (error) {
       }
@@ -63,16 +65,19 @@ export default function AuraEmotionDisplay({ roomId, sessionId, auraPersona = 'h
         <Icon className="w-3.5 h-3.5" style={{ color: config.color }} />
       </motion.div>
       <span style={{ color: config.color }}>{config.label}</span>
-      <motion.div
-        className="w-6 h-1.5 bg-white/20 rounded-full overflow-hidden"
-      >
-        <motion.div
-          className="h-full rounded-full"
-          animate={{ width: `${energy * 100}%` }}
-          transition={{ duration: 1 }}
-          style={{ background: config.color }}
-        />
-      </motion.div>
+      <div className="flex flex-col items-end gap-0.5">
+        <motion.div className="w-12 h-1.5 bg-white/20 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full rounded-full"
+            animate={{ width: `${energy * 100}%` }}
+            transition={{ duration: 1 }}
+            style={{ background: config.color }}
+          />
+        </motion.div>
+        <span className="text-[9px] font-mono" style={{ color: `${config.color}80` }}>
+          {Math.round(energy * 100)}%{lastUpdated ? ` · ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+        </span>
+      </div>
     </motion.div>
   );
 }

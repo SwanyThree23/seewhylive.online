@@ -25,8 +25,8 @@ const BG_MUSIC_GENRES = [
 ];
 
 export default function AudioPanel({ micMuted, onMicToggle, participants = [] }) {
-  const [preset, setPreset] = useState('normal');
-  const [bgMusicGenre, setBgMusicGenre] = useState('none');
+  const [preset, setPreset] = useState(() => { try { return localStorage.getItem('audiopanel_preset') || 'normal'; } catch { return 'normal'; } });
+  const [bgMusicGenre, setBgMusicGenre] = useState(() => { try { return localStorage.getItem('audiopanel_bgmusic') || 'none'; } catch { return 'none'; } });
   const [volumes, setVolumes] = useState({});
   const [masterVolume, setMasterVolume] = useState([80]);
   const [noiseCancel, setNoiseCancel] = useState(true);
@@ -118,7 +118,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                   {AUDIO_PRESETS.map(p => (
                     <button
                       key={p.id}
-                      onClick={() => setPreset(p.id)}
+                      onClick={() => { setPreset(p.id); try { localStorage.setItem('audiopanel_preset', p.id); } catch {} }}
                       className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg border transition-all ${
                         preset === p.id
                           ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10'
@@ -153,7 +153,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {BG_MUSIC_GENRES.map(g => (
-                    <button key={g.id} onClick={() => setBgMusicGenre(g.id)}
+                    <button key={g.id} onClick={() => { setBgMusicGenre(g.id); try { localStorage.setItem('audiopanel_bgmusic', g.id); } catch {} }}
                       className={`text-[10px] px-2 py-0.5 rounded border transition-all ${
                         bgMusicGenre === g.id ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/10 text-white/40 hover:border-white/20'
                       }`}>

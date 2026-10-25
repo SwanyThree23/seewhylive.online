@@ -30,12 +30,12 @@ const AUDIO_PRESETS = [
 ];
 
 export default function AudioMixer({ micMuted, onMicToggle, stream }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem('audiomixer_collapsed') === 'true'; } catch { return false; } });
   const [preset, setPreset] = useState(() => {
     try { return localStorage.getItem('audiomixer_preset') || 'normal'; } catch { return 'normal'; }
   });
   const savedPreset = AUDIO_PRESETS.find(p => p.id === preset) || AUDIO_PRESETS[0];
-  const [gain, setGain] = useState([savedPreset.gain]);
+  const [gain, setGain] = useState(() => { try { const v = localStorage.getItem('audiomixer_gain'); return [v ? parseInt(v, 10) : savedPreset.gain]; } catch { return [savedPreset.gain]; } });
   const [noiseSuppression, setNoiseSuppression] = useState(savedPreset.noise);
   const [echoCancellation, setEchoCancellation] = useState(savedPreset.echo);
   const [speakerMuted, setSpeakerMuted] = useState(false);
@@ -87,7 +87,7 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
   return (
     <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => { const next = !collapsed; setCollapsed(next); try { localStorage.setItem('audiomixer_collapsed', String(next)); } catch {} }}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
         <div className="flex items-center gap-2">
@@ -156,7 +156,7 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
               <p className="text-[10px] text-white/40">Input Gain</p>
               <p className="text-[10px] font-mono text-[#d4af37]">{gain[0]}%</p>
             </div>
-            <input type="range" value={gain[0]} onChange={e => setGain([+e.target.value])} min={0} max={200} step={5} style={{ width: '100%', accentColor: '#D4AF37' }} />
+            <input type="range" value={gain[0]} onChange={e => { const v = +e.target.value; setGain([v]); try { localStorage.setItem('audiomixer_gain', String(v)); } catch {} }} min={0} max={200} step={5} style={{ width: '100%', accentColor: '#D4AF37' }} />
           </div>
 
           {/* Audio Presets */}

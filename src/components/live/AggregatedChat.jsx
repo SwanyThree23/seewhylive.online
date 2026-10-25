@@ -387,7 +387,7 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
           onKeyDown={e => e.key === 'Enter' && sendMessage()}
           placeholder={boostMode ? 'RocketChat — pinned 30s (50 Love)…' : 'Send a message...'}
           maxLength={LIMITS.CHAT_MESSAGE}
-          className="flex-1 rounded-lg px-3 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none"
+          className="flex-1 rounded-lg px-3 py-1.5 pr-8 text-xs text-white placeholder-white/30 focus:outline-none"
           style={{
             background: 'rgba(255,255,255,0.05)',
             border: boostMode ? '1px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)',
@@ -395,6 +395,12 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
             transition: 'all 0.2s',
           }}
         />
+        {input.length > LIMITS.CHAT_MESSAGE * 0.8 && (
+          <span className="absolute right-[76px] bottom-[18px] text-[9px] font-mono pointer-events-none"
+            style={{ color: input.length >= LIMITS.CHAT_MESSAGE ? '#C0392B' : 'rgba(255,255,255,0.3)' }}>
+            {LIMITS.CHAT_MESSAGE - input.length}
+          </span>
+        )}
         <div style={{ position: 'relative' }}>
           <button
             onClick={() => setBoostMode(v => !v)}
