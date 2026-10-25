@@ -9,7 +9,8 @@ export default function NetworkQualityBanner({ quality, rtt }) {
   const countdownRef = useRef(null);
 
   useEffect(() => {
-    if (quality === 'excellent' || quality === 'good' || quality === 'fair') {
+    if (quality === 'excellent' || quality === 'good' || quality === 'fair' ||
+        (quality === 'poor' && prevQuality === 'offline')) {
       setDismissed(false);
       setRetryCountdown(null);
       clearInterval(countdownRef.current);

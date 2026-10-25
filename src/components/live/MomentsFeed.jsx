@@ -149,7 +149,7 @@ function MomentCard({ clip, currentUserId, onLike }) {
  * Props: { currentUserId, followingIds }
  */
 export default function MomentsFeed({ currentUserId, followingIds = [] }) {
-  const [mode, setMode] = useState('trending'); // 'trending' | 'following'
+  const [mode, setMode] = useState(() => { try { return localStorage.getItem('moments_tab') || 'trending'; } catch { return 'trending'; } });
   const qc = useQueryClient();
 
   const { data: allClips = [], isLoading } = useQuery({
@@ -214,7 +214,7 @@ export default function MomentsFeed({ currentUserId, followingIds = [] }) {
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
-            onClick={() => setMode(key)}
+            onClick={() => { setMode(key); try { localStorage.setItem('moments_tab', key); } catch {} }}
             style={{
               padding: '6px 16px',
               borderRadius: 8, cursor: 'pointer',
