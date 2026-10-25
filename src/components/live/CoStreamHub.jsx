@@ -617,6 +617,7 @@ export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, com
   var handCount = raisedHands.size;
 
   var prevLiveRef = useRef(liveCount);
+  var activityTimerRef = useRef(null);
   useEffect(function() {
     var prev = prevLiveRef.current;
     if (participants.length === 0) return;
@@ -629,6 +630,14 @@ export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, com
     }
     prevLiveRef.current = liveCount;
   }, [liveCount]);
+
+  // Auto-clear activity feed after 8 seconds
+  useEffect(function() {
+    if (!lastActivity) return;
+    clearTimeout(activityTimerRef.current);
+    activityTimerRef.current = setTimeout(function() { setLastActivity(null); }, 8000);
+    return function() { clearTimeout(activityTimerRef.current); };
+  }, [lastActivity]);
 
   function handleReact(emoji) {
     var id = Date.now() + Math.random();

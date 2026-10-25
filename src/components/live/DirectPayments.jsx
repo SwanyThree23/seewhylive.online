@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, DollarSign, Plus, Trash2, X } from 'lucide-react';
+import { ExternalLink, DollarSign, Plus, Trash2, X, Copy, CheckCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { isSafeUrl } from '@/lib/security';
@@ -19,6 +19,16 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
   const [links, setLinks] = useState({});
   const [editMode, setEditMode] = useState(false);
   const [saved, setSaved] = useState({});
+  const [copiedId, setCopiedId] = useState(null);
+
+  const handleCopy = (platform) => {
+    const val = links[platform.id] || saved[platform.id];
+    if (!val) return;
+    const url = (platform.baseUrl && !val.startsWith('http')) ? platform.baseUrl + val : val;
+    navigator.clipboard.writeText(url).catch(() => {});
+    setCopiedId(platform.id);
+    setTimeout(() => setCopiedId(null), 1800);
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -92,20 +102,28 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   {activeLinks.map(platform => (
-                    <button
-                      key={platform.id}
-                      onClick={() => handleOpen(platform)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, borderRadius: 12, background: `linear-gradient(to right, var(--c1), var(--c2))`, opacity: 1, cursor: 'pointer', border: 'none', textAlign: 'left' }}
-                      className={`bg-gradient-to-r ${platform.color} hover:opacity-90 transition-all`}
-                    >
-                      <span style={{ fontSize: 20 }}>{platform.emoji}</span>
-                      <div>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{platform.name}</p>
-                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 2 }}>
-                          Send <ExternalLink className="w-2.5 h-2.5" style={{ marginLeft: 2 }} />
-                        </p>
-                      </div>
-                    </button>
+                    <div key={platform.id} style={{ position: 'relative' }}>
+                      <button
+                        onClick={() => handleOpen(platform)}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: 12, borderRadius: 12, opacity: 1, cursor: 'pointer', border: 'none', textAlign: 'left' }}
+                        className={`bg-gradient-to-r ${platform.color} hover:opacity-90 transition-all`}
+                      >
+                        <span style={{ fontSize: 20 }}>{platform.emoji}</span>
+                        <div>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{platform.name}</p>
+                          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 2 }}>
+                            Send <ExternalLink className="w-2.5 h-2.5" style={{ marginLeft: 2 }} />
+                          </p>
+                        </div>
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleCopy(platform); }}
+                        title="Copy link"
+                        style={{ position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,0.35)', border: 'none', borderRadius: 5, padding: '3px 5px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: copiedId === platform.id ? '#6DBF7E' : '#fff' }}
+                      >
+                        {copiedId === platform.id ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}

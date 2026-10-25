@@ -100,7 +100,7 @@ function ChatMessage({ msg, i }) {
   );
 }
 
-export default function ChatOverlay({ roomId, isVisible = true }) {
+export default function ChatOverlay({ roomId, isVisible = true, onClose }) {
   const [messages, setMessages]         = useState([]);
   const [inputValue, setInputValue]     = useState('');
   const [showEmojis, setShowEmojis]     = useState(false);
@@ -182,8 +182,15 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-white">Live Chat</h3>
-        <button onClick={() => setShowEmojis(false)} className="text-white/40 hover:text-white/70 transition-colors">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-bold text-white">Live Chat</h3>
+          {messages.length > 0 && (
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37' }}>
+              {messages.length}
+            </span>
+          )}
+        </div>
+        <button onClick={onClose || (() => {})} className="text-white/40 hover:text-white/70 transition-colors">
           <X className="w-4 h-4" />
         </button>
       </div>
