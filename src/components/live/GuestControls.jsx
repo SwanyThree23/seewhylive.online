@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Mic, MicOff, Volume2, VolumeX, Trash2, Shield, MicOff as MuteAll } from 'lucide-react';
 
 export default function GuestControls({ participants = [], onMuteGuest, onRemoveGuest, speakingIds = [] }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(() => { try { return localStorage.getItem('guest_controls_expanded') !== 'false'; } catch { return true; } });
   const [mutedGuests, setMutedGuests] = useState({});
   const [volumes, setVolumes] = useState({});
   const [openVolume, setOpenVolume] = useState(null);
@@ -28,7 +28,7 @@ export default function GuestControls({ participants = [], onMuteGuest, onRemove
     <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
       {/* Header */}
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => { const n = !expanded; setExpanded(n); try { localStorage.setItem('guest_controls_expanded', String(n)); } catch {} }}
         className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-all"
       >
         <div className="flex items-center gap-2">

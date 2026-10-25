@@ -32,7 +32,7 @@ function CopyBtn({ value, label }) {
 
 export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
   const [showPanel, setShowPanel] = useState(false);
-  const [tab, setTab] = useState('invite'); // 'invite' | 'vdo'
+  const [tab, setTab] = useState(() => { try { return localStorage.getItem('connector_tab') || 'invite'; } catch { return 'invite'; } });
 
   const rSlug = roomId?.slice(0, 8) || 'DEMO';
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://seewhylive.online';
@@ -114,7 +114,7 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
                 {[['invite', 'Guest Invite'], ['vdo', 'VDO.ninja']].map(([key, label]) => (
                   <button
                     key={key}
-                    onClick={() => setTab(key)}
+                    onClick={() => { setTab(key); try { localStorage.setItem('connector_tab', key); } catch {} }}
                     className="flex-1 py-1 rounded text-[10px] font-black uppercase transition-all"
                     style={{
                       background: tab === key ? `${G}20` : 'transparent',

@@ -279,7 +279,7 @@ export default React.memo(function GuestGrid({
   currentUserId,   // current user's id, to identify which tile gets localStream
   speakingIds = {},
 }) {
-  const [layoutSlots, setLayoutSlots] = useState(4);
+  const [layoutSlots, setLayoutSlots] = useState(() => { try { return parseInt(localStorage.getItem('guest_grid_slots') || '4', 10) || 4; } catch { return 4; } });
   const [spotlightId, setSpotlightId] = useState(null);
   const [showDestsFor, setShowDestsFor] = useState(null);
 
@@ -347,7 +347,7 @@ export default React.memo(function GuestGrid({
         )}
         <div className="flex gap-1 ml-auto shrink-0 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {LAYOUTS.map(n => (
-            <button key={n} onClick={() => setLayoutSlots(n)}
+            <button key={n} onClick={() => { setLayoutSlots(n); try { localStorage.setItem('guest_grid_slots', String(n)); } catch {} }}
               aria-label={`Show ${n} stage slots`}
               aria-pressed={layoutSlots === n}
               className="text-[9px] rounded border transition-all flex items-center justify-center shrink-0"
