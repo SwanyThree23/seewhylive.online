@@ -8,7 +8,7 @@ const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function PKBattleSoundboard({ battleId, isBattleActive = false }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(() => { try { return localStorage.getItem('pk_soundboard_expanded') !== 'false'; } catch { return true; } });
 
   return (
     <AnimatePresence>
@@ -22,7 +22,7 @@ export default function PKBattleSoundboard({ battleId, isBattleActive = false })
         >
           {/* Toggle header */}
           <motion.button
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={() => { const n = !isExpanded; setIsExpanded(n); try { localStorage.setItem('pk_soundboard_expanded', String(n)); } catch {} }}
             className="w-full px-3 py-2 flex items-center justify-between transition-all hover:bg-white/5"
             style={{ background: 'rgba(0,0,0,0.2)', borderBottom: isExpanded ? `1px solid ${BORDER}` : 'none' }}
           >
