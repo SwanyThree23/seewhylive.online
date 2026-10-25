@@ -39,6 +39,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
   const [userVotes, setUserVotes] = useState({});
   const [timeRemaining, setTimeRemaining] = useState(null);
   const [winner, setWinner] = useState(null);
+  const [sessionPollCount, setSessionPollCount] = useState(0);
   const queryClient = useQueryClient();
 
   const { data: polls } = useQuery({
@@ -116,6 +117,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
       queryClient.invalidateQueries({ queryKey: ['polls', roomId] });
       setShowCreate(false);
       setForm(DEFAULT_FORM);
+      setSessionPollCount(c => c + 1);
       toast.success(poll?.status === 'scheduled' ? '📅 Poll scheduled!' : '📊 Poll launched!');
       if (hostId) {
         base44.entities.Activity.create({
@@ -260,6 +262,13 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
 
   return (
     <div className="space-y-3">
+      {/* Session poll count */}
+      {sessionPollCount > 0 && (
+        <div className="flex items-center gap-1.5 text-[10px]" style={{ color: 'rgba(212,175,55,0.5)' }}>
+          <Trophy className="w-3 h-3" />
+          <span>{sessionPollCount} poll{sessionPollCount !== 1 ? 's' : ''} this session</span>
+        </div>
+      )}
       {/* Winner banner */}
       <AnimatePresence>
         {winner && (

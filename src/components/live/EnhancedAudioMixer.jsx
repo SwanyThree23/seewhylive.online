@@ -30,8 +30,8 @@ const AUDIO_PRESETS = [
 ];
 
 export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSettingsChange, stream }) {
-  const [collapsed, setCollapsed] = useState(false);
-  const [preset, setPreset] = useState('normal');
+  const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem('eam_collapsed') === 'true'; } catch { return false; } });
+  const [preset, setPreset] = useState(() => { try { return localStorage.getItem('eam_preset') || 'normal'; } catch { return 'normal'; } });
   const [gain, setGain] = useState([100]);
   const [noiseSuppression, setNoiseSuppression] = useState(true);
   const [echoCancellation, setEchoCancellation] = useState(true);
@@ -78,6 +78,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
 
   const handlePresetChange = (presetId) => {
     setPreset(presetId);
+    try { localStorage.setItem('eam_preset', presetId); } catch {}
     const p = AUDIO_PRESETS.find(x => x.id === presetId);
     if (p) {
       setGain([p.settings.gain]);
@@ -113,7 +114,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
   return (
     <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => { const next = !collapsed; setCollapsed(next); try { localStorage.setItem('eam_collapsed', String(next)); } catch {} }}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
         <div className="flex items-center gap-2">

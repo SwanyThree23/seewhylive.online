@@ -12,10 +12,12 @@ export default function EnhancedRoomControls({
   onAudioSettingsChange,
   onBrandingChange,
 }) {
-  const [expandedSection, setExpandedSection] = useState('audio');
+  const [expandedSection, setExpandedSection] = useState(() => { try { return localStorage.getItem('erc_section') || 'audio'; } catch { return 'audio'; } });
 
   const toggleSection = (section) => {
-    setExpandedSection(expandedSection === section ? null : section);
+    const next = expandedSection === section ? null : section;
+    setExpandedSection(next);
+    try { localStorage.setItem('erc_section', next || ''); } catch {}
   };
 
   return (

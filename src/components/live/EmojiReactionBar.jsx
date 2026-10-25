@@ -76,6 +76,7 @@ export default function EmojiReactionBar({ roomId, userId, userName }) {
   }, [cooldown, roomId, userId, userName]);
 
   const rows = [EMOJIS.slice(0, 8), EMOJIS.slice(8)];
+  const totalSent = Object.values(sessionTotals.current).reduce((s, v) => s + v, 0);
 
   return (
     <div className="relative px-2 py-1.5 border-t border-white/5" style={{ background: 'rgba(8,11,24,0.6)' }}>
@@ -127,6 +128,15 @@ export default function EmojiReactionBar({ roomId, userId, userName }) {
           ))}
         </AnimatePresence>
       </div>
+      {/* Session total */}
+      {totalSent > 0 && (
+        <div className="absolute top-1 right-2 pointer-events-none">
+          <span className="text-[9px] font-mono" style={{ color: 'rgba(212,175,55,0.4)' }}>
+            {totalSent} sent{hotEmoji ? ` · ${hotEmoji} hot` : ''}
+          </span>
+        </div>
+      )}
+
       {/* Streak badge */}
       <AnimatePresence>
         {streakEmoji && (

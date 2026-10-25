@@ -63,13 +63,11 @@ export default function EngagementBadgesDisplay({ roomId, userId, creatorId, mes
     const id = Date.now();
     const badgeInfo = BADGE_ICONS[badgeData.badge_type] || BADGE_ICONS.chat_legend;
     const tier = badgeInfo.tier || 'bronze';
-    setBadges(prev => [...prev, { id, ...badgeData, ...badgeInfo, tier }]);
+    setBadges(prev => [...prev.slice(-2), { id, ...badgeData, ...badgeInfo, tier }]);
     setTimeout(() => {
       setBadges(prev => prev.filter(b => b.id !== id));
     }, 6000);
   };
-
-  React.useImperativeHandle = triggerBadgeAward;
 
   return (
     <div className="fixed top-24 right-4 z-50 space-y-2 pointer-events-none">
