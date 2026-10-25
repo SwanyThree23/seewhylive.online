@@ -53,7 +53,7 @@ function AlertRow({ alert }) {
 }
 
 export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) {
-  const [collapsed, setCollapsed]       = useState(false);
+  const [collapsed, setCollapsed]       = useState(() => { try { return localStorage.getItem('health_monitor_collapsed') === 'true'; } catch { return false; } });
   const [showAlerts, setShowAlerts]     = useState(false);
   const [health, setHealth]             = useState(85);
   const [bitrate, setBitrate]           = useState(3200);
@@ -150,7 +150,7 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
     >
       {/* Header row */}
       <button
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => { const n = !collapsed; setCollapsed(n); try { localStorage.setItem('health_monitor_collapsed', String(n)); } catch {} }}
         className="w-full px-3 py-2 flex items-center gap-2 hover:bg-white/5"
       >
         <div className="relative w-8 h-8 shrink-0">
