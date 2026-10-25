@@ -49,7 +49,7 @@ function GiftRow({ entry, rank }) {
       <div className="flex-1 min-w-0">
         <p className="text-xs font-bold text-white truncate">{entry.sender_name || `User ${entry.sender_id?.slice(0, 6)}`}</p>
         <p className="text-[10px] truncate" style={{ color: isTop ? G : 'rgba(212,175,55,0.5)' }}>
-          {entry.gift_count} gift{entry.gift_count !== 1 ? 's' : ''}
+          {entry.gift_count} gift{entry.gift_count !== 1 ? 's' : ''} · avg ${(entry.total_value / entry.gift_count).toFixed(2)}
         </p>
       </div>
 
@@ -99,6 +99,7 @@ export default function GiftLeaderboard({ roomId }) {
   });
 
   const totalGifted = transactions.reduce((s, e) => s + e.total_value, 0);
+  const totalGiftCount = transactions.reduce((s, e) => s + e.gift_count, 0);
 
   return (
     <div className="rounded-lg overflow-hidden" style={{ background: '#080B18', border: `1px solid ${BORDER}` }}>
@@ -110,9 +111,14 @@ export default function GiftLeaderboard({ roomId }) {
             Gift Leaderboard
           </h3>
           {totalGifted > 0 && (
-            <span className="text-[10px] font-black font-mono" style={{ color: '#6DBF7E' }}>
-              ${totalGifted.toFixed(2)} gifted
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-black font-mono" style={{ color: '#6DBF7E' }}>
+                ${totalGifted.toFixed(2)}
+              </span>
+              <span className="text-[9px] font-mono" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                {totalGiftCount} gift{totalGiftCount !== 1 ? 's' : ''}
+              </span>
+            </div>
           )}
         </div>
 

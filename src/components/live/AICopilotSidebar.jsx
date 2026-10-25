@@ -95,6 +95,8 @@ function InsightCard({ insight, onDismiss, onCopy, onPin, pinned }) {
 export default function AICopilotSidebar({ roomId, isHost, viewerCount, onSendToChat }) {
   const [collapsed, setCollapsed]       = useState(false);
   const [showResponses, setShowResponses] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [customAnswer, setCustomAnswer] = useState(null);
   const [insights, setInsights]         = useState([]);
   const [sentimentScore, setSentimentScore] = useState(65);
   const [trendingTopics, setTrendingTopics] = useState([]);
@@ -165,6 +167,16 @@ Messages:\n${msgLines}`,
     }, 45000);
     return () => clearInterval(analyzeIntervalRef.current);
   }, [isHost, roomId, autoAnalyze, recentMessages.length]);
+
+  const customMutation = useMutation({
+    mutationFn: (prompt) => base44.integrations.Core.InvokeLLM({
+      prompt: `You are a live stream AI copilot. The host asks: "${prompt}"\nContext: ${viewerCount} viewers, recent messages: ${recentMessages.slice(0,10).map(m => m.content).join(' | ')}\nRespond in 1-2 concise sentences.`,
+    }),
+    onSuccess: (data) => {
+      setCustomAnswer(typeof data === 'string' ? data : data?.content || JSON.stringify(data));
+    },
+    onError: () => toast.error('AI query failed'),
+  });
 
   const handleDismiss = (id) => {
     setDismissed(prev => new Set([...prev, id]));
@@ -308,6 +320,34 @@ Messages:\n${msgLines}`,
                     </motion.div>
                   )}
                 </AnimatePresence>
+              </div>
+
+              {/* Ask AI anything */}
+              <div className="space-y-1.5">
+                <p className="text-[10px] uppercase font-bold text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Ask AI</p>
+                <div className="flex gap-1">
+                  <input
+                    value={customPrompt}
+                    onChange={e => setCustomPrompt(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && customPrompt.trim() && customMutation.mutate(customPrompt.trim())}
+                    placeholder="e.g. Should I take a break soon?"
+                    style={{ flex: 1, padding: '6px 8px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 11, outline: 'none' }}
+                  />
+                  <button
+                    onClick={() => customPrompt.trim() && customMutation.mutate(customPrompt.trim())}
+                    disabled={!customPrompt.trim() || customMutation.isPending}
+                    className="px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-40"
+                    style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)' }}>
+                    <Send className="w-3 h-3" />
+                  </button>
+                </div>
+                {customAnswer && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="px-2 py-2 rounded-lg text-[11px] text-white/70 leading-relaxed"
+                    style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                    {customAnswer}
+                  </motion.div>
+                )}
               </div>
 
               {/* Insights */}

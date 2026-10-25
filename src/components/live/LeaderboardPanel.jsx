@@ -32,7 +32,7 @@ function RankChange({ change }) {
   return <span className="text-[9px] font-bold text-white/20"><Minus className="w-2.5 h-2.5" /></span>;
 }
 
-function LeaderRow({ item, idx, medals, subLine, showRankChange }) {
+function LeaderRow({ item, idx, medals, subLine, showRankChange, isCurrentUser }) {
   const isFirst = idx === 0;
   return (
     <motion.div
@@ -42,8 +42,8 @@ function LeaderRow({ item, idx, medals, subLine, showRankChange }) {
       transition={{ delay: idx * 0.04 }}
       className="flex items-center gap-2 px-3 py-2 rounded-lg"
       style={{
-        background: isFirst ? `${G}10` : 'rgba(255,255,255,0.03)',
-        border: isFirst ? `1px solid ${G}25` : '1px solid transparent',
+        background: isFirst ? `${G}10` : isCurrentUser ? 'rgba(109,191,126,0.08)' : 'rgba(255,255,255,0.03)',
+        border: isFirst ? `1px solid ${G}25` : isCurrentUser ? '1px solid rgba(109,191,126,0.3)' : '1px solid transparent',
       }}
     >
       <div className="flex items-center justify-center w-6 h-6 shrink-0 rounded-lg text-xs font-bold"
@@ -54,6 +54,7 @@ function LeaderRow({ item, idx, medals, subLine, showRankChange }) {
         <p className="text-xs font-bold text-white truncate">{item.display_name || item.creator_name || `User ${(item.user_id || '').slice(0, 8)}`}</p>
         <p className="text-[10px] truncate" style={{ color: isFirst ? G : 'rgba(109,191,126,0.8)' }}>{subLine}</p>
       </div>
+      {isCurrentUser && <span className="text-[9px] font-bold text-[#6DBF7E] shrink-0">you</span>}
       {showRankChange && <RankChange change={item.rank_change ?? 0} />}
     </motion.div>
   );
@@ -67,7 +68,7 @@ const TABS = [
   { id: 'badges',     label: '🏅 Badges'     },
 ];
 
-export default function LeaderboardPanel({ roomId }) {
+export default function LeaderboardPanel({ roomId, currentUserId }) {
   const [activeTab, setActiveTab] = useState('supporters');
   const [timeRange, setTimeRange] = useState('stream');
   const prevRanksRef = useRef({});
@@ -139,25 +140,40 @@ export default function LeaderboardPanel({ roomId }) {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'supporters':
-        return topSupporters.length
-          ? topSupporters.map((v, i) => <LeaderRow key={v.id || i} item={v} idx={i} medals={RANK_MEDALS} subLine={`${v.tips_sent_count || 0} tips`} showRankChange />)
-          : <Empty />;
+      case 'supporters': {
+        const myEntry = currentUserId ? topSupporters.find(v => (v.user_id || v.id) === currentUserId) : null;
+        const rows = topSupporters.length
+          ? topSupporters.map((v, i) => <LeaderRow key={v.id || i} item={v} idx={i} medals={RANK_MEDALS} subLine={`${v.tips_sent_count || 0} tips`} showRankChange isCurrentUser={(v.user_id || v.id) === currentUserId} />)
+          : [<Empty key="empty" />];
+        if (currentUserId && !myEntry && topSupporters.length >= 10)
+          rows.push(<div key="you-sep" className="border-t border-white/5 my-1" />, <LeaderRow key="you" item={{ user_id: currentUserId, tips_sent_count: 0 }} idx={topSupporters.length} medals={RANK_MEDALS} subLine="0 tips" showRankChange={false} isCurrentUser />);
+        return rows;
+      }
 
-      case 'chatters':
-        return topChatters.length
-          ? topChatters.map((v, i) => <LeaderRow key={v.id || i} item={v} idx={i} medals={['💬', '🗣️', '📢']} subLine={`${v.message_count || 0} messages`} showRankChange />)
-          : <Empty />;
+      case 'chatters': {
+        const myEntry = currentUserId ? topChatters.find(v => (v.user_id || v.id) === currentUserId) : null;
+        const rows = topChatters.length
+          ? topChatters.map((v, i) => <LeaderRow key={v.id || i} item={v} idx={i} medals={['💬', '🗣️', '📢']} subLine={`${v.message_count || 0} messages`} showRankChange isCurrentUser={(v.user_id || v.id) === currentUserId} />)
+          : [<Empty key="empty" />];
+        if (currentUserId && !myEntry && topChatters.length >= 10)
+          rows.push(<div key="you-sep" className="border-t border-white/5 my-1" />, <LeaderRow key="you" item={{ user_id: currentUserId, message_count: 0 }} idx={topChatters.length} medals={['💬', '🗣️', '📢']} subLine="0 messages" showRankChange={false} isCurrentUser />);
+        return rows;
+      }
 
       case 'raiders':
         return topRaiders.length
-          ? topRaiders.map((r, i) => <LeaderRow key={r.creator_id || i} item={{ ...r, display_name: r.creator_name }} idx={i} medals={RAID_MEDALS} subLine={`${r.total_viewers} viewers · ${r.raid_count} raids`} showRankChange />)
+          ? topRaiders.map((r, i) => <LeaderRow key={r.creator_id || i} item={{ ...r, display_name: r.creator_name }} idx={i} medals={RAID_MEDALS} subLine={`${r.total_viewers} viewers · ${r.raid_count} raids`} showRankChange isCurrentUser={r.creator_id === currentUserId} />)
           : <Empty />;
 
-      case 'active':
-        return activeViewers.length
-          ? activeViewers.map((v, i) => <LeaderRow key={v.id || i} item={v} idx={i} medals={ACTIVE_MEDALS} subLine={`${Math.round(v.watch_minutes || 0)}m · ${v.points || 0} pts`} showRankChange />)
-          : <Empty />;
+      case 'active': {
+        const myEntry = currentUserId ? activeViewers.find(v => (v.user_id || v.id) === currentUserId) : null;
+        const rows = activeViewers.length
+          ? activeViewers.map((v, i) => <LeaderRow key={v.id || i} item={v} idx={i} medals={ACTIVE_MEDALS} subLine={`${Math.round(v.watch_minutes || 0)}m · ${v.points || 0} pts`} showRankChange isCurrentUser={(v.user_id || v.id) === currentUserId} />)
+          : [<Empty key="empty" />];
+        if (currentUserId && !myEntry && activeViewers.length >= 10)
+          rows.push(<div key="you-sep" className="border-t border-white/5 my-1" />, <LeaderRow key="you" item={{ user_id: currentUserId, watch_minutes: 0, points: 0 }} idx={activeViewers.length} medals={ACTIVE_MEDALS} subLine="0m · 0 pts" showRankChange={false} isCurrentUser />);
+        return rows;
+      }
 
       case 'badges':
         return badges?.length ? (
