@@ -1,10 +1,25 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, StopCircle, Monitor, X } from 'lucide-react';
 
 export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare }) {
   const [showOptions, setShowOptions] = useState(false);
   const [shareType, setShareType] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (isSharing) {
+      setElapsed(0);
+      timerRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
+    } else {
+      clearInterval(timerRef.current);
+      setElapsed(0);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [isSharing]);
+
+  const fmtElapsed = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   const handleStartScreenShare = async () => {
     try {
@@ -34,6 +49,20 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
     } catch {}
   };
 
+  const handleStartTabShare = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { cursor: 'always', displaySurface: 'browser' },
+        audio: true,
+      });
+      const vt = stream.getVideoTracks()[0];
+      if (vt) vt.onended = handleStopShare;
+      setShareType('tab');
+      onStartShare(stream);
+      setShowOptions(false);
+    } catch {}
+  };
+
   const handleStopShare = () => {
     onStopShare();
     setShareType(null);
@@ -51,7 +80,7 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
           <span className="text-xs font-semibold text-white">Screen Share</span>
           {isSharing && (
             <span className="text-[11px] px-1.5 py-0.5 rounded-full animate-pulse" style={{ background: 'rgba(192,57,43,0.4)', color: '#D4AF37' }}>
-              ACTIVE
+              {shareType ? shareType.toUpperCase() : 'ACTIVE'} {fmtElapsed(elapsed)}
             </span>
           )}
         </div>
@@ -91,8 +120,15 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
                     <Monitor className="w-4 h-4" />
                     Share Window
                   </button>
+                  <button
+                    onClick={handleStartTabShare}
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(109,191,126,0.25)', background:'rgba(109,191,126,0.08)', color:'#6DBF7E', cursor:'pointer', fontSize:13 }}
+                  >
+                    <Monitor className="w-4 h-4" />
+                    Share Tab + Audio
+                  </button>
                   <p className="text-[11px] text-white/40 px-2 py-1">
-                    Share your screen or application window with viewers in real-time
+                    Share your screen, window, or browser tab with audio
                   </p>
                 </>
               )}

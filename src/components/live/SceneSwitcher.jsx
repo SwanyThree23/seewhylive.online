@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Monitor, Layout, Pause, Play, Sunrise, Sunset, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -13,7 +13,13 @@ const SCENES = [
 
 export default function SceneSwitcher({ activeScene, onSceneChange }) {
   const [collapsed, setCollapsed] = useState(false);
-  const [brbMessage, setBrbMessage] = useState('Be Right Back!');
+  const [brbMessage, setBrbMessage] = useState(() => {
+    try { return localStorage.getItem('swl_brb_msg') || 'Be Right Back!'; } catch { return 'Be Right Back!'; }
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem('swl_scene', activeScene || ''); } catch {}
+  }, [activeScene]);
 
   return (
     <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
@@ -36,7 +42,7 @@ export default function SceneSwitcher({ activeScene, onSceneChange }) {
                   key={scene.id}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => onSceneChange(scene.id)}
+                  onClick={() => onSceneChange(scene.id, scene.id === 'brb' ? brbMessage : undefined)}
                   className={`relative p-2 rounded-lg border text-left transition-all ${
                     isActive
                       ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-[0_0_12px_rgba(212,175,55,0.3)]'
@@ -65,7 +71,10 @@ export default function SceneSwitcher({ activeScene, onSceneChange }) {
                 <p className="text-[10px] text-white/50">BRB Message</p>
                 <input
                   value={brbMessage}
-                  onChange={(e) => setBrbMessage(e.target.value)}
+                  onChange={(e) => {
+                    setBrbMessage(e.target.value);
+                    try { localStorage.setItem('swl_brb_msg', e.target.value); } catch {}
+                  }}
                   placeholder="Be Right Back!"
                   style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                 />
