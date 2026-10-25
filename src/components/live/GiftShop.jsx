@@ -436,24 +436,34 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
             }}>
               {/* Gift message input */}
               {selected && (
-                <input
-                  value={giftMessage}
-                  onChange={e => setGiftMessage(e.target.value.slice(0, 80))}
-                  placeholder="Add a message… (optional)"
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: 10,
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    background: 'rgba(255,255,255,0.05)',
-                    color: '#fff',
-                    fontSize: 13,
-                    fontFamily: 'Barlow Condensed, sans-serif',
-                    outline: 'none',
-                    marginBottom: 8,
-                    boxSizing: 'border-box',
-                  }}
-                />
+                <div style={{ position: 'relative', marginBottom: 8 }}>
+                  <input
+                    value={giftMessage}
+                    onChange={e => setGiftMessage(e.target.value.slice(0, 80))}
+                    placeholder="Add a message… (optional)"
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: 10,
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      background: 'rgba(255,255,255,0.05)',
+                      color: '#fff',
+                      fontSize: 13,
+                      fontFamily: 'Barlow Condensed, sans-serif',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                  {giftMessage.length > 40 && (
+                    <span style={{
+                      position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                      fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+                      color: giftMessage.length > 70 ? '#ef4444' : 'rgba(212,175,55,0.6)',
+                    }}>
+                      {80 - giftMessage.length}
+                    </span>
+                  )}
+                </div>
               )}
               <motion.button
                 whileTap={{ scale: selected ? 0.97 : 1 }}

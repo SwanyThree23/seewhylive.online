@@ -36,7 +36,7 @@ function GiftRow({ entry, rank }) {
       {/* Rank */}
       <div className="w-6 h-6 flex items-center justify-center rounded-lg text-xs font-black shrink-0"
         style={{ background: isTop ? `${G}25` : `${G}12`, color: G }}>
-        {rank < 3 ? RANK_MEDALS[rank] : rank + 1}
+        {isTop ? <Trophy className="w-3.5 h-3.5" style={{ color: G }} /> : rank < 3 ? RANK_MEDALS[rank] : rank + 1}
       </div>
 
       {/* Most-sent gift emoji */}

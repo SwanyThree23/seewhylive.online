@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const GOLD = '#D4AF37';
@@ -80,15 +80,19 @@ function StreamParticles({ color, count }) {
 
 export default function GiftAnimation({ event, onDone }) {
   const [visible, setVisible] = useState(true);
+  const timerRef = useRef(null);
+
+  function dismiss() {
+    clearTimeout(timerRef.current);
+    setVisible(false);
+    setTimeout(() => onDone?.(), 400);
+  }
 
   useEffect(() => {
     if (!event) return;
     setVisible(true);
-    const t = setTimeout(() => {
-      setVisible(false);
-      setTimeout(() => onDone?.(), 400);
-    }, 2800);
-    return () => clearTimeout(t);
+    timerRef.current = setTimeout(dismiss, 2800);
+    return () => clearTimeout(timerRef.current);
   }, [event?.id]);
 
   if (!event) return null;
@@ -115,6 +119,7 @@ export default function GiftAnimation({ event, onDone }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
+          onClick={dismiss}
           style={{
             position: 'fixed',
             inset: 0,
@@ -123,7 +128,8 @@ export default function GiftAnimation({ event, onDone }) {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            pointerEvents: 'none',
+            pointerEvents: 'auto',
+            cursor: 'pointer',
             background: isMega
               ? `radial-gradient(ellipse at center, ${gift.color}30 0%, transparent 70%)`
               : `radial-gradient(ellipse at center, ${gift.color}18 0%, transparent 65%)`,

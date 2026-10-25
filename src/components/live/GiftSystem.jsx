@@ -225,13 +225,16 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, padding: 12 }}>
             {gifts.map(gift => {
               var rs = RARITY_STYLES[gift.rarity] || RARITY_STYLES.common;
+              var isSending = sendMutation.isPending;
               return (
                 <button key={gift.id || gift.name} onClick={() => sendMutation.mutate(gift)}
+                  disabled={isSending}
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                     padding: "10px 4px", borderRadius: 10,
                     border: "1px solid " + rs.border, background: "rgba(255,255,255,0.03)",
-                    cursor: "pointer", transition: "all .15s",
+                    cursor: isSending ? "not-allowed" : "pointer", transition: "all .15s",
+                    opacity: isSending ? 0.6 : 1,
                   }}>
                   <span style={{ fontSize: 28, filter: "drop-shadow(0 0 6px " + rs.color + ")" }}>
                     {typeof gift.emoji === "string" && gift.emoji.startsWith("http") ? "🎁" : gift.emoji}
@@ -239,7 +242,9 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
                   <span style={{ fontFamily: C.fMon, fontSize: 7, color: rs.color }}>{rs.label}</span>
                   <span style={{ fontFamily: C.fRaj, fontSize: 10, color: C.white }}>{gift.name}</span>
                   <span style={{ fontFamily: C.fMon, fontSize: 11, color: C.gold }}>💎{gift.price}</span>
-                  <span style={{ fontFamily: C.fMon, fontSize: 7, color: C.dim }}>{gift.times_sent || 0}x sent</span>
+                  <span style={{ fontFamily: C.fMon, fontSize: 7, color: isSending ? C.gold : C.dim }}>
+                    {isSending ? "Sending…" : (gift.times_sent || 0) + "x sent"}
+                  </span>
                 </button>
               );
             })}
