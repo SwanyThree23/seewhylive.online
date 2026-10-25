@@ -8,9 +8,9 @@ export default function PreJoinSettingsModal(props) {
   var cameras = (props.devices && props.devices.cameras) || [];
 
   var videoRef = useRef(null);
-  var [resolution, setResolution] = useState('auto');
-  var [beautify, setBeautify] = useState(false);
-  var [mirror, setMirror] = useState(false);
+  var [resolution, setResolution] = useState(function () { try { return localStorage.getItem('prejoin_resolution') || 'auto'; } catch { return 'auto'; } });
+  var [beautify, setBeautify] = useState(function () { try { return localStorage.getItem('prejoin_beautify') === 'true'; } catch { return false; } });
+  var [mirror, setMirror] = useState(function () { try { return localStorage.getItem('prejoin_mirror') === 'true'; } catch { return false; } });
 
   useEffect(function () {
     if (videoRef.current && stream) {
@@ -123,7 +123,7 @@ export default function PreJoinSettingsModal(props) {
           <div style={rowLabel}>Resolution</div>
           <MobileSelect
             value={resolution}
-            onChange={function (v) { setResolution(v); props.onResolutionChange && props.onResolutionChange(v); }}
+            onChange={function (v) { setResolution(v); try { localStorage.setItem('prejoin_resolution', v); } catch {} props.onResolutionChange && props.onResolutionChange(v); }}
             options={[{ value: 'auto', label: 'Auto' }, { value: '720p', label: '720p' }, { value: '1080p', label: '1080p' }]}
             placeholder="Select resolution"
           />
@@ -134,6 +134,7 @@ export default function PreJoinSettingsModal(props) {
           checked={beautify}
           onChange={function (v) {
             setBeautify(v);
+            try { localStorage.setItem('prejoin_beautify', String(v)); } catch {}
             props.onBeautificationChange && props.onBeautificationChange(v);
           }}
         />
@@ -142,6 +143,7 @@ export default function PreJoinSettingsModal(props) {
           checked={mirror}
           onChange={function (v) {
             setMirror(v);
+            try { localStorage.setItem('prejoin_mirror', String(v)); } catch {}
             props.onMirrorChange && props.onMirrorChange(v);
           }}
         />

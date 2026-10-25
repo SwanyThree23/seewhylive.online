@@ -29,7 +29,7 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
   const [processing, setProcessing] = useState(false);
 
   // Host-side state
-  const [hostPaywallEnabled, setHostPaywallEnabled] = useState(false);
+  const [hostPaywallEnabled, setHostPaywallEnabled] = useState(() => { try { return localStorage.getItem('paywall_enabled') === 'true'; } catch { return false; } });
   const [customPrice, setCustomPrice] = useState('');
 
   // Countdown timer — only for non-host non-unlocked viewers
@@ -70,8 +70,10 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
           </div>
           <button
             onClick={() => {
-              setHostPaywallEnabled(v => !v);
-              toast.success(hostPaywallEnabled ? 'Paywall disabled' : '120s free preview paywall enabled');
+              const next = !hostPaywallEnabled;
+              setHostPaywallEnabled(next);
+              try { localStorage.setItem('paywall_enabled', String(next)); } catch {}
+              toast.success(next ? '120s free preview paywall enabled' : 'Paywall disabled');
             }}
             className={`w-10 h-5 rounded-full transition-all relative ${hostPaywallEnabled ? 'bg-[#d4af37]' : 'bg-white/10'}`}
           >
