@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Camera, MessageSquare, Heart, DollarSign, MoreHorizontal, X, RotateCcw } from 'lucide-react';
 
 export default function MobileStreamControls({ micMuted, onMicToggle, onReact, onQuickTip, onWebSource, onGoal, onClip, onRaid, onPoll, onQA, roomId }) {
-  const [showChat, setShowChat] = useState(true);
+  const [showChat, setShowChat] = useState(() => { try { return localStorage.getItem('mobile_chat_visible') !== 'false'; } catch { return true; } });
   const [showMore, setShowMore] = useState(false);
   const [facing, setFacing] = useState('user');
   const [hypeCount, setHypeCount] = useState(0);
   const [floatEmojis, setFloatEmojis] = useState([]);
+  const [reactIdx, setReactIdx] = useState(0);
   const floatId = useRef(0);
 
   const handleFlipCamera = () => {
@@ -23,7 +24,6 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
   };
 
   const REACT_EMOJIS = ['❤️', '🔥', '😍', '🎉', '💯', '👏'];
-  const reactIdx = useRef(0);
 
   const handleHype = () => {
     for (let i = 0; i < 5; i++) setTimeout(() => addFloat('🔥'), i * 80);
@@ -32,8 +32,8 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
   };
 
   const handleReactCycle = () => {
-    const emoji = REACT_EMOJIS[reactIdx.current % REACT_EMOJIS.length];
-    reactIdx.current += 1;
+    const emoji = REACT_EMOJIS[reactIdx % REACT_EMOJIS.length];
+    setReactIdx(i => i + 1);
     addFloat(emoji);
   };
 
@@ -72,7 +72,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
             {/* Toggle Chat */}
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => setShowChat(!showChat)}
+              onClick={() => { const n = !showChat; setShowChat(n); try { localStorage.setItem('mobile_chat_visible', String(n)); } catch {} }}
               className={`w-12 h-12 rounded-full flex flex-col items-center justify-center gap-0.5 ${
                 showChat ? 'bg-[#D4AF37]/20 border border-[#D4AF37]/50' : 'bg-white/10 border border-white/20'
               }`}
@@ -97,7 +97,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
               onClick={handleReactCycle}
               className="w-12 h-12 rounded-full bg-red-900/40 border border-red-700/40 flex flex-col items-center justify-center gap-0.5"
             >
-              <span className="text-xl">{REACT_EMOJIS[reactIdx.current % REACT_EMOJIS.length]}</span>
+              <span className="text-xl">{REACT_EMOJIS[reactIdx % REACT_EMOJIS.length]}</span>
               <span className="text-[11px] text-white/60">React</span>
             </motion.button>
 

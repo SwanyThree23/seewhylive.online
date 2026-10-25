@@ -31,16 +31,16 @@ const inputStyle = {
 };
 
 export default function LowerThirdsBanner({ onBannerChange }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem('lt_collapsed') === 'true'; } catch { return false; } });
   const [enabled, setEnabled] = useState(false);
-  const [text, setText] = useState('🔴 LIVE NOW — StreamSpace');
-  const [style, setStyle] = useState('gradient');
-  const [color, setColor] = useState('#d4af37');
+  const [text, setText] = useState(() => { try { return localStorage.getItem('lt_text') || '🔴 LIVE NOW — StreamSpace'; } catch { return '🔴 LIVE NOW — StreamSpace'; } });
+  const [style, setStyle] = useState(() => { try { return localStorage.getItem('lt_style') || 'gradient'; } catch { return 'gradient'; } });
+  const [color, setColor] = useState(() => { try { return localStorage.getItem('lt_color') || '#d4af37'; } catch { return '#d4af37'; } });
   const [duration, setDuration] = useState(0);
   const [progress, setProgress] = useState(100);
   const [scroll, setScroll] = useState(false);
-  const [fontSize, setFontSize] = useState('medium');
-  const [position, setPosition] = useState('bottom');
+  const [fontSize, setFontSize] = useState(() => { try { return localStorage.getItem('lt_fontsize') || 'medium'; } catch { return 'medium'; } });
+  const [position, setPosition] = useState(() => { try { return localStorage.getItem('lt_position') || 'bottom'; } catch { return 'bottom'; } });
 
   const FONT_SIZES = { small: 11, medium: 14, large: 18 };
 
@@ -71,7 +71,7 @@ export default function LowerThirdsBanner({ onBannerChange }) {
   return (
     <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => { const n = !collapsed; setCollapsed(n); try { localStorage.setItem('lt_collapsed', String(n)); } catch {} }}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
         <div className="flex items-center gap-2">
@@ -98,7 +98,7 @@ export default function LowerThirdsBanner({ onBannerChange }) {
             <p className="text-[10px] text-white/40">Banner Text</p>
             <input
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => { setText(e.target.value); try { localStorage.setItem('lt_text', e.target.value); } catch {} }}
               placeholder="Enter banner text..."
               style={{ ...inputStyle, height: 28, padding: '0 10px', fontSize: 12 }}
             />
@@ -123,7 +123,7 @@ export default function LowerThirdsBanner({ onBannerChange }) {
             {['gradient', 'solid', 'transparent'].map(s => (
               <button
                 key={s}
-                onClick={() => setStyle(s)}
+                onClick={() => { setStyle(s); try { localStorage.setItem('lt_style', s); } catch {} }}
                 className={`text-[10px] py-1 rounded capitalize border transition-all ${
                   style === s ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 text-white/50 hover:border-white/20'
                 }`}
@@ -135,7 +135,7 @@ export default function LowerThirdsBanner({ onBannerChange }) {
 
           <div className="flex items-center gap-2">
             <p className="text-[10px] text-white/40">Color</p>
-            <input type="color" value={color} onChange={(e) => setColor(e.target.value)}
+            <input type="color" value={color} onChange={(e) => { setColor(e.target.value); try { localStorage.setItem('lt_color', e.target.value); } catch {} }}
               className="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
             <p className="text-[10px] text-white/40 ml-auto">Duration</p>
             <div className="flex gap-1">
@@ -155,12 +155,12 @@ export default function LowerThirdsBanner({ onBannerChange }) {
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-[10px] text-white/40">Size</p>
             {['small', 'medium', 'large'].map(s => (
-              <button key={s} onClick={() => setFontSize(s)}
+              <button key={s} onClick={() => { setFontSize(s); try { localStorage.setItem('lt_fontsize', s); } catch {} }}
                 className={`text-[10px] px-1.5 py-0.5 rounded border capitalize transition-all ${fontSize === s ? 'border-[#d4af37] text-[#d4af37]' : 'border-white/10 text-white/50'}`}>{s[0].toUpperCase()}</button>
             ))}
             <p className="text-[10px] text-white/40 ml-1">Pos</p>
             {['bottom', 'top'].map(p => (
-              <button key={p} onClick={() => setPosition(p)}
+              <button key={p} onClick={() => { setPosition(p); try { localStorage.setItem('lt_position', p); } catch {} }}
                 className={`text-[10px] px-1.5 py-0.5 rounded border capitalize transition-all ${position === p ? 'border-[#d4af37] text-[#d4af37]' : 'border-white/10 text-white/50'}`}>{p[0].toUpperCase() + p.slice(1)}</button>
             ))}
             <button onClick={() => setScroll(v => !v)}
