@@ -7,7 +7,7 @@ const G = '#d4af37';
 
 export default function RealtimeLeaderboard({ roomId, creatorId }) {
   const [leaderboard, setLeaderboard] = useState([]);
-  const [timeRange, setTimeRange] = useState('live');
+  const [timeRange, setTimeRange] = useState(() => { try { return localStorage.getItem('leaderboard_range') || 'live'; } catch { return 'live'; } });
   const [loading, setLoading] = useState(false);
   const [rankDeltas, setRankDeltas] = useState({});
   const prevRanks = useRef({});
@@ -50,7 +50,7 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
           {['live', 'session', 'all-time'].map((range) => (
             <button
               key={range}
-              onClick={() => setTimeRange(range)}
+              onClick={() => { setTimeRange(range); try { localStorage.setItem('leaderboard_range', range); } catch {} }}
               className="px-2 py-1 text-[10px] font-bold rounded transition-all"
               style={{
                 background: timeRange === range ? `${G}20` : 'rgba(255,255,255,0.03)',
