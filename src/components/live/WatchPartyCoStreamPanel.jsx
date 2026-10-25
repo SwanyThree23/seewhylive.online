@@ -121,7 +121,7 @@ export default function WatchPartyCoStreamPanel({ roomId, isHost: _isHost, parti
   // ── Playback ─────────────────────────────────────────────────────────────────
   const [playing, setPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [volume, setVolume]   = useState(75);
+  const [volume, setVolume]   = useState(() => { try { const s = localStorage.getItem('watchparty_volume'); return s ? Number(s) : 75; } catch { return 75; } });
   const intervalRef           = useRef(null);
 
   // ── Sync ─────────────────────────────────────────────────────────────────────
@@ -442,7 +442,7 @@ export default function WatchPartyCoStreamPanel({ roomId, isHost: _isHost, parti
               <Volume2 size={14} color={C.muted} style={{ marginLeft: 6 }} />
               <input
                 type="range" min={0} max={100} value={volume}
-                onChange={e => setVolume(Number(e.target.value))}
+                onChange={e => { const v = Number(e.target.value); setVolume(v); try { localStorage.setItem('watchparty_volume', String(v)); } catch {} }}
                 style={{ flex: 1, accentColor: G, height: 4 }}
               />
               <span style={{ fontSize: 11, color: C.muted, width: 26, textAlign: 'right' }}>{volume}</span>

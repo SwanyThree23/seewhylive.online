@@ -96,21 +96,23 @@ function SectionLabel({ children }) {
 }
 
 export default function WebRTCConfigModal({ isOpen, onClose, onApply, currentConfig }) {
-  const [cfg, setCfg] = useState(currentConfig || DEFAULTS);
+  const [cfg, setCfg] = useState(() => { try { const s = localStorage.getItem('webrtc_config'); if (s) return { ...DEFAULTS, ...JSON.parse(s) }; } catch {} return currentConfig || DEFAULTS; });
 
   function set(key, value) {
     setCfg((c) => ({ ...c, [key]: value }));
   }
 
   function handleApply() {
-    onApply({
+    const applied = {
       codec:             cfg.codec,
       resolution:        cfg.resolution,
       fps:               cfg.fps,
       bitrate:           cfg.bitrate,
       noiseSuppression:  cfg.noiseSuppression,
       echoCancellation:  cfg.echoCancellation,
-    });
+    };
+    try { localStorage.setItem('webrtc_config', JSON.stringify(applied)); } catch {}
+    onApply(applied);
     onClose();
   }
 
