@@ -132,7 +132,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   const [msgPerMin, setMsgPerMin] = useState(0);
   const [activeChatters, setActiveChatters] = useState(0);
   const [lastSentAt, setLastSentAt] = useState(0);
-  const [translateLang, setTranslateLang] = useState(null);
+  const [translateLang, setTranslateLang] = useState(() => { try { return localStorage.getItem('chat_translate_lang') || null; } catch { return null; } });
   const [translationMap, setTranslationMap] = useState({});
   const [langSheetOpen, setLangSheetOpen] = useState(false);
   const [reactions, setReactions] = useState({});   // { [msgId]: { [emoji]: count } }
@@ -535,7 +535,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
 
               {/* Off option */}
               <button
-                onClick={() => { setTranslateLang(null); setTranslationMap({}); setLangSheetOpen(false); }}
+                onClick={() => { setTranslateLang(null); setTranslationMap({}); setLangSheetOpen(false); try { localStorage.setItem('chat_translate_lang', ''); } catch {} }}
                 className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all"
                 style={{
                   background: !translateLang ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.04)',
@@ -554,7 +554,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
               {LANGUAGES.map(lang => (
                 <button
                   key={lang.code}
-                  onClick={() => { setTranslateLang(lang.code); setTranslationMap({}); setLangSheetOpen(false); }}
+                  onClick={() => { setTranslateLang(lang.code); setTranslationMap({}); setLangSheetOpen(false); try { localStorage.setItem('chat_translate_lang', lang.code); } catch {} }}
                   className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all"
                   style={{
                     background: translateLang === lang.code ? 'rgba(109,191,126,0.1)' : 'rgba(255,255,255,0.04)',
