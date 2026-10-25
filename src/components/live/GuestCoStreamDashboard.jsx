@@ -628,6 +628,13 @@ export default function GuestCoStreamDashboard({
       ) : (
         <>
           <div style={{ display: 'flex', gap: 6, padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
+            <button onClick={() => setSortBy(s => s === 'role' ? 'name' : 'role')} style={{
+              ...T, fontSize: 9, padding: '4px 8px', borderRadius: 5, cursor: 'pointer',
+              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+              color: 'rgba(255,255,255,0.4)', fontWeight: 900, whiteSpace: 'nowrap', flexShrink: 0,
+            }}>
+              {sortBy === 'role' ? '⬍ Role' : '⬍ Name'}
+            </button>
             <input
               value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search guests..."

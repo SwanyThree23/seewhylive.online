@@ -62,7 +62,9 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
   const [open, setOpen] = useState(false);
   const [cat, setCat] = useState('All');
   const [sending, setSending] = useState(null);
-  const [multiplier, setMultiplier] = useState(1);
+  const [multiplier, setMultiplier] = useState(() => {
+    try { return parseInt(localStorage.getItem('gift_tray_multiplier') || '1', 10) || 1; } catch { return 1; }
+  });
   const [giftStreak, setGiftStreak] = useState(0);
   const [showCombo, setShowCombo] = useState(false);
   const lastGiftRef = useRef(null);
@@ -230,7 +232,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
               <div className="flex items-center gap-2 px-4 py-2 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 <span className="text-[10px] uppercase tracking-wider font-bold" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Send:</span>
                 {MULTIPLIERS.map(m => (
-                  <button key={m} onClick={() => setMultiplier(m)}
+                  <button key={m} onClick={() => { setMultiplier(m); try { localStorage.setItem('gift_tray_multiplier', String(m)); } catch {} }}
                     className="px-3 py-1 rounded-lg text-[11px] font-black uppercase"
                     style={{
                       background: multiplier === m ? `${G}20` : 'rgba(255,255,255,0.04)',

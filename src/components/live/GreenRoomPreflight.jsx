@@ -130,13 +130,22 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                   </div>
                 );
               })}
-              <button
-                onClick={runChecks}
-                className="text-[11px] font-black uppercase self-start"
-                style={{ color: 'rgba(212,175,55,0.55)', ...T }}
-              >
-                ↺ Re-run checks
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={runChecks}
+                  className="text-[11px] font-black uppercase self-start"
+                  style={{ color: 'rgba(212,175,55,0.55)', ...T }}
+                >
+                  ↺ Re-run checks
+                </button>
+                {Object.values(checks).some(v => v !== 'idle') && (
+                  <span className="text-[10px] font-black" style={{
+                    color: allReady ? '#6DBF7E' : 'rgba(255,255,255,0.3)', ...T
+                  }}>
+                    {Object.values(checks).filter(v => v === 'ready' || v === 'warn').length}/3 ready
+                  </span>
+                )}
+              </div>
 
               {/* RTMP Stream Key */}
               <div>

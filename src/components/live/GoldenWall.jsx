@@ -85,7 +85,9 @@ const FILTER_TABS = [
 
 export default function GoldenWall({ roomId, isExpanded = true }) {
   const [wallItems, setWallItems]   = useState([]);
-  const [filter, setFilter]         = useState('all');
+  const [filter, setFilter]         = useState(() => {
+    try { return localStorage.getItem('golden_wall_filter') || 'all'; } catch { return 'all'; }
+  });
   const [sessionTotal, setSessionTotal] = useState(0);
   const qc = useQueryClient();
 
@@ -190,7 +192,7 @@ export default function GoldenWall({ roomId, isExpanded = true }) {
           {FILTER_TABS.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setFilter(tab.id)}
+              onClick={() => { setFilter(tab.id); try { localStorage.setItem('golden_wall_filter', tab.id); } catch {} }}
               className="flex-1 py-1 rounded text-[10px] font-bold transition-all"
               style={filter === tab.id
                 ? { background: `${G}20`, color: G, border: `1px solid ${G}30` }
