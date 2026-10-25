@@ -38,10 +38,15 @@ export default function LowerThirdsBanner({ onBannerChange }) {
   const [color, setColor] = useState('#d4af37');
   const [duration, setDuration] = useState(0);
   const [progress, setProgress] = useState(100);
+  const [scroll, setScroll] = useState(false);
+  const [fontSize, setFontSize] = useState('medium');
+  const [position, setPosition] = useState('bottom');
+
+  const FONT_SIZES = { small: 11, medium: 14, large: 18 };
 
   useEffect(() => {
-    if (onBannerChange) onBannerChange({ enabled, text, style, color });
-  }, [enabled, text, style, color]);
+    if (onBannerChange) onBannerChange({ enabled, text, style, color, scroll, fontSize, position });
+  }, [enabled, text, style, color, scroll, fontSize, position]);
 
   useEffect(() => {
     if (!enabled || duration === 0) { setProgress(100); return; }
@@ -146,6 +151,22 @@ export default function LowerThirdsBanner({ onBannerChange }) {
             </div>
           </div>
 
+          {/* Font size + Position + Scroll */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-[10px] text-white/40">Size</p>
+            {['small', 'medium', 'large'].map(s => (
+              <button key={s} onClick={() => setFontSize(s)}
+                className={`text-[10px] px-1.5 py-0.5 rounded border capitalize transition-all ${fontSize === s ? 'border-[#d4af37] text-[#d4af37]' : 'border-white/10 text-white/50'}`}>{s[0].toUpperCase()}</button>
+            ))}
+            <p className="text-[10px] text-white/40 ml-1">Pos</p>
+            {['bottom', 'top'].map(p => (
+              <button key={p} onClick={() => setPosition(p)}
+                className={`text-[10px] px-1.5 py-0.5 rounded border capitalize transition-all ${position === p ? 'border-[#d4af37] text-[#d4af37]' : 'border-white/10 text-white/50'}`}>{p[0].toUpperCase() + p.slice(1)}</button>
+            ))}
+            <button onClick={() => setScroll(v => !v)}
+              className={`text-[10px] px-1.5 py-0.5 rounded border transition-all ${scroll ? 'border-[#d4af37] text-[#d4af37]' : 'border-white/10 text-white/50'}`}>Scroll</button>
+          </div>
+
           {enabled && duration > 0 && (
             <div className="h-1 bg-white/10 rounded-full overflow-hidden">
               <motion.div className="h-full rounded-full bg-[#d4af37]" style={{ width: `${progress}%` }} />
@@ -156,9 +177,18 @@ export default function LowerThirdsBanner({ onBannerChange }) {
           {enabled && (
             <div className="rounded overflow-hidden relative h-10">
               <div className="absolute inset-0" style={{ background: bgStyle[style] }} />
-              <div className="relative h-full flex items-center px-3">
-                <p className="text-sm font-bold truncate" style={{ color, textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>{text}</p>
+              <div className="relative h-full flex items-center px-3 overflow-hidden">
+                <p
+                  className="font-bold whitespace-nowrap"
+                  style={{
+                    color,
+                    fontSize: FONT_SIZES[fontSize],
+                    textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                    animation: scroll ? 'marquee 8s linear infinite' : 'none',
+                  }}
+                >{text}</p>
               </div>
+              <style>{`@keyframes marquee { 0% { transform: translateX(100%) } 100% { transform: translateX(-100%) } }`}</style>
             </div>
           )}
         </motion.div>

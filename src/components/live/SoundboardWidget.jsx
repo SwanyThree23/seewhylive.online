@@ -26,6 +26,8 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
   const [customUrl, setCustomUrl]   = useState('');
   const [customLabel, setCustomLabel] = useState('');
   const [customSounds, setCustomSounds] = useState([]);
+  const [playCounts, setPlayCounts] = useState({});
+  const [cooldowns, setCooldowns]   = useState({});
   const audioRef = useRef(new Audio());
 
   const allSounds = [...SOUND_EFFECTS, ...customSounds];
@@ -40,7 +42,7 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
   }, []);
 
   const playSound = useCallback((sound) => {
-    if (disabled) return;
+    if (disabled || cooldowns[sound.id]) return;
     if (playingId === sound.id) { stopSound(); return; }
     stopSound();
     const audio = audioRef.current;
@@ -49,6 +51,9 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
     audio.loop   = loopId === sound.id;
     audio.play().catch(() => {});
     setPlayingId(sound.id);
+    setPlayCounts(prev => ({ ...prev, [sound.id]: (prev[sound.id] || 0) + 1 }));
+    setCooldowns(prev => ({ ...prev, [sound.id]: true }));
+    setTimeout(() => setCooldowns(prev => ({ ...prev, [sound.id]: false })), 2000);
     setRecentPlayed(prev => {
       const next = [sound, ...prev.filter(s => s.id !== sound.id)].slice(0, 3);
       return next;
@@ -57,7 +62,7 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
       if (!audio.loop) setPlayingId(null);
     };
     setTimeout(() => { if (!audio.loop) setPlayingId(null); }, 8000);
-  }, [disabled, playingId, volume, loopId, stopSound]);
+  }, [disabled, playingId, volume, loopId, stopSound, cooldowns]);
 
   // Keyboard hotkeys (1-8 when widget is focused area)
   useEffect(() => {
@@ -178,12 +183,12 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
                 whileHover={{ scale: disabled ? 1 : 1.05 }}
                 whileTap={{ scale: disabled ? 1 : 0.95 }}
                 onClick={() => playSound(sound)}
-                disabled={disabled}
+                disabled={disabled || cooldowns[sound.id]}
                 className="w-full py-2 px-1 rounded text-center transition-all disabled:opacity-40 flex flex-col items-center gap-0.5"
                 style={{
-                  background: isPlaying ? `${G}30` : 'rgba(255,255,255,0.05)',
+                  background: isPlaying ? `${G}30` : cooldowns[sound.id] ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)',
                   border: isPlaying ? `1px solid ${G}` : `1px solid ${BORDER}`,
-                  cursor: disabled ? 'not-allowed' : 'pointer',
+                  cursor: disabled || cooldowns[sound.id] ? 'not-allowed' : 'pointer',
                 }}
                 title={`${sound.label}${sound.hotkey ? ` (${sound.hotkey})` : ''}`}
               >
@@ -191,6 +196,11 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
                 <span className="text-[10px] font-bold text-white/70 leading-tight">{sound.label.split(' ')[0]}</span>
                 {sound.hotkey && <span className="text-[8px] text-white/25 font-mono">[{sound.hotkey}]</span>}
               </motion.button>
+              {playCounts[sound.id] > 0 && (
+                <span style={{ position: 'absolute', bottom: 2, left: 2, fontSize: 8, color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace', pointerEvents: 'none' }}>
+                  ×{playCounts[sound.id]}
+                </span>
+              )}
 
               {/* Loop toggle (top-right on each button) */}
               <button

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Target, X, Check, TrendingUp, Zap } from 'lucide-react';
+import { Plus, Target, X, Check, TrendingUp, Zap, Share2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { fireAlert } from './HostAlertCenter';
@@ -71,6 +71,22 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
   const completeMut = useMutation({
     mutationFn: (id) => base44.entities.StreamerGoal.update(id, { status: 'completed' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['stream-goals', creatorId, roomId] }),
+  });
+
+  const shareGoalMut = useMutation({
+    mutationFn: async (goal) => {
+      const current = getCurrentValue(goal.goal_type);
+      const gt = GOAL_TYPES.find(g => g.id === goal.goal_type);
+      const pct = goal.target_amount > 0 ? Math.min(100, Math.round((current / goal.target_amount) * 100)) : 0;
+      const bar = '█'.repeat(Math.floor(pct / 10)) + '░'.repeat(10 - Math.floor(pct / 10));
+      await base44.entities.Message.create({
+        room_id: roomId,
+        user_id: creatorId,
+        user_name: 'System',
+        content: `🎯 Goal: ${goal.title} — ${bar} ${pct}% (${gt?.prefix}${current}/${gt?.prefix}${goal.target_amount})${goal.reward_text ? ` · ${goal.reward_text}` : ''}`,
+        type: 'system',
+      });
+    },
   });
 
   // Track tip rate ($/min) from tip changes
@@ -219,7 +235,8 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
 
         return (
           <motion.div key={goal.id} layout
-            className={`p-4 rounded-xl border space-y-3 ${isCompleted ? 'border-[#6DBF7E]/50 bg-[#6DBF7E]/5' : 'border-white/10 bg-white/3'}`}
+            className={`p-4 rounded-xl border space-y-3 ${isCompleted ? 'border-[#6DBF7E]/50 bg-[#6DBF7E]/5' : pct >= 80 ? 'border-[#C9A84C]/40 bg-[#C9A84C]/5' : 'border-white/10 bg-white/3'}`}
+            style={pct >= 80 && !isCompleted ? { boxShadow: '0 0 16px rgba(201,168,76,0.15)' } : {}}
           >
             <div className="flex items-start justify-between">
               <div>
@@ -228,6 +245,11 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
               </div>
               <div className="flex items-center gap-2">
                 {isCompleted && <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.2)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.3)' }}>✓ REACHED</span>}
+                {isHost && roomId && (
+                  <button onClick={() => shareGoalMut.mutate(goal)} className="text-white/30 hover:text-[#C9A84C]" title="Share progress to chat">
+                    <Share2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
                 {isHost && (
                   <button onClick={() => deleteMut.mutate(goal.id)} className="text-white/20 hover:text-[#C0392B]">
                     <X className="w-3.5 h-3.5" />

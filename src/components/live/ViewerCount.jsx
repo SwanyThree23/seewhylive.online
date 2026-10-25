@@ -43,16 +43,16 @@ export default function ViewerCount({ count = 0, peakViewers = 0 }) {
     setHistory(prev => [...prev.slice(-59), { v: count }]);
     const prevCount = prevRef.current;
     const diff = count - prevCount;
-    if (diff !== 0) {
-      setDeltaFlash(diff);
-      const t = setTimeout(() => setDeltaFlash(null), 2500);
-      return () => clearTimeout(t);
-    }
     const hitMilestone = MILESTONES.find(m => prevCount < m && count >= m);
     if (hitMilestone) {
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.3 }, colors: ['#d4af37', '#f5e6a3', '#D4AF37'] });
     }
     prevRef.current = count;
+    if (diff !== 0) {
+      setDeltaFlash(diff);
+      const t = setTimeout(() => setDeltaFlash(null), 2500);
+      return () => clearTimeout(t);
+    }
   }, [count]);
 
   const perMinute  = getPerMinuteDelta(history);
@@ -114,16 +114,22 @@ export default function ViewerCount({ count = 0, peakViewers = 0 }) {
         <p className="text-[10px] text-[#d4af37]/70">Peak: {peakViewers.toLocaleString()}</p>
       )}
 
-      {/* Next milestone countdown */}
-      {awayFromNext != null && awayFromNext > 0 && awayFromNext <= 50 && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-[10px] font-bold text-center mt-0.5"
-          style={{ color: '#C9A84C' }}
-        >
-          {awayFromNext} away from {nextMile?.toLocaleString()}!
-        </motion.p>
+      {/* Next milestone progress bar */}
+      {nextMile != null && awayFromNext != null && awayFromNext > 0 && (
+        <div className="w-full mt-1">
+          <div className="flex justify-between text-[9px] mb-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <span>{count.toLocaleString()}</span>
+            <span style={{ color: '#C9A84C' }}>→ {nextMile.toLocaleString()}</span>
+          </div>
+          <div className="h-0.5 bg-white/10 rounded-full overflow-hidden w-20 mx-auto">
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: '#C9A84C' }}
+              animate={{ width: `${Math.min(100, (count / nextMile) * 100)}%` }}
+              transition={{ duration: 0.6 }}
+            />
+          </div>
+        </div>
       )}
 
       {/* Sparkline */}
