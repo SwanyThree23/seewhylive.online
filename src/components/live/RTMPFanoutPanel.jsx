@@ -157,7 +157,7 @@ export default function RTMPFanoutPanel({ roomId, isHost }) {
   const [destinations, setDestinations] = useState([]);
   const [fanoutActive, setFanoutActive] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [selectedPlatform, setSelectedPlatform] = useState('youtube');
+  const [selectedPlatform, setSelectedPlatform] = useState(() => { try { return localStorage.getItem('rtmp_platform') || 'youtube'; } catch { return 'youtube'; } });
   const [customLabel, setCustomLabel] = useState('');
 
   // Load existing RTMP destinations from room entity
@@ -314,7 +314,7 @@ export default function RTMPFanoutPanel({ roomId, isHost }) {
                 {PLATFORM_DEFS.map(p => (
                   <button
                     key={p.key}
-                    onClick={() => setSelectedPlatform(p.key)}
+                    onClick={() => { setSelectedPlatform(p.key); try { localStorage.setItem('rtmp_platform', p.key); } catch {} }}
                     className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all"
                     style={{
                       background: selectedPlatform === p.key ? `${p.color}15` : 'rgba(255,255,255,0.04)',

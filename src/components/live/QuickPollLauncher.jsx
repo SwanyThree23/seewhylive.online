@@ -21,7 +21,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
   const [custom, setCustom] = useState(false);
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '']);
-  const [timeout, setTimeout_] = useState(60);
+  const [timeout, setTimeout_] = useState(() => { try { const s = localStorage.getItem('quickpoll_timeout'); return s ? Number(s) : 60; } catch { return 60; } });
   const qc = useQueryClient();
   const TIMEOUT_OPTIONS = [{ v: 30, l: '30s' }, { v: 60, l: '1m' }, { v: 120, l: '2m' }, { v: 300, l: '5m' }];
 
@@ -108,7 +108,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
                   <button onClick={() => setCustom(false)} className="text-[10px] text-white/30 hover:text-white transition-colors">← Back</button>
                   <div className="flex gap-1">
                     {TIMEOUT_OPTIONS.map(o => (
-                      <button key={o.v} onClick={() => setTimeout_(o.v)}
+                      <button key={o.v} onClick={() => { setTimeout_(o.v); try { localStorage.setItem('quickpoll_timeout', String(o.v)); } catch {} }}
                         className="text-[10px] px-2 py-0.5 rounded font-black transition-all"
                         style={{
                           background: timeout === o.v ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)',
