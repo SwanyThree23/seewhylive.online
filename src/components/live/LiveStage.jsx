@@ -582,7 +582,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
   } = useLiveStage({ roomId, userId, userName, role, token });
 
   const [pinnedId,          setPinnedId]          = useState(null);
-  const [showChat,          setShowChat]          = useState(false);
+  const [showChat,          setShowChat]          = useState(() => { try { return localStorage.getItem('stage_chat_open') === 'true'; } catch { return false; } });
   const [floatingReactions, setFloatingReactions] = useState([]);
 
   // Per-seat gift totals keyed by userId — polled every 15s
@@ -861,7 +861,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
 
           {/* Chat toggle */}
           <button
-            onClick={() => setShowChat(v => !v)}
+            onClick={() => setShowChat(v => { const n = !v; try { localStorage.setItem('stage_chat_open', String(n)); } catch {} return n; })}
             aria-label={showChat ? 'Hide live chat' : 'Show live chat'}
             aria-pressed={showChat}
             className="flex items-center gap-1.5 px-2.5 rounded-lg transition-all"

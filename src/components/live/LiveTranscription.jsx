@@ -87,7 +87,7 @@ export default function LiveTranscription({
   const [showCaptions, setShowCaptions] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [usingWebSpeech, setUsingWebSpeech] = useState(false);
-  const [lang, setLang] = useState('en-US');
+  const [lang, setLang] = useState(() => { try { return localStorage.getItem('transcription_lang') || 'en-US'; } catch { return 'en-US'; } });
   const [wordCount, setWordCount] = useState(0);
   const [copied, setCopied] = useState(false);
   const allTextRef = useRef([]);
@@ -240,7 +240,7 @@ export default function LiveTranscription({
         {/* Language selector */}
         <div className="flex items-center gap-0.5">
           {LANG_OPTIONS.map(l => (
-            <button key={l.code} onClick={() => setLang(l.code)}
+            <button key={l.code} onClick={() => { setLang(l.code); try { localStorage.setItem('transcription_lang', l.code); } catch {} }}
               className="px-1.5 py-1 rounded text-[9px] font-black transition-all"
               style={{ background: lang === l.code ? `${G}25` : 'rgba(255,255,255,0.04)', color: lang === l.code ? G : 'rgba(255,255,255,0.3)', border: `1px solid ${lang === l.code ? `${G}45` : 'rgba(255,255,255,0.07)'}` }}>
               {l.label}
