@@ -18,7 +18,10 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
   const [isActive, setIsActive]       = useState(false);
   const [processing, setProcessing]   = useState(false);
   const [totalFlagged, setTotalFlagged] = useState(0);
-  const [autoRemoveThreshold, setAutoRemoveThreshold] = useState(0.95);
+  const [totalActioned, setTotalActioned] = useState(0);
+  const [autoRemoveThreshold, setAutoRemoveThreshold] = useState(() => {
+    try { const v = localStorage.getItem('guardian_threshold'); return v ? parseFloat(v) : 0.95; } catch { return 0.95; }
+  });
   const [showSettings, setShowSettings] = useState(false);
 
   useGuardianEnforcement({ roomId, moderatorId, thresholds, enabled: isActive && !!roomId });
@@ -108,6 +111,7 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
 
   const handleAction = async (flag, action) => {
     setFlags(prev => prev.filter(f => f.id !== flag.id));
+    if (action !== 'approve') setTotalActioned(n => n + 1);
 
     if (action === 'remove') {
       await base44.entities.Message.delete(flag.message_id).catch(() => {});
@@ -172,9 +176,17 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
           <Shield className="w-4 h-4" />
           Guardian AI {isActive ? '✓ ACTIVE' : '○ OFF'}
           {totalFlagged > 0 && (
-            <span className="ml-auto text-[10px] font-black px-1.5 py-0.5 rounded-full"
-              style={{ background: 'rgba(192,57,43,0.3)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.4)' }}>
-              {totalFlagged}
+            <span className="ml-auto flex items-center gap-1">
+              <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
+                style={{ background: 'rgba(192,57,43,0.3)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.4)' }}>
+                {totalFlagged} flagged
+              </span>
+              {totalActioned > 0 && (
+                <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
+                  style={{ background: 'rgba(109,191,126,0.15)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)' }}>
+                  {totalActioned} actioned
+                </span>
+              )}
             </span>
           )}
         </motion.button>
@@ -195,7 +207,7 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
             <p className="text-[10px] text-white/40 font-bold uppercase">Auto-remove threshold</p>
             <div className="flex items-center gap-2">
               <input type="range" min={0.5} max={1} step={0.05} value={autoRemoveThreshold}
-                onChange={e => setAutoRemoveThreshold(parseFloat(e.target.value))}
+                onChange={e => { const v = parseFloat(e.target.value); setAutoRemoveThreshold(v); try { localStorage.setItem('guardian_threshold', String(v)); } catch {} }}
                 className="flex-1 h-1" style={{ accentColor: '#C0392B' }} />
               <span className="text-[11px] font-mono font-bold w-8 text-right" style={{ color: '#C0392B' }}>
                 {Math.round(autoRemoveThreshold * 100)}%

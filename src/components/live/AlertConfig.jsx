@@ -34,6 +34,12 @@ export default function AlertConfig({ creatorId }) {
     enabled: !!creatorId,
   });
 
+  const deleteAlertMutation = useMutation({
+    mutationFn: (id) => base44.entities.SoundAlert.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['soundAlerts', creatorId] }),
+    onError: () => toast.error('Failed to delete alert.'),
+  });
+
   const createAlertMutation = useMutation({
     mutationFn: async () => {
       return base44.entities.SoundAlert.create({
@@ -169,14 +175,18 @@ export default function AlertConfig({ creatorId }) {
               <p className="font-bold text-sm text-white">{alert.name}</p>
               <p className="text-[10px] text-white/60">{alert.trigger_type} • 🔊 {alert.sound_preset}</p>
             </div>
-            <motion.button whileHover={{ scale: 1.1 }} className="p-2 text-[#C0392B]">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              onClick={() => deleteAlertMutation.mutate(alert.id)}
+              disabled={deleteAlertMutation.isPending}
+              className="p-2 text-[#C0392B] disabled:opacity-40">
               <Trash2 className="w-4 h-4" />
             </motion.button>
           </motion.div>
         ))}
       </div>
 
-      {!alerts || alerts.length === 0 && (
+      {(!alerts || alerts.length === 0) && (
         <p className="text-center text-white/40 py-4 text-sm">No alerts yet</p>
       )}
     </div>

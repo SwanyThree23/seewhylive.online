@@ -470,9 +470,35 @@ export default function AccessibilityPanel() {
         </div>
       </Section>
 
-      {/* Info footer */}
-      <div className="text-[10px] text-white/25 text-center" style={T}>
-        Settings persist across sessions
+      {/* Reset + footer */}
+      <div className="flex items-center justify-between">
+        {isActive && (
+          <button
+            onClick={() => {
+              Object.values(LS_KEYS).forEach(k => { try { localStorage.removeItem(k); } catch {} });
+              applyBodyClass('a11y-high-contrast', false);
+              applyBodyClass('a11y-reduce-motion', false);
+              applyBodyClass('a11y-keyboard-nav', false);
+              applyBodyClass('a11y-focus-highlight', false);
+              applyTextScale('normal');
+              applyColorBlind('none');
+              applyCursor('normal');
+              setCaptions(false); setCaptionSize('medium'); setCaptionPos('bottom'); setCaptionHC(false);
+              setSpeakerLabels(false); setVisualAlert(false); setFlash(false); setVibrate(false);
+              setTranscriptPin(false); setSlMode(false); setHighContrast(false); setTextScale('normal');
+              setReduceMotion(false); setColorBlind('none'); setSrMode(false); setKeyboardNav(false);
+              setCursor('normal'); setFocusHighlight(false);
+              announce('All accessibility settings reset');
+            }}
+            className="text-[10px] font-bold transition-all hover:opacity-80"
+            style={{ color: 'rgba(192,57,43,0.7)' }}
+          >
+            Reset all
+          </button>
+        )}
+        <p className="text-[10px] text-white/25 ml-auto" style={T}>
+          Settings persist across sessions
+        </p>
       </div>
     </div>
   );
