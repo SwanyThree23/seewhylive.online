@@ -114,8 +114,8 @@ export default function LocalVideoTile({
         </div>
       </div>
 
-      {/* Picture-in-Picture button — shown on hover when video is active */}
-      {hovered && stream && videoEnabled && document.pictureInPictureEnabled && (
+      {/* Picture-in-Picture button — shown on hover or when PiP is active */}
+      {(hovered || isPip) && stream && videoEnabled && document.pictureInPictureEnabled && (
         <button
           onClick={togglePip}
           title={isPip ? 'Exit Picture-in-Picture' : 'Pop out to Picture-in-Picture'}

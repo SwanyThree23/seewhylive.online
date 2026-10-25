@@ -37,7 +37,7 @@ const CONTROLS = [
 export default function LiveViewersPanel({ roomId, user, isHost = false }) {
   const { watchers, count } = useRoomPresence(roomId, user);
   const { controls, setControl } = useHostControls(roomId, user);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => { try { return localStorage.getItem('viewers_panel_open') === 'true'; } catch { return false; } });
 
   if (!roomId) return null;
 
@@ -83,7 +83,7 @@ export default function LiveViewersPanel({ roomId, user, isHost = false }) {
           </span>
         )}
 
-        <button onClick={() => setOpen((v) => !v)}
+        <button onClick={() => setOpen(v => { const n = !v; try { localStorage.setItem('viewers_panel_open', String(n)); } catch {} return n; })}
           aria-label={open ? 'Hide viewer list' : 'Show viewer list'}
           aria-expanded={open}
           className="ml-auto flex items-center gap-1 px-2.5 py-1.5 rounded-lg shrink-0"

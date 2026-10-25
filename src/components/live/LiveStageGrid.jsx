@@ -6,7 +6,7 @@ export default function LiveStageGrid(props) {
   var maxSeats = props.maxSeats || 20;
   var onTapSeat = props.onTapSeat;
 
-  var emptySeats = Math.max(0, maxSeats - participants.length);
+  var emptySeats = Math.min(4, Math.max(0, maxSeats - participants.length));
   var emptyArray = new Array(emptySeats).fill(null);
 
   return (
