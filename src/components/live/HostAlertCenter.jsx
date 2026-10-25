@@ -12,7 +12,7 @@ export function fireAlert(alert) {
 export default function HostAlertCenter() {
   const [alerts, setAlerts] = useState([]);
   const [historyLog, setHistoryLog] = useState([]);
-  const [showHistory, setShowHistory] = useState(false);
+  const [showHistory, setShowHistory] = useState(() => { try { return localStorage.getItem('alert_history_open') === 'true'; } catch { return false; } });
 
   useEffect(() => {
     const handler = (alert) => {
@@ -49,7 +49,7 @@ export default function HostAlertCenter() {
       {historyLog.length > 0 && (
         <div className="pointer-events-auto flex justify-end">
           <button
-            onClick={() => setShowHistory(v => !v)}
+            onClick={() => setShowHistory(v => { const n = !v; try { localStorage.setItem('alert_history_open', String(n)); } catch {} return n; })}
             className="text-[9px] px-2 py-1 rounded border border-white/10 hover:bg-white/10 text-white/30 hover:text-white/60"
           >
             {showHistory ? 'Hide' : `History (${historyLog.length})`}

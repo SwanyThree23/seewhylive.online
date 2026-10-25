@@ -5,17 +5,24 @@ import { Button } from '@/components/ui/button';
 
 export default function GuestStreamingPermissions({ participant, isHost, onPermissionChange }) {
   const [open, setOpen] = useState(false);
-  const [permissions, setPermissions] = useState({
-    canStream: participant?.can_stream ?? false,
-    canMultistream: participant?.can_multistream ?? false,
-    recordingAllowed: participant?.recording_allowed ?? true,
-    visibleToViewers: participant?.visible_to_viewers ?? true,
+  const [permissions, setPermissions] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`perm_${participant?.id}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      canStream: participant?.can_stream ?? false,
+      canMultistream: participant?.can_multistream ?? false,
+      recordingAllowed: participant?.recording_allowed ?? true,
+      visibleToViewers: participant?.visible_to_viewers ?? true,
+    };
   });
 
   const handlePermissionToggle = (key) => {
     const updated = { ...permissions, [key]: !permissions[key] };
     setPermissions(updated);
     onPermissionChange?.(participant?.id, updated);
+    try { localStorage.setItem(`perm_${participant?.id}`, JSON.stringify(updated)); } catch {}
   };
 
   if (!isHost) return null;

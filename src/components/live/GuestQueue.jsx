@@ -34,6 +34,7 @@ function timeAgo(dateStr) {
 
 export default function GuestQueue({ roomId, isHost }) {
   const qc = useQueryClient();
+  const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem('guest_queue_collapsed') === 'true'; } catch { return false; } });
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -152,9 +153,15 @@ export default function GuestQueue({ roomId, isHost }) {
             letterSpacing: '0.04em',
             textTransform: 'uppercase',
             flex: 1,
+            cursor: 'pointer',
           }}
+          onClick={() => { const n = !collapsed; setCollapsed(n); try { localStorage.setItem('guest_queue_collapsed', String(n)); } catch {} }}
         >
           Guest Queue
+        </span>
+        <span style={{ ...T, color: 'rgba(255,255,255,0.3)', fontSize: 10, cursor: 'pointer' }}
+          onClick={() => { const n = !collapsed; setCollapsed(n); try { localStorage.setItem('guest_queue_collapsed', String(n)); } catch {} }}>
+          {collapsed ? '▼' : '▲'}
         </span>
         {waitingGuests.length > 0 && (
           <span
@@ -173,6 +180,9 @@ export default function GuestQueue({ roomId, isHost }) {
           </span>
         )}
       </div>
+
+      {/* Collapsible body */}
+      {!collapsed && <>
 
       {/* Non-host message */}
       {!isHost && (
@@ -505,6 +515,8 @@ export default function GuestQueue({ roomId, isHost }) {
           )}
         </>
       )}
+
+      </>}
     </div>
   );
 }

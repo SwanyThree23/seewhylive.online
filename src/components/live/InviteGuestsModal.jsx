@@ -182,16 +182,23 @@ export default function InviteGuestsModal({ isOpen, onClose, roomId, roomTitle, 
               justifyContent: 'space-between',
               padding: '4px 16px 12px',
             }}>
-              <span style={{
-                ...FONT,
-                fontSize: 22,
-                fontWeight: 900,
-                color: '#fff',
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-              }}>
-                Invite Guests
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  ...FONT,
+                  fontSize: 22,
+                  fontWeight: 900,
+                  color: '#fff',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                }}>
+                  Invite Guests
+                </span>
+                {invited.size > 0 && (
+                  <span style={{ ...FONT, fontSize: 10, fontWeight: 900, padding: '2px 7px', borderRadius: 99, background: `${GOLD}22`, color: GOLD }}>
+                    {invited.size} invited
+                  </span>
+                )}
+              </div>
               <button
                 onClick={onClose}
                 style={{
