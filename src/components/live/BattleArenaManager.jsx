@@ -94,8 +94,8 @@ export default function BattleArenaManager({ roomId, isHost, participants = [], 
   const [phase, setPhase]           = useState('setup'); // setup | countdown | live | ended
   const [teamA, setTeamA]           = useState([]);
   const [teamB, setTeamB]           = useState([]);
-  const [teamAName, setTeamAName]   = useState('Team A');
-  const [teamBName, setTeamBName]   = useState('Team B');
+  const [teamAName, setTeamAName]   = useState(() => { try { return localStorage.getItem('battle_teamA_name') || 'Team A'; } catch { return 'Team A'; } });
+  const [teamBName, setTeamBName]   = useState(() => { try { return localStorage.getItem('battle_teamB_name') || 'Team B'; } catch { return 'Team B'; } });
   const [teamAColor, setTeamAColor] = useState(CRIMSON);
   const [teamBColor, setTeamBColor] = useState('#3b82f6');
   const [votesA, setVotesA]         = useState(50);
@@ -361,7 +361,7 @@ export default function BattleArenaManager({ roomId, isHost, participants = [], 
               </div>
               <input
                 value={teamAName}
-                onChange={e => setTeamAName(e.target.value)}
+                onChange={e => { setTeamAName(e.target.value); try { localStorage.setItem('battle_teamA_name', e.target.value); } catch {} }}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: `1px solid ${teamAColor}40`, borderRadius: 5, padding: '4px 7px', color: C.text, fontSize: 12, ...T, outline: 'none', marginBottom: 6, boxSizing: 'border-box' }}
               />
               <div style={{ display: 'flex', gap: 5, marginBottom: 6 }}>
@@ -391,7 +391,7 @@ export default function BattleArenaManager({ roomId, isHost, participants = [], 
               </div>
               <input
                 value={teamBName}
-                onChange={e => setTeamBName(e.target.value)}
+                onChange={e => { setTeamBName(e.target.value); try { localStorage.setItem('battle_teamB_name', e.target.value); } catch {} }}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: `1px solid ${teamBColor}40`, borderRadius: 5, padding: '4px 7px', color: C.text, fontSize: 12, ...T, outline: 'none', marginBottom: 6, boxSizing: 'border-box' }}
               />
               <div style={{ display: 'flex', gap: 5, marginBottom: 6 }}>

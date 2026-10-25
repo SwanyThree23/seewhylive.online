@@ -98,6 +98,11 @@ export default function BattleScoreboard({ roomId }) {
           <div className="flex justify-between w-full text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
             <span>{hostPct}%</span><span>{chalPct}%</span>
           </div>
+          {hostScore !== chalScore && (
+            <span className="text-[9px] font-black font-mono" style={{ color: leading === 'host' ? '#d4af37' : '#CC7755' }}>
+              +{Math.abs(hostScore - chalScore).toLocaleString()} {leading === 'host' ? '👑' : '⚔️'}
+            </span>
+          )}
         </div>
 
         {/* Challenger */}
