@@ -15,7 +15,7 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
   var [amount, setAmount] = useState(null);
   var [custom, setCustom] = useState("");
   var [message, setMessage] = useState("");
-  var [method, setMethod] = useState("Card");
+  var [method, setMethod] = useState(function () { try { return localStorage.getItem('tipnow_method') || 'Card'; } catch { return 'Card'; } });
   var [success, setSuccess] = useState(false);
   var qc = useQueryClient();
 
@@ -118,7 +118,7 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
             <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>PAYMENT METHOD</div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {["Card", "CashApp", "PayPal", "Venmo", "Zelle", "SeeGems"].map(m => (
-                <button key={m} onClick={() => setMethod(m)} style={{
+                <button key={m} onClick={() => { setMethod(m); try { localStorage.setItem('tipnow_method', m); } catch {} }} style={{
                   padding: "5px 10px", borderRadius: 6,
                   border: "1px solid " + (method === m ? C.gold : "#333"),
                   background: method === m ? "rgba(212,175,55,0.1)" : C.surface,

@@ -40,10 +40,10 @@ const MSG_STYLES = [
 
 export default function SuperChatBar({ roomId, currentUser, recipientId, recipientName }) {
   const [mode, setMode]                   = useState(null);
-  const [selectedAmount, setSelectedAmount] = useState(SUPER_AMOUNTS[1]);
+  const [selectedAmount, setSelectedAmount] = useState(() => { try { const i = localStorage.getItem('superchat_amount_idx'); return SUPER_AMOUNTS[i !== null ? Number(i) : 1] || SUPER_AMOUNTS[1]; } catch { return SUPER_AMOUNTS[1]; } });
   const [customAmount, setCustomAmount]   = useState('');
   const [message, setMessage]             = useState('');
-  const [msgStyle, setMsgStyle]           = useState('normal');
+  const [msgStyle, setMsgStyle]           = useState(() => { try { return localStorage.getItem('superchat_msg_style') || 'normal'; } catch { return 'normal'; } });
   const [selectedGift, setSelectedGift]   = useState(null);
   const [confirming, setConfirming]       = useState(false);
   const [sentHistory, setSentHistory]     = useState([]);
@@ -228,7 +228,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                 {SUPER_AMOUNTS.map(a => (
                   <button
                     key={a.value}
-                    onClick={() => { setSelectedAmount(a); setCustomAmount(''); }}
+                    onClick={() => { setSelectedAmount(a); setCustomAmount(''); try { localStorage.setItem('superchat_amount_idx', String(SUPER_AMOUNTS.indexOf(a))); } catch {} }}
                     className={`py-1.5 rounded text-[11px] font-bold transition-all border ${
                       !customAmount && selectedAmount.value === a.value
                         ? 'border-current'
@@ -257,7 +257,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                 {MSG_STYLES.map(s => (
                   <button
                     key={s.id}
-                    onClick={() => setMsgStyle(s.id)}
+                    onClick={() => { setMsgStyle(s.id); try { localStorage.setItem('superchat_msg_style', s.id); } catch {} }}
                     className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all border ${
                       msgStyle === s.id
                         ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/10'
