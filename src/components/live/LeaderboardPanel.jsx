@@ -69,8 +69,8 @@ const TABS = [
 ];
 
 export default function LeaderboardPanel({ roomId, currentUserId }) {
-  const [activeTab, setActiveTab] = useState('supporters');
-  const [timeRange, setTimeRange] = useState('stream');
+  const [activeTab, setActiveTab] = useState(() => { try { return localStorage.getItem('leader_tab') || 'supporters'; } catch { return 'supporters'; } });
+  const [timeRange, setTimeRange] = useState(() => { try { return localStorage.getItem('leader_time_range') || 'stream'; } catch { return 'stream'; } });
   const prevRanksRef = useRef({});
 
   const addRankChanges = (items, key) => {
@@ -207,7 +207,7 @@ export default function LeaderboardPanel({ roomId, currentUserId }) {
           {showTimeRange && (
             <div className="flex gap-1">
               {TIME_RANGES.map(r => (
-                <button key={r.id} onClick={() => setTimeRange(r.id)}
+                <button key={r.id} onClick={() => { setTimeRange(r.id); try { localStorage.setItem('leader_time_range', r.id); } catch {} }}
                   className="px-1.5 py-0.5 rounded text-[9px] font-bold transition-all"
                   style={timeRange === r.id
                     ? { background: `${G}20`, color: G }
@@ -222,7 +222,7 @@ export default function LeaderboardPanel({ roomId, currentUserId }) {
         {/* Tabs */}
         <div className="flex gap-0.5 overflow-x-auto pb-0.5 scrollbar-hide">
           {TABS.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            <button key={tab.id} onClick={() => { setActiveTab(tab.id); try { localStorage.setItem('leader_tab', tab.id); } catch {} }}
               className="shrink-0 px-2 py-1.5 rounded-t text-[10px] font-bold transition-all whitespace-nowrap"
               style={{
                 background: activeTab === tab.id ? `${G}20` : 'rgba(255,255,255,0.03)',

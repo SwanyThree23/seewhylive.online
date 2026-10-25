@@ -358,7 +358,7 @@ function AuctionWinnerBanner({ auction, onDismiss }) {
 export default function LiveAuctionWidget({ roomId, currentUser, isHost }) {
   const [showCreate, setShowCreate] = useState(false);
   const [winner, setWinner] = useState(null);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(() => { try { return localStorage.getItem('auction_expanded') !== 'false'; } catch { return true; } });
   const qc = useQueryClient();
 
   const { data: auctions = [] } = useQuery({
@@ -392,7 +392,7 @@ export default function LiveAuctionWidget({ roomId, currentUser, isHost }) {
 
       <div className="rounded-xl overflow-hidden" style={{ background: '#161616', border: `1px solid rgba(212,175,55,0.15)` }}>
         <button className="w-full flex items-center justify-between px-4 py-3"
-          onClick={() => setExpanded(e => !e)}>
+          onClick={() => setExpanded(e => { const n = !e; try { localStorage.setItem('auction_expanded', String(n)); } catch {} return n; })}>
           <div className="flex items-center gap-2">
             <Gavel className="w-4 h-4" style={{ color: GOLD }} />
             <span className="font-black uppercase text-[11px]" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>

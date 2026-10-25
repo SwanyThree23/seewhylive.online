@@ -17,8 +17,26 @@ function genToken() {
 
 export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost, isCoHost }) {
   const [copiedKey, setCopiedKey]           = useState(null);
-  const [coHostToken]                       = useState(genToken);
-  const [guestToken]                        = useState(genToken);
+  const [coHostToken]                       = useState(() => {
+    try {
+      const k = `invite_cohost_${roomId}`;
+      const s = localStorage.getItem(k);
+      if (s) return s;
+      const t = genToken();
+      localStorage.setItem(k, t);
+      return t;
+    } catch { return genToken(); }
+  });
+  const [guestToken]                        = useState(() => {
+    try {
+      const k = `invite_guest_${roomId}`;
+      const s = localStorage.getItem(k);
+      if (s) return s;
+      const t = genToken();
+      localStorage.setItem(k, t);
+      return t;
+    } catch { return genToken(); }
+  });
   const [regCode, setRegCode]               = useState('');
   const [generatingCode, setGeneratingCode] = useState(false);
 

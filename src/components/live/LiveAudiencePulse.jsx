@@ -10,7 +10,7 @@ export default function LiveAudiencePulse({ roomId, isHost, viewerCount }) {
   const [trend, setTrend] = useState('stable');
   const prevScoreRef = useRef(50);
   const peakScoreRef = useRef(50);
-  const [peakScore, setPeakScore] = useState(50);
+  const [peakScore, setPeakScore] = useState(() => { try { return parseInt(localStorage.getItem(`pulse_peak_${roomId}`) || '50', 10) || 50; } catch { return 50; } });
 
   const { data: recentMessages = [] } = useQuery({
     queryKey: ['pulse-messages', roomId],
@@ -37,6 +37,7 @@ export default function LiveAudiencePulse({ roomId, isHost, viewerCount }) {
     if (newScore > peakScoreRef.current) {
       peakScoreRef.current = newScore;
       setPeakScore(newScore);
+      try { localStorage.setItem(`pulse_peak_${roomId}`, String(newScore)); } catch {}
     }
     setEngagementScore(newScore);
     setChatVelocity(last60s);
