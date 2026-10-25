@@ -76,7 +76,7 @@ const PLATFORM_FEE  = 0.10;
 const CHART_TABS = ['viewers', 'chat', 'revenue', 'engagement'];
 
 export default function StreamAnalyticsDashboard({ roomId }) {
-  const [chartTab, setChartTab] = useState('viewers');
+  const [chartTab, setChartTab] = useState(() => { try { return localStorage.getItem('analytics_tab') || 'viewers'; } catch { return 'viewers'; } });
   const [lastRefresh, setLastRefresh] = useState(null);
 
   const { data: analytics, refetch: refetchAnalytics } = useQuery({
@@ -166,7 +166,7 @@ export default function StreamAnalyticsDashboard({ roomId }) {
         {CHART_TABS.map(tab => (
           <button
             key={tab}
-            onClick={() => setChartTab(tab)}
+            onClick={() => { setChartTab(tab); try { localStorage.setItem('analytics_tab', tab); } catch {} }}
             className="px-3 py-1 rounded-lg text-[11px] font-bold uppercase transition-all"
             style={chartTab === tab
               ? { background: `${G}20`, color: G, border: `1px solid ${G}40` }

@@ -22,14 +22,14 @@ const BOT_NAME = '🤖 SeeWhyBot';
 const MAX_LOG  = 5;
 
 export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName, room, viewerCount = 0, topGifters = [] }) {
-  const [enabled, setEnabled]             = useState(false);
-  const [expanded, setExpanded]           = useState(false);
+  const [enabled, setEnabled]             = useState(() => { try { return localStorage.getItem('chatbot_enabled') === 'true'; } catch { return false; } });
+  const [expanded, setExpanded]           = useState(() => { try { return localStorage.getItem('chatbot_expanded') === 'true'; } catch { return false; } });
   const [customCmd, setCustomCmd]         = useState('');
   const [customReply, setCustomReply]     = useState('');
-  const [customCmds, setCustomCmds]       = useState([]);
+  const [customCmds, setCustomCmds]       = useState(() => { try { const s = localStorage.getItem('chatbot_custom_cmds'); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [sentLog, setSentLog]             = useState([]);
-  const [schedMsg, setSchedMsg]           = useState('');
-  const [schedInterval, setSchedInterval] = useState(10);
+  const [schedMsg, setSchedMsg]           = useState(() => { try { return localStorage.getItem('chatbot_sched_msg') || ''; } catch { return ''; } });
+  const [schedInterval, setSchedInterval] = useState(() => { try { const s = localStorage.getItem('chatbot_sched_interval'); return s ? Number(s) : 10; } catch { return 10; } });
   const [schedActive, setSchedActive]     = useState(false);
   const processedIds = useRef(new Set());
   const schedTimerRef = useRef(null);
@@ -126,7 +126,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
   return (
     <div className="bg-[rgba(212,175,55,0.05)] border border-[#d4af37]/20 rounded-xl overflow-hidden">
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => { const n = !expanded; setExpanded(n); try { localStorage.setItem('chatbot_expanded', String(n)); } catch {} }}
         className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
               {/* Enable toggle */}
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-white/60">Enable Chatbot</span>
-                <div onClick={() => setEnabled(!enabled)} style={{ width:40, height:22, borderRadius:99, background: enabled ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                <div onClick={() => { const n = !enabled; setEnabled(n); try { localStorage.setItem('chatbot_enabled', String(n)); } catch {} }} style={{ width:40, height:22, borderRadius:99, background: enabled ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
                   <div style={{ position:'absolute', top:3, left: enabled ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                 </div>
               </div>
@@ -178,7 +178,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
                   <button
                     onClick={() => {
                       if (!customCmd || !customReply) return;
-                      setCustomCmds(p => [...p, { trigger: customCmd, reply: customReply }]);
+                      setCustomCmds(p => { const next = [...p, { trigger: customCmd, reply: customReply }]; try { localStorage.setItem('chatbot_custom_cmds', JSON.stringify(next)); } catch {} return next; });
                       setCustomCmd(''); setCustomReply('');
                     }}
                     className="text-[10px] px-2 py-1 bg-[#d4af37]/20 text-[#d4af37] rounded border border-[#d4af37]/30 hover:bg-[#d4af37]/30 shrink-0">
@@ -189,7 +189,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
                   <div key={i} className="flex items-center gap-2 mt-1 text-[10px]">
                     <code className="bg-white/10 rounded px-1.5 py-0.5 text-[#d4af37] font-mono">{c.trigger}</code>
                     <span className="text-white/40 flex-1 truncate">{c.reply}</span>
-                    <button onClick={() => setCustomCmds(p => p.filter((_, j) => j !== i))} className="text-[#C0392B]/60 hover:text-[#C0392B]">
+                    <button onClick={() => setCustomCmds(p => { const next = p.filter((_, j) => j !== i); try { localStorage.setItem('chatbot_custom_cmds', JSON.stringify(next)); } catch {} return next; })} className="text-[#C0392B]/60 hover:text-[#C0392B]">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
@@ -205,10 +205,11 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
                   </div>
                 </div>
                 <div className="flex gap-1.5">
-                  <input placeholder="Announcement text…" value={schedMsg} onChange={e => setSchedMsg(e.target.value)}
+                  <input placeholder="Announcement text…" value={schedMsg} onChange={e => { setSchedMsg(e.target.value); try { localStorage.setItem('chatbot_sched_msg', e.target.value); } catch {} }}
                     className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder:text-white/20 outline-none" />
-                  <select value={schedInterval} onChange={e => setSchedInterval(Number(e.target.value))}
-                    className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white/70 outline-none">
+                  <select value={schedInterval}
+                    className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white/70 outline-none"
+                    onChange={e => { const v = Number(e.target.value); setSchedInterval(v); try { localStorage.setItem('chatbot_sched_interval', String(v)); } catch {} }}>
                     {[5, 10, 15, 20, 30].map(n => <option key={n} value={n}>{n}m</option>)}
                   </select>
                 </div>

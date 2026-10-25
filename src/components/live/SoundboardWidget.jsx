@@ -19,13 +19,13 @@ const SOUND_EFFECTS = [
 
 export default function SoundboardWidget({ isVisible = true, disabled = false }) {
   const [playingId, setPlayingId]   = useState(null);
-  const [volume, setVolume]         = useState(0.7);
+  const [volume, setVolume]         = useState(() => { try { const s = localStorage.getItem('soundboard_volume'); return s !== null ? Number(s) : 0.7; } catch { return 0.7; } });
   const [loopId, setLoopId]         = useState(null);
   const [recentPlayed, setRecentPlayed] = useState([]);
   const [showCustom, setShowCustom] = useState(false);
   const [customUrl, setCustomUrl]   = useState('');
   const [customLabel, setCustomLabel] = useState('');
-  const [customSounds, setCustomSounds] = useState([]);
+  const [customSounds, setCustomSounds] = useState(() => { try { const s = localStorage.getItem('soundboard_custom_sounds'); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [playCounts, setPlayCounts] = useState({});
   const [cooldowns, setCooldowns]   = useState({});
   const audioRef = useRef(new Audio());
@@ -82,7 +82,7 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
     if (!url || !url.startsWith('http')) return;
     const label = customLabel.trim() || 'Custom';
     const id    = `custom_${Date.now()}`;
-    setCustomSounds(prev => [...prev, { id, label, icon: '🎵', url, hotkey: null }]);
+    setCustomSounds(prev => { const next = [...prev, { id, label, icon: '🎵', url, hotkey: null }]; try { localStorage.setItem('soundboard_custom_sounds', JSON.stringify(next)); } catch {} return next; });
     setCustomUrl('');
     setCustomLabel('');
     setShowCustom(false);
@@ -90,7 +90,7 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
 
   const removeCustom = (id) => {
     if (playingId === id) stopSound();
-    setCustomSounds(prev => prev.filter(s => s.id !== id));
+    setCustomSounds(prev => { const next = prev.filter(s => s.id !== id); try { localStorage.setItem('soundboard_custom_sounds', JSON.stringify(next)); } catch {} return next; });
   };
 
   if (!isVisible) return null;
@@ -165,7 +165,7 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
         <Volume2 className="w-3.5 h-3.5 text-white/50" />
         <input
           type="range" min="0" max="1" step="0.05" value={volume}
-          onChange={e => { const v = parseFloat(e.target.value); setVolume(v); if (audioRef.current) audioRef.current.volume = v; }}
+          onChange={e => { const v = parseFloat(e.target.value); setVolume(v); try { localStorage.setItem('soundboard_volume', String(v)); } catch {} if (audioRef.current) audioRef.current.volume = v; }}
           className="flex-1 h-1 cursor-pointer"
           style={{ accentColor: G }}
         />
