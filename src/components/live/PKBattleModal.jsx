@@ -26,8 +26,8 @@ function formatTime(seconds) {
 export default function PKBattleModal({ isOpen, onClose, roomId, isHost, currentUser, hostName }) {
   const [phase, setPhase] = useState('setup');
   const [challengerHandle, setChallengerHandle] = useState('');
-  const [duration, setDuration] = useState(180);
-  const [timeLeft, setTimeLeft] = useState(180);
+  const [duration, setDuration] = useState(() => { try { const s = localStorage.getItem('pk_modal_duration'); return s ? Number(s) : 180; } catch { return 180; } });
+  const [timeLeft, setTimeLeft] = useState(() => { try { const s = localStorage.getItem('pk_modal_duration'); return s ? Number(s) : 180; } catch { return 180; } });
   const [isOvertime, setIsOvertime] = useState(false);
   const OVERTIME_SECONDS = 30;
   const [hostScore, setHostScore] = useState(0);
@@ -226,7 +226,7 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
                         {DURATION_OPTIONS.map((opt) => (
                           <button
                             key={opt.value}
-                            onClick={() => setDuration(opt.value)}
+                            onClick={() => { setDuration(opt.value); try { localStorage.setItem('pk_modal_duration', String(opt.value)); } catch {} }}
                             className="px-4 py-1.5 rounded-full text-sm font-bold transition-all"
                             style={{
                               fontFamily: 'Barlow Condensed, sans-serif',

@@ -21,7 +21,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
   const [custom, setCustom] = useState(false);
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '', '']);
-  const [duration, setDuration] = useState(60);
+  const [duration, setDuration] = useState(() => { try { const s = localStorage.getItem('poll_duration'); return s ? Number(s) : 60; } catch { return 60; } });
   const qc = useQueryClient();
 
   const launchMutation = useMutation({
@@ -199,7 +199,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
                         <div className="flex gap-1">
                           {[30, 60, 120, 300].map(d => (
                             <button key={d}
-                              onClick={() => setDuration(d)}
+                              onClick={() => { setDuration(d); try { localStorage.setItem('poll_duration', String(d)); } catch {} }}
                               className="px-2 py-0.5 rounded text-[11px] font-black"
                               style={{
                                 ...T,

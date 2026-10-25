@@ -29,7 +29,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
   const [active, setActive] = useState(false);
   const [opponentName, setOpponentName] = useState('');
   const [opponentUrl, setOpponentUrl] = useState('');
-  const [selectedDuration, setSelectedDuration] = useState(120);
+  const [selectedDuration, setSelectedDuration] = useState(() => { try { const s = localStorage.getItem('pk_battle_duration'); return s ? Number(s) : 120; } catch { return 120; } });
   const [timeLeft, setTimeLeft] = useState(120);
   const [myScore, setMyScore] = useState(0);
   const [theirScore, setTheirScore] = useState(0);
@@ -355,7 +355,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                   <p className="text-[11px] text-white/50">⏱ Duration</p>
                   <div className="flex gap-1.5 flex-wrap">
                     {DURATION_OPTIONS.map(d => (
-                      <button key={d.secs} onClick={() => setSelectedDuration(d.secs)}
+                      <button key={d.secs} onClick={() => { setSelectedDuration(d.secs); try { localStorage.setItem('pk_battle_duration', String(d.secs)); } catch {} }}
                         className="px-3 py-1 rounded-lg text-[11px] font-black uppercase transition-all"
                         style={{
                           background: selectedDuration === d.secs ? `rgba(212,175,55,0.2)` : 'rgba(255,255,255,0.05)',

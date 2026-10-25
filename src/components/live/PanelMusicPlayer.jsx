@@ -38,9 +38,9 @@ function WaveformVisualizer({ playing, color = GOLD, bars = 16, height = 28 }) {
 export default function PanelMusicPlayer({ className, style }) {
   const [track, setTrack] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(75);
+  const [volume, setVolume] = useState(() => { try { const s = localStorage.getItem('panel_volume'); return s !== null ? Number(s) : 75; } catch { return 75; } });
   const [showVolume, setShowVolume] = useState(false);
-  const [shuffle, setShuffle] = useState(false);
+  const [shuffle, setShuffle] = useState(() => { try { return localStorage.getItem('panel_shuffle') === 'true'; } catch { return false; } });
   const [progress, setProgress] = useState(0);
   const progressRef = useRef(null);
 
@@ -145,7 +145,7 @@ export default function PanelMusicPlayer({ className, style }) {
             <SkipForward size={12} color="rgba(255,255,255,0.7)" />
           </motion.button>
 
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShuffle(s => !s)}
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShuffle(s => { const n = !s; try { localStorage.setItem('panel_shuffle', String(n)); } catch {} return n; })}
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, opacity: shuffle ? 1 : 0.3 }}>
             <Shuffle size={11} color={shuffle ? GOLD : 'rgba(255,255,255,0.7)'} />
           </motion.button>
@@ -162,7 +162,7 @@ export default function PanelMusicPlayer({ className, style }) {
               <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
                 style={{ position: 'absolute', bottom: '110%', right: 0, background: 'rgba(8,11,24,0.97)', border: `1px solid ${GOLD}30`, borderRadius: 8, padding: '8px 10px', width: 110, zIndex: 60 }}>
                 <p style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Volume {volume}%</p>
-                <input type="range" min={0} max={100} value={volume} onChange={e => setVolume(+e.target.value)} style={{ width: '100%', accentColor: GOLD }} />
+                <input type="range" min={0} max={100} value={volume} onChange={e => { const v = +e.target.value; setVolume(v); try { localStorage.setItem('panel_volume', String(v)); } catch {} }} style={{ width: '100%', accentColor: GOLD }} />
               </motion.div>
             )}
           </AnimatePresence>
