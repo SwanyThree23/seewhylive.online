@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
+const CATEGORIES = ['All', 'Gaming', 'Music', 'Talk', 'Sports', 'Education'];
 
 function RaidCountdownBanner({ raid, onJoin }) {
   const [count, setCount] = useState(10);
@@ -89,6 +90,7 @@ function IncomingRaidBanner({ raid, onWelcome }) {
 function RaidLauncher({ room, currentUser, onClose }) {
   const [search, setSearch] = useState('');
   const [message, setMessage] = useState('');
+  const [category, setCategory] = useState('All');
   const qc = useQueryClient();
 
   const { data: liveRooms = [] } = useQuery({
@@ -98,6 +100,8 @@ function RaidLauncher({ room, currentUser, onClose }) {
 
   const targets = liveRooms.filter(r => r.id !== room?.id && (
     !search || r.title?.toLowerCase().includes(search.toLowerCase())
+  ) && (
+    category === 'All' || r.category?.toLowerCase() === category.toLowerCase()
   ));
 
   const raidMut = useMutation({
@@ -145,6 +149,25 @@ function RaidLauncher({ room, currentUser, onClose }) {
         <input placeholder="Search rooms…" value={search} onChange={e => setSearch(e.target.value)}
           className="flex-1 bg-transparent text-[11px] outline-none"
           style={{ color: 'white' }} />
+      </div>
+      {/* Category filter */}
+      <div className="flex gap-1 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+        {CATEGORIES.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setCategory(cat)}
+            className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold transition-all"
+            style={{
+              background: category === cat ? `${GOLD}20` : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${category === cat ? `${GOLD}55` : 'rgba(255,255,255,0.08)'}`,
+              color: category === cat ? GOLD : 'rgba(255,255,255,0.4)',
+              fontFamily: 'Barlow Condensed, sans-serif',
+              cursor: 'pointer',
+            }}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
       <textarea placeholder="Raid message (optional)" value={message} onChange={e => setMessage(e.target.value)}
         rows={2} className="w-full px-3 py-2 rounded-lg resize-none text-[10px]"
@@ -239,7 +262,7 @@ export default function RaidPanelButton({ room, currentUser, isHost, triggerOpen
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
             title="Raid a creator"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-            <Repeat className="w-3.5 h-3.5" /> Raid
+            <Repeat className="w-3.5 h-3.5" /> Raid{room?.viewer_count > 0 ? ` (${room.viewer_count})` : ''}
           </button>
 
           <AnimatePresence>

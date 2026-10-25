@@ -23,11 +23,12 @@ function fmt(secs) {
  * a local video excerpt via getClipBlobUrl (from useVODRecording.extractClipBlobUrl).
  */
 export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl }) {
-  const [open,     setOpen]     = useState(false);
-  const [title,    setTitle]    = useState('');
-  const [duration, setDuration] = useState(60);
-  const [saving,   setSaving]   = useState(false);
-  const [recent,   setRecent]   = useState([]);
+  const [open,       setOpen]       = useState(false);
+  const [title,      setTitle]      = useState('');
+  const [duration,   setDuration]   = useState(60);
+  const [saving,     setSaving]     = useState(false);
+  const [recent,     setRecent]     = useState([]);
+  const [savedFlash, setSavedFlash] = useState(false);
 
   const { data: existingClips = [] } = useQuery({
     queryKey: ['studio-clips', roomId],
@@ -63,6 +64,8 @@ export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl
         created_date:           new Date().toISOString(),
       });
       setRecent(prev => [clip, ...prev]);
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 2000);
       toast.success(`✂️ Clip "${title.trim()}" saved!`);
 
       // Offer instant local download from the rolling recording buffer
@@ -119,8 +122,8 @@ export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl
           position: 'relative',
         }}
       >
-        <Scissors style={{ width: 13, height: 13 }} />
-        Clip
+        {savedFlash ? <Check style={{ width: 13, height: 13 }} /> : <Scissors style={{ width: 13, height: 13 }} />}
+        {savedFlash ? 'Saved!' : 'Clip'}
         {allClips.length > 0 && (
           <span style={{
             position: 'absolute', top: -5, right: -5,
@@ -193,7 +196,7 @@ export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl
                   Duration
                 </div>
                 <div style={{ display: 'flex', gap: 5 }}>
-                  {[30, 60, 90, 120].map(d => (
+                  {[30, 60, 90, 120, 300].map(d => (
                     <button
                       key={d}
                       onClick={() => setDuration(d)}
@@ -205,7 +208,7 @@ export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl
                         background: duration === d ? `${GOLD}18` : 'transparent',
                         color: duration === d ? GOLD : 'rgba(255,255,255,0.35)',
                       }}
-                    >{d}s</button>
+                    >{d >= 60 ? `${d/60}m` : `${d}s`}</button>
                   ))}
                 </div>
               </div>
@@ -248,7 +251,9 @@ export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl
                         {c.title}
                       </span>
                       <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: FONT, flexShrink: 0 }}>
-                        {c.duration_seconds || ((c.end_timestamp_seconds || 0) - (c.start_timestamp_seconds || 0))}s
+                        {c.start_timestamp_seconds != null && c.end_timestamp_seconds != null
+                          ? `${fmt(c.start_timestamp_seconds)}–${fmt(c.end_timestamp_seconds)}`
+                          : `${c.duration_seconds || 0}s`}
                       </span>
                       <div style={{
                         width: 6, height: 6, borderRadius: '50%', flexShrink: 0,

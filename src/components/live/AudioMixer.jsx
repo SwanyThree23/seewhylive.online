@@ -1,27 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp, Music } from 'lucide-react';
 import SoundboardWidget from './SoundboardWidget';
 import { MobileSelect } from '@/components/ui/MobileSelect';
 
 const BG_MUSIC = [
-  { id: 'none', label: 'No Music' },
-  { id: 'lofi', label: '🎵 Lo-Fi Chill' },
-  { id: 'upbeat', label: '🎶 Upbeat Pop' },
-  { id: 'ambient', label: '🌌 Ambient Space' },
-  { id: 'jazz', label: '🎷 Smooth Jazz' },
-  { id: 'edm', label: '⚡ Electronic' },
-  { id: 'acoustic', label: '🎸 Acoustic' },
+  { id: 'none',      label: 'No Music' },
+  { id: 'lofi',      label: '🎵 Lo-Fi Chill' },
+  { id: 'upbeat',    label: '🎶 Upbeat Pop' },
+  { id: 'ambient',   label: '🌌 Ambient Space' },
+  { id: 'jazz',      label: '🎷 Smooth Jazz' },
+  { id: 'edm',       label: '⚡ Electronic' },
+  { id: 'acoustic',  label: '🎸 Acoustic' },
+  { id: 'rnb',       label: '🎤 R&B / Soul' },
+  { id: 'hiphop',    label: '🔊 Hip-Hop' },
+  { id: 'classical', label: '🎻 Classical' },
+  { id: 'nature',    label: '🌿 Nature Sounds' },
+  { id: 'trap',      label: '🥁 Trap / Bass' },
+  { id: 'deephouse', label: '🏠 Deep House' },
+];
+
+const AUDIO_PRESETS = [
+  { id: 'normal',    label: 'Normal',    icon: '🎙',  gain: 100, noise: true,  echo: true  },
+  { id: 'music',     label: 'Music',     icon: '🎵',  gain: 120, noise: false, echo: true  },
+  { id: 'podcast',   label: 'Podcast',   icon: '🎧',  gain: 110, noise: true,  echo: false },
+  { id: 'voice',     label: 'Voice+',    icon: '🗣',  gain: 130, noise: true,  echo: false },
+  { id: 'gaming',    label: 'Gaming',    icon: '🎮',  gain: 105, noise: true,  echo: true  },
+  { id: 'broadcast', label: 'Broadcast', icon: '📡', gain: 125, noise: true,  echo: false },
 ];
 
 export default function AudioMixer({ micMuted, onMicToggle, stream }) {
-  const [collapsed, setCollapsed] = useState(false);
-  const [gain, setGain] = useState([100]);
-  const [noiseSuppression, setNoiseSuppression] = useState(true);
-  const [echoCancellation, setEchoCancellation] = useState(true);
+  const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem('audiomixer_collapsed') === 'true'; } catch { return false; } });
+  const [preset, setPreset] = useState(() => {
+    try { return localStorage.getItem('audiomixer_preset') || 'normal'; } catch { return 'normal'; }
+  });
+  const savedPreset = AUDIO_PRESETS.find(p => p.id === preset) || AUDIO_PRESETS[0];
+  const [gain, setGain] = useState(() => { try { const v = localStorage.getItem('audiomixer_gain'); return [v ? parseInt(v, 10) : savedPreset.gain]; } catch { return [savedPreset.gain]; } });
+  const [noiseSuppression, setNoiseSuppression] = useState(savedPreset.noise);
+  const [echoCancellation, setEchoCancellation] = useState(savedPreset.echo);
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [bgMusic, setBgMusic] = useState('none');
+  const [mono, setMono] = useState(false);
   const [vuLevels, setVuLevels] = useState(Array(8).fill(0.02));
+  const [clipping, setClipping] = useState(false);
+  const clipTimer = useRef(null);
+
+  const handlePresetChange = (p) => {
+    setPreset(p.id);
+    setGain([p.gain]);
+    setNoiseSuppression(p.noise);
+    setEchoCancellation(p.echo);
+    try { localStorage.setItem('audiomixer_preset', p.id); } catch {}
+  };
 
   useEffect(() => {
     if (!stream || micMuted) { setVuLevels(Array(8).fill(0.02)); return; }
@@ -37,10 +67,16 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
         analyser.getByteFrequencyData(buf);
         const bands = 8;
         const size = Math.floor(buf.length / bands);
-        setVuLevels(Array.from({ length: bands }, (_, i) => {
+        const levels = Array.from({ length: bands }, (_, i) => {
           const slice = buf.slice(i * size, i * size + size);
           return slice.reduce((a, b) => a + b, 0) / (size * 255);
-        }));
+        });
+        setVuLevels(levels);
+        if (levels.some(l => l > 0.9)) {
+          setClipping(true);
+          clearTimeout(clipTimer.current);
+          clipTimer.current = setTimeout(() => setClipping(false), 500);
+        }
         raf = requestAnimationFrame(tick);
       };
       tick();
@@ -51,7 +87,7 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
   return (
     <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => { const next = !collapsed; setCollapsed(next); try { localStorage.setItem('audiomixer_collapsed', String(next)); } catch {} }}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
         <div className="flex items-center gap-2">
@@ -65,7 +101,15 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
         <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="overflow-hidden px-3 pb-3 space-y-3">
           {/* VU Meter */}
           <div className="space-y-1">
-            <p className="text-[10px] text-white/40 uppercase">Mic Level</p>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-white/40 uppercase">Mic Level</p>
+              {clipping && (
+                <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded animate-pulse"
+                  style={{ background: 'rgba(192,57,43,0.3)', color: '#FF4444', border: '1px solid rgba(192,57,43,0.5)' }}>
+                  CLIP
+                </span>
+              )}
+            </div>
             <div className="flex items-end gap-0.5 h-8 bg-black/30 rounded px-2">
               {vuLevels.map((level, i) => (
                 <motion.div
@@ -73,7 +117,7 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
                   animate={{ height: `${(micMuted ? 0.02 : level) * 100}%` }}
                   transition={{ duration: 0.08 }}
                   className="flex-1 rounded-sm"
-                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#C9A84C' : '#6DBF7E' }}
+                  style={{ background: level > 0.9 ? '#FF4444' : level > 0.8 ? '#C0392B' : level > 0.5 ? '#C9A84C' : '#6DBF7E' }}
                 />
               ))}
             </div>
@@ -102,7 +146,7 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
               }`}
             >
               {speakerMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
-              Monitor
+              Monitor (S)
             </button>
           </div>
 
@@ -112,7 +156,22 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
               <p className="text-[10px] text-white/40">Input Gain</p>
               <p className="text-[10px] font-mono text-[#d4af37]">{gain[0]}%</p>
             </div>
-            <input type="range" value={gain[0]} onChange={e => setGain([+e.target.value])} min={0} max={200} step={5} style={{ width: '100%', accentColor: '#D4AF37' }} />
+            <input type="range" value={gain[0]} onChange={e => { const v = +e.target.value; setGain([v]); try { localStorage.setItem('audiomixer_gain', String(v)); } catch {} }} min={0} max={200} step={5} style={{ width: '100%', accentColor: '#D4AF37' }} />
+          </div>
+
+          {/* Audio Presets */}
+          <div className="space-y-1.5">
+            <p className="text-[10px] text-white/40 uppercase tracking-wider">Preset</p>
+            <div className="flex gap-1 flex-wrap">
+              {AUDIO_PRESETS.map(p => (
+                <button key={p.id} onClick={() => handlePresetChange(p)}
+                  className={`text-[10px] px-2 py-1 rounded border transition-all flex items-center gap-0.5 ${
+                    preset === p.id ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 text-white/40 hover:border-white/20'
+                  }`}>
+                  <span>{p.icon}</span> {p.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Smart Toggles */}
@@ -124,6 +183,10 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-white/60">Echo Cancellation</span>
               <div onClick={() => setEchoCancellation(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: echoCancellation ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: echoCancellation ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-white/60">Mono Mode</span>
+              <div onClick={() => setMono(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: mono ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: mono ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
             </div>
           </div>
 

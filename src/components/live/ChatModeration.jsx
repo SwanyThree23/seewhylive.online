@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { Shield, X, ChevronDown, ChevronUp, Plus, Eye, EyeOff, Loader2 } from 'lucide-react';
+
+const PRESET_WORDS = ['spam', 'scam', 'hate', 'racist', 'nsfw', 'promo', 'follow4follow'];
 
 const TIMEOUT_OPTIONS = [
   { label: '1 min', value: 1 },
@@ -21,9 +23,13 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
   const [collapsed, setCollapsed] = useState(initCollapsed);
   const [wordInput, setWordInput] = useState('');
   const [newAction, setNewAction] = useState('hide');
-  const [blockLinks, setBlockLinks] = useState(true);
-  const [blockCaps, setBlockCaps] = useState(true);
-  const [blockSpam, setBlockSpam] = useState(true);
+  const [blockLinks, setBlockLinks] = useState(() => { try { const v = localStorage.getItem('swmod_blockLinks'); return v === null ? true : v === 'true'; } catch { return true; } });
+  const [blockCaps, setBlockCaps] = useState(() => { try { const v = localStorage.getItem('swmod_blockCaps'); return v === null ? true : v === 'true'; } catch { return true; } });
+  const [blockSpam, setBlockSpam] = useState(() => { try { const v = localStorage.getItem('swmod_blockSpam'); return v === null ? true : v === 'true'; } catch { return true; } });
+
+  useEffect(() => { try { localStorage.setItem('swmod_blockLinks', String(blockLinks)); } catch {} }, [blockLinks]);
+  useEffect(() => { try { localStorage.setItem('swmod_blockCaps', String(blockCaps)); } catch {} }, [blockCaps]);
+  useEffect(() => { try { localStorage.setItem('swmod_blockSpam', String(blockSpam)); } catch {} }, [blockSpam]);
   const [newAccountGate, setNewAccountGate] = useState(false);
   const [accountAge, setAccountAge] = useState(7);
   const [timeoutDuration, setTimeoutDuration] = useState(5);
@@ -58,6 +64,12 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
     mutationFn: ({ id, action }) => base44.entities.BlockedWord.update(id, { action }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: wordsKey }),
     onError: () => toast.error('Could not update that word'),
+  });
+
+  const clearAll = useMutation({
+    mutationFn: () => Promise.all(words.map(w => base44.entities.BlockedWord.delete(w.id))),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: wordsKey }),
+    onError: () => toast.error('Could not clear list'),
   });
 
   const handleAdd = () => {
@@ -111,7 +123,16 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
 
           {/* Word filter */}
           <div className="space-y-1.5">
-            <p className="text-[10px] text-white/40 uppercase">Watch List</p>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-white/40 uppercase">Watch List</p>
+              {words.length > 0 && (
+                <button onClick={() => clearAll.mutate()} disabled={clearAll.isPending}
+                  className="text-[9px] font-bold disabled:opacity-40"
+                  style={{ color: 'rgba(192,57,43,0.6)' }}>
+                  Clear all
+                </button>
+              )}
+            </div>
             <p className="text-[10px] leading-snug" style={{ color: 'rgba(255,255,255,0.3)' }}>
               These words are checked on every chat message in your live streams.
             </p>
@@ -151,6 +172,17 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
                   </button>
                 );
               })}
+            </div>
+
+            {/* Quick-add presets */}
+            <div className="flex flex-wrap gap-1">
+              {PRESET_WORDS.filter(p => !words.some(w => w.word === p)).map(p => (
+                <button key={p} onClick={() => { addWord.mutate(p); }}
+                  className="text-[9px] font-bold px-1.5 py-0.5 rounded border transition-all hover:opacity-80"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)' }}>
+                  + {p}
+                </button>
+              ))}
             </div>
 
             {isLoading ? (

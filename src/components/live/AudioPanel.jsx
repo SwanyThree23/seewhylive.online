@@ -4,20 +4,36 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SoundboardWidget from './SoundboardWidget';
 
 const AUDIO_PRESETS = [
-  { id: 'normal', label: 'Normal', icon: '🎙️' },
-  { id: 'music', label: 'Music Mode', icon: '🎵' },
-  { id: 'podcast', label: 'Podcast', icon: '🎧' },
-  { id: 'bass', label: 'Bass Boost', icon: '🔊' },
-  { id: 'voice', label: 'Voice Enhance', icon: '🗣️' },
+  { id: 'normal',    label: 'Normal',    icon: '🎙️', eq: [0,0,0,0,0,0,0,0] },
+  { id: 'music',     label: 'Music',     icon: '🎵', eq: [2,1,0,0,0,1,2,3] },
+  { id: 'podcast',   label: 'Podcast',   icon: '🎧', eq: [-1,0,2,3,2,1,0,-1] },
+  { id: 'bass',      label: 'Bass Boost',icon: '🔊', eq: [4,3,2,0,0,0,0,0] },
+  { id: 'voice',     label: 'Voice+',    icon: '🗣️', eq: [-2,0,1,3,4,3,1,0] },
+  { id: 'broadcast', label: 'Broadcast', icon: '📡', eq: [-1,1,2,3,3,2,1,0] },
+  { id: 'gaming',    label: 'Gaming',    icon: '🎮', eq: [2,1,0,0,1,2,1,0] },
+];
+
+const BG_MUSIC_GENRES = [
+  { id: 'none',      label: 'Off' },
+  { id: 'lofi',      label: '🎵 Lo-Fi' },
+  { id: 'upbeat',    label: '🎶 Pop' },
+  { id: 'jazz',      label: '🎷 Jazz' },
+  { id: 'edm',       label: '⚡ EDM' },
+  { id: 'rnb',       label: '🎤 R&B' },
+  { id: 'hiphop',    label: '🔊 Hip-Hop' },
+  { id: 'nature',    label: '🌿 Nature' },
 ];
 
 export default function AudioPanel({ micMuted, onMicToggle, participants = [] }) {
-  const [preset, setPreset] = useState('normal');
-  const [bgMusic, setBgMusic] = useState(false);
+  const [preset, setPreset] = useState(() => { try { return localStorage.getItem('audiopanel_preset') || 'normal'; } catch { return 'normal'; } });
+  const [bgMusicGenre, setBgMusicGenre] = useState(() => { try { return localStorage.getItem('audiopanel_bgmusic') || 'none'; } catch { return 'none'; } });
   const [volumes, setVolumes] = useState({});
   const [masterVolume, setMasterVolume] = useState([80]);
   const [noiseCancel, setNoiseCancel] = useState(true);
   const [expanded, setExpanded] = useState(false);
+
+  const bgMusic = bgMusicGenre !== 'none';
+  const activeEq = AUDIO_PRESETS.find(p => p.id === preset)?.eq || Array(8).fill(0);
 
   const audioOnlyParticipants = participants.filter(p =>
     ['host', 'co-host', 'speaker'].includes(p.role)
@@ -102,7 +118,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                   {AUDIO_PRESETS.map(p => (
                     <button
                       key={p.id}
-                      onClick={() => setPreset(p.id)}
+                      onClick={() => { setPreset(p.id); try { localStorage.setItem('audiopanel_preset', p.id); } catch {} }}
                       className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg border transition-all ${
                         preset === p.id
                           ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10'
@@ -115,18 +131,36 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                 </div>
               </div>
 
-              {/* Background music toggle */}
-              <div className="flex items-center justify-between">
+              {/* EQ visualizer */}
+              <div className="space-y-1">
+                <p className="text-[10px] text-white/40 uppercase tracking-wider">EQ Preview</p>
+                <div className="flex items-end gap-0.5 h-8 bg-black/20 rounded px-2 py-1">
+                  {activeEq.map((v, i) => {
+                    const pct = Math.max(0, (v + 4) / 8);
+                    return (
+                      <div key={i} className="flex-1 rounded-sm transition-all duration-200" style={{ height: `${pct * 100}%`, minHeight: 2, background: v > 2 ? '#C0392B' : v > 0 ? '#C9A84C' : '#6DBF7E' }} />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Background music genre */}
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <Music className="w-3.5 h-3.5 text-[#D4854A]" />
-                  <span className="text-xs text-white">Background Music</span>
+                  <span className="text-[10px] text-white/60 uppercase tracking-wider">Background Music</span>
+                  {bgMusic && <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37' }}>ON</span>}
                 </div>
-                <button
-                  onClick={() => setBgMusic(!bgMusic)}
-                  className={`w-9 h-5 rounded-full transition-all relative ${bgMusic ? 'bg-[#D4AF37]' : 'bg-white/10'}`}
-                >
-                  <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${bgMusic ? 'left-4' : 'left-0.5'}`} />
-                </button>
+                <div className="flex flex-wrap gap-1">
+                  {BG_MUSIC_GENRES.map(g => (
+                    <button key={g.id} onClick={() => { setBgMusicGenre(g.id); try { localStorage.setItem('audiopanel_bgmusic', g.id); } catch {} }}
+                      className={`text-[10px] px-2 py-0.5 rounded border transition-all ${
+                        bgMusicGenre === g.id ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/10 text-white/40 hover:border-white/20'
+                      }`}>
+                      {g.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Per-speaker volumes */}

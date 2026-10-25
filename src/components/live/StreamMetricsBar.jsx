@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const F = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -46,11 +46,14 @@ export default function StreamMetricsBar({
   memberCount = 0,
   tipTotal = 0,
   peakViewers = 0,
+  subCount = 0,
   netQuality = null,
   netRtt = null,
 }) {
   const [elapsed, setElapsed] = useState(0);
   const [peak, setPeak] = useState(peakViewers);
+  const [newPeak, setNewPeak] = useState(false);
+  const prevPeakRef = useRef(peakViewers);
 
   useEffect(() => {
     const t0 = startTime || Date.now();
@@ -59,7 +62,14 @@ export default function StreamMetricsBar({
   }, [startTime]);
 
   useEffect(() => {
-    if (memberCount > peak) setPeak(memberCount);
+    if (memberCount > peak) {
+      setPeak(memberCount);
+      if (memberCount > prevPeakRef.current) {
+        setNewPeak(true);
+        setTimeout(() => setNewPeak(false), 3000);
+      }
+      prevPeakRef.current = memberCount;
+    }
   }, [memberCount, peak]);
 
   function fmt(s) {
@@ -116,6 +126,30 @@ export default function StreamMetricsBar({
           <span style={{ fontSize: 10 }}>💰</span>
           <span style={{ fontSize: 12, fontWeight: 900, color: '#D4AF37', ...F }}>${tipTotal.toFixed(2)}</span>
           <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', ...F }}>earned</span>
+        </div>
+      )}
+
+      {/* Subs */}
+      {subCount > 0 && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 4,
+          paddingRight: 10, borderRight: '1px solid rgba(255,255,255,0.08)', marginRight: 10,
+        }}>
+          <span style={{ fontSize: 10 }}>⭐</span>
+          <span style={{ fontSize: 12, fontWeight: 900, color: '#D4AF37', ...F }}>{subCount}</span>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', ...F }}>subs</span>
+        </div>
+      )}
+
+      {/* New peak flash */}
+      {newPeak && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 3,
+          paddingRight: 10, borderRight: '1px solid rgba(255,255,255,0.08)', marginRight: 10,
+          animation: 'pulse 1s ease-in-out 2',
+        }}>
+          <span style={{ fontSize: 10 }}>📈</span>
+          <span style={{ fontSize: 11, fontWeight: 900, color: '#6DBF7E', ...F }}>NEW PEAK</span>
         </div>
       )}
 

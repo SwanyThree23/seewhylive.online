@@ -12,15 +12,27 @@ const BG      = '#080B18';
 const GREEN   = '#6DBF7E';
 
 export const GIFTS = [
-  { id: 'rose',     emoji: '🌹', name: 'Rose',      price: 0.99,   color: '#E8003D', particles: 12 },
-  { id: 'confetti', emoji: '🎉', name: 'Confetti',  price: 1.99,   color: '#D4854A', particles: 20 },
-  { id: 'rocket',   emoji: '🚀', name: 'Rocket',    price: 4.99,   color: '#C9A84C', particles: 24 },
-  { id: 'crown',    emoji: '👑', name: 'Crown',     price: 9.99,   color: GOLD,      particles: 30 },
-  { id: 'lion',     emoji: '🦁', name: 'Lion King', price: 19.99,  color: '#D4854A', particles: 36 },
-  { id: 'diamond',  emoji: '💎', name: 'Diamond',   price: 49.99,  color: '#C9A84C', particles: 48 },
-  { id: 'tsunami',  emoji: '🌊', name: 'Tsunami',   price: 99.99,  color: '#0066FF', particles: 60 },
-  { id: 'legend',   emoji: '🏆', name: 'Legend',    price: 199.99, color: GOLD,      particles: 80 },
+  { id: 'rose',     emoji: '🌹', name: 'Rose',      price: 0.99,   color: '#E8003D', particles: 12, rarity: 'common' },
+  { id: 'confetti', emoji: '🎉', name: 'Confetti',  price: 1.99,   color: '#D4854A', particles: 20, rarity: 'common' },
+  { id: 'rocket',   emoji: '🚀', name: 'Rocket',    price: 4.99,   color: '#C9A84C', particles: 24, rarity: 'rare' },
+  { id: 'crown',    emoji: '👑', name: 'Crown',     price: 9.99,   color: GOLD,      particles: 30, rarity: 'rare' },
+  { id: 'lion',     emoji: '🦁', name: 'Lion King', price: 19.99,  color: '#D4854A', particles: 36, rarity: 'epic' },
+  { id: 'diamond',  emoji: '💎', name: 'Diamond',   price: 49.99,  color: '#C9A84C', particles: 48, rarity: 'legendary' },
+  { id: 'tsunami',  emoji: '🌊', name: 'Tsunami',   price: 99.99,  color: '#0066FF', particles: 60, rarity: 'legendary' },
+  { id: 'legend',   emoji: '🏆', name: 'Legend',    price: 199.99, color: GOLD,      particles: 80, rarity: 'legendary' },
+  { id: 'star',     emoji: '⭐', name: 'Star',      price: 2.99,   color: '#FFD700', particles: 18, rarity: 'common' },
+  { id: 'fire',     emoji: '🔥', name: 'Fire',      price: 7.99,   color: '#FF4500', particles: 28, rarity: 'rare' },
+  { id: 'unicorn',  emoji: '🦄', name: 'Unicorn',   price: 29.99,  color: '#C084FC', particles: 40, rarity: 'epic' },
+  { id: 'phoenix',  emoji: '🔮', name: 'Phoenix',   price: 149.99, color: '#A855F7', particles: 70, rarity: 'legendary', featured: true },
 ];
+
+const BUNDLES = [
+  { id: 'starter',  label: '💝 Starter Pack',  gifts: ['rose','star','confetti'],   price: 4.99,  savings: '20% off' },
+  { id: 'supporter',label: '🌟 Supporter Pack', gifts: ['rocket','fire','crown'],    price: 19.99, savings: '15% off' },
+  { id: 'vip',      label: '💎 VIP Pack',       gifts: ['lion','diamond','unicorn'], price: 79.99, savings: '25% off' },
+];
+
+const RARITY_COLORS = { common: 'rgba(255,255,255,0.4)', rare: GOLD, epic: '#D4854A', legendary: '#C084FC' };
 
 function GiftCard({ gift, selected, onSelect }) {
   const isLegendary = gift.price >= 49.99;
@@ -157,8 +169,16 @@ function TopGifters({ roomId }) {
 }
 
 export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, creatorName, onGiftSent }) {
-  const [selected, setSelected] = useState(null);
-  const [sending,  setSending]  = useState(false);
+  const [selected,   setSelected]   = useState(null);
+  const [sending,    setSending]    = useState(false);
+  const [qty,        setQty]        = useState(1);
+  const [activeTab,  setActiveTab]  = useState('gifts'); // 'gifts' | 'bundles'
+  const [recentSent, setRecentSent] = useState([]);
+  const [rarityFilter, setRarityFilter] = useState('all');
+  const [giftMessage, setGiftMessage] = useState('');
+
+  const featuredGift = GIFTS.find(g => g.featured);
+  const totalPrice   = selected ? (selected.price * qty).toFixed(2) : null;
 
   async function handleSend() {
     if (!selected || sending) return;
@@ -176,7 +196,7 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
           sender_name: user.full_name || user.email || 'Guest',
           creator_id:  creatorId,
           amount_usd:  selected.price,
-          message:     `${selected.emoji} ${selected.name}`,
+          message:     giftMessage.trim() ? `${selected.emoji} ${selected.name} — ${giftMessage.trim()}` : `${selected.emoji} ${selected.name}`,
         }),
         base44.entities.GemTransaction?.create({
           sender_id:    user.id,
@@ -187,10 +207,15 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
           usd_value:    selected.price,
         }).catch(() => {}),
       ]);
-      toast.success(`${selected.emoji} ${selected.name} sent to ${creatorName}!`);
+      toast.success(`${selected.emoji} ${qty > 1 ? `x${qty} ` : ''}${selected.name} sent to ${creatorName}!`);
       onGiftSent?.(selected, user);
+      const entry = { ...selected, qty, sentAt: Date.now() };
+      setRecentSent(prev => [entry, ...prev].slice(0, 4));
+      setTimeout(() => setRecentSent(prev => prev.filter(r => r.sentAt !== entry.sentAt)), 30000);
       onClose();
       setSelected(null);
+      setQty(1);
+      setGiftMessage('');
     } catch {
       toast.error('Failed to send gift');
     } finally {
@@ -257,21 +282,150 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
             <div style={{ flex: 1, overflowY: 'auto' }}>
               <TopGifters roomId={roomId} />
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: 8,
-                padding: 16,
-              }}>
-                {GIFTS.map(gift => (
-                  <GiftCard
-                    key={gift.id}
-                    gift={gift}
-                    selected={selected?.id === gift.id}
-                    onSelect={setSelected}
-                  />
+              {/* Featured gift banner */}
+              {featuredGift && activeTab === 'gifts' && (
+                <div style={{ margin: '10px 16px 0', padding: '8px 12px', borderRadius: 12,
+                  background: `linear-gradient(135deg, ${featuredGift.color}22, rgba(168,85,247,0.12))`,
+                  border: `1px solid ${featuredGift.color}44`, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 28 }}>{featuredGift.emoji}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif',
+                      color: featuredGift.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      ✨ Featured Gift
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: '#fff' }}>
+                      {featuredGift.name} — ${featuredGift.price.toFixed(2)}
+                    </div>
+                  </div>
+                  <button onClick={() => setSelected(featuredGift)}
+                    style={{ padding: '5px 12px', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif',
+                      fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em',
+                      background: featuredGift.color, color: '#000', border: 'none', cursor: 'pointer' }}>
+                    Pick
+                  </button>
+                </div>
+              )}
+
+              {/* Tab bar: Gifts / Bundles */}
+              <div style={{ display: 'flex', gap: 4, padding: '10px 16px 0' }}>
+                {[{ id: 'gifts', label: '🎁 Gifts' }, { id: 'bundles', label: '📦 Bundles' }].map(tab => (
+                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                    style={{ flex: 1, padding: '7px 0', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif',
+                      fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em', border: 'none',
+                      cursor: 'pointer', background: activeTab === tab.id ? `${GOLD}22` : 'rgba(255,255,255,0.05)',
+                      color: activeTab === tab.id ? GOLD : 'rgba(255,255,255,0.35)',
+                      borderBottom: activeTab === tab.id ? `2px solid ${GOLD}` : '2px solid transparent' }}>
+                    {tab.label}
+                  </button>
                 ))}
               </div>
+
+              {activeTab === 'gifts' && (
+                <>
+                  {/* Quantity selector */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px 0' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif',
+                      color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Qty</span>
+                    {[1, 3, 5, 10].map(n => (
+                      <button key={n} onClick={() => setQty(n)}
+                        style={{ padding: '4px 10px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif',
+                          fontSize: 11, fontWeight: 900, border: 'none', cursor: 'pointer',
+                          background: qty === n ? `${GOLD}22` : 'rgba(255,255,255,0.06)',
+                          color: qty === n ? GOLD : 'rgba(255,255,255,0.4)',
+                          outline: qty === n ? `1px solid ${GOLD}50` : 'none' }}>
+                        {n === 1 ? '×1' : `×${n}`}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Rarity filter */}
+                  <div style={{ display: 'flex', gap: 4, padding: '8px 16px 0', flexWrap: 'wrap' }}>
+                    {[
+                      { id: 'all',       label: 'All',       color: 'rgba(255,255,255,0.4)' },
+                      { id: 'common',    label: 'Common',    color: 'rgba(255,255,255,0.5)' },
+                      { id: 'rare',      label: 'Rare',      color: GOLD },
+                      { id: 'epic',      label: 'Epic',      color: '#D4854A' },
+                      { id: 'legendary', label: 'Legendary', color: '#C084FC' },
+                    ].map(f => (
+                      <button key={f.id} onClick={() => setRarityFilter(f.id)}
+                        style={{ padding: '3px 9px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif',
+                          fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em',
+                          border: `1px solid ${rarityFilter === f.id ? f.color : 'rgba(255,255,255,0.1)'}`,
+                          background: rarityFilter === f.id ? `${f.color}18` : 'transparent',
+                          color: rarityFilter === f.id ? f.color : 'rgba(255,255,255,0.35)',
+                          cursor: 'pointer' }}>
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, padding: 16 }}>
+                    {GIFTS.filter(g => rarityFilter === 'all' || g.rarity === rarityFilter).map(gift => (
+                      <GiftCard key={gift.id} gift={gift} selected={selected?.id === gift.id} onSelect={setSelected} />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'bundles' && (
+                <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {BUNDLES.map(bundle => (
+                    <div key={bundle.id} style={{ padding: '12px 14px', borderRadius: 12,
+                      background: 'rgba(212,175,55,0.06)', border: `1px solid ${GOLD}25`,
+                      display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: '#fff' }}>
+                          {bundle.label}
+                        </div>
+                        <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+                          {bundle.gifts.map(gid => {
+                            const g = GIFTS.find(x => x.id === gid);
+                            return g ? <span key={gid} style={{ fontSize: 18 }}>{g.emoji}</span> : null;
+                          })}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 15, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: GOLD }}>
+                          ${bundle.price.toFixed(2)}
+                        </div>
+                        <div style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif',
+                          color: GREEN, letterSpacing: '0.04em' }}>
+                          {bundle.savings}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => { toast.info(`${bundle.label} — coming soon!`); }}
+                        style={{ padding: '7px 12px', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif',
+                          fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em',
+                          background: `${GOLD}22`, color: GOLD, border: `1px solid ${GOLD}40`, cursor: 'pointer' }}>
+                        Buy
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Recent sent history */}
+              {recentSent.length > 0 && (
+                <div style={{ padding: '0 16px 12px' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif',
+                    color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                    Recently Sent
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {recentSent.map((r, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 99,
+                        background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <span style={{ fontSize: 14 }}>{r.emoji}</span>
+                        <span style={{ fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.5)' }}>
+                          {r.qty > 1 ? `×${r.qty} ` : ''}{r.name}
+                        </span>
+                        <span style={{ fontSize: 9, color: GREEN, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>✓ sent</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div style={{
@@ -280,6 +434,37 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
               borderTop: '1px solid rgba(255,255,255,0.06)',
               flexShrink: 0,
             }}>
+              {/* Gift message input */}
+              {selected && (
+                <div style={{ position: 'relative', marginBottom: 8 }}>
+                  <input
+                    value={giftMessage}
+                    onChange={e => setGiftMessage(e.target.value.slice(0, 80))}
+                    placeholder="Add a message… (optional)"
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: 10,
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      background: 'rgba(255,255,255,0.05)',
+                      color: '#fff',
+                      fontSize: 13,
+                      fontFamily: 'Barlow Condensed, sans-serif',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                  {giftMessage.length > 40 && (
+                    <span style={{
+                      position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                      fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+                      color: giftMessage.length > 70 ? '#ef4444' : 'rgba(212,175,55,0.6)',
+                    }}>
+                      {80 - giftMessage.length}
+                    </span>
+                  )}
+                </div>
+              )}
               <motion.button
                 whileTap={{ scale: selected ? 0.97 : 1 }}
                 onClick={handleSend}
@@ -309,7 +494,7 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
                 }}
               >
                 {selected
-                  ? (sending ? 'Sending…' : `${selected.emoji} Send ${selected.name} — $${selected.price.toFixed(2)}`)
+                  ? (sending ? 'Sending…' : `${selected.emoji} Send ${qty > 1 ? `×${qty} ` : ''}${selected.name} — $${totalPrice}`)
                   : 'Select a gift'}
               </motion.button>
             </div>

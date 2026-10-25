@@ -2,11 +2,20 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Scissors, Zap, Share2, Check } from 'lucide-react';
+import { Scissors, Zap, Share2, Check, Sparkles, Eye } from 'lucide-react';
 import { Drawer } from 'vaul';
 
 const GOLD   = '#D4AF37';
 const BURG   = '#800020';
+
+const CLIP_TAGS = [
+  { id: 'hype',   emoji: '🔥', label: 'Hype' },
+  { id: 'funny',  emoji: '😂', label: 'Funny' },
+  { id: 'wow',    emoji: '😱', label: 'Wow' },
+  { id: 'moment', emoji: '⭐', label: 'Moment' },
+  { id: 'fail',   emoji: '💀', label: 'Fail' },
+  { id: 'win',    emoji: '🏆', label: 'Win' },
+];
 
 function autoTitle(roomTitle) {
   const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -33,9 +42,11 @@ async function shareClip(clip) {
 export default function ClipCreatorSheet({
   roomId, sessionId, creatorId, elapsedSeconds, roomTitle, onClose,
 }) {
-  const [title, setTitle]     = useState(autoTitle(roomTitle));
-  const [duration, setDuration] = useState(30);
+  const [title, setTitle]         = useState(autoTitle(roomTitle));
+  const [duration, setDuration]   = useState(30);
   const [savedClip, setSavedClip] = useState(null);
+  const [tags, setTags]           = useState([]);
+  const [aiGenerating, setAiGenerating] = useState(false);
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -52,6 +63,7 @@ export default function ClipCreatorSheet({
       clipped_by_id: user?.id,
       clipped_by_username: user?.full_name || 'Anonymous',
       title,
+      tags: tags.join(','),
       start_timestamp_seconds: Math.max(0, (elapsedSeconds || 0) - secs),
       end_timestamp_seconds: elapsedSeconds || 0,
       duration_seconds: secs,
@@ -176,7 +188,7 @@ export default function ClipCreatorSheet({
               <div>
                 <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">Clip last</p>
                 <div className="flex gap-2">
-                  {[15, 30, 60, 90].map(s => (
+                  {[15, 30, 60, 90, 120].map(s => (
                     <button key={s} onClick={() => setDuration(s)}
                       className="flex-1 py-2.5 rounded-xl text-sm font-black transition-all"
                       style={{
@@ -193,7 +205,27 @@ export default function ClipCreatorSheet({
 
               {/* Title input */}
               <div>
-                <p className="text-[10px] text-white/40 uppercase tracking-wider mb-1.5">Title</p>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[10px] text-white/40 uppercase tracking-wider">Title</p>
+                  <button
+                    disabled={aiGenerating}
+                    onClick={async () => {
+                      setAiGenerating(true);
+                      try {
+                        const res = await base44.integrations.Core.InvokeLLM({
+                          prompt: `Generate a short, punchy, exciting clip title (max 60 chars) for a live stream moment. Room: "${roomTitle || 'Stream'}". Tags: ${tags.join(', ') || 'none'}. Duration: ${duration}s. Return only the title, no quotes.`,
+                          add_context_from_internet: false,
+                        });
+                        if (res) setTitle(String(res).slice(0, 80));
+                      } catch { toast.error('AI title failed'); }
+                      finally { setAiGenerating(false); }
+                    }}
+                    className="flex items-center gap-1 text-[9px] px-2 py-0.5 rounded border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all"
+                  >
+                    <Sparkles className="w-2.5 h-2.5" />
+                    {aiGenerating ? 'Generating…' : 'AI Title'}
+                  </button>
+                </div>
                 <input
                   value={title}
                   onChange={e => setTitle(e.target.value.slice(0, 80))}
@@ -204,6 +236,31 @@ export default function ClipCreatorSheet({
                     fontFamily: 'Barlow Condensed, sans-serif',
                   }}
                 />
+              </div>
+
+              {/* Tag chips */}
+              <div>
+                <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">Tags</p>
+                <div className="flex gap-2 flex-wrap">
+                  {CLIP_TAGS.map(t => {
+                    const active = tags.includes(t.id);
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => setTags(prev => active ? prev.filter(x => x !== t.id) : [...prev, t.id])}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all"
+                        style={{
+                          fontFamily: 'Barlow Condensed, sans-serif',
+                          background: active ? 'rgba(212,175,55,0.18)' : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${active ? GOLD : 'rgba(255,255,255,0.1)'}`,
+                          color: active ? GOLD : 'rgba(255,255,255,0.4)',
+                        }}
+                      >
+                        <span>{t.emoji}</span> {t.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Create button */}
@@ -235,7 +292,7 @@ export default function ClipCreatorSheet({
                         <Scissors className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }} />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs text-white/60 truncate">{c.title}</p>
-                          <p className="text-[10px] text-white/30">{c.duration_seconds}s · {c.share_count || 0} shares</p>
+                          <p className="text-[10px] text-white/30">{c.duration_seconds}s · {c.share_count || 0} shares {c.view_count > 0 && <span className="ml-1 text-[#D4AF37]">· <Eye className="inline w-2.5 h-2.5 -mt-0.5" /> {c.view_count}</span>}</p>
                         </div>
                         <button onClick={() => shareClip(c)}
                           className="w-7 h-7 flex items-center justify-center rounded-lg shrink-0"

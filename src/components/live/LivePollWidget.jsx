@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -88,8 +88,10 @@ function CreatePollModal({ roomId, communityId, userId, onClose, onCreated }) {
 }
 
 export default function LivePollWidget({ roomId, currentUser, isHost }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(() => { try { return localStorage.getItem('poll_widget_expanded') !== 'false'; } catch { return true; } });
   const [showCreate, setShowCreate] = useState(false);
+  const [voteFlash, setVoteFlash] = useState(null);
+  const prevTotalRef = useRef(0);
   const qc = useQueryClient();
 
   const { data: polls = [] } = useQuery({
@@ -155,6 +157,16 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
   });
 
   const activePoll = polls[0];
+  const currentTotal = activePoll?.total_votes || 0;
+  useEffect(() => {
+    if (currentTotal > prevTotalRef.current) {
+      setVoteFlash(currentTotal);
+      const t = setTimeout(() => setVoteFlash(null), 1200);
+      prevTotalRef.current = currentTotal;
+      return () => clearTimeout(t);
+    }
+  }, [currentTotal]);
+
   if (!activePoll && !isHost) return null;
 
   const opts = Array.isArray(activePoll?.options) ? activePoll.options : [];
@@ -180,7 +192,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
 
       <div className="rounded-xl overflow-hidden" style={{ background: '#161616', border: `1px solid rgba(212,175,55,0.15)` }}>
         <button className="w-full flex items-center justify-between px-4 py-3"
-          onClick={() => setExpanded(e => !e)}>
+          onClick={() => setExpanded(e => { const n = !e; try { localStorage.setItem('poll_widget_expanded', String(n)); } catch {} return n; })}>
           <div className="flex items-center gap-2">
             <BarChart2 className="w-4 h-4" style={{ color: GOLD }} />
             <span className="font-black uppercase text-[11px]" style={{ color: GOLD, ...T }}>
@@ -253,19 +265,43 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
                       })}
                     </div>
 
-                    <p className="text-[11px]" style={{ color: 'rgba(245,230,211,0.3)' }}>{activePoll.total_votes || 0} votes</p>
+                    <div className="flex items-center gap-1.5">
+                      <motion.p
+                        key={activePoll.total_votes}
+                        initial={voteFlash ? { scale: 1.3, color: GOLD } : false}
+                        animate={{ scale: 1, color: 'rgba(245,230,211,0.3)' }}
+                        transition={{ duration: 0.4 }}
+                        className="text-[11px]"
+                        style={{ ...T }}
+                      >
+                        {activePoll.total_votes || 0} votes
+                      </motion.p>
+                      {voteFlash && (
+                        <motion.span
+                          initial={{ opacity: 1, y: 0 }}
+                          animate={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.9 }}
+                          className="text-[10px] font-black"
+                          style={{ color: GOLD, ...T }}
+                        >
+                          +1
+                        </motion.span>
+                      )}
+                    </div>
 
-                    {isHost && (
+                    {(isHost || (!myVoteForPoll && activePoll.total_votes > 0)) && (
                       <div className="flex gap-1.5">
-                        <button onClick={() => endPollMut.mutate(activePoll.id)}
-                          className="flex-1 py-1.5 rounded-lg text-[11px] font-black uppercase"
-                          style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
-                          End Poll
-                        </button>
+                        {isHost && (
+                          <button onClick={() => endPollMut.mutate(activePoll.id)}
+                            className="flex-1 py-1.5 rounded-lg text-[11px] font-black uppercase"
+                            style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
+                            End Poll
+                          </button>
+                        )}
                         <button onClick={() => pinResultsMut.mutate(activePoll)}
                           className="flex-1 py-1.5 rounded-lg text-[11px] font-black uppercase"
                           style={{ background: `rgba(212,175,55,0.08)`, color: GOLD, border: `1px solid rgba(212,175,55,0.2)`, ...T }}>
-                          Pin Results
+                          📊 Share
                         </button>
                       </div>
                     )}

@@ -5,7 +5,7 @@
  * the host copy or share all 20 guest push links in one tap — no more
  * individually copying links one by one.
  */
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -591,6 +591,7 @@ export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, com
   var [spotlitId, setSpotlitId] = useState(null);
   var [floaters, setFloaters] = useState([]);
   var [showLaunchSheet, setShowLaunchSheet] = useState(false);
+  var [lastActivity, setLastActivity] = useState(null);
   var canControl = isHost || isCoHost;
 
   var participantsQuery = useQuery({
@@ -613,6 +614,30 @@ export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, com
     enabled: !!roomId,
   });
   var battles = battlesQuery.data || [];
+  var handCount = raisedHands.size;
+
+  var prevLiveRef = useRef(liveCount);
+  var activityTimerRef = useRef(null);
+  useEffect(function() {
+    var prev = prevLiveRef.current;
+    if (participants.length === 0) return;
+    if (liveCount > prev) {
+      var admitted = participants.filter(function(p) { return p.status === 'admitted'; });
+      var joined = admitted[admitted.length - 1];
+      setLastActivity((joined && joined.user_name ? joined.user_name.split(' ')[0] : 'Guest') + ' joined the stage');
+    } else if (liveCount < prev) {
+      setLastActivity('Guest left the stage');
+    }
+    prevLiveRef.current = liveCount;
+  }, [liveCount]);
+
+  // Auto-clear activity feed after 8 seconds
+  useEffect(function() {
+    if (!lastActivity) return;
+    clearTimeout(activityTimerRef.current);
+    activityTimerRef.current = setTimeout(function() { setLastActivity(null); }, 8000);
+    return function() { clearTimeout(activityTimerRef.current); };
+  }, [lastActivity]);
 
   function handleReact(emoji) {
     var id = Date.now() + Math.random();
@@ -621,7 +646,7 @@ export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, com
 
   var TABS = [
     { id: 'stage',        label: '🎙 Stage',       badge: liveCount > 0 ? liveCount : null,   always: true  },
-    { id: 'greenroom',    label: '🟢 Greenroom',    badge: waitingCount,                        always: false },
+    { id: 'greenroom',    label: '🟢 Greenroom',    badge: waitingCount + handCount,             always: false },
     { id: 'watchparty',   label: '🎬 Watch Party',  badge: null,                                always: true  },
     { id: 'battle',       label: '⚔ Battle',        badge: battles.length > 0 ? 1 : null,      always: true  },
     { id: 'destinations', label: '📡 Destinations', badge: null,                                always: false },
@@ -645,6 +670,7 @@ export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, com
           <Stat value={liveCount + '/20'} label="LIVE"     color={C.scarlet} />
           {coHostCount > 0 && <Stat value={coHostCount}  label="CO-HOSTS" color={C.gold}   />}
           {waitingCount > 0 && <Stat value={waitingCount} label="WAITING"  color={C.amber}  />}
+          {handCount > 0 && <Stat value={handCount} label="🖐 HANDS" color={C.goldDim} />}
           <div style={{ flex: 1 }} />
           {canControl && (
             <>
@@ -661,10 +687,13 @@ export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, com
           )}
         </div>
 
-        {/* Reactions bar */}
+        {/* Reactions bar + activity feed */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ ...T, fontSize: 9, color: C.textD, letterSpacing: '0.1em' }}>REACT</span>
           <ReactionsBar onReact={handleReact} />
+          {lastActivity && (
+            <span style={{ ...T, fontSize: 9, color: C.green, opacity: 0.8 }}>· {lastActivity}</span>
+          )}
         </div>
       </div>
 
@@ -688,7 +717,33 @@ export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, com
                 participants={participants} raisedHands={raisedHands}
                 onSpotlight={setSpotlitId} spotlitId={spotlitId} />
             )}
-            {activeTab === 'greenroom' && <GreenroomQueue roomId={roomId} isHost={isHost} />}
+            {activeTab === 'greenroom' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {handCount > 0 && canControl && (
+                  <div style={{ borderRadius: 10, background: C.gold + '0E', border: '1px solid ' + C.gold + '33', padding: '10px 12px' }}>
+                    <div style={{ ...T, fontSize: 9, color: C.gold, letterSpacing: '0.12em', fontWeight: 700, marginBottom: 8 }}>🖐 RAISED HANDS — {handCount}</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {participants.filter(function(p) { return p.hand_raised; }).map(function(p) {
+                        return (
+                          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Dot color={C.gold} pulse />
+                            <span style={{ ...T, fontSize: 12, color: C.text, flex: 1 }}>{p.user_name || 'Guest'}</span>
+                            {isHost && (
+                              <button onClick={function() {
+                                base44.entities.Participant.update(p.id, { status: 'admitted', hand_raised: false }).catch(function() {});
+                              }} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid ' + C.green + '44', background: C.green + '22', color: C.green, cursor: 'pointer', ...T, fontSize: 10, fontWeight: 700 }}>
+                                ADMIT
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <GreenroomQueue roomId={roomId} isHost={isHost} />
+              </div>
+            )}
             {activeTab === 'watchparty' && <WatchPartyTab roomId={roomId} isHost={isHost} currentUser={currentUser} />}
             {activeTab === 'battle' && (
               <BattleTab roomId={roomId} isHost={isHost} isCoHost={isCoHost}

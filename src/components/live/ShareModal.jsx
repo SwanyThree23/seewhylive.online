@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Copy, Check, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Copy, Check, ExternalLink, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PLATFORMS = [
@@ -63,15 +63,29 @@ const PLATFORMS = [
 
 export default function ShareModal({ isOpen, onClose, url, title }) {
   const [copied, setCopied] = useState(false);
+  const [copyCount, setCopyCount] = useState(0);
   const shareUrl = url || window.location.href;
   const shareTitle = title || 'Join me LIVE on SeeWhy!';
+  const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isOpen, onClose]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
       setCopied(true);
-      toast.success('Link copied!');
+      setCopyCount(c => c + 1);
+      toast.success(copyCount > 0 ? 'Copied again!' : 'Link copied!');
       setTimeout(() => setCopied(false), 2000);
     }).catch(() => toast.error('Copy failed.'));
+  };
+
+  const handleNativeShare = () => {
+    navigator.share({ url: shareUrl, title: shareTitle }).catch(() => {});
   };
 
   const handleShare = (platform) => {
@@ -98,6 +112,16 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
           <p className="text-xs text-white/50">
             Share your live stream to outside platforms. Viewers don't need the app — they can watch from the link and discover SeeWhy!
           </p>
+
+          {/* Native share (mobile) */}
+          {canNativeShare && (
+            <button
+              onClick={handleNativeShare}
+              style={{ width: '100%', padding: '10px', borderRadius: 8, border: 'none', background: '#800020', color: '#D4AF37', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif' }}
+            >
+              <Share2 size={15} /> Share via Phone
+            </button>
+          )}
 
           {/* Copy link */}
           <div className="flex gap-2">

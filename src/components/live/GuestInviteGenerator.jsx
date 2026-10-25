@@ -161,8 +161,8 @@ export default function GuestInviteGenerator({ roomId, isHost }) {
 
   const [showForm, setShowForm] = useState(false);
   const [label, setLabel] = useState('');
-  const [role, setRole] = useState('guest');
-  const [expiryIdx, setExpiryIdx] = useState(0);
+  const [role, setRole] = useState(() => { try { return localStorage.getItem('invite_role') || 'guest'; } catch { return 'guest'; } });
+  const [expiryIdx, setExpiryIdx] = useState(() => { try { return parseInt(localStorage.getItem('invite_expiry_idx') || '0', 10) || 0; } catch { return 0; } });
 
   // Store invites in entity (or fallback to local state if entity unavailable)
   const [localInvites, setLocalInvites] = useState([]);
@@ -256,7 +256,7 @@ export default function GuestInviteGenerator({ roomId, isHost }) {
                 <p className="text-[10px] text-white/30 uppercase mb-1 font-bold" style={T}>Role</p>
                 <div className="flex gap-1">
                   {ROLES.map(r => (
-                    <button key={r} onClick={() => setRole(r)}
+                    <button key={r} onClick={() => { setRole(r); try { localStorage.setItem('invite_role', r); } catch {} }}
                       className="flex-1 py-1 rounded text-[10px] font-black uppercase transition-all"
                       style={{
                         background: role === r ? `${G}20` : 'rgba(255,255,255,0.04)',
@@ -274,7 +274,7 @@ export default function GuestInviteGenerator({ roomId, isHost }) {
                 <p className="text-[10px] text-white/30 uppercase mb-1 font-bold" style={T}>Expires</p>
                 <div className="flex gap-1 flex-wrap">
                   {EXPIRY_OPTIONS.map((opt, i) => (
-                    <button key={opt.label} onClick={() => setExpiryIdx(i)}
+                    <button key={opt.label} onClick={() => { setExpiryIdx(i); try { localStorage.setItem('invite_expiry_idx', String(i)); } catch {} }}
                       className="px-2 py-1 rounded text-[10px] font-bold transition-all"
                       style={{
                         background: expiryIdx === i ? `${G}20` : 'rgba(255,255,255,0.04)',

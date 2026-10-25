@@ -1,13 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-// Quality → bar color
 const QUALITY_COLOR = {
   excellent: '#22c55e',
   good:      '#6DBF7E',
   fair:      '#F59E0B',
   poor:      '#EF4444',
   offline:   '#6B7280',
+};
+
+const QUALITY_LABEL = {
+  excellent: 'Excellent',
+  good:      'Good',
+  fair:      'Fair',
+  poor:      'Poor',
+  offline:   'Offline',
 };
 
 /**
@@ -33,9 +40,13 @@ export default function SignalBars({
   const scale = size === 'xs' ? 0.7 : size === 'sm' ? 1 : size === 'md' ? 1.4 : 1.8;
   const qualityColor = quality ? QUALITY_COLOR[quality] : null;
   const lit = filledBars ?? count;
+  const showLabel = (size === 'md' || size === 'lg') && quality;
+  const labelText = quality ? QUALITY_LABEL[quality] : '';
+  const titleAttr = quality ? `${QUALITY_LABEL[quality] || quality}${quality === 'offline' ? '' : ''}` : undefined;
 
   return (
-    <div className={`flex items-end gap-[2px] ${className}`}>
+    <div className={`flex items-center gap-1 ${className}`} title={titleAttr}>
+      <div className="flex items-end gap-[2px]">
       {Array.from({ length: count }).map((_, i) => {
         const isFilled = i < lit;
         const barColor = isFilled
@@ -64,6 +75,12 @@ export default function SignalBars({
           />
         );
       })}
+      </div>
+      {showLabel && (
+        <span style={{ fontSize: size === 'lg' ? 13 : 11, fontWeight: 700, color: qualityColor, fontFamily: 'Barlow Condensed, sans-serif', transition: 'color 0.4s ease' }}>
+          {labelText}
+        </span>
+      )}
     </div>
   );
 }

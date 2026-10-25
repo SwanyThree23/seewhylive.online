@@ -210,9 +210,9 @@ function DestRow({ dest, userId }) {
 
 export default function GuestDestinationsPanel({ participantUserId, guestName }) {
   var qc = useQueryClient();
-  var [expanded, setExpanded] = useState(false);
+  var [expanded, setExpanded] = useState(function() { try { return localStorage.getItem('guest_dests_expanded_' + (participantUserId || '')) === 'true'; } catch(_) { return false; } });
   var [showAdd, setShowAdd] = useState(false);
-  var [selectedPreset, setSelectedPreset] = useState('youtube');
+  var [selectedPreset, setSelectedPreset] = useState(function() { try { return localStorage.getItem('guest_dests_preset') || 'youtube'; } catch(_) { return 'youtube'; } });
   var [label, setLabel] = useState('');
 
   var { data: destinations = [] } = useQuery({
@@ -254,7 +254,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
     <div className="rounded-lg overflow-hidden" style={{ background: '#1A1008', border: '1px solid rgba(212,175,55,0.12)' }}>
       {/* Header */}
       <button
-        onClick={function() { setExpanded(function(v) { return !v; }); }}
+        onClick={function() { setExpanded(function(v) { var n = !v; try { localStorage.setItem('guest_dests_expanded_' + (participantUserId || ''), String(n)); } catch(_) {} return n; }); }}
         className="w-full flex items-center gap-2 px-2.5 py-2 text-left hover:bg-white/5 transition-colors"
         style={{ background: 'none', cursor: 'pointer' }}
       >
@@ -309,7 +309,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
                         {PLATFORM_PRESETS.map(function(p) {
                           return (
                             <button key={p.id}
-                              onClick={function() { setSelectedPreset(p.id); }}
+                              onClick={function() { setSelectedPreset(p.id); try { localStorage.setItem('guest_dests_preset', p.id); } catch(_) {} }}
                               className="py-1 px-1 rounded text-[11px] font-semibold transition-all border"
                               style={selectedPreset === p.id
                                 ? { borderColor: p.color, color: p.color, background: p.color + '15', cursor: 'pointer' }

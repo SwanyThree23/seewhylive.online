@@ -29,7 +29,7 @@ export default function GlobalChatWidget() {
   const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [lang, setLang] = useState('en');
+  const [lang, setLang] = useState(() => { try { return localStorage.getItem('gcw_lang') || 'en'; } catch { return 'en'; } });
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const [translating, setTranslating] = useState(false);
@@ -185,7 +185,7 @@ export default function GlobalChatWidget() {
                         className="absolute right-0 top-9 z-10 rounded-2xl overflow-hidden shadow-2xl"
                         style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(212,175,55,0.2)', width: 180, maxHeight: 280, overflowY: 'auto' }}>
                         {LANGUAGES.map(l => (
-                          <button key={l.code} onClick={() => { setLang(l.code); setShowLangPicker(false); }}
+                          <button key={l.code} onClick={() => { setLang(l.code); setShowLangPicker(false); try { localStorage.setItem('gcw_lang', l.code); } catch {} }}
                             className="w-full flex items-center gap-2 px-3 py-2 text-xs transition-all"
                             style={{ background: lang === l.code ? 'rgba(212,175,55,0.1)' : 'transparent', color: lang === l.code ? '#d4af37' : 'rgba(255,255,255,0.6)' }}>
                             <span className="text-base">{l.flag}</span>

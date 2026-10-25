@@ -1221,6 +1221,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     ...(canStream ? [{ id: 'audio',  label: '🎚 Audio',  desc: 'Mixer' }] : []),
     { id: 'health',  label: '❤️ Health', desc: 'Stream stats' },
     { id: 'ai',    label: '🤖 AI',    desc: 'Music & Mod' },
+    { id: 'a11y',  label: '♿ Access', desc: 'Impaired aids' },
     { id: 'share', label: '📢 Share', desc: 'Go Viral' },
   ];
 

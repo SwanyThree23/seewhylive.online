@@ -22,10 +22,19 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
     onReact?.(emoji);
   };
 
+  const REACT_EMOJIS = ['❤️', '🔥', '😍', '🎉', '💯', '👏'];
+  const reactIdx = useRef(0);
+
   const handleHype = () => {
     for (let i = 0; i < 5; i++) setTimeout(() => addFloat('🔥'), i * 80);
     setHypeCount(c => c + 5);
     setTimeout(() => setHypeCount(0), 2000);
+  };
+
+  const handleReactCycle = () => {
+    const emoji = REACT_EMOJIS[reactIdx.current % REACT_EMOJIS.length];
+    reactIdx.current += 1;
+    addFloat(emoji);
   };
 
   return (
@@ -72,13 +81,23 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
               <span className="text-[11px] text-white/60">Chat</span>
             </motion.button>
 
-            {/* Quick React */}
+            {/* Hype */}
             <motion.button
               whileTap={{ scale: 0.8 }}
-              onClick={() => addFloat('❤️')}
+              onClick={handleHype}
+              className="w-12 h-12 rounded-full bg-orange-900/40 border border-orange-700/40 flex flex-col items-center justify-center gap-0.5 relative"
+            >
+              <span className="text-xl">🔥</span>
+              <span className="text-[11px] text-white/60">Hype</span>
+            </motion.button>
+
+            {/* Quick React (cycles emoji) */}
+            <motion.button
+              whileTap={{ scale: 0.8 }}
+              onClick={handleReactCycle}
               className="w-12 h-12 rounded-full bg-red-900/40 border border-red-700/40 flex flex-col items-center justify-center gap-0.5"
             >
-              <span className="text-xl">❤️</span>
+              <span className="text-xl">{REACT_EMOJIS[reactIdx.current % REACT_EMOJIS.length]}</span>
               <span className="text-[11px] text-white/60">React</span>
             </motion.button>
 

@@ -42,7 +42,7 @@ function formatTime(seconds) {
   return `${m}:${s}`;
 }
 
-function VideoPane({ stream, label, mirrored, isLocal, score, side, noVideo }) {
+function VideoPane({ stream, label, mirrored, isLocal, score, side, noVideo, connState }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -94,12 +94,20 @@ function VideoPane({ stream, label, mirrored, isLocal, score, side, noVideo }) {
         style={{ background: `linear-gradient(90deg, ${accent}22, transparent)` }}>
         {isLocal && <Crown className="w-3 h-3" style={{ color: GOLD }} />}
         <span className="font-black text-sm truncate" style={{ ...T, color: '#fff' }}>{label}</span>
-        {isLocal && (
+        {isLocal ? (
           <span className="text-[9px] font-black uppercase px-1.5 py-px rounded-full ml-auto shrink-0"
             style={{ background: `${SCAR}cc`, color: '#fff', ...T }}>
             YOU
           </span>
-        )}
+        ) : connState ? (
+          <span className="ml-auto shrink-0 flex items-center gap-1">
+            {connState === 'connected'
+              ? <Wifi className="w-3 h-3" style={{ color: '#6DBF7E' }} />
+              : connState === 'connecting' || connState === 'checking'
+                ? <Wifi className="w-3 h-3" style={{ color: GOLD }} />
+                : <WifiOff className="w-3 h-3" style={{ color: '#ef4444' }} />}
+          </span>
+        ) : null}
       </div>
     </div>
   );
@@ -347,6 +355,7 @@ export default function FaceToFaceRoom({
             label={theirName}
             score={hasBattle ? opponentScore : undefined}
             side={side === 'creator' ? 'right' : 'left'}
+            connState={opponentConnState}
           />
           {/* Gifts to send to opponent — same panel, mirrors left */}
           {hasBattle && battle?.status === 'active' && (

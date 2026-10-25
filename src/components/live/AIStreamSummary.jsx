@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Sparkles, RefreshCw, Copy, CheckCheck } from 'lucide-react';
+import { Sparkles, RefreshCw, Copy, CheckCheck, MessageCircle } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
-export default function AIStreamSummary({ roomId, isHost, streamTitle, viewerCount, elapsedSeconds }) {
+export default function AIStreamSummary({ roomId, isHost, streamTitle, viewerCount, elapsedSeconds, creatorId }) {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const shareMutation = useMutation({
+    mutationFn: () => base44.entities.Message.create({ room_id: roomId, user_id: creatorId, user_name: 'Host', content: `📊 Stream Summary: ${summary}` }),
+    onSuccess: () => toast.success('Summary shared to chat!'),
+    onError: () => toast.error('Could not share to chat.'),
+  });
 
   const { data: recentMessages = [] } = useQuery({
     queryKey: ['summary-messages', roomId],
@@ -63,7 +70,7 @@ Write an engaging summary that captures the energy of the stream. Include highli
         <button
           onClick={generateSummary}
           disabled={loading}
-          style={{ height: 24, padding: '0 8px', fontSize: 10, fontWeight: 700, background: 'rgba(212,175,55,0.2)', color: '#7B5DA6', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ height: 24, padding: '0 8px', fontSize: 10, fontWeight: 700, background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>
           <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} style={{ marginRight: 2 }} />
           {loading ? 'Writing...' : summary ? 'Refresh' : 'Generate'}
         </button>
@@ -77,13 +84,25 @@ Write an engaging summary that captures the energy of the stream. Include highli
             exit={{ opacity: 0, height: 0 }}
             className="p-3 space-y-2">
             <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>{summary}</p>
-            <button
-              onClick={copyToClipboard}
-              className="flex items-center gap-1 text-[10px] font-bold transition-colors"
-              style={{ color: copied ? '#6DBF7E' : 'rgba(212,175,55,0.7)' }}>
-              {copied ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-              {copied ? 'Copied!' : 'Copy for social'}
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={copyToClipboard}
+                className="flex items-center gap-1 text-[10px] font-bold transition-colors"
+                style={{ color: copied ? '#6DBF7E' : 'rgba(212,175,55,0.7)' }}>
+                {copied ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+              {roomId && creatorId && (
+                <button
+                  onClick={() => shareMutation.mutate()}
+                  disabled={shareMutation.isPending}
+                  className="flex items-center gap-1 text-[10px] font-bold transition-colors disabled:opacity-40"
+                  style={{ color: 'rgba(109,191,126,0.8)' }}>
+                  <MessageCircle className="w-3 h-3" />
+                  {shareMutation.isPending ? 'Sharing…' : 'Share to chat'}
+                </button>
+              )}
+            </div>
           </motion.div>
         )}
         {!summary && !loading && (

@@ -14,9 +14,15 @@ const MOMENTS = [
   { id: 'peak',    icon: '🏆', label: 'Peak Moment',  color: '#D4AF37' },
 ];
 
+function fmtTs(secs) {
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
 export default function StreamHighlightCapture({ roomId, sessionId, creatorId, elapsedSeconds, isHost }) {
   const [captured, setCaptured] = useState(null);
   const [open, setOpen] = useState(false);
+  const [captureCount, setCaptureCount] = useState(0);
 
   const captureMutation = useMutation({
     mutationFn: (momentType) => base44.entities.StreamHighlight.create({
@@ -30,6 +36,7 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
     }),
     onSuccess: (highlight, momentType) => {
       setCaptured(momentType);
+      setCaptureCount(c => c + 1);
       toast.success('Moment captured! ⚡');
       setTimeout(() => setCaptured(null), 2000);
       setOpen(false);
@@ -66,6 +73,9 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
         }}>
         <Scissors className="w-3 h-3" />
         Clip
+        {captureCount > 0 && (
+          <span className="ml-0.5 text-[9px] font-mono opacity-70">×{captureCount}</span>
+        )}
       </button>
 
       <AnimatePresence>
@@ -76,8 +86,13 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
             exit={{ opacity: 0, scale: 0.9 }}
             className="absolute bottom-full mb-2 right-0 z-50 rounded-2xl p-2 space-y-1"
             style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', width: 160, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
-            <p className="text-[11px] font-bold uppercase text-white/30 px-1 pb-1"
-              style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Tag This Moment</p>
+            <div className="flex items-center justify-between px-1 pb-1">
+              <p className="text-[11px] font-bold uppercase text-white/30"
+                style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Tag This Moment</p>
+              {elapsedSeconds > 0 && (
+                <span className="text-[10px] font-mono" style={{ color: 'rgba(212,175,55,0.5)' }}>@ {fmtTs(elapsedSeconds)}</span>
+              )}
+            </div>
             {MOMENTS.map(m => (
               <button key={m.id}
                 onClick={() => captureMutation.mutate(m.id)}

@@ -11,6 +11,8 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 export default function ChallengeCard({ challenge, userParticipation, userId }) {
   const queryClient = useQueryClient();
   const [joining, setJoining] = useState(false);
+  // Optimistic local state: flips true immediately on join click, rolls back on error
+  const [optimisticJoined, setOptimisticJoined] = useState(false);
 
   const joinChallengeMutation = useMutation({
     mutationFn: async () => {
@@ -20,6 +22,13 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
         progress: 0,
         score: 0,
       });
+    },
+    onMutate: async () => {
+      setOptimisticJoined(true);
+      // Also cancel + snapshot any in-flight participation queries
+      await queryClient.cancelQueries({ queryKey: ['challengeParticipation'] });
+      const prevData = queryClient.getQueryData(['challengeParticipation']);
+      return { prevData };
     },
     onSuccess: () => {
       setJoining(false);
@@ -34,10 +43,17 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
         }).catch(() => {});
       }
     },
-    onError: () => { setJoining(false); toast.error('Action failed.'); },
+    onError: (err, vars, context) => {
+      setOptimisticJoined(false);
+      setJoining(false);
+      if (context?.prevData !== undefined) {
+        queryClient.setQueryData(['challengeParticipation'], context.prevData);
+      }
+      toast.error('Action failed.');
+    },
   });
 
-  const isParticipating = !!userParticipation;
+  const isParticipating = !!userParticipation || optimisticJoined;
   const progress = userParticipation ? (userParticipation.progress / challenge.goal_value) * 100 : 0;
   const isCompleted = userParticipation?.completed;
 

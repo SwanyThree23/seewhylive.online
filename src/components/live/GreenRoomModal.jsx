@@ -272,9 +272,15 @@ export default function GreenRoomModal({
                 </button>
               </div>
 
-              {/* Progress dots */}
-              <div className="mb-5">
+              {/* Progress dots + pass counter */}
+              <div className="mb-5 flex items-center gap-3">
                 <ProgressDots step={allDone ? 3 : step} total={3} />
+                {(results.mic !== null || results.cam !== null || results.net !== null) && (
+                  <span className="text-[10px] font-black shrink-0"
+                    style={{ fontFamily: "'Barlow Condensed', sans-serif", color: allDone ? '#6DBF7E' : GOLD }}>
+                    {[results.mic, results.cam, results.net].filter(r => r === true).length}/3 passed
+                  </span>
+                )}
               </div>
 
               {/* Active step card */}

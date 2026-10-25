@@ -20,6 +20,7 @@ function genToken(userId) {
 
 export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, user }) {
   const [checks, setChecks] = useState({ mic: 'idle', camera: 'idle', network: 'idle' });
+  const [networkMs, setNetworkMs] = useState(null);
   const [copied, setCopied]   = useState(null);
   const rtmpKey = user?.stream_key || 'SW_XXXXXXXX_XXXXXXXX';
   const [sessionToken]        = useState(() => (user?.id ? genToken(user.id) : ''));
@@ -55,6 +56,7 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
       const start = Date.now();
       await fetch(window.location.origin + '/', { method: 'HEAD', cache: 'no-store' });
       const ms = Date.now() - start;
+      setNetworkMs(ms);
       setChecks(c => ({ ...c, network: ms < 500 ? 'ready' : 'warn' }));
     } catch {
       setChecks(c => ({ ...c, network: 'fail' }));
@@ -73,10 +75,10 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
 
   const allReady = checks.mic === 'ready' && checks.camera === 'ready' && (checks.network === 'ready' || checks.network === 'warn');
 
-  const checkLabel = (state) => {
+  const checkLabel = (state, key) => {
     if (state === 'idle' || state === 'testing') return { label: 'TESTING…', color: 'rgba(255,255,255,0.3)' };
-    if (state === 'ready') return { label: '✓ READY', color: '#6DBF7E' };
-    if (state === 'warn')  return { label: '⚠ SLOW', color: '#C9A84C' };
+    if (state === 'ready') return { label: key === 'network' && networkMs ? `✓ ${networkMs}ms` : '✓ READY', color: '#6DBF7E' };
+    if (state === 'warn')  return { label: key === 'network' && networkMs ? `⚠ ${networkMs}ms` : '⚠ SLOW', color: '#C9A84C' };
     return { label: '✗ FAIL', color: '#C0392B' };
   };
 
@@ -119,7 +121,7 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
 
               {/* Check rows */}
               {ROWS.map(row => {
-                const { label, color } = checkLabel(checks[row.key]);
+                const { label, color } = checkLabel(checks[row.key], row.key);
                 return (
                   <div key={row.key} className="flex items-center justify-between px-4 py-3 rounded-xl"
                     style={{ background: checks[row.key] === 'ready' ? 'rgba(109,191,126,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${checks[row.key] === 'ready' ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.07)'}` }}>
@@ -128,6 +130,22 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                   </div>
                 );
               })}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={runChecks}
+                  className="text-[11px] font-black uppercase self-start"
+                  style={{ color: 'rgba(212,175,55,0.55)', ...T }}
+                >
+                  ↺ Re-run checks
+                </button>
+                {Object.values(checks).some(v => v !== 'idle') && (
+                  <span className="text-[10px] font-black" style={{
+                    color: allReady ? '#6DBF7E' : 'rgba(255,255,255,0.3)', ...T
+                  }}>
+                    {Object.values(checks).filter(v => v === 'ready' || v === 'warn').length}/3 ready
+                  </span>
+                )}
+              </div>
 
               {/* RTMP Stream Key */}
               <div>

@@ -21,16 +21,18 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
   const [custom, setCustom] = useState(false);
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '']);
+  const [timeout, setTimeout_] = useState(60);
   const qc = useQueryClient();
+  const TIMEOUT_OPTIONS = [{ v: 30, l: '30s' }, { v: 60, l: '1m' }, { v: 120, l: '2m' }, { v: 300, l: '5m' }];
 
   const launchMutation = useMutation({
-    mutationFn: ({ q, opts }) => base44.entities.Poll.create({
+    mutationFn: ({ q, opts, t }) => base44.entities.Poll.create({
       room_id: roomId,
       host_id: hostId,
       question: q,
       options: opts.filter(Boolean),
       status: 'active',
-      timeout_seconds: 60,
+      timeout_seconds: t || 60,
       created_at: new Date().toISOString(),
     }),
     onSuccess: (poll) => {
@@ -87,7 +89,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
               <div className="p-2 space-y-1">
                 {QUICK_TEMPLATES.map((t, i) => (
                   <button key={i}
-                    onClick={() => launchMutation.mutate({ q: t.q, opts: t.opts })}
+                    onClick={() => launchMutation.mutate({ q: t.q, opts: t.opts, t: 60 })}
                     disabled={launchMutation.isPending}
                     className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-white/5 transition-all">
                     <p className="text-[11px] font-bold text-white">{t.q}</p>
@@ -102,6 +104,23 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
               </div>
             ) : (
               <div className="p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <button onClick={() => setCustom(false)} className="text-[10px] text-white/30 hover:text-white transition-colors">← Back</button>
+                  <div className="flex gap-1">
+                    {TIMEOUT_OPTIONS.map(o => (
+                      <button key={o.v} onClick={() => setTimeout_(o.v)}
+                        className="text-[10px] px-2 py-0.5 rounded font-black transition-all"
+                        style={{
+                          background: timeout === o.v ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${timeout === o.v ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                          color: timeout === o.v ? '#D4AF37' : 'rgba(255,255,255,0.4)',
+                          fontFamily: 'Barlow Condensed, sans-serif',
+                        }}>
+                        {o.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <input
                   placeholder="Your question..."
                   value={question}
@@ -110,17 +129,26 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
                 />
                 {options.map((opt, i) => (
-                  <input key={i}
-                    placeholder={`Option ${i + 1}`}
-                    value={opt}
-                    onChange={e => {
-                      const next = [...options];
-                      next[i] = e.target.value;
-                      setOptions(next);
-                    }}
-                    className="w-full text-[11px] px-2.5 py-2 rounded-lg text-white placeholder:text-white/30 outline-none"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
-                  />
+                  <div key={i} className="flex gap-1 items-center">
+                    <input
+                      placeholder={`Option ${i + 1}`}
+                      value={opt}
+                      onChange={e => {
+                        const next = [...options];
+                        next[i] = e.target.value;
+                        setOptions(next);
+                      }}
+                      className="flex-1 text-[11px] px-2.5 py-2 rounded-lg text-white placeholder:text-white/30 outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+                    />
+                    {options.length > 2 && (
+                      <button onClick={() => setOptions(options.filter((_, j) => j !== i))}
+                        className="w-6 h-6 flex items-center justify-center rounded text-white/30 hover:text-white/70 transition-colors"
+                        style={{ background: 'rgba(255,255,255,0.05)' }}>
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                 ))}
                 {options.length < 5 && (
                   <button onClick={() => setOptions([...options, ''])}
@@ -129,7 +157,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
                   </button>
                 )}
                 <button
-                  onClick={() => launchMutation.mutate({ q: question, opts: options })}
+                  onClick={() => launchMutation.mutate({ q: question, opts: options, t: timeout })}
                   disabled={!question || options.filter(Boolean).length < 2 || launchMutation.isPending}
                   className="w-full py-2 rounded-xl text-[11px] font-black uppercase transition-all disabled:opacity-40"
                   style={{ background: '#D4AF37', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>

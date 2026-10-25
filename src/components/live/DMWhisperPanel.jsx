@@ -101,17 +101,26 @@ export function WhisperPanel({ roomId, currentUser, recipientId, recipientName, 
           );
         })}
       </div>
-      <div style={{ padding: "8px 12px", borderTop: "1px solid #2a2a2a", display: "flex", gap: 6 }}>
-        <input
-          style={{ flex: 1, background: "#111", border: "1px solid #333", borderRadius: 6, color: C.white, fontFamily: C.fMon, fontSize: 11, padding: "6px 10px", outline: "none" }}
-          placeholder="Whisper…" value={input} onChange={e => setInput(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && input.trim()) sendMutation.mutate(input.trim()); }}
-        />
-        <button
-          onClick={() => input.trim() && sendMutation.mutate(input.trim())}
-          style={{ padding: "6px 14px", background: C.burgundy, border: "1px solid " + C.gold, borderRadius: 6, color: C.gold, fontFamily: C.fMon, fontSize: 10, cursor: "pointer" }}>
-          SEND
-        </button>
+      <div style={{ padding: "8px 12px", borderTop: "1px solid #2a2a2a" }}>
+        <div style={{ display: "flex", gap: 6 }}>
+          <input
+            maxLength={120}
+            style={{ flex: 1, background: "#111", border: "1px solid #333", borderRadius: 6, color: C.white, fontFamily: C.fMon, fontSize: 11, padding: "6px 10px", outline: "none" }}
+            placeholder="Whisper…" value={input} onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && input.trim()) sendMutation.mutate(input.trim()); }}
+          />
+          <button
+            onClick={() => input.trim() && sendMutation.mutate(input.trim())}
+            disabled={sendMutation.isPending || !input.trim()}
+            style={{ padding: "6px 14px", background: C.burgundy, border: "1px solid " + C.gold, borderRadius: 6, color: C.gold, fontFamily: C.fMon, fontSize: 10, cursor: input.trim() ? "pointer" : "not-allowed", opacity: input.trim() ? 1 : 0.5 }}>
+            {sendMutation.isPending ? '…' : 'SEND'}
+          </button>
+        </div>
+        {input.length > 80 && (
+          <div style={{ fontFamily: C.fMon, fontSize: 10, color: input.length >= 115 ? "#C0392B" : C.dim, textAlign: "right", marginTop: 3 }}>
+            {120 - input.length} left
+          </div>
+        )}
       </div>
     </div>
   );

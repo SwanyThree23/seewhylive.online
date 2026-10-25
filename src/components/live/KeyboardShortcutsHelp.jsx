@@ -16,7 +16,11 @@ const BG   = '#080B18';
  */
 export default function KeyboardShortcutsHelp({ shortcuts = [], extraShortcuts = [] }) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const all = [...shortcuts, ...extraShortcuts];
+  const filtered = search.trim()
+    ? all.filter(s => s.label.toLowerCase().includes(search.toLowerCase()) || s.key.toLowerCase().includes(search.toLowerCase()))
+    : all;
 
   useEffect(() => {
     const onKey = (e) => {
@@ -79,8 +83,19 @@ export default function KeyboardShortcutsHelp({ shortcuts = [], extraShortcuts =
                 </button>
               </div>
 
+              {all.length > 5 && (
+                <div className="px-4 pb-2 pt-1">
+                  <input
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Filter shortcuts…"
+                    className="w-full px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+                  />
+                </div>
+              )}
               <div className="p-4 space-y-1.5">
-                {all.map(({ key, label }) => (
+                {filtered.map(({ key, label }) => (
                   <div key={key} className="flex items-center justify-between gap-4">
                     <span className="text-sm text-white/70" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</span>
                     <kbd style={{

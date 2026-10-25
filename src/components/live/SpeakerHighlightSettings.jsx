@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings2, Check } from 'lucide-react';
 
@@ -18,6 +18,15 @@ export default function SpeakerHighlightSettings({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const active = HIGHLIGHT_STYLES.find(s => s.id === value) || HIGHLIGHT_STYLES[0];
 
+  useEffect(() => {
+    if (!value) {
+      try {
+        const saved = localStorage.getItem('speaker_highlight');
+        if (saved && HIGHLIGHT_STYLES.some(s => s.id === saved)) onChange(saved);
+      } catch {}
+    }
+  }, []);
+
   return (
     <div style={{ position: 'relative' }}>
       <button
@@ -27,7 +36,7 @@ export default function SpeakerHighlightSettings({ value, onChange }) {
       >
         <Settings2 className="w-3.5 h-3.5" style={{ color: open ? GOLD : 'rgba(255,255,255,0.5)' }} />
         <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: open ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-          Speaker FX
+          FX: {active.name}
         </span>
       </button>
 
@@ -55,7 +64,7 @@ export default function SpeakerHighlightSettings({ value, onChange }) {
                   return (
                     <button
                       key={s.id}
-                      onClick={() => { onChange(s.id); setOpen(false); }}
+                      onClick={() => { onChange(s.id); setOpen(false); try { localStorage.setItem('speaker_highlight', s.id); } catch {} }}
                       className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-left"
                       style={{ background: isActive ? 'rgba(212,175,55,0.15)' : 'transparent', border: `1px solid ${isActive ? GOLD + '66' : 'transparent'}` }}
                     >

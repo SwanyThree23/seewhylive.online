@@ -32,10 +32,18 @@ var DEFAULT_GIFTS = [
 // Full-screen gift animation overlay
 export function GiftAnimationOverlay({ queue, onDone }) {
   var [current, setCurrent] = useState(null);
+  var [trainCount, setTrainCount] = useState(0);
+  var trainRef = useRef(0);
+  var trainTimer = useRef(null);
 
   useEffect(() => {
     if (queue.length > 0 && !current) {
       setCurrent(queue[0]);
+      // gift train: increment counter, reset after 4s of quiet
+      trainRef.current += 1;
+      setTrainCount(trainRef.current);
+      clearTimeout(trainTimer.current);
+      trainTimer.current = setTimeout(() => { trainRef.current = 0; setTrainCount(0); }, 4000);
       var dur = queue[0].rarity === "legendary" ? 5000 : queue[0].rarity === "epic" ? 4000 : 3000;
       var t = setTimeout(() => { setCurrent(null); onDone(); }, dur);
       return () => clearTimeout(t);
@@ -54,6 +62,15 @@ export function GiftAnimationOverlay({ queue, onDone }) {
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       animation: "fadeIn .3s ease-out",
     }}>
+      {/* Gift train badge */}
+      {trainCount >= 2 && (
+        <div style={{ position: "absolute", top: 60, left: "50%", transform: "translateX(-50%)",
+          background: "linear-gradient(135deg,#800020,#D4AF37)", borderRadius: 20,
+          padding: "6px 18px", fontFamily: C.fBeb, fontSize: 16, color: "#fff",
+          letterSpacing: 2, boxShadow: "0 0 24px rgba(212,175,55,0.6)", animation: "coinSpin .4s ease-out" }}>
+          🔥 GIFT TRAIN ×{trainCount}!
+        </div>
+      )}
       {/* Particle burst for legendary */}
       {isLegendary && (
         <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
@@ -208,13 +225,16 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, padding: 12 }}>
             {gifts.map(gift => {
               var rs = RARITY_STYLES[gift.rarity] || RARITY_STYLES.common;
+              var isSending = sendMutation.isPending;
               return (
                 <button key={gift.id || gift.name} onClick={() => sendMutation.mutate(gift)}
+                  disabled={isSending}
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                     padding: "10px 4px", borderRadius: 10,
                     border: "1px solid " + rs.border, background: "rgba(255,255,255,0.03)",
-                    cursor: "pointer", transition: "all .15s",
+                    cursor: isSending ? "not-allowed" : "pointer", transition: "all .15s",
+                    opacity: isSending ? 0.6 : 1,
                   }}>
                   <span style={{ fontSize: 28, filter: "drop-shadow(0 0 6px " + rs.color + ")" }}>
                     {typeof gift.emoji === "string" && gift.emoji.startsWith("http") ? "🎁" : gift.emoji}
@@ -222,7 +242,9 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
                   <span style={{ fontFamily: C.fMon, fontSize: 7, color: rs.color }}>{rs.label}</span>
                   <span style={{ fontFamily: C.fRaj, fontSize: 10, color: C.white }}>{gift.name}</span>
                   <span style={{ fontFamily: C.fMon, fontSize: 11, color: C.gold }}>💎{gift.price}</span>
-                  <span style={{ fontFamily: C.fMon, fontSize: 7, color: C.dim }}>{gift.times_sent || 0}x sent</span>
+                  <span style={{ fontFamily: C.fMon, fontSize: 7, color: isSending ? C.gold : C.dim }}>
+                    {isSending ? "Sending…" : (gift.times_sent || 0) + "x sent"}
+                  </span>
                 </button>
               );
             })}
@@ -242,7 +264,15 @@ export function TipAlertOverlay({ alert, onDismiss }) {
     // TTS
     if (alert.message && window.speechSynthesis) {
       var utt = new SpeechSynthesisUtterance(alert.sender_name + " says: " + alert.message);
+      utt.rate = 1.05;
+      utt.pitch = alert.amount_usd >= 50 ? 1.15 : 1.0;
       window.speechSynthesis.speak(utt);
+    }
+    // Haptic feedback on mobile
+    if (navigator.vibrate) {
+      if (alert.amount_usd >= 50) navigator.vibrate([80, 40, 80, 40, 200]);
+      else if (alert.amount_usd >= 10) navigator.vibrate([60, 40, 120]);
+      else navigator.vibrate(60);
     }
     return () => { clearTimeout(t); window.speechSynthesis?.cancel(); };
   }, [alert]);
@@ -250,23 +280,40 @@ export function TipAlertOverlay({ alert, onDismiss }) {
   if (!alert) return null;
   var isLegendary = alert.amount_usd >= 50;
   var isGold = alert.amount_usd >= 10;
+  var tierEmoji = alert.amount_usd >= 100 ? "👑" : alert.amount_usd >= 50 ? "⚡" : alert.amount_usd >= 10 ? "🌟" : "💰";
+  var tierLabel = alert.amount_usd >= 100 ? "LEGENDARY TIP" : alert.amount_usd >= 50 ? "EPIC TIP" : alert.amount_usd >= 10 ? "SUPER TIP" : "TIP";
 
   return (
     <div style={{
-      position: "fixed", top: 70, right: 12, zIndex: 9991, maxWidth: 280,
-      background: isLegendary ? "rgba(0,0,0,0.95)" : "rgba(13,13,13,0.95)",
-      border: "1px solid " + (isLegendary ? C.gold : isGold ? C.gold + "88" : "#444"),
-      borderRadius: 12, padding: "12px 16px",
-      boxShadow: isLegendary ? "0 0 30px rgba(212,175,55,0.6)" : "0 4px 20px rgba(0,0,0,0.5)",
+      position: "fixed", top: 70, right: 12, zIndex: 9991, maxWidth: 300,
+      background: isLegendary ? "linear-gradient(135deg,rgba(20,0,40,0.98),rgba(0,0,0,0.98))" : "rgba(13,13,13,0.97)",
+      border: "1px solid " + (isLegendary ? C.gold : isGold ? C.gold + "60" : "#444"),
+      borderRadius: 14, padding: "12px 16px",
+      boxShadow: isLegendary ? "0 0 40px rgba(212,175,55,0.5), 0 8px 32px rgba(0,0,0,0.8)" : "0 4px 24px rgba(0,0,0,0.6)",
       animation: "slideUp .4s ease-out",
     }}>
+      {/* Tier label */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <span style={{ fontFamily: C.fOrb, fontSize: 9, color: isLegendary ? C.gold : isGold ? C.gold + "aa" : C.dim,
+          letterSpacing: 2, textTransform: "uppercase" }}>{tierLabel}</span>
+        <button onClick={onDismiss} style={{ background: "none", border: "none", color: C.dim, cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>✕</button>
+      </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 26 }}>{isLegendary ? "⚡" : "💰"}</span>
-        <div>
-          <div style={{ fontFamily: C.fBeb, fontSize: 16, color: isLegendary ? C.gold : C.white, textShadow: isLegendary ? "0 0 12px " + C.gold : "none" }}>
-            {alert.sender_name} tipped ${parseFloat(alert.amount_usd).toFixed(2)}
+        <span style={{ fontSize: 28, filter: isLegendary ? "drop-shadow(0 0 8px " + C.gold + ")" : "none" }}>{tierEmoji}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: C.fBeb, fontSize: 17, color: isLegendary ? C.gold : C.white,
+            textShadow: isLegendary ? "0 0 12px " + C.gold : "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {alert.sender_name}
           </div>
-          {alert.message && <div style={{ fontFamily: C.fRaj, fontSize: 11, color: C.gray, marginTop: 2 }}>{alert.message}</div>}
+          <div style={{ fontFamily: C.fOrb, fontSize: 13, color: isGold ? C.gold : C.cyan, marginTop: 1 }}>
+            ${parseFloat(alert.amount_usd).toFixed(2)}
+          </div>
+          {alert.message && (
+            <div style={{ fontFamily: C.fRaj, fontSize: 11, color: C.gray, marginTop: 3,
+              background: "rgba(255,255,255,0.05)", borderRadius: 6, padding: "3px 6px" }}>
+              "{alert.message}"
+            </div>
+          )}
         </div>
       </div>
     </div>

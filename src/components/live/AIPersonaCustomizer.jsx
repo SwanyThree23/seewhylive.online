@@ -8,8 +8,9 @@ const G = '#d4af37';
 
 export default function AIPersonaCustomizer({ roomId, sessionId, onCustomized }) {
   const [expanded, setExpanded] = useState(false);
-  const [personaName, setPersonaName] = useState('Aura');
-  const [personaStyle, setPersonaStyle] = useState('hype');
+  const [personaName, setPersonaName] = useState(() => { try { return localStorage.getItem('persona_name') || 'Aura'; } catch { return 'Aura'; } });
+  const [personaStyle, setPersonaStyle] = useState(() => { try { return localStorage.getItem('persona_style') || 'hype'; } catch { return 'hype'; } });
+  const [savedPersona, setSavedPersona] = useState(null);
   const [customInstructions, setCustomInstructions] = useState('');
   const [avatarPreset, setAvatarPreset] = useState('default');
   const [saving, setSaving] = useState(false);
@@ -40,6 +41,8 @@ Return JSON: { "persona_name": string, "style": string, "tone": string, "greetin
       });
       if (result) {
         onCustomized?.(result);
+        setSavedPersona(result);
+        try { localStorage.setItem('persona_name', personaName); localStorage.setItem('persona_style', personaStyle); } catch {}
         toast.success(`${personaName} AI persona saved!`);
         setExpanded(false);
       }
@@ -64,6 +67,13 @@ Return JSON: { "persona_name": string, "style": string, "tone": string, "greetin
         </div>
         <span className="text-white/50">{expanded ? '−' : '+'}</span>
       </button>
+
+      {savedPersona && !expanded && (
+        <div className="mt-2 px-2 py-1.5 rounded text-[10px] space-y-0.5" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.15)' }}>
+          <p className="font-bold" style={{ color: G }}>{savedPersona.persona_name} · {savedPersona.style}</p>
+          {savedPersona.greeting && <p className="text-white/50 italic">"{savedPersona.greeting}"</p>}
+        </div>
+      )}
 
       {expanded && (
         <motion.div

@@ -465,6 +465,18 @@ export default function BreakoutRoomsModal({
     setFocusedRoomId(null);
   }
 
+  function handleShuffleAll() {
+    if (breakoutRooms.length === 0 || unassigned.length === 0) return;
+    const shuffled = [...unassigned].sort(() => Math.random() - 0.5);
+    let i = 0;
+    setBreakoutRooms(prev => prev.map(room => {
+      const available = room.capacity - room.participants.length;
+      const toAdd = shuffled.slice(i, i + available);
+      i += toAdd.length;
+      return { ...room, participants: [...room.participants, ...toAdd] };
+    }));
+  }
+
   function handleUnassignedClick(participant) {
     if (!focusedRoomId) return;
     const room = breakoutRooms.find((r) => r.id === focusedRoomId);
@@ -885,6 +897,37 @@ export default function BreakoutRoomsModal({
                     </AnimatePresence>
                   </div>
 
+                  {/* Shuffle + End controls (host only) */}
+                  {isHost && unassigned.length > 0 && breakoutRooms.length > 0 && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={handleShuffleAll}
+                      whileHover={{ background: `${GOLD}22` }}
+                      whileTap={{ scale: 0.98 }}
+                      style={{
+                        ...FONT,
+                        width: '100%',
+                        marginTop: 12,
+                        padding: '11px 0',
+                        borderRadius: 12,
+                        border: `1.5px solid ${GOLD}60`,
+                        background: `${GOLD}0E`,
+                        color: GOLD,
+                        fontSize: 15,
+                        fontWeight: 800,
+                        letterSpacing: '0.04em',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                      }}
+                    >
+                      <Shuffle size={15} />
+                      Shuffle {unassigned.length} Unassigned
+                    </motion.button>
+                  )}
                   {/* End all rooms button (host only) */}
                   {isHost && (
                     <motion.button

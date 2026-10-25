@@ -156,7 +156,7 @@ const PollCard = ({ poll, votes, isHost, isPinned, onPin, onClose, hasVoted, onV
 export default function InteractivePollingSystem({ roomId, isHost, currentUser }) {
   const [polls, setPolls] = useState([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newQuestion, setNewQuestion] = useState('');
+  const [newQuestion, setNewQuestion] = useState(() => { try { return localStorage.getItem('poll_draft_question') || ''; } catch { return ''; } });
   const [newOptions, setNewOptions] = useState(['', '']);
   const [pinnedPollId, setPinnedPollId] = useState(null);
   const [userVotes, setUserVotes] = useState({});
@@ -227,6 +227,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
       setNewQuestion('');
       setNewOptions(['', '']);
       setShowCreateForm(false);
+      try { localStorage.removeItem('poll_draft_question'); } catch {}
       toast.success('Poll created!');
     },
     onError: () => {
@@ -324,7 +325,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
             >
               <input
                 value={newQuestion}
-                onChange={e => setNewQuestion(e.target.value)}
+                onChange={e => { setNewQuestion(e.target.value); try { localStorage.setItem('poll_draft_question', e.target.value); } catch {} }}
                 placeholder="Poll question..."
                 maxLength={100}
                 className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-[10px] outline-none placeholder:text-white/25"

@@ -22,6 +22,8 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
     enabled: !!currentUser?.id && !!targetUserId && currentUser?.id !== targetUserId,
   });
 
+  const followKey = ['follow', currentUser?.id, targetUserId];
+
   const followMutation = useMutation({
     mutationFn: () => base44.entities.Follow.create({
       follower_id: currentUser.id,
@@ -29,11 +31,21 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
       follower_name: currentUser.full_name || currentUser.email,
       following_name: targetUserName,
     }),
-    onError: () => toast.error('Could not follow. Please try again.'),
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: followKey });
+      const prev = qc.getQueryData(followKey);
+      // Optimistically mark as following so the button flips instantly
+      qc.setQueryData(followKey, { id: '__optimistic__', follower_id: currentUser?.id, following_id: targetUserId });
+      return { prev };
+    },
+    onError: (err, vars, context) => {
+      qc.setQueryData(followKey, context?.prev);
+      toast.error('Could not follow. Please try again.');
+    },
     onSuccess: () => {
       toast.success(`Following ${targetUserName || 'creator'}!`);
-      qc.invalidateQueries(['follow', currentUser?.id, targetUserId]);
-      qc.invalidateQueries(['followers', targetUserId]);
+      qc.invalidateQueries({ queryKey: followKey });
+      qc.invalidateQueries({ queryKey: ['followers', targetUserId] });
       Promise.allSettled([
         base44.entities.Activity.create({
           user_id: currentUser.id,
@@ -53,10 +65,20 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
 
   const unfollowMutation = useMutation({
     mutationFn: () => base44.entities.Follow.delete(followRecord.id),
-    onError: () => toast.error('Could not unfollow. Please try again.'),
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: followKey });
+      const prev = qc.getQueryData(followKey);
+      // Optimistically mark as not following so the button flips instantly
+      qc.setQueryData(followKey, null);
+      return { prev };
+    },
+    onError: (err, vars, context) => {
+      qc.setQueryData(followKey, context?.prev);
+      toast.error('Could not unfollow. Please try again.');
+    },
     onSuccess: () => {
       toast.success('Unfollowed');
-      qc.invalidateQueries({ queryKey: ['follow', currentUser?.id, targetUserId] });
+      qc.invalidateQueries({ queryKey: followKey });
       qc.invalidateQueries({ queryKey: ['followers', targetUserId] });
     },
   });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 import { injectFocusRing } from '@/hooks/useMobileUtils';
@@ -15,14 +15,16 @@ import {
 // DollarSign, Heart, Sparkles already imported above
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
-import GlobalSearch from '@/components/shared/GlobalSearch';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePresenceHeartbeat } from '@/components/shared/PresenceDot';
 import { useBackground } from '@/lib/BackgroundManager';
 import BrandChyron from '@/components/live/BrandChyron';
-import GlobalChatWidget from '@/components/live/GlobalChatWidget';
-import SwanyBotWidget from '@/components/guide/ARIAWidget';
+
+// Secondary overlay components — lazy-loaded so they don't bloat the initial bundle
+const GlobalSearch    = lazy(() => import('@/components/shared/GlobalSearch'));
+const GlobalChatWidget = lazy(() => import('@/components/live/GlobalChatWidget'));
+const SwanyBotWidget  = lazy(() => import('@/components/guide/ARIAWidget'));
 
 // ── 5 Bottom Nav Tabs ──────────────────────────────────────────────────────
 var BOTTOM_NAV = [
@@ -269,7 +271,11 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen" style={backgrounds[backgroundStyle] || backgrounds.default}>
       <AnimatePresence>
-        {showSearch && <GlobalSearch onClose={function() { setShowSearch(false); }} />}
+        {showSearch && (
+          <Suspense fallback={null}>
+            <GlobalSearch onClose={function() { setShowSearch(false); }} />
+          </Suspense>
+        )}
       </AnimatePresence>
 
       {!isFullscreen && <>
@@ -468,11 +474,15 @@ export default function Layout({ children, currentPageName }) {
       {/* Brand chyron */}
       <BrandChyron />
 
-      {/* Global multilingual chat widget */}
-      <GlobalChatWidget />
+      {/* Global multilingual chat widget — lazy chunk */}
+      <Suspense fallback={null}>
+        <GlobalChatWidget />
+      </Suspense>
 
-      {/* SwanyBot — Voice AI Guide */}
-      <SwanyBotWidget pageName={currentPageName} />
+      {/* SwanyBot — Voice AI Guide — lazy chunk */}
+      <Suspense fallback={null}>
+        <SwanyBotWidget pageName={currentPageName} />
+      </Suspense>
 
       {/* ── MOBILE BOTTOM NAV (5 tabs) ── */}
       {!isFullscreen && (

@@ -126,6 +126,17 @@ function TipAnimation({ senderName, amount, emoji, tier, onDone }) {
         >
           {activeTier.icon} {activeTier.label} Tier
         </motion.div>
+        {amount >= 50 && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.8, type: 'spring', bounce: 0.5 }}
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black uppercase mt-2 ml-2"
+            style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.6)', color: G, ...T }}
+          >
+            🏆 Top Tipper
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Floating emojis */}
@@ -154,6 +165,7 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
   const [selectedEmoji, setSelectedEmoji] = useState(null);
   const [animating, setAnimating] = useState(null);
   const [confetti, setConfetti] = useState(false);
+  const sessionTips = useRef(0);
 
   const rawAmount = useCustom ? parseFloat(custom) : selected;
   const validAmount = rawAmount > 0 && !isNaN(rawAmount);
@@ -192,6 +204,7 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
     },
     onSuccess: () => {
       navigator.vibrate?.([50, 30, 80]);
+      sessionTips.current++;
       const name = (currentUser.full_name || currentUser.email || 'Viewer').split(' ')[0];
       setAnimating({ name, amount: rawAmount, emoji: selectedEmoji });
       setOpen(false);
@@ -237,7 +250,7 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
       <motion.button
         whileTap={{ scale: 0.93 }}
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
+        className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
         title="Send a tip"
         style={{
           ...T,
@@ -247,6 +260,16 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
         }}
       >
         💸 Tip
+        {sessionTips.current > 0 && (
+          <span style={{
+            position: 'absolute', top: -4, right: -4,
+            minWidth: 16, height: 16, borderRadius: 99,
+            background: G, color: '#000',
+            fontSize: 9, fontWeight: 900, lineHeight: '16px', textAlign: 'center', padding: '0 3px',
+          }}>
+            {sessionTips.current}
+          </span>
+        )}
       </motion.button>
 
       {/* Bottom Sheet */}

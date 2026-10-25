@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Captions, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { Captions, X, ChevronUp, ChevronDown, Copy, Check } from 'lucide-react';
+
+const LANG_OPTIONS = [
+  { code: 'en-US', label: 'EN' },
+  { code: 'es-ES', label: 'ES' },
+  { code: 'fr-FR', label: 'FR' },
+  { code: 'pt-BR', label: 'PT' },
+];
 
 const G = '#d4af37';
 const MAX_CAPTIONS = 5;
@@ -10,7 +17,7 @@ const CHUNK_INTERVAL_S = 5;
 
 // Attempt to start Web Speech API recognition.
 // Returns a stop() function on success, or null if unavailable.
-function startWebSpeech({ onInterim, onFinal, onError }) {
+function startWebSpeech({ onInterim, onFinal, onError, lang: speechLang = 'en-US' }) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) return null;
   let alive = true;
@@ -22,7 +29,7 @@ function startWebSpeech({ onInterim, onFinal, onError }) {
   }
   rec.continuous = true;
   rec.interimResults = true;
-  rec.lang = 'en-US';
+  rec.lang = speechLang;
   rec.maxAlternatives = 1;
 
   rec.onresult = (e) => {
@@ -80,6 +87,10 @@ export default function LiveTranscription({
   const [showCaptions, setShowCaptions] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [usingWebSpeech, setUsingWebSpeech] = useState(false);
+  const [lang, setLang] = useState('en-US');
+  const [wordCount, setWordCount] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const allTextRef = useRef([]);
 
   const ownedStreamRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -90,6 +101,8 @@ export default function LiveTranscription({
     if (!text) return;
     const id = Date.now() + Math.random();
     setCaptions(prev => [...prev, { id, text, ts: Date.now() }].slice(-MAX_CAPTIONS));
+    allTextRef.current.push(text);
+    setWordCount(prev => prev + text.split(/\s+/).filter(Boolean).length);
     setTimeout(() => setCaptions(prev => prev.filter(c => c.id !== id)), CAPTION_MS);
   }, []);
 
@@ -104,6 +117,7 @@ export default function LiveTranscription({
 
     // --- Primary path: Web Speech API (Chrome/Edge — zero-latency) ---
     const stopWS = startWebSpeech({
+      lang,
       onInterim: setInterimText,
       onFinal: (text) => { if (!cancelled) addCaption(text); },
       onError: () => {
@@ -191,7 +205,7 @@ export default function LiveTranscription({
       setIsTranscribing(false);
       setInterimText('');
     };
-  }, [isLive, showCaptions, propStream, addCaption]);
+  }, [isLive, showCaptions, propStream, addCaption, lang]);
 
   const lastCaption = captions[captions.length - 1];
   const historyItems = captions.slice(0, -1);
@@ -199,7 +213,7 @@ export default function LiveTranscription({
   return (
     <div className="fixed bottom-20 left-4 right-4 md:right-4 md:left-auto md:w-96 z-40 pointer-events-none">
       {/* Toggle + history button row */}
-      <div className="pointer-events-auto mb-2 flex items-center gap-2">
+      <div className="pointer-events-auto mb-2 flex items-center gap-2 flex-wrap">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -223,6 +237,24 @@ export default function LiveTranscription({
           )}
         </motion.button>
 
+        {/* Language selector */}
+        <div className="flex items-center gap-0.5">
+          {LANG_OPTIONS.map(l => (
+            <button key={l.code} onClick={() => setLang(l.code)}
+              className="px-1.5 py-1 rounded text-[9px] font-black transition-all"
+              style={{ background: lang === l.code ? `${G}25` : 'rgba(255,255,255,0.04)', color: lang === l.code ? G : 'rgba(255,255,255,0.3)', border: `1px solid ${lang === l.code ? `${G}45` : 'rgba(255,255,255,0.07)'}` }}>
+              {l.label}
+            </button>
+          ))}
+        </div>
+
+        {wordCount > 0 && (
+          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded"
+            style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            {wordCount}w
+          </span>
+        )}
+
         {historyItems.length > 0 && showCaptions && (
           <motion.button
             initial={{ opacity: 0 }}
@@ -233,6 +265,21 @@ export default function LiveTranscription({
           >
             {showHistory ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
             {historyItems.length} earlier
+          </motion.button>
+        )}
+
+        {allTextRef.current.length > 0 && (
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => {
+              navigator.clipboard?.writeText(allTextRef.current.join(' ')).catch(() => {});
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] transition-colors"
+            style={{ border: '1px solid rgba(255,255,255,0.07)', color: copied ? '#6DBF7E' : 'rgba(255,255,255,0.4)' }}
+          >
+            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           </motion.button>
         )}
       </div>

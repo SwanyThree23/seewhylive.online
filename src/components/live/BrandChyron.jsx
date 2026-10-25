@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Radio, Users, DollarSign, Zap } from 'lucide-react';
+import { Users } from 'lucide-react';
 import SignalBars from './SignalBars';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
@@ -13,10 +13,8 @@ import { createPageUrl } from '../../utils';
  * NEVER remove, hide, or conditionally render this component.
  */
 export default function BrandChyron() {
-  const [tickerX, setTickerX] = useState(0);
   const [time, setTime] = useState(new Date());
 
-  // Platform live stats
   const { data: liveRooms = [] } = useQuery({
     queryKey: ['chyron-live'],
     queryFn: () => base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 5),
@@ -29,10 +27,10 @@ export default function BrandChyron() {
   }, []);
 
   const totalViewers = liveRooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
-  const liveCount = liveRooms.length;
+  const liveCount    = liveRooms.length;
 
   const tickerItems = [
-    liveCount > 0 && `${liveCount} streams live now`,
+    liveCount > 0 && `${liveCount} stream${liveCount !== 1 ? 's' : ''} live now`,
     totalViewers > 0 && `${totalViewers.toLocaleString()} viewers online`,
     ...liveRooms.map(r => `🔴 ${r.title}`),
     'SeeWhy LIVE — Culture Creator Platform',
@@ -40,6 +38,8 @@ export default function BrandChyron() {
   ].filter(Boolean);
 
   const tickerText = tickerItems.join('   ·   ');
+  // Speed scales with content length: ~40s base, +1s per 10 extra chars
+  const tickerDuration = Math.max(30, 40 + Math.floor((tickerText.length - 60) / 10));
 
   return (
     <div
@@ -67,14 +67,20 @@ export default function BrandChyron() {
         <motion.div
           className="flex whitespace-nowrap text-[10px] text-white/50"
           animate={{ x: [0, -2000] }}
-          transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: tickerDuration, repeat: Infinity, ease: 'linear' }}
         >
           <span>{tickerText}&nbsp;&nbsp;&nbsp;{tickerText}&nbsp;&nbsp;&nbsp;</span>
         </motion.div>
       </div>
 
-      {/* Right: clock + live count */}
+      {/* Right: total viewers + live count + clock */}
       <div className="shrink-0 flex items-center gap-3 px-3 border-l border-white/5">
+        {totalViewers > 0 && (
+          <div className="flex items-center gap-1">
+            <Users className="w-2.5 h-2.5 text-white/30" />
+            <span className="text-[10px] text-white/40 font-mono">{totalViewers.toLocaleString()}</span>
+          </div>
+        )}
         {liveCount > 0 && (
           <div className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse" />

@@ -96,8 +96,8 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
       </div>
       <div style={{ flex:1, overflow:'auto', padding:'14px 16px' }}>
         {/* Stats */}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:16 }}>
-          {[['Interventions', aura?.interventions_count||0], ['Tokens Used', (aura?.tokens_used||0).toLocaleString()]].map(([l,v]) => (
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:16 }}>
+          {[['Interventions', aura?.interventions_count||0], ['Hype Moments', aura?.hype_moments||0], ['Tokens Used', (aura?.tokens_used||0).toLocaleString()]].map(([l,v]) => (
             <div key={l} style={{ padding:'8px', borderRadius:6, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ fontFamily:'Barlow Condensed', fontSize:11, color:C.gray, letterSpacing:1 }}>{l.toUpperCase()}</div>
               <div style={{ fontFamily:'Barlow Condensed', fontSize:18, color:C.gold }}>{v}</div>

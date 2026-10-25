@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Camera, Mic, Monitor, RefreshCw, Volume2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Camera, Mic, Monitor, RefreshCw, Volume2, AlertTriangle } from 'lucide-react';
 import { useCameraDevices, RESOLUTION_PRESETS } from '../../hooks/useCameraDevices';
 import { MobileSelect } from '@/components/ui/MobileSelect';
 
@@ -56,6 +56,19 @@ export default function CameraDeviceSelector({
   currentSpeakerId, onSpeakerChange,
 }) {
   const { cameras, mics, speakers, refresh } = useCameraDevices();
+  const [justRefreshed, setJustRefreshed] = useState(false);
+
+  // Refresh devices on mount
+  useEffect(() => { refresh(); }, []);
+
+  const handleRefresh = () => {
+    refresh();
+    setJustRefreshed(true);
+    setTimeout(() => setJustRefreshed(false), 1200);
+  };
+
+  const noCamera = !hideVideo && cameras.length === 0;
+  const noMic = mics.length === 0;
 
   if (compact) {
     return (
@@ -86,10 +99,10 @@ export default function CameraDeviceSelector({
             {isSharingScreen ? 'Stop' : 'Share'}
           </button>
         )}
-        <button onClick={refresh}
+        <button onClick={handleRefresh}
           className="w-8 h-8 flex items-center justify-center rounded-xl"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)', userSelect: 'none' }}>
-          <RefreshCw className="w-3.5 h-3.5" />
+          style={{ background: justRefreshed ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${justRefreshed ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.08)'}`, color: justRefreshed ? GOLD : 'rgba(255,255,255,0.3)', userSelect: 'none' }}>
+          <RefreshCw className={`w-3.5 h-3.5 ${justRefreshed ? 'animate-spin' : ''}`} />
         </button>
       </div>
     );
@@ -97,19 +110,31 @@ export default function CameraDeviceSelector({
 
   return (
     <div className="space-y-3">
+      {/* No-device warning */}
+      {(noCamera || noMic) && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]"
+          style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD }}>
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+          <span style={T}>{noCamera && noMic ? 'No camera or mic found.' : noCamera ? 'No camera found.' : 'No mic found.'} Check permissions and refresh.</span>
+        </div>
+      )}
+
       {/* Camera */}
       {!hideVideo && (
         <div>
-          <label style={LBL}>Camera</label>
+          <div className="flex items-center justify-between mb-1">
+            <label style={LBL}>Camera</label>
+            {cameras.length > 0 && <span className="text-[9px] font-mono" style={{ color: 'rgba(255,255,255,0.25)' }}>{cameras.length} found</span>}
+          </div>
           <div style={ROW}>
             <Camera className="w-4 h-4 shrink-0" style={{ color: GOLD }} />
             <NativeSelect
               value={currentVideoId} onChange={onVideoChange}
               options={cameras} placeholder="No cameras found"
             />
-            <button onClick={refresh} title="Refresh devices"
-              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', padding: 2, userSelect: 'none' }}>
-              <RefreshCw className="w-3.5 h-3.5" />
+            <button onClick={handleRefresh} title="Refresh devices"
+              style={{ background: 'none', border: 'none', color: justRefreshed ? GOLD : 'rgba(255,255,255,0.25)', cursor: 'pointer', padding: 2, userSelect: 'none' }}>
+              <RefreshCw className={`w-3.5 h-3.5 ${justRefreshed ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
@@ -117,7 +142,10 @@ export default function CameraDeviceSelector({
 
       {/* Mic */}
       <div>
-        <label style={LBL}>Microphone</label>
+        <div className="flex items-center justify-between mb-1">
+          <label style={LBL}>Microphone</label>
+          {mics.length > 0 && <span className="text-[9px] font-mono" style={{ color: 'rgba(255,255,255,0.25)' }}>{mics.length} found</span>}
+        </div>
         <div style={ROW}>
           <Mic className="w-4 h-4 shrink-0" style={{ color: GOLD }} />
           <NativeSelect

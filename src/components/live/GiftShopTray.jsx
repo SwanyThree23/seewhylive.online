@@ -66,6 +66,9 @@ function GiftCard({ gift, onSend, sending }) {
       <p className="font-black text-[10px] mt-0.5" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{gift.price}</p>
       <span className="text-[6px] font-black uppercase px-1 py-0.5 rounded mt-1"
         style={{ background: `${r.color}15`, color: r.color, ...T }}>{r.label}</span>
+      {gift.times_sent > 0 && (
+        <span className="text-[7px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>{gift.times_sent}× sent</span>
+      )}
     </motion.button>
   );
 }
