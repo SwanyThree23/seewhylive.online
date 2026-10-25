@@ -198,6 +198,9 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
               />
             )}
           </div>
+          <button onClick={() => setIsVisible(false)} className="w-5 h-5 flex items-center justify-center rounded" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)' }} title="Dismiss">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
           <div className="flex items-center gap-1 text-[11px]" style={{ ...T }}>
             <Clock className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.3)' }} />
             {activePoll.ends_at

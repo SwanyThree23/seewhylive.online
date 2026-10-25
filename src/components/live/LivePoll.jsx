@@ -75,6 +75,15 @@ export default function LivePoll({ roomId, isHost }) {
     refetchInterval: 5000,
   });
 
+  // Restore voted option from localStorage when active poll loads
+  useEffect(() => {
+    if (!activePoll?.id) return;
+    try {
+      const saved = localStorage.getItem(`poll_voted_${activePoll.id}`);
+      if (saved !== null) setUserVotedOption(Number(saved));
+    } catch {}
+  }, [activePoll?.id]);
+
   // Subscribe to poll vote updates in real-time
   useEffect(() => {
     if (!activePoll?.id) return;
@@ -169,11 +178,13 @@ export default function LivePoll({ roomId, isHost }) {
         (old || []).concat({ poll_id: activePoll.id, option_index: optionIndex, user_id: 'optimistic' })
       );
       setUserVotedOption(optionIndex);
+      try { if (activePoll?.id) localStorage.setItem(`poll_voted_${activePoll.id}`, String(optionIndex)); } catch {}
       return { prevVotes };
     },
     onError: (_err, _optionIndex, context) => {
       if (context) qc.setQueryData(['pollvotes', activePoll?.id], context.prevVotes);
       setUserVotedOption(null);
+      try { if (activePoll?.id) localStorage.removeItem(`poll_voted_${activePoll.id}`); } catch {}
       toast.error('Could not record vote');
     },
     onSettled: () => {

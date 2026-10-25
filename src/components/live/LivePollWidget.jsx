@@ -88,7 +88,7 @@ function CreatePollModal({ roomId, communityId, userId, onClose, onCreated }) {
 }
 
 export default function LivePollWidget({ roomId, currentUser, isHost }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(() => { try { return localStorage.getItem('poll_widget_expanded') !== 'false'; } catch { return true; } });
   const [showCreate, setShowCreate] = useState(false);
   const [voteFlash, setVoteFlash] = useState(null);
   const prevTotalRef = useRef(0);
@@ -192,7 +192,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
 
       <div className="rounded-xl overflow-hidden" style={{ background: '#161616', border: `1px solid rgba(212,175,55,0.15)` }}>
         <button className="w-full flex items-center justify-between px-4 py-3"
-          onClick={() => setExpanded(e => !e)}>
+          onClick={() => setExpanded(e => { const n = !e; try { localStorage.setItem('poll_widget_expanded', String(n)); } catch {} return n; })}>
           <div className="flex items-center gap-2">
             <BarChart2 className="w-4 h-4" style={{ color: GOLD }} />
             <span className="font-black uppercase text-[11px]" style={{ color: GOLD, ...T }}>

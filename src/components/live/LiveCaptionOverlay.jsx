@@ -7,7 +7,7 @@ import { Mic, MicOff, Type, X } from 'lucide-react';
 // enabled: user toggle
 // position: 'bottom' (default) | 'top'
 export default function LiveCaptionOverlay({ stream, position = 'bottom' }) {
-  const [captionsOn, setCaptionsOn] = useState(false);
+  const [captionsOn, setCaptionsOn] = useState(() => { try { return localStorage.getItem('captions_on') === 'true'; } catch { return false; } });
   const [showHistory, setShowHistory] = useState(false);
 
   const { transcript, interimTranscript, isConnected, hasKey, clearTranscript } = useDeepgramTranscription({
@@ -95,7 +95,7 @@ export default function LiveCaptionOverlay({ stream, position = 'bottom' }) {
           </button>
         )}
         <button
-          onClick={() => setCaptionsOn(v => !v)}
+          onClick={() => setCaptionsOn(v => { const n = !v; try { localStorage.setItem('captions_on', String(n)); } catch {} return n; })}
           style={{
             width: 36, height: 36, borderRadius: 10,
             background: captionsOn ? 'rgba(109,191,126,0.2)' : 'rgba(7,5,10,0.85)',

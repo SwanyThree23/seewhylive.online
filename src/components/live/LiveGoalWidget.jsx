@@ -14,7 +14,7 @@ const PRESETS = [
 ];
 
 export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount = 0, triggerEdit }) {
-  const [goal, setGoal] = useState(null);
+  const [goal, setGoal] = useState(() => { try { const s = localStorage.getItem('stream_goal'); return s ? JSON.parse(s) : null; } catch { return null; } });
   const [editing, setEditing] = useState(false);
   const prevTriggerEdit = React.useRef(triggerEdit);
   useEffect(() => {
@@ -53,6 +53,7 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
 
   const setPreset = (p) => {
     setGoal({ ...p });
+    try { localStorage.setItem('stream_goal', JSON.stringify(p)); } catch {}
     setEditing(false);
     setCelebrated(false);
   };
@@ -60,7 +61,9 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
   const setCustom = () => {
     const t = parseInt(customTarget);
     if (!customLabel.trim() || isNaN(t) || t <= 0) return;
-    setGoal({ label: customLabel.trim(), type: customType, target: t });
+    const g = { label: customLabel.trim(), type: customType, target: t };
+    setGoal(g);
+    try { localStorage.setItem('stream_goal', JSON.stringify(g)); } catch {}
     setEditing(false);
     setCelebrated(false);
   };
