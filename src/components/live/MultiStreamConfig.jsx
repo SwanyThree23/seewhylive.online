@@ -5,7 +5,12 @@ import { Radio, Plus, Trash2, Copy, Play, Square, CheckCircle2, AlertCircle } fr
 import { MobileSelect } from '@/components/ui/MobileSelect';
 
 export default function MultiStreamConfig({ roomId, isHost }) {
-  const [destinations, setDestinations] = useState([]);
+  const [destinations, setDestinations] = useState(() => {
+    try {
+      const saved = localStorage.getItem('multistream_dests');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ platform: 'twitch', rtmpUrl: '', streamKey: '' });
   const [isDistributing, setIsDistributing] = useState(false);
@@ -19,14 +24,18 @@ export default function MultiStreamConfig({ roomId, isHost }) {
         ...formData,
         isActive: true,
       };
-      setDestinations([...destinations, newDest]);
+      const next = [...destinations, newDest];
+      setDestinations(next);
+      try { localStorage.setItem('multistream_dests', JSON.stringify(next.map(d => ({ id: d.id, platform: d.platform, rtmpUrl: d.rtmpUrl, isActive: d.isActive })))); } catch {}
       setFormData({ platform: 'twitch', rtmpUrl: '', streamKey: '' });
       setShowForm(false);
     }
   };
 
   const handleRemove = (id) => {
-    setDestinations(destinations.filter(d => d.id !== id));
+    const next = destinations.filter(d => d.id !== id);
+    setDestinations(next);
+    try { localStorage.setItem('multistream_dests', JSON.stringify(next.map(d => ({ id: d.id, platform: d.platform, rtmpUrl: d.rtmpUrl, isActive: d.isActive })))); } catch {}
   };
 
   const handleStartStreaming = async () => {

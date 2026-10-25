@@ -263,7 +263,7 @@ export default function MultiGuestCoStreamPanel({
   const qc = useQueryClient();
   const [spotlight, setSpotlight]   = useState(null);
   const [showInvite, setShowInvite] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(() => { try { return localStorage.getItem('costream_sidebar') === 'true'; } catch { return false; } });
 
   // Local media
   const {
@@ -374,7 +374,7 @@ export default function MultiGuestCoStreamPanel({
           </button>
         )}
 
-        <button onClick={() => setShowSidebar(s => !s)}
+        <button onClick={() => { const n = !showSidebar; setShowSidebar(n); try { localStorage.setItem('costream_sidebar', String(n)); } catch {} }}
           className="w-7 h-7 rounded-lg flex items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer' }}>
           <Users className="w-3.5 h-3.5 text-white opacity-50" />

@@ -9,6 +9,7 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
   const [appealReason, setAppealReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleSubmitAppeal = async () => {
     setSubmitting(true);
@@ -29,7 +30,8 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
       if (res) {
         setResult(res);
       }
-    } catch (error) {
+    } catch {
+      setError('Unable to submit appeal. Please try again.');
     }
     setSubmitting(false);
   };
@@ -78,8 +80,12 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
         rows={3}
       />
 
+      {error && (
+        <p className="text-[11px] px-2 py-1.5 rounded" style={{ background: 'rgba(192,57,43,0.12)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.3)' }}>{error}</p>
+      )}
+
       <button
-        onClick={handleSubmitAppeal}
+        onClick={() => { setError(null); handleSubmitAppeal(); }}
         disabled={!appealReason.trim() || submitting}
         className="w-full px-3 py-2 rounded text-xs font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
         style={{ background: G, color: '#000' }}
