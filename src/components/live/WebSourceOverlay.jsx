@@ -135,7 +135,7 @@ function DraggableOverlay({ source, onRemove, onUpdate, containerRef }) {
 }
 
 export default function WebSourceOverlay({ isStreamActive = false }) {
-  const [sources, setSources] = useState([]);
+  const [sources, setSources] = useState(() => { try { const s = localStorage.getItem('web_overlays_list'); return s ? JSON.parse(s).map((src, i) => ({ ...src, active: false, pos: { x: 60 + i * 20, y: 80 + i * 20 }, size: { w: 400, h: 225 } })) : []; } catch { return []; } });
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState('');
   const [newUrl, setNewUrl] = useState('');
@@ -150,14 +150,11 @@ export default function WebSourceOverlay({ isStreamActive = false }) {
     const name = newName.trim() || 'Web Source';
     if (!url) { toast.error('Enter a URL'); return; }
     if (!url.startsWith('http')) { toast.error('URL must start with http:// or https://'); return; }
-    setSources(prev => [...prev, {
-      id: `wso_${Date.now()}`,
-      name,
-      url,
-      active: true,
-      pos: { x: 60 + prev.length * 20, y: 80 + prev.length * 20 },
-      size: { w: 400, h: 225 },
-    }]);
+    setSources(prev => {
+      const next = [...prev, { id: `wso_${Date.now()}`, name, url, active: true, pos: { x: 60 + prev.length * 20, y: 80 + prev.length * 20 }, size: { w: 400, h: 225 } }];
+      try { localStorage.setItem('web_overlays_list', JSON.stringify(next.map(s => ({ id: s.id, name: s.name, url: s.url })))); } catch {}
+      return next;
+    });
     setNewName('');
     setNewUrl('');
     setShowAdd(false);
@@ -165,7 +162,11 @@ export default function WebSourceOverlay({ isStreamActive = false }) {
   };
 
   const removeSource = useCallback((id) => {
-    setSources(prev => prev.filter(s => s.id !== id));
+    setSources(prev => {
+      const next = prev.filter(s => s.id !== id);
+      try { localStorage.setItem('web_overlays_list', JSON.stringify(next.map(s => ({ id: s.id, name: s.name, url: s.url })))); } catch {}
+      return next;
+    });
   }, []);
 
   const activeSources = sources.filter(s => s.active);
