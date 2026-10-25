@@ -18,8 +18,8 @@ export default function StreamMetadata({ room, isHost }) {
   const qc = useQueryClient();
   const [title, setTitle] = useState(room?.title || '');
   const [category, setCategory] = useState(room?.type || 'gaming');
-  const [language, setLanguage] = useState('English');
-  const [rating, setRating] = useState('all');
+  const [language, setLanguage] = useState(() => { try { return localStorage.getItem('stream_language') || 'English'; } catch { return 'English'; } });
+  const [rating, setRating] = useState(() => { try { return localStorage.getItem('stream_rating') || 'all'; } catch { return 'all'; } });
   const [tags, setTags] = useState(room?.tags || []);
   const [tagInput, setTagInput] = useState('');
   const [saved, setSaved] = useState(false);
@@ -138,7 +138,7 @@ export default function StreamMetadata({ room, isHost }) {
         <label className="text-xs text-white/50">Content Rating</label>
         <div className="flex gap-1.5">
           {RATINGS.map(r => (
-            <button key={r.id} onClick={() => setRating(r.id)}
+            <button key={r.id} onClick={() => { setRating(r.id); try { localStorage.setItem('stream_rating', r.id); } catch {} }}
               className={`flex-1 text-[10px] py-1.5 rounded-lg border transition-all ${
                 rating === r.id ? 'border-[#d4af37] bg-[#d4af37]/10 text-white' : 'border-white/10 text-white/40'
               }`}>
@@ -153,7 +153,7 @@ export default function StreamMetadata({ room, isHost }) {
         <label className="text-xs text-white/50">Stream Language</label>
         <MobileSelect
           value={language}
-          onChange={(v) => setLanguage(v)}
+          onChange={(v) => { setLanguage(v); try { localStorage.setItem('stream_language', v); } catch {} }}
           options={LANGUAGES.map(l => ({ value: l, label: l }))}
           placeholder="Select language"
         />

@@ -54,7 +54,7 @@ function WebSourceTile({ source, onRemove, onToggle }) {
 }
 
 export default function StreamWebSourceManager({ isStreamActive = false }) {
-  const [sources, setSources] = useState([]);
+  const [sources, setSources] = useState(() => { try { const s = localStorage.getItem('web_sources_list'); return s ? JSON.parse(s).map(src => ({ ...src, active: false })) : []; } catch { return []; } });
   const [activeSourceId, setActiveSourceId] = useState(null);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
@@ -69,7 +69,7 @@ export default function StreamWebSourceManager({ isStreamActive = false }) {
     if (!url) { toast.error('Enter a URL'); return; }
     if (!url.startsWith('http')) { toast.error('URL must start with http:// or https://'); return; }
     const id = `ws_${Date.now()}`;
-    setSources(prev => [...prev, { id, name, url, active: false }]);
+    setSources(prev => { const next = [...prev, { id, name, url, active: false }]; try { localStorage.setItem('web_sources_list', JSON.stringify(next)); } catch {} return next; });
     setNewName('');
     setNewUrl('');
     setAdding(false);
@@ -87,14 +87,14 @@ export default function StreamWebSourceManager({ isStreamActive = false }) {
   };
 
   const removeSource = (id) => {
-    setSources(prev => prev.filter(s => s.id !== id));
+    setSources(prev => { const next = prev.filter(s => s.id !== id); try { localStorage.setItem('web_sources_list', JSON.stringify(next)); } catch {} return next; });
     if (activeSourceId === id) setActiveSourceId(null);
   };
 
   const applyPreset = (preset) => {
     if (!preset.url) { toast.error('Preset URL not configured'); return; }
     const id = `ws_${Date.now()}`;
-    setSources(prev => [...prev, { id, name: preset.name, url: preset.url, active: false }]);
+    setSources(prev => { const next = [...prev, { id, name: preset.name, url: preset.url, active: false }]; try { localStorage.setItem('web_sources_list', JSON.stringify(next)); } catch {} return next; });
     toast.success(`${preset.name} added`);
   };
 
