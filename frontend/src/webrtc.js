@@ -90,16 +90,24 @@ class SeeWhyRTC {
 
   _tryIceRestart(direction) {
     var self = this;
+    // Give the browser 5 seconds to self-recover before sending an ICE restart.
+    // Many brief 'disconnected' events resolve on their own (NAT keepalive gap,
+    // single-packet loss) — restarting immediately would interrupt that recovery.
     var transport = direction === 'send' ? this.sendTransport : this.recvTransport;
-    if (!transport || !this.socket || !this.socket.connected) return;
+    if (!transport) return;
     var transportId = transport.id;
-    this.socket.emit('restart-ice', { transportId: transportId }, function(data) {
-      if (!data || data.error || !data.iceParameters) return;
-      // If the transport is already gone (full reconnect started), bail out
+    setTimeout(function() {
       var current = direction === 'send' ? self.sendTransport : self.recvTransport;
-      if (!current || current.id !== transportId || current.closed) return;
-      current.restartIce({ iceParameters: data.iceParameters });
-    });
+      if (!current || current.id !== transportId) return; // reconnect already happened
+      if (current.connectionState !== 'disconnected') return; // already recovered
+      if (!self.socket || !self.socket.connected) return;
+      self.socket.emit('restart-ice', { transportId: transportId }, function(data) {
+        if (!data || data.error || !data.iceParameters) return;
+        var c = direction === 'send' ? self.sendTransport : self.recvTransport;
+        if (!c || c.id !== transportId || c.closed) return;
+        c.restartIce({ iceParameters: data.iceParameters });
+      });
+    }, 5000);
   }
 
   _scheduleReconnect() {
