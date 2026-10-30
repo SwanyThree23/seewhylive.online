@@ -19,6 +19,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var flyTimersRef   = useRef(new Set());
   var isMutedRef     = useRef(isMuted);
   var onlineRef      = useRef(false);
+  var remoteCamOffRef = useRef(false);
   var [speaking,     setSpeaking]     = useState(false);
   var [online,       setOnline]       = useState(false);
   var [loading,      setLoading]      = useState(false);
@@ -244,6 +245,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   // Keep muted ref in sync for use inside rAF loop
   useEffect(function() { isMutedRef.current = isMuted; }, [isMuted]);
   useEffect(function() { onlineRef.current = online; }, [online]);
+  useEffect(function() { remoteCamOffRef.current = !!(guest && guest.remoteCamOff); }, [guest && guest.remoteCamOff]);
 
   // Freeze detection: re-subscribe remote tile if video currentTime stops advancing for ~10s
   useEffect(function() {
@@ -252,7 +254,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     var stuckCount = 0;
     var timer = setInterval(function() {
       var v = videoRef.current;
-      if (!v || !v.srcObject || !onlineRef.current) { stuckCount = 0; prevTime = -1; return; }
+      if (!v || !v.srcObject || !onlineRef.current || remoteCamOffRef.current) { stuckCount = 0; prevTime = -1; return; }
       var ct = v.currentTime;
       if (ct > 0 && ct === prevTime) {
         stuckCount++;
