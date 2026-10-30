@@ -663,6 +663,7 @@ export default function App() {
           if (existing.producerId)               merged.producerId      = existing.producerId;
           if (existing.audioProducerId)          merged.audioProducerId = existing.audioProducerId;
           if (existing.remoteMuted !== undefined) merged.remoteMuted    = existing.remoteMuted;
+          if (existing.remoteCamOff)             merged.remoteCamOff   = existing.remoteCamOff;
           return merged;
         });
       });
