@@ -52,6 +52,7 @@ function DesktopStudioTab() {
   var screenStreamRef  = useRef(null);
   var uptimeRef        = useRef(null);
   var isLiveRef        = useRef(false);
+  var screenOnRef      = useRef(false);
   var uptimeState      = useState(0);
   var uptime           = uptimeState[0];
   var setUptime        = uptimeState[1];
@@ -127,8 +128,9 @@ function DesktopStudioTab() {
     };
   }, []);
 
-  // Keep isLiveRef in sync so the unmount cleanup below can read the live value
+  // Keep refs in sync so callbacks and event handlers always read the live values
   useEffect(function() { isLiveRef.current = isLive; }, [isLive]);
+  useEffect(function() { screenOnRef.current = screenOn; }, [screenOn]);
 
   // Stop camera/screen streams when the tab is left, unless a broadcast is active
   useEffect(function() {
@@ -157,6 +159,12 @@ function DesktopStudioTab() {
           videoRef.current.muted = true;
         }
         if (isLiveRef.current && vt) {
+          // If switching from screen share to camera, clear the server-side layer boost + badge
+          if (screenOnRef.current) {
+            var _sock2 = socketRef.current;
+            var _rid2 = localStorage.getItem('sw_room_id') || '';
+            if (_sock2 && _rid2) _sock2.emit('screen-share-stop', { roomId: _rid2 });
+          }
           rtcManager.replaceTrack('video', vt);
           rtcManager.setVideoEncodings([
             { rid: 'r0', maxBitrate: 99000,  scaleResolutionDownBy: 4 },
@@ -187,7 +195,10 @@ function DesktopStudioTab() {
       setError('Screen share not supported in this browser');
       return;
     }
-    navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+    navigator.mediaDevices.getDisplayMedia({
+      video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
+      audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false }
+    })
       .then(function(stream) {
         screenStreamRef.current = stream;
         var screenVt = stream.getVideoTracks()[0];
@@ -205,6 +216,10 @@ function DesktopStudioTab() {
               { rid: 'r1', maxBitrate: 800000,  scaleResolutionDownBy: 1 },
               { rid: 'r2', maxBitrate: 2000000, scaleResolutionDownBy: 1 },
             ]).catch(function() {});
+            // Tell server screen share started — triggers simulcast layer boost + viewer badge
+            var _sock = socketRef.current;
+            var _roomId = localStorage.getItem('sw_room_id') || '';
+            if (_sock && _roomId) _sock.emit('screen-share-start', { roomId: _roomId });
           }
         }
         setScreenOn(true);
@@ -219,6 +234,12 @@ function DesktopStudioTab() {
   }, [isLive]);
 
   var stopScreenShare = useCallback(function() {
+    // Notify server before stopping — clears layer boost and removes viewer SCREEN badge
+    if (isLiveRef.current) {
+      var _sock = socketRef.current;
+      var _roomId = localStorage.getItem('sw_room_id') || '';
+      if (_sock && _roomId) _sock.emit('screen-share-stop', { roomId: _roomId });
+    }
     if (screenStreamRef.current) {
       screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
       screenStreamRef.current = null;
