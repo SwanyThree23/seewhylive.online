@@ -885,7 +885,7 @@ export default function App() {
             for (var i = 0; i < ackData.existingProducers.length; i++) {
               var p = ackData.existingProducers[i];
               if (p.guestId !== gid) continue;
-              if (p.kind === 'video') update.producerId      = p.producerId;
+              if (p.kind === 'video') { update.producerId = p.producerId; update.remoteCamOff = !!p.paused; }
               if (p.kind === 'audio') update.audioProducerId = p.producerId;
             }
             return update;
@@ -898,7 +898,7 @@ export default function App() {
             if (!added[p.guestId]) {
               added[p.guestId] = { guestId: p.guestId, userId: p.guestId };
             }
-            if (p.kind === 'video') added[p.guestId].producerId      = p.producerId;
+            if (p.kind === 'video') { added[p.guestId].producerId = p.producerId; added[p.guestId].remoteCamOff = !!p.paused; }
             if (p.kind === 'audio') added[p.guestId].audioProducerId = p.producerId;
           }
           var addedArr = Object.keys(added).map(function(k) { return added[k]; });

@@ -379,7 +379,7 @@ function getRoomProducers(roomId) {
   for (var i = 0; i < ids.length; i++) {
     var entry = producers[ids[i]];
     if (entry.roomId === roomId) {
-      result.push({ producerId: ids[i], guestId: entry.guestId, kind: entry.kind, appData: entry.appData || {} });
+      result.push({ producerId: ids[i], guestId: entry.guestId, kind: entry.kind, appData: entry.appData || {}, paused: !!(entry.producer && entry.producer.paused) });
     }
   }
   return result;
