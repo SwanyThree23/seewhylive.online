@@ -19,10 +19,10 @@ const MODE_PROMPTS = {
 };
 
 export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, isLive, userTier }) {
-  const [mode, setMode] = useState('HYPE');
+  const [mode, setMode] = useState(() => { try { return localStorage.getItem('aura_mode') || 'HYPE'; } catch { return 'HYPE'; } });
   const [messages, setMessages] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [enabled, setEnabled] = useState(true);
+  const [enabled, setEnabled] = useState(() => { try { const v = localStorage.getItem('aura_enabled'); return v === null ? true : v === 'true'; } catch { return true; } });
   const [callCount, setCallCount] = useState(0);
   const [copiedId, setCopiedId] = useState(null);
   const CAP = 20;
@@ -135,7 +135,7 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
             </div>
           </div>
           <button
-            onClick={() => setEnabled(v => !v)}
+            onClick={() => setEnabled(v => { const n = !v; try { localStorage.setItem('aura_enabled', String(n)); } catch {} return n; })}
             className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
               enabled ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'bg-white/5 text-white/30'
             }`}
@@ -150,7 +150,7 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
         {MODES.map(m => (
           <button
             key={m.id}
-            onClick={() => setMode(m.id)}
+            onClick={() => { setMode(m.id); try { localStorage.setItem('aura_mode', m.id); } catch {}; }}
             className={`flex-1 py-1 rounded text-[11px] font-bold transition-all border ${
               mode === m.id
                 ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/10'
