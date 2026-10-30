@@ -252,6 +252,7 @@ class SeeWhyRTC {
     var prevPacketsLost = 0;
     var prevBytesRecv = 0;
     var poorRecvCount = 0;
+    var goodRecvCount = 0;
     var currentRecvLayer = 1; // track last requested layer to avoid redundant emits
     var consumerPrevBytes = {}; // producerId → prevBytesReceived for per-consumer bitrate
     var consumerStatsTick = 0; // sample per-consumer stats every other tick (4s)
@@ -310,23 +311,38 @@ class SeeWhyRTC {
           lossPct:         Math.max(0, lossPct),
         });
 
-        // Adaptive recv quality: downgrade all viewer consumers when bandwidth is poor
+        // Adaptive recv quality — 3-tier: degrade fast on poor bw, recover conservatively.
+        // Layer 0 (r0 ~100 kbps/consumer): emergency downgrade after 2 poor samples.
+        // Layer 1 (r1 ~300 kbps/consumer): default; re-enter when rb recovers above 250 kbps.
+        // Layer 2 (r2 ~900 kbps/consumer): upgrade only after 4 sustained good-bw samples.
         if (self.socket && self.recvTransport) {
           var rb = Math.max(0, recvBitratekbps);
           if (rb > 0 && rb < 150) {
             poorRecvCount++;
+            goodRecvCount = 0;
             if (poorRecvCount >= 2 && currentRecvLayer !== 0) {
               currentRecvLayer = 0;
               self.socket.emit('consumer:adapt-layer', { spatialLayer: 0 });
             }
-          } else if (rb >= 400) {
+          } else if (rb >= 800) {
             poorRecvCount = 0;
+            goodRecvCount++;
+            if (goodRecvCount >= 4 && currentRecvLayer < 2) {
+              goodRecvCount = 0;
+              currentRecvLayer = 2;
+              self.socket.emit('consumer:adapt-layer', { spatialLayer: 2 });
+            }
+          } else if (rb >= 250) {
+            poorRecvCount = 0;
+            goodRecvCount = 0;
             if (currentRecvLayer !== 1) {
               currentRecvLayer = 1;
               self.socket.emit('consumer:adapt-layer', { spatialLayer: 1 });
             }
           } else {
+            // 150–249 kbps band — stable, no change
             poorRecvCount = 0;
+            goodRecvCount = 0;
           }
         }
         // Per-consumer recv stats for remote tile quality indicators (every 4s)

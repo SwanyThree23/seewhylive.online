@@ -288,6 +288,29 @@ async function createConsumer(routerId, transportId, producerId, rtpCapabilities
     guestVideoConsumers[producerGuestId].add(consumer.id);
   }
 
+  // Clean up all indexes when this consumer closes for any reason (producer gone, transport
+  // closed, etc.) — prevents stale entries accumulating in guestVideoConsumers and
+  // socketVideoConsumers that would cause setPreferredLayers calls on dead consumers.
+  var consumerId = consumer.id;
+  consumer.on('close', function() {
+    delete consumers[consumerId];
+    if (producerGuestId && guestVideoConsumers[producerGuestId]) {
+      guestVideoConsumers[producerGuestId].delete(consumerId);
+      if (guestVideoConsumers[producerGuestId].size === 0) {
+        delete guestVideoConsumers[producerGuestId];
+      }
+    }
+    // socketVideoConsumers is keyed by socketId — scan to find and remove the entry
+    var sids = Object.keys(socketVideoConsumers);
+    for (var _i = 0; _i < sids.length; _i++) {
+      var _set = socketVideoConsumers[sids[_i]];
+      if (_set && _set.has(consumerId)) {
+        _set.delete(consumerId);
+        break;
+      }
+    }
+  });
+
   var params = {
     id: consumer.id,
     producerId: producerId,
