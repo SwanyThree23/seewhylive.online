@@ -41,6 +41,19 @@ export default function PanelTile({
     return function() { rtcManager.off('rtcReset', onReset); };
   }, [isLocal, rtcManager]);
 
+  // Re-subscribe when a consumer closes unexpectedly
+  useEffect(function() {
+    if (isLocal || !rtcManager) return;
+    var onClosed = function(data) {
+      if (!data) return;
+      if (data.producerId === producerId || data.producerId === audioProducerId) {
+        setSubscribeKey(function(k) { return k + 1; });
+      }
+    };
+    rtcManager.on('consumerClosed', onClosed);
+    return function() { rtcManager.off('consumerClosed', onClosed); };
+  }, [isLocal, rtcManager, producerId, audioProducerId]);
+
   // Subscribe to remote stream or wire up local producer track
   useEffect(function() {
     if (isAudioOnlyRoom || !rtcManager) {

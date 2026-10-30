@@ -151,9 +151,15 @@ class SeeWhyRTC {
     if (!this.recvTransport) throw new Error('Recv transport not initialized');
     if (!this.device.loaded) throw new Error('Device not loaded');
 
-    // Return existing consumer's stream if already subscribed
-    if (this.consumers[producerId] && !this.consumers[producerId].closed) {
-      return new MediaStream([this.consumers[producerId].track]);
+    // Return existing consumer's stream if still alive
+    var existing = this.consumers[producerId];
+    if (existing && !existing.closed && existing.track && existing.track.readyState !== 'ended') {
+      return new MediaStream([existing.track]);
+    }
+    // Clean up stale consumer before re-subscribing
+    if (existing) {
+      try { existing.close(); } catch(e) {}
+      delete this.consumers[producerId];
     }
 
     var self = this;
@@ -171,7 +177,10 @@ class SeeWhyRTC {
     var consumer = await this.recvTransport.consume(consumerParams);
     this.consumers[producerId] = consumer;
 
-    consumer.on('producerclose', function() { delete self.consumers[producerId]; });
+    consumer.on('producerclose', function() {
+      delete self.consumers[producerId];
+      self._emit('consumerClosed', { producerId: producerId });
+    });
     consumer.on('transportclose', function() { delete self.consumers[producerId]; });
 
     var stream = new MediaStream([consumer.track]);
