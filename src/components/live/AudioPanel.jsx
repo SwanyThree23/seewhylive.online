@@ -28,8 +28,8 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
   const [preset, setPreset] = useState(() => { try { return localStorage.getItem('audiopanel_preset') || 'normal'; } catch { return 'normal'; } });
   const [bgMusicGenre, setBgMusicGenre] = useState(() => { try { return localStorage.getItem('audiopanel_bgmusic') || 'none'; } catch { return 'none'; } });
   const [volumes, setVolumes] = useState({});
-  const [masterVolume, setMasterVolume] = useState([80]);
-  const [noiseCancel, setNoiseCancel] = useState(true);
+  const [masterVolume, setMasterVolume] = useState(() => { try { const v = localStorage.getItem('audiopanel_mastervol'); return [v ? parseInt(v, 10) : 80]; } catch { return [80]; } });
+  const [noiseCancel, setNoiseCancel] = useState(() => { try { const v = localStorage.getItem('audiopanel_noise'); return v === null ? true : v === 'true'; } catch { return true; } });
   const [expanded, setExpanded] = useState(false);
 
   const bgMusic = bgMusicGenre !== 'none';
@@ -86,7 +86,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
 
                 {/* Noise cancel toggle */}
                 <button
-                  onClick={() => setNoiseCancel(!noiseCancel)}
+                  onClick={() => { const n = !noiseCancel; setNoiseCancel(n); try { localStorage.setItem('audiopanel_noise', String(n)); } catch {}; }}
                   className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg border transition-all ${
                     noiseCancel
                       ? 'border-[#d4af37]/40 text-[#d4af37] bg-[#d4af37]/10'
@@ -106,7 +106,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                 </div>
                 <div className="flex items-center gap-2">
                   <VolumeX className="w-3 h-3 text-white/30 shrink-0" />
-                  <input type="range" value={masterVolume[0]} onChange={e => setMasterVolume([+e.target.value])} min={0} max={100} step={1} style={{ flex: 1, accentColor: '#D4AF37' }} />
+                  <input type="range" value={masterVolume[0]} onChange={e => { const v = +e.target.value; setMasterVolume([v]); try { localStorage.setItem('audiopanel_mastervol', String(v)); } catch {} }} min={0} max={100} step={1} style={{ flex: 1, accentColor: '#D4AF37' }} />
                   <Volume2 className="w-3 h-3 text-[#d4af37] shrink-0" />
                 </div>
               </div>
