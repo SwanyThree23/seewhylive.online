@@ -14,7 +14,7 @@ var INITIAL_SERVICES = [
 ];
 
 var VPS_IP  = '2.24.194.112';
-var APP_ID  = '6990f5f24823b53e21fcdc9d';
+var APP_ID  = '6990f5f2-4823-453e-a1fc-dc9d00000000';
 var AUTO_REFRESH_SEC = 30;
 
 var SYSTEM_STATS = [
