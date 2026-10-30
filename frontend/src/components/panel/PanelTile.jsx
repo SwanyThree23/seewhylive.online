@@ -151,6 +151,7 @@ export default function PanelTile({
                 videoRef.current.play().catch(function() {});
               }
             };
+            setConnQuality('green');
             setCamActive(true);
           }
         })
@@ -158,8 +159,10 @@ export default function PanelTile({
           if (!active) return;
           retryCount++;
           if (retryCount <= 3) {
+            setConnQuality(retryCount >= 2 ? 'red' : 'yellow');
             retryTimer = setTimeout(doSubscribe, retryCount * 2000);
           } else {
+            setConnQuality('red');
             setCamActive(false);
           }
         });
@@ -729,8 +732,8 @@ export default function PanelTile({
         )}
       </div>
 
-      {/* Speaking / connection quality indicator */}
-      {!isAudioOnlyRoom && isLocal && rtcManager ? (
+      {/* Speaking / connection quality indicator — shown for all tiles with RTC */}
+      {!isAudioOnlyRoom && rtcManager && (
         <span
           style={{
             position: 'absolute', bottom: 4, right: 4,
@@ -747,10 +750,6 @@ export default function PanelTile({
           }}
           title={effectiveSpeaking ? 'Speaking' : connQuality === 'green' ? 'Connection good' : connQuality === 'yellow' ? 'Connection unstable' : 'Connection poor'}
         />
-      ) : (
-        effectiveSpeaking && !isAudioOnlyRoom && (
-          <span style={{ position: 'absolute', bottom: 4, right: 4, width: 8, height: 8, borderRadius: '50%', background: GOLD, boxShadow: '0 0 6px ' + GOLD }} />
-        )
       )}
 
       {/* Muted badge */}

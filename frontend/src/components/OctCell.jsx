@@ -20,6 +20,8 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var isMutedRef     = useRef(isMuted);
   var onlineRef      = useRef(false);
   var remoteCamOffRef = useRef(false);
+  var speakHoldRef    = useRef(null);
+  var speakingLiveRef = useRef(false);
   var [speaking,     setSpeaking]     = useState(false);
   var [online,       setOnline]       = useState(false);
   var [loading,      setLoading]      = useState(false);
@@ -440,6 +442,8 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var initAnalyser = function(stream) {
     if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null; }
     if (audioCtxRef.current) { audioCtxRef.current.close().catch(function(){}); audioCtxRef.current = null; }
+    clearTimeout(speakHoldRef.current); speakHoldRef.current = null;
+    speakingLiveRef.current = false;
     analyserRef.current = null;
     try {
       var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -478,19 +482,29 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
       setEqBars(bars);
       // Use RMS of time-domain signal for voice detection — less sensitive
       // to steady-state background noise than frequency-domain average.
+      // 400ms hold timer matches PanelTile, debouncing rapid threshold crossings.
       analyserRef.current.getByteTimeDomainData(timeData);
       var sum = 0;
       for (var j = 0; j < timeData.length; j++) {
         var v = (timeData[j] - 128) / 128;
         sum += v * v;
       }
-      setSpeaking(Math.sqrt(sum / timeData.length) > 0.01);
+      var rms = Math.sqrt(sum / timeData.length);
+      if (rms > 0.01) {
+        clearTimeout(speakHoldRef.current); speakHoldRef.current = null;
+        if (!speakingLiveRef.current) { speakingLiveRef.current = true; setSpeaking(true); }
+      } else if (speakingLiveRef.current && !speakHoldRef.current) {
+        speakHoldRef.current = setTimeout(function() {
+          speakHoldRef.current = null; speakingLiveRef.current = false; setSpeaking(false);
+        }, 400);
+      }
     };
     tick();
   };
 
   useEffect(function() {
     return function() {
+      clearTimeout(speakHoldRef.current);
       if (animRef.current) cancelAnimationFrame(animRef.current);
       if (audioCtxRef.current) audioCtxRef.current.close().catch(function(){});
       if (streamRef.current) streamRef.current.getTracks().forEach(function(t) { t.stop(); });
