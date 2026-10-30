@@ -31,7 +31,8 @@ export default function PanelTile({
   var [remoteSpeaking, setRemoteSpeaking] = useState(false);
   var [connQuality, setConnQuality] = useState('green');
   var [screenSharing, setScreenSharing] = useState(false);
-  var [subscribeKey, setSubscribeKey] = useState(0);
+  var [videoSubscribeKey, setVideoSubscribeKey] = useState(0);
+  var [audioSubscribeKey, setAudioSubscribeKey] = useState(0);
   var camActiveRef = useRef(false);
   useEffect(function() { camActiveRef.current = camActive; }, [camActive]);
 
@@ -81,19 +82,21 @@ export default function PanelTile({
   // Force re-subscription when mediasoup reconnects (consumers cleared by connect())
   useEffect(function() {
     if (isLocal || !rtcManager) return;
-    var onReset = function() { setSubscribeKey(function(k) { return k + 1; }); };
+    var onReset = function() {
+      setVideoSubscribeKey(function(k) { return k + 1; });
+      setAudioSubscribeKey(function(k) { return k + 1; });
+    };
     rtcManager.on('rtcReset', onReset);
     return function() { rtcManager.off('rtcReset', onReset); };
   }, [isLocal, rtcManager]);
 
-  // Re-subscribe when a consumer closes unexpectedly
+  // Re-subscribe only the affected stream when a consumer closes unexpectedly
   useEffect(function() {
     if (isLocal || !rtcManager) return;
     var onClosed = function(data) {
       if (!data) return;
-      if (data.producerId === producerId || data.producerId === audioProducerId) {
-        setSubscribeKey(function(k) { return k + 1; });
-      }
+      if (data.producerId === producerId)      setVideoSubscribeKey(function(k) { return k + 1; });
+      if (data.producerId === audioProducerId) setAudioSubscribeKey(function(k) { return k + 1; });
     };
     rtcManager.on('consumerClosed', onClosed);
     return function() { rtcManager.off('consumerClosed', onClosed); };
@@ -167,7 +170,7 @@ export default function PanelTile({
       if (videoRef.current) videoRef.current.srcObject = null;
       setCamActive(false);
     };
-  }, [producerId, rtcManager, isAudioOnlyRoom, isLocal, subscribeKey]);
+  }, [producerId, rtcManager, isAudioOnlyRoom, isLocal, videoSubscribeKey]);
 
   // Subscribe to remote audio producer for playback and speaking detection
   useEffect(function() {
@@ -242,7 +245,7 @@ export default function PanelTile({
       try { if (ctx) ctx.close(); } catch (e) {}
       if (audioRef.current) audioRef.current.srcObject = null;
     };
-  }, [audioProducerId, rtcManager, isLocal, subscribeKey]);
+  }, [audioProducerId, rtcManager, isLocal, audioSubscribeKey]);
 
   // Freeze detection: re-subscribe remote tile if video currentTime stops advancing for ~10s
   useEffect(function() {
@@ -258,7 +261,7 @@ export default function PanelTile({
         if (stuckCount >= 2) {
           stuckCount = 0;
           prevTime = -1;
-          setSubscribeKey(function(k) { return k + 1; });
+          setVideoSubscribeKey(function(k) { return k + 1; });
         }
       } else {
         stuckCount = 0;
