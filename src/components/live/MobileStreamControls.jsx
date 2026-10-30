@@ -5,14 +5,18 @@ import { Mic, MicOff, Camera, MessageSquare, Heart, DollarSign, MoreHorizontal, 
 export default function MobileStreamControls({ micMuted, onMicToggle, onReact, onQuickTip, onWebSource, onGoal, onClip, onRaid, onPoll, onQA, roomId }) {
   const [showChat, setShowChat] = useState(() => { try { return localStorage.getItem('mobile_chat_visible') !== 'false'; } catch { return true; } });
   const [showMore, setShowMore] = useState(false);
-  const [facing, setFacing] = useState('user');
+  const [facing, setFacing] = useState(() => { try { return localStorage.getItem('mobile_facing') || 'user'; } catch { return 'user'; } });
   const [hypeCount, setHypeCount] = useState(0);
   const [floatEmojis, setFloatEmojis] = useState([]);
   const [reactIdx, setReactIdx] = useState(0);
   const floatId = useRef(0);
 
   const handleFlipCamera = () => {
-    setFacing(f => f === 'user' ? 'environment' : 'user');
+    setFacing(f => {
+      const n = f === 'user' ? 'environment' : 'user';
+      try { localStorage.setItem('mobile_facing', n); } catch {}
+      return n;
+    });
   };
 
   const addFloat = (emoji) => {

@@ -33,7 +33,16 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
   const qc = useQueryClient();
   const [showForm, setShowForm]         = useState(false);
   const [showPresets, setShowPresets]   = useState(false);
-  const [form, setForm]                 = useState({ goal_type: 'tips', title: '', target_amount: 100, reward_text: '' });
+  const [form, setForm]                 = useState(() => {
+    try {
+      return {
+        goal_type: localStorage.getItem('sg_goal_type') || 'tips',
+        title: '',
+        target_amount: Number(localStorage.getItem('sg_target_amount') || 100),
+        reward_text: '',
+      };
+    } catch { return { goal_type: 'tips', title: '', target_amount: 100, reward_text: '' }; }
+  });
   const [completed, setCompleted]       = useState(new Set());
   const prevTipsRef                     = React.useRef(currentTips);
   const [tipRate, setTipRate]           = React.useState(0);
@@ -187,7 +196,7 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
             <div className="bg-white/5 border border-[#6DBF7E]/20 rounded-xl p-4 space-y-3">
               <div className="grid grid-cols-2 gap-1.5">
                 {GOAL_TYPES.map(gt => (
-                  <button key={gt.id} onClick={() => setForm(f => ({ ...f, goal_type: gt.id }))}
+                  <button key={gt.id} onClick={() => { setForm(f => ({ ...f, goal_type: gt.id })); try { localStorage.setItem('sg_goal_type', gt.id); } catch {} }}
                     className={`text-xs py-1.5 px-2 rounded-lg border transition-all text-left ${
                       form.goal_type === gt.id ? 'border-[#6DBF7E] bg-[#6DBF7E]/10 text-white' : 'border-white/10 text-white/40'
                     }`}>
@@ -199,7 +208,7 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
                 placeholder="Goal title (e.g. New Mic Fund!)"
                 style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
               <div className="flex gap-2">
-                <input type="number" value={form.target_amount} onChange={e => setForm(f => ({ ...f, target_amount: Number(e.target.value) }))}
+                <input type="number" value={form.target_amount} onChange={e => { const v = Number(e.target.value); setForm(f => ({ ...f, target_amount: v })); try { localStorage.setItem('sg_target_amount', String(v)); } catch {} }}
                   placeholder="Target"
                   style={{ flex:1, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
                 <span className="text-sm text-white/40 flex items-center">{GOAL_TYPES.find(g => g.id === form.goal_type)?.unit}</span>
