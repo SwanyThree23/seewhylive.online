@@ -2627,6 +2627,22 @@ io.on('connection', function(socket) {
   });
 
   // ── close-transport ────────────────────────────────────────────────────
+  // ── restart-ice ────────────────────────────────────────────────────────
+  // Called by the client when its WebRTC transport enters 'disconnected' state to
+  // trigger an ICE restart — much faster than a full transport teardown/reconnect.
+  // Server re-generates ICE credentials; client re-runs candidate gathering using them.
+  socket.on('restart-ice', function(data, ack) {
+    if (!data || !data.transportId) { if (ack) ack({ error: 'transportId required' }); return; }
+    var tid = data.transportId;
+    if (!socket.data.ownedTransportIds || !socket.data.ownedTransportIds.includes(tid)) {
+      if (ack) ack({ error: 'forbidden' });
+      return;
+    }
+    mediasoup.restartTransportIce(tid)
+      .then(function(iceParameters) { if (ack) ack({ iceParameters: iceParameters }); })
+      .catch(function(err) { if (ack) ack({ error: err.message }); });
+  });
+
   // Client emits this before reconnecting (same socket) to free the old server-side
   // transport and its UDP port allocation. Only the owning socket may close its transport.
   socket.on('close-transport', function(data) {

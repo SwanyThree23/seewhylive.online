@@ -251,6 +251,13 @@ function closeTransport(transportId) {
   delete transports[transportId];
 }
 
+async function restartTransportIce(transportId) {
+  var transport = transports[transportId];
+  if (!transport) throw new Error('Transport not found: ' + transportId);
+  var iceParameters = await transport.restartIce();
+  return iceParameters;
+}
+
 function pauseProducer(producerId) {
   var entry = producers[producerId];
   if (!entry) return;
@@ -527,6 +534,7 @@ module.exports = {
   createConsumer: createConsumer,
   closeProducer: closeProducer,
   closeTransport: closeTransport,
+  restartTransportIce: restartTransportIce,
   pauseProducer: pauseProducer,
   resumeProducer: resumeProducer,
   getProducerIdsByGuest: getProducerIdsByGuest,

@@ -88,6 +88,20 @@ class SeeWhyRTC {
     }
   }
 
+  _tryIceRestart(direction) {
+    var self = this;
+    var transport = direction === 'send' ? this.sendTransport : this.recvTransport;
+    if (!transport || !this.socket || !this.socket.connected) return;
+    var transportId = transport.id;
+    this.socket.emit('restart-ice', { transportId: transportId }, function(data) {
+      if (!data || data.error || !data.iceParameters) return;
+      // If the transport is already gone (full reconnect started), bail out
+      var current = direction === 'send' ? self.sendTransport : self.recvTransport;
+      if (!current || current.id !== transportId || current.closed) return;
+      current.restartIce({ iceParameters: data.iceParameters });
+    });
+  }
+
   _scheduleReconnect() {
     if (this._reconnectTimer || !this._lastConnectParams || this._connecting) return;
     var self = this;
@@ -134,6 +148,7 @@ class SeeWhyRTC {
 
     this.sendTransport.on('connectionstatechange', function(state) {
       self._emit('transportState', { direction: 'send', state: state });
+      if (state === 'disconnected') self._tryIceRestart('send');
       if (state === 'failed') self._scheduleReconnect();
     });
   }
@@ -158,6 +173,7 @@ class SeeWhyRTC {
 
     this.recvTransport.on('connectionstatechange', function(state) {
       self._emit('transportState', { direction: 'recv', state: state });
+      if (state === 'disconnected') self._tryIceRestart('recv');
       if (state === 'failed') self._scheduleReconnect();
     });
   }
