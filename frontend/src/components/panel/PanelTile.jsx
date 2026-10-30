@@ -35,6 +35,8 @@ export default function PanelTile({
   var [audioSubscribeKey, setAudioSubscribeKey] = useState(0);
   var camActiveRef = useRef(false);
   useEffect(function() { camActiveRef.current = camActive; }, [camActive]);
+  var remoteCamOffRef = useRef(false);
+  useEffect(function() { remoteCamOffRef.current = !!remoteCamOff; }, [remoteCamOff]);
 
   // Reconnect: re-publish the local panel stream after RTC transport cycling.
   // PanelJoinModal publishes once at join; after reconnect those producers are gone.
@@ -254,7 +256,7 @@ export default function PanelTile({
     var stuckCount = 0;
     var timer = setInterval(function() {
       var v = videoRef.current;
-      if (!v || !v.srcObject || !camActiveRef.current) { stuckCount = 0; prevTime = -1; return; }
+      if (!v || !v.srcObject || !camActiveRef.current || remoteCamOffRef.current) { stuckCount = 0; prevTime = -1; return; }
       var ct = v.currentTime;
       if (ct > 0 && ct === prevTime) {
         stuckCount++;
