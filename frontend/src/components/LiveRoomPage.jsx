@@ -1810,7 +1810,7 @@ export default function LiveRoomPage({
                             isCamOff={isOwn ? isCamOff : false}
                             onMuteToggle={isOwn ? toggleMute : null}
                             onCamToggle={isOwn ? toggleCam : null}
-                            onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; } : null}
+                            onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; if (rtcManager && rtcManager.producers && rtcManager.producers['video']) { rtcManager.replaceTrack('video', t).catch(function() {}); } } : null}
                             handRaised={isHand}
                             giftTotal={guestGiftTotals[gid] || 0}
                             activeEffect={panelEffects[gid] || null}
@@ -1951,7 +1951,7 @@ export default function LiveRoomPage({
                                 isCamOff={isOwn ? isCamOff : false}
                                 onMuteToggle={isOwn ? toggleMute : null}
                                 onCamToggle={isOwn ? toggleCam : null}
-                                onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; } : null}
+                                onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; if (rtcManager && rtcManager.producers && rtcManager.producers['video']) { rtcManager.replaceTrack('video', t).catch(function() {}); } } : null}
                                 handRaised={isHand}
                                 giftTotal={guestGiftTotals[gid] || 0}
                                 activeEffect={panelEffects[gid] || null}
@@ -2030,6 +2030,7 @@ export default function LiveRoomPage({
                     onMuteToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleMute : null}
                     onCamToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleCam : null}
                     giftTotal={guestGiftTotals[featuredGuest.guestId || featuredGuest.userId] || 0}
+                    handRaised={!!(raisedHands && raisedHands[featuredGuest.guestId || featuredGuest.userId])}
                     activeEffect={panelEffects[featuredGuest.guestId || featuredGuest.userId] || null}
                   />
                   <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGuest.guestId || featuredGuest.userId} />
@@ -2078,6 +2079,7 @@ export default function LiveRoomPage({
                           onMuteToggle={null}
                           onCamToggle={null}
                           giftTotal={guestGiftTotals[gid] || 0}
+                          handRaised={!!(raisedHands && raisedHands[gid])}
                           activeEffect={panelEffects[gid] || null}
                           onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                         />
