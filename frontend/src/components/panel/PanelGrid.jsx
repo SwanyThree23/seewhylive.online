@@ -183,13 +183,9 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
           return next;
         });
       }
-      var onScreenShareEnded = function(payload) {
-        if (payload.roomId !== roomId) return;
-        setScreenSharingIds(function(prev) {
-          var next = Object.assign({}, prev);
-          delete next[payload.userId];
-          return next;
-        });
+      var onScreenShareEnded = function() {
+        // server emits {} with no roomId — already scoped to the room via io.to(roomId)
+        setScreenSharingIds({});
       }
       socket.on('screen-share-active', onScreenShareActive);
       socket.on('screen-share-ended', onScreenShareEnded);

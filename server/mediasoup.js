@@ -158,7 +158,7 @@ async function connectTransport(transportId, dtlsParameters) {
 
 // ─── Producer management ─────────────────────────────────────────────────
 
-async function createProducer(transportId, rtpParameters, kind, guestId) {
+async function createProducer(transportId, rtpParameters, kind, guestId, appData) {
   var transport = transports[transportId];
   if (!transport) {
     throw new Error('Transport not found: ' + transportId);
@@ -189,7 +189,7 @@ async function createProducer(transportId, rtpParameters, kind, guestId) {
     }
   }
 
-  producers[producer.id] = { producer: producer, guestId: guestId, kind: kind, roomId: roomId };
+  producers[producer.id] = { producer: producer, guestId: guestId, kind: kind, roomId: roomId, appData: appData || {} };
 
   return { producer: producer, producerId: producer.id };
 }
@@ -307,7 +307,7 @@ function getRoomProducers(roomId) {
   for (var i = 0; i < ids.length; i++) {
     var entry = producers[ids[i]];
     if (entry.roomId === roomId) {
-      result.push({ producerId: ids[i], guestId: entry.guestId, kind: entry.kind });
+      result.push({ producerId: ids[i], guestId: entry.guestId, kind: entry.kind, appData: entry.appData || {} });
     }
   }
   return result;

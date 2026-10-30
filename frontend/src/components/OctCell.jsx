@@ -10,7 +10,7 @@ var _PP_ANIM =
   '@keyframes ppCrown{0%{transform:translateY(-8px) scale(.8);opacity:0}60%{transform:translateY(2px) scale(1.1);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}' +
   '@keyframes ppEject{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-120%) scale(.4);opacity:0}}';
 
-function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay }) {
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay, isScreenSharing }) {
   var videoRef       = useRef(null);
   var analyserRef    = useRef(null);
   var animRef        = useRef(null);
@@ -27,7 +27,8 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var [streamReady,  setStreamReady]  = useState(false);
   var [retryCount,   setRetryCount]   = useState(0);
   var [flyReactions, setFlyReactions] = useState([]);
-  var [sendTransportReady, setSendTransportReady] = useState(!!(rtcManager && rtcManager.sendTransport));
+  var [sendTransportKey, setSendTransportKey] = useState(0);
+  var [subscribeKey, setSubscribeKey] = useState(0);
   var [facingFront,  setFacingFront]  = useState(true);
 
   var size      = fill ? null : (sz || 200);
@@ -129,7 +130,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     }).catch(function(e) {
       console.error('[OctCell] publishStream error:', e);
     });
-  }, [isOwnCell, streamReady, rtcManager, sendTransportReady]);
+  }, [isOwnCell, streamReady, rtcManager, sendTransportKey]);
 
   // Apply mute state to local audio tracks
   useEffect(function() {
@@ -183,9 +184,17 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
   useEffect(function() {
     if (!isOwnCell || !rtcManager) return;
-    var onReady = function() { setSendTransportReady(true); };
+    var onReady = function() { setSendTransportKey(function(k) { return k + 1; }); };
     rtcManager.on('sendTransportReady', onReady);
     return function() { rtcManager.off('sendTransportReady', onReady); };
+  }, [isOwnCell, rtcManager]);
+
+  // Force remote cells to re-subscribe when mediasoup reconnects (consumers cleared by connect())
+  useEffect(function() {
+    if (isOwnCell || !rtcManager) return;
+    var onReset = function() { setSubscribeKey(function(k) { return k + 1; }); };
+    rtcManager.on('rtcReset', onReset);
+    return function() { rtcManager.off('rtcReset', onReset); };
   }, [isOwnCell, rtcManager]);
 
   // Keep muted ref in sync for use inside rAF loop
@@ -283,13 +292,16 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     return function() {
       cancelled = true;
       clearTimeout(retryTimer);
+      if (videoRef.current) videoRef.current.srcObject = null;
+      setOnline(false);
+      setLoading(false);
       if (localStream) {
         localStream.getTracks().forEach(function(t) { t.stop(); });
         if (streamRef.current === localStream) streamRef.current = null;
         localStream = null;
       }
     };
-  }, [isOwnCell, rtcManager, guest && guest.producerId, guest && guest.audioProducerId]);
+  }, [isOwnCell, rtcManager, guest && guest.producerId, guest && guest.audioProducerId, subscribeKey]);
 
   var initAnalyser = function(stream) {
     if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null; }
@@ -431,6 +443,13 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         {!isOwnCell && guest && guest.remoteMuted && (
           <div style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,26,60,.75)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff' }}>
             🔇 MUTED
+          </div>
+        )}
+
+        {/* Screen share indicator (remote viewer sees this on the sharer's tile) */}
+        {isScreenSharing && !isOwnCell && (
+          <div style={{ position: 'absolute', top: 6, right: 6, background: 'rgba(201,168,76,.9)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09', zIndex: 5 }}>
+            🖥 SCREEN
           </div>
         )}
 
@@ -641,6 +660,7 @@ function areOctCellPropsEqual(prev, next) {
     prev.mediaConfig    === next.mediaConfig   &&
     prev.onCameraTrack  === next.onCameraTrack &&
     prev.activeEffect   === next.activeEffect  &&
+    prev.isScreenSharing === next.isScreenSharing &&
     prev.socket         === next.socket
   );
 }

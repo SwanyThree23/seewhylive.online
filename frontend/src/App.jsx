@@ -844,6 +844,7 @@ export default function App() {
 
     socket.on('new-producer', function(data) {
       if (!data || !data.guestId || !data.producerId) return;
+      var isScreen = data.appData && data.appData.source === 'screen';
       setGuests(function(prev) {
         var found = false;
         var updated = prev.map(function(g) {
@@ -851,16 +852,18 @@ export default function App() {
           if (gid !== data.guestId) return g;
           found = true;
           var update = Object.assign({}, g);
-          if (data.kind === 'video') update.producerId      = data.producerId;
-          if (data.kind === 'audio') update.audioProducerId = data.producerId;
+          if (data.kind === 'video' && isScreen)  update.screenProducerId = data.producerId;
+          if (data.kind === 'video' && !isScreen) update.producerId       = data.producerId;
+          if (data.kind === 'audio')              update.audioProducerId  = data.producerId;
           return update;
         });
         // Producer arrived before roster-update added this guest — store a placeholder
         // so roster-update's merge logic picks up the producerId when it arrives.
         if (!found) {
           var placeholder = { guestId: data.guestId, userId: data.guestId };
-          if (data.kind === 'video') placeholder.producerId      = data.producerId;
-          if (data.kind === 'audio') placeholder.audioProducerId = data.producerId;
+          if (data.kind === 'video' && isScreen)  placeholder.screenProducerId = data.producerId;
+          if (data.kind === 'video' && !isScreen) placeholder.producerId       = data.producerId;
+          if (data.kind === 'audio')              placeholder.audioProducerId  = data.producerId;
           return updated.concat([placeholder]);
         }
         return updated;
@@ -885,8 +888,10 @@ export default function App() {
             for (var i = 0; i < ackData.existingProducers.length; i++) {
               var p = ackData.existingProducers[i];
               if (p.guestId !== gid) continue;
-              if (p.kind === 'video') update.producerId      = p.producerId;
-              if (p.kind === 'audio') update.audioProducerId = p.producerId;
+              var isScreen = p.appData && p.appData.source === 'screen';
+              if (p.kind === 'video' && isScreen)  update.screenProducerId = p.producerId;
+              if (p.kind === 'video' && !isScreen) update.producerId       = p.producerId;
+              if (p.kind === 'audio')              update.audioProducerId  = p.producerId;
             }
             return update;
           });
@@ -898,8 +903,10 @@ export default function App() {
             if (!added[p.guestId]) {
               added[p.guestId] = { guestId: p.guestId, userId: p.guestId };
             }
-            if (p.kind === 'video') added[p.guestId].producerId      = p.producerId;
-            if (p.kind === 'audio') added[p.guestId].audioProducerId = p.producerId;
+            var isScreen = p.appData && p.appData.source === 'screen';
+            if (p.kind === 'video' && isScreen)  added[p.guestId].screenProducerId = p.producerId;
+            if (p.kind === 'video' && !isScreen) added[p.guestId].producerId       = p.producerId;
+            if (p.kind === 'audio')              added[p.guestId].audioProducerId  = p.producerId;
           }
           var addedArr = Object.keys(added).map(function(k) { return added[k]; });
           return addedArr.length ? updated.concat(addedArr) : updated;
@@ -923,8 +930,9 @@ export default function App() {
       setGuests(function(prev) {
         return prev.map(function(g) {
           var update = Object.assign({}, g);
-          if (g.producerId      === data.producerId) update.producerId      = null;
-          if (g.audioProducerId === data.producerId) update.audioProducerId = null;
+          if (g.producerId       === data.producerId) update.producerId       = null;
+          if (g.audioProducerId  === data.producerId) update.audioProducerId  = null;
+          if (g.screenProducerId === data.producerId) update.screenProducerId = null;
           return update;
         });
       });

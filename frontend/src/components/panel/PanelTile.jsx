@@ -21,6 +21,7 @@ export default function PanelTile({
   var { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
   var videoRef = useRef(null);
   var audioRef = useRef(null);
+  var prevCamTrackRef = useRef(null);
   var [camActive, setCamActive] = useState(false);
   var [localCamOn, setLocalCamOn] = useState(true);
   var [localMicOn, setLocalMicOn] = useState(true);
@@ -30,6 +31,15 @@ export default function PanelTile({
   var [remoteSpeaking, setRemoteSpeaking] = useState(false);
   var [connQuality, setConnQuality] = useState('green');
   var [screenSharing, setScreenSharing] = useState(false);
+  var [subscribeKey, setSubscribeKey] = useState(0);
+
+  // Force re-subscription when mediasoup reconnects (consumers cleared by connect())
+  useEffect(function() {
+    if (isLocal || !rtcManager) return;
+    var onReset = function() { setSubscribeKey(function(k) { return k + 1; }); };
+    rtcManager.on('rtcReset', onReset);
+    return function() { rtcManager.off('rtcReset', onReset); };
+  }, [isLocal, rtcManager]);
 
   // Subscribe to remote stream or wire up local producer track
   useEffect(function() {
@@ -92,7 +102,7 @@ export default function PanelTile({
       if (videoRef.current) videoRef.current.srcObject = null;
       setCamActive(false);
     };
-  }, [producerId, rtcManager, isAudioOnlyRoom, isLocal]);
+  }, [producerId, rtcManager, isAudioOnlyRoom, isLocal, subscribeKey]);
 
   // Subscribe to remote audio producer for playback and speaking detection
   useEffect(function() {
@@ -104,53 +114,65 @@ export default function PanelTile({
     var holdTimer = null;
     var speaking = false;
 
-    rtcManager.subscribeToProducer(audioProducerId)
-      .then(function(stream) {
-        if (!active) return;
-        if (audioRef.current) {
-          audioRef.current.srcObject = stream;
-          audioRef.current.play().catch(function() {});
-        }
-        var tracks = stream.getAudioTracks();
-        if (!tracks.length) return;
-        try {
-          ctx = new (window.AudioContext || window.webkitAudioContext)();
-          var analyser = ctx.createAnalyser();
-          analyser.fftSize = 256;
-          ctx.createMediaStreamSource(stream).connect(analyser);
-          var data = new Uint8Array(analyser.frequencyBinCount);
-          var loop = function() {
-            analyser.getByteTimeDomainData(data);
-            var sum = 0;
-            for (var i = 0; i < data.length; i++) {
-              var v = (data[i] - 128) / 128;
-              sum += v * v;
-            }
-            var rms = Math.sqrt(sum / data.length);
-            if (rms > 0.01) {
-              clearTimeout(holdTimer);
-              if (!speaking) { speaking = true; if (active) setRemoteSpeaking(true); }
-            } else if (speaking) {
-              holdTimer = setTimeout(function() {
-                speaking = false;
-                if (active) setRemoteSpeaking(false);
-              }, 400);
+    var audioRetryCount = 0;
+    var audioRetryTimer = null;
+    var doAudioSubscribe = function() {
+      rtcManager.subscribeToProducer(audioProducerId)
+        .then(function(stream) {
+          if (!active) return;
+          if (audioRef.current) {
+            audioRef.current.srcObject = stream;
+            audioRef.current.play().catch(function() {});
+          }
+          var tracks = stream.getAudioTracks();
+          if (!tracks.length) return;
+          try {
+            ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var analyser = ctx.createAnalyser();
+            analyser.fftSize = 256;
+            ctx.createMediaStreamSource(stream).connect(analyser);
+            var data = new Uint8Array(analyser.frequencyBinCount);
+            var loop = function() {
+              analyser.getByteTimeDomainData(data);
+              var sum = 0;
+              for (var i = 0; i < data.length; i++) {
+                var v = (data[i] - 128) / 128;
+                sum += v * v;
+              }
+              var rms = Math.sqrt(sum / data.length);
+              if (rms > 0.01) {
+                clearTimeout(holdTimer);
+                if (!speaking) { speaking = true; if (active) setRemoteSpeaking(true); }
+              } else if (speaking) {
+                holdTimer = setTimeout(function() {
+                  speaking = false;
+                  if (active) setRemoteSpeaking(false);
+                }, 400);
+              }
+              raf = requestAnimationFrame(loop);
             }
             raf = requestAnimationFrame(loop);
+          } catch (e) {}
+        })
+        .catch(function() {
+          if (!active) return;
+          audioRetryCount++;
+          if (audioRetryCount <= 3) {
+            audioRetryTimer = setTimeout(doAudioSubscribe, audioRetryCount * 2000);
           }
-          raf = requestAnimationFrame(loop);
-        } catch (e) {}
-      })
-      .catch(function() {});
+        });
+    };
+    doAudioSubscribe();
 
     return function() {
       active = false;
+      clearTimeout(audioRetryTimer);
       if (raf) cancelAnimationFrame(raf);
       clearTimeout(holdTimer);
       try { if (ctx) ctx.close(); } catch (e) {}
       if (audioRef.current) audioRef.current.srcObject = null;
     };
-  }, [audioProducerId, rtcManager, isLocal]);
+  }, [audioProducerId, rtcManager, isLocal, subscribeKey]);
 
   // Connection quality from RTC stats (local tile only)
   useEffect(function() {
@@ -220,17 +242,38 @@ export default function PanelTile({
   var toggleScreenShare = function() {
     if (!rtcManager) return;
     if (screenSharing) {
-      rtcManager.stopScreenShare();
       setScreenSharing(false);
       if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
+      // Restore camera track
+      var vp = rtcManager.producers && rtcManager.producers['video'];
+      if (vp && prevCamTrackRef.current) {
+        rtcManager.replaceTrack('video', prevCamTrackRef.current).catch(function() {});
+        prevCamTrackRef.current = null;
+      } else if (vp) {
+        navigator.mediaDevices.getUserMedia({ video: true }).then(function(s) {
+          var t = s.getVideoTracks()[0];
+          if (t) rtcManager.replaceTrack('video', t).catch(function() {});
+        }).catch(function() {});
+      }
     } else {
-      rtcManager.publishScreenShare().then(function() {
-        setScreenSharing(true);
-        if (socket && roomId) socket.emit('screen-share-start', { roomId: roomId });
-        rtcManager.on('screenShareStopped', function onSSStop() {
+      navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false }).then(function(displayStream) {
+        var screenTrack = displayStream.getVideoTracks()[0];
+        if (!screenTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
+        var vp = rtcManager.producers && rtcManager.producers['video'];
+        if (vp) prevCamTrackRef.current = vp.track;
+        screenTrack.addEventListener('ended', function() {
           setScreenSharing(false);
           if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
-          rtcManager.off('screenShareStopped', onSSStop);
+          if (vp && prevCamTrackRef.current) {
+            rtcManager.replaceTrack('video', prevCamTrackRef.current).catch(function() {});
+            prevCamTrackRef.current = null;
+          }
+        });
+        rtcManager.replaceTrack('video', screenTrack).then(function() {
+          setScreenSharing(true);
+          if (socket && roomId) socket.emit('screen-share-start', { roomId: roomId });
+        }).catch(function() {
+          displayStream.getTracks().forEach(function(t) { t.stop(); });
         });
       }).catch(function() {});
     }
@@ -539,7 +582,7 @@ export default function PanelTile({
       )}
 
       {/* Hidden audio element for remote panelist audio playback */}
-      <audio ref={audioRef} autoPlay style={{ display: 'none' }} />
+      <audio ref={audioRef} autoPlay playsInline style={{ display: 'none' }} />
 
       {/* Local cam/mic controls (shown on hover) */}
       {renderLocalControls()}

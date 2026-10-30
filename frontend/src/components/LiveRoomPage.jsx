@@ -592,7 +592,8 @@ export default function LiveRoomPage({
         console.log('[LiveRoomPage] calling rtcManager.connect', { roomId: roomId, userId: userId, role: role }); await rtcManager.connect(socket, roomId, userId, role); console.log('[LiveRoomPage] connect() RESOLVED');
         if (!mounted) return;
         setRtcReady(true);
-        // Wire up stream health stats (only meaningful for hosts/cohosts sending media)
+        // Wire up stream health stats; guard against duplicate registration on reconnect
+        rtcManager.off('stats', onStatsUpdate);
         rtcManager.on('stats', onStatsUpdate);
       } catch(e) {
         if (!mounted) return;
@@ -926,7 +927,7 @@ export default function LiveRoomPage({
 
     socket.on('screen-share-active', function(data) {
       if (!data) return;
-      if (data.userId !== userId) setScreenShareHost({ username: data.username || 'Host' });
+      if (data.userId !== userId) setScreenShareHost({ userId: data.userId, username: data.username || 'Host' });
     });
 
     socket.on('screen-share-ended', function() {
@@ -1475,7 +1476,9 @@ export default function LiveRoomPage({
           }}
           onToggleChat={function() { setChatOpen(function(o) { return !o; }); }}
           onGoLive={function() { setShowLiveModal(true); }}
-          rtcManager={rtcManager}
+          isScreenSharing={isScreenSharing}
+          onStartScreenShare={startScreenShare}
+          onStopScreenShare={stopScreenShare}
         />
       )}
 
@@ -1815,6 +1818,7 @@ export default function LiveRoomPage({
                             giftTotal={guestGiftTotals[gid] || 0}
                             activeEffect={panelEffects[gid] || null}
                             onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                            isScreenSharing={!!(screenShareHost && screenShareHost.userId === gid)}
                           />
                         )}
                       </div>
@@ -1956,6 +1960,7 @@ export default function LiveRoomPage({
                                 giftTotal={guestGiftTotals[gid] || 0}
                                 activeEffect={panelEffects[gid] || null}
                                 onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                                isScreenSharing={!!(screenShareHost && screenShareHost.userId === gid)}
                               />
                             )}
                           </div>
@@ -2032,6 +2037,7 @@ export default function LiveRoomPage({
                     giftTotal={guestGiftTotals[featuredGuest.guestId || featuredGuest.userId] || 0}
                     handRaised={!!(raisedHands && raisedHands[featuredGuest.guestId || featuredGuest.userId])}
                     activeEffect={panelEffects[featuredGuest.guestId || featuredGuest.userId] || null}
+                    isScreenSharing={!!(screenShareHost && screenShareHost.userId === (featuredGuest.guestId || featuredGuest.userId))}
                   />
                   <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGuest.guestId || featuredGuest.userId} />
                 </div>
@@ -2082,6 +2088,7 @@ export default function LiveRoomPage({
                           handRaised={!!(raisedHands && raisedHands[gid])}
                           activeEffect={panelEffects[gid] || null}
                           onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                          isScreenSharing={!!(screenShareHost && screenShareHost.userId === gid)}
                         />
                         <div style={{ padding: '3px 5px 5px' }}>
                           <span style={{ fontSize: 10, color: MUTED, fontWeight: 500, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
