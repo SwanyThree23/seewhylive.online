@@ -90,7 +90,7 @@ function IncomingRaidBanner({ raid, onWelcome }) {
 function RaidLauncher({ room, currentUser, onClose }) {
   const [search, setSearch] = useState('');
   const [message, setMessage] = useState('');
-  const [category, setCategory] = useState('All');
+  const [category, setCategory] = useState(() => { try { return localStorage.getItem('raid_category') || 'All'; } catch { return 'All'; } });
   const qc = useQueryClient();
 
   const { data: liveRooms = [] } = useQuery({
@@ -155,7 +155,7 @@ function RaidLauncher({ room, currentUser, onClose }) {
         {CATEGORIES.map(cat => (
           <button
             key={cat}
-            onClick={() => setCategory(cat)}
+            onClick={() => { setCategory(cat); try { localStorage.setItem('raid_category', cat); } catch {} }}
             className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold transition-all"
             style={{
               background: category === cat ? `${GOLD}20` : 'rgba(255,255,255,0.05)',

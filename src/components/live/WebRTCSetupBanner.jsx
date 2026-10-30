@@ -6,7 +6,7 @@ import { AlertCircle, CheckCircle, ChevronDown, ChevronUp, ExternalLink, Mic, Vi
  * Also shows browser-level permission status.
  */
 export default function WebRTCSetupBanner({ error, audioEnabled, videoEnabled, onRetry }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(() => { try { return localStorage.getItem('webrtc_banner_expanded') === 'true'; } catch { return false; } });
 
   if (!error && (audioEnabled || videoEnabled)) return null;
 
@@ -24,7 +24,7 @@ export default function WebRTCSetupBanner({ error, audioEnabled, videoEnabled, o
           <button onClick={onRetry} style={{ height:24, padding:'0 8px', borderRadius:6, border:'none', background:'transparent', color:'#D4AF37', cursor:'pointer', fontSize:10 }}>
             Retry
           </button>
-          <button onClick={() => setExpanded(v => !v)} className="text-[#D4AF37]">
+          <button onClick={() => setExpanded(v => { const n = !v; try { localStorage.setItem('webrtc_banner_expanded', String(n)); } catch {} return n; })} className="text-[#D4AF37]">
             {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
         </div>
