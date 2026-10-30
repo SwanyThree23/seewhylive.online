@@ -108,7 +108,7 @@ function GiftLeaderboard({ roomId }) {
 
 export default function GiftShopTray({ roomId, currentUser }) {
   const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState('All');
+  const [category, setCategory] = useState(() => { try { return localStorage.getItem('gift_shop_tray_cat') || 'All'; } catch { return 'All'; } });
   const [anim, setAnim] = useState(null);
   const qc = useQueryClient();
 
@@ -195,7 +195,7 @@ export default function GiftShopTray({ roomId, currentUser }) {
                 {/* Category filter */}
                 <div className="flex gap-1.5 px-4 py-2 overflow-x-auto scrollbar-hide">
                   {GIFT_CATEGORIES.map(c => (
-                    <button key={c} onClick={() => setCategory(c)}
+                    <button key={c} onClick={() => { setCategory(c); try { localStorage.setItem('gift_shop_tray_cat', c); } catch {}; }}
                       className="px-3 py-1 rounded-full text-[11px] font-black uppercase shrink-0"
                       style={{ background: category === c ? GOLD : 'rgba(255,255,255,0.07)', color: category === c ? '#000' : CREAM + '50', ...T }}>
                       {c}
