@@ -1098,6 +1098,24 @@ export default function LiveRoomPage({
     };
   }, [ccEnabled, role, isLive, socket]);
 
+  // ── RTC reconnect: clear stale screen share state ──────────────────────────
+  // When the transport reconnects, OctCell re-publishes the camera stream.
+  // If screen sharing was active, the screen track is gone but isScreenSharing
+  // is still true. Reset it so the UI and server stay in sync.
+  useEffect(function() {
+    if (!rtcReady) return;
+    var onReady = function() {
+      if (!screenStreamRef.current) return; // nothing to clean up
+      setIsScreenSharing(false);
+      screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
+      screenStreamRef.current = null;
+      if (micTrackRef.current) { micTrackRef.current = null; }
+      if (socket) socket.emit('screen-share-stop', { roomId: roomId });
+    };
+    rtcManager.on('sendTransportReady', onReady);
+    return function() { rtcManager.off('sendTransportReady', onReady); };
+  }, [rtcReady, socket, roomId]);
+
   // ── Local mic level analyzer (for GlobalMicButtonV49) ──
   useEffect(function() {
     if (!rtcReady || isMuted) { setMicLevel(0); return; }
