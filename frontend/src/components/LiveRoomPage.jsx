@@ -1475,6 +1475,7 @@ export default function LiveRoomPage({
           }}
           onToggleChat={function() { setChatOpen(function(o) { return !o; }); }}
           onGoLive={function() { setShowLiveModal(true); }}
+          rtcManager={rtcManager}
         />
       )}
 
