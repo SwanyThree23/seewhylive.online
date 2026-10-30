@@ -36,11 +36,11 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
   });
   const savedPreset = AUDIO_PRESETS.find(p => p.id === preset) || AUDIO_PRESETS[0];
   const [gain, setGain] = useState(() => { try { const v = localStorage.getItem('audiomixer_gain'); return [v ? parseInt(v, 10) : savedPreset.gain]; } catch { return [savedPreset.gain]; } });
-  const [noiseSuppression, setNoiseSuppression] = useState(savedPreset.noise);
-  const [echoCancellation, setEchoCancellation] = useState(savedPreset.echo);
+  const [noiseSuppression, setNoiseSuppression] = useState(() => { try { const v = localStorage.getItem('audiomixer_noise'); return v === null ? savedPreset.noise : v === 'true'; } catch { return savedPreset.noise; } });
+  const [echoCancellation, setEchoCancellation] = useState(() => { try { const v = localStorage.getItem('audiomixer_echo'); return v === null ? savedPreset.echo : v === 'true'; } catch { return savedPreset.echo; } });
   const [speakerMuted, setSpeakerMuted] = useState(false);
-  const [bgMusic, setBgMusic] = useState('none');
-  const [mono, setMono] = useState(false);
+  const [bgMusic, setBgMusic] = useState(() => { try { return localStorage.getItem('audiomixer_bgmusic') || 'none'; } catch { return 'none'; } });
+  const [mono, setMono] = useState(() => { try { return localStorage.getItem('audiomixer_mono') === 'true'; } catch { return false; } });
   const [vuLevels, setVuLevels] = useState(Array(8).fill(0.02));
   const [clipping, setClipping] = useState(false);
   const clipTimer = useRef(null);
@@ -178,15 +178,15 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-white/60">Smart Noise Filter</span>
-              <div onClick={() => setNoiseSuppression(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: noiseSuppression ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: noiseSuppression ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+              <div onClick={() => { setNoiseSuppression(v => { const n = !v; try { localStorage.setItem('audiomixer_noise', String(n)); } catch {} return n; }); }} style={{ width: 40, height: 22, borderRadius: 99, background: noiseSuppression ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: noiseSuppression ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-white/60">Echo Cancellation</span>
-              <div onClick={() => setEchoCancellation(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: echoCancellation ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: echoCancellation ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+              <div onClick={() => { setEchoCancellation(v => { const n = !v; try { localStorage.setItem('audiomixer_echo', String(n)); } catch {} return n; }); }} style={{ width: 40, height: 22, borderRadius: 99, background: echoCancellation ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: echoCancellation ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-white/60">Mono Mode</span>
-              <div onClick={() => setMono(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: mono ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: mono ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+              <div onClick={() => { setMono(v => { const n = !v; try { localStorage.setItem('audiomixer_mono', String(n)); } catch {} return n; }); }} style={{ width: 40, height: 22, borderRadius: 99, background: mono ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: mono ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
             </div>
           </div>
 
@@ -195,7 +195,7 @@ export default function AudioMixer({ micMuted, onMicToggle, stream }) {
             <p className="text-[10px] text-white/40 flex items-center gap-1"><Music className="w-3 h-3" /> Background Music</p>
             <MobileSelect
               value={bgMusic}
-              onChange={(v) => setBgMusic(v)}
+              onChange={(v) => { setBgMusic(v); try { localStorage.setItem('audiomixer_bgmusic', v); } catch {} }}
               options={BG_MUSIC.map(m => ({ value: m.id, label: m.label }))}
               placeholder="Select music"
             />
