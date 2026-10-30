@@ -399,6 +399,11 @@ class SeeWhyRTC {
         // Per-consumer recv stats for remote tile quality indicators (every 4s)
         consumerStatsTick++;
         if (consumerStatsTick % 2 === 0) {
+          // Prune stale consumerPrevBytes entries for closed consumers
+          var allPids = Object.keys(consumerPrevBytes);
+          for (var _pi = 0; _pi < allPids.length; _pi++) {
+            if (!self.consumers[allPids[_pi]]) delete consumerPrevBytes[allPids[_pi]];
+          }
           var pids = Object.keys(self.consumers);
           for (var _i = 0; _i < pids.length; _i++) {
             var _pid = pids[_i];

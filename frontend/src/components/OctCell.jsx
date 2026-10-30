@@ -442,7 +442,8 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
       audioCtxRef.current = audioCtx;
       var source = audioCtx.createMediaStreamSource(stream);
       var analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 32;
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
       source.connect(analyser);
       analyserRef.current = analyser;
       drawEQ();
@@ -453,7 +454,8 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
   var drawEQ = function() {
     if (!analyserRef.current) return;
-    var dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+    var freqData = new Uint8Array(analyserRef.current.frequencyBinCount);
+    var timeData = new Uint8Array(analyserRef.current.fftSize);
     var tick = function() {
       animRef.current = requestAnimationFrame(tick);
       if (isMutedRef.current) {
@@ -461,15 +463,22 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         setSpeaking(false);
         return;
       }
-      analyserRef.current.getByteFrequencyData(dataArray);
+      analyserRef.current.getByteFrequencyData(freqData);
       var bars = [];
-      var step = Math.floor(dataArray.length / 8);
+      var step = Math.floor(freqData.length / 8);
       for (var i = 0; i < 8; i++) {
-        bars.push(Math.round((dataArray[i * step] / 255) * 100));
+        bars.push(Math.round((freqData[i * step] / 255) * 100));
       }
       setEqBars(bars);
-      var avg = bars.reduce(function(a, b) { return a + b; }, 0) / bars.length;
-      setSpeaking(avg > 20);
+      // Use RMS of time-domain signal for voice detection — less sensitive
+      // to steady-state background noise than frequency-domain average.
+      analyserRef.current.getByteTimeDomainData(timeData);
+      var sum = 0;
+      for (var j = 0; j < timeData.length; j++) {
+        var v = (timeData[j] - 128) / 128;
+        sum += v * v;
+      }
+      setSpeaking(Math.sqrt(sum / timeData.length) > 0.01);
     };
     tick();
   };
