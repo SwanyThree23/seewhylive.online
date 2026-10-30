@@ -89,6 +89,10 @@ class SeeWhyRTC {
         callback({ id: data.producerId });
       });
     });
+
+    this.sendTransport.on('connectionstatechange', function(state) {
+      self._emit('transportState', { direction: 'send', state: state });
+    });
   }
 
   async _createRecvTransport() {
@@ -107,6 +111,10 @@ class SeeWhyRTC {
         if (ack && ack.error) return errback(new Error(ack.error));
         callback();
       });
+    });
+
+    this.recvTransport.on('connectionstatechange', function(state) {
+      self._emit('transportState', { direction: 'recv', state: state });
     });
   }
 
@@ -182,44 +190,60 @@ class SeeWhyRTC {
     var prevBytesSent = 0;
     var prevPacketsSent = 0;
     var prevPacketsLost = 0;
+    var prevBytesRecv = 0;
     this.statsInterval = setInterval(async function() {
-      if (!self.sendTransport) return;
       try {
-        var stats = await self.sendTransport.getStats();
         var bytesSent = 0;
         var packetsSent = 0;
         var packetsLost = 0;
         var rttMs = null;
 
-        stats.forEach(function(report) {
-          if (report.type === 'outbound-rtp') {
-            if (report.bytesSent)    bytesSent    += report.bytesSent;
-            if (report.packetsSent)  packetsSent  += report.packetsSent;
-          }
-          if (report.type === 'remote-inbound-rtp') {
-            if (report.roundTripTime != null) rttMs = Math.round(report.roundTripTime * 1000);
-            if (report.packetsLost  != null) packetsLost += report.packetsLost;
-          }
-          if (report.type === 'candidate-pair' && report.state === 'succeeded' && report.currentRoundTripTime != null) {
-            rttMs = Math.round(report.currentRoundTripTime * 1000);
-          }
-        });
+        if (self.sendTransport) {
+          var stats = await self.sendTransport.getStats();
+          stats.forEach(function(report) {
+            if (report.type === 'outbound-rtp') {
+              if (report.bytesSent)    bytesSent    += report.bytesSent;
+              if (report.packetsSent)  packetsSent  += report.packetsSent;
+            }
+            if (report.type === 'remote-inbound-rtp') {
+              if (report.roundTripTime != null) rttMs = Math.round(report.roundTripTime * 1000);
+              if (report.packetsLost  != null) packetsLost += report.packetsLost;
+            }
+            if (report.type === 'candidate-pair' && report.state === 'succeeded' && report.currentRoundTripTime != null) {
+              rttMs = Math.round(report.currentRoundTripTime * 1000);
+            }
+          });
+        }
 
-        // Bitrate = delta bytes * 8 bits / 2s interval (kbps)
-        var bitratekbps = Math.round((bytesSent - prevBytesSent) * 8 / 2 / 1000);
-        var lostDelta   = packetsLost - prevPacketsLost;
-        var sentDelta   = packetsSent - prevPacketsSent;
-        var lossPct     = sentDelta > 0 ? Math.min(100, Math.round((lostDelta / (sentDelta + lostDelta)) * 100)) : 0;
+        var bytesRecv = 0;
+        if (self.recvTransport) {
+          try {
+            var recvStats = await self.recvTransport.getStats();
+            recvStats.forEach(function(report) {
+              if (report.type === 'inbound-rtp' && report.bytesReceived) {
+                bytesRecv += report.bytesReceived;
+              }
+            });
+          } catch (e) {}
+        }
+
+        var bitratekbps    = Math.round((bytesSent - prevBytesSent) * 8 / 2 / 1000);
+        var recvBitratekbps = Math.round((bytesRecv - prevBytesRecv) * 8 / 2 / 1000);
+        var lostDelta      = packetsLost - prevPacketsLost;
+        var sentDelta      = packetsSent - prevPacketsSent;
+        var lossPct        = sentDelta > 0 ? Math.min(100, Math.round((lostDelta / (sentDelta + lostDelta)) * 100)) : 0;
 
         prevBytesSent    = bytesSent;
         prevPacketsSent  = packetsSent;
         prevPacketsLost  = packetsLost;
+        prevBytesRecv    = bytesRecv;
 
         self._emit('stats', {
-          bytesSent:   bytesSent,
-          bitratekbps: Math.max(0, bitratekbps),
-          rttMs:       rttMs,
-          lossPct:     Math.max(0, lossPct),
+          bytesSent:       bytesSent,
+          bitratekbps:     Math.max(0, bitratekbps),
+          recvBitratekbps: Math.max(0, recvBitratekbps),
+          rttMs:           rttMs,
+          lossPct:         Math.max(0, lossPct),
         });
       } catch (e) {
         // stats not critical
@@ -234,6 +258,33 @@ class SeeWhyRTC {
     } catch(e) {
       console.error('[RTC] replaceTrack error:', e);
     }
+  }
+
+  async publishScreenShare() {
+    if (!this.sendTransport) throw new Error('Send transport not initialized');
+    if (this.producers['screen']) return this.producers['screen'].id;
+    var displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    var screenTrack = displayStream.getVideoTracks()[0];
+    var self = this;
+    screenTrack.onended = function() { self.stopScreenShare(); };
+    var screenProducer = await this.sendTransport.produce({
+      track: screenTrack,
+      appData: { source: 'screen' }
+    });
+    this.producers['screen'] = screenProducer;
+    this._emit('screenShareStarted', { producerId: screenProducer.id });
+    return screenProducer.id;
+  }
+
+  stopScreenShare() {
+    if (!this.producers['screen']) return;
+    try {
+      var track = this.producers['screen'].track;
+      if (track) track.stop();
+    } catch(e) {}
+    this.producers['screen'].close();
+    delete this.producers['screen'];
+    this._emit('screenShareStopped');
   }
 
   pauseProducer(kind) {
