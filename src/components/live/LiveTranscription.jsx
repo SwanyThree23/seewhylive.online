@@ -84,7 +84,7 @@ export default function LiveTranscription({
   const [captions, setCaptions] = useState([]);
   const [interimText, setInterimText] = useState('');
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [showCaptions, setShowCaptions] = useState(true);
+  const [showCaptions, setShowCaptions] = useState(() => { try { const v = localStorage.getItem('transcription_captions_on'); return v === null ? true : v === 'true'; } catch { return true; } });
   const [showHistory, setShowHistory] = useState(false);
   const [usingWebSpeech, setUsingWebSpeech] = useState(false);
   const [lang, setLang] = useState(() => { try { return localStorage.getItem('transcription_lang') || 'en-US'; } catch { return 'en-US'; } });
@@ -217,7 +217,7 @@ export default function LiveTranscription({
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setShowCaptions(s => !s)}
+          onClick={() => { const n = !showCaptions; setShowCaptions(n); try { localStorage.setItem('transcription_captions_on', String(n)); } catch {} }}
           className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all"
           style={{
             background: showCaptions ? `${G}18` : 'rgba(255,255,255,0.03)',
