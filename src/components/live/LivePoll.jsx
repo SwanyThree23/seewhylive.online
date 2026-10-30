@@ -65,7 +65,7 @@ export default function LivePoll({ roomId, isHost }) {
   const [options, setOptions] = useState(['', '']);
   const [votes, setVotes] = useState({});
   const [userVotedOption, setUserVotedOption] = useState(null);
-  const [pollDuration, setPollDuration] = useState(0);
+  const [pollDuration, setPollDuration] = useState(() => { try { const s = localStorage.getItem('poll_duration'); return s !== null ? Number(s) : 0; } catch { return 0; } });
   const [pollSecondsLeft, setPollSecondsLeft] = useState(null);
 
   const { data: activePoll } = useQuery({
@@ -289,7 +289,7 @@ export default function LivePoll({ roomId, isHost }) {
             )}
             <div className="flex items-center gap-2">
               <Clock className="w-3 h-3 shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
-              <select value={pollDuration} onChange={e => setPollDuration(Number(e.target.value))}
+              <select value={pollDuration} onChange={e => { const v = Number(e.target.value); setPollDuration(v); try { localStorage.setItem('poll_duration', String(v)); } catch {} }}
                 style={{ flex: 1, padding: '2px 6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'rgba(255,255,255,0.7)', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}>
                 <option value={0}>No timer</option>
                 <option value={30}>30s</option>
