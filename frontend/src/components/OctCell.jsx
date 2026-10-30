@@ -191,19 +191,6 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   // Keep muted ref in sync for use inside rAF loop
   useEffect(function() { isMutedRef.current = isMuted; }, [isMuted]);
 
-  // Real-time connection quality from RTC stats
-  useEffect(function() {
-    if (!isOwnCell || !rtcManager) return;
-    var onStats = function(s) {
-      var quality = (s.lossPct > 10 || s.bitratekbps < 50) ? 'red'
-        : (s.lossPct > 3 || s.bitratekbps < 200) ? 'yellow'
-        : 'green';
-      setConnQuality(quality);
-    };
-    rtcManager.on('stats', onStats);
-    return function() { rtcManager.off('stats', onStats); };
-  }, [isOwnCell, rtcManager]);
-
   // Update connection quality from outbound stats (own cell only)
   useEffect(function() {
     if (!isOwnCell || !rtcManager) return;
@@ -614,6 +601,12 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
               {isCamOff ? '📵' : '📷'}
             </button>
           )}
+          <button
+            onClick={function(e) { e.stopPropagation(); setFacingFront(function(f) { return !f; }); }}
+            style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(255,255,255,.12)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title="Flip camera">
+            🔄
+          </button>
         </div>
       )}
     </div>
