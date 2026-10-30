@@ -775,7 +775,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
               {isMuted ? '🔇' : '🎙'}
             </button>
           )}
-          {onCamToggle && (
+          {onCamToggle && !isScreenSharing && (
             <button
               onClick={function(e) { e.stopPropagation(); onCamToggle(); }}
               style={{ width: 26, height: 26, borderRadius: '50%', background: isCamOff ? 'rgba(255,26,60,.8)' : 'rgba(201,168,76,.5)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}

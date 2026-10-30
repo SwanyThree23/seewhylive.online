@@ -35,6 +35,49 @@ export default function PanelTile({
   var camActiveRef = useRef(false);
   useEffect(function() { camActiveRef.current = camActive; }, [camActive]);
 
+  // Reconnect: re-publish the local panel stream after RTC transport cycling.
+  // PanelJoinModal publishes once at join; after reconnect those producers are gone.
+  // We save track refs just before reconnect (beforeReconnect event fires before producer.close())
+  // and re-publish them once the new send transport is ready.
+  var localTrackRefs = useRef({ video: null, audio: null });
+  var screenSharingRef = useRef(false);
+  useEffect(function() { screenSharingRef.current = screenSharing; }, [screenSharing]);
+
+  useEffect(function() {
+    if (!isLocal || !rtcManager) return;
+    var onBefore = function(tracks) {
+      if (tracks.video) localTrackRefs.current.video = tracks.video;
+      if (tracks.audio) localTrackRefs.current.audio = tracks.audio;
+    };
+    rtcManager.on('beforeReconnect', onBefore);
+    return function() { rtcManager.off('beforeReconnect', onBefore); };
+  }, [isLocal, rtcManager]);
+
+  useEffect(function() {
+    if (!isLocal || !rtcManager) return;
+    var onReady = function() {
+      // If producers already exist this is the initial sendTransportReady (not a reconnect).
+      var hasProducers = !!(rtcManager.producers &&
+        (rtcManager.producers['video'] || rtcManager.producers['audio']));
+      if (hasProducers) return;
+      var video = localTrackRefs.current.video;
+      var audio = localTrackRefs.current.audio;
+      if (!video && !audio) return;
+      var s = new MediaStream();
+      if (video && video.readyState !== 'ended') s.addTrack(video);
+      if (audio && audio.readyState !== 'ended') s.addTrack(audio);
+      if (s.getTracks().length === 0) return;
+      rtcManager.publishStream(s).then(function() {
+        // Restore server-side layer boost if screen share was active when reconnect happened
+        if (screenSharingRef.current && socket && roomId) {
+          socket.emit('screen-share-start', { roomId: roomId });
+        }
+      }).catch(function() {});
+    };
+    rtcManager.on('sendTransportReady', onReady);
+    return function() { rtcManager.off('sendTransportReady', onReady); };
+  }, [isLocal, rtcManager, socket, roomId]);
+
   // Force re-subscription when mediasoup reconnects (consumers cleared by connect())
   useEffect(function() {
     if (isLocal || !rtcManager) return;
@@ -413,7 +456,7 @@ export default function PanelTile({
           pointerEvents: showControls ? 'auto' : 'none',
         }}
       >
-        {!isAudioOnlyRoom && (
+        {!isAudioOnlyRoom && !screenSharing && (
           <button
             onClick={toggleLocalCam}
             style={{

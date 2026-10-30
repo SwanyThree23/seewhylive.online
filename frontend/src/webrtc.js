@@ -60,6 +60,14 @@ class SeeWhyRTC {
     }
     try {
       if (this.statsInterval) { clearInterval(this.statsInterval); this.statsInterval = null; }
+      // Fire beforeReconnect with the current tracks so components can save refs
+      // for re-publish after the new send transport is ready.
+      var _savedTracks = {};
+      var _vp = this.producers['video'];
+      var _ap = this.producers['audio'];
+      if (_vp && _vp.track) _savedTracks.video = _vp.track;
+      if (_ap && _ap.track) _savedTracks.audio = _ap.track;
+      if (_vp || _ap) this._emit('beforeReconnect', _savedTracks);
       Object.values(this.producers).forEach(function(p) { p.close(); });
       Object.values(this.consumers).forEach(function(c) { c.close(); });
       // Tell the server to free the old server-side transports (ports/resources) before
