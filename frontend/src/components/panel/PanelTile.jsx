@@ -271,7 +271,7 @@ export default function PanelTile({
         }).catch(function() {});
       }
     } else {
-      navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false }).then(function(displayStream) {
+      navigator.mediaDevices.getDisplayMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } }, audio: false }).then(function(displayStream) {
         var screenTrack = displayStream.getVideoTracks()[0];
         if (!screenTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
         var vp = rtcManager.producers && rtcManager.producers['video'];

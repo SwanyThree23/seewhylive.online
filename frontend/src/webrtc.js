@@ -119,19 +119,23 @@ class SeeWhyRTC {
     });
   }
 
-  async publishStream(stream) {
+  async publishStream(stream, options) {
     if (!this.sendTransport) throw new Error('Send transport not initialized');
 
     var videoTrack = stream.getVideoTracks()[0];
     var audioTrack = stream.getAudioTracks()[0];
 
     if (videoTrack) {
+      // Scale simulcast layers relative to the top-layer cap from the quality preset
+      var topBitrate = (options && options.maxBitrate) ? Math.min(options.maxBitrate, 5000000) : 900000;
+      var midBitrate  = Math.round(topBitrate * 0.33);
+      var lowBitrate  = Math.round(topBitrate * 0.11);
       var videoProducer = await this.sendTransport.produce({
         track: videoTrack,
         encodings: [
-          { rid: 'r0', maxBitrate: 100000, scaleResolutionDownBy: 4 },
-          { rid: 'r1', maxBitrate: 300000, scaleResolutionDownBy: 2 },
-          { rid: 'r2', maxBitrate: 900000, scaleResolutionDownBy: 1 }
+          { rid: 'r0', maxBitrate: lowBitrate, scaleResolutionDownBy: 4 },
+          { rid: 'r1', maxBitrate: midBitrate, scaleResolutionDownBy: 2 },
+          { rid: 'r2', maxBitrate: topBitrate, scaleResolutionDownBy: 1 }
         ],
         codecOptions: { videoGoogleStartBitrate: 1000 }
       });

@@ -1185,7 +1185,7 @@ export default function LiveRoomPage({
       return;
     }
     try {
-      var displayStream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false });
+      var displayStream = await navigator.mediaDevices.getDisplayMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } }, audio: false });
       var videoTrack = displayStream.getVideoTracks()[0];
       if (!videoTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
       videoTrack.addEventListener('ended', stopScreenShare);
