@@ -32,6 +32,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var [subscribeKey, setSubscribeKey] = useState(0);
   var [facingFront,  setFacingFront]  = useState(true);
   var [reconnecting, setReconnecting] = useState(false);
+  var [sendStats,    setSendStats]    = useState(null); // { bitratekbps, rttMs } for HUD
 
   var size      = fill ? null : (sz || 200);
   var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
@@ -88,7 +89,17 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
         if (onCameraTrack) {
           var vt = stream.getVideoTracks()[0];
-          if (vt) onCameraTrack(vt);
+          if (vt) {
+            onCameraTrack(vt);
+            // Detect unexpected camera loss (e.g. USB disconnect, permission revoke)
+            vt.addEventListener('ended', function() {
+              if (!cancelled) {
+                setCamError('Camera disconnected');
+                setOnline(false);
+                setStreamReady(false);
+              }
+            });
+          }
         }
 
         if (videoRef.current) {
@@ -254,7 +265,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     return function() { clearInterval(timer); };
   }, [isOwnCell]);
 
-  // Update connection quality from outbound stats (own cell only)
+  // Update connection quality and stats HUD from outbound stats (own cell only)
   useEffect(function() {
     if (!isOwnCell || !rtcManager) return;
     var onStats = function(stats) {
@@ -267,6 +278,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         quality = 'green';
       }
       setConnQuality(quality);
+      setSendStats({ bitratekbps: stats.bitratekbps, rttMs: stats.rttMs, lossPct: stats.lossPct });
     };
     rtcManager.on('stats', onStats);
     return function() { rtcManager.off('stats', onStats); };
@@ -463,7 +475,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
           autoPlay
           playsInline
           muted={isOwnCell}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: (online && !isCamOff && !(guest && guest.remoteCamOff)) ? 'block' : 'none' }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: (online && !isCamOff && !(guest && guest.remoteCamOff)) ? 'block' : 'none', transform: (isOwnCell && facingFront) ? 'scaleX(-1)' : 'none' }}
         />
 
         {/* Cam off overlay — own cell */}
@@ -502,6 +514,15 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
             ) : (
               <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: nameFs, color: '#8A7A62', textAlign: 'center', maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName}</span>
             )}
+          </div>
+        )}
+
+        {/* Send stats HUD — own cell, shown when poor quality or bitrate available */}
+        {isOwnCell && sendStats && sendStats.bitratekbps > 0 && (connQuality !== 'green' || fill) && (
+          <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,.72)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 6, color: connQuality === 'red' ? '#FF1A3C' : connQuality === 'yellow' ? '#F0A500' : '#6DBF7E', whiteSpace: 'nowrap', zIndex: 8, display: 'flex', gap: 5 }}>
+            <span>{'↑ ' + sendStats.bitratekbps + ' kbps'}</span>
+            {sendStats.rttMs !== null && <span>{'RTT ' + sendStats.rttMs + 'ms'}</span>}
+            {sendStats.lossPct > 0 && <span>{'loss ' + sendStats.lossPct + '%'}</span>}
           </div>
         )}
 
