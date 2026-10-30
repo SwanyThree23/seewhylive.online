@@ -2626,6 +2626,17 @@ io.on('connection', function(socket) {
       });
   });
 
+  // ── close-transport ────────────────────────────────────────────────────
+  // Client emits this before reconnecting (same socket) to free the old server-side
+  // transport and its UDP port allocation. Only the owning socket may close its transport.
+  socket.on('close-transport', function(data) {
+    if (!data || !data.transportId) return;
+    var tid = data.transportId;
+    if (!socket.data.ownedTransportIds || !socket.data.ownedTransportIds.includes(tid)) return;
+    mediasoup.closeTransport(tid);
+    socket.data.ownedTransportIds = socket.data.ownedTransportIds.filter(function(id) { return id !== tid; });
+  });
+
   // ── produce ────────────────────────────────────────────────────────────
   socket.on('produce', function(data, ack) {
     if (!data) { if (ack) ack({ error: 'data required' }); return; }

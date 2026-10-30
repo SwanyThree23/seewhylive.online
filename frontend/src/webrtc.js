@@ -37,6 +37,11 @@ class SeeWhyRTC {
       if (this.statsInterval) { clearInterval(this.statsInterval); this.statsInterval = null; }
       Object.values(this.producers).forEach(function(p) { p.close(); });
       Object.values(this.consumers).forEach(function(c) { c.close(); });
+      // Tell the server to free the old server-side transports (ports/resources) before
+      // creating new ones — only needed on same-socket reconnect; a full socket disconnect
+      // already triggers server-side transport cleanup via ownedTransportIds.
+      if (socket && this.sendTransport) socket.emit('close-transport', { transportId: this.sendTransport.id });
+      if (socket && this.recvTransport) socket.emit('close-transport', { transportId: this.recvTransport.id });
       if (this.sendTransport) { this.sendTransport.close(); this.sendTransport = null; }
       if (this.recvTransport) { this.recvTransport.close(); this.recvTransport = null; }
       this.producers = {};

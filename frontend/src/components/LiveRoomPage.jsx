@@ -1173,8 +1173,14 @@ export default function LiveRoomPage({
       screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
       screenStreamRef.current = null;
     }
-    if (cameraTrackRef.current) {
-      rtcManager.replaceTrack('video', cameraTrackRef.current);
+    // Restore camera: use the saved track if still live, else re-acquire
+    if (cameraTrackRef.current && cameraTrackRef.current.readyState !== 'ended') {
+      rtcManager.replaceTrack('video', cameraTrackRef.current).catch(function() {});
+    } else {
+      navigator.mediaDevices.getUserMedia({ video: true }).then(function(s) {
+        var t = s.getVideoTracks()[0];
+        if (t) { cameraTrackRef.current = t; rtcManager.replaceTrack('video', t).catch(function() {}); }
+      }).catch(function() {});
     }
     // Restore microphone if screen audio was captured and replaced the mic track
     if (micTrackRef.current && rtcManager) {
