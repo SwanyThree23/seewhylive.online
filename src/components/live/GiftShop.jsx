@@ -172,9 +172,9 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
   const [selected,   setSelected]   = useState(null);
   const [sending,    setSending]    = useState(false);
   const [qty,        setQty]        = useState(1);
-  const [activeTab,  setActiveTab]  = useState('gifts'); // 'gifts' | 'bundles'
+  const [activeTab,  setActiveTab]  = useState(() => { try { return localStorage.getItem('gift_shop_tab') || 'gifts'; } catch { return 'gifts'; } }); // 'gifts' | 'bundles'
   const [recentSent, setRecentSent] = useState([]);
-  const [rarityFilter, setRarityFilter] = useState('all');
+  const [rarityFilter, setRarityFilter] = useState(() => { try { return localStorage.getItem('gift_shop_rarity') || 'all'; } catch { return 'all'; } });
   const [giftMessage, setGiftMessage] = useState('');
 
   const featuredGift = GIFTS.find(g => g.featured);
@@ -309,7 +309,7 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
               {/* Tab bar: Gifts / Bundles */}
               <div style={{ display: 'flex', gap: 4, padding: '10px 16px 0' }}>
                 {[{ id: 'gifts', label: '🎁 Gifts' }, { id: 'bundles', label: '📦 Bundles' }].map(tab => (
-                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  <button key={tab.id} onClick={() => { setActiveTab(tab.id); try { localStorage.setItem('gift_shop_tab', tab.id); } catch {} }}
                     style={{ flex: 1, padding: '7px 0', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif',
                       fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em', border: 'none',
                       cursor: 'pointer', background: activeTab === tab.id ? `${GOLD}22` : 'rgba(255,255,255,0.05)',
@@ -347,7 +347,7 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
                       { id: 'epic',      label: 'Epic',      color: '#D4854A' },
                       { id: 'legendary', label: 'Legendary', color: '#C084FC' },
                     ].map(f => (
-                      <button key={f.id} onClick={() => setRarityFilter(f.id)}
+                      <button key={f.id} onClick={() => { setRarityFilter(f.id); try { localStorage.setItem('gift_shop_rarity', f.id); } catch {} }}
                         style={{ padding: '3px 9px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif',
                           fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em',
                           border: `1px solid ${rarityFilter === f.id ? f.color : 'rgba(255,255,255,0.1)'}`,

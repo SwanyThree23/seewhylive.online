@@ -93,7 +93,7 @@ function InsightCard({ insight, onDismiss, onCopy, onPin, pinned }) {
 }
 
 export default function AICopilotSidebar({ roomId, isHost, viewerCount, onSendToChat }) {
-  const [collapsed, setCollapsed]       = useState(false);
+  const [collapsed, setCollapsed]       = useState(() => { try { return localStorage.getItem('ai_copilot_collapsed') === 'true'; } catch { return false; } });
   const [showResponses, setShowResponses] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
   const [customAnswer, setCustomAnswer] = useState(null);
@@ -104,7 +104,7 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount, onSendTo
   const [lastAnalyzed, setLastAnalyzed] = useState(null);
   const [dismissed, setDismissed]       = useState(new Set());
   const [pinned, setPinned]             = useState(new Set());
-  const [autoAnalyze, setAutoAnalyze]   = useState(true);
+  const [autoAnalyze, setAutoAnalyze]   = useState(() => { try { return localStorage.getItem('ai_copilot_auto_analyze') !== 'false'; } catch { return true; } });
   const analyzeIntervalRef = useRef(null);
 
   const { data: recentMessages = [] } = useQuery({
@@ -211,7 +211,7 @@ Messages:\n${msgLines}`,
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(11,11,24,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}>
       {/* Header */}
-      <button onClick={() => setCollapsed(v => !v)}
+      <button onClick={() => { const n = !collapsed; setCollapsed(n); try { localStorage.setItem('ai_copilot_collapsed', String(n)); } catch {} }}
         className="w-full flex items-center justify-between px-3 py-2.5 transition-all hover:bg-white/5">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg flex items-center justify-center"
@@ -230,7 +230,7 @@ Messages:\n${msgLines}`,
         <div className="flex items-center gap-2">
           {/* Auto-analyze toggle */}
           <button
-            onClick={(e) => { e.stopPropagation(); setAutoAnalyze(v => !v); }}
+            onClick={(e) => { e.stopPropagation(); const n = !autoAnalyze; setAutoAnalyze(n); try { localStorage.setItem('ai_copilot_auto_analyze', String(n)); } catch {}; }}
             className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold transition-all"
             style={{ color: autoAnalyze ? '#6DBF7E' : 'rgba(255,255,255,0.25)' }}
             title={autoAnalyze ? 'Auto-analyze ON' : 'Auto-analyze OFF'}

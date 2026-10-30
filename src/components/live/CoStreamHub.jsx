@@ -587,7 +587,7 @@ function LinksTab({ roomId, isHost, isCoHost }) {
 
 // ── Main CoStreamHub ─────────────────────────────────────────────────────────
 export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, compact, speakingIds }) {
-  var [activeTab, setActiveTab] = useState('stage');
+  var [activeTab, setActiveTab] = useState(function() { try { return localStorage.getItem('co_stream_tab') || 'stage'; } catch { return 'stage'; } });
   var [spotlitId, setSpotlitId] = useState(null);
   var [floaters, setFloaters] = useState([]);
   var [showLaunchSheet, setShowLaunchSheet] = useState(false);
@@ -703,7 +703,7 @@ export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, com
           return (
             <TabBtn key={tab.id} id={tab.id} label={tab.label} active={activeTab === tab.id}
               badge={typeof tab.badge === 'number' ? tab.badge : null}
-              onClick={setActiveTab} />
+              onClick={function(id) { setActiveTab(id); try { localStorage.setItem('co_stream_tab', id); } catch {} }} />
           );
         })}
       </div>
