@@ -102,13 +102,13 @@ export default function BattleArenaManager({ roomId, isHost, participants = [], 
   const [votesB, setVotesB]         = useState(50);
   const [countdown, setCountdown]   = useState(3);
   const [elapsed, setElapsed]       = useState(0);
-  const [DURATION, setDURATION]     = useState(180);
+  const [DURATION, setDURATION]     = useState(() => { try { const s = localStorage.getItem('battle_duration'); return s ? Number(s) : 180; } catch { return 180; } });
   const [round, setRound]           = useState(1);
-  const [maxRounds, setMaxRounds]   = useState(3);
+  const [maxRounds, setMaxRounds]   = useState(() => { try { const s = localStorage.getItem('battle_max_rounds'); return s ? Number(s) : 3; } catch { return 3; } });
   const [roundWinsA, setRoundWinsA] = useState(0);
   const [roundWinsB, setRoundWinsB] = useState(0);
   const [prizePool, setPrizePool]   = useState('');
-  const [votingMode, setVotingMode] = useState('chat'); // chat | poll
+  const [votingMode, setVotingMode] = useState(() => { try { return localStorage.getItem('battle_voting_mode') || 'chat'; } catch { return 'chat'; } }); // chat | poll
   const [history, setHistory]       = useState([]);
   const [openAssignMenu, setOpenAssignMenu] = useState(null); // participant id
 
@@ -441,7 +441,7 @@ export default function BattleArenaManager({ roomId, isHost, participants = [], 
               {DURATION_OPTIONS.map(o => (
                 <button
                   key={o.value}
-                  onClick={() => setDURATION(o.value)}
+                  onClick={() => { setDURATION(o.value); try { localStorage.setItem('battle_duration', String(o.value)); } catch {} }}
                   style={{
                     background: DURATION === o.value ? G : 'rgba(255,255,255,0.06)',
                     border: `1px solid ${DURATION === o.value ? G : C.border}`,
@@ -463,7 +463,7 @@ export default function BattleArenaManager({ roomId, isHost, participants = [], 
               {ROUND_OPTIONS.map(r => (
                 <button
                   key={r}
-                  onClick={() => setMaxRounds(r)}
+                  onClick={() => { setMaxRounds(r); try { localStorage.setItem('battle_max_rounds', String(r)); } catch {} }}
                   style={{
                     background: maxRounds === r ? CRIMSON : 'rgba(255,255,255,0.06)',
                     border: `1px solid ${maxRounds === r ? CRIMSON : C.border}`,
@@ -499,7 +499,7 @@ export default function BattleArenaManager({ roomId, isHost, participants = [], 
               {[{ v: 'chat', label: 'Chat (!A/!B)' }, { v: 'poll', label: 'Poll' }].map(opt => (
                 <button
                   key={opt.v}
-                  onClick={() => setVotingMode(opt.v)}
+                  onClick={() => { setVotingMode(opt.v); try { localStorage.setItem('battle_voting_mode', opt.v); } catch {} }}
                   style={{
                     background: votingMode === opt.v ? PINK : 'rgba(255,255,255,0.06)',
                     border: `1px solid ${votingMode === opt.v ? PINK : C.border}`,

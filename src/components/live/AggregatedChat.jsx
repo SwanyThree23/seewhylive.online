@@ -45,8 +45,8 @@ export default function AggregatedChat({ roomId, currentUser, isHost, onMessages
   const qc = useQueryClient();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [translateEnabled, setTranslateEnabled] = useState(false);
-  const [targetLang, setTargetLang] = useState('en');
+  const [translateEnabled, setTranslateEnabled] = useState(() => { try { return localStorage.getItem('agg_translate_enabled') === 'true'; } catch { return false; } });
+  const [targetLang, setTargetLang] = useState(() => { try { return localStorage.getItem('agg_target_lang') || 'en'; } catch { return 'en'; } });
   const [langSheetOpen, setLangSheetOpen] = useState(false);
   const [modMap, setModMap] = useState({});       // msgId → status string
   const [translationMap, setTranslationMap] = useState({});
@@ -303,7 +303,7 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
             <ChevronDown className="w-2.5 h-2.5 ml-0.5" />
           </button>
           <button
-            onClick={() => { setTranslateEnabled(t => !t); if (!translateEnabled) translateAll(); }}
+            onClick={() => { const n = !translateEnabled; setTranslateEnabled(n); try { localStorage.setItem('agg_translate_enabled', String(n)); } catch {} if (n) translateAll(); }}
             disabled={isTranslating}
             style={{ height: 24, padding: '0 8px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4, background: 'transparent', border: 'none', cursor: 'pointer', color: translateEnabled ? '#4A8A7A' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}
           >
@@ -432,6 +432,7 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
               key={opt.value}
               onClick={() => {
                 setTargetLang(opt.value);
+                try { localStorage.setItem('agg_target_lang', opt.value); } catch {}
                 setLangSheetOpen(false);
                 if (translateEnabled) setTimeout(translateAll, 100);
               }}

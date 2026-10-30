@@ -487,10 +487,10 @@ export default function GuestCoStreamDashboard({
 }) {
   const [locked, setLocked]         = useState(false);
   const [search, setSearch]         = useState('');
-  const [filter, setFilter]         = useState('all');
-  const [sortBy, setSortBy]         = useState('role');
+  const [filter, setFilter]         = useState(() => { try { return localStorage.getItem('gcsd_filter') || 'all'; } catch { return 'all'; } });
+  const [sortBy, setSortBy]         = useState(() => { try { return localStorage.getItem('gcsd_sort_by') || 'role'; } catch { return 'role'; } });
   const [showHealth, setShowHealth] = useState(true);
-  const [dashTab, setDashTab]       = useState('guests');
+  const [dashTab, setDashTab]       = useState(() => { try { return localStorage.getItem('gcsd_dash_tab') || 'guests'; } catch { return 'guests'; } });
   const qc = useQueryClient();
 
   const guests = participants.filter(p => ['host','co-host','speaker','guest'].includes(p.role));
@@ -609,7 +609,7 @@ export default function GuestCoStreamDashboard({
           { id: 'guests', label: 'Guests' },
           { id: 'scenes', label: 'Scenes' },
         ].map(t => (
-          <button key={t.id} onClick={() => setDashTab(t.id)} style={{
+          <button key={t.id} onClick={() => { setDashTab(t.id); try { localStorage.setItem('gcsd_dash_tab', t.id); } catch {}; }} style={{
             ...T, fontSize: 10, padding: '4px 12px', borderRadius: 6,
             background: dashTab === t.id ? `${G}15` : 'transparent',
             color: dashTab === t.id ? G : 'rgba(255,255,255,0.35)',
@@ -628,7 +628,7 @@ export default function GuestCoStreamDashboard({
       ) : (
         <>
           <div style={{ display: 'flex', gap: 6, padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
-            <button onClick={() => setSortBy(s => s === 'role' ? 'name' : 'role')} style={{
+            <button onClick={() => { const n = sortBy === 'role' ? 'name' : 'role'; setSortBy(n); try { localStorage.setItem('gcsd_sort_by', n); } catch {}; }} style={{
               ...T, fontSize: 9, padding: '4px 8px', borderRadius: 5, cursor: 'pointer',
               background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
               color: 'rgba(255,255,255,0.4)', fontWeight: 900, whiteSpace: 'nowrap', flexShrink: 0,
@@ -649,7 +649,7 @@ export default function GuestCoStreamDashboard({
               { id: 'cohost', label: 'Co-hosts' },
               ...(raisedCount > 0 ? [{ id: 'hands', label: `Raised ${raisedCount}` }] : []),
             ].map(f => (
-              <button key={f.id} onClick={() => setFilter(f.id)} style={{
+              <button key={f.id} onClick={() => { setFilter(f.id); try { localStorage.setItem('gcsd_filter', f.id); } catch {}; }} style={{
                 ...T, fontSize: 9, padding: '4px 8px', borderRadius: 5, cursor: 'pointer',
                 background: filter === f.id ? `${G}18` : 'rgba(255,255,255,0.04)',
                 color: filter === f.id ? G : 'rgba(255,255,255,0.35)',
