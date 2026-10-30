@@ -309,9 +309,10 @@ export default function PanelTile({
     if (isLocal || !rtcManager || !producerId) return;
     var onConsumerStats = function(data) {
       if (!data || data.producerId !== producerId) return;
+      if (!data.bitratekbps) return; // producer paused or no data — don't change indicator
       var q;
-      if (data.bitratekbps > 0 && data.bitratekbps < 80) q = 'red';
-      else if (data.bitratekbps > 0 && data.bitratekbps < 250) q = 'yellow';
+      if (data.bitratekbps < 80) q = 'red';
+      else if (data.bitratekbps < 250) q = 'yellow';
       else q = 'green';
       setConnQuality(q);
     };
