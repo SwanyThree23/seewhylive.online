@@ -592,7 +592,8 @@ export default function LiveRoomPage({
         console.log('[LiveRoomPage] calling rtcManager.connect', { roomId: roomId, userId: userId, role: role }); await rtcManager.connect(socket, roomId, userId, role); console.log('[LiveRoomPage] connect() RESOLVED');
         if (!mounted) return;
         setRtcReady(true);
-        // Wire up stream health stats (only meaningful for hosts/cohosts sending media)
+        // Wire up stream health stats; guard against duplicate registration on reconnect
+        rtcManager.off('stats', onStatsUpdate);
         rtcManager.on('stats', onStatsUpdate);
       } catch(e) {
         if (!mounted) return;

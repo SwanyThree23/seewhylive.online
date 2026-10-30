@@ -27,7 +27,8 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var [streamReady,  setStreamReady]  = useState(false);
   var [retryCount,   setRetryCount]   = useState(0);
   var [flyReactions, setFlyReactions] = useState([]);
-  var [sendTransportReady, setSendTransportReady] = useState(!!(rtcManager && rtcManager.sendTransport));
+  var [sendTransportKey, setSendTransportKey] = useState(0);
+  var [subscribeKey, setSubscribeKey] = useState(0);
   var [facingFront,  setFacingFront]  = useState(true);
 
   var size      = fill ? null : (sz || 200);
@@ -129,7 +130,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     }).catch(function(e) {
       console.error('[OctCell] publishStream error:', e);
     });
-  }, [isOwnCell, streamReady, rtcManager, sendTransportReady]);
+  }, [isOwnCell, streamReady, rtcManager, sendTransportKey]);
 
   // Apply mute state to local audio tracks
   useEffect(function() {
@@ -183,9 +184,17 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
   useEffect(function() {
     if (!isOwnCell || !rtcManager) return;
-    var onReady = function() { setSendTransportReady(true); };
+    var onReady = function() { setSendTransportKey(function(k) { return k + 1; }); };
     rtcManager.on('sendTransportReady', onReady);
     return function() { rtcManager.off('sendTransportReady', onReady); };
+  }, [isOwnCell, rtcManager]);
+
+  // Force remote cells to re-subscribe when mediasoup reconnects (consumers cleared by connect())
+  useEffect(function() {
+    if (isOwnCell || !rtcManager) return;
+    var onReset = function() { setSubscribeKey(function(k) { return k + 1; }); };
+    rtcManager.on('rtcReset', onReset);
+    return function() { rtcManager.off('rtcReset', onReset); };
   }, [isOwnCell, rtcManager]);
 
   // Keep muted ref in sync for use inside rAF loop
@@ -289,7 +298,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         localStream = null;
       }
     };
-  }, [isOwnCell, rtcManager, guest && guest.producerId, guest && guest.audioProducerId]);
+  }, [isOwnCell, rtcManager, guest && guest.producerId, guest && guest.audioProducerId, subscribeKey]);
 
   var initAnalyser = function(stream) {
     if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null; }

@@ -54,6 +54,7 @@ class SeeWhyRTC {
 
       await this.device.load({ routerRtpCapabilities: rtpCapabilities });
       await this._createSendTransport();
+      this._emit('rtcReset');
       this._emit('sendTransportReady');
       await this._createRecvTransport();
       this._startStatsMonitor();

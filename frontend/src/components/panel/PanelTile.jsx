@@ -30,6 +30,15 @@ export default function PanelTile({
   var [remoteSpeaking, setRemoteSpeaking] = useState(false);
   var [connQuality, setConnQuality] = useState('green');
   var [screenSharing, setScreenSharing] = useState(false);
+  var [subscribeKey, setSubscribeKey] = useState(0);
+
+  // Force re-subscription when mediasoup reconnects (consumers cleared by connect())
+  useEffect(function() {
+    if (isLocal || !rtcManager) return;
+    var onReset = function() { setSubscribeKey(function(k) { return k + 1; }); };
+    rtcManager.on('rtcReset', onReset);
+    return function() { rtcManager.off('rtcReset', onReset); };
+  }, [isLocal, rtcManager]);
 
   // Subscribe to remote stream or wire up local producer track
   useEffect(function() {
@@ -92,7 +101,7 @@ export default function PanelTile({
       if (videoRef.current) videoRef.current.srcObject = null;
       setCamActive(false);
     };
-  }, [producerId, rtcManager, isAudioOnlyRoom, isLocal]);
+  }, [producerId, rtcManager, isAudioOnlyRoom, isLocal, subscribeKey]);
 
   // Subscribe to remote audio producer for playback and speaking detection
   useEffect(function() {
@@ -162,7 +171,7 @@ export default function PanelTile({
       try { if (ctx) ctx.close(); } catch (e) {}
       if (audioRef.current) audioRef.current.srcObject = null;
     };
-  }, [audioProducerId, rtcManager, isLocal]);
+  }, [audioProducerId, rtcManager, isLocal, subscribeKey]);
 
   // Connection quality from RTC stats (local tile only)
   useEffect(function() {
