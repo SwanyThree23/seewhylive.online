@@ -145,6 +145,11 @@ export default function PanelTile({
           if (audioRef.current) {
             audioRef.current.srcObject = stream;
             audioRef.current.play().catch(function() {});
+            audioRef.current.onpause = function() {
+              if (active && audioRef.current && audioRef.current.srcObject) {
+                audioRef.current.play().catch(function() {});
+              }
+            };
           }
           var tracks = stream.getAudioTracks();
           if (!tracks.length) return;

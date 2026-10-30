@@ -13,6 +13,7 @@ var ANNOUNCED_IP = process.env.MEDIASOUP_ANNOUNCED_IP || '2.24.194.112';
 // ─── Internal state maps ───────────────────────────────────────────────────
 var workers = [];               // mediasoup.Worker[]
 var routers = {};               // roomId → mediasoup.Router
+var routerWorker = {};          // routerId → worker — tracks which worker owns each router
 var transports = {};            // transportId → mediasoup.WebRtcTransport
 var producers = {};             // producerId → { producer, guestId, kind, roomId }
 var consumers = {};             // consumerId → mediasoup.Consumer  (do not change key scheme)
@@ -63,9 +64,45 @@ async function spawnWorker() {
   worker.on('died', function(error) {
     console.error('mediasoup Worker died, restarting in 2s:', error);
     var idx = workers.indexOf(worker);
-    if (idx !== -1) {
-      workers.splice(idx, 1);
-    }
+    if (idx !== -1) workers.splice(idx, 1);
+
+    // Remove all routers that were running on the dead worker so that affected
+    // rooms don't get stuck with unresolvable router references. Clients that
+    // attempt to reconnect will trigger a fresh router creation on the new worker.
+    var deadRouterIds = Object.keys(routerWorker).filter(function(rid) {
+      return routerWorker[rid] === worker;
+    });
+    deadRouterIds.forEach(function(rid) {
+      delete routerWorker[rid];
+      // Find and evict all room entries pointing to this router
+      var roomIds = Object.keys(routers).filter(function(rmId) {
+        return routers[rmId] && routers[rmId].id === rid;
+      });
+      roomIds.forEach(function(rmId) {
+        delete routers[rmId];
+        // Evict transports/producers/consumers belonging to this room so they
+        // are not referenced after the worker is gone.
+        var tids = Object.keys(transports).filter(function(tid) {
+          return transports[tid] && transports[tid].routerId === rid;
+        });
+        tids.forEach(function(tid) { delete transports[tid]; });
+        var pids = Object.keys(producers).filter(function(pid) {
+          return producers[pid] && producers[pid].roomId === rmId;
+        });
+        pids.forEach(function(pid) {
+          var entry = producers[pid];
+          if (entry && entry.guestId && guestVideoConsumers[entry.guestId]) {
+            delete guestVideoConsumers[entry.guestId];
+          }
+          delete producers[pid];
+        });
+        var cids = Object.keys(consumers).filter(function(cid) {
+          return consumers[cid] && consumers[cid].routerId === rid;
+        });
+        cids.forEach(function(cid) { delete consumers[cid]; });
+      });
+    });
+
     setTimeout(function() {
       spawnWorker().then(function(newWorker) {
         workers.push(newWorker);
@@ -108,6 +145,7 @@ async function getOrCreateRouter(roomId) {
   var worker = pickWorker();
   var router = await worker.createRouter({ mediaCodecs: mediaCodecs });
   routers[roomId] = router;
+  routerWorker[router.id] = worker;
   return router;
 }
 
@@ -377,8 +415,10 @@ function cleanupRoom(roomId) {
       }
     }
 
+    var routerId = router.id;
     try { router.close(); } catch (e) { /* ignore */ }
     delete routers[roomId];
+    delete routerWorker[routerId];
   }
 }
 
