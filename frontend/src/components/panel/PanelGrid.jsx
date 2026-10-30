@@ -295,6 +295,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         : null,
       role: guest ? (guest.role || null) : null,
       isScreenSharing: !!(screenSharingIds[slot.user_id]),
+      remoteCamOff: !!(guest && guest.remoteCamOff),
       isSpotlighted: !!(spotlightUserId && slot.user_id === spotlightUserId),
       onSpotlight: function() {
         var next = (spotlightUserId && spotlightUserId === slot.user_id) ? null : slot.user_id;

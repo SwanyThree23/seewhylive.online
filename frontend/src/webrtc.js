@@ -119,19 +119,23 @@ class SeeWhyRTC {
     });
   }
 
-  async publishStream(stream) {
+  async publishStream(stream, options) {
     if (!this.sendTransport) throw new Error('Send transport not initialized');
 
     var videoTrack = stream.getVideoTracks()[0];
     var audioTrack = stream.getAudioTracks()[0];
 
     if (videoTrack) {
+      // Scale simulcast layers relative to the top-layer cap from the quality preset
+      var topBitrate = (options && options.maxBitrate) ? Math.min(options.maxBitrate, 5000000) : 900000;
+      var midBitrate  = Math.round(topBitrate * 0.33);
+      var lowBitrate  = Math.round(topBitrate * 0.11);
       var videoProducer = await this.sendTransport.produce({
         track: videoTrack,
         encodings: [
-          { maxBitrate: 100000, scaleResolutionDownBy: 4 },
-          { maxBitrate: 300000, scaleResolutionDownBy: 2 },
-          { maxBitrate: 900000, scaleResolutionDownBy: 1 }
+          { rid: 'r0', maxBitrate: lowBitrate, scaleResolutionDownBy: 4 },
+          { rid: 'r1', maxBitrate: midBitrate, scaleResolutionDownBy: 2 },
+          { rid: 'r2', maxBitrate: topBitrate, scaleResolutionDownBy: 1 }
         ],
         codecOptions: { videoGoogleStartBitrate: 1000 }
       });
@@ -151,9 +155,15 @@ class SeeWhyRTC {
     if (!this.recvTransport) throw new Error('Recv transport not initialized');
     if (!this.device.loaded) throw new Error('Device not loaded');
 
-    // Return existing consumer's stream if already subscribed
-    if (this.consumers[producerId] && !this.consumers[producerId].closed) {
-      return new MediaStream([this.consumers[producerId].track]);
+    // Return existing consumer's stream if still alive
+    var existing = this.consumers[producerId];
+    if (existing && !existing.closed && existing.track && existing.track.readyState !== 'ended') {
+      return new MediaStream([existing.track]);
+    }
+    // Clean up stale consumer before re-subscribing
+    if (existing) {
+      try { existing.close(); } catch(e) {}
+      delete this.consumers[producerId];
     }
 
     var self = this;
@@ -171,7 +181,10 @@ class SeeWhyRTC {
     var consumer = await this.recvTransport.consume(consumerParams);
     this.consumers[producerId] = consumer;
 
-    consumer.on('producerclose', function() { delete self.consumers[producerId]; });
+    consumer.on('producerclose', function() {
+      delete self.consumers[producerId];
+      self._emit('consumerClosed', { producerId: producerId });
+    });
     consumer.on('transportclose', function() { delete self.consumers[producerId]; });
 
     var stream = new MediaStream([consumer.track]);

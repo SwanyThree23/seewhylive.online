@@ -13,7 +13,7 @@ export default function PanelTile({
   rtcManager, producerId, audioProducerId, isLocal,
   isRaisedHand, onRaiseHand,
   onKick, onMuteToggle,
-  role, isScreenSharing,
+  role, isScreenSharing, remoteCamOff,
   isSpotlighted, onSpotlight,
   onExpand,
   isSwapSource, onSwap,
@@ -40,6 +40,19 @@ export default function PanelTile({
     rtcManager.on('rtcReset', onReset);
     return function() { rtcManager.off('rtcReset', onReset); };
   }, [isLocal, rtcManager]);
+
+  // Re-subscribe when a consumer closes unexpectedly
+  useEffect(function() {
+    if (isLocal || !rtcManager) return;
+    var onClosed = function(data) {
+      if (!data) return;
+      if (data.producerId === producerId || data.producerId === audioProducerId) {
+        setSubscribeKey(function(k) { return k + 1; });
+      }
+    };
+    rtcManager.on('consumerClosed', onClosed);
+    return function() { rtcManager.off('consumerClosed', onClosed); };
+  }, [isLocal, rtcManager, producerId, audioProducerId]);
 
   // Subscribe to remote stream or wire up local producer track
   useEffect(function() {
@@ -214,12 +227,14 @@ export default function PanelTile({
     var next = !localCamOn;
     vp.track.enabled = next;
     setLocalCamOn(next);
-    if (!next && videoRef.current) videoRef.current.srcObject = null;
-    if (next && vp.track.readyState !== 'ended') {
-      if (videoRef.current) videoRef.current.srcObject = new MediaStream([vp.track]);
-      setCamActive(next);
-    } else if (!next) {
+    if (!next) {
+      rtcManager.pauseProducer('video');
+      if (videoRef.current) videoRef.current.srcObject = null;
       setCamActive(false);
+    } else if (vp.track.readyState !== 'ended') {
+      rtcManager.resumeProducer('video');
+      if (videoRef.current) videoRef.current.srcObject = new MediaStream([vp.track]);
+      setCamActive(true);
     }
   }
 
@@ -256,7 +271,7 @@ export default function PanelTile({
         }).catch(function() {});
       }
     } else {
-      navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false }).then(function(displayStream) {
+      navigator.mediaDevices.getDisplayMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } }, audio: false }).then(function(displayStream) {
         var screenTrack = displayStream.getVideoTracks()[0];
         if (!screenTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
         var vp = rtcManager.producers && rtcManager.producers['video'];
@@ -330,7 +345,7 @@ export default function PanelTile({
         >
           ✋
         </button>
-        {!isAudioOnlyRoom && rtcManager && isHost && (
+        {!isAudioOnlyRoom && rtcManager && (isHost || role === 'cohost') && (
           <button
             onClick={toggleScreenShare}
             style={{
@@ -509,6 +524,21 @@ export default function PanelTile({
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: CREAM, fontSize: 22, fontFamily: '"DM Sans", sans-serif',
                 }}>
+                  {(display_name || '?')[0].toUpperCase()}
+                </div>
+              )}
+              <span style={{ color: '#666', fontSize: 10, fontFamily: '"DM Sans", sans-serif' }}>
+                {!isLocal && remoteCamOff ? 'Camera off' : 'Camera off'}
+              </span>
+            </div>
+          )}
+          {/* Remote cam-off overlay: show when producer is paused by the remote panelist */}
+          {!isLocal && remoteCamOff && camActive && (
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,12,9,.85)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, zIndex: 4 }}>
+              {avatar_url ? (
+                <img src={avatar_url} alt={display_name} style={{ width: 48, height: 48, borderRadius: '50%', opacity: 0.6 }} />
+              ) : (
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', color: CREAM, fontSize: 20, fontFamily: '"DM Sans", sans-serif' }}>
                   {(display_name || '?')[0].toUpperCase()}
                 </div>
               )}

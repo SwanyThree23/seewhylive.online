@@ -122,12 +122,11 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
   // Own cell: publish stream once both stream and rtcManager are ready
   useEffect(function() {
-    console.log('[OctCell publish-check]', { isOwnCell: isOwnCell, streamReady: streamReady, hasRtcManager: !!rtcManager, hasSendTransport: !!(rtcManager && rtcManager.sendTransport) });
     if (!isOwnCell || !streamReady || !rtcManager || !rtcManager.sendTransport) return;
-    console.log('[OctCell] calling publishStream now');
-    rtcManager.publishStream(streamRef.current).then(function() {
-      console.log('[OctCell] publishStream SUCCEEDED');
-    }).catch(function(e) {
+    var publishOptions = (mediaConfig && mediaConfig.preset && mediaConfig.preset.bitrate)
+      ? { maxBitrate: mediaConfig.preset.bitrate }
+      : null;
+    rtcManager.publishStream(streamRef.current, publishOptions).catch(function(e) {
       console.error('[OctCell] publishStream error:', e);
     });
   }, [isOwnCell, streamReady, rtcManager, sendTransportKey]);
@@ -196,6 +195,21 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     rtcManager.on('rtcReset', onReset);
     return function() { rtcManager.off('rtcReset', onReset); };
   }, [isOwnCell, rtcManager]);
+
+  // Re-subscribe when a consumer closes unexpectedly (e.g. server-side producer pause/restart)
+  useEffect(function() {
+    if (isOwnCell || !rtcManager || !guest) return;
+    var videoId = guest && guest.producerId;
+    var audioId = guest && guest.audioProducerId;
+    var onClosed = function(data) {
+      if (!data) return;
+      if (data.producerId === videoId || data.producerId === audioId) {
+        setSubscribeKey(function(k) { return k + 1; });
+      }
+    };
+    rtcManager.on('consumerClosed', onClosed);
+    return function() { rtcManager.off('consumerClosed', onClosed); };
+  }, [isOwnCell, rtcManager, guest && guest.producerId, guest && guest.audioProducerId]);
 
   // Keep muted ref in sync for use inside rAF loop
   useEffect(function() { isMutedRef.current = isMuted; }, [isMuted]);
