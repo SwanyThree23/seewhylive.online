@@ -150,9 +150,19 @@ function DesktopStudioTab() {
     navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: true })
       .then(function(stream) {
         localStreamRef.current = stream;
+        var vt = stream.getVideoTracks()[0];
+        if (vt && 'contentHint' in vt) vt.contentHint = 'motion';
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.muted = true;
+        }
+        if (isLiveRef.current && vt) {
+          rtcManager.replaceTrack('video', vt);
+          rtcManager.setVideoEncodings([
+            { rid: 'r0', maxBitrate: 99000,  scaleResolutionDownBy: 4 },
+            { rid: 'r1', maxBitrate: 297000, scaleResolutionDownBy: 2 },
+            { rid: 'r2', maxBitrate: 900000, scaleResolutionDownBy: 1 },
+          ]).catch(function() {});
         }
         setCamOn(true);
         setScreenOn(false);
@@ -180,18 +190,26 @@ function DesktopStudioTab() {
     navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
       .then(function(stream) {
         screenStreamRef.current = stream;
+        var screenVt = stream.getVideoTracks()[0];
+        if (screenVt && 'contentHint' in screenVt) screenVt.contentHint = 'detail';
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.muted = true;
         }
         // If already live, replace the video track in the transport
         if (isLive) {
-          var newTrack = stream.getVideoTracks()[0];
-          if (newTrack) rtcManager.replaceTrack('video', newTrack);
+          if (screenVt) {
+            rtcManager.replaceTrack('video', screenVt);
+            rtcManager.setVideoEncodings([
+              { rid: 'r0', maxBitrate: 300000,  scaleResolutionDownBy: 2 },
+              { rid: 'r1', maxBitrate: 800000,  scaleResolutionDownBy: 1 },
+              { rid: 'r2', maxBitrate: 2000000, scaleResolutionDownBy: 1 },
+            ]).catch(function() {});
+          }
         }
         setScreenOn(true);
         setCamOn(false);
-        stream.getVideoTracks()[0].addEventListener('ended', function() {
+        if (screenVt) screenVt.addEventListener('ended', function() {
           stopScreenShare();
         });
       })
