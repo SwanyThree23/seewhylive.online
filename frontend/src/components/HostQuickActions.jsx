@@ -33,13 +33,16 @@ export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCa
       if (sharingScreen) {
         rtcManager.stopScreenShare();
         setSharingScreen(false);
+        if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
         if (addToast) addToast('Screen share stopped', 'info');
       } else {
         rtcManager.publishScreenShare().then(function() {
           setSharingScreen(true);
+          if (socket && roomId) socket.emit('screen-share-start', { roomId: roomId });
           if (addToast) addToast('Screen share started', 'success');
           rtcManager.on('screenShareStopped', function onSSStop() {
             setSharingScreen(false);
+            if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
             rtcManager.off('screenShareStopped', onSSStop);
           });
         }).catch(function(e) {

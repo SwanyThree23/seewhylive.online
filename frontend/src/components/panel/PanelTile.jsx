@@ -28,6 +28,8 @@ export default function PanelTile({
   var [showControls, setShowControls] = useState(false);
   var touchStartRef = useRef({ x: 0, y: 0 });
   var [remoteSpeaking, setRemoteSpeaking] = useState(false);
+  var [connQuality, setConnQuality] = useState('green');
+  var [screenSharing, setScreenSharing] = useState(false);
 
   // Subscribe to remote stream or wire up local producer track
   useEffect(function() {
@@ -61,18 +63,32 @@ export default function PanelTile({
       return;
     }
 
-    rtcManager.subscribeToProducer(producerId)
-      .then(function(stream) {
-        if (!active) return;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          setCamActive(true);
-        }
-      })
-      .catch(function() { if (active) setCamActive(false); });
+    var retryCount = 0;
+    var retryTimer = null;
+    var doSubscribe = function() {
+      rtcManager.subscribeToProducer(producerId)
+        .then(function(stream) {
+          if (!active) return;
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            setCamActive(true);
+          }
+        })
+        .catch(function() {
+          if (!active) return;
+          retryCount++;
+          if (retryCount <= 3) {
+            retryTimer = setTimeout(doSubscribe, retryCount * 2000);
+          } else {
+            setCamActive(false);
+          }
+        });
+    };
+    doSubscribe();
 
     return function() {
       active = false;
+      clearTimeout(retryTimer);
       if (videoRef.current) videoRef.current.srcObject = null;
       setCamActive(false);
     };
@@ -136,6 +152,31 @@ export default function PanelTile({
     };
   }, [audioProducerId, rtcManager, isLocal]);
 
+  // Connection quality from RTC stats (local tile only)
+  useEffect(function() {
+    if (!isLocal || !rtcManager) return;
+    var onStats = function(stats) {
+      var q;
+      if (stats.lossPct > 15 || (stats.rttMs !== null && stats.rttMs > 300)) q = 'red';
+      else if (stats.lossPct > 5 || (stats.rttMs !== null && stats.rttMs > 150)) q = 'yellow';
+      else q = 'green';
+      setConnQuality(q);
+    };
+    rtcManager.on('stats', onStats);
+    return function() { rtcManager.off('stats', onStats); };
+  }, [isLocal, rtcManager]);
+
+  useEffect(function() {
+    if (!rtcManager) return;
+    var onState = function(info) {
+      if (info.state === 'failed' || info.state === 'closed') setConnQuality('red');
+      else if (info.state === 'disconnected') setConnQuality('yellow');
+      else if (info.state === 'connected') setConnQuality('green');
+    };
+    rtcManager.on('transportState', onState);
+    return function() { rtcManager.off('transportState', onState); };
+  }, [rtcManager]);
+
   var effectiveSpeaking = isLocal ? isSpeaking : remoteSpeaking;
 
   var handleTileClick = function(e) {
@@ -174,6 +215,25 @@ export default function PanelTile({
     var next = !localHandRaised;
     setLocalHandRaised(next);
     if (onRaiseHand) onRaiseHand(next);
+  }
+
+  var toggleScreenShare = function() {
+    if (!rtcManager) return;
+    if (screenSharing) {
+      rtcManager.stopScreenShare();
+      setScreenSharing(false);
+      if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
+    } else {
+      rtcManager.publishScreenShare().then(function() {
+        setScreenSharing(true);
+        if (socket && roomId) socket.emit('screen-share-start', { roomId: roomId });
+        rtcManager.on('screenShareStopped', function onSSStop() {
+          setScreenSharing(false);
+          if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
+          rtcManager.off('screenShareStopped', onSSStop);
+        });
+      }).catch(function() {});
+    }
   }
 
   var renderLocalControls = function() {
@@ -227,6 +287,20 @@ export default function PanelTile({
         >
           ✋
         </button>
+        {!isAudioOnlyRoom && rtcManager && isHost && (
+          <button
+            onClick={toggleScreenShare}
+            style={{
+              background: screenSharing ? GOLD : 'rgba(0,0,0,0.7)',
+              border: 'none', borderRadius: 20, width: 32, height: 32,
+              color: screenSharing ? '#111' : CREAM, fontSize: 14, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+            title={screenSharing ? 'Stop screen share' : 'Share screen'}
+          >
+            🖥
+          </button>
+        )}
       </div>
     );
   }
@@ -426,9 +500,28 @@ export default function PanelTile({
         )}
       </div>
 
-      {/* Speaking indicator */}
-      {effectiveSpeaking && !isAudioOnlyRoom && (
-        <span style={{ position: 'absolute', bottom: 4, right: 4, width: 8, height: 8, borderRadius: '50%', background: GOLD, boxShadow: '0 0 6px ' + GOLD }} />
+      {/* Speaking / connection quality indicator */}
+      {!isAudioOnlyRoom && isLocal && rtcManager ? (
+        <span
+          style={{
+            position: 'absolute', bottom: 4, right: 4,
+            width: 8, height: 8, borderRadius: '50%',
+            background: effectiveSpeaking ? GOLD
+              : connQuality === 'green' ? '#6DBF7E'
+              : connQuality === 'yellow' ? '#F0A500'
+              : LIVE_RED,
+            boxShadow: '0 0 6px ' + (effectiveSpeaking ? GOLD
+              : connQuality === 'green' ? '#6DBF7E'
+              : connQuality === 'yellow' ? '#F0A500'
+              : LIVE_RED),
+            transition: 'background 0.3s',
+          }}
+          title={effectiveSpeaking ? 'Speaking' : connQuality === 'green' ? 'Connection good' : connQuality === 'yellow' ? 'Connection unstable' : 'Connection poor'}
+        />
+      ) : (
+        effectiveSpeaking && !isAudioOnlyRoom && (
+          <span style={{ position: 'absolute', bottom: 4, right: 4, width: 8, height: 8, borderRadius: '50%', background: GOLD, boxShadow: '0 0 6px ' + GOLD }} />
+        )
       )}
 
       {/* Muted badge */}
