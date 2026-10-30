@@ -128,7 +128,7 @@ export default function WatchPartyCoStreamPanel({ roomId, isHost: _isHost, parti
   const [syncOffsets, setSyncOffsets] = useState({});
 
   // ── Co-host control ──────────────────────────────────────────────────────────
-  const [coHostControlEnabled, setCoHostControlEnabled] = useState(false);
+  const [coHostControlEnabled, setCoHostControlEnabled] = useState(() => { try { return localStorage.getItem('watch_party_cohost_ctrl') === 'true'; } catch { return false; } });
   const [coHostControllerId, setCoHostControllerId]     = useState('');
 
   // ── Reactions ────────────────────────────────────────────────────────────────
@@ -542,7 +542,7 @@ export default function WatchPartyCoStreamPanel({ roomId, isHost: _isHost, parti
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <div
-            onClick={() => setCoHostControlEnabled(v => !v)}
+            onClick={() => setCoHostControlEnabled(v => { const n = !v; try { localStorage.setItem('watch_party_cohost_ctrl', String(n)); } catch {} return n; })}
             style={{
               width: 38, height: 20, borderRadius: 10,
               background: coHostControlEnabled ? G : 'rgba(255,255,255,0.15)',
