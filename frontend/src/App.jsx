@@ -845,14 +845,25 @@ export default function App() {
     socket.on('new-producer', function(data) {
       if (!data || !data.guestId || !data.producerId) return;
       setGuests(function(prev) {
-        return prev.map(function(g) {
+        var found = false;
+        var updated = prev.map(function(g) {
           var gid = g.guestId ? g.guestId : g.userId;
           if (gid !== data.guestId) return g;
+          found = true;
           var update = Object.assign({}, g);
           if (data.kind === 'video') update.producerId      = data.producerId;
           if (data.kind === 'audio') update.audioProducerId = data.producerId;
           return update;
         });
+        // Producer arrived before roster-update added this guest — store a placeholder
+        // so roster-update's merge logic picks up the producerId when it arrives.
+        if (!found) {
+          var placeholder = { guestId: data.guestId, userId: data.guestId };
+          if (data.kind === 'video') placeholder.producerId      = data.producerId;
+          if (data.kind === 'audio') placeholder.audioProducerId = data.producerId;
+          return updated.concat([placeholder]);
+        }
+        return updated;
       });
     });
 
@@ -865,7 +876,10 @@ export default function App() {
       }
       if (Array.isArray(ackData.existingProducers)) {
         setGuests(function(prev) {
-          return prev.map(function(g) {
+          var prevMap = {};
+          prev.forEach(function(g) { var gid = g.guestId || g.userId; if (gid) prevMap[gid] = g; });
+          // Apply producers to existing guests
+          var updated = prev.map(function(g) {
             var gid = g.guestId ? g.guestId : g.userId;
             var update = Object.assign({}, g);
             for (var i = 0; i < ackData.existingProducers.length; i++) {
@@ -876,6 +890,19 @@ export default function App() {
             }
             return update;
           });
+          // Also add placeholders for any producers from guests not yet in the list
+          var added = {};
+          for (var i = 0; i < ackData.existingProducers.length; i++) {
+            var p = ackData.existingProducers[i];
+            if (!p.guestId || prevMap[p.guestId]) continue;
+            if (!added[p.guestId]) {
+              added[p.guestId] = { guestId: p.guestId, userId: p.guestId };
+            }
+            if (p.kind === 'video') added[p.guestId].producerId      = p.producerId;
+            if (p.kind === 'audio') added[p.guestId].audioProducerId = p.producerId;
+          }
+          var addedArr = Object.keys(added).map(function(k) { return added[k]; });
+          return addedArr.length ? updated.concat(addedArr) : updated;
         });
       }
       if (ackData.isLive) {
