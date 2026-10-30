@@ -47,6 +47,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   // panelInvite / setPanelInvite are lifted to App.jsx so the invite fires on all tabs
   var [swapSourceId, setSwapSourceId] = useState(null); // userId selected for swap (host only)
   var [pkBattle, setPkBattle] = useState(null);
+  var prevSpotlightRef = useRef(null);
   var exitTimersRef = useRef({});
   var localStreamRef = useRef(null);
   var prevSlotKeysRef = useRef(new Set());
@@ -234,6 +235,18 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       if (pkTimerRef.current) clearTimeout(pkTimerRef.current);
     };
   }, [socket, roomId]);
+
+  // Spotlight → simulcast layer hint: upgrade spotlighted guest to r2, downgrade previous
+  useEffect(function() {
+    if (!socket || !roomId) return;
+    if (prevSpotlightRef.current && prevSpotlightRef.current !== spotlightUserId) {
+      socket.emit('consumer:set-layer', { roomId: roomId, guestId: prevSpotlightRef.current, spatialLayer: 0 });
+    }
+    if (spotlightUserId) {
+      socket.emit('consumer:set-layer', { roomId: roomId, guestId: spotlightUserId, spatialLayer: 2 });
+    }
+    prevSpotlightRef.current = spotlightUserId;
+  }, [spotlightUserId, socket, roomId]);
 
   var hasSlot = slots.some(function(s) { return s.user_id === userId; });
 

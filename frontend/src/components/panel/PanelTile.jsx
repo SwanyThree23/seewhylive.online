@@ -32,6 +32,8 @@ export default function PanelTile({
   var [connQuality, setConnQuality] = useState('green');
   var [screenSharing, setScreenSharing] = useState(false);
   var [subscribeKey, setSubscribeKey] = useState(0);
+  var camActiveRef = useRef(false);
+  useEffect(function() { camActiveRef.current = camActive; }, [camActive]);
 
   // Force re-subscription when mediasoup reconnects (consumers cleared by connect())
   useEffect(function() {
@@ -186,6 +188,36 @@ export default function PanelTile({
       if (audioRef.current) audioRef.current.srcObject = null;
     };
   }, [audioProducerId, rtcManager, isLocal, subscribeKey]);
+
+  // Freeze detection: re-subscribe remote tile if video currentTime stops advancing for ~10s
+  useEffect(function() {
+    if (isLocal || !producerId || !rtcManager) return;
+    var prevTime = -1;
+    var stuckCount = 0;
+    var timer = setInterval(function() {
+      var v = videoRef.current;
+      if (!v || !v.srcObject || !camActiveRef.current) { stuckCount = 0; prevTime = -1; return; }
+      var ct = v.currentTime;
+      if (ct > 0 && ct === prevTime) {
+        stuckCount++;
+        if (stuckCount >= 2) {
+          stuckCount = 0;
+          prevTime = -1;
+          setSubscribeKey(function(k) { return k + 1; });
+        }
+      } else {
+        stuckCount = 0;
+        prevTime = ct;
+      }
+    }, 5000);
+    return function() { clearInterval(timer); };
+  }, [isLocal, producerId, rtcManager]);
+
+  // Emit speaking event for local panelist so server upgrades simulcast layer
+  useEffect(function() {
+    if (!isLocal || !socket || !roomId || !user_id) return;
+    socket.emit('speaking', { roomId: roomId, guestId: user_id, speaking: isSpeaking });
+  }, [isLocal, isSpeaking, socket, roomId, user_id]);
 
   // Connection quality from RTC stats (local tile only)
   useEffect(function() {

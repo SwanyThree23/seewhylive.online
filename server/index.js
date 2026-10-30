@@ -3614,6 +3614,18 @@ io.on('connection', function(socket) {
     mediasoup.setPreferredLayersByGuestId(guestId, _isSpeaking ? 2 : 0).catch(function() {});
   });
 
+  // ── consumer:set-layer ────────────────────────────────────────────────
+  // Allows a viewer to request a specific simulcast layer for a guest's video
+  // (e.g. upgrade when spotlighted, downgrade when un-spotlighted).
+  socket.on('consumer:set-layer', function(data) {
+    if (!data) return;
+    var roomId = socket.data.roomId;
+    var guestId = String(data.guestId || '');
+    if (!roomId || !guestId) return;
+    var layer = Math.min(2, Math.max(0, Number(data.spatialLayer) || 0));
+    mediasoup.setPreferredLayersByGuestId(guestId, layer).catch(function() {});
+  });
+
   // ── hand-raise ─────────────────────────────────────────────────────────
   socket.on('hand-raise', function(data) {
     var userId   = socket.data.userId;

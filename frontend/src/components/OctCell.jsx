@@ -18,6 +18,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var streamRef      = useRef(null);
   var flyTimersRef   = useRef(new Set());
   var isMutedRef     = useRef(isMuted);
+  var onlineRef      = useRef(false);
   var [speaking,     setSpeaking]     = useState(false);
   var [online,       setOnline]       = useState(false);
   var [loading,      setLoading]      = useState(false);
@@ -213,6 +214,31 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
   // Keep muted ref in sync for use inside rAF loop
   useEffect(function() { isMutedRef.current = isMuted; }, [isMuted]);
+  useEffect(function() { onlineRef.current = online; }, [online]);
+
+  // Freeze detection: re-subscribe remote tile if video currentTime stops advancing for ~10s
+  useEffect(function() {
+    if (isOwnCell) return;
+    var prevTime = -1;
+    var stuckCount = 0;
+    var timer = setInterval(function() {
+      var v = videoRef.current;
+      if (!v || !v.srcObject || !onlineRef.current) { stuckCount = 0; prevTime = -1; return; }
+      var ct = v.currentTime;
+      if (ct > 0 && ct === prevTime) {
+        stuckCount++;
+        if (stuckCount >= 2) {
+          stuckCount = 0;
+          prevTime = -1;
+          setSubscribeKey(function(k) { return k + 1; });
+        }
+      } else {
+        stuckCount = 0;
+        prevTime = ct;
+      }
+    }, 5000);
+    return function() { clearInterval(timer); };
+  }, [isOwnCell]);
 
   // Update connection quality from outbound stats (own cell only)
   useEffect(function() {
