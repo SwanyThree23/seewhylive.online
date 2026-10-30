@@ -244,7 +244,7 @@ class SeeWhyRTC {
         track: videoTrack,
         encodings: _encodings,
         codecOptions: { videoGoogleStartBitrate: 1000 },
-        appData: { type: isScreenTrack ? 'screen' : 'camera' }
+        appData: { source: isScreenTrack ? 'screen' : 'camera' }
       });
       this.producers['video'] = videoProducer;
     }

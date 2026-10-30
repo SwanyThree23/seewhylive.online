@@ -494,7 +494,7 @@ export default function PanelTile({
         >
           ✋
         </button>
-        {!isAudioOnlyRoom && rtcManager && (isHost || role === 'cohost') && (
+        {!isAudioOnlyRoom && rtcManager && role !== 'viewer' && (
           <button
             onClick={toggleScreenShare}
             style={{
