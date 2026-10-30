@@ -350,9 +350,10 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     if (!vidId) return;
     var onConsumerStats = function(data) {
       if (!data || data.producerId !== vidId) return;
+      if (!data.bitratekbps) return;
       var q;
-      if (data.bitratekbps > 0 && data.bitratekbps < 80) q = 'red';
-      else if (data.bitratekbps > 0 && data.bitratekbps < 250) q = 'yellow';
+      if (data.bitratekbps < 80) q = 'red';
+      else if (data.bitratekbps < 250) q = 'yellow';
       else q = 'green';
       setConnQuality(q);
     };
