@@ -275,10 +275,13 @@ async function createConsumer(routerId, transportId, producerId, rtpCapabilities
   consumer._producerGuestId = producerGuestId;
 
   if (consumer.kind === 'video') {
-    // Default to the lowest simulcast layer (r0 / 100 kbps) for all grid tiles.
-    // The speaking handler upgrades active speakers to layer 2 (r2 / 900 kbps).
+    // Start at layer 1 (r1, ~300 kbps) — a reasonable default for most viewers.
+    // The adaptive recv system in webrtc.js downgrades to layer 0 within 4s if
+    // bandwidth is insufficient, and upgrades to layer 2 after sustained good bandwidth.
+    // Starting at layer 1 instead of 0 avoids a ~4s window of blurry quality for
+    // viewers on normal connections.
     try {
-      await consumer.setPreferredLayers({ spatialLayer: 0 });
+      await consumer.setPreferredLayers({ spatialLayer: 1 });
     } catch (_) { /* consumer may be audio-only or not yet negotiated */ }
 
     // Add to the secondary guestId → Set<consumerId> index

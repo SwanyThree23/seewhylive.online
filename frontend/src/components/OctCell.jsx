@@ -389,6 +389,12 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         if (videoRef.current) {
           videoRef.current.srcObject = combined;
           videoRef.current.play().catch(function() {});
+          // Re-attempt play if browser pauses the element (e.g. autoplay policy, tab hidden)
+          videoRef.current.onpause = function() {
+            if (!cancelled && videoRef.current && videoRef.current.srcObject) {
+              videoRef.current.play().catch(function() {});
+            }
+          };
         }
         setOnline(true);
         setLoading(false);

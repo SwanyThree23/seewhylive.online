@@ -96,6 +96,13 @@ export default function PanelTile({
           if (!active) return;
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
+            videoRef.current.play().catch(function() {});
+            // Re-attempt play if browser pauses the element
+            videoRef.current.onpause = function() {
+              if (active && videoRef.current && videoRef.current.srcObject) {
+                videoRef.current.play().catch(function() {});
+              }
+            };
             setCamActive(true);
           }
         })
