@@ -129,9 +129,9 @@ class SeeWhyRTC {
       var videoProducer = await this.sendTransport.produce({
         track: videoTrack,
         encodings: [
-          { maxBitrate: 100000, scaleResolutionDownBy: 4 },
-          { maxBitrate: 300000, scaleResolutionDownBy: 2 },
-          { maxBitrate: 900000, scaleResolutionDownBy: 1 }
+          { rid: 'r0', maxBitrate: 100000, scaleResolutionDownBy: 4 },
+          { rid: 'r1', maxBitrate: 300000, scaleResolutionDownBy: 2 },
+          { rid: 'r2', maxBitrate: 900000, scaleResolutionDownBy: 1 }
         ],
         codecOptions: { videoGoogleStartBitrate: 1000 }
       });
