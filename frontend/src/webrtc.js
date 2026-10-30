@@ -139,7 +139,10 @@ class SeeWhyRTC {
     }
 
     if (audioTrack) {
-      var audioProducer = await this.sendTransport.produce({ track: audioTrack });
+      var audioProducer = await this.sendTransport.produce({
+        track: audioTrack,
+        codecOptions: { opusStereo: false, opusDtx: true, opusFec: true, opusMaxPlaybackRate: 48000 }
+      });
       this.producers['audio'] = audioProducer;
     }
   }

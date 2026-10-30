@@ -10,7 +10,7 @@ var _PP_ANIM =
   '@keyframes ppCrown{0%{transform:translateY(-8px) scale(.8);opacity:0}60%{transform:translateY(2px) scale(1.1);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}' +
   '@keyframes ppEject{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-120%) scale(.4);opacity:0}}';
 
-function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay }) {
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay, isScreenSharing }) {
   var videoRef       = useRef(null);
   var analyserRef    = useRef(null);
   var animRef        = useRef(null);
@@ -446,6 +446,13 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
           </div>
         )}
 
+        {/* Screen share indicator (remote viewer sees this on the sharer's tile) */}
+        {isScreenSharing && !isOwnCell && (
+          <div style={{ position: 'absolute', top: 6, right: 6, background: 'rgba(201,168,76,.9)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09', zIndex: 5 }}>
+            🖥 SCREEN
+          </div>
+        )}
+
         {/* Hand raised badge (shown inside video) */}
         {handRaised && (
           <div style={{ position: 'absolute', top: 6, left: 6, background: 'rgba(255,140,0,.9)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', zIndex: 5 }}>
@@ -653,6 +660,7 @@ function areOctCellPropsEqual(prev, next) {
     prev.mediaConfig    === next.mediaConfig   &&
     prev.onCameraTrack  === next.onCameraTrack &&
     prev.activeEffect   === next.activeEffect  &&
+    prev.isScreenSharing === next.isScreenSharing &&
     prev.socket         === next.socket
   );
 }

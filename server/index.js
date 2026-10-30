@@ -2652,7 +2652,7 @@ io.on('connection', function(socket) {
     var rawAppData = data.appData && typeof data.appData === 'object' ? data.appData : {};
     var safeAppData = rawAppData.source === 'screen' ? { source: 'screen' } : {};
 
-    mediasoup.createProducer(transportId, rtpParameters, kind, guestId)
+    mediasoup.createProducer(transportId, rtpParameters, kind, guestId, safeAppData)
       .then(function(result) {
         var producerId = result.producerId;
 

@@ -927,7 +927,7 @@ export default function LiveRoomPage({
 
     socket.on('screen-share-active', function(data) {
       if (!data) return;
-      if (data.userId !== userId) setScreenShareHost({ username: data.username || 'Host' });
+      if (data.userId !== userId) setScreenShareHost({ userId: data.userId, username: data.username || 'Host' });
     });
 
     socket.on('screen-share-ended', function() {
@@ -1818,6 +1818,7 @@ export default function LiveRoomPage({
                             giftTotal={guestGiftTotals[gid] || 0}
                             activeEffect={panelEffects[gid] || null}
                             onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                            isScreenSharing={!!(screenShareHost && screenShareHost.userId === gid)}
                           />
                         )}
                       </div>
@@ -1959,6 +1960,7 @@ export default function LiveRoomPage({
                                 giftTotal={guestGiftTotals[gid] || 0}
                                 activeEffect={panelEffects[gid] || null}
                                 onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                                isScreenSharing={!!(screenShareHost && screenShareHost.userId === gid)}
                               />
                             )}
                           </div>
@@ -2035,6 +2037,7 @@ export default function LiveRoomPage({
                     giftTotal={guestGiftTotals[featuredGuest.guestId || featuredGuest.userId] || 0}
                     handRaised={!!(raisedHands && raisedHands[featuredGuest.guestId || featuredGuest.userId])}
                     activeEffect={panelEffects[featuredGuest.guestId || featuredGuest.userId] || null}
+                    isScreenSharing={!!(screenShareHost && screenShareHost.userId === (featuredGuest.guestId || featuredGuest.userId))}
                   />
                   <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGuest.guestId || featuredGuest.userId} />
                 </div>
