@@ -21,6 +21,7 @@ export default function PanelTile({
   var { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
   var videoRef = useRef(null);
   var audioRef = useRef(null);
+  var prevCamTrackRef = useRef(null);
   var [camActive, setCamActive] = useState(false);
   var [localCamOn, setLocalCamOn] = useState(true);
   var [localMicOn, setLocalMicOn] = useState(true);
@@ -241,17 +242,38 @@ export default function PanelTile({
   var toggleScreenShare = function() {
     if (!rtcManager) return;
     if (screenSharing) {
-      rtcManager.stopScreenShare();
       setScreenSharing(false);
       if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
+      // Restore camera track
+      var vp = rtcManager.producers && rtcManager.producers['video'];
+      if (vp && prevCamTrackRef.current) {
+        rtcManager.replaceTrack('video', prevCamTrackRef.current).catch(function() {});
+        prevCamTrackRef.current = null;
+      } else if (vp) {
+        navigator.mediaDevices.getUserMedia({ video: true }).then(function(s) {
+          var t = s.getVideoTracks()[0];
+          if (t) rtcManager.replaceTrack('video', t).catch(function() {});
+        }).catch(function() {});
+      }
     } else {
-      rtcManager.publishScreenShare().then(function() {
-        setScreenSharing(true);
-        if (socket && roomId) socket.emit('screen-share-start', { roomId: roomId });
-        rtcManager.on('screenShareStopped', function onSSStop() {
+      navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false }).then(function(displayStream) {
+        var screenTrack = displayStream.getVideoTracks()[0];
+        if (!screenTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
+        var vp = rtcManager.producers && rtcManager.producers['video'];
+        if (vp) prevCamTrackRef.current = vp.track;
+        screenTrack.addEventListener('ended', function() {
           setScreenSharing(false);
           if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
-          rtcManager.off('screenShareStopped', onSSStop);
+          if (vp && prevCamTrackRef.current) {
+            rtcManager.replaceTrack('video', prevCamTrackRef.current).catch(function() {});
+            prevCamTrackRef.current = null;
+          }
+        });
+        rtcManager.replaceTrack('video', screenTrack).then(function() {
+          setScreenSharing(true);
+          if (socket && roomId) socket.emit('screen-share-start', { roomId: roomId });
+        }).catch(function() {
+          displayStream.getTracks().forEach(function(t) { t.stop(); });
         });
       }).catch(function() {});
     }
@@ -560,7 +582,7 @@ export default function PanelTile({
       )}
 
       {/* Hidden audio element for remote panelist audio playback */}
-      <audio ref={audioRef} autoPlay style={{ display: 'none' }} />
+      <audio ref={audioRef} autoPlay playsInline style={{ display: 'none' }} />
 
       {/* Local cam/mic controls (shown on hover) */}
       {renderLocalControls()}

@@ -292,6 +292,9 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     return function() {
       cancelled = true;
       clearTimeout(retryTimer);
+      if (videoRef.current) videoRef.current.srcObject = null;
+      setOnline(false);
+      setLoading(false);
       if (localStream) {
         localStream.getTracks().forEach(function(t) { t.stop(); });
         if (streamRef.current === localStream) streamRef.current = null;

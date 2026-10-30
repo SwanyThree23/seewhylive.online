@@ -1476,7 +1476,9 @@ export default function LiveRoomPage({
           }}
           onToggleChat={function() { setChatOpen(function(o) { return !o; }); }}
           onGoLive={function() { setShowLiveModal(true); }}
-          rtcManager={rtcManager}
+          isScreenSharing={isScreenSharing}
+          onStartScreenShare={startScreenShare}
+          onStopScreenShare={stopScreenShare}
         />
       )}
 

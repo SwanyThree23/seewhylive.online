@@ -54,9 +54,9 @@ class SeeWhyRTC {
 
       await this.device.load({ routerRtpCapabilities: rtpCapabilities });
       await this._createSendTransport();
-      this._emit('rtcReset');
       this._emit('sendTransportReady');
       await this._createRecvTransport();
+      this._emit('rtcReset');
       this._startStatsMonitor();
     } finally {
       this._connecting = false;
@@ -84,8 +84,8 @@ class SeeWhyRTC {
       });
     });
 
-    this.sendTransport.on('produce', function({ kind, rtpParameters }, callback, errback) {
-      self.socket.emit('produce', { transportId: self.sendTransport.id, kind: kind, rtpParameters: rtpParameters }, function(data) {
+    this.sendTransport.on('produce', function({ kind, rtpParameters, appData }, callback, errback) {
+      self.socket.emit('produce', { transportId: self.sendTransport.id, kind: kind, rtpParameters: rtpParameters, appData: appData || {} }, function(data) {
         if (data && data.error) return errback(new Error(data.error));
         callback({ id: data.producerId });
       });
@@ -265,41 +265,6 @@ class SeeWhyRTC {
     }
   }
 
-  async publishScreenShare() {
-    if (!this.sendTransport) throw new Error('Send transport not initialized');
-    if (this.producers['screen']) return this.producers['screen'].id;
-    var displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-    var screenTrack = displayStream.getVideoTracks()[0];
-    var self = this;
-    screenTrack.onended = function() { self.stopScreenShare(); };
-    var screenProducer = await this.sendTransport.produce({
-      track: screenTrack,
-      appData: { source: 'screen' }
-    });
-    this.producers['screen'] = screenProducer;
-    this._emit('screenShareStarted', { producerId: screenProducer.id });
-    return screenProducer.id;
-  }
-
-  stopScreenShare() {
-    if (!this.producers['screen']) return;
-    try {
-      var track = this.producers['screen'].track;
-      if (track) track.stop();
-    } catch(e) {}
-    this.producers['screen'].close();
-    delete this.producers['screen'];
-    this._emit('screenShareStopped');
-    // Restore camera into video producer so host's tile doesn't go black
-    var self = this;
-    if (this.producers['video']) {
-      navigator.mediaDevices.getUserMedia({ video: true }).then(function(s) {
-        var t = s.getVideoTracks()[0];
-        if (t) self.producers['video'].replaceTrack({ track: t }).catch(function() {});
-      }).catch(function() {});
-    }
-  }
-
   pauseProducer(kind) {
     if (this.producers[kind]) {
       this.producers[kind].pause();
@@ -315,9 +280,12 @@ class SeeWhyRTC {
   }
 
   closeProducer(kind) {
-    if (this.producers[kind]) {
-      this.producers[kind].close();
-      delete this.producers[kind];
+    if (!this.producers[kind]) return;
+    var producerId = this.producers[kind].id;
+    this.producers[kind].close();
+    delete this.producers[kind];
+    if (this.socket && producerId) {
+      this.socket.emit('producer-closed', { producerId: producerId });
     }
   }
 

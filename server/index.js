@@ -2648,6 +2648,10 @@ io.on('connection', function(socket) {
       return;
     }
 
+    // Sanitize appData — only allow known safe fields
+    var rawAppData = data.appData && typeof data.appData === 'object' ? data.appData : {};
+    var safeAppData = rawAppData.source === 'screen' ? { source: 'screen' } : {};
+
     mediasoup.createProducer(transportId, rtpParameters, kind, guestId)
       .then(function(result) {
         var producerId = result.producerId;
@@ -2662,7 +2666,8 @@ io.on('connection', function(socket) {
           io.to(roomId).emit('new-producer', {
             producerId: producerId,
             guestId:    guestId,
-            kind:       kind
+            kind:       kind,
+            appData:    safeAppData
           });
         }
 
