@@ -3639,9 +3639,13 @@ io.on('connection', function(socket) {
     speakingThrottle.set(socket.data.userId, _spNow);
     var _isSpeaking = data && !!data.speaking;
     io.volatile.to(roomId).emit('speaking', { guestId: guestId, speaking: _isSpeaking });
-    // Upgrade active-speaker video to r2 (900 kbps) while speaking;
-    // drop back to r1 (300 kbps default) when silent — O(subscribers) but fine for ≤20 seats.
-    mediasoup.setPreferredLayersByGuestId(guestId, _isSpeaking ? 2 : 1).catch(function() {});
+    // Upgrade active-speaker video to r2 (900 kbps) while speaking; drop back to r1
+    // (300 kbps default) when silent — O(subscribers) but fine for ≤20 seats.
+    // While screen sharing keep layer 2 regardless of voice activity: dropping the
+    // sharer's video quality mid-presentation because they paused speaking is distracting.
+    var _ssNow = screenShareState.get(roomId);
+    var _targetLayer = (_isSpeaking || (_ssNow && _ssNow.userId === guestId)) ? 2 : 1;
+    mediasoup.setPreferredLayersByGuestId(guestId, _targetLayer).catch(function() {});
   });
 
   // ── consumer:adapt-layer ──────────────────────────────────────────────
@@ -5169,6 +5173,11 @@ io.on('connection', function(socket) {
     var _ssState = { roomId: sRoomId, userId: socket.data.userId, username: socket.data.username || 'Host' };
     screenShareState.set(sRoomId, _ssState);
     io.to(sRoomId).emit('screen-share-active', _ssState);
+    // Boost all subscribers to the sharer's video stream to layer 2.
+    // Screen content (especially text/slides) is sharper at 2M bps than the
+    // 800k default layer 1; the layer persists until screen-share-stop or
+    // a new consumer:adapt-layer from each viewer.
+    mediasoup.setPreferredLayersByGuestId(socket.data.userId, 2).catch(function() {});
   });
 
   socket.on('screen-share-stop', function(data) {
@@ -5177,6 +5186,8 @@ io.on('connection', function(socket) {
     if (!sRoomId) return;
     screenShareState.delete(sRoomId);
     io.to(sRoomId).emit('screen-share-ended', {});
+    // Restore subscribers to the camera-default layer (1).
+    mediasoup.setPreferredLayersByGuestId(socket.data.userId, 1).catch(function() {});
   });
 
   // ── Watch sync handler ─────────────────────────────────────────────────

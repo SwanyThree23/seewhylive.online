@@ -213,18 +213,30 @@ class SeeWhyRTC {
         delete this.producers['video'];
         if (this.socket && oldVideoId) this.socket.emit('producer-closed', { producerId: oldVideoId });
       }
-      // Scale simulcast layers relative to the top-layer cap from the quality preset
-      var topBitrate = (options && options.maxBitrate) ? Math.min(options.maxBitrate, 5000000) : 900000;
-      var midBitrate  = Math.round(topBitrate * 0.33);
-      var lowBitrate  = Math.round(topBitrate * 0.11);
+      // Choose simulcast profile based on track type.
+      // Screen capture (contentHint='detail') needs minimal downscaling so text stays crisp;
+      // camera uses resolution-scaled tiers relative to the quality preset's bitrate cap.
+      var isScreenTrack = videoTrack.contentHint === 'detail';
+      var _encodings;
+      if (isScreenTrack) {
+        _encodings = [
+          { rid: 'r0', maxBitrate: 300000,  scaleResolutionDownBy: 2 },
+          { rid: 'r1', maxBitrate: 800000,  scaleResolutionDownBy: 1 },
+          { rid: 'r2', maxBitrate: 2000000, scaleResolutionDownBy: 1 },
+        ];
+      } else {
+        var topBitrate = (options && options.maxBitrate) ? Math.min(options.maxBitrate, 5000000) : 900000;
+        _encodings = [
+          { rid: 'r0', maxBitrate: Math.round(topBitrate * 0.11), scaleResolutionDownBy: 4 },
+          { rid: 'r1', maxBitrate: Math.round(topBitrate * 0.33), scaleResolutionDownBy: 2 },
+          { rid: 'r2', maxBitrate: topBitrate,                    scaleResolutionDownBy: 1 },
+        ];
+      }
       var videoProducer = await this.sendTransport.produce({
         track: videoTrack,
-        encodings: [
-          { rid: 'r0', maxBitrate: lowBitrate, scaleResolutionDownBy: 4 },
-          { rid: 'r1', maxBitrate: midBitrate, scaleResolutionDownBy: 2 },
-          { rid: 'r2', maxBitrate: topBitrate, scaleResolutionDownBy: 1 }
-        ],
-        codecOptions: { videoGoogleStartBitrate: 1000 }
+        encodings: _encodings,
+        codecOptions: { videoGoogleStartBitrate: 1000 },
+        appData: { type: isScreenTrack ? 'screen' : 'camera' }
       });
       this.producers['video'] = videoProducer;
     }
@@ -239,7 +251,8 @@ class SeeWhyRTC {
       }
       var audioProducer = await this.sendTransport.produce({
         track: audioTrack,
-        codecOptions: { opusStereo: false, opusDtx: true, opusFec: true, opusMaxPlaybackRate: 48000, opusMaxAverageBitrate: 48000 }
+        codecOptions: { opusStereo: false, opusDtx: true, opusFec: true, opusMaxPlaybackRate: 48000, opusMaxAverageBitrate: 48000 },
+        appData: { type: 'microphone' }
       });
       this.producers['audio'] = audioProducer;
     }
