@@ -84,7 +84,7 @@ var DMTab              = React.lazy(function() { return import('./components/DMT
 var ScheduledRoomsTab  = React.lazy(function() { return import('./components/ScheduledRoomsTab.jsx'); });
 var AccessibilityTab   = React.lazy(function() { return import('./components/AccessibilityTab.jsx'); });
 
-var APP_ID = '6990f5f24823b53e21fcdc9d';
+var APP_ID = '6990f5f2-4823-453e-a1fc-dc9d00000000';
 var TABS = [
   { id: 'room',      label: '🎙 ROOM' },
   { id: 'fades',     label: '⚡ FADES' },
@@ -389,7 +389,9 @@ export default function App() {
     setRole(newRole);
     var token = localStorage.getItem('sw_token') || '';
     var hostPayload = { roomId: APP_ID, userId: userId, username: username, role: newRole, token: token };
-    if (socketRef.current) socketRef.current.emit('join-room', hostPayload);
+    if (socketRef.current) socketRef.current.emit('join-room', hostPayload, function(ack) {
+      if (ack && ack.error) addToast('Room join failed: ' + ack.error, 'error');
+    });
     setActiveTab('room');
   }
   var [showAgeGate, setShowAgeGate] = useState(function() {
@@ -613,7 +615,9 @@ export default function App() {
       // rtcManager.connect() which rebuilds fresh transports against the new
       // server-side socket session.
       rtcManager.destroy();
-      socket.emit('join-room', joinPayload);
+      socket.emit('join-room', joinPayload, function(ack) {
+        if (ack && ack.error) addToast('Room join failed: ' + ack.error, 'error');
+      });
       // Ask other devices of this user to share their current state
       socket.emit('user:request-state');
     };

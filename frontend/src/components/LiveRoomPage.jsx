@@ -1251,7 +1251,7 @@ export default function LiveRoomPage({
   }
 
   var shareRoom = function() {
-    var url = window.location.origin + (roomId !== '6990f5f24823b53e21fcdc9d' ? ('?room=' + roomId) : '');
+    var url = window.location.origin + (roomId !== '6990f5f2-4823-453e-a1fc-dc9d00000000' ? ('?room=' + roomId) : '');
     if (navigator.share) {
       navigator.share({ title: 'SeeWhy LIVE', text: 'Watch live domino action on SeeWhy LIVE!', url: url });
     } else {
@@ -3459,7 +3459,7 @@ export default function LiveRoomPage({
 
       {/* ════════════════ SOCIAL SHARE SHEET ════════════════ */}
       {showShareSheet && (function() {
-        var roomUrl = window.location.origin + (roomId !== '6990f5f24823b53e21fcdc9d' ? ('?room=' + roomId) : '');
+        var roomUrl = window.location.origin + (roomId !== '6990f5f2-4823-453e-a1fc-dc9d00000000' ? ('?room=' + roomId) : '');
         var shareMsg = 'Watch live on SeeWhy LIVE! ' + (streamInfo && streamInfo.title ? streamInfo.title + ' — ' : '') + 'No app needed 🔴';
         return (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 72, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowShareSheet(false); }}>
