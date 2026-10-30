@@ -104,47 +104,59 @@ export default function PanelTile({
     var holdTimer = null;
     var speaking = false;
 
-    rtcManager.subscribeToProducer(audioProducerId)
-      .then(function(stream) {
-        if (!active) return;
-        if (audioRef.current) {
-          audioRef.current.srcObject = stream;
-          audioRef.current.play().catch(function() {});
-        }
-        var tracks = stream.getAudioTracks();
-        if (!tracks.length) return;
-        try {
-          ctx = new (window.AudioContext || window.webkitAudioContext)();
-          var analyser = ctx.createAnalyser();
-          analyser.fftSize = 256;
-          ctx.createMediaStreamSource(stream).connect(analyser);
-          var data = new Uint8Array(analyser.frequencyBinCount);
-          var loop = function() {
-            analyser.getByteTimeDomainData(data);
-            var sum = 0;
-            for (var i = 0; i < data.length; i++) {
-              var v = (data[i] - 128) / 128;
-              sum += v * v;
-            }
-            var rms = Math.sqrt(sum / data.length);
-            if (rms > 0.01) {
-              clearTimeout(holdTimer);
-              if (!speaking) { speaking = true; if (active) setRemoteSpeaking(true); }
-            } else if (speaking) {
-              holdTimer = setTimeout(function() {
-                speaking = false;
-                if (active) setRemoteSpeaking(false);
-              }, 400);
+    var audioRetryCount = 0;
+    var audioRetryTimer = null;
+    var doAudioSubscribe = function() {
+      rtcManager.subscribeToProducer(audioProducerId)
+        .then(function(stream) {
+          if (!active) return;
+          if (audioRef.current) {
+            audioRef.current.srcObject = stream;
+            audioRef.current.play().catch(function() {});
+          }
+          var tracks = stream.getAudioTracks();
+          if (!tracks.length) return;
+          try {
+            ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var analyser = ctx.createAnalyser();
+            analyser.fftSize = 256;
+            ctx.createMediaStreamSource(stream).connect(analyser);
+            var data = new Uint8Array(analyser.frequencyBinCount);
+            var loop = function() {
+              analyser.getByteTimeDomainData(data);
+              var sum = 0;
+              for (var i = 0; i < data.length; i++) {
+                var v = (data[i] - 128) / 128;
+                sum += v * v;
+              }
+              var rms = Math.sqrt(sum / data.length);
+              if (rms > 0.01) {
+                clearTimeout(holdTimer);
+                if (!speaking) { speaking = true; if (active) setRemoteSpeaking(true); }
+              } else if (speaking) {
+                holdTimer = setTimeout(function() {
+                  speaking = false;
+                  if (active) setRemoteSpeaking(false);
+                }, 400);
+              }
+              raf = requestAnimationFrame(loop);
             }
             raf = requestAnimationFrame(loop);
+          } catch (e) {}
+        })
+        .catch(function() {
+          if (!active) return;
+          audioRetryCount++;
+          if (audioRetryCount <= 3) {
+            audioRetryTimer = setTimeout(doAudioSubscribe, audioRetryCount * 2000);
           }
-          raf = requestAnimationFrame(loop);
-        } catch (e) {}
-      })
-      .catch(function() {});
+        });
+    };
+    doAudioSubscribe();
 
     return function() {
       active = false;
+      clearTimeout(audioRetryTimer);
       if (raf) cancelAnimationFrame(raf);
       clearTimeout(holdTimer);
       try { if (ctx) ctx.close(); } catch (e) {}

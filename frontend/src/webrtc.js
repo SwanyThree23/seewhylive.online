@@ -147,6 +147,11 @@ class SeeWhyRTC {
     if (!this.recvTransport) throw new Error('Recv transport not initialized');
     if (!this.device.loaded) throw new Error('Device not loaded');
 
+    // Return existing consumer's stream if already subscribed
+    if (this.consumers[producerId] && !this.consumers[producerId].closed) {
+      return new MediaStream([this.consumers[producerId].track]);
+    }
+
     var self = this;
     var consumerParams = await new Promise(function(resolve, reject) {
       self.socket.emit('consume', {
@@ -162,7 +167,6 @@ class SeeWhyRTC {
     var consumer = await this.recvTransport.consume(consumerParams);
     this.consumers[producerId] = consumer;
 
-    var self = this;
     consumer.on('producerclose', function() { delete self.consumers[producerId]; });
     consumer.on('transportclose', function() { delete self.consumers[producerId]; });
 
