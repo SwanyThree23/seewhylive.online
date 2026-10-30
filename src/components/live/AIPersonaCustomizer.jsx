@@ -12,7 +12,7 @@ export default function AIPersonaCustomizer({ roomId, sessionId, onCustomized })
   const [personaStyle, setPersonaStyle] = useState(() => { try { return localStorage.getItem('persona_style') || 'hype'; } catch { return 'hype'; } });
   const [savedPersona, setSavedPersona] = useState(null);
   const [customInstructions, setCustomInstructions] = useState('');
-  const [avatarPreset, setAvatarPreset] = useState('default');
+  const [avatarPreset, setAvatarPreset] = useState(() => { try { return localStorage.getItem('persona_avatar') || 'default'; } catch { return 'default'; } });
   const [saving, setSaving] = useState(false);
 
   const styles = ['hype', 'professional', 'comedian', 'storyteller', 'analyst'];
@@ -86,7 +86,7 @@ Return JSON: { "persona_name": string, "style": string, "tone": string, "greetin
             <input
               type="text"
               value={personaName}
-              onChange={(e) => setPersonaName(e.target.value)}
+              onChange={(e) => { setPersonaName(e.target.value); try { localStorage.setItem('persona_name', e.target.value); } catch {} }}
               className="w-full px-2 py-1.5 rounded text-xs bg-white/5 border border-white/10 text-white"
               placeholder="e.g., Aura, Nova, Echo"
             />
@@ -98,7 +98,7 @@ Return JSON: { "persona_name": string, "style": string, "tone": string, "greetin
               {styles.map(style => (
                 <button
                   key={style}
-                  onClick={() => setPersonaStyle(style)}
+                  onClick={() => { setPersonaStyle(style); try { localStorage.setItem('persona_style', style); } catch {} }}
                   className="px-2 py-1.5 rounded text-[11px] font-bold transition-all capitalize"
                   style={{
                     background: personaStyle === style ? G : 'rgba(255,255,255,0.05)',
@@ -117,7 +117,7 @@ Return JSON: { "persona_name": string, "style": string, "tone": string, "greetin
               {avatars.map(avatar => (
                 <button
                   key={avatar}
-                  onClick={() => setAvatarPreset(avatar)}
+                  onClick={() => { setAvatarPreset(avatar); try { localStorage.setItem('persona_avatar', avatar); } catch {} }}
                   className="px-2 py-1.5 rounded text-[11px] font-bold transition-all capitalize"
                   style={{
                     background: avatarPreset === avatar ? G : 'rgba(255,255,255,0.05)',

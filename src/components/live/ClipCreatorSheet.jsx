@@ -43,7 +43,7 @@ export default function ClipCreatorSheet({
   roomId, sessionId, creatorId, elapsedSeconds, roomTitle, onClose,
 }) {
   const [title, setTitle]         = useState(autoTitle(roomTitle));
-  const [duration, setDuration]   = useState(30);
+  const [duration, setDuration]   = useState(() => { try { const s = localStorage.getItem('clip_duration'); return s ? Number(s) : 30; } catch { return 30; } });
   const [savedClip, setSavedClip] = useState(null);
   const [tags, setTags]           = useState([]);
   const [aiGenerating, setAiGenerating] = useState(false);
@@ -189,7 +189,7 @@ export default function ClipCreatorSheet({
                 <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">Clip last</p>
                 <div className="flex gap-2">
                   {[15, 30, 60, 90, 120].map(s => (
-                    <button key={s} onClick={() => setDuration(s)}
+                    <button key={s} onClick={() => { setDuration(s); try { localStorage.setItem('clip_duration', String(s)); } catch {}; }}
                       className="flex-1 py-2.5 rounded-xl text-sm font-black transition-all"
                       style={{
                         fontFamily: 'Barlow Condensed, sans-serif',
