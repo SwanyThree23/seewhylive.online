@@ -16,10 +16,10 @@ const EVENTS = [
 ];
 
 export default function WebhookHooks({ roomId, isHost }) {
-  const [expanded, setExpanded] = useState(false);
-  const [hooks, setHooks] = useState([]);
+  const [expanded, setExpanded] = useState(() => { try { return localStorage.getItem('webhook_expanded') === 'true'; } catch { return false; } });
+  const [hooks, setHooks] = useState(() => { try { const s = localStorage.getItem('webhook_hooks'); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [newUrl, setNewUrl] = useState('');
-  const [selectedEvents, setSelectedEvents] = useState(['stream.start', 'stream.end', 'tip.received']);
+  const [selectedEvents, setSelectedEvents] = useState(() => { try { const s = localStorage.getItem('webhook_selected_events'); return s ? JSON.parse(s) : ['stream.start', 'stream.end', 'tip.received']; } catch { return ['stream.start', 'stream.end', 'tip.received']; } });
   const [testing, setTesting] = useState(null);
 
   if (!isHost) return null;
@@ -29,13 +29,17 @@ export default function WebhookHooks({ roomId, isHost }) {
       toast.error('Enter a valid webhook URL');
       return;
     }
-    setHooks(p => [...p, { id: Date.now(), url: newUrl, events: [...selectedEvents], active: true }]);
+    setHooks(p => {
+      const next = [...p, { id: Date.now(), url: newUrl, events: [...selectedEvents], active: true }];
+      try { localStorage.setItem('webhook_hooks', JSON.stringify(next)); } catch {}
+      return next;
+    });
     setNewUrl('');
     toast.success('Webhook added');
   };
 
-  const removeHook = (id) => setHooks(p => p.filter(h => h.id !== id));
-  const toggleHook = (id) => setHooks(p => p.map(h => h.id === id ? { ...h, active: !h.active } : h));
+  const removeHook = (id) => setHooks(p => { const next = p.filter(h => h.id !== id); try { localStorage.setItem('webhook_hooks', JSON.stringify(next)); } catch {} return next; });
+  const toggleHook = (id) => setHooks(p => { const next = p.map(h => h.id === id ? { ...h, active: !h.active } : h); try { localStorage.setItem('webhook_hooks', JSON.stringify(next)); } catch {} return next; });
 
   const testHook = async (hook) => {
     setTesting(hook.id);
@@ -52,14 +56,16 @@ export default function WebhookHooks({ roomId, isHost }) {
     } catch { setTesting(null); toast.error('Webhook test failed.'); }
   };
 
-  const toggleEvent = (ev) => setSelectedEvents(p =>
-    p.includes(ev) ? p.filter(e => e !== ev) : [...p, ev]
-  );
+  const toggleEvent = (ev) => setSelectedEvents(p => {
+    const next = p.includes(ev) ? p.filter(e => e !== ev) : [...p, ev];
+    try { localStorage.setItem('webhook_selected_events', JSON.stringify(next)); } catch {}
+    return next;
+  });
 
   return (
     <div className="bg-[rgba(212,175,55,0.04)] border border-[#d4af37]/15 rounded-xl overflow-hidden">
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => { const n = !expanded; setExpanded(n); try { localStorage.setItem('webhook_expanded', String(n)); } catch {} }}
         className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-2">

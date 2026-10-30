@@ -11,18 +11,18 @@ var C = {
 var RTMP_BASE = "rtmp://ingest.seewhy.live/live";
 
 export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
-  var [noiseCancel, setNoiseCancel] = useState(true);
-  var [echoCancel, setEchoCancel] = useState(true);
-  var [gain, setGain] = useState(100);
-  var [blur, setBlur] = useState(false);
-  var [brightness, setBrightness] = useState(50);
-  var [bitrate, setBitrate] = useState(3000);
-  var [resolution, setResolution] = useState("1080p");
-  var [fps, setFps] = useState(30);
-  var [latencyMode, setLatencyMode] = useState("Low");
-  var [maxGuests, setMaxGuests] = useState(10);
-  var [requireGreenroom, setRequireGreenroom] = useState(true);
-  var [section, setSection] = useState("camera");
+  var [noiseCancel, setNoiseCancel] = useState(function () { try { return localStorage.getItem('zego_noise_cancel') !== 'false'; } catch { return true; } });
+  var [echoCancel, setEchoCancel] = useState(function () { try { return localStorage.getItem('zego_echo_cancel') !== 'false'; } catch { return true; } });
+  var [gain, setGain] = useState(function () { try { var s = localStorage.getItem('zego_gain'); return s ? Number(s) : 100; } catch { return 100; } });
+  var [blur, setBlur] = useState(function () { try { return localStorage.getItem('zego_blur') === 'true'; } catch { return false; } });
+  var [brightness, setBrightness] = useState(function () { try { var s = localStorage.getItem('zego_brightness'); return s ? Number(s) : 50; } catch { return 50; } });
+  var [bitrate, setBitrate] = useState(function () { try { var s = localStorage.getItem('zego_bitrate'); return s ? Number(s) : 3000; } catch { return 3000; } });
+  var [resolution, setResolution] = useState(function () { try { return localStorage.getItem('zego_resolution') || '1080p'; } catch { return '1080p'; } });
+  var [fps, setFps] = useState(function () { try { var s = localStorage.getItem('zego_fps'); return s ? Number(s) : 30; } catch { return 30; } });
+  var [latencyMode, setLatencyMode] = useState(function () { try { return localStorage.getItem('zego_latency_mode') || 'Low'; } catch { return 'Low'; } });
+  var [maxGuests, setMaxGuests] = useState(function () { try { var s = localStorage.getItem('zego_max_guests'); return s ? Number(s) : 10; } catch { return 10; } });
+  var [requireGreenroom, setRequireGreenroom] = useState(function () { try { return localStorage.getItem('zego_require_greenroom') !== 'false'; } catch { return true; } });
+  var [section, setSection] = useState(function () { try { return localStorage.getItem('zego_section') || 'camera'; } catch { return 'camera'; } });
   var [copied, setCopied] = useState("");
 
   var ingestUrl = RTMP_BASE + "/" + (streamKey || roomId || "your-stream-key");
@@ -64,7 +64,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
         {/* Section tabs */}
         <div style={{ display: "flex", overflowX: "auto", borderBottom: "1px solid #2a2a2a" }}>
           {sections.map(s => (
-            <button key={s} onClick={() => setSection(s)} style={{
+            <button key={s} onClick={() => { setSection(s); try { localStorage.setItem('zego_section', s); } catch {} }} style={{
               padding: "8px 14px", background: "none", border: "none",
               borderBottom: "2px solid " + (section === s ? C.gold : "transparent"),
               cursor: "pointer", fontFamily: C.fMon, fontSize: 11, letterSpacing: 1,
@@ -76,20 +76,20 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
         <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
           {section === "camera" && (
             <div>
-              <Toggle on={blur} onToggle={() => setBlur(b => !b)} label="Virtual Background Blur" />
+              <Toggle on={blur} onToggle={() => { var n = !blur; setBlur(n); try { localStorage.setItem('zego_blur', String(n)); } catch {} }} label="Virtual Background Blur" />
               <div style={{ marginBottom: 16 }}>
                 <span style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1 }}>BRIGHTNESS {brightness}%</span>
-                <input type="range" min={0} max={100} value={brightness} onChange={e => setBrightness(+e.target.value)} style={{ width: "100%", accentColor: C.gold, marginTop: 8 }} />
+                <input type="range" min={0} max={100} value={brightness} onChange={e => { var v = +e.target.value; setBrightness(v); try { localStorage.setItem('zego_brightness', String(v)); } catch {} }} style={{ width: "100%", accentColor: C.gold, marginTop: 8 }} />
               </div>
             </div>
           )}
           {section === "audio" && (
             <div>
-              <Toggle on={noiseCancel} onToggle={() => setNoiseCancel(n => !n)} label="Noise Cancellation" />
-              <Toggle on={echoCancel} onToggle={() => setEchoCancel(e => !e)} label="Echo Cancellation" />
+              <Toggle on={noiseCancel} onToggle={() => { var n = !noiseCancel; setNoiseCancel(n); try { localStorage.setItem('zego_noise_cancel', String(n)); } catch {} }} label="Noise Cancellation" />
+              <Toggle on={echoCancel} onToggle={() => { var n = !echoCancel; setEchoCancel(n); try { localStorage.setItem('zego_echo_cancel', String(n)); } catch {} }} label="Echo Cancellation" />
               <div style={{ marginBottom: 16 }}>
                 <span style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1 }}>MIC GAIN {gain}%</span>
-                <input type="range" min={0} max={200} value={gain} onChange={e => setGain(+e.target.value)} style={{ width: "100%", accentColor: C.gold, marginTop: 8 }} />
+                <input type="range" min={0} max={200} value={gain} onChange={e => { var v = +e.target.value; setGain(v); try { localStorage.setItem('zego_gain', String(v)); } catch {} }} style={{ width: "100%", accentColor: C.gold, marginTop: 8 }} />
               </div>
             </div>
           )}
@@ -99,7 +99,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
                 <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>BITRATE</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {[1000, 2000, 3000, 4500, 8000].map(b => (
-                    <button key={b} onClick={() => setBitrate(b)} style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid " + (bitrate === b ? C.gold : "#333"), background: bitrate === b ? "rgba(212,175,55,0.1)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: bitrate === b ? C.gold : C.gray }}>{b}k</button>
+                    <button key={b} onClick={() => { setBitrate(b); try { localStorage.setItem('zego_bitrate', String(b)); } catch {} }} style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid " + (bitrate === b ? C.gold : "#333"), background: bitrate === b ? "rgba(212,175,55,0.1)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: bitrate === b ? C.gold : C.gray }}>{b}k</button>
                   ))}
                 </div>
               </div>
@@ -107,7 +107,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
                 <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>RESOLUTION</div>
                 <div style={{ display: "flex", gap: 6 }}>
                   {["720p", "1080p"].map(r => (
-                    <button key={r} onClick={() => setResolution(r)} style={{ flex: 1, padding: "6px", borderRadius: 6, border: "1px solid " + (resolution === r ? C.gold : "#333"), background: resolution === r ? "rgba(212,175,55,0.1)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 10, color: resolution === r ? C.gold : C.gray }}>{r}</button>
+                    <button key={r} onClick={() => { setResolution(r); try { localStorage.setItem('zego_resolution', r); } catch {} }} style={{ flex: 1, padding: "6px", borderRadius: 6, border: "1px solid " + (resolution === r ? C.gold : "#333"), background: resolution === r ? "rgba(212,175,55,0.1)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 10, color: resolution === r ? C.gold : C.gray }}>{r}</button>
                   ))}
                 </div>
               </div>
@@ -115,7 +115,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
                 <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>FPS</div>
                 <div style={{ display: "flex", gap: 6 }}>
                   {[24, 30, 60].map(f => (
-                    <button key={f} onClick={() => setFps(f)} style={{ flex: 1, padding: "6px", borderRadius: 6, border: "1px solid " + (fps === f ? C.volt : "#333"), background: fps === f ? "rgba(212,175,55,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 10, color: fps === f ? C.volt : C.gray }}>{f}</button>
+                    <button key={f} onClick={() => { setFps(f); try { localStorage.setItem('zego_fps', String(f)); } catch {} }} style={{ flex: 1, padding: "6px", borderRadius: 6, border: "1px solid " + (fps === f ? C.volt : "#333"), background: fps === f ? "rgba(212,175,55,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 10, color: fps === f ? C.volt : C.gray }}>{f}</button>
                   ))}
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
               <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>LATENCY MODE</div>
               <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
                 {["Ultra-Low", "Low", "Standard"].map(m => (
-                  <button key={m} onClick={() => setLatencyMode(m)} style={{ flex: 1, padding: "8px 4px", borderRadius: 6, border: "1px solid " + (latencyMode === m ? C.volt : "#333"), background: latencyMode === m ? "rgba(212,175,55,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: latencyMode === m ? C.volt : C.gray }}>{m}</button>
+                  <button key={m} onClick={() => { setLatencyMode(m); try { localStorage.setItem('zego_latency_mode', m); } catch {} }} style={{ flex: 1, padding: "8px 4px", borderRadius: 6, border: "1px solid " + (latencyMode === m ? C.volt : "#333"), background: latencyMode === m ? "rgba(212,175,55,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: latencyMode === m ? C.volt : C.gray }}>{m}</button>
                 ))}
               </div>
             </div>
@@ -135,9 +135,9 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
             <div>
               <div style={{ marginBottom: 16 }}>
                 <span style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1 }}>MAX GUESTS: {maxGuests}</span>
-                <input type="range" min={1} max={20} value={maxGuests} onChange={e => setMaxGuests(+e.target.value)} style={{ width: "100%", accentColor: C.gold, marginTop: 8 }} />
+                <input type="range" min={1} max={20} value={maxGuests} onChange={e => { var v = +e.target.value; setMaxGuests(v); try { localStorage.setItem('zego_max_guests', String(v)); } catch {} }} style={{ width: "100%", accentColor: C.gold, marginTop: 8 }} />
               </div>
-              <Toggle on={requireGreenroom} onToggle={() => setRequireGreenroom(g => !g)} label="Require Greenroom Approval" />
+              <Toggle on={requireGreenroom} onToggle={() => { var n = !requireGreenroom; setRequireGreenroom(n); try { localStorage.setItem('zego_require_greenroom', String(n)); } catch {} }} label="Require Greenroom Approval" />
             </div>
           )}
           {section === "links" && (
