@@ -102,11 +102,11 @@ export function MerchShopV2({ onClose }) {
 
 // ── VIEWER CONTROLS (v16.2) ───────────────────────────────────────
 export function ViewerControlsV2({ onClose }) {
-  var [volume, setVolume] = useState(80);
-  var [quality, setQuality] = useState("720p");
+  var [volume, setVolume] = useState(function() { return lsGet('v2_viewer_volume', 80); });
+  var [quality, setQuality] = useState(function() { return lsGet('v2_viewer_quality', '720p'); });
   var [pip, setPip] = useState(false);
   var [handRaised, setHandRaised] = useState(false);
-  var [muted, setMuted] = useState(false);
+  var [muted, setMuted] = useState(function() { return lsGet('v2_viewer_muted', false); });
   var qualities = ["1080p","720p","480p","360p","Auto"];
 
   function togglePip(){
@@ -133,19 +133,19 @@ export function ViewerControlsV2({ onClose }) {
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}><span style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,letterSpacing:1}}>VOLUME</span><span style={{fontFamily:G.fMon,fontSize:11,color:G.gold}}>{volume}%</span></div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <span style={{fontSize:14}}>{volume===0?"🔇":volume<40?"🔉":"🔊"}</span>
-            <input type="range" min={0} max={100} value={volume} onChange={function(e){setVolume(parseInt(e.target.value));}} style={{flex:1,accentColor:G.gold}} />
+            <input type="range" min={0} max={100} value={volume} onChange={function(e){var v=parseInt(e.target.value);setVolume(v);lsSet('v2_viewer_volume',v);}} style={{flex:1,accentColor:G.gold}} />
           </div>
         </div>
         <div>
           <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,letterSpacing:1,marginBottom:5}}>STREAM QUALITY</div>
           <div style={{display:"flex",gap:4}}>
-            {qualities.map(function(q){return <button key={q} onClick={function(){setQuality(q);}} style={{flex:1,padding:"5px 0",borderRadius:5,border:"1px solid "+(quality===q?G.volt:G.grayDim),background:quality===q?"rgba(200,255,0,.1)":"none",color:quality===q?G.volt:G.gray,fontFamily:G.fMon,fontSize:11,cursor:"pointer"}}>{q}</button>;})}
+            {qualities.map(function(q){return <button key={q} onClick={function(){setQuality(q);lsSet('v2_viewer_quality',q);}} style={{flex:1,padding:"5px 0",borderRadius:5,border:"1px solid "+(quality===q?G.volt:G.grayDim),background:quality===q?"rgba(200,255,0,.1)":"none",color:quality===q?G.volt:G.gray,fontFamily:G.fMon,fontSize:11,cursor:"pointer"}}>{q}</button>;})}
           </div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
           <button onClick={togglePip} style={{padding:"8px",borderRadius:7,border:"1px solid "+(pip?G.cyan:G.grayDim),background:pip?"rgba(0,229,255,.1)":"none",color:pip?G.cyan:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>{pip?"✓":"⧉"} PIP</button>
           <button onClick={toggleFS} style={{padding:"8px",borderRadius:7,border:"1px solid "+G.grayDim,background:"none",color:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>⛶ FULL</button>
-          <button onClick={function(){setMuted(function(m){return !m;});}} style={{padding:"8px",borderRadius:7,border:"1px solid "+(muted?G.red:G.grayDim),background:muted?"rgba(255,59,48,.1)":"none",color:muted?G.red:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>{muted?"🔇 UNMUTE":"🔊 MUTE"}</button>
+          <button onClick={function(){setMuted(function(m){var n=!m;lsSet('v2_viewer_muted',n);return n;});}} style={{padding:"8px",borderRadius:7,border:"1px solid "+(muted?G.red:G.grayDim),background:muted?"rgba(255,59,48,.1)":"none",color:muted?G.red:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>{muted?"🔇 UNMUTE":"🔊 MUTE"}</button>
           <button onClick={function(){setHandRaised(function(h){return !h;});}} style={{padding:"8px",borderRadius:7,border:"1px solid "+(handRaised?G.orange:G.grayDim),background:handRaised?"rgba(255,149,0,.1)":"none",color:handRaised?G.orange:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>{handRaised?"✋ LOWER":"✋ RAISE"}</button>
         </div>
         <div style={{padding:"6px 8px",background:G.surfaceBg,borderRadius:6,border:"1px solid #222",display:"flex",gap:5,flexWrap:"wrap"}}>
@@ -168,7 +168,7 @@ var SUB_TIERS_V2 = [
 ];
 
 export function InRoomSubWidgetV2({ creatorName, onClose }) {
-  var [selected, setSelected] = useState("silver");
+  var [selected, setSelected] = useState(function() { return lsGet('v2_sub_selected', 'silver'); });
   var [subbed, setSubbed] = useState(false);
   var tier = SUB_TIERS_V2.find(function(t){return t.id===selected;})||SUB_TIERS_V2[1];
   var split = calcSplit(tier.price);
@@ -181,7 +181,7 @@ export function InRoomSubWidgetV2({ creatorName, onClose }) {
       <div style={{padding:"10px 14px"}}>
         <div style={{fontFamily:G.fRaj,fontSize:12,color:G.gray,marginBottom:10,textAlign:"center"}}>Support {creatorName||"creator"} every month</div>
         <div style={{display:"flex",gap:5,marginBottom:12}}>
-          {SUB_TIERS_V2.map(function(t){return <button key={t.id} onClick={function(){setSelected(t.id);setSubbed(false);}} style={{flex:1,padding:"7px 3px",borderRadius:7,border:"2px solid "+(selected===t.id?t.color:G.grayDim),background:selected===t.id?t.color+"18":"none",cursor:"pointer",textAlign:"center"}}><div style={{fontSize:16}}>{t.icon}</div><div style={{fontFamily:G.fMon,fontSize:11,color:selected===t.id?t.color:G.gray,marginTop:1}}>${t.price}</div></button>;})}
+          {SUB_TIERS_V2.map(function(t){return <button key={t.id} onClick={function(){setSelected(t.id);lsSet('v2_sub_selected',t.id);setSubbed(false);}} style={{flex:1,padding:"7px 3px",borderRadius:7,border:"2px solid "+(selected===t.id?t.color:G.grayDim),background:selected===t.id?t.color+"18":"none",cursor:"pointer",textAlign:"center"}}><div style={{fontSize:16}}>{t.icon}</div><div style={{fontFamily:G.fMon,fontSize:11,color:selected===t.id?t.color:G.gray,marginTop:1}}>${t.price}</div></button>;})}
         </div>
         <div style={{background:G.surfaceBg,borderRadius:9,padding:"10px",border:"1px solid "+tier.color+"44",marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:6}}><span style={{fontSize:18}}>{tier.icon}</span><div><div style={{fontFamily:G.fRaj,fontSize:13,fontWeight:700,color:tier.color}}>{tier.name}</div><div style={{fontFamily:G.fMon,fontSize:11,color:G.gray}}>${tier.price}/month</div></div></div>
