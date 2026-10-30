@@ -27,6 +27,7 @@ class SeeWhyRTC {
     this._reconnectTimer = null;
     this._reconnectAttempts = 0;
     this._netChangeHandler = null;
+    this._subscribePending = {}; // producerId → in-flight Promise to prevent duplicate consumers
   }
 
   async connect(socket, roomId, userId, role) {
@@ -58,6 +59,7 @@ class SeeWhyRTC {
       if (this.recvTransport) { this.recvTransport.close(); this.recvTransport = null; }
       this.producers = {};
       this.consumers = {};
+      this._subscribePending = {};
       this.socket = socket;
       this.roomId = roomId;
       this.userId = userId;
@@ -222,8 +224,14 @@ class SeeWhyRTC {
       delete this.consumers[producerId];
     }
 
+    // Dedup concurrent subscribe calls for the same producerId — prevents creating two
+    // consumers when a component mounts and re-mounts before the first subscribe resolves.
+    if (this._subscribePending[producerId]) {
+      return this._subscribePending[producerId];
+    }
+
     var self = this;
-    var consumerParams = await new Promise(function(resolve, reject) {
+    var pending = new Promise(function(resolve, reject) {
       self.socket.emit('consume', {
         transportId: self.recvTransport.id,
         producerId: producerId,
@@ -232,19 +240,22 @@ class SeeWhyRTC {
         if (data && data.error) return reject(new Error(data.error));
         resolve(data);
       });
+    }).then(function(consumerParams) {
+      return self.recvTransport.consume(consumerParams);
+    }).then(function(consumer) {
+      self.consumers[producerId] = consumer;
+      consumer.on('producerclose', function() {
+        delete self.consumers[producerId];
+        self._emit('consumerClosed', { producerId: producerId });
+      });
+      consumer.on('transportclose', function() { delete self.consumers[producerId]; });
+      return new MediaStream([consumer.track]);
+    }).finally(function() {
+      delete self._subscribePending[producerId];
     });
 
-    var consumer = await this.recvTransport.consume(consumerParams);
-    this.consumers[producerId] = consumer;
-
-    consumer.on('producerclose', function() {
-      delete self.consumers[producerId];
-      self._emit('consumerClosed', { producerId: producerId });
-    });
-    consumer.on('transportclose', function() { delete self.consumers[producerId]; });
-
-    var stream = new MediaStream([consumer.track]);
-    return stream;
+    this._subscribePending[producerId] = pending;
+    return pending;
   }
 
   on(event, cb) {
