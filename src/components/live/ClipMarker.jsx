@@ -25,7 +25,7 @@ function fmt(secs) {
 export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl }) {
   const [open,       setOpen]       = useState(false);
   const [title,      setTitle]      = useState('');
-  const [duration,   setDuration]   = useState(60);
+  const [duration,   setDuration]   = useState(() => { try { const s = localStorage.getItem('clip_marker_duration'); return s ? Number(s) : 60; } catch { return 60; } });
   const [saving,     setSaving]     = useState(false);
   const [recent,     setRecent]     = useState([]);
   const [savedFlash, setSavedFlash] = useState(false);
@@ -199,7 +199,7 @@ export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl
                   {[30, 60, 90, 120, 300].map(d => (
                     <button
                       key={d}
-                      onClick={() => setDuration(d)}
+                      onClick={() => { setDuration(d); try { localStorage.setItem('clip_marker_duration', String(d)); } catch {} }}
                       style={{
                         flex: 1, padding: '5px 0',
                         borderRadius: 6, fontSize: 10, fontWeight: 900, fontFamily: FONT,
