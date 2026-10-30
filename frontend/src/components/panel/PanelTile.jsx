@@ -322,13 +322,25 @@ export default function PanelTile({
       if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
       // Restore camera track
       var vp = rtcManager.producers && rtcManager.producers['video'];
+      var _camSimulcast = [
+        { rid: 'r0', maxBitrate: 99000,  scaleResolutionDownBy: 4 },
+        { rid: 'r1', maxBitrate: 297000, scaleResolutionDownBy: 2 },
+        { rid: 'r2', maxBitrate: 900000, scaleResolutionDownBy: 1 },
+      ];
       if (vp && prevCamTrackRef.current) {
-        rtcManager.replaceTrack('video', prevCamTrackRef.current).catch(function() {});
+        var _ct = prevCamTrackRef.current;
+        if ('contentHint' in _ct) _ct.contentHint = 'motion';
+        rtcManager.replaceTrack('video', _ct).catch(function() {});
+        rtcManager.setVideoEncodings(_camSimulcast).catch(function() {});
         prevCamTrackRef.current = null;
       } else if (vp) {
         navigator.mediaDevices.getUserMedia({ video: true }).then(function(s) {
           var t = s.getVideoTracks()[0];
-          if (t) rtcManager.replaceTrack('video', t).catch(function() {});
+          if (t) {
+            if ('contentHint' in t) t.contentHint = 'motion';
+            rtcManager.replaceTrack('video', t).catch(function() {});
+            rtcManager.setVideoEncodings(_camSimulcast).catch(function() {});
+          }
         }).catch(function() {});
       }
       // Restore microphone if screen audio was captured
@@ -343,13 +355,21 @@ export default function PanelTile({
       }).then(function(displayStream) {
         var screenTrack = displayStream.getVideoTracks()[0];
         if (!screenTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
+        if ('contentHint' in screenTrack) screenTrack.contentHint = 'detail';
         var vp = rtcManager.producers && rtcManager.producers['video'];
         if (vp) prevCamTrackRef.current = vp.track;
         screenTrack.addEventListener('ended', function() {
           setScreenSharing(false);
           if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
-          if (vp && prevCamTrackRef.current) {
-            rtcManager.replaceTrack('video', prevCamTrackRef.current).catch(function() {});
+          var camTrack = prevCamTrackRef.current;
+          if (vp && camTrack) {
+            if ('contentHint' in camTrack) camTrack.contentHint = 'motion';
+            rtcManager.replaceTrack('video', camTrack).catch(function() {});
+            rtcManager.setVideoEncodings([
+              { rid: 'r0', maxBitrate: 99000,  scaleResolutionDownBy: 4 },
+              { rid: 'r1', maxBitrate: 297000, scaleResolutionDownBy: 2 },
+              { rid: 'r2', maxBitrate: 900000, scaleResolutionDownBy: 1 },
+            ]).catch(function() {});
             prevCamTrackRef.current = null;
           }
           if (prevMicTrackRef.current) {
@@ -358,6 +378,12 @@ export default function PanelTile({
           }
         });
         rtcManager.replaceTrack('video', screenTrack).then(function() {
+          // Switch to screen-optimized simulcast (text/slides readable; less resolution downscaling)
+          rtcManager.setVideoEncodings([
+            { rid: 'r0', maxBitrate: 300000,  scaleResolutionDownBy: 2 },
+            { rid: 'r1', maxBitrate: 800000,  scaleResolutionDownBy: 1 },
+            { rid: 'r2', maxBitrate: 2000000, scaleResolutionDownBy: 1 },
+          ]).catch(function() {});
           // Capture screen audio if available (tab/window audio on Chrome)
           var screenAudioTrack = displayStream.getAudioTracks()[0];
           var ap = rtcManager.producers && rtcManager.producers['audio'];
@@ -590,7 +616,8 @@ export default function PanelTile({
             playsInline
             muted={!!isLocal}
             style={{
-              width: '100%', height: '100%', objectFit: 'cover',
+              width: '100%', height: '100%',
+              objectFit: (isScreenSharing || screenSharing) ? 'contain' : 'cover',
               display: camActive ? 'block' : 'none',
             }}
           />

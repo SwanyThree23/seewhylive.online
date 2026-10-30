@@ -315,7 +315,10 @@ class SeeWhyRTC {
     var currentRecvLayer = 1; // track last requested layer to avoid redundant emits
     var consumerPrevBytes = {}; // producerId → prevBytesReceived for per-consumer bitrate
     var consumerStatsTick = 0; // sample per-consumer stats every other tick (4s)
+    var _statsRunning = false; // guard against overlapping async runs
     this.statsInterval = setInterval(async function() {
+      if (_statsRunning) return;
+      _statsRunning = true;
       try {
         var bytesSent = 0;
         var packetsSent = 0;
@@ -437,6 +440,8 @@ class SeeWhyRTC {
 
       } catch (e) {
         // stats not critical
+      } finally {
+        _statsRunning = false;
       }
     }, 2000);
   }

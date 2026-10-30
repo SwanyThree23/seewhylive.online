@@ -289,6 +289,9 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         if (!streamRef.current) return;
         var vt = streamRef.current.getVideoTracks()[0];
         if (!vt || !vt.applyConstraints) return;
+        // Don't apply camera constraints to a screen capture track — they don't apply and
+        // some browsers throw on the mismatch.
+        if (vt.contentHint === 'detail') return;
         vt.applyConstraints({ width: { ideal: w }, height: { ideal: h }, frameRate: { ideal: fps } }).catch(function() {});
       };
       if (quality === 'red') {
@@ -517,7 +520,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
       onClick={onTap ? function() { onTap(guest); } : undefined}
     >
       {/* Video container — octagonal clip or full rect depending on fill mode */}
-      <div style={{ clipPath: fill ? 'none' : OCT, width: '100%', height: fill ? '100%' : '100%', position: 'relative', background: '#0E0C09', boxShadow: ringGlow }}>
+      <div style={{ clipPath: (fill || (!isOwnCell && isScreenSharing)) ? 'none' : OCT, width: '100%', height: fill ? '100%' : '100%', position: 'relative', background: '#0E0C09', boxShadow: ringGlow }}>
         {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,12,9,.8)', zIndex: 2 }}>
             <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid ' + color, borderTopColor: 'transparent' }} />
@@ -529,7 +532,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
           autoPlay
           playsInline
           muted={isOwnCell}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: (online && !isCamOff && !(guest && guest.remoteCamOff)) ? 'block' : 'none', transform: (isOwnCell && facingFront) ? 'scaleX(-1)' : 'none' }}
+          style={{ width: '100%', height: '100%', objectFit: (!isOwnCell && isScreenSharing) ? 'contain' : 'cover', display: (online && !isCamOff && !(guest && guest.remoteCamOff)) ? 'block' : 'none', transform: (isOwnCell && facingFront) ? 'scaleX(-1)' : 'none' }}
         />
 
         {/* Cam off overlay — own cell */}
