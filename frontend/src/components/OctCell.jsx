@@ -31,8 +31,11 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var [sendTransportKey, setSendTransportKey] = useState(0);
   var [subscribeKey, setSubscribeKey] = useState(0);
   var [facingFront,  setFacingFront]  = useState(true);
-  var [reconnecting, setReconnecting] = useState(false);
-  var [sendStats,    setSendStats]    = useState(null); // { bitratekbps, rttMs } for HUD
+  var [reconnecting,   setReconnecting]   = useState(false);
+  var [sendStats,      setSendStats]      = useState(null); // { bitratekbps, rttMs } for HUD
+  var [autoQuality,    setAutoQuality]    = useState('high'); // 'high' | 'medium' | 'low'
+  var redSamplesRef   = useRef(0);
+  var greenSamplesRef = useRef(0);
 
   var size      = fill ? null : (sz || 200);
   var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
@@ -279,10 +282,45 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
       }
       setConnQuality(quality);
       setSendStats({ bitratekbps: stats.bitratekbps, rttMs: stats.rttMs, lossPct: stats.lossPct });
+
+      // Auto quality degradation — apply capture constraints on sustained red; restore on green
+      var applyVC = function(w, h, fps) {
+        if (!streamRef.current) return;
+        var vt = streamRef.current.getVideoTracks()[0];
+        if (!vt || !vt.applyConstraints) return;
+        vt.applyConstraints({ width: { ideal: w }, height: { ideal: h }, frameRate: { ideal: fps } }).catch(function() {});
+      };
+      if (quality === 'red') {
+        greenSamplesRef.current = 0;
+        redSamplesRef.current = redSamplesRef.current + 1;
+        if (redSamplesRef.current === 3) {
+          applyVC(640, 360, 15);
+          setAutoQuality('medium');
+        } else if (redSamplesRef.current === 6) {
+          applyVC(320, 240, 10);
+          setAutoQuality('low');
+        }
+      } else if (quality === 'green') {
+        redSamplesRef.current = 0;
+        greenSamplesRef.current = greenSamplesRef.current + 1;
+        if (greenSamplesRef.current >= 3) {
+          greenSamplesRef.current = 0;
+          setAutoQuality(function(prev) {
+            if (prev !== 'high') {
+              var preset = mediaConfig && mediaConfig.preset ? mediaConfig.preset : { width: 1280, height: 720, frameRate: 30 };
+              applyVC(preset.width, preset.height, preset.frameRate);
+            }
+            return 'high';
+          });
+        }
+      } else {
+        redSamplesRef.current = 0;
+        greenSamplesRef.current = 0;
+      }
     };
     rtcManager.on('stats', onStats);
     return function() { rtcManager.off('stats', onStats); };
-  }, [isOwnCell, rtcManager]);
+  }, [isOwnCell, rtcManager, mediaConfig]);
 
   // React to transport state changes (own and remote cells share same rtcManager)
   useEffect(function() {
@@ -530,6 +568,13 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         {isOwnCell && reconnecting && (
           <div style={{ position: 'absolute', bottom: 22, left: '50%', transform: 'translateX(-50%)', background: 'rgba(240,165,0,.9)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09', whiteSpace: 'nowrap', zIndex: 8 }}>
             ⟳ RECONNECTING
+          </div>
+        )}
+
+        {/* Auto quality degradation indicator — own cell only */}
+        {isOwnCell && autoQuality !== 'high' && (
+          <div style={{ position: 'absolute', bottom: 38, left: '50%', transform: 'translateX(-50%)', background: 'rgba(240,165,0,.85)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09', whiteSpace: 'nowrap', zIndex: 8 }}>
+            {'⚠ AUTO-' + autoQuality.toUpperCase()}
           </div>
         )}
 
