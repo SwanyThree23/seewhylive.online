@@ -3627,15 +3627,17 @@ io.on('connection', function(socket) {
   });
 
   // ── consumer:set-layer ────────────────────────────────────────────────
-  // Allows a viewer to request a specific simulcast layer for a guest's video
+  // Allows a viewer to request a specific simulcast layer for a single guest's video
   // (e.g. upgrade when spotlighted, downgrade when un-spotlighted).
+  // Only affects THIS viewer's consumer — uses per-viewer per-guest setter so other
+  // viewers of the same guest are unaffected.
   socket.on('consumer:set-layer', function(data) {
     if (!data) return;
     var roomId = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId) return;
     var layer = Math.min(2, Math.max(0, Number(data.spatialLayer) || 0));
-    mediasoup.setPreferredLayersByGuestId(guestId, layer).catch(function() {});
+    mediasoup.setSocketConsumerPreferredLayerForGuest(socket.id, guestId, layer).catch(function() {});
   });
 
   // ── hand-raise ─────────────────────────────────────────────────────────

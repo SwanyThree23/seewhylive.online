@@ -429,6 +429,24 @@ async function setPreferredLayersByGuestId(producerGuestId, spatialLayer) {
   await Promise.all(promises);
 }
 
+// Set the preferred simulcast layer for the specific consumer that socketId holds for
+// producerGuestId — used by spotlight so only the requesting viewer's quality changes,
+// not every viewer of that guest.
+async function setSocketConsumerPreferredLayerForGuest(socketId, producerGuestId, spatialLayer) {
+  var socketIds = socketVideoConsumers[socketId];
+  var guestIds  = guestVideoConsumers[producerGuestId];
+  if (!socketIds || !guestIds) return;
+  var promises = [];
+  socketIds.forEach(function(cid) {
+    if (!guestIds.has(cid)) return; // not this guest's consumer
+    var c = consumers[cid];
+    if (c && c.kind === 'video') {
+      promises.push(c.setPreferredLayers({ spatialLayer: spatialLayer }).catch(function() {}));
+    }
+  });
+  await Promise.all(promises);
+}
+
 
 // ---- Load monitoring (added for perf visibility) ----------------------
 var lastCpuUsage = process.cpuUsage();
@@ -476,5 +494,6 @@ module.exports = {
   setPreferredLayersByGuestId: setPreferredLayersByGuestId,
   indexConsumerBySocket: indexConsumerBySocket,
   cleanupSocketConsumers: cleanupSocketConsumers,
-  setSocketConsumerPreferredLayers: setSocketConsumerPreferredLayers
+  setSocketConsumerPreferredLayers: setSocketConsumerPreferredLayers,
+  setSocketConsumerPreferredLayerForGuest: setSocketConsumerPreferredLayerForGuest
 };
