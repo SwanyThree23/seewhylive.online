@@ -532,7 +532,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
           autoPlay
           playsInline
           muted={isOwnCell}
-          style={{ width: '100%', height: '100%', objectFit: (!isOwnCell && isScreenSharing) ? 'contain' : 'cover', display: (online && !isCamOff && !(guest && guest.remoteCamOff)) ? 'block' : 'none', transform: (isOwnCell && facingFront) ? 'scaleX(-1)' : 'none' }}
+          style={{ width: '100%', height: '100%', objectFit: (!isOwnCell && isScreenSharing) ? 'contain' : 'cover', display: (online && !isCamOff && !(guest && guest.remoteCamOff)) ? 'block' : 'none', transform: (isOwnCell && facingFront && !isScreenSharing) ? 'scaleX(-1)' : 'none' }}
         />
 
         {/* Cam off overlay — own cell */}
@@ -783,12 +783,14 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
               {isCamOff ? '📵' : '📷'}
             </button>
           )}
-          <button
-            onClick={function(e) { e.stopPropagation(); setFacingFront(function(f) { return !f; }); }}
-            style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(255,255,255,.12)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            title="Flip camera">
-            🔄
-          </button>
+          {!isScreenSharing && (
+            <button
+              onClick={function(e) { e.stopPropagation(); setFacingFront(function(f) { return !f; }); }}
+              style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(255,255,255,.12)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Flip camera">
+              🔄
+            </button>
+          )}
         </div>
       )}
     </div>

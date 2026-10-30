@@ -28,6 +28,7 @@ class SeeWhyRTC {
     this._reconnectAttempts = 0;
     this._netChangeHandler = null;
     this._subscribePending = {}; // producerId → in-flight Promise to prevent duplicate consumers
+    this._visibilityHandler = null;
   }
 
   async connect(socket, roomId, userId, role) {
@@ -35,6 +36,17 @@ class SeeWhyRTC {
     this._connecting = true;
     if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
     this._lastConnectParams = { socket: socket, roomId: roomId, userId: userId, role: role };
+    // On tab focus after backgrounding, check if transports failed while throttled
+    // (browsers suspend WebRTC keepalives in background tabs, so ICE can silently fail).
+    if (!this._visibilityHandler && typeof document !== 'undefined') {
+      var _self = this;
+      this._visibilityHandler = function() {
+        if (document.visibilityState !== 'visible') return;
+        if (_self.sendTransport && _self.sendTransport.connectionState === 'failed') _self._scheduleReconnect();
+        else if (_self.recvTransport && _self.recvTransport.connectionState === 'failed') _self._scheduleReconnect();
+      };
+      document.addEventListener('visibilitychange', this._visibilityHandler);
+    }
     // Listen for network changes — speeds up reconnect after WiFi↔mobile switch by
     // triggering _scheduleReconnect immediately instead of waiting for ICE timeout (~30s).
     if (!this._netChangeHandler && navigator && navigator.connection) {
@@ -497,6 +509,10 @@ class SeeWhyRTC {
   destroy() {
     if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
     this._lastConnectParams = null;
+    if (this._visibilityHandler && typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this._visibilityHandler);
+      this._visibilityHandler = null;
+    }
     if (this._netChangeHandler && navigator && navigator.connection) {
       navigator.connection.removeEventListener('change', this._netChangeHandler);
       this._netChangeHandler = null;
