@@ -464,6 +464,23 @@ async function setSocketConsumerPreferredLayers(socketId, spatialLayer) {
   await Promise.all(promises);
 }
 
+// Like setSocketConsumerPreferredLayers but skips consumers belonging to skipGuestId.
+// Used by adaptive bandwidth to avoid overriding the layer-2 boost for screen sharers.
+async function setSocketConsumerPreferredLayersExcept(socketId, spatialLayer, skipGuestId) {
+  var ids = socketVideoConsumers[socketId];
+  if (!ids || ids.size === 0) return;
+  var skipSet = (skipGuestId && guestVideoConsumers[skipGuestId]) ? guestVideoConsumers[skipGuestId] : new Set();
+  var promises = [];
+  ids.forEach(function(cid) {
+    if (skipSet.has(cid)) return;
+    var c = consumers[cid];
+    if (c && c.kind === 'video') {
+      promises.push(c.setPreferredLayers({ spatialLayer: spatialLayer }).catch(function() {}));
+    }
+  });
+  await Promise.all(promises);
+}
+
 async function setPreferredLayersByGuestId(producerGuestId, spatialLayer) {
   var ids = guestVideoConsumers[producerGuestId];
   if (!ids || ids.size === 0) return;
@@ -546,5 +563,6 @@ module.exports = {
   indexConsumerBySocket: indexConsumerBySocket,
   cleanupSocketConsumers: cleanupSocketConsumers,
   setSocketConsumerPreferredLayers: setSocketConsumerPreferredLayers,
+  setSocketConsumerPreferredLayersExcept: setSocketConsumerPreferredLayersExcept,
   setSocketConsumerPreferredLayerForGuest: setSocketConsumerPreferredLayerForGuest
 };

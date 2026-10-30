@@ -2727,6 +2727,12 @@ io.on('connection', function(socket) {
       .then(function(result) {
         if (result.consumer && result.consumer.kind === 'video') {
           mediasoup.indexConsumerBySocket(socket.id, result.consumer.id);
+          // Boost to layer 2 if this producer belongs to an active screen sharer
+          var _producerGuestId = producerOwners.get(producerId);
+          var _ss = screenShareState.get(roomId);
+          if (_producerGuestId && _ss && _ss.userId === _producerGuestId) {
+            result.consumer.setPreferredLayers({ spatialLayer: 2 }).catch(function() {});
+          }
         }
         if (ack) ack(result.params);
       })
@@ -3654,7 +3660,15 @@ io.on('connection', function(socket) {
   socket.on('consumer:adapt-layer', function(data) {
     if (!data) return;
     var layer = Math.min(2, Math.max(0, Number(data.spatialLayer) || 0));
-    mediasoup.setSocketConsumerPreferredLayers(socket.id, layer).catch(function() {});
+    var _roomId = socket.data.roomId;
+    var _ss = _roomId ? screenShareState.get(_roomId) : null;
+    // Don't let adaptive bandwidth downgrade a screen-share consumer — it was boosted
+    // to layer 2 intentionally and dropping it makes shared content unreadable.
+    if (_ss && _ss.userId && layer < 2) {
+      mediasoup.setSocketConsumerPreferredLayersExcept(socket.id, layer, _ss.userId).catch(function() {});
+    } else {
+      mediasoup.setSocketConsumerPreferredLayers(socket.id, layer).catch(function() {});
+    }
   });
 
   // ── consumer:set-layer ────────────────────────────────────────────────
