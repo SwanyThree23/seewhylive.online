@@ -126,6 +126,14 @@ class SeeWhyRTC {
     var audioTrack = stream.getAudioTracks()[0];
 
     if (videoTrack) {
+      // Close existing video producer so re-publishing (e.g. quality preset change) cleanly
+      // signals removal to subscribers before creating the new producer
+      if (this.producers['video']) {
+        var oldVideoId = this.producers['video'].id;
+        try { this.producers['video'].close(); } catch(e) {}
+        delete this.producers['video'];
+        if (this.socket && oldVideoId) this.socket.emit('producer-closed', { producerId: oldVideoId });
+      }
       // Scale simulcast layers relative to the top-layer cap from the quality preset
       var topBitrate = (options && options.maxBitrate) ? Math.min(options.maxBitrate, 5000000) : 900000;
       var midBitrate  = Math.round(topBitrate * 0.33);
@@ -143,6 +151,13 @@ class SeeWhyRTC {
     }
 
     if (audioTrack) {
+      // Same: close existing audio producer before recreating
+      if (this.producers['audio']) {
+        var oldAudioId = this.producers['audio'].id;
+        try { this.producers['audio'].close(); } catch(e) {}
+        delete this.producers['audio'];
+        if (this.socket && oldAudioId) this.socket.emit('producer-closed', { producerId: oldAudioId });
+      }
       var audioProducer = await this.sendTransport.produce({
         track: audioTrack,
         codecOptions: { opusStereo: false, opusDtx: true, opusFec: true, opusMaxPlaybackRate: 48000 }
