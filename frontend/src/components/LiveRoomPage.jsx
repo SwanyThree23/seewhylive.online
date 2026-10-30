@@ -2088,6 +2088,7 @@ export default function LiveRoomPage({
                           handRaised={!!(raisedHands && raisedHands[gid])}
                           activeEffect={panelEffects[gid] || null}
                           onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                          isScreenSharing={!!(screenShareHost && screenShareHost.userId === gid)}
                         />
                         <div style={{ padding: '3px 5px 5px' }}>
                           <span style={{ fontSize: 10, color: MUTED, fontWeight: 500, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
