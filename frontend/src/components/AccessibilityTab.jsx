@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 var BG    = '#0D0B08';
 var CARD  = 'rgba(26,21,16,0.96)';
@@ -101,21 +100,13 @@ function Section({ title, children, defaultOpen }) {
         <span style={{ ...T, fontSize: 13, fontWeight: 900, color: GOLD, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{title}</span>
         <span style={{ color: DIM, fontSize: 10 }}>{open ? '▲' : '▼'}</span>
       </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            style={{ overflow: 'hidden' }}
-          >
-            <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {children}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {open && (
+        <div style={{ overflow: 'hidden' }}>
+          <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {children}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
