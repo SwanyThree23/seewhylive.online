@@ -681,7 +681,7 @@ export default function PanelTile({
                 </div>
               )}
               <span style={{ color: '#666', fontSize: 10, fontFamily: '"DM Sans", sans-serif' }}>
-                {!isLocal && remoteCamOff ? 'Camera off' : 'Camera off'}
+                {(isLocal && !localCamOn) || (!isLocal && remoteCamOff) ? 'Camera off' : 'Connecting...'}
               </span>
             </div>
           )}

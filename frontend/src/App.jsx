@@ -851,7 +851,7 @@ export default function App() {
           if (gid !== data.guestId) return g;
           found = true;
           var update = Object.assign({}, g);
-          if (data.kind === 'video') update.producerId      = data.producerId;
+          if (data.kind === 'video') { update.producerId = data.producerId; update.remoteCamOff = false; }
           if (data.kind === 'audio') update.audioProducerId = data.producerId;
           return update;
         });
@@ -859,7 +859,7 @@ export default function App() {
         // so roster-update's merge logic picks up the producerId when it arrives.
         if (!found) {
           var placeholder = { guestId: data.guestId, userId: data.guestId };
-          if (data.kind === 'video') placeholder.producerId      = data.producerId;
+          if (data.kind === 'video') { placeholder.producerId = data.producerId; placeholder.remoteCamOff = false; }
           if (data.kind === 'audio') placeholder.audioProducerId = data.producerId;
           return updated.concat([placeholder]);
         }
@@ -923,9 +923,8 @@ export default function App() {
       setGuests(function(prev) {
         return prev.map(function(g) {
           var update = Object.assign({}, g);
-          if (g.producerId       === data.producerId) update.producerId       = null;
-          if (g.audioProducerId  === data.producerId) update.audioProducerId  = null;
-          if (g.screenProducerId === data.producerId) update.screenProducerId = null;
+          if (g.producerId      === data.producerId) { update.producerId = null; update.remoteCamOff = false; }
+          if (g.audioProducerId === data.producerId) update.audioProducerId = null;
           return update;
         });
       });
