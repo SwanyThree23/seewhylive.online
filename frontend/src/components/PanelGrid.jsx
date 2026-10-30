@@ -28,6 +28,9 @@ var MAX_SEATS = 20;
  *   onCamToggle   {function}
  *   onTap         {function|null}
  */
+// Map guestCount to column count for a compact, adaptive grid
+var LAYOUT_COLS = [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5];
+
 export default function PanelGrid({
   guests,
   isHost,
@@ -45,27 +48,37 @@ export default function PanelGrid({
   onTap,
   onCameraTrack,
   giftTotals,
+  activeEffects,
+  handRaisedSet,
+  onPowerPlay,
 }) {
   if (!giftTotals) giftTotals = {};
+  if (!activeEffects) activeEffects = {};
+  if (!handRaisedSet) handRaisedSet = {};
   var seats = (guests || []).slice(0, MAX_SEATS);
+
+  // Adapt grid to actual guest count — show 1 empty "open" slot when below max
+  var guestCount = seats.length;
+  var totalSlots = guestCount < MAX_SEATS
+    ? Math.max(1, guestCount + 1)
+    : MAX_SEATS;
+  var cols = LAYOUT_COLS[Math.min(totalSlots, LAYOUT_COLS.length - 1)] || 5;
 
   return (
     <div
       style={{
         display: 'grid',
-        // 5 columns; each column is at least 1px wide so the grid never overflows.
-        // repeat(5, minmax(0, 1fr)) distributes space evenly without scroll.
-        gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-        gridTemplateRows: 'repeat(4, minmax(0, 1fr))',
+        gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))',
         gap: 6,
         width: '100%',
         height: '100%',
         padding: 4,
         boxSizing: 'border-box',
         background: '#080B12',
+        alignContent: 'start',
       }}
     >
-      {Array.from({ length: MAX_SEATS }).map(function(_, idx) {
+      {Array.from({ length: totalSlots }).map(function(_, idx) {
         var g   = seats[idx] || null;
         var gid = g ? (g.guestId || g.userId || ('seat-' + idx)) : ('empty-' + idx);
         var isOwn = g && g.userId === userId;
@@ -82,6 +95,7 @@ export default function PanelGrid({
                 ? '1px solid rgba(201,168,76,0.12)'
                 : '1px dashed rgba(255,255,255,0.06)',
               minHeight: 0,
+              aspectRatio: '1 / 1',
             }}
           >
             {g ? (
@@ -103,6 +117,9 @@ export default function PanelGrid({
                 onCamToggle={isOwn ? onCamToggle : null}
                 onCameraTrack={isOwn ? onCameraTrack : null}
                 giftTotal={giftTotals[gid] || 0}
+                activeEffect={activeEffects[gid] || null}
+                handRaised={!!(handRaisedSet[gid] || handRaisedSet[g.guestId] || handRaisedSet[g.userId])}
+                onPowerPlay={onPowerPlay || null}
               />
             ) : (
               /* Empty seat placeholder */

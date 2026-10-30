@@ -10,19 +10,45 @@ var GREEN = '#22c55e';
 var ACTIONS = [
   { id: 'mic',    emoji: '🎤', label: 'Mic'    },
   { id: 'cam',    emoji: '📷', label: 'Camera' },
+  { id: 'screen', emoji: '🖥', label: 'Screen' },
   { id: 'invite', emoji: '👥', label: 'Invite' },
   { id: 'chat',   emoji: '💬', label: 'Chat'   },
   { id: 'live',   emoji: '🚀', label: 'Go Live'},
 ];
 
-export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCamOff, onToggleMic, onToggleCam, onToggleChat, onGoLive, addToast }) {
+export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCamOff, onToggleMic, onToggleCam, onToggleChat, onGoLive, addToast, rtcManager }) {
   var [inviteCopied, setInviteCopied] = useState(false);
+  var [sharingScreen, setSharingScreen] = useState(false);
 
   function handleAction(id) {
     if (id === 'mic') {
       if (onToggleMic) onToggleMic();
     } else if (id === 'cam') {
       if (onToggleCam) onToggleCam();
+    } else if (id === 'screen') {
+      if (!rtcManager) {
+        if (addToast) addToast('Not connected to stream', 'error');
+        return;
+      }
+      if (sharingScreen) {
+        rtcManager.stopScreenShare();
+        setSharingScreen(false);
+        if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
+        if (addToast) addToast('Screen share stopped', 'info');
+      } else {
+        rtcManager.publishScreenShare().then(function() {
+          setSharingScreen(true);
+          if (socket && roomId) socket.emit('screen-share-start', { roomId: roomId });
+          if (addToast) addToast('Screen share started', 'success');
+          rtcManager.on('screenShareStopped', function onSSStop() {
+            setSharingScreen(false);
+            if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
+            rtcManager.off('screenShareStopped', onSSStop);
+          });
+        }).catch(function(e) {
+          if (addToast) addToast('Screen share failed: ' + e.message, 'error');
+        });
+      }
     } else if (id === 'invite') {
       var shareUrl = window.location.origin + (roomId ? '?room=' + roomId : '');
       try {
@@ -42,9 +68,10 @@ export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCa
   }
 
   function getState(id) {
-    if (id === 'mic')  return isMuted ? 'off' : 'on';
-    if (id === 'cam')  return isCamOff ? 'off' : 'on';
-    if (id === 'live') return isLive ? 'live' : 'ready';
+    if (id === 'mic')    return isMuted ? 'off' : 'on';
+    if (id === 'cam')    return isCamOff ? 'off' : 'on';
+    if (id === 'screen') return sharingScreen ? 'on' : 'off';
+    if (id === 'live')   return isLive ? 'live' : 'ready';
     if (id === 'invite') return inviteCopied ? 'copied' : 'default';
     return 'default';
   }
@@ -52,16 +79,18 @@ export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCa
   function getEmoji(id) {
     if (id === 'mic')    return isMuted ? '🔇' : '🎤';
     if (id === 'cam')    return isCamOff ? '📷' : '📸';
+    if (id === 'screen') return sharingScreen ? '🛑' : '🖥';
     if (id === 'invite') return inviteCopied ? '✅' : '👥';
     if (id === 'live')   return isLive ? '🔴' : '🚀';
     return id === 'chat' ? '💬' : '●';
   }
 
   function getLabel(id) {
-    if (id === 'mic')  return isMuted ? 'Unmute' : 'Mute';
-    if (id === 'cam')  return isCamOff ? 'Start Cam' : 'Camera';
+    if (id === 'mic')    return isMuted ? 'Unmute' : 'Mute';
+    if (id === 'cam')    return isCamOff ? 'Start Cam' : 'Camera';
+    if (id === 'screen') return sharingScreen ? 'Stop' : 'Screen';
     if (id === 'invite') return inviteCopied ? 'Copied!' : 'Invite';
-    if (id === 'live') return isLive ? 'LIVE' : 'Go Live';
+    if (id === 'live')   return isLive ? 'LIVE' : 'Go Live';
     return 'Chat';
   }
 
@@ -70,6 +99,7 @@ export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCa
     if (id === 'live' && isLive) return 'rgba(255,26,60,.2)';
     if (id === 'mic' && isMuted) return 'rgba(255,26,60,.15)';
     if (id === 'cam' && isCamOff) return 'rgba(255,26,60,.15)';
+    if (id === 'screen' && sharingScreen) return 'rgba(201,168,76,.2)';
     if (state === 'copied') return 'rgba(34,197,94,.15)';
     return CARD;
   }
@@ -79,6 +109,7 @@ export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCa
     if (id === 'live' && isLive) return '1px solid rgba(255,26,60,.5)';
     if (id === 'mic' && isMuted) return '1px solid rgba(255,26,60,.35)';
     if (id === 'cam' && isCamOff) return '1px solid rgba(255,26,60,.35)';
+    if (id === 'screen' && sharingScreen) return '1px solid rgba(201,168,76,.5)';
     if (state === 'copied') return '1px solid rgba(34,197,94,.4)';
     return '1px solid rgba(201,168,76,.15)';
   }
@@ -86,6 +117,7 @@ export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCa
   function getLabelColor(id) {
     if (id === 'live' && isLive) return RED;
     if ((id === 'mic' && isMuted) || (id === 'cam' && isCamOff)) return RED;
+    if (id === 'screen' && sharingScreen) return GOLD;
     if (getState(id) === 'copied') return GREEN;
     return MUTED;
   }

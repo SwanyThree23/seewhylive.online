@@ -262,6 +262,57 @@ class SeeWhyRTC {
 
   async publishScreenShare() {
     if (!this.sendTransport) throw new Error('Send transport not initialized');
+    var stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    var track = stream.getVideoTracks()[0];
+    if (!track) throw new Error('No video track from screen capture');
+
+    var self = this;
+    // Replace existing video producer track so the same consumer sees screen share
+    if (this.producers['video']) {
+      await this.producers['video'].replaceTrack({ track: track });
+      this._screenTrack = track;
+      this._prevCamTrack = null;
+    } else {
+      var producer = await this.sendTransport.produce({
+        track: track,
+        encodings: [{ maxBitrate: 1500000 }],
+        codecOptions: { videoGoogleStartBitrate: 1000 },
+        appData: { screen: true },
+      });
+      this._screenTrack = track;
+      this.producers['screen'] = producer;
+    }
+
+    // Auto-stop when user clicks browser's "Stop sharing"
+    track.addEventListener('ended', function() {
+      self.stopScreenShare();
+      self._emit('screenShareStopped');
+    });
+  }
+
+  async stopScreenShare() {
+    if (this._screenTrack) {
+      this._screenTrack.stop();
+      this._screenTrack = null;
+    }
+    // Restore camera track into the video producer if we replaced it
+    if (this.producers['video']) {
+      try {
+        var camStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        var camTrack = camStream.getVideoTracks()[0];
+        if (camTrack) await this.producers['video'].replaceTrack({ track: camTrack });
+      } catch(e) {
+        console.warn('[RTC] could not restore camera after screen share:', e.message);
+      }
+    }
+    if (this.producers['screen']) {
+      this.producers['screen'].close();
+      delete this.producers['screen'];
+    }
+  }
+
+  async publishScreenShare() {
+    if (!this.sendTransport) throw new Error('Send transport not initialized');
     if (this.producers['screen']) return this.producers['screen'].id;
     var displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
     var screenTrack = displayStream.getVideoTracks()[0];
