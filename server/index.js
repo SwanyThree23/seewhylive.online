@@ -5180,11 +5180,13 @@ io.on('connection', function(socket) {
   });
 
   // ── Screen share handlers ──────────────────────────────────────────────
+  // Allow any panelist (host, cohost, guest, owner, admin) to share their screen.
+  // Only 'viewer' sockets are blocked — they don't have a video slot to share from.
   socket.on('screen-share-start', function(data) {
-    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (socket.data.role === 'viewer') return;
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
-    var _ssState = { roomId: sRoomId, userId: socket.data.userId, username: socket.data.username || 'Host' };
+    var _ssState = { roomId: sRoomId, userId: socket.data.userId, username: socket.data.username || socket.data.userId };
     screenShareState.set(sRoomId, _ssState);
     io.to(sRoomId).emit('screen-share-active', _ssState);
     // Boost all subscribers to the sharer's video stream to layer 2.
@@ -5195,9 +5197,13 @@ io.on('connection', function(socket) {
   });
 
   socket.on('screen-share-stop', function(data) {
-    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (socket.data.role === 'viewer') return;
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
+    // Only clear if THIS user is the current sharer (prevents a late 'stop' from
+    // a different session clearing another panelist's active screen share).
+    var _ssCur = screenShareState.get(sRoomId);
+    if (_ssCur && _ssCur.userId !== socket.data.userId) return;
     screenShareState.delete(sRoomId);
     io.to(sRoomId).emit('screen-share-ended', {});
     // Restore subscribers to the camera-default layer (1).
@@ -6084,6 +6090,7 @@ io.on('connection', function(socket) {
           io.to(roomId).emit('watch-party-pause', { position: room.watchParty.position, reason: 'host_disconnected' });
         }
         // Clear screen share indicator
+        screenShareState.delete(roomId);
         io.to(roomId).emit('screen-share-ended', {});
         // Notify room that host fully disconnected
         io.to(roomId).emit('host-disconnected', { ts: Math.floor(Date.now() / 1000) });
@@ -6098,8 +6105,17 @@ io.on('connection', function(socket) {
         room.watchParty.ts = Date.now();
         io.to(roomId).emit('watch-party-pause', { position: room.watchParty.position, reason: 'host_disconnected' });
       }
+      screenShareState.delete(roomId);
       io.to(roomId).emit('screen-share-ended', {});
       io.to(roomId).emit('host-disconnected', { ts: Math.floor(Date.now() / 1000) });
+    }
+
+    // If this user was screen sharing, clear the room-level screen share state so
+    // new joiners don't receive a stale screen-share-active event.
+    var _dcSS = screenShareState.get(roomId);
+    if (_dcSS && _dcSS.userId === _dcUserId) {
+      screenShareState.delete(roomId);
+      io.to(roomId).emit('screen-share-ended', {});
     }
 
     // Close only this socket's producers (per-socket ownedProducerIds list).
