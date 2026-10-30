@@ -286,6 +286,8 @@ export default function PanelTile({
     if (onRaiseHand) onRaiseHand(next);
   }
 
+  var prevMicTrackRef = useRef(null); // saved mic track for restoration after screen audio
+
   var toggleScreenShare = function() {
     if (!rtcManager) return;
     if (screenSharing) {
@@ -302,8 +304,16 @@ export default function PanelTile({
           if (t) rtcManager.replaceTrack('video', t).catch(function() {});
         }).catch(function() {});
       }
+      // Restore microphone if screen audio was captured
+      if (prevMicTrackRef.current) {
+        rtcManager.replaceTrack('audio', prevMicTrackRef.current).catch(function() {});
+        prevMicTrackRef.current = null;
+      }
     } else {
-      navigator.mediaDevices.getDisplayMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } }, audio: false }).then(function(displayStream) {
+      navigator.mediaDevices.getDisplayMedia({
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
+        audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false }
+      }).then(function(displayStream) {
         var screenTrack = displayStream.getVideoTracks()[0];
         if (!screenTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
         var vp = rtcManager.producers && rtcManager.producers['video'];
@@ -315,8 +325,19 @@ export default function PanelTile({
             rtcManager.replaceTrack('video', prevCamTrackRef.current).catch(function() {});
             prevCamTrackRef.current = null;
           }
+          if (prevMicTrackRef.current) {
+            rtcManager.replaceTrack('audio', prevMicTrackRef.current).catch(function() {});
+            prevMicTrackRef.current = null;
+          }
         });
         rtcManager.replaceTrack('video', screenTrack).then(function() {
+          // Capture screen audio if available (tab/window audio on Chrome)
+          var screenAudioTrack = displayStream.getAudioTracks()[0];
+          var ap = rtcManager.producers && rtcManager.producers['audio'];
+          if (screenAudioTrack && ap && ap.track) {
+            prevMicTrackRef.current = ap.track;
+            rtcManager.replaceTrack('audio', screenAudioTrack).catch(function() {});
+          }
           setScreenSharing(true);
           if (socket && roomId) socket.emit('screen-share-start', { roomId: roomId });
         }).catch(function() {

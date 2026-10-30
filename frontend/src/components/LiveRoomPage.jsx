@@ -445,6 +445,7 @@ export default function LiveRoomPage({
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
   var screenStreamRef = useRef(null);
+  var micTrackRef     = useRef(null); // saved mic track for restoration after screen audio
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Trivia ──────────────────────────────────────────────────────────────
@@ -1175,6 +1176,11 @@ export default function LiveRoomPage({
     if (cameraTrackRef.current) {
       rtcManager.replaceTrack('video', cameraTrackRef.current);
     }
+    // Restore microphone if screen audio was captured and replaced the mic track
+    if (micTrackRef.current && rtcManager) {
+      rtcManager.replaceTrack('audio', micTrackRef.current).catch(function() {});
+      micTrackRef.current = null;
+    }
     if (socket) socket.emit('screen-share-stop', { roomId: roomId });
     if (addToast) addToast('Screen share ended — camera restored', 'info');
   }
@@ -1185,13 +1191,23 @@ export default function LiveRoomPage({
       return;
     }
     try {
-      var displayStream = await navigator.mediaDevices.getDisplayMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } }, audio: false });
+      var displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
+        audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false }
+      });
       var videoTrack = displayStream.getVideoTracks()[0];
       if (!videoTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
       videoTrack.addEventListener('ended', stopScreenShare);
       screenStreamRef.current = displayStream;
       setIsScreenSharing(true);
       rtcManager.replaceTrack('video', videoTrack);
+      // If browser provided system/tab audio, route it through the audio producer
+      var screenAudioTrack = displayStream.getAudioTracks()[0];
+      var ap = rtcManager.producers && rtcManager.producers['audio'];
+      if (screenAudioTrack && ap && ap.track) {
+        micTrackRef.current = ap.track;
+        rtcManager.replaceTrack('audio', screenAudioTrack).catch(function() {});
+      }
       if (socket) socket.emit('screen-share-start', { roomId: roomId, userId: userId, username: username });
       if (addToast) addToast('Screen share active — viewers now see your screen', 'success');
     } catch(e) {
