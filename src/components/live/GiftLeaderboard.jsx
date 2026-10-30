@@ -62,7 +62,7 @@ function GiftRow({ entry, rank }) {
 }
 
 export default function GiftLeaderboard({ roomId }) {
-  const [timeTab, setTimeTab] = useState('stream');
+  const [timeTab, setTimeTab] = useState(() => { try { return localStorage.getItem('gift_lb_tab') || 'stream'; } catch { return 'stream'; } });
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['gift-leaderboard', roomId, timeTab],
@@ -125,7 +125,7 @@ export default function GiftLeaderboard({ roomId }) {
         {/* Time tabs */}
         <div className="flex gap-1 pb-0.5">
           {TIME_TABS.map(tab => (
-            <button key={tab.id} onClick={() => setTimeTab(tab.id)}
+            <button key={tab.id} onClick={() => { setTimeTab(tab.id); try { localStorage.setItem('gift_lb_tab', tab.id); } catch {} }}
               className="px-2 py-1 rounded-t text-[10px] font-bold transition-all"
               style={{
                 background: timeTab === tab.id ? `${G}20` : 'rgba(255,255,255,0.03)',

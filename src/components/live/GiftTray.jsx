@@ -60,7 +60,7 @@ function GiftAnimation({ gift, senderName, combo, onDone }) {
 
 export default function GiftTray({ roomId, currentUser, recipientId }) {
   const [open, setOpen] = useState(false);
-  const [cat, setCat] = useState('All');
+  const [cat, setCat] = useState(() => { try { return localStorage.getItem('gift_tray_cat') || 'All'; } catch { return 'All'; } });
   const [sending, setSending] = useState(null);
   const [multiplier, setMultiplier] = useState(() => {
     try { return parseInt(localStorage.getItem('gift_tray_multiplier') || '1', 10) || 1; } catch { return 1; }
@@ -264,7 +264,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
               {/* Category filter */}
               <div className="flex overflow-x-auto gap-1.5 px-4 py-2 shrink-0 scrollbar-hide" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 {CATS.map(c => (
-                  <button key={c} onClick={() => setCat(c)}
+                  <button key={c} onClick={() => { setCat(c); try { localStorage.setItem('gift_tray_cat', c); } catch {} }}
                     className="shrink-0 px-3 py-1 rounded-full text-[11px] font-black uppercase"
                     style={{ background: cat === c ? `${G}20` : 'rgba(255,255,255,0.05)', color: cat === c ? G : 'rgba(255,255,255,0.35)', border: cat === c ? `1px solid ${G}40` : '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     {c}
