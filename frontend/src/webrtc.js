@@ -253,6 +253,8 @@ class SeeWhyRTC {
     var prevBytesRecv = 0;
     var poorRecvCount = 0;
     var currentRecvLayer = 1; // track last requested layer to avoid redundant emits
+    var consumerPrevBytes = {}; // producerId → prevBytesReceived for per-consumer bitrate
+    var consumerStatsTick = 0; // sample per-consumer stats every other tick (4s)
     this.statsInterval = setInterval(async function() {
       try {
         var bytesSent = 0;
@@ -327,6 +329,32 @@ class SeeWhyRTC {
             poorRecvCount = 0;
           }
         }
+        // Per-consumer recv stats for remote tile quality indicators (every 4s)
+        consumerStatsTick++;
+        if (consumerStatsTick % 2 === 0) {
+          var pids = Object.keys(self.consumers);
+          for (var _i = 0; _i < pids.length; _i++) {
+            var _pid = pids[_i];
+            var _c = self.consumers[_pid];
+            if (!_c || _c.closed || _c.kind !== 'video') continue;
+            try {
+              var _cs = await _c.getStats();
+              var _rb = 0; var _jitter = 0; var _lost = 0;
+              _cs.forEach(function(r) {
+                if (r.type === 'inbound-rtp') {
+                  if (r.bytesReceived) _rb += r.bytesReceived;
+                  if (r.jitter) _jitter = r.jitter;
+                  if (r.packetsLost) _lost = r.packetsLost;
+                }
+              });
+              var _prev = consumerPrevBytes[_pid] || 0;
+              var _kbps = Math.max(0, Math.round((_rb - _prev) * 8 / 4 / 1000));
+              consumerPrevBytes[_pid] = _rb;
+              self._emit('consumerStats', { producerId: _pid, bitratekbps: _kbps, jitter: _jitter, packetsLost: _lost });
+            } catch (_) {}
+          }
+        }
+
       } catch (e) {
         // stats not critical
       }

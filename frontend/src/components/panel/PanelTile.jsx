@@ -244,6 +244,21 @@ export default function PanelTile({
     return function() { rtcManager.off('transportState', onState); };
   }, [rtcManager]);
 
+  // Per-consumer recv quality indicator for remote tiles
+  useEffect(function() {
+    if (isLocal || !rtcManager || !producerId) return;
+    var onConsumerStats = function(data) {
+      if (!data || data.producerId !== producerId) return;
+      var q;
+      if (data.bitratekbps > 0 && data.bitratekbps < 80) q = 'red';
+      else if (data.bitratekbps > 0 && data.bitratekbps < 250) q = 'yellow';
+      else q = 'green';
+      setConnQuality(q);
+    };
+    rtcManager.on('consumerStats', onConsumerStats);
+    return function() { rtcManager.off('consumerStats', onConsumerStats); };
+  }, [isLocal, rtcManager, producerId]);
+
   var effectiveSpeaking = isLocal ? isSpeaking : remoteSpeaking;
 
   var handleTileClick = function(e) {

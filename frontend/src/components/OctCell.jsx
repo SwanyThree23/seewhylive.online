@@ -289,6 +289,23 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     return function() { rtcManager.off('transportState', onTransportState); };
   }, [rtcManager, isOwnCell]);
 
+  // Per-consumer recv quality for remote tiles
+  useEffect(function() {
+    if (isOwnCell || !rtcManager || !guest) return;
+    var vidId = guest.producerId;
+    if (!vidId) return;
+    var onConsumerStats = function(data) {
+      if (!data || data.producerId !== vidId) return;
+      var q;
+      if (data.bitratekbps > 0 && data.bitratekbps < 80) q = 'red';
+      else if (data.bitratekbps > 0 && data.bitratekbps < 250) q = 'yellow';
+      else q = 'green';
+      setConnQuality(q);
+    };
+    rtcManager.on('consumerStats', onConsumerStats);
+    return function() { rtcManager.off('consumerStats', onConsumerStats); };
+  }, [isOwnCell, rtcManager, guest && guest.producerId]);
+
   // Remote cell: subscribe to video + audio producers
   useEffect(function() {
     if (isOwnCell || !rtcManager || !guest) return;
