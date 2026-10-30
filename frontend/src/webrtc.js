@@ -26,6 +26,7 @@ class SeeWhyRTC {
     this._lastConnectParams = null;
     this._reconnectTimer = null;
     this._reconnectAttempts = 0;
+    this._netChangeHandler = null;
   }
 
   async connect(socket, roomId, userId, role) {
@@ -33,6 +34,17 @@ class SeeWhyRTC {
     this._connecting = true;
     if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
     this._lastConnectParams = { socket: socket, roomId: roomId, userId: userId, role: role };
+    // Listen for network changes — speeds up reconnect after WiFi↔mobile switch by
+    // triggering _scheduleReconnect immediately instead of waiting for ICE timeout (~30s).
+    if (!this._netChangeHandler && navigator && navigator.connection) {
+      var self = this;
+      this._netChangeHandler = function() {
+        if (self.sendTransport && self.sendTransport.connectionState !== 'connected') {
+          self._scheduleReconnect();
+        }
+      };
+      navigator.connection.addEventListener('change', this._netChangeHandler);
+    }
     try {
       if (this.statsInterval) { clearInterval(this.statsInterval); this.statsInterval = null; }
       Object.values(this.producers).forEach(function(p) { p.close(); });
@@ -418,6 +430,10 @@ class SeeWhyRTC {
   destroy() {
     if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
     this._lastConnectParams = null;
+    if (this._netChangeHandler && navigator && navigator.connection) {
+      navigator.connection.removeEventListener('change', this._netChangeHandler);
+      this._netChangeHandler = null;
+    }
     if (this.statsInterval) { clearInterval(this.statsInterval); this.statsInterval = null; }
     Object.values(this.producers).forEach(function(p) { return p.close(); });
     Object.values(this.consumers).forEach(function(c) { return c.close(); });
