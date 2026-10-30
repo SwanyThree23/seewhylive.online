@@ -17,6 +17,7 @@ var transports = {};            // transportId → mediasoup.WebRtcTransport
 var producers = {};             // producerId → { producer, guestId, kind, roomId }
 var consumers = {};             // consumerId → mediasoup.Consumer  (do not change key scheme)
 var guestVideoConsumers = {};   // producerGuestId → Set<consumerId> — secondary index for layer control
+var socketVideoConsumers = {};  // socketId → Set<consumerId> — per-viewer adaptive layer control
 
 var workerIndex = 0;
 
@@ -364,6 +365,32 @@ function getWorkerCount() {
 // For every subscriber currently consuming the named guest's video stream,
 // flip to spatialLayer 2 (r2/900 kbps) while speaking or back to 0 (r0/100 kbps)
 // when silent.  Fire-and-forget: wrapped in try/catch in the caller.
+// Track a video consumer under a viewer's socketId for per-viewer adaptive quality.
+// Called from the 'consume' handler in index.js after createConsumer returns.
+function indexConsumerBySocket(socketId, consumerId) {
+  if (!socketVideoConsumers[socketId]) socketVideoConsumers[socketId] = new Set();
+  socketVideoConsumers[socketId].add(consumerId);
+}
+
+// Remove all consumer entries for a socket (called on disconnect).
+function cleanupSocketConsumers(socketId) {
+  delete socketVideoConsumers[socketId];
+}
+
+// For a viewer requesting adaptive quality: set preferred layer on all their video consumers.
+async function setSocketConsumerPreferredLayers(socketId, spatialLayer) {
+  var ids = socketVideoConsumers[socketId];
+  if (!ids || ids.size === 0) return;
+  var promises = [];
+  ids.forEach(function(cid) {
+    var c = consumers[cid];
+    if (c && c.kind === 'video') {
+      promises.push(c.setPreferredLayers({ spatialLayer: spatialLayer }).catch(function() {}));
+    }
+  });
+  await Promise.all(promises);
+}
+
 async function setPreferredLayersByGuestId(producerGuestId, spatialLayer) {
   var ids = guestVideoConsumers[producerGuestId];
   if (!ids || ids.size === 0) return;
@@ -423,5 +450,8 @@ module.exports = {
   getRoomProducers: getRoomProducers,
   cleanupRoom: cleanupRoom,
   getWorkerCount: getWorkerCount,
-  setPreferredLayersByGuestId: setPreferredLayersByGuestId
+  setPreferredLayersByGuestId: setPreferredLayersByGuestId,
+  indexConsumerBySocket: indexConsumerBySocket,
+  cleanupSocketConsumers: cleanupSocketConsumers,
+  setSocketConsumerPreferredLayers: setSocketConsumerPreferredLayers
 };

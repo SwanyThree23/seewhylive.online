@@ -2698,6 +2698,9 @@ io.on('connection', function(socket) {
 
     mediasoup.createConsumer(roomId, transportId, producerId, rtpCapabilities)
       .then(function(result) {
+        if (result.consumer && result.consumer.kind === 'video') {
+          mediasoup.indexConsumerBySocket(socket.id, result.consumer.id);
+        }
         if (ack) ack(result.params);
       })
       .catch(function(err) {
@@ -3612,6 +3615,15 @@ io.on('connection', function(socket) {
     // Upgrade active-speaker video to r2 (900 kbps) while speaking;
     // drop back to r0 (100 kbps) when silent — O(subscribers) but fine for ≤20 seats.
     mediasoup.setPreferredLayersByGuestId(guestId, _isSpeaking ? 2 : 0).catch(function() {});
+  });
+
+  // ── consumer:adapt-layer ──────────────────────────────────────────────
+  // Viewer requests a layer change across ALL their video consumers (adaptive quality).
+  // Emitted by the client when recv bandwidth is poor (spatialLayer 0) or recovering (2).
+  socket.on('consumer:adapt-layer', function(data) {
+    if (!data) return;
+    var layer = Math.min(2, Math.max(0, Number(data.spatialLayer) || 0));
+    mediasoup.setSocketConsumerPreferredLayers(socket.id, layer).catch(function() {});
   });
 
   // ── consumer:set-layer ────────────────────────────────────────────────
@@ -5900,6 +5912,8 @@ io.on('connection', function(socket) {
   // ── disconnect ─────────────────────────────────────────────────────────
   socket.on('disconnect', function(reason) {
     logger.info('[socket] Disconnected: ' + socket.id + ' reason=' + reason);
+
+    mediasoup.cleanupSocketConsumers(socket.id);
 
     // Always purge throttle entries regardless of room state (prevents memory leak)
     var _tKey = socket.data.userId || socket.id;

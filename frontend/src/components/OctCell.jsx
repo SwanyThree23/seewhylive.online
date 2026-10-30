@@ -31,6 +31,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var [sendTransportKey, setSendTransportKey] = useState(0);
   var [subscribeKey, setSubscribeKey] = useState(0);
   var [facingFront,  setFacingFront]  = useState(true);
+  var [reconnecting, setReconnecting] = useState(false);
 
   var size      = fill ? null : (sz || 200);
   var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
@@ -187,6 +188,19 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     var onReady = function() { setSendTransportKey(function(k) { return k + 1; }); };
     rtcManager.on('sendTransportReady', onReady);
     return function() { rtcManager.off('sendTransportReady', onReady); };
+  }, [isOwnCell, rtcManager]);
+
+  // Track auto-reconnect state for own cell status indicator
+  useEffect(function() {
+    if (!isOwnCell || !rtcManager) return;
+    var onReconnecting = function() { setReconnecting(true); };
+    var onReset = function() { setReconnecting(false); };
+    rtcManager.on('reconnecting', onReconnecting);
+    rtcManager.on('rtcReset', onReset);
+    return function() {
+      rtcManager.off('reconnecting', onReconnecting);
+      rtcManager.off('rtcReset', onReset);
+    };
   }, [isOwnCell, rtcManager]);
 
   // Force remote cells to re-subscribe when mediasoup reconnects (consumers cleared by connect())
@@ -471,6 +485,13 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
             ) : (
               <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: nameFs, color: '#8A7A62', textAlign: 'center', maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName}</span>
             )}
+          </div>
+        )}
+
+        {/* Reconnecting overlay — own cell only */}
+        {isOwnCell && reconnecting && (
+          <div style={{ position: 'absolute', bottom: 22, left: '50%', transform: 'translateX(-50%)', background: 'rgba(240,165,0,.9)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09', whiteSpace: 'nowrap', zIndex: 8 }}>
+            ⟳ RECONNECTING
           </div>
         )}
 

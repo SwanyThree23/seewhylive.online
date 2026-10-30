@@ -23,11 +23,16 @@ class SeeWhyRTC {
     this.listeners = {};
     this.statsInterval = null;
     this._connecting = false;
+    this._lastConnectParams = null;
+    this._reconnectTimer = null;
+    this._reconnectAttempts = 0;
   }
 
   async connect(socket, roomId, userId, role) {
     if (this._connecting) return;
     this._connecting = true;
+    if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
+    this._lastConnectParams = { socket: socket, roomId: roomId, userId: userId, role: role };
     try {
       if (this.statsInterval) { clearInterval(this.statsInterval); this.statsInterval = null; }
       Object.values(this.producers).forEach(function(p) { p.close(); });
@@ -58,9 +63,26 @@ class SeeWhyRTC {
       await this._createRecvTransport();
       this._emit('rtcReset');
       this._startStatsMonitor();
+      this._reconnectAttempts = 0;
     } finally {
       this._connecting = false;
     }
+  }
+
+  _scheduleReconnect() {
+    if (this._reconnectTimer || !this._lastConnectParams || this._connecting) return;
+    var self = this;
+    var delay = Math.min(30000, 3000 * Math.pow(2, this._reconnectAttempts));
+    this._reconnectAttempts++;
+    this._emit('reconnecting', { attempt: this._reconnectAttempts, delayMs: delay });
+    this._reconnectTimer = setTimeout(function() {
+      self._reconnectTimer = null;
+      if (!self._lastConnectParams) return;
+      var p = self._lastConnectParams;
+      self.connect(p.socket, p.roomId, p.userId, p.role).catch(function() {
+        self._scheduleReconnect();
+      });
+    }, delay);
   }
 
   async _createSendTransport() {
@@ -93,6 +115,7 @@ class SeeWhyRTC {
 
     this.sendTransport.on('connectionstatechange', function(state) {
       self._emit('transportState', { direction: 'send', state: state });
+      if (state === 'failed') self._scheduleReconnect();
     });
   }
 
@@ -116,6 +139,7 @@ class SeeWhyRTC {
 
     this.recvTransport.on('connectionstatechange', function(state) {
       self._emit('transportState', { direction: 'recv', state: state });
+      if (state === 'failed') self._scheduleReconnect();
     });
   }
 
@@ -227,6 +251,8 @@ class SeeWhyRTC {
     var prevPacketsSent = 0;
     var prevPacketsLost = 0;
     var prevBytesRecv = 0;
+    var poorRecvCount = 0;
+    var currentRecvLayer = 1; // track last requested layer to avoid redundant emits
     this.statsInterval = setInterval(async function() {
       try {
         var bytesSent = 0;
@@ -281,6 +307,26 @@ class SeeWhyRTC {
           rttMs:           rttMs,
           lossPct:         Math.max(0, lossPct),
         });
+
+        // Adaptive recv quality: downgrade all viewer consumers when bandwidth is poor
+        if (self.socket && self.recvTransport) {
+          var rb = Math.max(0, recvBitratekbps);
+          if (rb > 0 && rb < 150) {
+            poorRecvCount++;
+            if (poorRecvCount >= 2 && currentRecvLayer !== 0) {
+              currentRecvLayer = 0;
+              self.socket.emit('consumer:adapt-layer', { spatialLayer: 0 });
+            }
+          } else if (rb >= 400) {
+            poorRecvCount = 0;
+            if (currentRecvLayer !== 1) {
+              currentRecvLayer = 1;
+              self.socket.emit('consumer:adapt-layer', { spatialLayer: 1 });
+            }
+          } else {
+            poorRecvCount = 0;
+          }
+        }
       } catch (e) {
         // stats not critical
       }
@@ -321,6 +367,8 @@ class SeeWhyRTC {
   }
 
   destroy() {
+    if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
+    this._lastConnectParams = null;
     if (this.statsInterval) { clearInterval(this.statsInterval); this.statsInterval = null; }
     Object.values(this.producers).forEach(function(p) { return p.close(); });
     Object.values(this.consumers).forEach(function(c) { return c.close(); });
