@@ -93,6 +93,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         if (onCameraTrack) {
           var vt = stream.getVideoTracks()[0];
           if (vt) {
+            if ('contentHint' in vt) vt.contentHint = 'motion';
             onCameraTrack(vt);
             // Detect unexpected camera loss (e.g. USB disconnect, permission revoke)
             vt.addEventListener('ended', function() {

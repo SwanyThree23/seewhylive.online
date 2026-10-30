@@ -203,7 +203,7 @@ class SeeWhyRTC {
       }
       var audioProducer = await this.sendTransport.produce({
         track: audioTrack,
-        codecOptions: { opusStereo: false, opusDtx: true, opusFec: true, opusMaxPlaybackRate: 48000 }
+        codecOptions: { opusStereo: false, opusDtx: true, opusFec: true, opusMaxPlaybackRate: 48000, opusMaxAverageBitrate: 48000 }
       });
       this.producers['audio'] = audioProducer;
     }
@@ -249,6 +249,13 @@ class SeeWhyRTC {
         self._emit('consumerClosed', { producerId: producerId });
       });
       consumer.on('transportclose', function() { delete self.consumers[producerId]; });
+      // Track 'ended' fires when the remote side closes without a proper producerclose signal
+      consumer.track.addEventListener('ended', function() {
+        if (!consumer.closed) {
+          delete self.consumers[producerId];
+          self._emit('consumerClosed', { producerId: producerId });
+        }
+      });
       return new MediaStream([consumer.track]);
     }).finally(function() {
       delete self._subscribePending[producerId];
@@ -412,6 +419,21 @@ class SeeWhyRTC {
     } catch(e) {
       console.error('[RTC] replaceTrack error:', e);
     }
+  }
+
+  async setVideoEncodings(encodings) {
+    if (!this.producers['video']) return;
+    try {
+      await this.producers['video'].setEncodings(encodings);
+    } catch(e) {
+      // setEncodings not supported by this version — safe to ignore
+    }
+  }
+
+  getVideoEncodings() {
+    var p = this.producers['video'];
+    if (!p || !p.encodings) return null;
+    return p.encodings;
   }
 
   pauseProducer(kind) {

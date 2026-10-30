@@ -3624,8 +3624,8 @@ io.on('connection', function(socket) {
     var _isSpeaking = data && !!data.speaking;
     io.volatile.to(roomId).emit('speaking', { guestId: guestId, speaking: _isSpeaking });
     // Upgrade active-speaker video to r2 (900 kbps) while speaking;
-    // drop back to r0 (100 kbps) when silent — O(subscribers) but fine for ≤20 seats.
-    mediasoup.setPreferredLayersByGuestId(guestId, _isSpeaking ? 2 : 0).catch(function() {});
+    // drop back to r1 (300 kbps default) when silent — O(subscribers) but fine for ≤20 seats.
+    mediasoup.setPreferredLayersByGuestId(guestId, _isSpeaking ? 2 : 1).catch(function() {});
   });
 
   // ── consumer:adapt-layer ──────────────────────────────────────────────

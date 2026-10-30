@@ -1173,13 +1173,25 @@ export default function LiveRoomPage({
       screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
       screenStreamRef.current = null;
     }
+    // Restore camera simulcast — back to motion-optimized downscale profile
+    var _topBR = medConf && medConf.preset && medConf.preset.bitrate ? Math.min(medConf.preset.bitrate, 5000000) : 900000;
+    rtcManager.setVideoEncodings([
+      { rid: 'r0', maxBitrate: Math.round(_topBR * 0.11), scaleResolutionDownBy: 4 },
+      { rid: 'r1', maxBitrate: Math.round(_topBR * 0.33), scaleResolutionDownBy: 2 },
+      { rid: 'r2', maxBitrate: _topBR, scaleResolutionDownBy: 1 },
+    ]).catch(function() {});
     // Restore camera: use the saved track if still live, else re-acquire
     if (cameraTrackRef.current && cameraTrackRef.current.readyState !== 'ended') {
+      if ('contentHint' in cameraTrackRef.current) cameraTrackRef.current.contentHint = 'motion';
       rtcManager.replaceTrack('video', cameraTrackRef.current).catch(function() {});
     } else {
       navigator.mediaDevices.getUserMedia({ video: true }).then(function(s) {
         var t = s.getVideoTracks()[0];
-        if (t) { cameraTrackRef.current = t; rtcManager.replaceTrack('video', t).catch(function() {}); }
+        if (t) {
+          if ('contentHint' in t) t.contentHint = 'motion';
+          cameraTrackRef.current = t;
+          rtcManager.replaceTrack('video', t).catch(function() {});
+        }
       }).catch(function() {});
     }
     // Restore microphone if screen audio was captured and replaced the mic track
@@ -1203,10 +1215,19 @@ export default function LiveRoomPage({
       });
       var videoTrack = displayStream.getVideoTracks()[0];
       if (!videoTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
+      // Tell the browser encoder this is screen content (sharp edges, text) not motion video
+      if ('contentHint' in videoTrack) videoTrack.contentHint = 'detail';
       videoTrack.addEventListener('ended', stopScreenShare);
       screenStreamRef.current = displayStream;
       setIsScreenSharing(true);
       rtcManager.replaceTrack('video', videoTrack);
+      // Optimize simulcast for screen content: reduce downscale so low layers remain readable;
+      // increase bitrate so text stays crisp at all layers.
+      rtcManager.setVideoEncodings([
+        { rid: 'r0', maxBitrate: 300000, scaleResolutionDownBy: 2 },
+        { rid: 'r1', maxBitrate: 800000, scaleResolutionDownBy: 1 },
+        { rid: 'r2', maxBitrate: 2000000, scaleResolutionDownBy: 1 },
+      ]).catch(function() {});
       // If browser provided system/tab audio, route it through the audio producer
       var screenAudioTrack = displayStream.getAudioTracks()[0];
       var ap = rtcManager.producers && rtcManager.producers['audio'];
