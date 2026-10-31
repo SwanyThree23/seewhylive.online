@@ -550,6 +550,12 @@ export default function LiveRoomPage({
   var [roomTimerActive,    setRoomTimerActive]    = useState(false); // room timer overlay visible
   var [showTimerPicker,    setShowTimerPicker]    = useState(false); // host timer preset picker popover
   var roomTimerRef         = useRef(null);
+  var [stageBg,            setStageBg]            = useState('');    // CSS gradient string or '' for default
+  var [showBgPicker,       setShowBgPicker]       = useState(false); // stage bg picker popover
+  var [wordFilter,         setWordFilter]         = useState(function() { try { var s = localStorage.getItem('sw_word_filter'); return s ? JSON.parse(s) : []; } catch(e) { return []; } });
+  var [showWordFilter,     setShowWordFilter]     = useState(false); // word filter editor visible
+  var [wordFilterInput,    setWordFilterInput]    = useState('');    // new word input
+  var [showGiftStrip,      setShowGiftStrip]      = useState(false); // gift leaderboard strip visible
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -1561,6 +1567,7 @@ export default function LiveRoomPage({
         if (prefs.density !== undefined)  setGridDensity(Number(prefs.density) || 0);
         if (prefs.aspect)                 setCellAspect(prefs.aspect);
         if (prefs.tint !== undefined)     setStageTint(prefs.tint || '');
+        if (prefs.bg !== undefined)       setStageBg(prefs.bg || '');
       }
     } catch(e) {}
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1568,9 +1575,14 @@ export default function LiveRoomPage({
   // ── Stage prefs: persist to localStorage whenever they change ───────────
   useEffect(function() {
     try {
-      localStorage.setItem('sw_stage_prefs', JSON.stringify({ layout: stageLayout, sort: stageSort, limitSec: stageLimitSec, density: gridDensity, aspect: cellAspect, tint: stageTint }));
+      localStorage.setItem('sw_stage_prefs', JSON.stringify({ layout: stageLayout, sort: stageSort, limitSec: stageLimitSec, density: gridDensity, aspect: cellAspect, tint: stageTint, bg: stageBg }));
     } catch(e) {}
-  }, [stageLayout, stageSort, stageLimitSec, gridDensity, cellAspect, stageTint]);
+  }, [stageLayout, stageSort, stageLimitSec, gridDensity, cellAspect, stageTint, stageBg]);
+
+  // ── Word filter: persist whenever list changes ──────────────────────────
+  useEffect(function() {
+    try { localStorage.setItem('sw_word_filter', JSON.stringify(wordFilter)); } catch(e) {}
+  }, [wordFilter]);
 
   // ── Presenter notes: restore from localStorage on mount ─────────────────
   useEffect(function() {
@@ -2556,6 +2568,21 @@ export default function LiveRoomPage({
     });
   };
 
+  // Chat export: downloads all chat messages as plain text
+  var downloadChat = function() {
+    if (!chat || chat.length === 0) { if (addToastRef.current) addToastRef.current('No chat to export', 'info'); return; }
+    var lines = chat.map(function(m) {
+      var ts = m.ts ? new Date(m.ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+      return '[' + ts + '] ' + (m.username || 'Guest') + ': ' + (m.message || '');
+    });
+    var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href = url; a.download = 'seewhy-chat-' + new Date().toISOString().slice(0, 10) + '.txt'; a.click();
+    URL.revokeObjectURL(url);
+    if (addToastRef.current) addToastRef.current('Chat exported', 'success');
+  };
+
   // Stage ticker: host broadcasts a scrolling text banner to all viewers
   var startTicker = function(text) {
     if (!text || !text.trim()) return;
@@ -2809,6 +2836,11 @@ export default function LiveRoomPage({
                   if (addToast) addToast('🎙 All participants unmuted', 'info');
                 }} title="Unmute all participants" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🎙</button>
               )}
+              {Object.keys(guestGiftTotals).some(function(k) { return guestGiftTotals[k] > 0; }) && (
+                <button onClick={function() { setShowGiftStrip(function(v) { return !v; }); }}
+                  title="Gift leaderboard"
+                  style={{ background: showGiftStrip ? 'rgba(201,168,76,.15)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (showGiftStrip ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 8px', fontSize: 10, color: showGiftStrip ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🎁</button>
+              )}
               <button onClick={function() { setShowTTSSheet(true); }} title="Voice SuperChat" style={{ background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: RED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🚀</button>
               <button onClick={function() { setShowSuperChatSheet(true); }} title="Super Chat" style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: GOLD, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>💬</button>
               <button onClick={function() { setShowShareSheet(true); }} title="Share" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: TEXT, cursor: 'pointer' }}>🔗</button>
@@ -2914,7 +2946,7 @@ export default function LiveRoomPage({
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
 
         {/* ── Stage Section ── */}
-        <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden', background: stageBg || 'transparent' }}>
           {/* Stage tint overlay */}
           {stageTint && (
             <div style={{ position: 'absolute', inset: 0, background: stageTint, opacity: 0.08, pointerEvents: 'none', zIndex: 1 }} />
@@ -2986,6 +3018,34 @@ export default function LiveRoomPage({
               </div>
             );
           })}
+
+          {/* ── Gift leaderboard strip ── */}
+          {showGiftStrip && (function() {
+            var entries = Object.keys(guestGiftTotals)
+              .filter(function(gid) { return guestGiftTotals[gid] > 0; })
+              .sort(function(a, b) { return guestGiftTotals[b] - guestGiftTotals[a]; })
+              .slice(0, 5)
+              .map(function(gid) {
+                var g = allGuestMap[gid] || {};
+                return { gid: gid, name: localGuestNames[gid] || g.username || gid, cents: guestGiftTotals[gid] };
+              });
+            if (entries.length === 0) return null;
+            var medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+            return (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, marginBottom: 6, flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 1, flexShrink: 0 }}>🎁 TOP GIFTERS</span>
+                {entries.map(function(e, i) {
+                  return (
+                    <span key={e.gid} style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, color: i === 0 ? GOLD : TEXT, display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <span style={{ fontSize: 11 }}>{medals[i]}</span>
+                      <span style={{ maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD }}>${(e.cents / 100).toFixed(0)}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
           {/* ── Reaction counter bar (host/cohost) ── */}
           {showReactionBar && (role === 'host' || role === 'cohost') && Object.keys(reactionCounts).length > 0 && (
@@ -4755,6 +4815,17 @@ export default function LiveRoomPage({
                   🐌 {slowModeSec > 0 ? (slowModeSec + 's') : 'OFF'}
                 </button>
               )}
+              <button onClick={downloadChat} title="Export chat as .txt"
+                style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 7px', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>
+                📥
+              </button>
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() { setShowWordFilter(function(v) { return !v; }); }}
+                  title={wordFilter.length > 0 ? ('Word filter: ' + wordFilter.length + ' words') : 'Word filter (none)'}
+                  style={{ background: wordFilter.length > 0 ? 'rgba(255,140,0,.15)' : 'rgba(255,255,255,.05)', border: '1px solid ' + (wordFilter.length > 0 ? 'rgba(255,140,0,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 7px', color: wordFilter.length > 0 ? 'rgba(255,140,0,.9)' : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>
+                  🚫{wordFilter.length > 0 ? (' ' + wordFilter.length) : ''}
+                </button>
+              )}
               <button onClick={function() {
                 var next = !soundOn;
                 setSoundOn(next);
@@ -4767,6 +4838,51 @@ export default function LiveRoomPage({
                 style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
             </div>
           </div>
+          {/* Word filter editor (host/cohost) */}
+          {showWordFilter && (role === 'host' || role === 'cohost') && (
+            <div style={{ padding: '8px 12px', borderBottom: '1px solid ' + DIM, background: 'rgba(255,140,0,.06)', flexShrink: 0 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: 'rgba(255,140,0,.8)', letterSpacing: .5, marginBottom: 6 }}>🚫 WORD FILTER — messages containing these words show as [filtered]</div>
+              <div style={{ display: 'flex', gap: 5, marginBottom: 6 }}>
+                <input
+                  value={wordFilterInput}
+                  onChange={function(e) { setWordFilterInput(e.target.value.slice(0, 40)); }}
+                  onKeyDown={function(e) {
+                    if (e.key === 'Enter') {
+                      var w = wordFilterInput.trim().toLowerCase();
+                      if (w && !wordFilter.includes(w)) setWordFilter(function(prev) { return prev.concat([w]); });
+                      setWordFilterInput('');
+                    }
+                  }}
+                  placeholder="Add word…"
+                  style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '4px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, outline: 'none' }}
+                />
+                <button
+                  onClick={function() {
+                    var w = wordFilterInput.trim().toLowerCase();
+                    if (w && !wordFilter.includes(w)) setWordFilter(function(prev) { return prev.concat([w]); });
+                    setWordFilterInput('');
+                  }}
+                  style={{ background: 'rgba(255,140,0,.2)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 5, padding: '4px 10px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: 'rgba(255,140,0,.9)', cursor: 'pointer', letterSpacing: 1 }}>
+                  ADD
+                </button>
+              </div>
+              {wordFilter.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {wordFilter.map(function(w) {
+                    return (
+                      <div key={w} style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(255,140,0,.12)', border: '1px solid rgba(255,140,0,.3)', borderRadius: 4, padding: '2px 6px' }}>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: 'rgba(255,140,0,.9)' }}>{w}</span>
+                        <button onClick={function() { setWordFilter(function(prev) { return prev.filter(function(x) { return x !== w; }); }); }}
+                          style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 9, padding: 0, lineHeight: 1 }}>✕</button>
+                      </div>
+                    );
+                  })}
+                  <button onClick={function() { setWordFilter([]); }}
+                    style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>clear all</button>
+                </div>
+              )}
+            </div>
+          )}
           {/* Pinned message banner */}
           {pinnedMsg && (
             <div style={{ padding: '7px 14px', background: 'rgba(201,168,76,.10)', borderBottom: '1px solid rgba(201,168,76,.22)', display: 'flex', alignItems: 'flex-start', gap: 8, flexShrink: 0 }}>
@@ -4849,7 +4965,16 @@ export default function LiveRoomPage({
                       </span>
                     )}
                   </div>
-                  <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45 }}>{m.message}</p>
+                  <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45 }}>{(function() {
+                    if (!wordFilter || wordFilter.length === 0) return m.message;
+                    var filtered = m.message || '';
+                    wordFilter.forEach(function(w) {
+                      if (!w) return;
+                      var re = new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                      filtered = filtered.replace(re, '[filtered]');
+                    });
+                    return filtered;
+                  })()}</p>
                   {m.translated && m.translated !== m.message && (
                     <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, margin: '2px 0 0', fontStyle: 'italic' }}>{m.translated}</p>
                   )}
@@ -5423,6 +5548,47 @@ export default function LiveRoomPage({
                   <button onClick={function() { setShowTickerInput(false); }}
                     style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 4 }}>
                     cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="🎨"
+                label={stageBg ? 'BG ✓' : 'Stage BG'}
+                active={!!stageBg}
+                activeColor={TEAL}
+                onPress={function() { setShowBgPicker(function(v) { return !v; }); }}
+              />
+              {showBgPicker && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 194, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 8, textAlign: 'center' }}>STAGE BACKGROUND</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                    {[
+                      { label: 'Default', val: '' },
+                      { label: 'Deep Space', val: 'linear-gradient(135deg,#0a0015 0%,#0e0c09 50%,#0a0820 100%)' },
+                      { label: 'Sunset', val: 'linear-gradient(160deg,#1a0a00 0%,#3d1200 40%,#1a0020 100%)' },
+                      { label: 'Ocean', val: 'linear-gradient(160deg,#001428 0%,#002244 50%,#001020 100%)' },
+                      { label: 'Forest', val: 'linear-gradient(160deg,#041a08 0%,#0a2412 50%,#041008 100%)' },
+                      { label: 'Crimson', val: 'linear-gradient(160deg,#1a0008 0%,#2d0012 50%,#1a0005 100%)' },
+                      { label: 'Neon', val: 'linear-gradient(135deg,#07001a 0%,#0e0028 50%,#1a0a00 100%)' },
+                      { label: 'Gold', val: 'linear-gradient(160deg,#100c00 0%,#1e1600 50%,#0e0a00 100%)' },
+                    ].map(function(opt) {
+                      var isActive = stageBg === opt.val;
+                      return (
+                        <button key={opt.label}
+                          onClick={function() { setStageBg(opt.val); setShowBgPicker(false); }}
+                          style={{ flex: '1 1 40%', background: opt.val || DIM, border: '1.5px solid ' + (isActive ? GOLD : BORDER), borderRadius: 6, padding: '7px 4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: isActive ? GOLD : TEXT, cursor: 'pointer', letterSpacing: .3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button onClick={function() { setShowBgPicker(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer' }}>
+                    close
                   </button>
                 </div>
               )}
