@@ -3747,6 +3747,15 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('spotlight-end');
   });
 
+  // ── lower-all-hands ────────────────────────────────────────────────────
+  // Host clears every raised hand in the room at once.
+  socket.on('lower-all-hands', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('lower-all-hands');
+  });
+
   // ── request-reconnect ──────────────────────────────────────────────────
   // Host asks a specific guest to reconnect (e.g. their stream quality is poor).
   // Delivers a 'please-reconnect' event directly to that user's socket room.

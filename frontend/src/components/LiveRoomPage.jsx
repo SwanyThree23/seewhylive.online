@@ -366,6 +366,7 @@ export default function LiveRoomPage({
   var [stageLayout,    setStageLayout]    = useState(function() { try { return localStorage.getItem('sw_layout') || 'grid'; } catch(e) { return 'grid'; } });   // 'grid' | 'featured'
   var [featuredId,     setFeaturedId]     = useState(userId);
   var [cinemaMode,     setCinemaMode]     = useState(false);  // hide thumbnail strip in featured layout
+  var [stageLocked,    setStageLocked]    = useState(false);  // stage entry locked by host
   var [showLiveModal,  setShowLiveModal]  = useState(false);
   var [stageGuests,    setStageGuests]    = useState([userId]);
   var [showMediaConf,  setShowMediaConf]  = useState(false);
@@ -758,6 +759,14 @@ export default function LiveRoomPage({
       if (addToastRef.current) addToastRef.current('⚠️ ' + who + ' is asking you to reconnect — leave and rejoin to fix your stream quality', 'warn');
     });
 
+    socket.on('stage-lock-update', function(data) {
+      setStageLocked(!!(data && data.locked));
+    });
+
+    socket.on('lower-all-hands', function() {
+      setRaisedHands({});
+    });
+
     var onStageInvite = function(data) {
       if (!data || !data.guestId) return;
       setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[data.guestId]; return n; });
@@ -1057,6 +1066,8 @@ export default function LiveRoomPage({
       socket.off('spotlight-end');
       socket.off('mute-all');
       socket.off('please-reconnect');
+      socket.off('stage-lock-update');
+      socket.off('lower-all-hands');
       socket.off('room-audio-only');
       socket.off('room-private');
       socket.off('subscriber-only-changed');
@@ -1851,6 +1862,15 @@ export default function LiveRoomPage({
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
               {(role === 'host' || role === 'cohost') && (
                 <button onClick={function() {
+                  var next = !stageLocked;
+                  if (socket) socket.emit('lock-stage', { roomId: roomId, locked: next });
+                }} title={stageLocked ? 'Unlock stage — let guests join' : 'Lock stage — no new guests'}
+                  style={{ background: stageLocked ? 'rgba(201,168,76,.18)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (stageLocked ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 8px', fontSize: 10, color: stageLocked ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", transition: 'all .15s' }}>
+                  {stageLocked ? '🔒' : '🔓'}
+                </button>
+              )}
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() {
                   if (socket) socket.emit('mute-all', { roomId: roomId });
                   if (addToast) addToast('🔇 All participants muted', 'info');
                 }} title="Mute all participants" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🔇</button>
@@ -1940,6 +1960,9 @@ export default function LiveRoomPage({
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontWeight: 700, fontSize: 20, color: TEXT, letterSpacing: .3 }}>Stage</span>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: MUTED, letterSpacing: 1 }}>{onStage.length}/{MAX_STAGE}</span>
+              {stageLocked && (
+                <span title="Stage locked — no new guests can join" style={{ fontSize: 12, lineHeight: 1 }}>🔒</span>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               {/* Panel mode (list vs grid for 20-person) */}
@@ -2196,6 +2219,7 @@ export default function LiveRoomPage({
                           { label: isPinned ? '📌 Unpin' : '📌 Pin (local)', action: 'pin' },
                           { label: spotlight && spotlight.guestId === gid ? '🔦 End spotlight' : '🔦 Spotlight all', action: 'spotlight' },
                           { label: g.remoteMuted ? '🎙 Unmute' : '🔇 Mute', action: 'mute' },
+                          { label: g.role === 'cohost' ? '⬇ Demote to Guest' : '⬆ Promote to Co-host', action: 'promote' },
                           { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
                           { label: producerQuality[g.producerId] === 'red' ? '↺ Request Reconnect' : null, action: 'reconnect', hide: producerQuality[g.producerId] !== 'red' },
                           { label: '🚫 Remove from Stage', action: 'remove' },
@@ -2225,6 +2249,10 @@ export default function LiveRoomPage({
                                 } else if (item.action === 'reconnect') {
                                   if (socket) socket.emit('request-reconnect', { roomId: roomId, guestId: gid });
                                   if (addToast) addToast('Reconnect request sent to ' + (g.username || gid), 'info');
+                                } else if (item.action === 'promote') {
+                                  var newRole = g.role === 'cohost' ? 'guest' : 'cohost';
+                                  if (socket) socket.emit('promote-guest', { roomId: roomId, guestId: gid, role: newRole });
+                                  if (addToast) addToast((g.username || gid) + ' → ' + newRole, 'success');
                                 }
                               }}
                               style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 13px', background: 'none', border: 'none', borderBottom: '1px solid ' + DIM, color: item.action === 'remove' ? RED : TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, cursor: 'pointer', letterSpacing: .3 }}>
@@ -2594,7 +2622,17 @@ export default function LiveRoomPage({
           <div style={{ margin: '0 14px 10px', background: 'rgba(255,140,0,.06)', border: '1px solid rgba(255,140,0,.28)', borderRadius: 12, padding: '10px 12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 1.5, color: '#D4854A' }}>✋ STAGE QUEUE</span>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{handQueue.length} waiting</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{handQueue.length} waiting</span>
+                <button
+                  onClick={function() {
+                    if (socket) socket.emit('lower-all-hands', { roomId: roomId });
+                  }}
+                  title="Lower all raised hands"
+                  style={{ background: 'none', border: '1px solid rgba(255,140,0,.35)', borderRadius: 5, padding: '2px 7px', fontSize: 7, color: '#D4854A', cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .5 }}>
+                  CLEAR ALL
+                </button>
+              </div>
             </div>
             {handQueue.map(function(gid, idx) {
               var entry = allGuestMap[gid] || audienceList.find(function(x) { return (x.guestId || x.userId) === gid; }) || { guestId: gid, username: gid };
