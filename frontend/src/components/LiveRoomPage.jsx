@@ -511,6 +511,9 @@ export default function LiveRoomPage({
   var [broadcastText,      setBroadcastText]      = useState('');    // text for host broadcast overlay
   var [showBroadcastInput, setShowBroadcastInput] = useState(false); // show broadcast input panel
   var [broadcastOverlay,   setBroadcastOverlay]   = useState(null);  // { text, from } | null — fullscreen text overlay
+  var [hiddenVideos,       setHiddenVideos]       = useState({});    // { [guestId]: true } — host-local video hide
+  var [showEmojiBar,       setShowEmojiBar]       = useState(false); // host quick-emoji fire bar
+  var [showSessionSummary, setShowSessionSummary] = useState(false); // session wrap-up card
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -2026,6 +2029,21 @@ export default function LiveRoomPage({
     if (addToast) addToast('Stream ended', 'info');
   }
 
+  var exportStageStatsCsv = function(rows) {
+    var lines = ['Name,Role,SpeakSecs,StageSecs,Quality,GiftsCents'];
+    rows.forEach(function(r) {
+      var cols = [r.name, r.guestRole || 'guest', r.speakSecs || 0, r.stageSecs || 0, r.q || '', r.gifts || 0];
+      lines.push(cols.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','));
+    });
+    var blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'stage-stats-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // ── Build participant arrays ──
   var allGuestMap = {};
   allGuestMap[userId] = { guestId: userId, username: username, role: role };
@@ -2326,6 +2344,13 @@ export default function LiveRoomPage({
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: 1 }}>AUDIO</span>
               </div>
             )}
+            {(role === 'host' || role === 'cohost') && (
+              <button onClick={function() { setShowSessionSummary(true); }}
+                title="Session summary"
+                style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '4px 8px', cursor: 'pointer', fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: .5 }}>
+                📈 SUMMARY
+              </button>
+            )}
             {isLive ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <button onClick={endStream} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}>
@@ -2480,6 +2505,29 @@ export default function LiveRoomPage({
           <button onClick={function() { setShowGoalSet(true); }} style={{ background: 'none', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '3px 10px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer', letterSpacing: 1 }}>
             + SET STREAM GOAL
           </button>
+        </div>
+      )}
+
+      {/* ── Quick emoji fire bar (host/cohost) ── */}
+      {showEmojiBar && (role === 'host' || role === 'cohost') && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '6px 16px', background: 'rgba(9,7,14,.95)', borderBottom: '1px solid ' + BORDER }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, flexShrink: 0 }}>FIRE EMOJI</span>
+          {['🔥', '💯', '👏', '😂', '❤️', '🎉', '💎', '🙌', '😮', '💪'].map(function(em) {
+            return (
+              <button key={em}
+                onClick={function() {
+                  if (socket) socket.emit('stage-reaction', { roomId: roomId, emoji: em });
+                  setReactionBurst(function(prev) {
+                    return prev.concat([{ id: Date.now() + em, emoji: em, x: 20 + Math.random() * 60 }]).slice(-20);
+                  });
+                }}
+                style={{ background: 'none', border: '1px solid ' + DIM, borderRadius: 8, padding: '4px 8px', fontSize: 18, cursor: 'pointer', transition: 'transform .1s, border-color .1s', lineHeight: 1 }}
+                onMouseEnter={function(e) { e.currentTarget.style.transform = 'scale(1.35)'; e.currentTarget.style.borderColor = GOLD + '66'; }}
+                onMouseLeave={function(e) { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = DIM; }}>
+                {em}
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -3040,6 +3088,14 @@ export default function LiveRoomPage({
 
                     <OverlayCustomLT lowerThirds={mergedLowerThirds} guestId={gid} />
 
+                    {/* Host-local video hide overlay */}
+                    {!isOwn && hiddenVideos[gid] && (
+                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,12,9,.92)', zIndex: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: CARD2, border: '1px solid ' + DIM, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🙈</div>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5 }}>VIDEO HIDDEN</span>
+                      </div>
+                    )}
+
                     {/* Overlay badges (top-left) */}
                     <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
                       {(isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)) && (
@@ -3127,6 +3183,7 @@ export default function LiveRoomPage({
                           { label: producerQuality[g.producerId] === 'red' ? '↺ Request Reconnect' : null, action: 'reconnect', hide: producerQuality[g.producerId] !== 'red' },
                           { label: '📸 Snapshot', action: 'snapshot' },
                           { label: '✂️ Mark Clip', action: 'clip' },
+                          { label: hiddenVideos[gid] ? '📹 Restore Video' : '🙈 Hide Video (local)', action: 'hidevideo' },
                           { label: '📨 Message', action: 'msg' },
                           { label: '✏️ Rename (local)', action: 'rename' },
                           { label: '🎨 Cell Color', action: 'color' },
@@ -3168,6 +3225,13 @@ export default function LiveRoomPage({
                                     next[gid] = { visible: !cur.visible, name: g.username || gid, title: (g.role || 'guest').toUpperCase() };
                                     return next;
                                   });
+                                } else if (item.action === 'hidevideo') {
+                                  setHiddenVideos(function(prev) {
+                                    var next = Object.assign({}, prev);
+                                    if (next[gid]) { delete next[gid]; } else { next[gid] = true; }
+                                    return next;
+                                  });
+                                  if (addToastRef.current) addToastRef.current(hiddenVideos[gid] ? 'Video restored' : 'Video hidden (local)', 'info');
                                 } else if (item.action === 'snapshot') {
                                   var snapEl = document.querySelector('[data-cell-gid="' + gid + '"] video');
                                   if (snapEl && snapEl.videoWidth > 0) {
@@ -4656,6 +4720,15 @@ export default function LiveRoomPage({
           />
           {(role === 'host' || role === 'cohost') && (
             <IconBtn
+              icon="🎉"
+              label={showEmojiBar ? 'Emoji ×' : 'Emojis'}
+              active={showEmojiBar}
+              activeColor={GOLD}
+              onPress={function() { setShowEmojiBar(function(v) { return !v; }); }}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
               icon="📊"
               label="Stats"
               active={showStageStats}
@@ -5679,8 +5752,22 @@ export default function LiveRoomPage({
             onClick={function(e) { e.stopPropagation(); }}>
             <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: TEXT, letterSpacing: 1 }}>Stage Stats</span>
-              <button onClick={function() { setShowStageStats(false); }}
-                style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', padding: '2px 4px', lineHeight: 1 }}>✕</button>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button onClick={function() {
+                  var now2 = Date.now();
+                  var csvRows = onStage.map(function(g) {
+                    var gid2 = g.guestId || g.userId || 'x';
+                    var joinMs2 = stageJoinTimesRef.current[gid2] || now2;
+                    return { name: localGuestNames[gid2] || g.username || gid2, guestRole: g.role || 'guest', speakSecs: speakingSnapshots[gid2] || 0, stageSecs: Math.floor((now2 - joinMs2) / 1000), q: producerQuality[g.producerId] || '', gifts: guestGiftTotals[gid2] || 0 };
+                  });
+                  exportStageStatsCsv(csvRows);
+                  if (addToastRef.current) addToastRef.current('Stats exported', 'success');
+                }} style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 9px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, cursor: 'pointer', letterSpacing: .5 }}>
+                  ↓ CSV
+                </button>
+                <button onClick={function() { setShowStageStats(false); }}
+                  style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', padding: '2px 4px', lineHeight: 1 }}>✕</button>
+              </div>
             </div>
             {(function() {
               var now = Date.now();
@@ -6047,6 +6134,63 @@ export default function LiveRoomPage({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ════════════════ SESSION SUMMARY OVERLAY ════════════════ */}
+      {showSessionSummary && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.86)', zIndex: 98, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeSlideIn .2s ease' }}
+          onClick={function() { setShowSessionSummary(false); }}>
+          <div style={{ background: SURF, borderRadius: 20, border: '1px solid ' + BORDER, padding: '28px 28px 32px', width: '90%', maxWidth: 360, boxShadow: '0 20px 60px rgba(0,0,0,.9)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 1 }}>📈 Session Summary</span>
+              <button onClick={function() { setShowSessionSummary(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', lineHeight: 1 }}>✕</button>
+            </div>
+            {(function() {
+              var topSpeakerName = null;
+              var bestSecs = 0;
+              onStage.forEach(function(g) {
+                var gid = g.guestId || g.userId;
+                var s = speakingSnapshots[gid] || 0;
+                if (s > bestSecs) { bestSecs = s; topSpeakerName = localGuestNames[gid] || g.username || gid; }
+              });
+              var totalGifts = Object.values(guestGiftTotals).reduce(function(sum, v) { return sum + (v || 0); }, 0);
+              var durH = Math.floor(streamDuration / 3600);
+              var durM = Math.floor((streamDuration % 3600) / 60);
+              var durS = streamDuration % 60;
+              var durStr = streamDuration > 0 ? ((durH > 0 ? (durH < 10 ? '0' : '') + durH + ':' : '') + (durM < 10 ? '0' : '') + durM + ':' + (durS < 10 ? '0' : '') + durS) : '—';
+              var rows2 = [
+                { label: '👥 Peak Viewers',  value: peakViewers || '—' },
+                { label: '🎤 On Stage',      value: onStage.length },
+                { label: '🗣 Top Speaker',   value: topSpeakerName || '—' },
+                { label: '🎁 Total Gifts',   value: totalGifts ? ('$' + (Math.floor(totalGifts) / 100).toFixed(2)) : '—' },
+                { label: '✂️ Clips',         value: clipLog.length || '0' },
+                { label: '⏱ Stream Time',   value: durStr },
+              ];
+              return (
+                <div>
+                  {rows2.map(function(row) {
+                    return (
+                      <div key={row.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid ' + DIM }}>
+                        <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 14, color: MUTED }}>{row.label}</span>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: TEXT }}>{row.value}</span>
+                      </div>
+                    );
+                  })}
+                  <button onClick={function() {
+                    var text = rows2.map(function(r) { return r.label + ' ' + r.value; }).join('\n');
+                    navigator.clipboard.writeText(text).then(function() {
+                      if (addToastRef.current) addToastRef.current('Summary copied!', 'success');
+                    });
+                  }} style={{ marginTop: 18, width: '100%', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 10, padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: GOLD, cursor: 'pointer', letterSpacing: .5 }}>
+                    📋 COPY TO CLIPBOARD
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
         </div>
       )}
 
