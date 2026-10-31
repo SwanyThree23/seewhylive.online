@@ -461,8 +461,11 @@ export default function LiveRoomPage({
   var [kicked,             setKicked]             = useState(false);
   var [clipLog,            setClipLog]            = useState([]); // [{ id, label, ts }]
   var [showClipLog,        setShowClipLog]        = useState(false);
+  var [isFullscreen,       setIsFullscreen]       = useState(false);
+  var [removeConfirmId,    setRemoveConfirmId]    = useState(null); // guestId pending removal confirmation
 
   var chatEndRef         = useRef(null);
+  var containerRef       = useRef(null);
   var cameraTrackRef     = useRef(null);
   var pipVideoRef        = useRef(null);
   var screenStreamRef    = useRef(null);
@@ -1476,6 +1479,31 @@ export default function LiveRoomPage({
     if (addToast) addToast('Score submitted!', 'success');
   }
 
+  // ── Fullscreen ───────────────────────────────────────────────────────────
+  useEffect(function() {
+    var onFsChange = function() {
+      setIsFullscreen(!!(document.fullscreenElement || document.webkitFullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    return function() {
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
+    };
+  }, []);
+
+  var toggleFullscreen = function() {
+    var el = containerRef.current;
+    if (!el) return;
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      if (el.requestFullscreen) { el.requestFullscreen(); }
+      else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+    } else {
+      if (document.exitFullscreen) { document.exitFullscreen(); }
+      else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+    }
+  };
+
   var shareRoom = function() {
     var url = window.location.origin + (roomId !== '6990f5f2-4823-453e-a1fc-dc9d00000000' ? ('?room=' + roomId) : '');
     if (navigator.share) {
@@ -1661,7 +1689,7 @@ export default function LiveRoomPage({
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, overflow: 'hidden', position: 'relative', fontFamily: "'Barlow Condensed',sans-serif" }}>
+    <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, overflow: 'hidden', position: 'relative', fontFamily: "'Barlow Condensed',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: ANIM }} />
 
       <HostHUD
@@ -1926,6 +1954,15 @@ export default function LiveRoomPage({
                     {autoFocusSpeaker ? '● AUTO' : '○ AUTO'}
                   </button>
                 )}
+                {(function() {
+                  var n = onStage.length;
+                  var stageColor = n >= MAX_STAGE ? RED : n >= MAX_STAGE - 4 ? '#F0A500' : MUTED;
+                  return (
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: stageColor, letterSpacing: 0.3, whiteSpace: 'nowrap', alignSelf: 'center' }}>
+                      {n}/{MAX_STAGE}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -2018,7 +2055,7 @@ export default function LiveRoomPage({
           {stageLayout === 'grid' && panelMode !== 'list' && (
             <div
               style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ',1fr)', gap: 4 }}
-              onClick={function() { if (cellMenuId) setCellMenuId(null); }}>
+              onClick={function() { if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); } }}>
               {onStage.map(function(g) {
                 var gid      = g.guestId || g.userId || 'x';
                 var isOwn    = gid === userId;
@@ -2030,8 +2067,8 @@ export default function LiveRoomPage({
                 return (
                   <div key={gid}
                     onClick={function(e) {
-                      if (cellMenuId === gid) { setCellMenuId(null); return; }
-                      if (cellMenuId) setCellMenuId(null);
+                      if (cellMenuId === gid) { setCellMenuId(null); setRemoveConfirmId(null); return; }
+                      if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); }
                       setFeaturedId(gid);
                       setStageLayout('featured');
                       setAutoFocusSpeaker(false);
@@ -2140,6 +2177,10 @@ export default function LiveRoomPage({
                             <button key={item.action}
                               onClick={function(e) {
                                 e.stopPropagation();
+                                if (item.action === 'remove') {
+                                  setRemoveConfirmId(gid);
+                                  return;
+                                }
                                 setCellMenuId(null);
                                 if (item.action === 'pin') {
                                   setPinnedId(function(p) { return p === gid ? null : gid; });
@@ -2154,8 +2195,6 @@ export default function LiveRoomPage({
                                   if (socket) socket.emit(g.remoteMuted ? 'unmute-guest' : 'mute-guest', { roomId: roomId, guestId: gid });
                                 } else if (item.action === 'invite') {
                                   if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid });
-                                } else if (item.action === 'remove') {
-                                  if (socket) socket.emit('stage-remove', { roomId: roomId, guestId: gid });
                                 }
                               }}
                               style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 13px', background: 'none', border: 'none', borderBottom: '1px solid ' + DIM, color: item.action === 'remove' ? RED : TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, cursor: 'pointer', letterSpacing: .3 }}>
@@ -2163,6 +2202,25 @@ export default function LiveRoomPage({
                             </button>
                           );
                         })}
+                        {removeConfirmId === gid && (
+                          <div style={{ padding: '8px 12px', background: 'rgba(255,26,60,.08)', borderTop: '1px solid rgba(255,26,60,.25)' }}>
+                            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, marginBottom: 6, letterSpacing: .3 }}>
+                              Remove {g.username || gid} from stage?
+                            </div>
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              <button
+                                onClick={function(e) { e.stopPropagation(); if (socket) socket.emit('stage-remove', { roomId: roomId, guestId: gid }); setRemoveConfirmId(null); setCellMenuId(null); }}
+                                style={{ flex: 1, padding: '5px 0', background: 'rgba(255,26,60,.25)', border: '1px solid rgba(255,26,60,.5)', borderRadius: 5, color: RED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: .3 }}>
+                                YES, REMOVE
+                              </button>
+                              <button
+                                onClick={function(e) { e.stopPropagation(); setRemoveConfirmId(null); }}
+                                style={{ flex: 1, padding: '5px 0', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 5, color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 11, cursor: 'pointer' }}>
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
                         {(function() {
                           var rs = g.producerId && consumerRawStats[g.producerId];
                           if (!rs) return null;
@@ -3282,6 +3340,12 @@ export default function LiveRoomPage({
             active={theaterMode}
             activeColor={gold}
             onPress={function() { setTheaterMode(function(v) { return !v; }); }}
+          />
+          <IconBtn
+            icon={isFullscreen ? '⊠' : '⤢'}
+            label={isFullscreen ? 'Exit FS' : 'Full'}
+            active={isFullscreen}
+            onPress={toggleFullscreen}
           />
         </div>
       </div>
