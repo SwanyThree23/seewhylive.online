@@ -469,6 +469,7 @@ export default function LiveRoomPage({
   var [mirrorSelf,         setMirrorSelf]         = useState(true);  // mirror own camera view
   var [stageAnnounce,      setStageAnnounce]      = useState(null);  // { username } | null — brief on-stage banner
   var [pipCorner,          setPipCorner]          = useState('BR');  // 'TL'|'TR'|'BL'|'BR' — PiP position
+  var [localLowerThirds,   setLocalLowerThirds]   = useState({});    // { [guestId]: { visible, name, title } } — host-local name cards
 
   var chatEndRef         = useRef(null);
   var announceTimerRef   = useRef(null);
@@ -1534,7 +1535,8 @@ export default function LiveRoomPage({
   };
 
   // ── Keyboard shortcuts ──────────────────────────────────────────────────
-  // m = mute/unmute, v = cam toggle, f = fullscreen, x = mirror, Escape = close modals
+  // m = mute/unmute, v = cam toggle, f = fullscreen, x = mirror
+  // [/ArrowLeft = prev guest in featured, ]/ArrowRight = next guest, Escape = close modals
   // Skipped when focus is inside an input or textarea.
   useEffect(function() {
     var onKey = function(e) {
@@ -1545,6 +1547,8 @@ export default function LiveRoomPage({
       else if (e.key === 'v' || e.key === 'V') { toggleCam(); }
       else if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
       else if (e.key === 'x' || e.key === 'X') { setMirrorSelf(function(v) { return !v; }); }
+      else if ((e.key === '[' || e.key === 'ArrowLeft') && stageLayout === 'featured') { prevGuest(); }
+      else if ((e.key === ']' || e.key === 'ArrowRight') && stageLayout === 'featured') { nextGuest(); }
       else if (e.key === 'Escape') {
         if (expandedCell) { setExpandedCell(null); }
         else if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); }
@@ -1552,7 +1556,7 @@ export default function LiveRoomPage({
     };
     document.addEventListener('keydown', onKey);
     return function() { document.removeEventListener('keydown', onKey); };
-  }, [expandedCell, cellMenuId]);
+  }, [expandedCell, cellMenuId, stageLayout, featuredId]);
 
   var shareRoom = function() {
     var url = window.location.origin + (roomId !== '6990f5f2-4823-453e-a1fc-dc9d00000000' ? ('?room=' + roomId) : '');
@@ -1736,6 +1740,27 @@ export default function LiveRoomPage({
   // Sorted queue of raised hands (oldest first = first in line)
   var handQueue = Object.keys(raisedHands).filter(function(gid) { return !!raisedHands[gid]; })
     .sort(function(a, b) { return raisedHands[a] - raisedHands[b]; });
+
+  // Featured-mode guest navigator helpers
+  var prevGuest = function() {
+    if (onStage.length <= 1) return;
+    var idx = onStage.findIndex(function(g) { return (g.guestId || g.userId) === featuredId; });
+    var prev = onStage[(idx - 1 + onStage.length) % onStage.length];
+    if (prev) { setFeaturedId(prev.guestId || prev.userId); setAutoFocusSpeaker(false); }
+  };
+  var nextGuest = function() {
+    if (onStage.length <= 1) return;
+    var idx = onStage.findIndex(function(g) { return (g.guestId || g.userId) === featuredId; });
+    var next = onStage[(idx + 1) % onStage.length];
+    if (next) { setFeaturedId(next.guestId || next.userId); setAutoFocusSpeaker(false); }
+  };
+
+  // Merged lower-thirds: local host overrides merged over server overlayConfig
+  var mergedLowerThirds = (function() {
+    var base = (overlayConfig && overlayConfig.lowerThirds) || {};
+    var hasLocal = Object.keys(localLowerThirds).length > 0;
+    return hasLocal ? Object.assign({}, base, localLowerThirds) : base;
+  })();
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (
@@ -2195,7 +2220,7 @@ export default function LiveRoomPage({
                       </div>
                     </div>
 
-                    <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={gid} />
+                    <OverlayCustomLT lowerThirds={mergedLowerThirds} guestId={gid} />
 
                     {/* Overlay badges (top-left) */}
                     <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
@@ -2243,6 +2268,7 @@ export default function LiveRoomPage({
                           { label: spotlight && spotlight.guestId === gid ? '🔦 End spotlight' : '🔦 Spotlight all', action: 'spotlight' },
                           { label: g.remoteMuted ? '🎙 Unmute' : '🔇 Mute', action: 'mute' },
                           { label: g.role === 'cohost' ? '⬇ Demote to Guest' : '⬆ Promote to Co-host', action: 'promote' },
+                          { label: (localLowerThirds[gid] && localLowerThirds[gid].visible) ? '📛 Hide name card' : '📛 Show name card', action: 'namecard' },
                           { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
                           { label: producerQuality[g.producerId] === 'red' ? '↺ Request Reconnect' : null, action: 'reconnect', hide: producerQuality[g.producerId] !== 'red' },
                           { label: '🚫 Remove from Stage', action: 'remove' },
@@ -2276,6 +2302,13 @@ export default function LiveRoomPage({
                                   var newRole = g.role === 'cohost' ? 'guest' : 'cohost';
                                   if (socket) socket.emit('promote-guest', { roomId: roomId, guestId: gid, role: newRole });
                                   if (addToast) addToast((g.username || gid) + ' → ' + newRole, 'success');
+                                } else if (item.action === 'namecard') {
+                                  setLocalLowerThirds(function(prev) {
+                                    var cur = prev[gid] || {};
+                                    var next = Object.assign({}, prev);
+                                    next[gid] = { visible: !cur.visible, name: g.username || gid, title: (g.role || 'guest').toUpperCase() };
+                                    return next;
+                                  });
                                 }
                               }}
                               style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 13px', background: 'none', border: 'none', borderBottom: '1px solid ' + DIM, color: item.action === 'remove' ? RED : TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, cursor: 'pointer', letterSpacing: .3 }}>
@@ -2501,7 +2534,7 @@ export default function LiveRoomPage({
                         remoteQuality={featuredGid === userId ? null : (producerQuality[featuredGuest.producerId] || null)}
                         mirrorOverride={featuredGid === userId ? mirrorSelf : undefined}
                       />
-                      <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGid} />
+                      <OverlayCustomLT lowerThirds={mergedLowerThirds} guestId={featuredGid} />
                     </div>
                     {/* Camera PiP — own camera while screen sharing */}
                     {featuredGid === userId && !isCamOff && (
@@ -2553,7 +2586,7 @@ export default function LiveRoomPage({
                     remoteQuality={featuredGid === userId ? null : (producerQuality[featuredGuest.producerId] || null)}
                     mirrorOverride={featuredGid === userId ? mirrorSelf : undefined}
                   />
-                  <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGid} />
+                  <OverlayCustomLT lowerThirds={mergedLowerThirds} guestId={featuredGid} />
                 </div>
                 )}
                 <div style={{ padding: '8px 12px 10px', background: CARD }}>
@@ -2564,8 +2597,17 @@ export default function LiveRoomPage({
                       style={{ flexShrink: 0, background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 13, padding: '0 4px 0 0', lineHeight: 1 }}>
                       ←
                     </button>
+                    {onStage.length > 1 && (
+                      <div style={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+                        <button onClick={prevGuest} title="Previous guest  [  or  ←" style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16, padding: '0 2px', lineHeight: 1 }}>‹</button>
+                        <button onClick={nextGuest} title="Next guest  ]  or  →" style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16, padding: '0 2px', lineHeight: 1 }}>›</button>
+                      </div>
+                    )}
                     <span style={{ fontWeight: 700, fontSize: 16, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {featuredGuest.username || featuredGuest.guestId}
+                    </span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .3, flexShrink: 0 }}>
+                      {onStage.findIndex(function(g) { return (g.guestId || g.userId) === featuredId; }) + 1}/{onStage.length}
                     </span>
                     <RolePill role={featuredGuest.role || role} />
                     {speakingIds[featuredGuest.guestId || featuredGuest.userId] && <SpeakBars color={TEAL} small />}
@@ -2693,6 +2735,12 @@ export default function LiveRoomPage({
                   {!canInvite && (
                     <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>FULL</span>
                   )}
+                  <button
+                    onClick={function() { setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[gid]; return n; }); }}
+                    title="Dismiss — skip this guest"
+                    style={{ width: 20, height: 20, background: 'none', border: '1px solid rgba(255,255,255,.15)', borderRadius: 4, color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, lineHeight: 1, padding: 0 }}>
+                    ×
+                  </button>
                 </div>
               );
             })}
