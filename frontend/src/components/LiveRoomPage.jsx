@@ -473,6 +473,8 @@ export default function LiveRoomPage({
   var [stageSort,          setStageSort]          = useState('joined'); // 'joined' | 'speaking' | 'quality'
   var [showStageStats,     setShowStageStats]     = useState(false); // host stage analytics sheet
   var [statsSortCol,       setStatsSortCol]       = useState('speaking'); // 'name'|'speaking'|'stage'|'quality'|'gifts'
+  var [autoMuteJoin,       setAutoMuteJoin]       = useState(false); // host: auto-mute new guests on stage join
+  var [stageLimitSec,      setStageLimitSec]      = useState(0);     // 0 = off; 180/300/600 = 3/5/10 min
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -514,6 +516,8 @@ export default function LiveRoomPage({
   var autoFocusTimerRef      = useRef(null);
   var prevQualityRef         = useRef({});   // { [producerId]: quality } — last known quality for change-detection
   var qualityToastCoolRef    = useRef({});   // { [producerId]: true } — cooldown: suppress repeat toasts < 30 s
+  var prevStageGidsRef       = useRef(new Set()); // Set<guestId> — previous render's on-stage set for new-joiner detection
+  var stageLimitWarnedRef    = useRef({});   // { [guestId]: true } — guests already warned about time limit
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Trivia ──────────────────────────────────────────────────────────────
@@ -1303,6 +1307,42 @@ export default function LiveRoomPage({
     });
     prevQualityRef.current = Object.assign({}, producerQuality);
   }, [producerQuality, role]);
+
+  // ── Auto-mute new stage joiners (host toggle) ────────────────────────────
+  useEffect(function() {
+    if (role !== 'host' || !autoMuteJoin || !socket) return;
+    var currentGids = new Set(onStage.map(function(g) { return g.guestId || g.userId; }));
+    currentGids.forEach(function(gid) {
+      if (gid === userId) return;
+      if (!prevStageGidsRef.current.has(gid)) {
+        socket.emit('mute-guest', { roomId: roomId, guestId: gid });
+      }
+    });
+    prevStageGidsRef.current = currentGids;
+  }, [onStage, autoMuteJoin, role]);
+
+  // ── Stage time limit: warn + remove guests who exceed the host-set limit ──
+  useEffect(function() {
+    if (role !== 'host' || stageLimitSec === 0) return;
+    var now = Date.now();
+    onStage.forEach(function(g) {
+      var gid = g.guestId || g.userId;
+      if (gid === userId) return;
+      var joinMs = stageJoinTimesRef.current[gid];
+      if (!joinMs) return;
+      var elapsedSec = Math.floor((now - joinMs) / 1000);
+      var warnAt  = stageLimitSec - 60;
+      var warnKey = gid + '_' + stageLimitSec;
+      if (elapsedSec >= stageLimitSec && !stageLimitWarnedRef.current[warnKey + '_removed']) {
+        stageLimitWarnedRef.current[warnKey + '_removed'] = true;
+        if (socket) socket.emit('stage-remove', { roomId: roomId, guestId: gid });
+        if (addToastRef.current) addToastRef.current((g.username || gid) + ': stage time limit reached', 'info');
+      } else if (elapsedSec >= warnAt && warnAt > 0 && !stageLimitWarnedRef.current[warnKey + '_warned']) {
+        stageLimitWarnedRef.current[warnKey + '_warned'] = true;
+        if (addToastRef.current) addToastRef.current((g.username || gid) + ': 60 s left on stage', 'warning');
+      }
+    });
+  }, [speakingSnapshots, stageLimitSec, role]); // piggyback on 5 s snapshot tick
 
   // ── Auto-reconnect: host-only, fires after 15 s of sustained freeze ─────
   useEffect(function() {
@@ -2194,6 +2234,31 @@ export default function LiveRoomPage({
                   );
                 })}
               </div>
+              {/* Auto-mute + stage time limit (host only) */}
+              {role === 'host' && (
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                  <button
+                    onClick={function() { setAutoMuteJoin(function(v) { return !v; }); }}
+                    title={autoMuteJoin ? 'Auto-mute ON: new guests join muted' : 'Auto-mute OFF: new guests join with mic open'}
+                    style={{ background: autoMuteJoin ? 'rgba(255,26,60,.18)' : CARD, border: '1px solid ' + (autoMuteJoin ? 'rgba(255,26,60,.4)' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: autoMuteJoin ? RED : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, transition: 'all .15s', whiteSpace: 'nowrap' }}>
+                    🔇{autoMuteJoin ? ' ON' : ' OFF'}
+                  </button>
+                  <select
+                    value={stageLimitSec}
+                    onChange={function(e) {
+                      var v = parseInt(e.target.value, 10) || 0;
+                      setStageLimitSec(v);
+                      stageLimitWarnedRef.current = {};
+                    }}
+                    title="Per-guest stage time limit (0 = off)"
+                    style={{ background: stageLimitSec > 0 ? 'rgba(201,168,76,.15)' : CARD, border: '1px solid ' + (stageLimitSec > 0 ? 'rgba(201,168,76,.4)' : BORDER), borderRadius: 6, padding: '4px 6px', fontSize: 9, color: stageLimitSec > 0 ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace', letterSpacing: .3", outline: 'none', appearance: 'none', WebkitAppearance: 'none' }}>
+                    <option value="0">⏰ OFF</option>
+                    <option value="180">⏰ 3m</option>
+                    <option value="300">⏰ 5m</option>
+                    <option value="600">⏰ 10m</option>
+                  </select>
+                </div>
+              )}
               {/* Panel mode (list vs grid for 20-person) */}
               <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
                 {[
@@ -2510,6 +2575,7 @@ export default function LiveRoomPage({
                           { label: (localLowerThirds[gid] && localLowerThirds[gid].visible) ? '📛 Hide name card' : '📛 Show name card', action: 'namecard' },
                           { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
                           { label: producerQuality[g.producerId] === 'red' ? '↺ Request Reconnect' : null, action: 'reconnect', hide: producerQuality[g.producerId] !== 'red' },
+                          { label: '✂️ Mark Clip', action: 'clip' },
                           { label: '🚫 Remove from Stage', action: 'remove' },
                         ].filter(function(item) { return !item.hide; }).map(function(item) {
                           return (
@@ -2548,6 +2614,11 @@ export default function LiveRoomPage({
                                     next[gid] = { visible: !cur.visible, name: g.username || gid, title: (g.role || 'guest').toUpperCase() };
                                     return next;
                                   });
+                                } else if (item.action === 'clip') {
+                                  var clipLabel = '✂️ ' + (g.username || gid);
+                                  if (socket) socket.emit('clip-marker', { label: clipLabel });
+                                  setClipLog(function(prev) { return [{ id: Date.now() + '', label: clipLabel, ts: Date.now() }].concat(prev); });
+                                  if (addToastRef.current) addToastRef.current(clipLabel, 'success');
                                 }
                               }}
                               style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 13px', background: 'none', border: 'none', borderBottom: '1px solid ' + DIM, color: item.action === 'remove' ? RED : TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, cursor: 'pointer', letterSpacing: .3 }}>
@@ -2635,6 +2706,13 @@ export default function LiveRoomPage({
                         </span>
                       )}
                       <StageTimer startMs={stageJoinTimesRef.current[gid]} />
+                      {!isOwn && stageLimitSec > 0 && stageJoinTimesRef.current[gid] && (function() {
+                        var elapsed = Math.floor((Date.now() - stageJoinTimesRef.current[gid]) / 1000);
+                        var rem     = stageLimitSec - elapsed;
+                        if (rem <= 0) return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: RED, letterSpacing: .3, flexShrink: 0 }}>⏰0s</span>;
+                        if (rem <= 60) return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#F0A500', letterSpacing: .3, flexShrink: 0 }}>⏰{rem}s</span>;
+                        return null;
+                      })()}
                       {!isOwn && g.producerId && producerQuality[g.producerId] && (
                         <SignalBars quality={producerQuality[g.producerId]} />
                       )}
@@ -2746,6 +2824,13 @@ export default function LiveRoomPage({
                             </span>
                           )}
                           <StageTimer startMs={stageJoinTimesRef.current[gid]} />
+                          {!isOwn && stageLimitSec > 0 && stageJoinTimesRef.current[gid] && (function() {
+                            var elapsed = Math.floor((Date.now() - stageJoinTimesRef.current[gid]) / 1000);
+                            var rem     = stageLimitSec - elapsed;
+                            if (rem <= 0) return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: RED, letterSpacing: .3, flexShrink: 0 }}>⏰0s</span>;
+                            if (rem <= 60) return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#F0A500', letterSpacing: .3, flexShrink: 0 }}>⏰{rem}s</span>;
+                            return null;
+                          })()}
                           {!isOwn && g.producerId && producerQuality[g.producerId] && (
                             <SignalBars quality={producerQuality[g.producerId]} />
                           )}
