@@ -57,6 +57,7 @@ var ANIM = [
   '@keyframes cellMenuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}',
   '@keyframes announceIn{from{opacity:0;transform:translateX(-50%) translateY(-14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}',
   '@keyframes announceOut{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(-10px)}}',
+  '@keyframes reactionFloat{0%{transform:translateY(0) scale(1);opacity:1}70%{transform:translateY(-110px) scale(1.25);opacity:.85}100%{transform:translateY(-150px) scale(.9);opacity:0}}',
 ].join('\n');
 
 // ─── Subtle reaction tone for emoji bursts ─────────────────────────────────
@@ -475,6 +476,8 @@ export default function LiveRoomPage({
   var [statsSortCol,       setStatsSortCol]       = useState('speaking'); // 'name'|'speaking'|'stage'|'quality'|'gifts'
   var [autoMuteJoin,       setAutoMuteJoin]       = useState(false); // host: auto-mute new guests on stage join
   var [stageLimitSec,      setStageLimitSec]      = useState(0);     // 0 = off; 180/300/600 = 3/5/10 min
+  var [reactionBurst,      setReactionBurst]      = useState([]);    // [{ id, emoji, x }] — flying emoji over stage
+  var [lowBwMode,          setLowBwMode]          = useState(false); // cap remote simulcast to lowest layer
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -1344,6 +1347,49 @@ export default function LiveRoomPage({
     });
   }, [speakingSnapshots, stageLimitSec, role]); // piggyback on 5 s snapshot tick
 
+  // ── Stage prefs: restore from localStorage on mount ─────────────────────
+  useEffect(function() {
+    try {
+      var saved = localStorage.getItem('sw_stage_prefs');
+      if (saved) {
+        var prefs = JSON.parse(saved);
+        if (prefs.layout) setStageLayout(prefs.layout);
+        if (prefs.sort)   setStageSort(prefs.sort);
+        if (prefs.limitSec !== undefined) setStageLimitSec(Number(prefs.limitSec) || 0);
+      }
+    } catch(e) {}
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Stage prefs: persist to localStorage whenever they change ───────────
+  useEffect(function() {
+    try {
+      localStorage.setItem('sw_stage_prefs', JSON.stringify({ layout: stageLayout, sort: stageSort, limitSec: stageLimitSec }));
+    } catch(e) {}
+  }, [stageLayout, stageSort, stageLimitSec]);
+
+  // ── Low-bandwidth mode: cap/restore simulcast layers for all consumers ───
+  useEffect(function() {
+    if (!socket) return;
+    guests.forEach(function(g) {
+      if (!g.producerId) return;
+      socket.emit('consumer-layers', { producerId: g.producerId, spatialLayer: lowBwMode ? 0 : 2, temporalLayer: lowBwMode ? 0 : 2 });
+    });
+  }, [lowBwMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Incoming stage-reaction from remote peers ────────────────────────────
+  useEffect(function() {
+    if (!socket) return;
+    function onRemoteReaction(data) {
+      if (!data || !data.emoji) return;
+      var rid = Date.now() + data.emoji + (Math.random() * 1000 | 0);
+      var x   = 10 + Math.floor(Math.random() * 80);
+      setReactionBurst(function(prev) { return prev.concat([{ id: rid, emoji: data.emoji, x: x }]); });
+      setTimeout(function() { setReactionBurst(function(prev) { return prev.filter(function(r) { return r.id !== rid; }); }); }, 2200);
+    }
+    socket.on('stage-reaction', onRemoteReaction);
+    return function() { socket.off('stage-reaction', onRemoteReaction); };
+  }, [socket]);
+
   // ── Auto-reconnect: host-only, fires after 15 s of sustained freeze ─────
   useEffect(function() {
     if (role !== 'host') return;
@@ -2208,6 +2254,14 @@ export default function LiveRoomPage({
 
         {/* ── Stage Section ── */}
         <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden' }}>
+          {/* Reaction rain overlay */}
+          {reactionBurst.map(function(r) {
+            return (
+              <div key={r.id} style={{ position: 'absolute', left: r.x + '%', bottom: 0, fontSize: 22, pointerEvents: 'none', zIndex: 60, animation: 'reactionFloat 2.2s ease-out forwards' }}>
+                {r.emoji}
+              </div>
+            );
+          })}
 
           {/* Stage header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -2408,8 +2462,8 @@ export default function LiveRoomPage({
                         </button>
                       </div>
                     )}
-                    {/* Host controls */}
-                    {role === 'host' && !isOwn && (
+                    {/* Host/cohost controls */}
+                    {(role === 'host' || role === 'cohost') && !isOwn && (
                       <div style={{ display: 'flex', gap: 4 }}>
                         {isHand && (
                           <button
@@ -2547,6 +2601,11 @@ export default function LiveRoomPage({
                           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(100,149,237,.9)', letterSpacing: .3 }}>FROZEN</span>
                         </div>
                       )}
+                      {lowBwMode && !isOwn && (
+                        <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(255,165,0,.4)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center' }}>
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(255,165,0,.9)', letterSpacing: .3 }}>LO</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Top-right buttons: expand + host ⋮ menu */}
@@ -2555,7 +2614,7 @@ export default function LiveRoomPage({
                         style={{ width: 20, height: 20, background: 'rgba(0,0,0,.6)', border: '1px solid rgba(255,255,255,.18)', borderRadius: 4, color: TEXT, fontSize: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         ⤢
                       </button>
-                      {role === 'host' && !isOwn && (
+                      {(role === 'host' || role === 'cohost') && !isOwn && (
                         <button onClick={function(e) { e.stopPropagation(); setCellMenuId(function(p) { return p === gid ? null : gid; }); }}
                           style={{ width: 20, height: 20, background: showMenu ? 'rgba(201,168,76,.25)' : 'rgba(0,0,0,.6)', border: '1px solid ' + (showMenu ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.18)'), borderRadius: 4, color: TEXT, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
                           ⋮
@@ -2804,6 +2863,11 @@ export default function LiveRoomPage({
                             <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(100,149,237,.5)', borderRadius: 999, padding: '2px 6px', display: 'flex', alignItems: 'center', gap: 2 }}>
                               <span style={{ fontSize: 7, lineHeight: 1 }}>❄</span>
                               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(100,149,237,.9)', letterSpacing: .3 }}>FROZEN</span>
+                            </div>
+                          )}
+                          {lowBwMode && !isOwn && (
+                            <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(255,165,0,.4)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center' }}>
+                              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(255,165,0,.9)', letterSpacing: .3 }}>LO</span>
                             </div>
                           )}
                         </div>
@@ -3160,6 +3224,24 @@ export default function LiveRoomPage({
                 )}
               </div>
             </div>
+            {/* Emoji reaction bar */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+              {['🔥','❤️','👏','💯','🎉','😂'].map(function(em) {
+                return (
+                  <button key={em} onClick={function() {
+                    var rid = Date.now() + em;
+                    var x   = 10 + Math.floor(Math.random() * 80);
+                    setReactionBurst(function(prev) { return prev.concat([{ id: rid, emoji: em, x: x }]); });
+                    setTimeout(function() { setReactionBurst(function(prev) { return prev.filter(function(r) { return r.id !== rid; }); }); }, 2200);
+                    if (socket) socket.emit('stage-reaction', { roomId: roomId, emoji: em });
+                  }}
+                    style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 999, padding: '4px 9px', fontSize: 13, cursor: 'pointer', lineHeight: 1 }}>
+                    {em}
+                  </button>
+                );
+              })}
+            </div>
+
             {showAllAud ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10 }}>
                 {audienceList.map(function(g) {
@@ -3899,6 +3981,15 @@ export default function LiveRoomPage({
               active={showStageStats}
               activeColor={gold}
               onPress={function() { setShowStageStats(function(v) { return !v; }); }}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="📶"
+              label={lowBwMode ? 'LO-BW' : 'HD'}
+              active={lowBwMode}
+              danger={lowBwMode}
+              onPress={function() { setLowBwMode(function(v) { return !v; }); }}
             />
           )}
           {(role === 'host' || role === 'cohost' || role === 'owner') && (
