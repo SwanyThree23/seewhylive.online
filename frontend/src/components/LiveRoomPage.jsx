@@ -561,6 +561,14 @@ export default function LiveRoomPage({
   var [sentimentVoted,     setSentimentVoted]     = useState(null);  // 'yes' | 'no' | null
   var [sentimentInput,     setSentimentInput]     = useState('');    // host input for sentiment question
   var [showSentimentInput, setShowSentimentInput] = useState(false); // host sentiment trigger popover
+  var [chatSearch,         setChatSearch]         = useState('');    // live filter string for chat panel
+  var [showChatSearch,     setShowChatSearch]     = useState(false); // chat search bar visible
+  var [showHealthHud,      setShowHealthHud]      = useState(false); // stream health HUD corner overlay
+  var [stageTimerTick,     setStageTimerTick]     = useState(0);     // incremented each second when stageLimitSec > 0
+  var [customReactions,    setCustomReactions]    = useState(function() { try { var s = localStorage.getItem('sw_reactions'); return s ? JSON.parse(s) : ['🔥','❤️','😂','👍','💎','⚡']; } catch(e) { return ['🔥','❤️','😂','👍','💎','⚡']; } });
+  var [showReactionPicker, setShowReactionPicker] = useState(false); // host emoji set config popover
+  var [reactionPickerSlot, setReactionPickerSlot] = useState(0);     // which of the 6 slots is being edited
+  var [reactionPickerInput,setReactionPickerInput]= useState('');    // emoji input for selected slot
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -1628,6 +1636,18 @@ export default function LiveRoomPage({
     var tid = setTimeout(function() { setSentimentPoll(null); setSentimentVoted(null); }, remaining);
     return function() { clearTimeout(tid); };
   }, [sentimentPoll && sentimentPoll.endTs]);
+
+  // ── Stage time limit: 1-second tick so badges stay current ─────────────
+  useEffect(function() {
+    if (!stageLimitSec) { setStageTimerTick(0); return; }
+    var id = setInterval(function() { setStageTimerTick(function(v) { return v + 1; }); }, 1000);
+    return function() { clearInterval(id); };
+  }, [stageLimitSec]);
+
+  // ── Custom reactions: persist whenever set changes ──────────────────────
+  useEffect(function() {
+    try { localStorage.setItem('sw_reactions', JSON.stringify(customReactions)); } catch(e) {}
+  }, [customReactions]);
 
   // ── Presenter notes: restore from localStorage on mount ─────────────────
   useEffect(function() {
@@ -3136,6 +3156,36 @@ export default function LiveRoomPage({
             );
           })()}
 
+          {/* ── Stream health HUD (host only) ── */}
+          {showHealthHud && (role === 'host' || role === 'cohost') && (function() {
+            var st = streamStats;
+            var quality = !st ? null : (st.bitratekbps < 100 || st.lossPct > 5 ? 'red' : st.bitratekbps < 350 || st.lossPct > 1 ? 'yellow' : 'green');
+            var qualColor = quality === 'green' ? '#6DBF7E' : quality === 'yellow' ? '#F0A500' : quality === 'red' ? RED : MUTED;
+            var worstConsumer = (function() {
+              var entries = Object.entries(consumerRawStats);
+              if (!entries.length) return null;
+              return entries.reduce(function(worst, entry) { return (!worst || entry[1].bitratekbps < worst[1].bitratekbps) ? entry : worst; }, null);
+            })();
+            return (
+              <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 52, background: 'rgba(14,12,9,.85)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '6px 10px', minWidth: 110, backdropFilter: 'blur(4px)', pointerEvents: 'none' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, letterSpacing: 2, marginBottom: 4 }}>STREAM HEALTH</div>
+                {st ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: qualColor, flexShrink: 0, boxShadow: '0 0 6px ' + qualColor }} />
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: qualColor, letterSpacing: .5 }}>{st.bitratekbps} kbps</span>
+                    </div>
+                    {st.rttMs != null && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: st.rttMs > 150 ? RED : MUTED }}>RTT {st.rttMs}ms</span>}
+                    {st.lossPct != null && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: st.lossPct > 2 ? RED : MUTED }}>loss {st.lossPct.toFixed(1)}%</span>}
+                    {worstConsumer && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: worstConsumer[1].bitratekbps < 80 ? RED : MUTED }}>↓ {worstConsumer[1].bitratekbps} kbps</span>}
+                  </div>
+                ) : (
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>—</span>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Scrolling ticker strip */}
           {tickerActive && tickerText && (
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 55, pointerEvents: 'none', overflow: 'hidden', background: 'rgba(14,12,9,.88)', borderTop: '1px solid rgba(201,168,76,.25)', height: 26, display: 'flex', alignItems: 'center' }}>
@@ -3627,6 +3677,16 @@ export default function LiveRoomPage({
                       </div>
                       <RolePill role={g.role || (isOwn ? role : 'guest')} />
                     </div>
+                    {/* Stage time limit badge */}
+                    {stageLimitSec > 0 && (function() {
+                      var joined = stageJoinTimesRef.current[gid] || Date.now();
+                      var elapsed = Math.floor((Date.now() - joined) / 1000);
+                      var rem = stageLimitSec - elapsed;
+                      if (rem <= 0) return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED, background: 'rgba(255,26,60,.18)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 4, padding: '1px 4px', flexShrink: 0 }}>TIME</span>;
+                      var urgent = rem < 30;
+                      var minStr = rem >= 60 ? Math.floor(rem / 60) + ':' + String(rem % 60).padStart(2, '0') : rem + 's';
+                      return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: urgent ? RED : MUTED, background: urgent ? 'rgba(255,26,60,.12)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (urgent ? 'rgba(255,26,60,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 4, padding: '1px 4px', flexShrink: 0, animation: urgent ? 'livePulse .8s ease-in-out infinite' : 'none' }}>⏱ {minStr}</span>;
+                    })()}
                     {/* Mute status */}
                     {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 12, color: RED }}>🔇</span>}
                     {/* Own controls */}
@@ -4929,7 +4989,7 @@ export default function LiveRoomPage({
           boxShadow: '0 8px 32px rgba(0,0,0,.5)',
           animation: 'fadeSlideIn .2s ease',
         }}>
-          {['❤️','🔥','👏','😂','💯','🎉','👑','💰'].map(function(e) {
+          {customReactions.map(function(e) {
             return (
               <button key={e} onClick={function() { sendReact(e); }}
                 style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', padding: '2px 3px', borderRadius: 8, transition: 'transform .1s' }}>
@@ -4937,6 +4997,84 @@ export default function LiveRoomPage({
               </button>
             );
           })}
+          {(role === 'host' || role === 'cohost') && (
+            <button onClick={function() { setShowReactionPicker(function(v) { return !v; }); setReactsOpen(false); }}
+              title="Customise reactions"
+              style={{ background: 'none', border: '1px dashed rgba(255,255,255,.2)', borderRadius: 8, fontSize: 12, cursor: 'pointer', padding: '2px 5px', color: MUTED, lineHeight: 1 }}>
+              ✎
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ════════════════ REACTION EMOJI PICKER ════════════════ */}
+      {showReactionPicker && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 93, display: 'flex', alignItems: 'flex-end', animation: 'fadeSlideIn .18s ease' }}
+          onClick={function() { setShowReactionPicker(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '16px 16px 0 0', border: '1px solid ' + BORDER, padding: '16px', boxShadow: '0 -10px 40px rgba(0,0,0,.7)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: TEXT, letterSpacing: 1 }}>🎭 Reaction Emojis</span>
+              <button onClick={function() { setShowReactionPicker(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', lineHeight: 1, padding: '2px 4px' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 10 }}>TAP A SLOT TO CHANGE IT</div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+              {customReactions.map(function(em, idx) {
+                var isActive = reactionPickerSlot === idx;
+                return (
+                  <button key={idx}
+                    onClick={function() { setReactionPickerSlot(idx); setReactionPickerInput(em); }}
+                    style={{ flex: 1, background: isActive ? 'rgba(201,168,76,.18)' : CARD, border: '1.5px solid ' + (isActive ? GOLD : BORDER), borderRadius: 10, padding: '8px 4px', fontSize: 22, cursor: 'pointer', textAlign: 'center' }}>
+                    {em}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+              <input
+                value={reactionPickerInput}
+                onChange={function(e) { setReactionPickerInput(e.target.value.slice(0, 4)); }}
+                placeholder="Paste emoji…"
+                style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 12px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 16, color: TEXT, outline: 'none', textAlign: 'center' }}
+              />
+              <button
+                onClick={function() {
+                  if (!reactionPickerInput) return;
+                  setCustomReactions(function(prev) {
+                    var next = prev.slice();
+                    next[reactionPickerSlot] = reactionPickerInput;
+                    return next;
+                  });
+                  setReactionPickerInput('');
+                }}
+                style={{ background: GOLD, border: 'none', borderRadius: 8, padding: '8px 18px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                SET
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+              {['🔥','❤️','😂','👍','💎','⚡','🎉','💯','👏','🙌','😮','💪','🫶','🤩','🥳','🫡','💸','👑','🚀','✨'].map(function(em) {
+                return (
+                  <button key={em}
+                    onClick={function() {
+                      setCustomReactions(function(prev) {
+                        var next = prev.slice();
+                        next[reactionPickerSlot] = em;
+                        return next;
+                      });
+                    }}
+                    style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 8, padding: '5px 6px', fontSize: 18, cursor: 'pointer' }}>
+                    {em}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={function() { setCustomReactions(['🔥','❤️','😂','👍','💎','⚡']); setShowReactionPicker(false); }}
+              style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+              RESET TO DEFAULT
+            </button>
+          </div>
         </div>
       )}
 
@@ -4965,6 +5103,11 @@ export default function LiveRoomPage({
                   🐌 {slowModeSec > 0 ? (slowModeSec + 's') : 'OFF'}
                 </button>
               )}
+              <button onClick={function() { setShowChatSearch(function(v) { return !v; }); if (showChatSearch) setChatSearch(''); }}
+                title="Search chat"
+                style={{ background: showChatSearch ? 'rgba(201,168,76,.15)' : 'rgba(255,255,255,.05)', border: '1px solid ' + (showChatSearch ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 7px', color: showChatSearch ? GOLD : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>
+                🔍
+              </button>
               <button onClick={downloadChat} title="Export chat as .txt"
                 style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 7px', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>
                 📥
@@ -4988,6 +5131,28 @@ export default function LiveRoomPage({
                 style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
             </div>
           </div>
+          {/* Chat search bar */}
+          {showChatSearch && (
+            <div style={{ padding: '7px 12px', borderBottom: '1px solid ' + DIM, background: 'rgba(201,168,76,.04)', flexShrink: 0 }}>
+              <input
+                autoFocus
+                value={chatSearch}
+                onChange={function(e) { setChatSearch(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === 'Escape') { setChatSearch(''); setShowChatSearch(false); } }}
+                placeholder="Search by name or message…"
+                style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, outline: 'none' }}
+              />
+              {chatSearch && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginTop: 4, letterSpacing: .3 }}>
+                  {(function() {
+                    var q = chatSearch.toLowerCase();
+                    var count = (chat || []).filter(function(m) { return (m.message || '').toLowerCase().indexOf(q) !== -1 || (m.username || '').toLowerCase().indexOf(q) !== -1; }).length;
+                    return count + ' match' + (count !== 1 ? 'es' : '');
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
           {/* Word filter editor (host/cohost) */}
           {showWordFilter && (role === 'host' || role === 'cohost') && (
             <div style={{ padding: '8px 12px', borderBottom: '1px solid ' + DIM, background: 'rgba(255,140,0,.06)', flexShrink: 0 }}>
@@ -5052,7 +5217,7 @@ export default function LiveRoomPage({
             {(!chat || chat.length === 0) && (
               <div style={{ textAlign: 'center', padding: '28px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>No messages yet</div>
             )}
-            {chat && chat.map(function(m, i) {
+            {chat && (chatSearch ? chat.filter(function(m) { var q = chatSearch.toLowerCase(); return (m.message || '').toLowerCase().indexOf(q) !== -1 || (m.username || '').toLowerCase().indexOf(q) !== -1; }) : chat).map(function(m, i) {
               if (m.type === 'super') {
                 var scColor = m.tierColor || '#C9A84C';
                 var scDollars = '$' + (Math.floor(m.amountCents || 0) / 100).toFixed(2);
@@ -5843,6 +6008,15 @@ export default function LiveRoomPage({
                 Auto-REC
               </label>
             </div>
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="📡"
+              label={showHealthHud ? 'HUD ✓' : 'HUD'}
+              active={showHealthHud}
+              activeColor={TEAL}
+              onPress={function() { setShowHealthHud(function(v) { return !v; }); }}
+            />
           )}
           {(role === 'host' || role === 'cohost') && (
             <IconBtn
