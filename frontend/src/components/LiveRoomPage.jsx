@@ -522,6 +522,13 @@ export default function LiveRoomPage({
   var [prompterRunning,    setPrompterRunning]    = useState(false); // auto-scroll active
   var [spotlightRotateSec, setSpotlightRotateSec] = useState(0);     // 0=off, or rotation interval seconds
   var [joinRequests,       setJoinRequests]       = useState([]);    // [{ guestId, username, ts }] — pending stage requests
+  var [bgBlurOn,           setBgBlurOn]           = useState(false); // canvas background blur active
+  var [bgBlurLevel,        setBgBlurLevel]        = useState(8);     // blur radius in px (2–20)
+  var [showBlurSlider,     setShowBlurSlider]     = useState(false); // blur config popover visible
+  var [showDevicePicker,   setShowDevicePicker]   = useState(false); // camera/mic picker sheet
+  var [layoutPresets,      setLayoutPresets]      = useState(function() { try { var s = localStorage.getItem('sw_layout_presets'); return s ? JSON.parse(s) : []; } catch(e) { return []; } });
+  var [showPresetsPanel,   setShowPresetsPanel]   = useState(false); // layout presets sheet
+  var [presetNameInput,    setPresetNameInput]    = useState('');    // name input for saving preset
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -574,6 +581,11 @@ export default function LiveRoomPage({
   var prompterLastTs         = useRef(null); // last rAF timestamp for delta-time scroll
   var spotlightRotateRef     = useRef(null); // interval id for spotlight auto-rotation
   var spotlightRotateIdxRef  = useRef(0);    // current index in sortedOnStage for rotation
+  var bgBlurVideoRef         = useRef(null); // hidden video element feeding camera into blur canvas
+  var bgBlurRafRef           = useRef(null); // rAF id for blur draw loop
+  var bgBlurStreamRef        = useRef(null); // canvas.captureStream() used as blurred producer source
+  var bgBlurLevelRef         = useRef(8);    // mirrors bgBlurLevel for use inside rAF closure
+  bgBlurLevelRef.current = bgBlurLevel;
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Trivia ──────────────────────────────────────────────────────────────
@@ -1242,6 +1254,9 @@ export default function LiveRoomPage({
         screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
         screenStreamRef.current = null;
       }
+      if (bgBlurRafRef.current) { cancelAnimationFrame(bgBlurRafRef.current); bgBlurRafRef.current = null; }
+      if (bgBlurVideoRef.current) { bgBlurVideoRef.current.srcObject = null; bgBlurVideoRef.current = null; }
+      if (bgBlurStreamRef.current) { bgBlurStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); bgBlurStreamRef.current = null; }
       if (audioCtxRef.current) {
         try { audioCtxRef.current.close(); } catch(e) {}
         audioCtxRef.current = null;
@@ -2268,6 +2283,105 @@ export default function LiveRoomPage({
     });
   };
 
+  // Select camera by index (device picker sheet)
+  var handleCamSelect = function(idx) {
+    if (idx === camDevIdx || idx >= avCameras.length) return;
+    var cam = avCameras[idx];
+    setCamDevIdx(idx);
+    setMedConf(function(prev) { return Object.assign({}, prev || {}, { camId: cam.deviceId }); });
+    if (addToast) addToast('Camera: ' + (cam.label || 'Camera ' + (idx + 1)), 'info');
+    setShowDevicePicker(false);
+  };
+
+  // Select mic by index (device picker sheet)
+  var handleMicSelect = function(idx) {
+    if (idx === micDevIdx || idx >= avMics.length) return;
+    var mic = avMics[idx];
+    setMicDevIdx(idx);
+    navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: mic.deviceId } } }).then(function(stream) {
+      var track = stream.getAudioTracks()[0];
+      if (!track) return;
+      if (rtcManager && rtcManager.producers && rtcManager.producers['audio']) {
+        rtcManager.replaceTrack('audio', track).catch(function() {});
+      }
+      if (addToast) addToast('Mic: ' + (mic.label || 'Mic ' + (idx + 1)), 'info');
+    }).catch(function(e) {
+      if (addToast) addToast('Mic swap failed: ' + e.message, 'error');
+    });
+    setShowDevicePicker(false);
+  };
+
+  // Layout preset helpers
+  var saveLayoutPreset = function(name) {
+    var preset = { id: Date.now().toString(), name: name || ('Layout ' + (layoutPresets.length + 1)), layout: stageLayout, order: stageOrderOverride ? stageOrderOverride.slice() : null, ts: Date.now() };
+    var updated = layoutPresets.concat([preset]);
+    setLayoutPresets(updated);
+    try { localStorage.setItem('sw_layout_presets', JSON.stringify(updated)); } catch(e) {}
+    if (addToastRef.current) addToastRef.current('Preset "' + preset.name + '" saved', 'success');
+  };
+  var loadLayoutPreset = function(preset) {
+    setStageLayout(preset.layout || 'grid');
+    setStageOrderOverride(preset.order || null);
+    if (addToastRef.current) addToastRef.current('Loaded "' + preset.name + '"', 'info');
+    setShowPresetsPanel(false);
+  };
+  var deleteLayoutPreset = function(id) {
+    var updated = layoutPresets.filter(function(p) { return p.id !== id; });
+    setLayoutPresets(updated);
+    try { localStorage.setItem('sw_layout_presets', JSON.stringify(updated)); } catch(e) {}
+  };
+
+  // Background blur: canvas-based soft-focus on own camera feed
+  var toggleBgBlur = async function() {
+    if (bgBlurOn) {
+      if (bgBlurRafRef.current) { cancelAnimationFrame(bgBlurRafRef.current); bgBlurRafRef.current = null; }
+      if (bgBlurVideoRef.current) { bgBlurVideoRef.current.srcObject = null; bgBlurVideoRef.current = null; }
+      if (bgBlurStreamRef.current) { bgBlurStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); bgBlurStreamRef.current = null; }
+      setBgBlurOn(false);
+      setShowBlurSlider(false);
+      var rawTrack = cameraTrackRef.current;
+      if (rawTrack && !isCamOff && rtcManager.sendTransport) {
+        var rawStream = new MediaStream([rawTrack]);
+        rtcManager.publishStream(rawStream, { maxBitrate: (medConf && medConf.maxBitrate) || 900000 }).catch(function() {});
+      }
+      return;
+    }
+    var rawTrack = cameraTrackRef.current;
+    if (!rawTrack) { if (addToastRef.current) addToastRef.current('Camera not active', 'error'); return; }
+    if (isCamOff)  { if (addToastRef.current) addToastRef.current('Turn camera on first', 'error'); return; }
+    try {
+      var vid = document.createElement('video');
+      vid.autoplay = true; vid.muted = true; vid.playsInline = true;
+      vid.srcObject = new MediaStream([rawTrack]);
+      await new Promise(function(res, rej) { vid.onloadedmetadata = res; setTimeout(rej, 5000); });
+      vid.play();
+      bgBlurVideoRef.current = vid;
+      var settings = rawTrack.getSettings();
+      var canvas = document.createElement('canvas');
+      canvas.width  = settings.width  || 640;
+      canvas.height = settings.height || 480;
+      var ctx = canvas.getContext('2d');
+      var blurDraw = function() {
+        if (!bgBlurVideoRef.current) return;
+        ctx.filter = 'blur(' + bgBlurLevelRef.current + 'px)';
+        ctx.drawImage(bgBlurVideoRef.current, 0, 0, canvas.width, canvas.height);
+        bgBlurRafRef.current = requestAnimationFrame(blurDraw);
+      };
+      blurDraw();
+      var captured = canvas.captureStream(30);
+      bgBlurStreamRef.current = captured;
+      setBgBlurOn(true);
+      setShowBlurSlider(false);
+      await rtcManager.publishStream(captured, { maxBitrate: (medConf && medConf.maxBitrate) || 900000 });
+      if (addToastRef.current) addToastRef.current('Soft blur active', 'success');
+    } catch(e) {
+      if (bgBlurRafRef.current) { cancelAnimationFrame(bgBlurRafRef.current); bgBlurRafRef.current = null; }
+      if (bgBlurVideoRef.current) { bgBlurVideoRef.current.srcObject = null; bgBlurVideoRef.current = null; }
+      if (bgBlurStreamRef.current) { bgBlurStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); bgBlurStreamRef.current = null; }
+      if (addToastRef.current) addToastRef.current('Blur unavailable', 'error');
+    }
+  };
+
   // Merged lower-thirds: local host overrides merged over server overlayConfig
   var mergedLowerThirds = (function() {
     var base = (overlayConfig && overlayConfig.lowerThirds) || {};
@@ -2952,6 +3066,15 @@ export default function LiveRoomPage({
                   title={swapMode ? 'Exit swap mode' : 'Swap mode: click two cells to reorder them'}
                   style={{ background: swapMode ? 'rgba(201,168,76,.25)' : CARD, border: '1px solid ' + (swapMode ? GOLD : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: swapMode ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap' }}>
                   ⇄ {swapMode ? 'SWAP ON' : 'SWAP'}
+                </button>
+              )}
+              {/* Layout presets (host/cohost) */}
+              {(role === 'host' || role === 'cohost') && (
+                <button
+                  onClick={function() { setShowPresetsPanel(function(v) { return !v; }); }}
+                  title="Save and load named layout presets"
+                  style={{ background: showPresetsPanel ? 'rgba(201,168,76,.18)' : CARD, border: '1px solid ' + (showPresetsPanel ? 'rgba(201,168,76,.45)' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: showPresetsPanel ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                  📐 {layoutPresets.length > 0 ? 'PRESETS(' + layoutPresets.length + ')' : 'PRESETS'}
                 </button>
               )}
               {/* Stage layout (single focus) */}
@@ -4834,6 +4957,47 @@ export default function LiveRoomPage({
               onPress={handleMicFlip}
             />
           )}
+          {role !== 'viewer' && (avCameras.length > 0 || avMics.length > 0) && (
+            <IconBtn
+              icon="🎛"
+              label="Devices"
+              active={showDevicePicker}
+              activeColor={TEAL}
+              onPress={function() { setShowDevicePicker(function(v) { return !v; }); }}
+            />
+          )}
+          {role !== 'viewer' && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="🌫"
+                label={bgBlurOn ? 'Blur ✓' : 'Blur'}
+                active={bgBlurOn}
+                activeColor={TEAL}
+                onPress={bgBlurOn ? toggleBgBlur : function() { setShowBlurSlider(function(v) { return !v; }); }}
+              />
+              {showBlurSlider && !bgBlurOn && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 148, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 6, textAlign: 'center' }}>BLUR STRENGTH</div>
+                  <input type="range" min={2} max={20} value={bgBlurLevel}
+                    onChange={function(e) { setBgBlurLevel(Number(e.target.value)); }}
+                    style={{ width: '100%', accentColor: TEAL }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3, marginBottom: 8 }}>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>SOFT</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL }}>{bgBlurLevel}px</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>HEAVY</span>
+                  </div>
+                  <button onClick={toggleBgBlur}
+                    style={{ width: '100%', background: TEAL, border: 'none', borderRadius: 6, padding: '6px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                    APPLY BLUR
+                  </button>
+                  <button onClick={function() { setShowBlurSlider(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 4 }}>
+                    cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           {(role === 'host' || role === 'cohost') && (
             <IconBtn
               icon="📝"
@@ -6401,6 +6565,124 @@ export default function LiveRoomPage({
               />
             </div>
           )}
+        </div>
+      )}
+
+      {/* ════════════════ DEVICE PICKER SHEET ════════════════ */}
+      {showDevicePicker && role !== 'viewer' && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 93, display: 'flex', alignItems: 'flex-end', animation: 'fadeSlideIn .18s ease' }}
+          onClick={function() { setShowDevicePicker(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '16px 16px 0 0', border: '1px solid ' + BORDER, maxHeight: '70vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', boxShadow: '0 -10px 40px rgba(0,0,0,.7)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid ' + DIM, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: TEXT, letterSpacing: 1 }}>🎛 Input Devices</span>
+              <button onClick={function() { setShowDevicePicker(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', lineHeight: 1, padding: '2px 4px' }}>✕</button>
+            </div>
+            {avCameras.length > 0 && (
+              <div style={{ padding: '12px 16px' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1, marginBottom: 8 }}>📷 CAMERA</div>
+                {avCameras.map(function(cam, idx) {
+                  var isActive = idx === camDevIdx;
+                  return (
+                    <button key={cam.deviceId} onClick={function() { handleCamSelect(idx); }}
+                      style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, background: isActive ? 'rgba(201,168,76,.12)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (isActive ? 'rgba(201,168,76,.4)' : BORDER), borderRadius: 8, cursor: 'pointer', textAlign: 'left', boxSizing: 'border-box' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: isActive ? GOLD : DIM, flexShrink: 0 }} />
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: isActive ? TEXT : MUTED, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {cam.label || 'Camera ' + (idx + 1)}
+                      </span>
+                      {isActive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, flexShrink: 0 }}>ACTIVE</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {avMics.length > 0 && (
+              <div style={{ padding: '12px 16px', borderTop: avCameras.length > 0 ? '1px solid ' + DIM : 'none' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1, marginBottom: 8 }}>🎙 MICROPHONE</div>
+                {avMics.map(function(mic, idx) {
+                  var isActive = idx === micDevIdx;
+                  return (
+                    <button key={mic.deviceId} onClick={function() { handleMicSelect(idx); }}
+                      style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, background: isActive ? 'rgba(201,168,76,.12)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (isActive ? 'rgba(201,168,76,.4)' : BORDER), borderRadius: 8, cursor: 'pointer', textAlign: 'left', boxSizing: 'border-box' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: isActive ? GOLD : DIM, flexShrink: 0 }} />
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: isActive ? TEXT : MUTED, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {mic.label || 'Mic ' + (idx + 1)}
+                      </span>
+                      {isActive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, flexShrink: 0 }}>ACTIVE</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <div style={{ padding: '8px 16px 20px', borderTop: '1px solid ' + DIM }}>
+              <button onClick={function() { setShowDevicePicker(false); }}
+                style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '10px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+                CLOSE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ LAYOUT PRESETS PANEL (host/cohost) ════════════════ */}
+      {showPresetsPanel && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 93, display: 'flex', alignItems: 'flex-end', animation: 'fadeSlideIn .18s ease' }}
+          onClick={function() { setShowPresetsPanel(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '16px 16px 0 0', border: '1px solid ' + BORDER, maxHeight: '75vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', boxShadow: '0 -10px 40px rgba(0,0,0,.7)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid ' + DIM, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: TEXT, letterSpacing: 1 }}>📐 Layout Presets</span>
+              <button onClick={function() { setShowPresetsPanel(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', lineHeight: 1, padding: '2px 4px' }}>✕</button>
+            </div>
+            {/* Save current layout */}
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid ' + DIM }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1, marginBottom: 8 }}>SAVE CURRENT LAYOUT</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input type="text" value={presetNameInput}
+                  onChange={function(e) { setPresetNameInput(e.target.value); }}
+                  placeholder={'Layout ' + (layoutPresets.length + 1)}
+                  style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 6, padding: '7px 10px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, outline: 'none' }} />
+                <button onClick={function() { saveLayoutPreset(presetNameInput || null); setPresetNameInput(''); }}
+                  style={{ background: GOLD, border: 'none', borderRadius: 6, padding: '7px 14px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: BG, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                  SAVE
+                </button>
+              </div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginTop: 5, letterSpacing: .3 }}>
+                Captures: {stageLayout} layout{stageOrderOverride ? ' · custom order (' + stageOrderOverride.length + ' guests)' : ''}
+              </div>
+            </div>
+            {/* Saved presets list */}
+            <div style={{ padding: '12px 16px' }}>
+              {layoutPresets.length === 0 ? (
+                <div style={{ padding: '16px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center' }}>No presets yet — save one above</div>
+              ) : layoutPresets.map(function(p) {
+                return (
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 10px', marginBottom: 6, background: CARD, border: '1px solid ' + BORDER, borderRadius: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginTop: 1 }}>
+                        {p.layout}{p.order ? ' · ' + p.order.length + ' guests' : ' · default order'}
+                      </div>
+                    </div>
+                    <button onClick={function() { loadLayoutPreset(p); }}
+                      style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, padding: '5px 10px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, cursor: 'pointer', letterSpacing: .3, flexShrink: 0 }}>
+                      LOAD
+                    </button>
+                    <button onClick={function() { deleteLayoutPreset(p.id); }}
+                      style={{ background: 'none', border: 'none', color: MUTED, fontSize: 14, cursor: 'pointer', padding: '2px 4px', lineHeight: 1, flexShrink: 0 }}>×</button>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ padding: '8px 16px 20px', borderTop: '1px solid ' + DIM }}>
+              <button onClick={function() { setShowPresetsPanel(false); }}
+                style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '10px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+                CLOSE
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
