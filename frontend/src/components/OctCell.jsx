@@ -490,7 +490,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         sum += v * v;
       }
       var rms = Math.sqrt(sum / timeData.length);
-      if (rms > 0.01) {
+      if (rms > 0.01 && !isMutedRef.current) {
         clearTimeout(speakHoldRef.current); speakHoldRef.current = null;
         if (!speakingLiveRef.current) { speakingLiveRef.current = true; setSpeaking(true); }
       } else if (speakingLiveRef.current && !speakHoldRef.current) {
@@ -822,7 +822,6 @@ function areOctCellPropsEqual(prev, next) {
   return (
     pg.producerId      === ng.producerId      &&
     pg.audioProducerId === ng.audioProducerId &&
-    pg.speaking        === ng.speaking        &&
     pg.role             === ng.role            &&
     pg.teamColor        === ng.teamColor       &&
     pg.remoteMuted     === ng.remoteMuted     &&

@@ -264,6 +264,7 @@ class SeeWhyRTC {
       });
       this.producers['audio'] = audioProducer;
     }
+    this._emit('streamPublished', { audioTrack: audioTrack || null, videoTrack: videoTrack || null });
   }
 
   async subscribeToProducer(producerId) {

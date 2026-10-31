@@ -279,7 +279,7 @@ export default function PanelTile({
   // Emit speaking event for local panelist so server upgrades simulcast layer
   useEffect(function() {
     if (!isLocal || !socket || !roomId || !user_id) return;
-    socket.emit('speaking', { roomId: roomId, guestId: user_id, speaking: isSpeaking });
+    socket.emit('speaking', { roomId: roomId, guestId: user_id, speaking: isSpeaking && !is_muted });
   }, [isLocal, isSpeaking, socket, roomId, user_id]);
 
   // Connection quality from RTC stats (local tile only)
