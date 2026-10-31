@@ -928,11 +928,16 @@ export default function LiveRoomPage({
 
     socket.on('screen-share-active', function(data) {
       if (!data) return;
-      if (data.userId !== userId) setScreenShareHost({ userId: data.userId, username: data.username || 'Host' });
+      if (data.userId !== userId) {
+        setScreenShareHost({ userId: data.userId, username: data.username || 'Host' });
+        setStageLayout('featured');
+        setFeaturedId(data.userId);
+      }
     });
 
     socket.on('screen-share-ended', function() {
       setScreenShareHost(null);
+      setStageLayout('grid');
     });
 
     socket.on('room-audio-only', function(data) {
@@ -1187,6 +1192,7 @@ export default function LiveRoomPage({
 
   var stopScreenShare = function() {
     setIsScreenSharing(false);
+    setStageLayout('grid');
     if (screenStreamRef.current) {
       screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
       screenStreamRef.current = null;
@@ -1238,6 +1244,8 @@ export default function LiveRoomPage({
       videoTrack.addEventListener('ended', stopScreenShare);
       screenStreamRef.current = displayStream;
       setIsScreenSharing(true);
+      setStageLayout('featured');
+      setFeaturedId(userId);
       rtcManager.replaceTrack('video', videoTrack);
       // Optimize simulcast for screen content: reduce downscale so low layers remain readable;
       // increase bitrate so text stays crisp at all layers.
@@ -2074,10 +2082,42 @@ export default function LiveRoomPage({
           })()}
 
           {/* Featured layout */}
-          {stageLayout === 'featured' && (
+          {stageLayout === 'featured' && (function() {
+            var featuredGid = featuredGuest.guestId || featuredGuest.userId;
+            var featuredIsScreenSharing = featuredGid === userId ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === featuredGid);
+            return (
             <div>
               {/* Big featured cell */}
-              <div style={{ background: CARD, borderRadius: 16, overflow: 'hidden', border: '1.5px solid ' + (speakingIds[featuredGuest.guestId || featuredGuest.userId] ? TEAL + '88' : BORDER), boxShadow: speakingIds[featuredGuest.guestId || featuredGuest.userId] ? ('0 0 24px ' + TEAL + '33') : 'none', marginBottom: 10 }}>
+              <div style={{ background: CARD, borderRadius: 16, overflow: 'hidden', border: '1.5px solid ' + (speakingIds[featuredGid] ? TEAL + '88' : BORDER), boxShadow: speakingIds[featuredGid] ? ('0 0 24px ' + TEAL + '33') : 'none', marginBottom: 10 }}>
+                {featuredIsScreenSharing ? (
+                  <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%' }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+                      <OctCell
+                        guest={featuredGuest}
+                        sz={0}
+                        fill={true}
+                        isHost={role === 'host'}
+                        fadesMode={false}
+                        branding={branding}
+                        onTap={null}
+                        socket={socket}
+                        roomId={roomId}
+                        userId={userId}
+                        rtcManager={rtcReady ? rtcManager : null}
+                        mediaConfig={featuredGid === userId ? medConf : null}
+                        isMuted={featuredGid === userId ? isMuted : false}
+                        isCamOff={featuredGid === userId ? isCamOff : false}
+                        onMuteToggle={featuredGid === userId ? toggleMute : null}
+                        onCamToggle={featuredGid === userId ? toggleCam : null}
+                        giftTotal={guestGiftTotals[featuredGid] || 0}
+                        handRaised={!!(raisedHands && raisedHands[featuredGid])}
+                        activeEffect={panelEffects[featuredGid] || null}
+                        isScreenSharing={featuredIsScreenSharing}
+                      />
+                      <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGid} />
+                    </div>
+                  </div>
+                ) : (
                 <div style={{ position: 'relative' }}>
                   <OctCell
                     guest={featuredGuest}
@@ -2090,18 +2130,19 @@ export default function LiveRoomPage({
                     roomId={roomId}
                     userId={userId}
                     rtcManager={rtcReady ? rtcManager : null}
-                    mediaConfig={(featuredGuest.guestId || featuredGuest.userId) === userId ? medConf : null}
-                    isMuted={(featuredGuest.guestId || featuredGuest.userId) === userId ? isMuted : false}
-                    isCamOff={(featuredGuest.guestId || featuredGuest.userId) === userId ? isCamOff : false}
-                    onMuteToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleMute : null}
-                    onCamToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleCam : null}
-                    giftTotal={guestGiftTotals[featuredGuest.guestId || featuredGuest.userId] || 0}
-                    handRaised={!!(raisedHands && raisedHands[featuredGuest.guestId || featuredGuest.userId])}
-                    activeEffect={panelEffects[featuredGuest.guestId || featuredGuest.userId] || null}
-                    isScreenSharing={(featuredGuest.guestId || featuredGuest.userId) === userId ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === (featuredGuest.guestId || featuredGuest.userId))}
+                    mediaConfig={featuredGid === userId ? medConf : null}
+                    isMuted={featuredGid === userId ? isMuted : false}
+                    isCamOff={featuredGid === userId ? isCamOff : false}
+                    onMuteToggle={featuredGid === userId ? toggleMute : null}
+                    onCamToggle={featuredGid === userId ? toggleCam : null}
+                    giftTotal={guestGiftTotals[featuredGid] || 0}
+                    handRaised={!!(raisedHands && raisedHands[featuredGid])}
+                    activeEffect={panelEffects[featuredGid] || null}
+                    isScreenSharing={false}
                   />
-                  <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGuest.guestId || featuredGuest.userId} />
+                  <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGid} />
                 </div>
+                )}
                 <div style={{ padding: '8px 12px 10px', background: CARD }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ fontWeight: 700, fontSize: 16, color: TEXT }}>
@@ -2162,7 +2203,7 @@ export default function LiveRoomPage({
                 </div>
               )}
             </div>
-          )}
+          );}())}
           <OverlayBanner banner={overlayConfig && overlayConfig.banner} />
           <OverlayCountdown countdown={overlayConfig && overlayConfig.countdown} />
           <OverlayScoreBug scoreBug={overlayConfig && overlayConfig.scoreBug} />
