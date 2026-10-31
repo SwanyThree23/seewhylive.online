@@ -422,6 +422,7 @@ export default function LiveRoomPage({
   var [theaterChatVisible, setTheaterChatVisible] = useState(true);
   var [isScreenSharing,    setIsScreenSharing]    = useState(false);
   var [screenShareHost,    setScreenShareHost]    = useState(null);  // { username } when remote host is sharing
+  var [autoFocusSpeaker,   setAutoFocusSpeaker]   = useState(false); // auto-track dominant speaker in featured mode
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -442,10 +443,11 @@ export default function LiveRoomPage({
   var [clipLog,            setClipLog]            = useState([]); // [{ id, label, ts }]
   var [showClipLog,        setShowClipLog]        = useState(false);
 
-  var chatEndRef      = useRef(null);
-  var cameraTrackRef  = useRef(null);
-  var screenStreamRef = useRef(null);
-  var micTrackRef     = useRef(null); // saved mic track for restoration after screen audio
+  var chatEndRef         = useRef(null);
+  var cameraTrackRef     = useRef(null);
+  var screenStreamRef    = useRef(null);
+  var micTrackRef        = useRef(null); // saved mic track for restoration after screen audio
+  var autoFocusTimerRef  = useRef(null);
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Trivia ──────────────────────────────────────────────────────────────
@@ -1121,6 +1123,28 @@ export default function LiveRoomPage({
     return function() { rtcManager.off('sendTransportReady', onReady); };
   }, [rtcReady, socket, roomId]);
 
+  // ── Dominant speaker auto-focus ─────────────────────────────────────────
+  // When in featured layout with autoFocusSpeaker enabled (and no active screen
+  // share), watch speakingIds and switch featuredId to whoever starts speaking.
+  // A 1 400 ms debounce prevents rapid hopping when multiple people overlap.
+  useEffect(function() {
+    if (!autoFocusSpeaker || stageLayout !== 'featured' || isScreenSharing || screenShareHost) {
+      clearTimeout(autoFocusTimerRef.current);
+      return;
+    }
+    var nextSpeaker = null;
+    var keys = Object.keys(speakingIds);
+    for (var i = 0; i < keys.length; i++) {
+      if (speakingIds[keys[i]] && allGuestMap[keys[i]]) { nextSpeaker = keys[i]; break; }
+    }
+    if (!nextSpeaker) { clearTimeout(autoFocusTimerRef.current); return; }
+    clearTimeout(autoFocusTimerRef.current);
+    autoFocusTimerRef.current = setTimeout(function() {
+      setFeaturedId(nextSpeaker);
+    }, 1400);
+    return function() { clearTimeout(autoFocusTimerRef.current); };
+  }, [speakingIds, stageLayout, autoFocusSpeaker, isScreenSharing, screenShareHost]);
+
   // ── Local mic level analyzer (for GlobalMicButtonV49) ──
   useEffect(function() {
     if (!rtcReady || isMuted) { setMicLevel(0); return; }
@@ -1730,19 +1754,29 @@ export default function LiveRoomPage({
                 })}
               </div>
               {/* Stage layout (single focus) */}
-              <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
-                {[
-                  { id: 'grid',     icon: '⊞' },
-                  { id: 'featured', icon: '◻' },
-                  { id: 'split',    icon: '⤢' },
-                ].map(function(l) {
-                  return (
-                    <button key={l.id} onClick={function() { setStageLayout(l.id); }}
-                      style={{ background: stageLayout === l.id ? CARD2 : 'transparent', border: 'none', color: stageLayout === l.id ? TEXT : MUTED, cursor: 'pointer', padding: '5px 10px', fontSize: 12, transition: 'background .15s' }}>
-                      {l.icon}
-                    </button>
-                  );
-                })}
+              <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
+                  {[
+                    { id: 'grid',     icon: '⊞' },
+                    { id: 'featured', icon: '◻' },
+                    { id: 'split',    icon: '⤢' },
+                  ].map(function(l) {
+                    return (
+                      <button key={l.id} onClick={function() { setStageLayout(l.id); }}
+                        style={{ background: stageLayout === l.id ? CARD2 : 'transparent', border: 'none', color: stageLayout === l.id ? TEXT : MUTED, cursor: 'pointer', padding: '5px 10px', fontSize: 12, transition: 'background .15s' }}>
+                        {l.icon}
+                      </button>
+                    );
+                  })}
+                </div>
+                {stageLayout === 'featured' && (
+                  <button
+                    onClick={function() { setAutoFocusSpeaker(function(v) { return !v; }); }}
+                    title={autoFocusSpeaker ? 'Auto-focus active — click to disable' : 'Enable auto-focus: featured tile follows the speaker'}
+                    style={{ background: autoFocusSpeaker ? 'rgba(109,191,126,.18)' : CARD, border: '1px solid ' + (autoFocusSpeaker ? '#6DBF7E66' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: autoFocusSpeaker ? '#6DBF7E' : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", whiteSpace: 'nowrap', transition: 'all .15s', letterSpacing: 0.3 }}>
+                    {autoFocusSpeaker ? '● AUTO' : '○ AUTO'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -2163,7 +2197,7 @@ export default function LiveRoomPage({
                     var isOwn = gid === userId;
                     var isSp  = !!speakingIds[gid];
                     return (
-                      <div key={gid} onClick={function() { setFeaturedId(gid); }}
+                      <div key={gid} onClick={function() { setAutoFocusSpeaker(false); setFeaturedId(gid); }}
                         style={{
                           flexShrink: 0, width: 90,
                           background: CARD2, borderRadius: 10, overflow: 'hidden',
