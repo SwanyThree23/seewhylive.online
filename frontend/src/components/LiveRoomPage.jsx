@@ -58,6 +58,7 @@ var ANIM = [
   '@keyframes announceIn{from{opacity:0;transform:translateX(-50%) translateY(-14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}',
   '@keyframes announceOut{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(-10px)}}',
   '@keyframes reactionFloat{0%{transform:translateY(0) scale(1);opacity:1}70%{transform:translateY(-110px) scale(1.25);opacity:.85}100%{transform:translateY(-150px) scale(.9);opacity:0}}',
+  '@keyframes tickerScroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}',
 ].join('\n');
 
 // ─── Subtle reaction tone for emoji bursts ─────────────────────────────────
@@ -535,6 +536,14 @@ export default function LiveRoomPage({
   var [showBrbInput,       setShowBrbInput]       = useState(false); // show BRB config popover
   var [noiseSuppOn,        setNoiseSuppOn]        = useState(false); // Web Audio noise suppression active
   var [pipActive,          setPipActive]          = useState(false); // browser native PiP active
+  var [tickerText,         setTickerText]         = useState('');    // current scrolling ticker text
+  var [tickerActive,       setTickerActive]       = useState(false); // ticker strip visible
+  var [tickerInput,        setTickerInput]        = useState('');    // host input for ticker text
+  var [showTickerInput,    setShowTickerInput]    = useState(false); // ticker config popover
+  var [ltEditGid,          setLtEditGid]          = useState(null);  // guestId whose name card is being edited
+  var [ltEditName,         setLtEditName]         = useState('');    // editor name field
+  var [ltEditTitle,        setLtEditTitle]        = useState('');    // editor title field
+  var [autoRecord,         setAutoRecord]         = useState(false); // auto-start recording when going live
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -909,6 +918,18 @@ export default function LiveRoomPage({
       setBrbMsg(data.msg ? String(data.msg).slice(0, 100) : '');
     });
 
+    socket.on('ticker', function(data) {
+      if (!data) return;
+      if (!data.active) { setTickerActive(false); setTickerText(''); return; }
+      setTickerText(data.text ? String(data.text).slice(0, 200) : '');
+      setTickerActive(true);
+    });
+
+    socket.on('unmute-all', function() {
+      setIsMuted(false);
+      if (addToastRef.current) addToastRef.current('🎙 Host unmuted all participants', 'info');
+    });
+
     socket.on('stage-join-requested', function(data) {
       if (!data || !data.guestId) return;
       setJoinRequests(function(prev) {
@@ -1262,6 +1283,8 @@ export default function LiveRoomPage({
       socket.off('chat-react-update');
       socket.off('panel:audio_only_changed');
       socket.off('brb');
+      socket.off('ticker');
+      socket.off('unmute-all');
       if (mediaRecRef.current && mediaRecRef.current.state !== 'inactive') {
         try { mediaRecRef.current.stop(); } catch(e) {}
       }
@@ -1551,6 +1574,13 @@ export default function LiveRoomPage({
       setStreamDuration(0);
     }
   }, [isLive]);
+
+  // ── Auto-record: start recording when stream goes live ─────────────────
+  useEffect(function() {
+    if (isLive && autoRecord && recState === 'idle') {
+      startRecording();
+    }
+  }, [isLive]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Peak viewer counter ─────────────────────────────────────────────────
   useEffect(function() {
@@ -2479,6 +2509,18 @@ export default function LiveRoomPage({
     });
   };
 
+  // Stage ticker: host broadcasts a scrolling text banner to all viewers
+  var startTicker = function(text) {
+    if (!text || !text.trim()) return;
+    if (socket) socket.emit('ticker-start', { text: text.trim().slice(0, 200) });
+    setTickerInput('');
+    setShowTickerInput(false);
+  };
+
+  var stopTicker = function() {
+    if (socket) socket.emit('ticker-stop');
+  };
+
   // Merged lower-thirds: local host overrides merged over server overlayConfig
   var mergedLowerThirds = (function() {
     var base = (overlayConfig && overlayConfig.lowerThirds) || {};
@@ -2714,6 +2756,12 @@ export default function LiveRoomPage({
                   if (addToast) addToast('🔇 All participants muted', 'info');
                 }} title="Mute all participants" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🔇</button>
               )}
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() {
+                  if (socket) socket.emit('unmute-all', { roomId: roomId });
+                  if (addToast) addToast('🎙 All participants unmuted', 'info');
+                }} title="Unmute all participants" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🎙</button>
+              )}
               <button onClick={function() { setShowTTSSheet(true); }} title="Voice SuperChat" style={{ background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: RED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🚀</button>
               <button onClick={function() { setShowSuperChatSheet(true); }} title="Super Chat" style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: GOLD, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>💬</button>
               <button onClick={function() { setShowShareSheet(true); }} title="Share" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: TEXT, cursor: 'pointer' }}>🔗</button>
@@ -2856,6 +2904,15 @@ export default function LiveRoomPage({
               </div>
             );
           })()}
+
+          {/* Scrolling ticker strip */}
+          {tickerActive && tickerText && (
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 55, pointerEvents: 'none', overflow: 'hidden', background: 'rgba(14,12,9,.88)', borderTop: '1px solid rgba(201,168,76,.25)', height: 26, display: 'flex', alignItems: 'center' }}>
+              <span style={{ display: 'inline-block', whiteSpace: 'nowrap', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: GOLD, letterSpacing: .8, animation: 'tickerScroll 18s linear infinite' }}>
+                {'⚡ ' + tickerText + '   ·   ⚡ ' + tickerText + '   ·   ⚡ ' + tickerText}
+              </span>
+            </div>
+          )}
 
           {/* Reaction rain overlay */}
           {reactionBurst.map(function(r) {
@@ -3564,6 +3621,7 @@ export default function LiveRoomPage({
                           { label: g.remoteMuted ? '🎙 Unmute' : '🔇 Mute', action: 'mute' },
                           { label: g.role === 'cohost' ? '⬇ Demote to Guest' : '⬆ Promote to Co-host', action: 'promote' },
                           { label: (localLowerThirds[gid] && localLowerThirds[gid].visible) ? '📛 Hide name card' : '📛 Show name card', action: 'namecard' },
+                          { label: '✏️ Edit name card', action: 'ltEdit' },
                           { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
                           { label: producerQuality[g.producerId] === 'red' ? '↺ Request Reconnect' : null, action: 'reconnect', hide: producerQuality[g.producerId] !== 'red' },
                           { label: '📸 Snapshot', action: 'snapshot' },
@@ -3610,6 +3668,12 @@ export default function LiveRoomPage({
                                     next[gid] = { visible: !cur.visible, name: g.username || gid, title: (g.role || 'guest').toUpperCase() };
                                     return next;
                                   });
+                                } else if (item.action === 'ltEdit') {
+                                  var curLt = localLowerThirds[gid] || {};
+                                  setLtEditName(curLt.name || g.username || gid);
+                                  setLtEditTitle(curLt.title || (g.role || 'guest').toUpperCase());
+                                  setLtEditGid(gid);
+                                  return; // keep menu open
                                 } else if (item.action === 'hidevideo') {
                                   setHiddenVideos(function(prev) {
                                     var next = Object.assign({}, prev);
@@ -3746,6 +3810,52 @@ export default function LiveRoomPage({
                                   ✕
                                 </button>
                               )}
+                            </div>
+                          </div>
+                        )}
+                        {/* Inline lower-thirds editor */}
+                        {ltEditGid === gid && (
+                          <div style={{ padding: '7px 10px 7px', borderTop: '1px solid ' + DIM }} onClick={function(e) { e.stopPropagation(); }}>
+                            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, marginBottom: 5 }}>✏️ NAME CARD</div>
+                            <input
+                              value={ltEditName}
+                              onChange={function(e) { setLtEditName(e.target.value.slice(0, 40)); }}
+                              placeholder="Display name"
+                              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '4px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, outline: 'none', marginBottom: 4 }}
+                            />
+                            <input
+                              value={ltEditTitle}
+                              onChange={function(e) { setLtEditTitle(e.target.value.slice(0, 40)); }}
+                              placeholder="Title / role"
+                              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '4px 7px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: TEXT, outline: 'none', marginBottom: 6 }}
+                            />
+                            <div style={{ display: 'flex', gap: 5 }}>
+                              <button
+                                onClick={function(e) {
+                                  e.stopPropagation();
+                                  setLocalLowerThirds(function(prev) {
+                                    var next = Object.assign({}, prev);
+                                    next[gid] = { visible: true, name: ltEditName.trim() || g.username || gid, title: ltEditTitle.trim() };
+                                    return next;
+                                  });
+                                  setLtEditGid(null); setCellMenuId(null);
+                                }}
+                                style={{ flex: 1, background: GOLD, border: 'none', borderRadius: 5, padding: '5px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                                SHOW
+                              </button>
+                              <button
+                                onClick={function(e) {
+                                  e.stopPropagation();
+                                  setLocalLowerThirds(function(prev) {
+                                    var next = Object.assign({}, prev);
+                                    next[gid] = { visible: false, name: '', title: '' };
+                                    return next;
+                                  });
+                                  setLtEditGid(null); setCellMenuId(null);
+                                }}
+                                style={{ flex: 1, background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 5, padding: '5px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: RED, cursor: 'pointer', letterSpacing: 1 }}>
+                                CLEAR
+                              </button>
                             </div>
                           </div>
                         )}
@@ -5169,6 +5279,52 @@ export default function LiveRoomPage({
               activeColor={TEAL}
               onPress={toggleBrowserPip}
             />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="📰"
+                label={tickerActive ? 'Ticker ✓' : 'Ticker'}
+                active={tickerActive}
+                activeColor={GOLD}
+                onPress={tickerActive ? stopTicker : function() { setShowTickerInput(function(v) { return !v; }); }}
+              />
+              {showTickerInput && !tickerActive && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 200, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 6, textAlign: 'center' }}>STAGE TICKER</div>
+                  <input
+                    value={tickerInput}
+                    onChange={function(e) { setTickerInput(e.target.value.slice(0, 200)); }}
+                    placeholder="Scrolling message…"
+                    onKeyDown={function(e) { if (e.key === 'Enter') { startTicker(tickerInput); } else if (e.key === 'Escape') { setShowTickerInput(false); } }}
+                    style={{ width: '100%', boxSizing: 'border-box', background: DIM, border: '1px solid ' + BORDER, borderRadius: 6, padding: '5px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, outline: 'none', marginBottom: 8 }}
+                  />
+                  <button
+                    onClick={function() { startTicker(tickerInput); }}
+                    style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 6, padding: '6px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                    START TICKER
+                  </button>
+                  <button onClick={function() { setShowTickerInput(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 4 }}>
+                    cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {(role === 'host' || role === 'cohost') && role !== 'viewer' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '0 4px' }}>
+              <input
+                type="checkbox"
+                id="sw-autorecord"
+                checked={autoRecord}
+                onChange={function(e) { setAutoRecord(e.target.checked); }}
+                style={{ accentColor: RED, cursor: 'pointer' }}
+              />
+              <label htmlFor="sw-autorecord" style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: autoRecord ? RED : MUTED, cursor: 'pointer', letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                Auto-REC
+              </label>
+            </div>
           )}
           {(role === 'host' || role === 'cohost') && (
             <IconBtn

@@ -3792,6 +3792,30 @@ io.on('connection', function(socket) {
     targetSockets.forEach(function(s) { s.emit('stage-join-denied', { reason: 'host_denied' }); });
   });
 
+  // ── ticker-start / ticker-stop ─────────────────────────────────────────
+  socket.on('ticker-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var text = data && data.text ? String(data.text).slice(0, 200) : '';
+    io.to(roomId).emit('ticker', { active: true, text: text, from: socket.data.username || 'Host' });
+  });
+
+  socket.on('ticker-stop', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('ticker', { active: false });
+  });
+
+  // ── unmute-all ─────────────────────────────────────────────────────────
+  socket.on('unmute-all', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('unmute-all');
+  });
+
   // ── brb-start / brb-end ────────────────────────────────────────────────
   socket.on('brb-start', function(data) {
     var roomId = socket.data.roomId;
