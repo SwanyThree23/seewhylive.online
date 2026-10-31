@@ -485,6 +485,11 @@ export default function LiveRoomPage({
   var [showNotes,          setShowNotes]          = useState(false); // host-only presenter notes overlay
   var [noteText,           setNoteText]           = useState('');    // content of host notes (never transmitted)
   var [joinSoundEnabled,   setJoinSoundEnabled]   = useState(true);  // play ping when guest joins stage
+  var [streamDuration,     setStreamDuration]     = useState(0);     // seconds since isLive became true
+  var [cellAspect,         setCellAspect]         = useState('16:9'); // '16:9' | '4:3' | '9:16'
+  var [stageCountdownMs,   setStageCountdownMs]   = useState(0);     // 0=off; epoch ms of countdown end
+  var [countdownInput,     setCountdownInput]     = useState('5:00'); // text input for countdown setting
+  var [showCountdownInput, setShowCountdownInput] = useState(false);  // show the countdown set panel
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -531,6 +536,7 @@ export default function LiveRoomPage({
   var spotlightStartRef      = useRef(null); // Date.now() when spotlight last activated
   var joinSoundEnabledRef    = useRef(true); // always-fresh mirror of joinSoundEnabled
   joinSoundEnabledRef.current = joinSoundEnabled;
+  var liveStartRef           = useRef(null); // Date.now() when isLive first became true
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Trivia ──────────────────────────────────────────────────────────────
@@ -1367,6 +1373,7 @@ export default function LiveRoomPage({
         if (prefs.sort)   setStageSort(prefs.sort);
         if (prefs.limitSec !== undefined) setStageLimitSec(Number(prefs.limitSec) || 0);
         if (prefs.density !== undefined)  setGridDensity(Number(prefs.density) || 0);
+        if (prefs.aspect)                 setCellAspect(prefs.aspect);
       }
     } catch(e) {}
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1374,9 +1381,9 @@ export default function LiveRoomPage({
   // ── Stage prefs: persist to localStorage whenever they change ───────────
   useEffect(function() {
     try {
-      localStorage.setItem('sw_stage_prefs', JSON.stringify({ layout: stageLayout, sort: stageSort, limitSec: stageLimitSec, density: gridDensity }));
+      localStorage.setItem('sw_stage_prefs', JSON.stringify({ layout: stageLayout, sort: stageSort, limitSec: stageLimitSec, density: gridDensity, aspect: cellAspect }));
     } catch(e) {}
-  }, [stageLayout, stageSort, stageLimitSec, gridDensity]);
+  }, [stageLayout, stageSort, stageLimitSec, gridDensity, cellAspect]);
 
   // ── Presenter notes: restore from localStorage on mount ─────────────────
   useEffect(function() {
@@ -1408,6 +1415,20 @@ export default function LiveRoomPage({
     socket.on('stage-reaction', onRemoteReaction);
     return function() { socket.off('stage-reaction', onRemoteReaction); };
   }, [socket]);
+
+  // ── Stream duration clock: tick every second while live ──────────────────
+  useEffect(function() {
+    if (isLive) {
+      if (!liveStartRef.current) liveStartRef.current = Date.now();
+      var t = setInterval(function() {
+        setStreamDuration(Math.floor((Date.now() - liveStartRef.current) / 1000));
+      }, 1000);
+      return function() { clearInterval(t); };
+    } else {
+      liveStartRef.current = null;
+      setStreamDuration(0);
+    }
+  }, [isLive]);
 
   // ── Spotlight elapsed timer ──────────────────────────────────────────────
   useEffect(function() {
@@ -2014,6 +2035,8 @@ export default function LiveRoomPage({
   // Grid sizing
   var n    = onStage.length;
   var cols = Math.max(1, (n <= 1 ? 1 : n <= 4 ? 2 : n <= 9 ? 3 : n <= 16 ? 4 : 5) + gridDensity);
+  // Cell aspect ratio → CSS padding-bottom trick
+  var cellAspectPb = cellAspect === '4:3' ? '75%' : cellAspect === '9:16' ? '177.78%' : '56.25%';
   var sz   = n <= 2 ? 160 : n <= 4 ? 130 : n <= 9 ? 100 : 80;
 
   // Host info
@@ -2176,10 +2199,19 @@ export default function LiveRoomPage({
               </div>
             )}
             {isLive ? (
-              <button onClick={endStream} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite' }} />
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, letterSpacing: 1 }}>LIVE</span>
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button onClick={endStream} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite' }} />
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, letterSpacing: 1 }}>LIVE</span>
+                </button>
+                {streamDuration > 0 && (function() {
+                  var h = Math.floor(streamDuration / 3600);
+                  var m = Math.floor((streamDuration % 3600) / 60);
+                  var s = streamDuration % 60;
+                  var str = (h > 0 ? (h < 10 ? '0' : '') + h + ':' : '') + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+                  return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>{str}</span>;
+                })()}
+              </div>
             ) : role === 'host' ? (
               <button onClick={function() { setShowLiveModal(true); }} style={{ display: 'flex', alignItems: 'center', gap: 5, background: RED, border: 'none', borderRadius: 999, padding: '5px 12px', cursor: 'pointer' }}>
                 <span style={{ fontSize: 9 }}>▶</span>
@@ -2328,6 +2360,23 @@ export default function LiveRoomPage({
 
         {/* ── Stage Section ── */}
         <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden' }}>
+          {/* Host countdown floating chip */}
+          {role === 'host' && stageCountdownMs > 0 && (function() {
+            var remMs = stageCountdownMs - Date.now();
+            var remSec = Math.max(0, Math.ceil(remMs / 1000));
+            var m = Math.floor(remSec / 60);
+            var s = remSec % 60;
+            var str = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            var urgent = remSec <= 30;
+            if (remSec === 0) { setTimeout(function() { setStageCountdownMs(0); }, 100); }
+            return (
+              <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 55, pointerEvents: 'none', background: urgent ? 'rgba(255,26,60,.18)' : 'rgba(14,12,9,.82)', border: '1px solid ' + (urgent ? 'rgba(255,26,60,.5)' : 'rgba(201,168,76,.35)'), borderRadius: 10, padding: '5px 14px', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 10 }}>⏳</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 16, color: urgent ? RED : GOLD, letterSpacing: 2, fontWeight: 700 }}>{str}</span>
+              </div>
+            );
+          })()}
+
           {/* Reaction rain overlay */}
           {reactionBurst.map(function(r) {
             return (
@@ -2401,6 +2450,23 @@ export default function LiveRoomPage({
                   );
                 })}
               </div>
+              {/* Cell aspect ratio toggle */}
+              {stageLayout === 'grid' && panelMode !== 'list' && (
+                <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
+                  {[
+                    { id: '16:9', icon: '▬', title: '16:9 widescreen' },
+                    { id: '4:3',  icon: '▪', title: '4:3 standard' },
+                    { id: '9:16', icon: '▮', title: '9:16 portrait' },
+                  ].map(function(item) {
+                    return (
+                      <button key={item.id} onClick={function() { setCellAspect(item.id); }} title={item.title}
+                        style={{ background: cellAspect === item.id ? CARD2 : 'transparent', border: 'none', color: cellAspect === item.id ? TEXT : MUTED, cursor: 'pointer', padding: '5px 8px', fontSize: 10, transition: 'background .15s', fontFamily: "'DM Mono',monospace", letterSpacing: .3 }}>
+                        {item.id}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               {/* Grid density (fewer/auto/more columns) */}
               {stageLayout === 'grid' && panelMode !== 'list' && (
                 <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
@@ -2416,6 +2482,42 @@ export default function LiveRoomPage({
                       </button>
                     );
                   })}
+                </div>
+              )}
+              {/* Stage countdown (host only) */}
+              {role === 'host' && (
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={function() {
+                      if (stageCountdownMs > 0) { setStageCountdownMs(0); setShowCountdownInput(false); return; }
+                      setShowCountdownInput(function(v) { return !v; });
+                    }}
+                    title={stageCountdownMs > 0 ? 'Stop countdown' : 'Start stage countdown timer'}
+                    style={{ background: stageCountdownMs > 0 ? 'rgba(201,168,76,.2)' : CARD, border: '1px solid ' + (stageCountdownMs > 0 ? 'rgba(201,168,76,.5)' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: stageCountdownMs > 0 ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                    ⏳ {stageCountdownMs > 0 ? 'STOP' : 'TIMER'}
+                  </button>
+                  {showCountdownInput && stageCountdownMs === 0 && (
+                    <div style={{ position: 'absolute', top: '110%', right: 0, background: CARD, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 10px', zIndex: 30, display: 'flex', gap: 6, alignItems: 'center', boxShadow: '0 4px 14px rgba(0,0,0,.5)', whiteSpace: 'nowrap' }}>
+                      <input
+                        value={countdownInput}
+                        onChange={function(e) { setCountdownInput(e.target.value); }}
+                        placeholder="mm:ss"
+                        style={{ width: 60, background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '4px 7px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: TEXT, outline: 'none' }}
+                      />
+                      <button
+                        onClick={function() {
+                          var parts = countdownInput.split(':');
+                          var totalSec = 0;
+                          if (parts.length === 2) { totalSec = (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0); }
+                          else { totalSec = parseInt(parts[0], 10) || 0; }
+                          if (totalSec > 0) { setStageCountdownMs(Date.now() + totalSec * 1000); }
+                          setShowCountdownInput(false);
+                        }}
+                        style={{ background: GOLD, border: 'none', borderRadius: 5, padding: '4px 9px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#0E0C09', cursor: 'pointer', letterSpacing: .5 }}>
+                        START
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
               {/* Mute all (host only) */}
@@ -2615,6 +2717,7 @@ export default function LiveRoomPage({
                 var showMenu = cellMenuId === gid;
                 return (
                   <div key={gid}
+                    data-cell-gid={gid}
                     onClick={function(e) {
                       if (cellMenuId === gid) { setCellMenuId(null); setRemoveConfirmId(null); return; }
                       if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); }
@@ -2633,8 +2736,8 @@ export default function LiveRoomPage({
                       animation: isSp ? 'speakPulseGrid 1.4s ease-in-out infinite' : 'fadeSlideIn .22s ease',
                       transition: 'border-color .2s',
                     }}>
-                    {/* 16:9 video wrapper */}
-                    <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
+                    {/* Video wrapper — aspect ratio driven by cellAspect */}
+                    <div style={{ position: 'relative', paddingBottom: cellAspectPb }}>
                       <div style={{ position: 'absolute', inset: 0 }}>
                         {audioOnly ? (
                           <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,' + CARD2 + ',' + BG + ')', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
@@ -2746,6 +2849,7 @@ export default function LiveRoomPage({
                           { label: (localLowerThirds[gid] && localLowerThirds[gid].visible) ? '📛 Hide name card' : '📛 Show name card', action: 'namecard' },
                           { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
                           { label: producerQuality[g.producerId] === 'red' ? '↺ Request Reconnect' : null, action: 'reconnect', hide: producerQuality[g.producerId] !== 'red' },
+                          { label: '📸 Snapshot', action: 'snapshot' },
                           { label: '✂️ Mark Clip', action: 'clip' },
                           { label: '🚫 Remove from Stage', action: 'remove' },
                         ].filter(function(item) { return !item.hide; }).map(function(item) {
@@ -2785,6 +2889,23 @@ export default function LiveRoomPage({
                                     next[gid] = { visible: !cur.visible, name: g.username || gid, title: (g.role || 'guest').toUpperCase() };
                                     return next;
                                   });
+                                } else if (item.action === 'snapshot') {
+                                  var snapEl = document.querySelector('[data-cell-gid="' + gid + '"] video');
+                                  if (snapEl && snapEl.videoWidth > 0) {
+                                    var cv = document.createElement('canvas');
+                                    cv.width = snapEl.videoWidth; cv.height = snapEl.videoHeight;
+                                    cv.getContext('2d').drawImage(snapEl, 0, 0);
+                                    cv.toBlob(function(blob) {
+                                      if (!blob) return;
+                                      var _url = URL.createObjectURL(blob);
+                                      var _a = document.createElement('a');
+                                      _a.href = _url; _a.download = (g.username || gid) + '_snapshot.jpg'; _a.click();
+                                      URL.revokeObjectURL(_url);
+                                    }, 'image/jpeg', 0.9);
+                                    if (addToastRef.current) addToastRef.current('Snapshot saved', 'success');
+                                  } else {
+                                    if (addToastRef.current) addToastRef.current('No video to snapshot', 'warning');
+                                  }
                                 } else if (item.action === 'clip') {
                                   var clipLabel = '✂️ ' + (g.username || gid);
                                   if (socket) socket.emit('clip-marker', { label: clipLabel });
