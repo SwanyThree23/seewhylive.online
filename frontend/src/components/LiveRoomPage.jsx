@@ -424,6 +424,7 @@ export default function LiveRoomPage({
   var [screenShareHost,    setScreenShareHost]    = useState(null);  // { username } when remote host is sharing
   var [autoFocusSpeaker,   setAutoFocusSpeaker]   = useState(false); // auto-track dominant speaker in featured mode
   var [producerQuality,    setProducerQuality]    = useState({});   // { [producerId]: 'green'|'yellow'|'red' }
+  var [spotlight,          setSpotlight]          = useState(null); // { guestId, username } | null — host-broadcast spotlight
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -943,6 +944,19 @@ export default function LiveRoomPage({
       setStageLayout('grid');
     });
 
+    socket.on('spotlight-guest', function(data) {
+      if (!data || !data.guestId) return;
+      setSpotlight({ guestId: data.guestId, username: data.username || data.guestId });
+      setStageLayout('featured');
+      setFeaturedId(data.guestId);
+      setAutoFocusSpeaker(false);
+    });
+
+    socket.on('spotlight-end', function() {
+      setSpotlight(null);
+      setStageLayout('grid');
+    });
+
     socket.on('room-audio-only', function(data) {
       if (!data) return;
       setAudioOnly(Boolean(data.enabled));
@@ -1010,6 +1024,8 @@ export default function LiveRoomPage({
       socket.off('power-play:rejected');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
+      socket.off('spotlight-guest');
+      socket.off('spotlight-end');
       socket.off('mute-all');
       socket.off('room-audio-only');
       socket.off('room-private');
@@ -1719,6 +1735,19 @@ export default function LiveRoomPage({
             <span style={{ fontSize: 12, color: TEAL, fontWeight: 600, letterSpacing: 0.5 }}>{screenShareHost.username} is sharing screen</span>
           </div>
         )}
+        {/* Spotlight banner */}
+        {spotlight && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, paddingTop: 7, borderTop: '1px solid ' + BORDER }}>
+            <span style={{ fontSize: 13 }}>🔦</span>
+            <span style={{ fontSize: 12, color: GOLD, fontWeight: 600, letterSpacing: 0.5 }}>{spotlight.username} spotlighted</span>
+            {(role === 'host' || role === 'cohost') && (
+              <button onClick={function() { if (socket) socket.emit('spotlight-end', { roomId: roomId }); }}
+                style={{ marginLeft: 'auto', padding: '3px 8px', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 5, color: GOLD, fontSize: 10, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>
+                END
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ════════════════ STREAM GOAL BAR ════════════════ */}
@@ -1986,7 +2015,8 @@ export default function LiveRoomPage({
                       <div style={{ position: 'absolute', top: 28, right: 4, background: CARD, border: '1px solid ' + BORDER, borderRadius: 8, overflow: 'hidden', zIndex: 30, minWidth: 150, boxShadow: '0 6px 22px rgba(0,0,0,.75)', animation: 'cellMenuIn .15s ease' }}
                         onClick={function(e) { e.stopPropagation(); }}>
                         {[
-                          { label: isPinned ? '📌 Unpin' : '📌 Spotlight', action: 'pin' },
+                          { label: isPinned ? '📌 Unpin' : '📌 Pin (local)', action: 'pin' },
+                          { label: spotlight && spotlight.guestId === gid ? '🔦 End spotlight' : '🔦 Spotlight all', action: 'spotlight' },
                           { label: g.remoteMuted ? '🎙 Unmute' : '🔇 Mute', action: 'mute' },
                           { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
                           { label: '🚫 Remove from Stage', action: 'remove' },
@@ -1998,6 +2028,13 @@ export default function LiveRoomPage({
                                 setCellMenuId(null);
                                 if (item.action === 'pin') {
                                   setPinnedId(function(p) { return p === gid ? null : gid; });
+                                } else if (item.action === 'spotlight') {
+                                  var isSpotlit = spotlight && spotlight.guestId === gid;
+                                  if (isSpotlit) {
+                                    if (socket) socket.emit('spotlight-end', { roomId: roomId });
+                                  } else {
+                                    if (socket) socket.emit('spotlight-guest', { roomId: roomId, guestId: gid, username: g.username || gid });
+                                  }
                                 } else if (item.action === 'mute') {
                                   if (socket) socket.emit(g.remoteMuted ? 'unmute-guest' : 'mute-guest', { roomId: roomId, guestId: gid });
                                 } else if (item.action === 'invite') {
@@ -2143,10 +2180,11 @@ export default function LiveRoomPage({
           {stageLayout === 'featured' && (function() {
             var featuredGid = featuredGuest.guestId || featuredGuest.userId;
             var featuredIsScreenSharing = featuredGid === userId ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === featuredGid);
+            var featuredIsSpotlit = !!(spotlight && spotlight.guestId === featuredGid);
             return (
             <div>
               {/* Big featured cell */}
-              <div style={{ background: CARD, borderRadius: 16, overflow: 'hidden', border: '1.5px solid ' + (speakingIds[featuredGid] ? TEAL + '88' : BORDER), boxShadow: speakingIds[featuredGid] ? ('0 0 24px ' + TEAL + '33') : 'none', marginBottom: 10 }}>
+              <div style={{ background: CARD, borderRadius: 16, overflow: 'hidden', border: '1.5px solid ' + (featuredIsSpotlit ? GOLD + '99' : speakingIds[featuredGid] ? TEAL + '88' : BORDER), boxShadow: featuredIsSpotlit ? ('0 0 28px ' + GOLD + '44') : speakingIds[featuredGid] ? ('0 0 24px ' + TEAL + '33') : 'none', marginBottom: 10 }}>
                 {featuredIsScreenSharing ? (
                   <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%' }}>
                     <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>

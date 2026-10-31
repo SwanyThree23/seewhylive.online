@@ -3731,6 +3731,22 @@ io.on('connection', function(socket) {
     });
   });
 
+  // ── spotlight-guest / spotlight-end ────────────────────────────────────
+  // Host broadcasts a featured-view directive so all viewers focus on one guest.
+  socket.on('spotlight-guest', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.guestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('spotlight-guest', { guestId: data.guestId, username: data.username || '' });
+  });
+
+  socket.on('spotlight-end', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('spotlight-end');
+  });
+
   // ── lock-stage ─────────────────────────────────────────────────────────
   socket.on('lock-stage', function(data) {
     var roomId = socket.data.roomId;
