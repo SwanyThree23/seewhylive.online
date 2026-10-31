@@ -499,6 +499,9 @@ export default function LiveRoomPage({
   var [showCellStats,      setShowCellStats]      = useState(false); // show speaking-time micro-badge on grid cells
   var [peakViewers,        setPeakViewers]        = useState(0);     // max viewerCount seen this session
   var [stageTint,          setStageTint]          = useState('');    // '' | '#hex' — translucent color wash over stage
+  var [msgTargetGid,       setMsgTargetGid]       = useState(null);  // guestId receiving a private host message
+  var [msgInput,           setMsgInput]           = useState('');    // controlled input for private message
+  var [inboundHostMsg,     setInboundHostMsg]     = useState(null);  // { from, text } — private message received from host
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -838,6 +841,13 @@ export default function LiveRoomPage({
 
     socket.on('stage-lock-update', function(data) {
       setStageLocked(!!(data && data.locked));
+    });
+
+    socket.on('host-private-msg', function(data) {
+      if (!data || !data.text) return;
+      setInboundHostMsg({ from: data.from || 'Host', text: data.text });
+      if (addToastRef.current) addToastRef.current('📨 ' + (data.from || 'Host') + ': ' + data.text, 'info');
+      setTimeout(function() { setInboundHostMsg(null); }, 8000);
     });
 
     socket.on('lower-all-hands', function() {
@@ -1869,7 +1879,7 @@ export default function LiveRoomPage({
         if (showKeyHelp) { setShowKeyHelp(false); }
         else if (showActivityLog) { setShowActivityLog(false); }
         else if (expandedCell) { setExpandedCell(null); }
-        else if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); setRenamingGid(null); }
+        else if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); setRenamingGid(null); setMsgTargetGid(null); }
       }
     };
     document.addEventListener('keydown', onKey);
@@ -2142,6 +2152,16 @@ export default function LiveRoomPage({
   return (
     <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, overflow: 'hidden', position: 'relative', fontFamily: "'Barlow Condensed',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: ANIM }} />
+
+      {/* ── Inbound private host message banner ── */}
+      {inboundHostMsg && role !== 'host' && (
+        <div style={{ position: 'absolute', top: 52, left: '50%', transform: 'translateX(-50%)', zIndex: 62, animation: 'announceIn .3s ease', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(201,168,76,.18)', border: '1px solid rgba(201,168,76,.6)', borderRadius: 20, padding: '8px 18px', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', boxShadow: '0 4px 20px rgba(0,0,0,.6)', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+          <span style={{ fontSize: 14, lineHeight: 1 }}>📨</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, letterSpacing: .5, flexShrink: 0 }}>{inboundHostMsg.from}</span>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis' }}>{inboundHostMsg.text}</span>
+          <button onClick={function() { setInboundHostMsg(null); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 12, padding: 0, lineHeight: 1, flexShrink: 0 }}>×</button>
+        </div>
+      )}
 
       {/* ── Stage join announcement banner ── */}
       {stageAnnounce && (
@@ -2773,7 +2793,7 @@ export default function LiveRoomPage({
           {stageLayout === 'grid' && panelMode !== 'list' && (
             <div
               style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ',1fr)', gap: 4 }}
-              onClick={function() { if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); setRenamingGid(null); } }}>
+              onClick={function() { if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); setRenamingGid(null); setMsgTargetGid(null); } }}>
               {sortedOnStage.map(function(g) {
                 var gid      = g.guestId || g.userId || 'x';
                 var isOwn    = gid === userId;
@@ -2848,6 +2868,11 @@ export default function LiveRoomPage({
 
                     {/* Overlay badges (top-left) */}
                     <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
+                      {(isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)) && (
+                        <div style={{ background: 'rgba(0,160,255,.92)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff', letterSpacing: .3 }}>📺</span>
+                        </div>
+                      )}
                       {gid === topSpeakerId && (
                         <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}>
                           <span style={{ fontSize: 7, lineHeight: 1 }}>👑</span>
@@ -2928,6 +2953,7 @@ export default function LiveRoomPage({
                           { label: producerQuality[g.producerId] === 'red' ? '↺ Request Reconnect' : null, action: 'reconnect', hide: producerQuality[g.producerId] !== 'red' },
                           { label: '📸 Snapshot', action: 'snapshot' },
                           { label: '✂️ Mark Clip', action: 'clip' },
+                          { label: '📨 Message', action: 'msg' },
                           { label: '✏️ Rename (local)', action: 'rename' },
                           { label: '🎨 Cell Color', action: 'color' },
                           { label: '🚫 Remove from Stage', action: 'remove' },
@@ -2990,6 +3016,10 @@ export default function LiveRoomPage({
                                   if (socket) socket.emit('clip-marker', { label: clipLabel });
                                   setClipLog(function(prev) { return [{ id: Date.now() + '', label: clipLabel, ts: Date.now() }].concat(prev); });
                                   if (addToastRef.current) addToastRef.current(clipLabel, 'success');
+                                } else if (item.action === 'msg') {
+                                  setMsgTargetGid(gid);
+                                  setMsgInput('');
+                                  return; // keep menu open
                                 } else if (item.action === 'rename') {
                                   setRenamingGid(gid);
                                   setRenameInput(localGuestNames[gid] || g.username || '');
@@ -3004,6 +3034,43 @@ export default function LiveRoomPage({
                             </button>
                           );
                         })}
+                        {/* Inline private message input */}
+                        {msgTargetGid === gid && (
+                          <div style={{ padding: '7px 10px 6px', borderTop: '1px solid ' + DIM }}>
+                            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, marginBottom: 5 }}>📨 PRIVATE MSG TO {(localGuestNames[gid] || g.username || gid).toUpperCase()}</div>
+                            <div style={{ display: 'flex', gap: 5 }}>
+                              <input
+                                autoFocus
+                                value={msgInput}
+                                onChange={function(e) { setMsgInput(e.target.value); }}
+                                onKeyDown={function(e) {
+                                  e.stopPropagation();
+                                  if (e.key === 'Enter') {
+                                    var text = msgInput.trim();
+                                    if (text && socket) socket.emit('host-private-msg', { roomId: roomId, toGuestId: gid, text: text, from: username || 'Host' });
+                                    if (text && addToastRef.current) addToastRef.current('Msg sent to ' + (localGuestNames[gid] || g.username || gid), 'success');
+                                    setMsgTargetGid(null); setCellMenuId(null);
+                                  } else if (e.key === 'Escape') { setMsgTargetGid(null); }
+                                }}
+                                onClick={function(e) { e.stopPropagation(); }}
+                                maxLength={120}
+                                placeholder="Type message, Enter to send…"
+                                style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '4px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, outline: 'none', minWidth: 0 }}
+                              />
+                              <button
+                                onClick={function(e) {
+                                  e.stopPropagation();
+                                  var text = msgInput.trim();
+                                  if (text && socket) socket.emit('host-private-msg', { roomId: roomId, toGuestId: gid, text: text, from: username || 'Host' });
+                                  if (text && addToastRef.current) addToastRef.current('Msg sent to ' + (localGuestNames[gid] || g.username || gid), 'success');
+                                  setMsgTargetGid(null); setCellMenuId(null);
+                                }}
+                                style={{ background: GOLD, border: 'none', borderRadius: 5, padding: '4px 9px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#0E0C09', cursor: 'pointer', flexShrink: 0 }}>
+                                ➤
+                              </button>
+                            </div>
+                          </div>
+                        )}
                         {/* Inline rename input */}
                         {renamingGid === gid && (
                           <div style={{ padding: '7px 10px 6px', borderTop: '1px solid ' + DIM }}>
@@ -5164,12 +5231,15 @@ export default function LiveRoomPage({
             <div style={{ padding: '14px 20px 28px', background: 'rgba(9,7,14,.97)', borderTop: '1px solid ' + BORDER }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 22, color: TEXT }}>{g.username || gid}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 22, color: localGuestNames[gid] ? GOLD : TEXT }}>
+                    {localGuestNames[gid] || g.username || gid}
+                    {localGuestNames[gid] && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, marginLeft: 5, opacity: .7 }}>*</span>}
+                  </div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2 }}>
                     <RolePill role={g.role || (isOwn ? role : 'guest')} />
                     {isSp && <SpeakBars color={TEAL} />}
                   </div>
-                  <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 6, flexWrap: 'wrap' }}>
                     {(function() {
                       var joinMs = stageJoinTimesRef.current[gid];
                       if (!joinMs) return null;
@@ -5185,6 +5255,28 @@ export default function LiveRoomPage({
                       return React.createElement('span', {
                         style: { fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }
                       }, '🗣 Speaking: ' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+                    })()}
+                    {(function() {
+                      var gifts = guestGiftTotals[gid] || 0;
+                      if (!gifts) return null;
+                      return React.createElement('span', {
+                        style: { fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD }
+                      }, '🎁 $' + (Math.floor(gifts) / 100).toFixed(2));
+                    })()}
+                    {(function() {
+                      if (!isOwn && (role === 'host' || role === 'cohost') && g.producerId) {
+                        var raw = consumerRawStats[g.producerId];
+                        if (!raw) return null;
+                        var br = raw.bitratekbps != null ? raw.bitratekbps + ' kbps' : null;
+                        var jt = raw.jitter != null ? raw.jitter + 'ms jit' : null;
+                        var pl = raw.packetsLost != null ? raw.packetsLost + ' lost' : null;
+                        var parts = [br, jt, pl].filter(Boolean).join(' · ');
+                        if (!parts) return null;
+                        return React.createElement('span', {
+                          style: { fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }
+                        }, '📡 ' + parts);
+                      }
+                      return null;
                     })()}
                   </div>
                 </div>
