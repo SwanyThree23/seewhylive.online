@@ -348,8 +348,9 @@ export default function LiveRoomPage({
   var [medConf,       setMedConf]       = useState(mediaConfig || null);
   var [reactsOpen,    setReactsOpen]    = useState(false);
   var [floatReacts,   setFloatReacts]   = useState([]);
-  var [stageLayout,    setStageLayout]    = useState('grid');   // 'grid' | 'featured'
+  var [stageLayout,    setStageLayout]    = useState(function() { try { return localStorage.getItem('sw_layout') || 'grid'; } catch(e) { return 'grid'; } });   // 'grid' | 'featured'
   var [featuredId,     setFeaturedId]     = useState(userId);
+  var [cinemaMode,     setCinemaMode]     = useState(false);  // hide thumbnail strip in featured layout
   var [showLiveModal,  setShowLiveModal]  = useState(false);
   var [stageGuests,    setStageGuests]    = useState([userId]);
   var [showMediaConf,  setShowMediaConf]  = useState(false);
@@ -1189,6 +1190,12 @@ export default function LiveRoomPage({
     rtcManager.on('consumerStats', onStats);
     return function() { rtcManager.off('consumerStats', onStats); };
   }, [rtcReady]);
+
+  // Persist chosen layout to localStorage so it survives page reloads
+  useEffect(function() {
+    try { localStorage.setItem('sw_layout', stageLayout); } catch(e) {}
+    if (stageLayout !== 'featured') setCinemaMode(false);
+  }, [stageLayout]);
 
   // ── Local mic level analyzer (for GlobalMicButtonV49) ──
   useEffect(function() {
@@ -2334,16 +2341,30 @@ export default function LiveRoomPage({
                 )}
                 <div style={{ padding: '8px 12px 10px', background: CARD }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontWeight: 700, fontSize: 16, color: TEXT }}>
+                    <button
+                      onClick={function() { setStageLayout('grid'); }}
+                      title="Back to grid"
+                      style={{ flexShrink: 0, background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 13, padding: '0 4px 0 0', lineHeight: 1 }}>
+                      ←
+                    </button>
+                    <span style={{ fontWeight: 700, fontSize: 16, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {featuredGuest.username || featuredGuest.guestId}
                     </span>
                     <RolePill role={featuredGuest.role || role} />
                     {speakingIds[featuredGuest.guestId || featuredGuest.userId] && <SpeakBars color={TEAL} small />}
+                    {onStage.length > 1 && (
+                      <button
+                        onClick={function() { setCinemaMode(function(v) { return !v; }); }}
+                        title={cinemaMode ? 'Show thumbnails' : 'Cinema mode'}
+                        style={{ flexShrink: 0, background: cinemaMode ? 'rgba(201,168,76,.18)' : 'none', border: '1px solid ' + (cinemaMode ? 'rgba(201,168,76,.4)' : 'transparent'), borderRadius: 5, color: cinemaMode ? GOLD : MUTED, cursor: 'pointer', fontSize: 10, padding: '2px 6px', fontFamily: "'DM Mono',monospace", letterSpacing: 0.3, lineHeight: 1 }}>
+                        {cinemaMode ? '⊡' : '⊡'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
               {/* Thumbnail strip */}
-              {onStage.length > 1 && (
+              {onStage.length > 1 && !cinemaMode && (
                 <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch' }}>
                   {onStage.filter(function(g) {
                     return (g.guestId || g.userId) !== (featuredGuest.guestId || featuredGuest.userId);
@@ -3177,7 +3198,7 @@ export default function LiveRoomPage({
             active={showMediaConf}
             onPress={function() { setShowMediaConf(function(v) { return !v; }); }}
           />
-          {(role === 'host' || role === 'cohost') && (
+          {(role === 'host' || role === 'cohost' || role === 'owner') && (
             <IconBtn
               icon={isScreenSharing ? '🛑' : '🖥'}
               label={isScreenSharing ? 'Stop' : 'Screen'}
