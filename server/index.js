@@ -3731,6 +3731,29 @@ io.on('connection', function(socket) {
     });
   });
 
+  // ── host-private-msg (host→specific guest) ──────────────────────────────
+  socket.on('host-private-msg', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.text || !data.toGuestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var text = String(data.text).slice(0, 120);
+    var toSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
+      return s.data.roomId === roomId && s.data.userId === data.toGuestId;
+    });
+    toSockets.forEach(function(s) {
+      s.emit('host-private-msg', { text: text, from: data.from || socket.data.username || 'Host' });
+    });
+  });
+
+  // ── host-broadcast-overlay ────────────────────────────────────────────
+  socket.on('host-broadcast-overlay', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.text) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var text = String(data.text).slice(0, 200);
+    io.to(roomId).emit('broadcast-overlay', { text: text, from: socket.data.username || 'Host' });
+  });
+
   // ── spotlight-guest / spotlight-end ────────────────────────────────────
   // Host broadcasts a featured-view directive so all viewers focus on one guest.
   socket.on('spotlight-guest', function(data) {

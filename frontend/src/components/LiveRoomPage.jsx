@@ -502,6 +502,15 @@ export default function LiveRoomPage({
   var [msgTargetGid,       setMsgTargetGid]       = useState(null);  // guestId receiving a private host message
   var [msgInput,           setMsgInput]           = useState('');    // controlled input for private message
   var [inboundHostMsg,     setInboundHostMsg]     = useState(null);  // { from, text } — private message received from host
+  var [hoverGid,           setHoverGid]           = useState(null);  // guestId under mouse (grid hover tooltip)
+  var [hoverRect,          setHoverRect]          = useState(null);  // { top, left, width } from getBoundingClientRect
+  var [swapPickGid,        setSwapPickGid]        = useState(null);  // first cell selected in swap-mode
+  var [swapMode,           setSwapMode]           = useState(false); // host cell-swap mode active
+  var [stageOrderOverride, setStageOrderOverride] = useState(null);  // null | string[] — custom cell order for grid
+  var [autoLayout,         setAutoLayout]         = useState(false); // auto-switch grid↔featured by stage count
+  var [broadcastText,      setBroadcastText]      = useState('');    // text for host broadcast overlay
+  var [showBroadcastInput, setShowBroadcastInput] = useState(false); // show broadcast input panel
+  var [broadcastOverlay,   setBroadcastOverlay]   = useState(null);  // { text, from } | null — fullscreen text overlay
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -850,6 +859,12 @@ export default function LiveRoomPage({
       setTimeout(function() { setInboundHostMsg(null); }, 8000);
     });
 
+    socket.on('broadcast-overlay', function(data) {
+      if (!data || !data.text) return;
+      setBroadcastOverlay({ text: String(data.text).slice(0, 200), from: data.from || 'Host' });
+      setTimeout(function() { setBroadcastOverlay(null); }, 6000);
+    });
+
     socket.on('lower-all-hands', function() {
       setRaisedHands({});
     });
@@ -1155,6 +1170,7 @@ export default function LiveRoomPage({
       socket.off('please-reconnect');
       socket.off('stage-lock-update');
       socket.off('lower-all-hands');
+      socket.off('broadcast-overlay');
       socket.off('room-audio-only');
       socket.off('room-private');
       socket.off('subscriber-only-changed');
@@ -1460,6 +1476,14 @@ export default function LiveRoomPage({
   useEffect(function() {
     if (viewerCount > peakViewers) setPeakViewers(viewerCount);
   }, [viewerCount]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Auto-layout: switch grid↔featured by stage count ───────────────────
+  useEffect(function() {
+    if (!autoLayout) return;
+    var n2 = onStage.length;
+    if (n2 <= 1 && stageLayout !== 'featured') { setStageLayout('featured'); }
+    else if (n2 >= 2 && stageLayout === 'featured') { setStageLayout('grid'); }
+  }, [onStage.length, autoLayout]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Spotlight elapsed timer ──────────────────────────────────────────────
   useEffect(function() {
@@ -1875,8 +1899,11 @@ export default function LiveRoomPage({
       else if (e.key === '+' || e.key === '=') { setGridDensity(function(d) { return Math.min(2, d + 1); }); }
       else if (e.key === '-' || e.key === '_') { setGridDensity(function(d) { return Math.max(-2, d - 1); }); }
       else if (e.key === '?') { setShowKeyHelp(function(v) { return !v; }); }
+      else if ((e.key === 'w' || e.key === 'W') && (role === 'host' || role === 'cohost')) { setAutoLayout(function(v) { return !v; }); }
       else if (e.key === 'Escape') {
         if (showKeyHelp) { setShowKeyHelp(false); }
+        else if (showBroadcastInput) { setShowBroadcastInput(false); }
+        else if (swapMode) { setSwapMode(false); setSwapPickGid(null); }
         else if (showActivityLog) { setShowActivityLog(false); }
         else if (expandedCell) { setExpandedCell(null); }
         else if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); setRenamingGid(null); setMsgTargetGid(null); }
@@ -1884,7 +1911,7 @@ export default function LiveRoomPage({
     };
     document.addEventListener('keydown', onKey);
     return function() { document.removeEventListener('keydown', onKey); };
-  }, [expandedCell, cellMenuId, stageLayout, featuredId, showKeyHelp, showActivityLog]);
+  }, [expandedCell, cellMenuId, stageLayout, featuredId, showKeyHelp, showActivityLog, showBroadcastInput, swapMode]);
 
   var shareRoom = function() {
     var url = window.location.origin + (roomId !== '6990f5f2-4823-453e-a1fc-dc9d00000000' ? ('?room=' + roomId) : '');
@@ -2044,9 +2071,19 @@ export default function LiveRoomPage({
     if (secs > topSpeakSecs) { topSpeakSecs = secs; topSpeakerId = gid; }
   });
 
-  // Sorted stage array according to stageSort mode
+  // Sorted stage array according to stageSort mode or stageOrderOverride
   var sortedOnStage = (function() {
     var arr = onStage.slice();
+    if (stageOrderOverride && stageOrderOverride.length > 0) {
+      arr.sort(function(a, b) {
+        var ia = stageOrderOverride.indexOf(a.guestId || a.userId);
+        var ib = stageOrderOverride.indexOf(b.guestId || b.userId);
+        if (ia < 0) ia = 9999;
+        if (ib < 0) ib = 9999;
+        return ia - ib;
+      });
+      return arr;
+    }
     if (stageSort === 'speaking') {
       arr.sort(function(a, b) {
         var sa = speakingSnapshots[a.guestId || a.userId] || 0;
@@ -2162,6 +2199,48 @@ export default function LiveRoomPage({
           <button onClick={function() { setInboundHostMsg(null); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 12, padding: 0, lineHeight: 1, flexShrink: 0 }}>×</button>
         </div>
       )}
+
+      {/* ── Broadcast overlay (fullscreen text from host) ── */}
+      {broadcastOverlay && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', animation: 'fadeSlideIn .35s ease' }}>
+          <div style={{ background: 'rgba(0,0,0,.82)', borderRadius: 24, padding: '28px 40px', maxWidth: '80%', textAlign: 'center', border: '2px solid ' + GOLD + '55', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', boxShadow: '0 0 60px rgba(201,168,76,.25)' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 2, marginBottom: 10 }}>{broadcastOverlay.from.toUpperCase()}</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: TEXT, lineHeight: 1.15, letterSpacing: 1.5 }}>{broadcastOverlay.text}</div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Hover quick-stats tooltip (host/cohost, grid mode) ── */}
+      {hoverGid && hoverRect && stageLayout === 'grid' && (role === 'host' || role === 'cohost') && (function() {
+        var hg = allGuestMap[hoverGid] || {};
+        var hName = localGuestNames[hoverGid] || hg.username || hoverGid;
+        var hSecs = speakingTimeRef.current[hoverGid] || 0;
+        var hm = Math.floor(hSecs / 60);
+        var hs = hSecs % 60;
+        var hPid = hg.producerId;
+        var hQ = hPid ? producerQuality[hPid] : null;
+        var hRaw = hPid ? (consumerRawStats[hPid] || null) : null;
+        var qColor = hQ === 'green' ? '#00e676' : hQ === 'yellow' ? '#ffc107' : hQ === 'red' ? RED : MUTED;
+        return (
+          <div style={{ position: 'fixed', top: hoverRect.top - 4, left: hoverRect.left + hoverRect.width / 2, transform: 'translate(-50%,-100%)', zIndex: 9999, pointerEvents: 'none', animation: 'fadeSlideIn .15s ease' }}>
+            <div style={{ background: 'rgba(9,7,14,.97)', border: '1px solid ' + BORDER, borderRadius: 8, padding: '6px 10px', minWidth: 120, maxWidth: 200, boxShadow: '0 4px 16px rgba(0,0,0,.7)' }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: TEXT, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hName}</div>
+              {hQ && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: qColor, flexShrink: 0 }} />
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: qColor, letterSpacing: .3 }}>{hQ.toUpperCase()}</span>
+                </div>
+              )}
+              {hRaw && hRaw.bitratekbps != null && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{'📡 ' + hRaw.bitratekbps + ' kbps'}{hRaw.jitter != null ? ' · ' + hRaw.jitter + 'ms' : ''}</div>
+              )}
+              {hSecs > 0 && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{'🗣 ' + (hm < 10 ? '0' : '') + hm + ':' + (hs < 10 ? '0' : '') + hs}</div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Stage join announcement banner ── */}
       {stageAnnounce && (
@@ -2622,6 +2701,62 @@ export default function LiveRoomPage({
                   🔇 ALL
                 </button>
               )}
+              {/* Broadcast overlay (host only) */}
+              {role === 'host' && (
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={function() { setShowBroadcastInput(function(v) { return !v; }); }}
+                    title="Send fullscreen text overlay to all viewers"
+                    style={{ background: showBroadcastInput ? 'rgba(201,168,76,.2)' : CARD, border: '1px solid ' + (showBroadcastInput ? 'rgba(201,168,76,.5)' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: showBroadcastInput ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                    📡 BROADCAST
+                  </button>
+                  {showBroadcastInput && (
+                    <div style={{ position: 'absolute', top: '110%', right: 0, background: CARD, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 10px', zIndex: 30, display: 'flex', flexDirection: 'column', gap: 6, boxShadow: '0 4px 14px rgba(0,0,0,.6)', minWidth: 220 }}>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: .5 }}>FULLSCREEN OVERLAY (6s)</div>
+                      <input
+                        value={broadcastText}
+                        onChange={function(e) { setBroadcastText(e.target.value.slice(0, 100)); }}
+                        onKeyDown={function(e) {
+                          if (e.key === 'Enter') {
+                            var txt = broadcastText.trim();
+                            if (txt && socket) { socket.emit('host-broadcast-overlay', { roomId: roomId, text: txt, from: username || 'Host' }); setBroadcastOverlay({ text: txt, from: username || 'Host' }); setTimeout(function() { setBroadcastOverlay(null); }, 6000); }
+                            setBroadcastText(''); setShowBroadcastInput(false);
+                          } else if (e.key === 'Escape') { setShowBroadcastInput(false); }
+                        }}
+                        autoFocus
+                        placeholder="Type message, Enter to broadcast…"
+                        maxLength={100}
+                        style={{ background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '5px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                      />
+                      <button onClick={function() {
+                        var txt = broadcastText.trim();
+                        if (txt && socket) { socket.emit('host-broadcast-overlay', { roomId: roomId, text: txt, from: username || 'Host' }); setBroadcastOverlay({ text: txt, from: username || 'Host' }); setTimeout(function() { setBroadcastOverlay(null); }, 6000); }
+                        setBroadcastText(''); setShowBroadcastInput(false);
+                      }} style={{ background: GOLD, border: 'none', borderRadius: 5, padding: '4px 9px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#0E0C09', cursor: 'pointer', letterSpacing: .5 }}>
+                        SEND
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* Auto-layout toggle (host/cohost) */}
+              {(role === 'host' || role === 'cohost') && (
+                <button
+                  onClick={function() { setAutoLayout(function(v) { return !v; }); }}
+                  title={autoLayout ? 'Auto-layout ON: click to disable' : 'Auto-layout: auto-switch grid/featured by count'}
+                  style={{ background: autoLayout ? 'rgba(0,195,255,.18)' : CARD, border: '1px solid ' + (autoLayout ? 'rgba(0,195,255,.5)' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: autoLayout ? TEAL : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                  {autoLayout ? '⟳ AUTO' : '⟳ AUTO'}
+                </button>
+              )}
+              {/* Cell swap mode (host/cohost, grid only) */}
+              {stageLayout === 'grid' && (role === 'host' || role === 'cohost') && (
+                <button
+                  onClick={function() { setSwapMode(function(v) { var next = !v; if (!next) { setSwapPickGid(null); } return next; }); }}
+                  title={swapMode ? 'Exit swap mode' : 'Swap mode: click two cells to reorder them'}
+                  style={{ background: swapMode ? 'rgba(201,168,76,.25)' : CARD, border: '1px solid ' + (swapMode ? GOLD : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: swapMode ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                  ⇄ {swapMode ? 'SWAP ON' : 'SWAP'}
+                </button>
+              )}
               {/* Stage layout (single focus) */}
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                 <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
@@ -2794,6 +2929,21 @@ export default function LiveRoomPage({
             <div
               style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ',1fr)', gap: 4 }}
               onClick={function() { if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); setRenamingGid(null); setMsgTargetGid(null); } }}>
+              {/* Swap mode banner */}
+              {swapMode && (
+                <div style={{ gridColumn: '1 / -1', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, padding: '5px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: .5 }}>
+                    ⇄ SWAP MODE — {swapPickGid ? 'NOW CLICK THE TARGET CELL' : 'CLICK FIRST CELL TO SWAP'}
+                    {stageOrderOverride ? ' · ORDER SAVED' : ''}
+                  </span>
+                  <div style={{ display: 'flex', gap: 5 }}>
+                    {stageOrderOverride && (
+                      <button onClick={function(e) { e.stopPropagation(); setStageOrderOverride(null); if (addToastRef.current) addToastRef.current('Order reset', 'info'); }} style={{ background: 'rgba(255,255,255,.08)', border: '1px solid ' + BORDER, borderRadius: 4, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer' }}>RESET ORDER</button>
+                    )}
+                    <button onClick={function(e) { e.stopPropagation(); setSwapMode(false); setSwapPickGid(null); }} style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 4, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED, cursor: 'pointer' }}>DONE</button>
+                  </div>
+                </div>
+              )}
               {sortedOnStage.map(function(g) {
                 var gid      = g.guestId || g.userId || 'x';
                 var isOwn    = gid === userId;
@@ -2805,9 +2955,32 @@ export default function LiveRoomPage({
                 return (
                   <div key={gid}
                     data-cell-gid={gid}
+                    onMouseEnter={function(e) {
+                      if (role !== 'host' && role !== 'cohost') return;
+                      setHoverGid(gid);
+                      setHoverRect(e.currentTarget.getBoundingClientRect());
+                    }}
+                    onMouseLeave={function() { setHoverGid(null); setHoverRect(null); }}
                     onClick={function(e) {
                       if (cellMenuId === gid) { setCellMenuId(null); setRemoveConfirmId(null); return; }
                       if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); }
+                      if (swapMode) {
+                        if (!swapPickGid) {
+                          setSwapPickGid(gid);
+                        } else if (swapPickGid !== gid) {
+                          var base = stageOrderOverride || sortedOnStage.map(function(x) { return x.guestId || x.userId; });
+                          var ia2 = base.indexOf(swapPickGid);
+                          var ib2 = base.indexOf(gid);
+                          if (ia2 < 0) ia2 = base.length;
+                          if (ib2 < 0) ib2 = base.length;
+                          var next2 = base.slice();
+                          var tmp = next2[ia2]; next2[ia2] = next2[ib2]; next2[ib2] = tmp;
+                          setStageOrderOverride(next2);
+                          setSwapPickGid(null);
+                          if (addToastRef.current) addToastRef.current('Cells swapped', 'info');
+                        }
+                        return;
+                      }
                       setFeaturedId(gid);
                       setStageLayout('featured');
                       setAutoFocusSpeaker(false);
@@ -2818,10 +2991,11 @@ export default function LiveRoomPage({
                       background: CARD,
                       borderRadius: 10,
                       overflow: 'hidden',
-                      cursor: 'pointer',
-                      border: '2px solid ' + (cellColors[gid] ? cellColors[gid] + '99' : isSp ? TEAL + 'BB' : isPinned ? GOLD + '66' : isHand ? 'rgba(255,140,0,.65)' : BORDER),
+                      cursor: swapMode ? (swapPickGid === gid ? 'copy' : 'crosshair') : 'pointer',
+                      border: '2px solid ' + (swapPickGid === gid ? GOLD : cellColors[gid] ? cellColors[gid] + '99' : isSp ? TEAL + 'BB' : isPinned ? GOLD + '66' : isHand ? 'rgba(255,140,0,.65)' : BORDER),
                       animation: isSp ? 'speakPulseGrid 1.4s ease-in-out infinite' : 'fadeSlideIn .22s ease',
                       transition: 'border-color .2s',
+                      outline: swapMode && swapPickGid !== gid ? '1px dashed rgba(201,168,76,.35)' : 'none',
                     }}>
                     {/* Video wrapper — aspect ratio driven by cellAspect */}
                     <div style={{ position: 'relative', paddingBottom: cellAspectPb }}>
@@ -5477,8 +5651,9 @@ export default function LiveRoomPage({
               { key: '- / _',   desc: 'Fewer grid columns' },
               { key: '[ / ←',  desc: 'Previous guest (featured view)' },
               { key: '] / →',  desc: 'Next guest (featured view)' },
+              { key: 'W',       desc: 'Toggle auto-layout (host/cohost)' },
               { key: '?',       desc: 'Show / hide this guide' },
-              { key: 'Esc',     desc: 'Close modals / collapse menus' },
+              { key: 'Esc',     desc: 'Close modals / exit swap mode' },
             ].map(function(row) {
               return (
                 <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '7px 0', borderBottom: '1px solid ' + DIM }}>
