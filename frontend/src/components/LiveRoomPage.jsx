@@ -55,6 +55,8 @@ var ANIM = [
   '@keyframes speakPulseGrid{0%,100%{box-shadow:0 0 0 2px '+TEAL+'99,0 0 8px '+TEAL+'22}50%{box-shadow:0 0 0 3px '+TEAL+',0 0 18px '+TEAL+'44}}',
   '@keyframes handBadgePulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.85}}',
   '@keyframes cellMenuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}',
+  '@keyframes announceIn{from{opacity:0;transform:translateX(-50%) translateY(-14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}',
+  '@keyframes announceOut{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(-10px)}}',
 ].join('\n');
 
 // ─── Subtle reaction tone for emoji bursts ─────────────────────────────────
@@ -464,8 +466,12 @@ export default function LiveRoomPage({
   var [showClipLog,        setShowClipLog]        = useState(false);
   var [isFullscreen,       setIsFullscreen]       = useState(false);
   var [removeConfirmId,    setRemoveConfirmId]    = useState(null); // guestId pending removal confirmation
+  var [mirrorSelf,         setMirrorSelf]         = useState(true);  // mirror own camera view
+  var [stageAnnounce,      setStageAnnounce]      = useState(null);  // { username } | null — brief on-stage banner
+  var [pipCorner,          setPipCorner]          = useState('BR');  // 'TL'|'TR'|'BL'|'BR' — PiP position
 
   var chatEndRef         = useRef(null);
+  var announceTimerRef   = useRef(null);
   var containerRef       = useRef(null);
   var cameraTrackRef     = useRef(null);
   var pipVideoRef        = useRef(null);
@@ -1292,6 +1298,12 @@ export default function LiveRoomPage({
       var gid = g.guestId || g.userId;
       if (gid && (g.producerId || g.audioProducerId) && !stageJoinTimesRef.current[gid]) {
         stageJoinTimesRef.current[gid] = now;
+        if (gid !== userId) {
+          var _announceName = g.username || gid;
+          if (announceTimerRef.current) clearTimeout(announceTimerRef.current);
+          setStageAnnounce({ username: _announceName });
+          announceTimerRef.current = setTimeout(function() { setStageAnnounce(null); }, 3500);
+        }
       }
     });
     setRaisedHands(function(prev) {
@@ -1522,7 +1534,7 @@ export default function LiveRoomPage({
   };
 
   // ── Keyboard shortcuts ──────────────────────────────────────────────────
-  // m = mute/unmute, v = cam toggle, f = fullscreen, Escape = close modals
+  // m = mute/unmute, v = cam toggle, f = fullscreen, x = mirror, Escape = close modals
   // Skipped when focus is inside an input or textarea.
   useEffect(function() {
     var onKey = function(e) {
@@ -1532,6 +1544,7 @@ export default function LiveRoomPage({
       if (e.key === 'm' || e.key === 'M') { toggleMute(); }
       else if (e.key === 'v' || e.key === 'V') { toggleCam(); }
       else if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
+      else if (e.key === 'x' || e.key === 'X') { setMirrorSelf(function(v) { return !v; }); }
       else if (e.key === 'Escape') {
         if (expandedCell) { setExpandedCell(null); }
         else if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); }
@@ -1728,6 +1741,15 @@ export default function LiveRoomPage({
   return (
     <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, overflow: 'hidden', position: 'relative', fontFamily: "'Barlow Condensed',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: ANIM }} />
+
+      {/* ── Stage join announcement banner ── */}
+      {stageAnnounce && (
+        <div style={{ position: 'absolute', top: 52, left: '50%', transform: 'translateX(-50%)', zIndex: 60, pointerEvents: 'none', animation: 'announceIn .3s ease', display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(26,21,16,.95)', border: '1px solid rgba(212,133,74,.5)', borderRadius: 20, padding: '7px 16px', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', boxShadow: '0 4px 20px rgba(0,0,0,.55)', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 14, lineHeight: 1 }}>🎤</span>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, letterSpacing: .5 }}>{stageAnnounce.username}</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: .3 }}>joined the stage</span>
+        </div>
+      )}
 
       <HostHUD
         sessionEarningsCents={sessionEarningsCents}
@@ -2167,6 +2189,7 @@ export default function LiveRoomPage({
                             onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                             isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
                             remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
+                            mirrorOverride={isOwn ? mirrorSelf : undefined}
                           />
                         )}
                       </div>
@@ -2383,6 +2406,7 @@ export default function LiveRoomPage({
                                 onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                                 isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
                                 remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
+                                mirrorOverride={isOwn ? mirrorSelf : undefined}
                               />
                             )}
                           </div>
@@ -2475,19 +2499,32 @@ export default function LiveRoomPage({
                         activeEffect={panelEffects[featuredGid] || null}
                         isScreenSharing={featuredIsScreenSharing}
                         remoteQuality={featuredGid === userId ? null : (producerQuality[featuredGuest.producerId] || null)}
+                        mirrorOverride={featuredGid === userId ? mirrorSelf : undefined}
                       />
                       <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGid} />
                     </div>
                     {/* Camera PiP — own camera while screen sharing */}
                     {featuredGid === userId && !isCamOff && (
-                      <div style={{ position: 'absolute', bottom: 10, right: 10, width: 110, zIndex: 20, borderRadius: 8, overflow: 'hidden', border: '2px solid rgba(201,168,76,.7)', boxShadow: '0 4px 18px rgba(0,0,0,.7)', background: '#0E0C09' }}>
-                        <video
-                          ref={pipVideoRef}
-                          autoPlay={true}
-                          playsInline={true}
-                          muted={true}
-                          style={{ width: '100%', display: 'block', transform: 'scaleX(-1)' }}
-                        />
+                      <div style={{
+                        position: 'absolute',
+                        ...(pipCorner === 'BR' ? {bottom:10,right:10} : pipCorner === 'BL' ? {bottom:10,left:10} : pipCorner === 'TR' ? {top:10,right:10} : {top:10,left:10}),
+                        width: 110, zIndex: 20,
+                      }}>
+                        <button
+                          onClick={function() { setPipCorner(function(c) { return c === 'BR' ? 'BL' : c === 'BL' ? 'TL' : c === 'TL' ? 'TR' : 'BR'; }); }}
+                          title="Move camera PiP"
+                          style={{ position: 'absolute', top: -8, left: -8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(14,12,9,.92)', border: '1px solid rgba(201,168,76,.5)', color: GOLD, fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2, lineHeight: 1, padding: 0 }}>
+                          ⤡
+                        </button>
+                        <div style={{ borderRadius: 8, overflow: 'hidden', border: '2px solid rgba(201,168,76,.7)', boxShadow: '0 4px 18px rgba(0,0,0,.7)', background: '#0E0C09' }}>
+                          <video
+                            ref={pipVideoRef}
+                            autoPlay={true}
+                            playsInline={true}
+                            muted={true}
+                            style={{ width: '100%', display: 'block', transform: mirrorSelf ? 'scaleX(-1)' : 'none' }}
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
@@ -2514,6 +2551,7 @@ export default function LiveRoomPage({
                     activeEffect={panelEffects[featuredGid] || null}
                     isScreenSharing={false}
                     remoteQuality={featuredGid === userId ? null : (producerQuality[featuredGuest.producerId] || null)}
+                    mirrorOverride={featuredGid === userId ? mirrorSelf : undefined}
                   />
                   <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGid} />
                 </div>
@@ -3393,6 +3431,14 @@ export default function LiveRoomPage({
             active={showMediaConf}
             onPress={function() { setShowMediaConf(function(v) { return !v; }); }}
           />
+          {role !== 'viewer' && (
+            <IconBtn
+              icon="⇔"
+              label={mirrorSelf ? 'Mirrored' : 'Normal'}
+              active={mirrorSelf}
+              onPress={function() { setMirrorSelf(function(v) { return !v; }); }}
+            />
+          )}
           {(role === 'host' || role === 'cohost' || role === 'owner') && (
             <IconBtn
               icon={isScreenSharing ? '🛑' : '🖥'}
@@ -4113,6 +4159,7 @@ export default function LiveRoomPage({
                     activeEffect={panelEffects[gid] || null}
                     onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                     remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
+                    mirrorOverride={isOwn ? mirrorSelf : undefined}
                   />
                 </div>
               )}

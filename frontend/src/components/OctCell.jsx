@@ -10,7 +10,7 @@ var _PP_ANIM =
   '@keyframes ppCrown{0%{transform:translateY(-8px) scale(.8);opacity:0}60%{transform:translateY(2px) scale(1.1);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}' +
   '@keyframes ppEject{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-120%) scale(.4);opacity:0}}';
 
-function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay, isScreenSharing, remoteQuality }) {
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay, isScreenSharing, remoteQuality, mirrorOverride }) {
   var videoRef       = useRef(null);
   var analyserRef    = useRef(null);
   var animRef        = useRef(null);
@@ -553,7 +553,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
           autoPlay
           playsInline
           muted={isOwnCell}
-          style={{ width: '100%', height: '100%', objectFit: (!isOwnCell && isScreenSharing) ? 'contain' : 'cover', display: (online && !isCamOff && !(guest && guest.remoteCamOff)) ? 'block' : 'none', transform: (isOwnCell && facingFront && !isScreenSharing) ? 'scaleX(-1)' : 'none' }}
+          style={{ width: '100%', height: '100%', objectFit: (!isOwnCell && isScreenSharing) ? 'contain' : 'cover', display: (online && !isCamOff && !(guest && guest.remoteCamOff)) ? 'block' : 'none', transform: (isOwnCell && (mirrorOverride !== undefined ? mirrorOverride : (facingFront && !isScreenSharing))) ? 'scaleX(-1)' : 'none' }}
         />
 
         {/* Cam off overlay — own cell */}
