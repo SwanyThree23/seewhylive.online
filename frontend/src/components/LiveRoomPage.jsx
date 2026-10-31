@@ -273,6 +273,25 @@ function StageTimer({ startMs }) {
   }, (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
 }
 
+function SignalBars({ quality }) {
+  var bars  = quality === 'green' ? 4 : quality === 'yellow' ? 2 : quality === 'red' ? 1 : 0;
+  var color = quality === 'green' ? '#6DBF7E' : quality === 'yellow' ? '#F0A500' : '#FF1A3C';
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5, height: 10, flexShrink: 0 }}>
+      {[1, 2, 3, 4].map(function(i) {
+        return (
+          <div key={i} style={{
+            width: 3,
+            height: 2 + 2 * i,
+            background: i <= bars ? color : 'rgba(138,122,98,.25)',
+            borderRadius: 1,
+          }} />
+        );
+      })}
+    </div>
+  );
+}
+
 function OverlayBanner({ banner }) {
   if (!banner || !banner.visible || !banner.text) return null;
   var isTop = banner.position === 'top';
@@ -444,6 +463,9 @@ export default function LiveRoomPage({
   var [autoFocusSpeaker,   setAutoFocusSpeaker]   = useState(false); // auto-track dominant speaker in featured mode
   var [producerQuality,    setProducerQuality]    = useState({});   // { [producerId]: 'green'|'yellow'|'red' }
   var [consumerRawStats,   setConsumerRawStats]   = useState({});   // { [producerId]: { bitratekbps, jitter, packetsLost } }
+  var [frozenProducers,    setFrozenProducers]    = useState({});   // { [producerId]: true } — bitrate near-zero last sample
+  var [avCameras,          setAvCameras]          = useState([]);   // available video input devices for hot-swap
+  var [camDevIdx,          setCamDevIdx]          = useState(0);    // index into avCameras currently active
   var [spotlight,          setSpotlight]          = useState(null); // { guestId, username } | null — host-broadcast spotlight
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
@@ -1236,6 +1258,35 @@ export default function LiveRoomPage({
     return function() { rtcManager.off('consumerStats', onStats); };
   }, [rtcReady]);
 
+  // ── Freeze detection: mark producers whose bitrate stays ~0 ─────────────
+  useEffect(function() {
+    setFrozenProducers(function(prev) {
+      var next = Object.assign({}, prev);
+      var changed = false;
+      Object.keys(consumerRawStats).forEach(function(pid) {
+        var isFrozen = consumerRawStats[pid].bitratekbps < 10;
+        if (isFrozen && !next[pid]) { next[pid] = true; changed = true; }
+        else if (!isFrozen && next[pid]) { delete next[pid]; changed = true; }
+      });
+      return changed ? next : prev;
+    });
+  }, [consumerRawStats]);
+
+  // ── Camera enumeration for hot-swap ─────────────────────────────────────
+  useEffect(function() {
+    if (role === 'viewer') return;
+    if (!navigator.mediaDevices) return;
+    var doEnum = function() {
+      navigator.mediaDevices.enumerateDevices().then(function(devs) {
+        var cams = devs.filter(function(d) { return d.kind === 'videoinput'; });
+        setAvCameras(cams);
+      }).catch(function() {});
+    };
+    doEnum();
+    navigator.mediaDevices.addEventListener('devicechange', doEnum);
+    return function() { navigator.mediaDevices.removeEventListener('devicechange', doEnum); };
+  }, []);
+
   // ── Speaking time accumulation ───────────────────────────────────────────
   // Track when each guest starts/stops speaking; accumulate seconds into
   // speakingTimeRef so the expanded-cell modal can show total speaking time.
@@ -1755,6 +1806,16 @@ export default function LiveRoomPage({
     if (next) { setFeaturedId(next.guestId || next.userId); setAutoFocusSpeaker(false); }
   };
 
+  // Cycle to next available camera and update medConf.camId
+  var handleCamFlip = function() {
+    if (avCameras.length < 2) return;
+    var nextIdx = (camDevIdx + 1) % avCameras.length;
+    setCamDevIdx(nextIdx);
+    var nextCam = avCameras[nextIdx];
+    setMedConf(function(prev) { return Object.assign({}, prev || {}, { camId: nextCam.deviceId }); });
+    if (addToast) addToast('Camera: ' + (nextCam.label || 'Camera ' + (nextIdx + 1)), 'info');
+  };
+
   // Merged lower-thirds: local host overrides merged over server overlayConfig
   var mergedLowerThirds = (function() {
     var base = (overlayConfig && overlayConfig.lowerThirds) || {};
@@ -2243,6 +2304,12 @@ export default function LiveRoomPage({
                           </span>
                         </div>
                       )}
+                      {!isOwn && g.producerId && frozenProducers[g.producerId] && (
+                        <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(100,149,237,.5)', borderRadius: 999, padding: '2px 6px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <span style={{ fontSize: 7, lineHeight: 1 }}>❄</span>
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(100,149,237,.9)', letterSpacing: .3 }}>FROZEN</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Top-right buttons: expand + host ⋮ menu */}
@@ -2372,6 +2439,9 @@ export default function LiveRoomPage({
                       <RolePill role={g.role || (isOwn ? role : 'guest')} />
                       {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 9 }}>🔇</span>}
                       <StageTimer startMs={stageJoinTimesRef.current[gid]} />
+                      {!isOwn && g.producerId && producerQuality[g.producerId] && (
+                        <SignalBars quality={producerQuality[g.producerId]} />
+                      )}
                     </div>
                   </div>
                 );
@@ -2454,6 +2524,12 @@ export default function LiveRoomPage({
                               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff', letterSpacing: .3 }}>{producerQuality[g.producerId] === 'red' ? 'POOR' : 'FAIR'}</span>
                             </div>
                           )}
+                          {!isOwn && g.producerId && frozenProducers[g.producerId] && (
+                            <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(100,149,237,.5)', borderRadius: 999, padding: '2px 6px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <span style={{ fontSize: 7, lineHeight: 1 }}>❄</span>
+                              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(100,149,237,.9)', letterSpacing: .3 }}>FROZEN</span>
+                            </div>
+                          )}
                         </div>
                         <button onClick={function(e) { e.stopPropagation(); setExpandedCell(gid); }}
                           style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, background: 'rgba(0,0,0,.6)', border: '1px solid rgba(255,255,255,.18)', borderRadius: 4, color: TEXT, fontSize: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
@@ -2467,6 +2543,9 @@ export default function LiveRoomPage({
                           <RolePill role={g.role || (isOwn ? role : 'guest')} />
                           {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 9 }}>🔇</span>}
                           <StageTimer startMs={stageJoinTimesRef.current[gid]} />
+                          {!isOwn && g.producerId && producerQuality[g.producerId] && (
+                            <SignalBars quality={producerQuality[g.producerId]} />
+                          )}
                         </div>
                       </div>
                     );
@@ -2611,6 +2690,15 @@ export default function LiveRoomPage({
                     </span>
                     <RolePill role={featuredGuest.role || role} />
                     {speakingIds[featuredGuest.guestId || featuredGuest.userId] && <SpeakBars color={TEAL} small />}
+                    {featuredGid !== userId && featuredGuest.producerId && frozenProducers[featuredGuest.producerId] && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: 'rgba(14,12,9,.88)', border: '1px solid rgba(100,149,237,.4)', borderRadius: 999, padding: '2px 6px', flexShrink: 0 }}>
+                        <span style={{ fontSize: 8, lineHeight: 1 }}>❄</span>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(100,149,237,.9)', letterSpacing: .3 }}>FROZEN</span>
+                      </div>
+                    )}
+                    {featuredGid !== userId && featuredGuest.producerId && producerQuality[featuredGuest.producerId] && (
+                      <SignalBars quality={producerQuality[featuredGuest.producerId]} />
+                    )}
                     {onStage.length > 1 && (
                       <button
                         onClick={function() { setCinemaMode(function(v) { return !v; }); }}
@@ -3485,6 +3573,13 @@ export default function LiveRoomPage({
               label={mirrorSelf ? 'Mirrored' : 'Normal'}
               active={mirrorSelf}
               onPress={function() { setMirrorSelf(function(v) { return !v; }); }}
+            />
+          )}
+          {role !== 'viewer' && avCameras.length > 1 && (
+            <IconBtn
+              icon="📷"
+              label="Flip Cam"
+              onPress={handleCamFlip}
             />
           )}
           {(role === 'host' || role === 'cohost' || role === 'owner') && (
