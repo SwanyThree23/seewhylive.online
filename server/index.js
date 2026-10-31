@@ -3747,6 +3747,21 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('spotlight-end');
   });
 
+  // ── request-reconnect ──────────────────────────────────────────────────
+  // Host asks a specific guest to reconnect (e.g. their stream quality is poor).
+  // Delivers a 'please-reconnect' event directly to that user's socket room.
+  socket.on('request-reconnect', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.guestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var targetId = String(data.guestId || '').trim().slice(0, 64);
+    if (!targetId) return;
+    io.to('user:' + targetId).emit('please-reconnect', {
+      by: socket.data.username || 'Host',
+      roomId: roomId,
+    });
+  });
+
   // ── lock-stage ─────────────────────────────────────────────────────────
   socket.on('lock-stage', function(data) {
     var roomId = socket.data.roomId;

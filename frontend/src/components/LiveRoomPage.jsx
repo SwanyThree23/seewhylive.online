@@ -753,6 +753,11 @@ export default function LiveRoomPage({
       if (addToastRef.current) addToastRef.current('🔇 Host muted all participants', 'info');
     });
 
+    socket.on('please-reconnect', function(data) {
+      var who = (data && data.by) ? data.by : 'Host';
+      if (addToastRef.current) addToastRef.current('⚠️ ' + who + ' is asking you to reconnect — leave and rejoin to fix your stream quality', 'warn');
+    });
+
     var onStageInvite = function(data) {
       if (!data || !data.guestId) return;
       setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[data.guestId]; return n; });
@@ -1051,6 +1056,7 @@ export default function LiveRoomPage({
       socket.off('spotlight-guest');
       socket.off('spotlight-end');
       socket.off('mute-all');
+      socket.off('please-reconnect');
       socket.off('room-audio-only');
       socket.off('room-private');
       socket.off('subscriber-only-changed');
@@ -1503,6 +1509,26 @@ export default function LiveRoomPage({
       else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
     }
   };
+
+  // ── Keyboard shortcuts ──────────────────────────────────────────────────
+  // m = mute/unmute, v = cam toggle, f = fullscreen, Escape = close modals
+  // Skipped when focus is inside an input or textarea.
+  useEffect(function() {
+    var onKey = function(e) {
+      var tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === 'm' || e.key === 'M') { toggleMute(); }
+      else if (e.key === 'v' || e.key === 'V') { toggleCam(); }
+      else if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
+      else if (e.key === 'Escape') {
+        if (expandedCell) { setExpandedCell(null); }
+        else if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); }
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return function() { document.removeEventListener('keydown', onKey); };
+  }, [expandedCell, cellMenuId]);
 
   var shareRoom = function() {
     var url = window.location.origin + (roomId !== '6990f5f2-4823-453e-a1fc-dc9d00000000' ? ('?room=' + roomId) : '');
@@ -2171,6 +2197,7 @@ export default function LiveRoomPage({
                           { label: spotlight && spotlight.guestId === gid ? '🔦 End spotlight' : '🔦 Spotlight all', action: 'spotlight' },
                           { label: g.remoteMuted ? '🎙 Unmute' : '🔇 Mute', action: 'mute' },
                           { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
+                          { label: producerQuality[g.producerId] === 'red' ? '↺ Request Reconnect' : null, action: 'reconnect', hide: producerQuality[g.producerId] !== 'red' },
                           { label: '🚫 Remove from Stage', action: 'remove' },
                         ].filter(function(item) { return !item.hide; }).map(function(item) {
                           return (
@@ -2195,6 +2222,9 @@ export default function LiveRoomPage({
                                   if (socket) socket.emit(g.remoteMuted ? 'unmute-guest' : 'mute-guest', { roomId: roomId, guestId: gid });
                                 } else if (item.action === 'invite') {
                                   if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid });
+                                } else if (item.action === 'reconnect') {
+                                  if (socket) socket.emit('request-reconnect', { roomId: roomId, guestId: gid });
+                                  if (addToast) addToast('Reconnect request sent to ' + (g.username || gid), 'info');
                                 }
                               }}
                               style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 13px', background: 'none', border: 'none', borderBottom: '1px solid ' + DIM, color: item.action === 'remove' ? RED : TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, cursor: 'pointer', letterSpacing: .3 }}>
