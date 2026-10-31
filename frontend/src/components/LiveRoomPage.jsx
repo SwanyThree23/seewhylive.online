@@ -469,6 +469,8 @@ export default function LiveRoomPage({
   var [guestVolumes,       setGuestVolumes]       = useState({});   // { [guestId]: 0..1 } — per-guest local volume override
   var [showKeyHelp,        setShowKeyHelp]        = useState(false); // keyboard shortcut guide modal
   var [spotlight,          setSpotlight]          = useState(null); // { guestId, username } | null — host-broadcast spotlight
+  var [speakingSnapshots,  setSpeakingSnapshots]  = useState({});   // { [guestId]: totalSeconds } — polled every 5s from speakingTimeRef
+  var [stageSort,          setStageSort]          = useState('joined'); // 'joined' | 'speaking' | 'quality'
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -1337,6 +1339,26 @@ export default function LiveRoomPage({
     });
   }, [speakingIds]);
 
+  // ── Speaking-time snapshots: poll speakingTimeRef every 5 s for badges ────
+  useEffect(function() {
+    var t = setInterval(function() {
+      var snap = {};
+      var now = Date.now();
+      // Include any ongoing speaking session in the snapshot
+      Object.keys(speakingStartRef.current).forEach(function(gid) {
+        if (speakingStartRef.current[gid]) {
+          var live = Math.floor((now - speakingStartRef.current[gid]) / 1000);
+          snap[gid] = (speakingTimeRef.current[gid] || 0) + live;
+        }
+      });
+      Object.keys(speakingTimeRef.current).forEach(function(gid) {
+        if (!snap[gid]) snap[gid] = speakingTimeRef.current[gid] || 0;
+      });
+      setSpeakingSnapshots(snap);
+    }, 5000);
+    return function() { clearInterval(t); };
+  }, []);
+
   // Persist chosen layout to localStorage so it survives page reloads
   useEffect(function() {
     try { localStorage.setItem('sw_layout', stageLayout); } catch(e) {}
@@ -1791,6 +1813,34 @@ export default function LiveRoomPage({
     return !g.producerId && !g.audioProducerId;
   });
 
+  // Dominant speaker: guest with most speaking time (≥30 s threshold)
+  var topSpeakerId = null;
+  var topSpeakSecs = 30;
+  onStage.forEach(function(g) {
+    var gid  = g.guestId || g.userId;
+    var secs = speakingSnapshots[gid] || 0;
+    if (secs > topSpeakSecs) { topSpeakSecs = secs; topSpeakerId = gid; }
+  });
+
+  // Sorted stage array according to stageSort mode
+  var sortedOnStage = (function() {
+    var arr = onStage.slice();
+    if (stageSort === 'speaking') {
+      arr.sort(function(a, b) {
+        var sa = speakingSnapshots[a.guestId || a.userId] || 0;
+        var sb = speakingSnapshots[b.guestId || b.userId] || 0;
+        return sb - sa;
+      });
+    } else if (stageSort === 'quality') {
+      var qRank = function(g) {
+        var q = producerQuality[g.producerId];
+        return q === 'green' ? 0 : q === 'yellow' ? 1 : q === 'red' ? 2 : 3;
+      };
+      arr.sort(function(a, b) { return qRank(a) - qRank(b); });
+    }
+    return arr;
+  })();
+
   // Top gifter this session — show 👑 in audience circle
   var topGifterId = null;
   var topGiftMax  = 0;
@@ -2106,6 +2156,21 @@ export default function LiveRoomPage({
               )}
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {/* Stage sort toggle */}
+              <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
+                {[
+                  { id: 'joined',   icon: '⏱', title: 'Sort by join order' },
+                  { id: 'speaking', icon: '🗣', title: 'Sort by speaking time' },
+                  { id: 'quality',  icon: '📶', title: 'Sort by signal quality' },
+                ].map(function(s) {
+                  return (
+                    <button key={s.id} onClick={function() { setStageSort(s.id); }} title={s.title}
+                      style={{ background: stageSort === s.id ? CARD2 : 'transparent', border: 'none', color: stageSort === s.id ? TEXT : MUTED, cursor: 'pointer', padding: '5px 9px', fontSize: 11, transition: 'background .15s' }}>
+                      {s.icon}
+                    </button>
+                  );
+                })}
+              </div>
               {/* Panel mode (list vs grid for 20-person) */}
               <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
                 {[
@@ -2156,6 +2221,51 @@ export default function LiveRoomPage({
               </div>
             </div>
           </div>
+
+          {/* ── Stage health bar (host only) ── */}
+          {role === 'host' && onStage.length > 1 && (function() {
+            var cGood = 0; var cFair = 0; var cPoor = 0; var cFroz = 0;
+            onStage.forEach(function(g) {
+              if ((g.guestId || g.userId) === userId) return;
+              var pid = g.producerId;
+              if (!pid) return;
+              if (frozenProducers[pid]) { cFroz++; return; }
+              var q = producerQuality[pid];
+              if (q === 'green') cGood++;
+              else if (q === 'yellow') cFair++;
+              else if (q === 'red') cPoor++;
+            });
+            if (cGood + cFair + cPoor + cFroz === 0) return null;
+            return (
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, padding: '5px 10px', background: 'rgba(14,12,9,.55)', borderRadius: 8, border: '1px solid ' + BORDER }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1, flexShrink: 0 }}>STAGE</span>
+                {cGood > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#6DBF7E', flexShrink: 0 }} />
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#6DBF7E' }}>{cGood}</span>
+                  </div>
+                )}
+                {cFair > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F0A500', flexShrink: 0 }} />
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#F0A500' }}>{cFair}</span>
+                  </div>
+                )}
+                {cPoor > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: RED, flexShrink: 0 }} />
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED }}>{cPoor}</span>
+                  </div>
+                )}
+                {cFroz > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <span style={{ fontSize: 8, lineHeight: 1 }}>❄</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: 'rgba(100,149,237,.9)' }}>{cFroz}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ── LIST MODE ── */}
           {stageLayout === 'grid' && panelMode === 'list' && (
@@ -2246,7 +2356,7 @@ export default function LiveRoomPage({
             <div
               style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ',1fr)', gap: 4 }}
               onClick={function() { if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); } }}>
-              {onStage.map(function(g) {
+              {sortedOnStage.map(function(g) {
                 var gid      = g.guestId || g.userId || 'x';
                 var isOwn    = gid === userId;
                 var isSp     = !!speakingIds[gid];
@@ -2319,6 +2429,11 @@ export default function LiveRoomPage({
 
                     {/* Overlay badges (top-left) */}
                     <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
+                      {gid === topSpeakerId && (
+                        <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <span style={{ fontSize: 7, lineHeight: 1 }}>👑</span>
+                        </div>
+                      )}
                       {isHand && (
                         <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋{handPos > 0 ? ' #' + handPos : ''}</div>
                       )}
@@ -2491,6 +2606,11 @@ export default function LiveRoomPage({
                       </span>
                       <RolePill role={g.role || (isOwn ? role : 'guest')} />
                       {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 9 }}>🔇</span>}
+                      {(speakingSnapshots[gid] || 0) >= 5 && (
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: .3, flexShrink: 0 }}>
+                          🗣{Math.floor((speakingSnapshots[gid] || 0) / 60)}m
+                        </span>
+                      )}
                       <StageTimer startMs={stageJoinTimesRef.current[gid]} />
                       {!isOwn && g.producerId && producerQuality[g.producerId] && (
                         <SignalBars quality={producerQuality[g.producerId]} />
@@ -2569,6 +2689,7 @@ export default function LiveRoomPage({
                           </div>
                         </div>
                         <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
+                          {gid === topSpeakerId && <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}><span style={{ fontSize: 7, lineHeight: 1 }}>👑</span></div>}
                           {isHand && <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋{handPos > 0 ? ' #' + handPos : ''}</div>}
                           {isPinned && <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09' }}>📌</div>}
                           {isSp && <div style={{ background: 'rgba(212,133,74,.85)', borderRadius: 999, padding: '1px 5px', display: 'flex', alignItems: 'center' }}><SpeakBars color='#fff' small /></div>}
@@ -2596,6 +2717,11 @@ export default function LiveRoomPage({
                           </span>
                           <RolePill role={g.role || (isOwn ? role : 'guest')} />
                           {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 9 }}>🔇</span>}
+                          {(speakingSnapshots[gid] || 0) >= 5 && (
+                            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: .3, flexShrink: 0 }}>
+                              🗣{Math.floor((speakingSnapshots[gid] || 0) / 60)}m
+                            </span>
+                          )}
                           <StageTimer startMs={stageJoinTimesRef.current[gid]} />
                           {!isOwn && g.producerId && producerQuality[g.producerId] && (
                             <SignalBars quality={producerQuality[g.producerId]} />
