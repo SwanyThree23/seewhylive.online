@@ -2101,6 +2101,14 @@ export default function LiveRoomPage({
                           <SpeakBars color='#fff' small />
                         </div>
                       )}
+                      {!isOwn && g.producerId && (producerQuality[g.producerId] === 'red' || producerQuality[g.producerId] === 'yellow') && (
+                        <div style={{ background: producerQuality[g.producerId] === 'red' ? 'rgba(255,26,60,.88)' : 'rgba(240,165,0,.88)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff', letterSpacing: .3 }}>
+                            {producerQuality[g.producerId] === 'red' ? 'POOR' : 'FAIR'}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Top-right buttons: expand + host ⋮ menu */}
@@ -2267,6 +2275,12 @@ export default function LiveRoomPage({
                           {isHand && <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋{handPos > 0 ? ' #' + handPos : ''}</div>}
                           {isPinned && <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09' }}>📌</div>}
                           {isSp && <div style={{ background: 'rgba(212,133,74,.85)', borderRadius: 999, padding: '1px 5px', display: 'flex', alignItems: 'center' }}><SpeakBars color='#fff' small /></div>}
+                          {!isOwn && g.producerId && (producerQuality[g.producerId] === 'red' || producerQuality[g.producerId] === 'yellow') && (
+                            <div style={{ background: producerQuality[g.producerId] === 'red' ? 'rgba(255,26,60,.88)' : 'rgba(240,165,0,.88)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
+                              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff', letterSpacing: .3 }}>{producerQuality[g.producerId] === 'red' ? 'POOR' : 'FAIR'}</span>
+                            </div>
+                          )}
                         </div>
                         <button onClick={function(e) { e.stopPropagation(); setExpandedCell(gid); }}
                           style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, background: 'rgba(0,0,0,.6)', border: '1px solid rgba(255,255,255,.18)', borderRadius: 4, color: TEXT, fontSize: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
@@ -2427,8 +2441,14 @@ export default function LiveRoomPage({
                           flexShrink: 0, width: 90,
                           background: CARD2, borderRadius: 10, overflow: 'hidden',
                           border: '1.5px solid ' + (isSp ? TEAL + '66' : BORDER),
-                          cursor: 'pointer',
+                          cursor: 'pointer', position: 'relative',
                         }}>
+                        {!isOwn && g.producerId && (producerQuality[g.producerId] === 'red' || producerQuality[g.producerId] === 'yellow') && (
+                          <div style={{ position: 'absolute', top: 3, left: 3, zIndex: 12, pointerEvents: 'none', background: producerQuality[g.producerId] === 'red' ? 'rgba(255,26,60,.88)' : 'rgba(240,165,0,.88)', borderRadius: 999, padding: '1px 4px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
+                            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff' }}>{producerQuality[g.producerId] === 'red' ? 'POOR' : 'FAIR'}</span>
+                          </div>
+                        )}
                         <OctCell
                           guest={g}
                           sz={90}
@@ -3217,7 +3237,7 @@ export default function LiveRoomPage({
             icon="✋"
             label="Hand"
             active={handRaised}
-            activeColor={gold}
+            badge={role === 'host' ? handQueue.length : 0}
             onPress={raiseHand}
           />
           <IconBtn
