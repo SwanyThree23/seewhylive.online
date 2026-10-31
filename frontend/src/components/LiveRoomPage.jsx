@@ -366,7 +366,7 @@ export default function LiveRoomPage({
   var [qaMyVotes,      setQaMyVotes]      = useState({});
   var [showShareSheet, setShowShareSheet] = useState(false);
   var [panelMode,      setPanelMode]      = useState('grid'); // grid | list — for 20-person layout hint
-  var [raisedHands,    setRaisedHands]    = useState({});    // { [guestId]: true } — persistent raised-hand indicators
+  var [raisedHands,    setRaisedHands]    = useState({});    // { [guestId]: timestamp } — persistent raised-hand indicators
   var [pinnedId,       setPinnedId]       = useState(null);  // guestId | null — pinned/spotlight cell in grid
   var [cellMenuId,     setCellMenuId]     = useState(null);  // guestId | null — host cell action menu
   var [musicBanner,    setMusicBanner]    = useState(null);   // {title,style,emoji,sharedBy} | null
@@ -716,7 +716,7 @@ export default function LiveRoomPage({
     socket.on('hand-raise', function(data) {
       if (!data) return;
       if (role === 'host' && addToastRef.current) addToastRef.current('✋ ' + (data.username || data.guestId) + ' wants on stage', 'info');
-      setRaisedHands(function(h) { var n = Object.assign({}, h); n[data.guestId] = true; return n; });
+      setRaisedHands(function(h) { var n = Object.assign({}, h); n[data.guestId] = data.ts || Date.now(); return n; });
     });
 
     socket.on('hand-lower', function(data) {
@@ -1561,6 +1561,10 @@ export default function LiveRoomPage({
 
   var newMsgCount = chat ? chat.length : 0;
 
+  // Sorted queue of raised hands (oldest first = first in line)
+  var handQueue = Object.keys(raisedHands).filter(function(gid) { return !!raisedHands[gid]; })
+    .sort(function(a, b) { return raisedHands[a] - raisedHands[b]; });
+
   // ── Render ──────────────────────────────────────────────────────────────
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, overflow: 'hidden', position: 'relative', fontFamily: "'Barlow Condensed',sans-serif" }}>
@@ -1926,6 +1930,7 @@ export default function LiveRoomPage({
                 var isOwn    = gid === userId;
                 var isSp     = !!speakingIds[gid];
                 var isHand   = !!raisedHands[gid];
+                var handPos  = isHand ? handQueue.indexOf(gid) + 1 : 0;
                 var isPinned = gid === pinnedId;
                 var showMenu = cellMenuId === gid;
                 return (
@@ -1984,7 +1989,7 @@ export default function LiveRoomPage({
                     {/* Overlay badges (top-left) */}
                     <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
                       {isHand && (
-                        <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋</div>
+                        <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋{handPos > 0 ? ' #' + handPos : ''}</div>
                       )}
                       {isPinned && (
                         <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09' }}>📌</div>
@@ -2085,6 +2090,7 @@ export default function LiveRoomPage({
                     var isOwn    = gid === userId;
                     var isSp     = !!speakingIds[gid];
                     var isHand   = !!raisedHands[gid];
+                    var handPos  = isHand ? handQueue.indexOf(gid) + 1 : 0;
                     var isPinned = gid === pinnedId;
                     return (
                       <div key={gid}
@@ -2130,7 +2136,7 @@ export default function LiveRoomPage({
                           </div>
                         </div>
                         <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
-                          {isHand && <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋</div>}
+                          {isHand && <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋{handPos > 0 ? ' #' + handPos : ''}</div>}
                           {isPinned && <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09' }}>📌</div>}
                           {isSp && <div style={{ background: 'rgba(212,133,74,.85)', borderRadius: 999, padding: '1px 5px', display: 'flex', alignItems: 'center' }}><SpeakBars color='#fff' small /></div>}
                         </div>
@@ -2320,6 +2326,40 @@ export default function LiveRoomPage({
           )}
         </div>
 
+        {/* ── Hand-Raise Queue (host only) ── */}
+        {role === 'host' && handQueue.length > 0 && (
+          <div style={{ margin: '0 14px 10px', background: 'rgba(255,140,0,.06)', border: '1px solid rgba(255,140,0,.28)', borderRadius: 12, padding: '10px 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 1.5, color: '#D4854A' }}>✋ STAGE QUEUE</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{handQueue.length} waiting</span>
+            </div>
+            {handQueue.map(function(gid, idx) {
+              var entry = allGuestMap[gid] || audienceList.find(function(x) { return (x.guestId || x.userId) === gid; }) || { guestId: gid, username: gid };
+              var uname = entry.username || gid;
+              var canInvite = onStage.length < MAX_STAGE;
+              return (
+                <div key={gid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: idx < handQueue.length - 1 ? '1px solid rgba(255,140,0,.1)' : 'none' }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#D4854A', minWidth: 18, textAlign: 'right' }}>#{idx + 1}</span>
+                  <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(212,133,74,.3),rgba(14,12,9,.8))', border: '1px solid rgba(255,140,0,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: GOLD }}>{uname.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <span style={{ flex: 1, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{uname}</span>
+                  {canInvite && (
+                    <button
+                      onClick={function() { if (socket) { socket.emit('stage-invite', { roomId: roomId, guestId: gid }); setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[gid]; return n; }); } }}
+                      style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#0E0C09', background: GOLD, border: 'none', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', letterSpacing: .5, flexShrink: 0 }}>
+                      INVITE
+                    </button>
+                  )}
+                  {!canInvite && (
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>FULL</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* ── Audience Section ── */}
         {(audienceList.length > 0 || (role !== 'host' && onStage.every(function(g) { return (g.guestId || g.userId) !== userId; }))) && (
           <div style={{ padding: '10px 14px 10px' }}>
@@ -2328,9 +2368,9 @@ export default function LiveRoomPage({
                 <span style={{ fontSize: 15, fontWeight: 500, color: MUTED, letterSpacing: .3 }}>
                   In the Room
                 </span>
-                {Object.keys(raisedHands).length > 0 && (
+                {handQueue.length > 0 && (
                   <span style={{ background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#D4854A', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>
-                    ✋ {Object.keys(raisedHands).length} raised
+                    ✋ {handQueue.length} in queue
                   </span>
                 )}
               </div>
@@ -2951,6 +2991,19 @@ export default function LiveRoomPage({
           )}
         </div>
       )}
+
+      {/* Queue position hint for waiting panelists */}
+      {handRaised && role !== 'host' && (function() {
+        var myPos = handQueue.indexOf(userId) + 1;
+        if (!myPos) return null;
+        return (
+          <div style={{ position: 'absolute', bottom: 62, left: '50%', transform: 'translateX(-50%)', zIndex: 41, pointerEvents: 'none' }}>
+            <div style={{ background: 'rgba(14,12,9,.9)', border: '1px solid rgba(255,140,0,.5)', borderRadius: 999, padding: '4px 14px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#D4854A', whiteSpace: 'nowrap', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>
+              ✋ You are #{myPos} in queue
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ════════════════ BOTTOM TOOLBAR ════════════════ */}
       <div style={{
