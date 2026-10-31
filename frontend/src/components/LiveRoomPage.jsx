@@ -514,6 +514,14 @@ export default function LiveRoomPage({
   var [hiddenVideos,       setHiddenVideos]       = useState({});    // { [guestId]: true } — host-local video hide
   var [showEmojiBar,       setShowEmojiBar]       = useState(false); // host quick-emoji fire bar
   var [showSessionSummary, setShowSessionSummary] = useState(false); // session wrap-up card
+  var [reactionCounts,     setReactionCounts]     = useState({});    // { [emoji]: count } — cumulative session counts
+  var [showReactionBar,    setShowReactionBar]    = useState(true);  // show reaction tally below stage
+  var [showTeleprompter,   setShowTeleprompter]   = useState(false); // host teleprompter overlay
+  var [prompterText,       setPrompterText]       = useState('');    // teleprompter script text
+  var [prompterSpeed,      setPrompterSpeed]      = useState(40);    // scroll speed px/s (20–120)
+  var [prompterRunning,    setPrompterRunning]    = useState(false); // auto-scroll active
+  var [spotlightRotateSec, setSpotlightRotateSec] = useState(0);     // 0=off, or rotation interval seconds
+  var [joinRequests,       setJoinRequests]       = useState([]);    // [{ guestId, username, ts }] — pending stage requests
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -561,6 +569,11 @@ export default function LiveRoomPage({
   var joinSoundEnabledRef    = useRef(true); // always-fresh mirror of joinSoundEnabled
   joinSoundEnabledRef.current = joinSoundEnabled;
   var liveStartRef           = useRef(null); // Date.now() when isLive first became true
+  var prompterScrollRef      = useRef(null); // teleprompter scrollable div
+  var prompterRafRef         = useRef(null); // requestAnimationFrame id for scroll
+  var prompterLastTs         = useRef(null); // last rAF timestamp for delta-time scroll
+  var spotlightRotateRef     = useRef(null); // interval id for spotlight auto-rotation
+  var spotlightRotateIdxRef  = useRef(0);    // current index in sortedOnStage for rotation
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Trivia ──────────────────────────────────────────────────────────────
@@ -866,6 +879,24 @@ export default function LiveRoomPage({
       if (!data || !data.text) return;
       setBroadcastOverlay({ text: String(data.text).slice(0, 200), from: data.from || 'Host' });
       setTimeout(function() { setBroadcastOverlay(null); }, 6000);
+    });
+
+    socket.on('stage-join-requested', function(data) {
+      if (!data || !data.guestId) return;
+      setJoinRequests(function(prev) {
+        if (prev.some(function(r) { return r.guestId === data.guestId; })) return prev;
+        return prev.concat([{ guestId: data.guestId, username: data.username || data.guestId, ts: Date.now() }]);
+      });
+      if (addToastRef.current) addToastRef.current('📩 ' + (data.username || data.guestId) + ' wants to join stage', 'info');
+    });
+
+    socket.on('stage-join-denied', function() {
+      if (addToastRef.current) addToastRef.current('Host declined your stage request', 'info');
+    });
+
+    socket.on('stage-join-approved', function(data) {
+      if (!data || data.guestId !== userId) return;
+      if (addToastRef.current) addToastRef.current('🎤 Host approved — you are now on stage!', 'success');
     });
 
     socket.on('lower-all-hands', function() {
@@ -1174,6 +1205,9 @@ export default function LiveRoomPage({
       socket.off('stage-lock-update');
       socket.off('lower-all-hands');
       socket.off('broadcast-overlay');
+      socket.off('stage-join-requested');
+      socket.off('stage-join-denied');
+      socket.off('stage-join-approved');
       socket.off('room-audio-only');
       socket.off('room-private');
       socket.off('subscriber-only-changed');
@@ -1456,6 +1490,11 @@ export default function LiveRoomPage({
       var x   = 10 + Math.floor(Math.random() * 80);
       setReactionBurst(function(prev) { return prev.concat([{ id: rid, emoji: data.emoji, x: x }]); });
       setTimeout(function() { setReactionBurst(function(prev) { return prev.filter(function(r) { return r.id !== rid; }); }); }, 2200);
+      setReactionCounts(function(prev) {
+        var next = Object.assign({}, prev);
+        next[data.emoji] = (next[data.emoji] || 0) + 1;
+        return next;
+      });
     }
     socket.on('stage-reaction', onRemoteReaction);
     return function() { socket.off('stage-reaction', onRemoteReaction); };
@@ -1487,6 +1526,39 @@ export default function LiveRoomPage({
     if (n2 <= 1 && stageLayout !== 'featured') { setStageLayout('featured'); }
     else if (n2 >= 2 && stageLayout === 'featured') { setStageLayout('grid'); }
   }, [onStage.length, autoLayout]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Spotlight auto-rotation ──────────────────────────────────────────────
+  useEffect(function() {
+    if (spotlightRotateRef.current) { clearInterval(spotlightRotateRef.current); spotlightRotateRef.current = null; }
+    if (!spotlightRotateSec || !socket) return;
+    spotlightRotateRef.current = setInterval(function() {
+      var stage = sortedOnStage;
+      if (stage.length < 2) return;
+      spotlightRotateIdxRef.current = (spotlightRotateIdxRef.current + 1) % stage.length;
+      var g2 = stage[spotlightRotateIdxRef.current];
+      var gid2 = g2.guestId || g2.userId;
+      socket.emit('spotlight-guest', { roomId: roomId, guestId: gid2, username: g2.username || gid2 });
+    }, spotlightRotateSec * 1000);
+    return function() { if (spotlightRotateRef.current) { clearInterval(spotlightRotateRef.current); spotlightRotateRef.current = null; } };
+  }, [spotlightRotateSec, socket]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Teleprompter rAF scroll ──────────────────────────────────────────────
+  useEffect(function() {
+    if (prompterRafRef.current) { cancelAnimationFrame(prompterRafRef.current); prompterRafRef.current = null; }
+    if (!prompterRunning || !prompterScrollRef.current) return;
+    prompterLastTs.current = null;
+    var tick = function(ts) {
+      if (!prompterScrollRef.current) return;
+      if (prompterLastTs.current !== null) {
+        var dt = ts - prompterLastTs.current;
+        prompterScrollRef.current.scrollTop += (prompterSpeed / 1000) * dt;
+      }
+      prompterLastTs.current = ts;
+      prompterRafRef.current = requestAnimationFrame(tick);
+    };
+    prompterRafRef.current = requestAnimationFrame(tick);
+    return function() { if (prompterRafRef.current) { cancelAnimationFrame(prompterRafRef.current); prompterRafRef.current = null; } };
+  }, [prompterRunning, prompterSpeed]);
 
   // ── Spotlight elapsed timer ──────────────────────────────────────────────
   useEffect(function() {
@@ -2520,6 +2592,7 @@ export default function LiveRoomPage({
                   setReactionBurst(function(prev) {
                     return prev.concat([{ id: Date.now() + em, emoji: em, x: 20 + Math.random() * 60 }]).slice(-20);
                   });
+                  setReactionCounts(function(prev) { var next = Object.assign({}, prev); next[em] = (next[em] || 0) + 1; return next; });
                 }}
                 style={{ background: 'none', border: '1px solid ' + DIM, borderRadius: 8, padding: '4px 8px', fontSize: 18, cursor: 'pointer', transition: 'transform .1s, border-color .1s', lineHeight: 1 }}
                 onMouseEnter={function(e) { e.currentTarget.style.transform = 'scale(1.35)'; e.currentTarget.style.borderColor = GOLD + '66'; }}
@@ -2566,6 +2639,54 @@ export default function LiveRoomPage({
             );
           })}
 
+          {/* ── Reaction counter bar (host/cohost) ── */}
+          {showReactionBar && (role === 'host' || role === 'cohost') && Object.keys(reactionCounts).length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 8px', background: 'rgba(9,7,14,.8)', borderRadius: 20, border: '1px solid ' + DIM, marginBottom: 6, flexWrap: 'wrap' }}>
+              {Object.entries(reactionCounts).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 8).map(function(entry) {
+                return (
+                  <span key={entry[0]} style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: TEXT, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <span style={{ fontSize: 13 }}>{entry[0]}</span>
+                    <span style={{ color: GOLD }}>{entry[1]}</span>
+                  </span>
+                );
+              })}
+              <button onClick={function() { setReactionCounts({}); }}
+                style={{ marginLeft: 'auto', background: 'none', border: 'none', color: MUTED, fontSize: 9, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}
+                title="Reset reaction counts">✕</button>
+            </div>
+          )}
+
+          {/* ── Join request notifications (host only, when stage locked) ── */}
+          {joinRequests.length > 0 && (role === 'host' || role === 'cohost') && (
+            <div style={{ marginBottom: 6 }}>
+              {joinRequests.slice(0, 3).map(function(req) {
+                return (
+                  <div key={req.guestId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 10px', background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 8, marginBottom: 3, animation: 'fadeSlideIn .2s ease' }}>
+                    <span style={{ fontSize: 12, lineHeight: 1 }}>📩</span>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.username}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, flexShrink: 0 }}>wants on stage</span>
+                    <button onClick={function() {
+                      if (socket) socket.emit('stage-join-approve', { roomId: roomId, guestId: req.guestId });
+                      setJoinRequests(function(prev) { return prev.filter(function(r) { return r.guestId !== req.guestId; }); });
+                      if (addToastRef.current) addToastRef.current('Approved: ' + req.username, 'success');
+                    }} style={{ background: 'rgba(0,200,120,.2)', border: '1px solid rgba(0,200,120,.45)', borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00e676', cursor: 'pointer', letterSpacing: .3, flexShrink: 0 }}>
+                      ✓ LET IN
+                    </button>
+                    <button onClick={function() {
+                      if (socket) socket.emit('stage-join-deny', { roomId: roomId, guestId: req.guestId });
+                      setJoinRequests(function(prev) { return prev.filter(function(r) { return r.guestId !== req.guestId; }); });
+                    }} style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.35)', borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, cursor: 'pointer', letterSpacing: .3, flexShrink: 0 }}>
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+              {joinRequests.length > 3 && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, padding: '2px 10px' }}>+{joinRequests.length - 3} more requests</div>
+              )}
+            </div>
+          )}
+
           {/* Stage header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -2573,6 +2694,14 @@ export default function LiveRoomPage({
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: MUTED, letterSpacing: 1 }}>{onStage.length}/{MAX_STAGE}</span>
               {stageLocked && (
                 <span title="Stage locked — no new guests can join" style={{ fontSize: 12, lineHeight: 1 }}>🔒</span>
+              )}
+              {stageLocked && role !== 'host' && role !== 'cohost' && !onStage.some(function(g) { return (g.guestId || g.userId) === userId; }) && (
+                <button onClick={function() {
+                  if (socket) socket.emit('stage-join-request', { roomId: roomId });
+                  if (addToastRef.current) addToastRef.current('Request sent to host', 'info');
+                }} style={{ background: 'rgba(0,195,255,.15)', border: '1px solid rgba(0,195,255,.4)', borderRadius: 10, padding: '3px 10px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, cursor: 'pointer', letterSpacing: .3 }}>
+                  📩 REQUEST STAGE
+                </button>
               )}
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -2748,6 +2877,26 @@ export default function LiveRoomPage({
                   style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 6, padding: '4px 7px', fontSize: 9, color: MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap', transition: 'all .15s' }}>
                   🔇 ALL
                 </button>
+              )}
+              {/* Spotlight auto-rotation (host/cohost) */}
+              {(role === 'host' || role === 'cohost') && onStage.length >= 2 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, flexShrink: 0 }}>ROTATE</span>
+                  {[0, 30, 60, 120].map(function(sec) {
+                    return (
+                      <button key={sec}
+                        onClick={function() {
+                          setSpotlightRotateSec(sec);
+                          if (sec === 0 && socket) socket.emit('spotlight-end', { roomId: roomId });
+                          else if (addToastRef.current) addToastRef.current('Spotlight rotation: ' + sec + 's', 'info');
+                        }}
+                        title={sec === 0 ? 'Off' : 'Rotate spotlight every ' + sec + 's'}
+                        style={{ background: spotlightRotateSec === sec ? 'rgba(0,195,255,.2)' : CARD, border: '1px solid ' + (spotlightRotateSec === sec ? TEAL : BORDER), borderRadius: 4, padding: '2px 5px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: spotlightRotateSec === sec ? TEAL : MUTED, cursor: 'pointer', letterSpacing: .3 }}>
+                        {sec === 0 ? 'OFF' : sec + 's'}
+                      </button>
+                    );
+                  })}
+                </div>
               )}
               {/* Broadcast overlay (host only) */}
               {role === 'host' && (
@@ -4696,6 +4845,15 @@ export default function LiveRoomPage({
           )}
           {(role === 'host' || role === 'cohost') && (
             <IconBtn
+              icon="📜"
+              label={showTeleprompter ? 'Prompt ×' : 'Prompt'}
+              active={showTeleprompter}
+              activeColor={TEAL}
+              onPress={function() { setShowTeleprompter(function(v) { return !v; }); }}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
               icon="📋"
               label={'Activity' + (activityLog.length > 0 ? ' ' + activityLog.length : '')}
               active={showActivityLog}
@@ -6191,6 +6349,58 @@ export default function LiveRoomPage({
               );
             })()}
           </div>
+        </div>
+      )}
+
+      {/* ════════════════ TELEPROMPTER OVERLAY (host-local) ════════════════ */}
+      {showTeleprompter && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 95, background: 'rgba(9,7,14,.94)', borderBottom: '2px solid ' + TEAL + '44', animation: 'fadeSlideIn .2s ease' }}>
+          {/* Controls bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderBottom: '1px solid ' + DIM }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: .5, flexShrink: 0 }}>📜 TELEPROMPTER</span>
+            <button onClick={function() { setPrompterRunning(function(v) { return !v; }); }}
+              style={{ background: prompterRunning ? 'rgba(0,195,255,.2)' : CARD, border: '1px solid ' + (prompterRunning ? TEAL : BORDER), borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: prompterRunning ? TEAL : MUTED, cursor: 'pointer', letterSpacing: .3 }}>
+              {prompterRunning ? '⏸ PAUSE' : '▶ SCROLL'}
+            </button>
+            <button onClick={function() { if (prompterScrollRef.current) prompterScrollRef.current.scrollTop = 0; setPrompterRunning(false); }}
+              style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, cursor: 'pointer' }}>
+              ↑ RESET
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>SPEED</span>
+              <input type="range" min={10} max={120} value={prompterSpeed}
+                onChange={function(e) { setPrompterSpeed(Number(e.target.value)); }}
+                style={{ width: 60, accentColor: TEAL }} />
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>{prompterSpeed}</span>
+            </div>
+            <div style={{ flex: 1 }} />
+            <button onClick={function() { setShowTeleprompter(false); setPrompterRunning(false); }}
+              style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '0 2px' }}>✕</button>
+          </div>
+          {/* Scrollable script (when text is set) */}
+          {prompterText ? (
+            <div>
+              <div ref={prompterScrollRef} style={{ maxHeight: 130, overflowY: 'auto', padding: '10px 14px', scrollbarWidth: 'none' }}>
+                <p style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 20, color: TEXT, lineHeight: 1.5, margin: 0, whiteSpace: 'pre-wrap', letterSpacing: .3 }}>{prompterText}</p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, padding: '4px 14px 8px' }}>
+                <button onClick={function() { setPrompterRunning(false); setPrompterText(''); }}
+                  style={{ background: 'none', border: '1px solid ' + BORDER, borderRadius: 5, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer' }}>
+                  ✏ EDIT SCRIPT
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: '8px 14px 10px' }}>
+              <textarea
+                value={prompterText}
+                onChange={function(e) { setPrompterText(e.target.value); }}
+                placeholder="Paste your script here, then press ▶ SCROLL…"
+                rows={3}
+                style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 6, padding: '8px 10px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, resize: 'none', outline: 'none' }}
+              />
+            </div>
+          )}
         </div>
       )}
 

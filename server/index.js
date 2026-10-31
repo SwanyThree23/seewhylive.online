@@ -3754,6 +3754,44 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('broadcast-overlay', { text: text, from: socket.data.username || 'Host' });
   });
 
+  // ── stage-join-request (viewer requests to join locked stage) ──────────
+  socket.on('stage-join-request', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var room = rooms.get(roomId);
+    if (!room || !room.stageLocked) {
+      socket.emit('stage-join-denied', { reason: 'stage_not_locked' });
+      return;
+    }
+    var hostSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
+      return s.data.roomId === roomId && (s.data.role === 'host' || s.data.role === 'owner');
+    });
+    hostSockets.forEach(function(s) {
+      s.emit('stage-join-requested', { guestId: socket.data.userId, username: socket.data.username || socket.data.userId });
+    });
+  });
+
+  socket.on('stage-join-approve', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.guestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('stage-join-approved', { guestId: data.guestId });
+    var targetSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
+      return s.data.roomId === roomId && s.data.userId === data.guestId;
+    });
+    targetSockets.forEach(function(s) { s.emit('stage-join-approved', { guestId: data.guestId }); });
+  });
+
+  socket.on('stage-join-deny', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.guestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var targetSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
+      return s.data.roomId === roomId && s.data.userId === data.guestId;
+    });
+    targetSockets.forEach(function(s) { s.emit('stage-join-denied', { reason: 'host_denied' }); });
+  });
+
   // ── spotlight-guest / spotlight-end ────────────────────────────────────
   // Host broadcasts a featured-view directive so all viewers focus on one guest.
   socket.on('spotlight-guest', function(data) {
