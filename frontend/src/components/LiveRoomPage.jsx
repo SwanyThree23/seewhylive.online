@@ -447,6 +447,7 @@ export default function LiveRoomPage({
 
   var chatEndRef         = useRef(null);
   var cameraTrackRef     = useRef(null);
+  var pipVideoRef        = useRef(null);
   var screenStreamRef    = useRef(null);
   var micTrackRef        = useRef(null); // saved mic track for restoration after screen audio
   var autoFocusTimerRef  = useRef(null);
@@ -1210,6 +1211,39 @@ export default function LiveRoomPage({
       try { if (ctx) ctx.close(); } catch(e2) {}
     };
   }, [rtcReady, isMuted]);
+
+  // Auto-dismiss raised hand when a guest appears on stage (gets a producer)
+  useEffect(function() {
+    setRaisedHands(function(prev) {
+      var changed = false;
+      var next = Object.assign({}, prev);
+      guests.forEach(function(g) {
+        var gid = g.guestId || g.userId;
+        if (gid && next[gid] && (g.producerId || g.audioProducerId)) {
+          delete next[gid];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [guests]);
+
+  // Camera PiP: wire own camera feed into the PiP video element while screen sharing
+  useEffect(function() {
+    var vid = pipVideoRef.current;
+    if (!isScreenSharing || !vid) return;
+    var track = cameraTrackRef.current;
+    if (!track || track.readyState === 'ended') return;
+    try {
+      vid.srcObject = new MediaStream([track]);
+      vid.play().catch(function() {});
+    } catch(e) {}
+    return function() {
+      if (pipVideoRef.current) {
+        pipVideoRef.current.srcObject = null;
+      }
+    };
+  }, [isScreenSharing]);
 
   var toggleMute = function() { setIsMuted(function(v) { return !v; }); }
   var toggleCam = function()  { setIsCamOff(function(v) { return !v; }); }
@@ -2219,6 +2253,18 @@ export default function LiveRoomPage({
                       />
                       <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGid} />
                     </div>
+                    {/* Camera PiP — own camera while screen sharing */}
+                    {featuredGid === userId && !isCamOff && (
+                      <div style={{ position: 'absolute', bottom: 10, right: 10, width: 110, zIndex: 20, borderRadius: 8, overflow: 'hidden', border: '2px solid rgba(201,168,76,.7)', boxShadow: '0 4px 18px rgba(0,0,0,.7)', background: '#0E0C09' }}>
+                        <video
+                          ref={pipVideoRef}
+                          autoPlay={true}
+                          playsInline={true}
+                          muted={true}
+                          style={{ width: '100%', display: 'block', transform: 'scaleX(-1)' }}
+                        />
+                      </div>
+                    )}
                   </div>
                 ) : (
                 <div style={{ position: 'relative' }}>
