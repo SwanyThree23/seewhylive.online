@@ -478,6 +478,8 @@ export default function LiveRoomPage({
   var [stageLimitSec,      setStageLimitSec]      = useState(0);     // 0 = off; 180/300/600 = 3/5/10 min
   var [reactionBurst,      setReactionBurst]      = useState([]);    // [{ id, emoji, x }] — flying emoji over stage
   var [lowBwMode,          setLowBwMode]          = useState(false); // cap remote simulcast to lowest layer
+  var [gridDensity,        setGridDensity]        = useState(0);     // -1=wider, 0=auto, +1=tighter column count
+  var [spotlightElapsed,   setSpotlightElapsed]   = useState(0);     // seconds spotlight has been active
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -521,6 +523,7 @@ export default function LiveRoomPage({
   var qualityToastCoolRef    = useRef({});   // { [producerId]: true } — cooldown: suppress repeat toasts < 30 s
   var prevStageGidsRef       = useRef(new Set()); // Set<guestId> — previous render's on-stage set for new-joiner detection
   var stageLimitWarnedRef    = useRef({});   // { [guestId]: true } — guests already warned about time limit
+  var spotlightStartRef      = useRef(null); // Date.now() when spotlight last activated
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Trivia ──────────────────────────────────────────────────────────────
@@ -1356,6 +1359,7 @@ export default function LiveRoomPage({
         if (prefs.layout) setStageLayout(prefs.layout);
         if (prefs.sort)   setStageSort(prefs.sort);
         if (prefs.limitSec !== undefined) setStageLimitSec(Number(prefs.limitSec) || 0);
+        if (prefs.density !== undefined)  setGridDensity(Number(prefs.density) || 0);
       }
     } catch(e) {}
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1363,9 +1367,9 @@ export default function LiveRoomPage({
   // ── Stage prefs: persist to localStorage whenever they change ───────────
   useEffect(function() {
     try {
-      localStorage.setItem('sw_stage_prefs', JSON.stringify({ layout: stageLayout, sort: stageSort, limitSec: stageLimitSec }));
+      localStorage.setItem('sw_stage_prefs', JSON.stringify({ layout: stageLayout, sort: stageSort, limitSec: stageLimitSec, density: gridDensity }));
     } catch(e) {}
-  }, [stageLayout, stageSort, stageLimitSec]);
+  }, [stageLayout, stageSort, stageLimitSec, gridDensity]);
 
   // ── Low-bandwidth mode: cap/restore simulcast layers for all consumers ───
   useEffect(function() {
@@ -1389,6 +1393,20 @@ export default function LiveRoomPage({
     socket.on('stage-reaction', onRemoteReaction);
     return function() { socket.off('stage-reaction', onRemoteReaction); };
   }, [socket]);
+
+  // ── Spotlight elapsed timer ──────────────────────────────────────────────
+  useEffect(function() {
+    if (spotlight) {
+      if (!spotlightStartRef.current) spotlightStartRef.current = Date.now();
+      var t = setInterval(function() {
+        setSpotlightElapsed(Math.floor((Date.now() - spotlightStartRef.current) / 1000));
+      }, 1000);
+      return function() { clearInterval(t); };
+    } else {
+      spotlightStartRef.current = null;
+      setSpotlightElapsed(0);
+    }
+  }, [spotlight ? spotlight.guestId : null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auto-reconnect: host-only, fires after 15 s of sustained freeze ─────
   useEffect(function() {
@@ -1960,7 +1978,7 @@ export default function LiveRoomPage({
 
   // Grid sizing
   var n    = onStage.length;
-  var cols = n <= 1 ? 1 : n <= 4 ? 2 : n <= 9 ? 3 : n <= 16 ? 4 : 5;
+  var cols = Math.max(1, (n <= 1 ? 1 : n <= 4 ? 2 : n <= 9 ? 3 : n <= 16 ? 4 : 5) + gridDensity);
   var sz   = n <= 2 ? 160 : n <= 4 ? 130 : n <= 9 ? 100 : 80;
 
   // Host info
@@ -2212,6 +2230,9 @@ export default function LiveRoomPage({
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, paddingTop: 7, borderTop: '1px solid ' + BORDER }}>
             <span style={{ fontSize: 13 }}>🔦</span>
             <span style={{ fontSize: 12, color: GOLD, fontWeight: 600, letterSpacing: 0.5 }}>{spotlight.username} spotlighted</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginLeft: 2 }}>
+              {Math.floor(spotlightElapsed / 60) + ':' + (spotlightElapsed % 60 < 10 ? '0' : '') + (spotlightElapsed % 60)}
+            </span>
             {(role === 'host' || role === 'cohost') && (
               <button onClick={function() { if (socket) socket.emit('spotlight-end', { roomId: roomId }); }}
                 style={{ marginLeft: 'auto', padding: '3px 8px', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 5, color: GOLD, fontSize: 10, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>
@@ -2327,6 +2348,39 @@ export default function LiveRoomPage({
                   );
                 })}
               </div>
+              {/* Grid density (fewer/auto/more columns) */}
+              {stageLayout === 'grid' && panelMode !== 'list' && (
+                <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
+                  {[
+                    { d: -1, icon: '⊟', title: 'Fewer columns (wider cells)' },
+                    { d:  0, icon: '⊡', title: 'Auto columns' },
+                    { d:  1, icon: '⊞', title: 'More columns (smaller cells)' },
+                  ].map(function(item) {
+                    return (
+                      <button key={item.d} onClick={function() { setGridDensity(item.d); }} title={item.title}
+                        style={{ background: gridDensity === item.d ? CARD2 : 'transparent', border: 'none', color: gridDensity === item.d ? TEXT : MUTED, cursor: 'pointer', padding: '5px 8px', fontSize: 12, transition: 'background .15s' }}>
+                        {item.icon}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Mute all (host only) */}
+              {role === 'host' && onStage.some(function(g) { var gid = g.guestId || g.userId; return gid !== userId && !g.remoteMuted; }) && (
+                <button
+                  onClick={function() {
+                    onStage.forEach(function(g) {
+                      var gid = g.guestId || g.userId;
+                      if (gid === userId || g.remoteMuted) return;
+                      if (socket) socket.emit('mute-guest', { roomId: roomId, guestId: gid });
+                    });
+                    if (addToastRef.current) addToastRef.current('All guests muted', 'info');
+                  }}
+                  title="Mute all guests on stage"
+                  style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 6, padding: '4px 7px', fontSize: 9, color: MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap', transition: 'all .15s' }}>
+                  🔇 ALL
+                </button>
+              )}
               {/* Stage layout (single focus) */}
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                 <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
@@ -5126,7 +5180,28 @@ export default function LiveRoomPage({
         <div style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom,0px) + 200px)', left: 12, zIndex: 9998, width: 270, maxHeight: 320, background: 'rgba(26,21,16,.97)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 14, boxShadow: '-4px 4px 24px rgba(0,0,0,.6)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'fadeSlideIn .2s ease' }}>
           <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(201,168,76,.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
             <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 2 }}>✂️ CLIP LOG</span>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{clipLog.length} clip{clipLog.length !== 1 ? 's' : ''}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{clipLog.length} clip{clipLog.length !== 1 ? 's' : ''}</span>
+              {clipLog.length > 0 && (
+                <button
+                  onClick={function() {
+                    var lines = clipLog.map(function(entry) {
+                      var d = new Date(entry.ts * 1000);
+                      var ts = d.toISOString().substring(11, 19);
+                      return ts + '  ' + entry.label;
+                    });
+                    var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url; a.download = 'clips.txt'; a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  title="Export clip log as .txt"
+                  style={{ background: 'none', border: '1px solid rgba(201,168,76,.3)', borderRadius: 5, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', cursor: 'pointer', letterSpacing: .3 }}>
+                  ⬇ EXPORT
+                </button>
+              )}
+            </div>
           </div>
           <div style={{ overflowY: 'auto', flex: 1 }}>
             {clipLog.length === 0 && (
