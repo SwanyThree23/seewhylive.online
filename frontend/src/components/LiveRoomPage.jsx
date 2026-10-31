@@ -59,6 +59,7 @@ var ANIM = [
   '@keyframes announceOut{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(-10px)}}',
   '@keyframes reactionFloat{0%{transform:translateY(0) scale(1);opacity:1}70%{transform:translateY(-110px) scale(1.25);opacity:.85}100%{transform:translateY(-150px) scale(.9);opacity:0}}',
   '@keyframes tickerScroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}',
+  '@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}80%{opacity:1}100%{transform:translateY(110%) rotate(540deg);opacity:0}}',
 ].join('\n');
 
 // ─── Subtle reaction tone for emoji bursts ─────────────────────────────────
@@ -544,6 +545,11 @@ export default function LiveRoomPage({
   var [ltEditName,         setLtEditName]         = useState('');    // editor name field
   var [ltEditTitle,        setLtEditTitle]        = useState('');    // editor title field
   var [autoRecord,         setAutoRecord]         = useState(false); // auto-start recording when going live
+  var [confettiBurst,      setConfettiBurst]      = useState([]);    // array of { id, x, color, delay, size } particles
+  var [roomTimerSec,       setRoomTimerSec]       = useState(0);     // seconds remaining on room countdown
+  var [roomTimerActive,    setRoomTimerActive]    = useState(false); // room timer overlay visible
+  var [showTimerPicker,    setShowTimerPicker]    = useState(false); // host timer preset picker popover
+  var roomTimerRef         = useRef(null);
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -930,6 +936,44 @@ export default function LiveRoomPage({
       if (addToastRef.current) addToastRef.current('🎙 Host unmuted all participants', 'info');
     });
 
+    socket.on('confetti-burst', function() {
+      var colors = [GOLD, RED, TEAL, '#00e676', '#7c4dff', '#ff6d00', '#00b0ff', '#ff4081'];
+      var particles = [];
+      for (var ci = 0; ci < 32; ci++) {
+        particles.push({
+          id: Date.now() + ci,
+          x: Math.random() * 100,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          delay: Math.random() * 1.2,
+          size: 6 + Math.floor(Math.random() * 8),
+        });
+      }
+      setConfettiBurst(particles);
+      setTimeout(function() { setConfettiBurst([]); }, 3800);
+    });
+
+    socket.on('room-timer', function(data) {
+      if (!data) return;
+      clearInterval(roomTimerRef.current);
+      if (!data.active || !data.seconds) {
+        setRoomTimerActive(false);
+        setRoomTimerSec(0);
+        return;
+      }
+      setRoomTimerSec(data.seconds);
+      setRoomTimerActive(true);
+      roomTimerRef.current = setInterval(function() {
+        setRoomTimerSec(function(prev) {
+          if (prev <= 1) {
+            clearInterval(roomTimerRef.current);
+            setTimeout(function() { setRoomTimerActive(false); }, 800);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    });
+
     socket.on('stage-join-requested', function(data) {
       if (!data || !data.guestId) return;
       setJoinRequests(function(prev) {
@@ -1285,6 +1329,9 @@ export default function LiveRoomPage({
       socket.off('brb');
       socket.off('ticker');
       socket.off('unmute-all');
+      socket.off('confetti-burst');
+      socket.off('room-timer');
+      clearInterval(roomTimerRef.current);
       if (mediaRecRef.current && mediaRecRef.current.state !== 'inactive') {
         try { mediaRecRef.current.stop(); } catch(e) {}
       }
@@ -2904,6 +2951,23 @@ export default function LiveRoomPage({
               </div>
             );
           })()}
+
+          {/* Room countdown timer overlay */}
+          {roomTimerActive && (
+            <div style={{ position: 'absolute', inset: 0, zIndex: 58, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', background: 'rgba(14,12,9,.65)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)', animation: 'fadeSlideIn .25s ease' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 3, marginBottom: 6, textTransform: 'uppercase' }}>COUNTDOWN</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 80, lineHeight: 1, letterSpacing: 4, color: roomTimerSec <= 5 ? RED : GOLD, animation: roomTimerSec <= 5 ? 'livePulse .6s ease-in-out infinite' : 'none', textShadow: '0 0 40px ' + (roomTimerSec <= 5 ? RED : GOLD) + '55' }}>
+                {roomTimerSec > 59 ? (Math.floor(roomTimerSec / 60) + ':' + (roomTimerSec % 60 < 10 ? '0' : '') + (roomTimerSec % 60)) : roomTimerSec}
+              </div>
+            </div>
+          )}
+
+          {/* Confetti burst */}
+          {confettiBurst.length > 0 && confettiBurst.map(function(p) {
+            return (
+              <div key={p.id} style={{ position: 'absolute', top: 0, left: p.x + '%', zIndex: 65, pointerEvents: 'none', width: p.size, height: p.size, background: p.color, borderRadius: 2, animation: 'confettiFall 2.8s ' + p.delay + 's ease-in forwards', opacity: 0 }} />
+            );
+          })}
 
           {/* Scrolling ticker strip */}
           {tickerActive && tickerText && (
@@ -5279,6 +5343,58 @@ export default function LiveRoomPage({
               activeColor={TEAL}
               onPress={toggleBrowserPip}
             />
+          )}
+          {role !== 'host' && (
+            <IconBtn
+              icon="✋"
+              label={handRaised ? 'Hand ✓' : 'Hand'}
+              active={handRaised}
+              activeColor='rgba(255,140,0,.9)'
+              onPress={raiseHand}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="🎊"
+              label="Confetti"
+              onPress={function() {
+                if (socket) socket.emit('confetti-burst', { roomId: roomId });
+              }}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="⏱"
+                label={roomTimerActive ? 'Timer ✓' : 'Timer'}
+                active={roomTimerActive}
+                activeColor={GOLD}
+                onPress={roomTimerActive
+                  ? function() { if (socket) socket.emit('room-timer-stop', { roomId: roomId }); }
+                  : function() { setShowTimerPicker(function(v) { return !v; }); }}
+              />
+              {showTimerPicker && !roomTimerActive && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 160, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 8, textAlign: 'center' }}>COUNTDOWN TIMER</div>
+                  {[[15,'15s'],[30,'30s'],[60,'1m'],[180,'3m'],[300,'5m']].map(function(preset) {
+                    return (
+                      <button key={preset[0]}
+                        onClick={function() {
+                          if (socket) socket.emit('room-timer-start', { roomId: roomId, seconds: preset[0] });
+                          setShowTimerPicker(false);
+                        }}
+                        style={{ display: 'block', width: '100%', background: DIM, border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: TEXT, cursor: 'pointer', letterSpacing: 1, marginBottom: 4 }}>
+                        {preset[1]}
+                      </button>
+                    );
+                  })}
+                  <button onClick={function() { setShowTimerPicker(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 2 }}>
+                    cancel
+                  </button>
+                </div>
+              )}
+            </div>
           )}
           {(role === 'host' || role === 'cohost') && (
             <div style={{ position: 'relative' }}>

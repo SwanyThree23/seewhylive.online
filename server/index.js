@@ -3792,6 +3792,30 @@ io.on('connection', function(socket) {
     targetSockets.forEach(function(s) { s.emit('stage-join-denied', { reason: 'host_denied' }); });
   });
 
+  // ── confetti-burst ─────────────────────────────────────────────────────
+  socket.on('confetti-burst', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('confetti-burst');
+  });
+
+  // ── room-timer-start / room-timer-stop ─────────────────────────────────
+  socket.on('room-timer-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var seconds = data && data.seconds ? Math.min(Math.max(parseInt(data.seconds, 10) || 30, 5), 3600) : 30;
+    io.to(roomId).emit('room-timer', { active: true, seconds: seconds });
+  });
+
+  socket.on('room-timer-stop', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('room-timer', { active: false });
+  });
+
   // ── ticker-start / ticker-stop ─────────────────────────────────────────
   socket.on('ticker-start', function(data) {
     var roomId = socket.data.roomId;
