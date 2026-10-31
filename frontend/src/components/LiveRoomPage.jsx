@@ -466,6 +466,8 @@ export default function LiveRoomPage({
   var [frozenProducers,    setFrozenProducers]    = useState({});   // { [producerId]: true } — bitrate near-zero last sample
   var [avCameras,          setAvCameras]          = useState([]);   // available video input devices for hot-swap
   var [camDevIdx,          setCamDevIdx]          = useState(0);    // index into avCameras currently active
+  var [guestVolumes,       setGuestVolumes]       = useState({});   // { [guestId]: 0..1 } — per-guest local volume override
+  var [showKeyHelp,        setShowKeyHelp]        = useState(false); // keyboard shortcut guide modal
   var [spotlight,          setSpotlight]          = useState(null); // { guestId, username } | null — host-broadcast spotlight
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
@@ -495,6 +497,8 @@ export default function LiveRoomPage({
 
   var chatEndRef         = useRef(null);
   var announceTimerRef   = useRef(null);
+  var guestsRef          = useRef(guests || []);   // always-fresh guests list for async callbacks
+  var freezeTimersRef    = useRef({});             // { [producerId]: timerId } — auto-reconnect on freeze
   var containerRef       = useRef(null);
   var cameraTrackRef     = useRef(null);
   var pipVideoRef        = useRef(null);
@@ -1258,6 +1262,9 @@ export default function LiveRoomPage({
     return function() { rtcManager.off('consumerStats', onStats); };
   }, [rtcReady]);
 
+  // Keep guestsRef current so async callbacks see fresh guest list
+  useEffect(function() { guestsRef.current = guests || []; }, [guests]);
+
   // ── Freeze detection: mark producers whose bitrate stays ~0 ─────────────
   useEffect(function() {
     setFrozenProducers(function(prev) {
@@ -1271,6 +1278,30 @@ export default function LiveRoomPage({
       return changed ? next : prev;
     });
   }, [consumerRawStats]);
+
+  // ── Auto-reconnect: host-only, fires after 15 s of sustained freeze ─────
+  useEffect(function() {
+    if (role !== 'host') return;
+    // Start a 15 s timer for any newly frozen producer
+    Object.keys(frozenProducers).forEach(function(pid) {
+      if (freezeTimersRef.current[pid]) return;
+      freezeTimersRef.current[pid] = setTimeout(function() {
+        delete freezeTimersRef.current[pid];
+        var g = guestsRef.current.find(function(guest) { return guest.producerId === pid; });
+        if (!g) return;
+        var gid = g.guestId || g.userId;
+        if (socket) socket.emit('request-reconnect', { roomId: roomId, guestId: gid });
+        if (addToastRef.current) addToastRef.current('Auto-reconnect → ' + (g.username || gid), 'info');
+      }, 15000);
+    });
+    // Cancel timers for producers that recovered
+    Object.keys(freezeTimersRef.current).forEach(function(pid) {
+      if (!frozenProducers[pid]) {
+        clearTimeout(freezeTimersRef.current[pid]);
+        delete freezeTimersRef.current[pid];
+      }
+    });
+  }, [frozenProducers, role]);
 
   // ── Camera enumeration for hot-swap ─────────────────────────────────────
   useEffect(function() {
@@ -1600,14 +1631,16 @@ export default function LiveRoomPage({
       else if (e.key === 'x' || e.key === 'X') { setMirrorSelf(function(v) { return !v; }); }
       else if ((e.key === '[' || e.key === 'ArrowLeft') && stageLayout === 'featured') { prevGuest(); }
       else if ((e.key === ']' || e.key === 'ArrowRight') && stageLayout === 'featured') { nextGuest(); }
+      else if (e.key === '?') { setShowKeyHelp(function(v) { return !v; }); }
       else if (e.key === 'Escape') {
-        if (expandedCell) { setExpandedCell(null); }
+        if (showKeyHelp) { setShowKeyHelp(false); }
+        else if (expandedCell) { setExpandedCell(null); }
         else if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); }
       }
     };
     document.addEventListener('keydown', onKey);
     return function() { document.removeEventListener('keydown', onKey); };
-  }, [expandedCell, cellMenuId, stageLayout, featuredId]);
+  }, [expandedCell, cellMenuId, stageLayout, featuredId, showKeyHelp]);
 
   var shareRoom = function() {
     var url = window.location.origin + (roomId !== '6990f5f2-4823-453e-a1fc-dc9d00000000' ? ('?room=' + roomId) : '');
@@ -2276,6 +2309,7 @@ export default function LiveRoomPage({
                             isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
                             remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
                             mirrorOverride={isOwn ? mirrorSelf : undefined}
+                            remoteVolume={isOwn ? undefined : (guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1)}
                           />
                         )}
                       </div>
@@ -2402,6 +2436,25 @@ export default function LiveRoomPage({
                             </div>
                           </div>
                         )}
+                        {!isOwn && (
+                          <div style={{ padding: '7px 13px 6px', borderTop: '1px solid ' + DIM }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span style={{ fontSize: 9, flexShrink: 0 }}>{(guestVolumes[gid] || 1) === 0 ? '🔇' : '🔊'}</span>
+                              <input
+                                type="range" min="0" max="100"
+                                value={Math.round((guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1) * 100)}
+                                onChange={function(e) {
+                                  var vol = parseInt(e.target.value, 10) / 100;
+                                  setGuestVolumes(function(prev) { var next = Object.assign({}, prev); next[gid] = vol; return next; });
+                                }}
+                                onClick={function(e) { e.stopPropagation(); }}
+                                style={{ flex: 1, height: 3, cursor: 'pointer', accentColor: GOLD }} />
+                              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, width: 24, textAlign: 'right', flexShrink: 0 }}>
+                                {Math.round((guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1) * 100)}%
+                              </span>
+                            </div>
+                          </div>
+                        )}
                         {(function() {
                           var rs = g.producerId && consumerRawStats[g.producerId];
                           if (!rs) return null;
@@ -2510,6 +2563,7 @@ export default function LiveRoomPage({
                                 isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
                                 remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
                                 mirrorOverride={isOwn ? mirrorSelf : undefined}
+                                remoteVolume={isOwn ? undefined : (guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1)}
                               />
                             )}
                           </div>
@@ -2612,6 +2666,7 @@ export default function LiveRoomPage({
                         isScreenSharing={featuredIsScreenSharing}
                         remoteQuality={featuredGid === userId ? null : (producerQuality[featuredGuest.producerId] || null)}
                         mirrorOverride={featuredGid === userId ? mirrorSelf : undefined}
+                        remoteVolume={featuredGid === userId ? undefined : (guestVolumes[featuredGid] !== undefined ? guestVolumes[featuredGid] : 1)}
                       />
                       <OverlayCustomLT lowerThirds={mergedLowerThirds} guestId={featuredGid} />
                     </div>
@@ -2664,6 +2719,7 @@ export default function LiveRoomPage({
                     isScreenSharing={false}
                     remoteQuality={featuredGid === userId ? null : (producerQuality[featuredGuest.producerId] || null)}
                     mirrorOverride={featuredGid === userId ? mirrorSelf : undefined}
+                    remoteVolume={featuredGid === userId ? undefined : (guestVolumes[featuredGid] !== undefined ? guestVolumes[featuredGid] : 1)}
                   />
                   <OverlayCustomLT lowerThirds={mergedLowerThirds} guestId={featuredGid} />
                 </div>
@@ -2755,6 +2811,7 @@ export default function LiveRoomPage({
                           onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                           isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
                           remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
+                          remoteVolume={isOwn ? undefined : (guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1)}
                         />
                         <div style={{ padding: '3px 5px 5px' }}>
                           <span style={{ fontSize: 10, color: MUTED, fontWeight: 500, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -3582,6 +3639,12 @@ export default function LiveRoomPage({
               onPress={handleCamFlip}
             />
           )}
+          <IconBtn
+            icon="?"
+            label="Shortcuts"
+            active={showKeyHelp}
+            onPress={function() { setShowKeyHelp(function(v) { return !v; }); }}
+          />
           {(role === 'host' || role === 'cohost' || role === 'owner') && (
             <IconBtn
               icon={isScreenSharing ? '🛑' : '🖥'}
@@ -4303,6 +4366,7 @@ export default function LiveRoomPage({
                     onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                     remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
                     mirrorOverride={isOwn ? mirrorSelf : undefined}
+                    remoteVolume={isOwn ? undefined : (guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1)}
                   />
                 </div>
               )}
@@ -4511,6 +4575,39 @@ export default function LiveRoomPage({
             {scoreReveal.label ? (
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, color: TEXT, marginTop: 12, letterSpacing: .5 }}>{scoreReveal.label}</div>
             ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ KEYBOARD SHORTCUT GUIDE ════════════════ */}
+      {showKeyHelp && (
+        <div
+          style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 92, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeSlideIn .18s ease' }}
+          onClick={function() { setShowKeyHelp(false); }}>
+          <div style={{ background: SURF, borderRadius: 16, border: '1px solid ' + BORDER, padding: '22px 24px 24px', width: '92%', maxWidth: 360, maxHeight: '80vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', boxShadow: '0 16px 60px rgba(0,0,0,.8)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1, marginBottom: 14 }}>Keyboard Shortcuts</div>
+            {[
+              { key: 'M',       desc: 'Mute / unmute microphone' },
+              { key: 'V',       desc: 'Toggle camera on / off' },
+              { key: 'F',       desc: 'Enter / exit fullscreen' },
+              { key: 'X',       desc: 'Mirror own camera view' },
+              { key: '[ / ←',  desc: 'Previous guest (featured view)' },
+              { key: '] / →',  desc: 'Next guest (featured view)' },
+              { key: '?',       desc: 'Show / hide this guide' },
+              { key: 'Esc',     desc: 'Close modals / collapse menus' },
+            ].map(function(row) {
+              return (
+                <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '7px 0', borderBottom: '1px solid ' + DIM }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 5, padding: '3px 8px', color: GOLD, letterSpacing: 0.5, flexShrink: 0, minWidth: 56, textAlign: 'center' }}>{row.key}</div>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 500, fontSize: 13, color: TEXT, letterSpacing: 0.3 }}>{row.desc}</span>
+                </div>
+              );
+            })}
+            <button onClick={function() { setShowKeyHelp(false); }}
+              style={{ marginTop: 14, width: '100%', padding: '9px 0', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer', letterSpacing: 0.5 }}>
+              CLOSE
+            </button>
           </div>
         </div>
       )}

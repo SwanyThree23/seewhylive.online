@@ -10,7 +10,7 @@ var _PP_ANIM =
   '@keyframes ppCrown{0%{transform:translateY(-8px) scale(.8);opacity:0}60%{transform:translateY(2px) scale(1.1);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}' +
   '@keyframes ppEject{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-120%) scale(.4);opacity:0}}';
 
-function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay, isScreenSharing, remoteQuality, mirrorOverride }) {
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay, isScreenSharing, remoteQuality, mirrorOverride, remoteVolume }) {
   var videoRef       = useRef(null);
   var analyserRef    = useRef(null);
   var animRef        = useRef(null);
@@ -37,8 +37,9 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var [reconnecting,   setReconnecting]   = useState(false);
   var [sendStats,      setSendStats]      = useState(null); // { bitratekbps, rttMs } for HUD
   var [autoQuality,    setAutoQuality]    = useState('high'); // 'high' | 'medium' | 'low'
-  var redSamplesRef   = useRef(0);
-  var greenSamplesRef = useRef(0);
+  var redSamplesRef    = useRef(0);
+  var greenSamplesRef  = useRef(0);
+  var remoteVolumeRef  = useRef(remoteVolume !== undefined && remoteVolume !== null ? remoteVolume : 1);
 
   var size      = fill ? null : (sz || 200);
   var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
@@ -347,6 +348,14 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     return function() { rtcManager.off('transportState', onTransportState); };
   }, [rtcManager, isOwnCell]);
 
+  // Apply remote volume changes (no-op on own cell, iOS silently ignores this)
+  useEffect(function() {
+    remoteVolumeRef.current = (remoteVolume !== undefined && remoteVolume !== null) ? remoteVolume : 1;
+    if (!isOwnCell && videoRef.current) {
+      try { videoRef.current.volume = remoteVolumeRef.current; } catch(e) {}
+    }
+  }, [remoteVolume, isOwnCell]);
+
   // Per-consumer recv quality for remote tiles
   useEffect(function() {
     if (isOwnCell || !rtcManager || !guest) return;
@@ -397,6 +406,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         streamRef.current = combined;
         if (videoRef.current) {
           videoRef.current.srcObject = combined;
+          try { videoRef.current.volume = remoteVolumeRef.current; } catch(e) {}
           videoRef.current.play().catch(function() {});
           // Re-attempt play if browser pauses the element (e.g. autoplay policy, tab hidden)
           videoRef.current.onpause = function() {
