@@ -529,6 +529,12 @@ export default function LiveRoomPage({
   var [layoutPresets,      setLayoutPresets]      = useState(function() { try { var s = localStorage.getItem('sw_layout_presets'); return s ? JSON.parse(s) : []; } catch(e) { return []; } });
   var [showPresetsPanel,   setShowPresetsPanel]   = useState(false); // layout presets sheet
   var [presetNameInput,    setPresetNameInput]    = useState('');    // name input for saving preset
+  var [brbActive,          setBrbActive]          = useState(false); // BRB overlay visible (from socket brb event)
+  var [brbMsg,             setBrbMsg]             = useState('');    // message shown in BRB overlay
+  var [brbInput,           setBrbInput]           = useState('');    // input text for custom BRB message
+  var [showBrbInput,       setShowBrbInput]       = useState(false); // show BRB config popover
+  var [noiseSuppOn,        setNoiseSuppOn]        = useState(false); // Web Audio noise suppression active
+  var [pipActive,          setPipActive]          = useState(false); // browser native PiP active
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -586,6 +592,9 @@ export default function LiveRoomPage({
   var bgBlurStreamRef        = useRef(null); // canvas.captureStream() used as blurred producer source
   var bgBlurLevelRef         = useRef(8);    // mirrors bgBlurLevel for use inside rAF closure
   bgBlurLevelRef.current = bgBlurLevel;
+  var nsRawTrackRef          = useRef(null); // raw mic track saved before NS processing
+  var nsAudioCtxRef          = useRef(null); // AudioContext for NS chain
+  var nsDestRef              = useRef(null); // MediaStreamDestination for NS chain
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Trivia ──────────────────────────────────────────────────────────────
@@ -891,6 +900,13 @@ export default function LiveRoomPage({
       if (!data || !data.text) return;
       setBroadcastOverlay({ text: String(data.text).slice(0, 200), from: data.from || 'Host' });
       setTimeout(function() { setBroadcastOverlay(null); }, 6000);
+    });
+
+    socket.on('brb', function(data) {
+      if (!data) return;
+      setBrbActive(!!data.active);
+      if (!data.active) { setBrbMsg(''); return; }
+      setBrbMsg(data.msg ? String(data.msg).slice(0, 100) : '');
     });
 
     socket.on('stage-join-requested', function(data) {
@@ -1245,6 +1261,7 @@ export default function LiveRoomPage({
       socket.off('trivia-results');
       socket.off('chat-react-update');
       socket.off('panel:audio_only_changed');
+      socket.off('brb');
       if (mediaRecRef.current && mediaRecRef.current.state !== 'inactive') {
         try { mediaRecRef.current.stop(); } catch(e) {}
       }
@@ -1257,6 +1274,12 @@ export default function LiveRoomPage({
       if (bgBlurRafRef.current) { cancelAnimationFrame(bgBlurRafRef.current); bgBlurRafRef.current = null; }
       if (bgBlurVideoRef.current) { bgBlurVideoRef.current.srcObject = null; bgBlurVideoRef.current = null; }
       if (bgBlurStreamRef.current) { bgBlurStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); bgBlurStreamRef.current = null; }
+      if (nsAudioCtxRef.current) {
+        try { nsAudioCtxRef.current.close(); } catch(e) {}
+        nsAudioCtxRef.current = null;
+        nsRawTrackRef.current = null;
+        nsDestRef.current = null;
+      }
       if (audioCtxRef.current) {
         try { audioCtxRef.current.close(); } catch(e) {}
         audioCtxRef.current = null;
@@ -2382,6 +2405,80 @@ export default function LiveRoomPage({
     }
   };
 
+  // Noise suppression: HighPass + DynamicsCompressor chain over live mic track
+  var toggleNoiseSuppression = function() {
+    if (noiseSuppOn) {
+      if (nsAudioCtxRef.current) {
+        try { nsAudioCtxRef.current.close(); } catch(e) {}
+        nsAudioCtxRef.current = null;
+        nsDestRef.current = null;
+      }
+      setNoiseSuppOn(false);
+      var rawT = nsRawTrackRef.current;
+      nsRawTrackRef.current = null;
+      if (rawT && rtcManager.producers && rtcManager.producers['audio']) {
+        try { rtcManager.replaceTrack('audio', rawT); } catch(e) {}
+      }
+      if (addToastRef.current) addToastRef.current('Noise suppression off', 'info');
+      return;
+    }
+    var prod = rtcManager.producers && rtcManager.producers['audio'];
+    if (!prod || !prod.track) { if (addToastRef.current) addToastRef.current('Mic not active', 'error'); return; }
+    var liveTrack = prod.track;
+    try {
+      var nsCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var src = nsCtx.createMediaStreamSource(new MediaStream([liveTrack]));
+      var hpf = nsCtx.createBiquadFilter();
+      hpf.type = 'highpass';
+      hpf.frequency.value = 100;
+      var comp = nsCtx.createDynamicsCompressor();
+      comp.threshold.value = -30;
+      comp.knee.value = 10;
+      comp.ratio.value = 6;
+      comp.attack.value = 0.003;
+      comp.release.value = 0.25;
+      var dest = nsCtx.createMediaStreamDestination();
+      src.connect(hpf);
+      hpf.connect(comp);
+      comp.connect(dest);
+      nsAudioCtxRef.current = nsCtx;
+      nsDestRef.current = dest;
+      nsRawTrackRef.current = liveTrack;
+      var processedTrack = dest.stream.getAudioTracks()[0];
+      rtcManager.replaceTrack('audio', processedTrack);
+      setNoiseSuppOn(true);
+      if (addToastRef.current) addToastRef.current('Noise suppression on', 'success');
+    } catch(e) {
+      if (nsAudioCtxRef.current) { try { nsAudioCtxRef.current.close(); } catch(ee) {} nsAudioCtxRef.current = null; }
+      nsRawTrackRef.current = null;
+      nsDestRef.current = null;
+      if (addToastRef.current) addToastRef.current('NS unavailable', 'error');
+    }
+  };
+
+  // Browser native PiP: pins featured guest (or first on-stage) into a floating window
+  var toggleBrowserPip = function() {
+    if (!document.pictureInPictureEnabled) {
+      if (addToastRef.current) addToastRef.current('PiP not supported in this browser', 'error');
+      return;
+    }
+    if (pipActive) {
+      try { document.exitPictureInPicture(); } catch(e) {}
+      setPipActive(false);
+      return;
+    }
+    var targetGid = spotlightGid || (sortedOnStage.length > 0 ? sortedOnStage[0].guestId : null);
+    if (!targetGid) { if (addToastRef.current) addToastRef.current('No one on stage', 'error'); return; }
+    var vid = document.querySelector('[data-cell-gid="' + targetGid + '"] video');
+    if (!vid) { if (addToastRef.current) addToastRef.current('Video not found', 'error'); return; }
+    vid.requestPictureInPicture().then(function(pipWin) {
+      setPipActive(true);
+      pipWin.addEventListener('leavepictureinpicture', function() { setPipActive(false); }, { once: true });
+    }).catch(function() {
+      if (addToastRef.current) addToastRef.current('PiP unavailable', 'error');
+    });
+  };
+
   // Merged lower-thirds: local host overrides merged over server overlayConfig
   var mergedLowerThirds = (function() {
     var base = (overlayConfig && overlayConfig.lowerThirds) || {};
@@ -2726,6 +2823,22 @@ export default function LiveRoomPage({
           {/* Stage tint overlay */}
           {stageTint && (
             <div style={{ position: 'absolute', inset: 0, background: stageTint, opacity: 0.08, pointerEvents: 'none', zIndex: 1 }} />
+          )}
+          {/* BRB overlay */}
+          {brbActive && (
+            <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,12,9,.82)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', pointerEvents: 'none', animation: 'fadeSlideIn .3s ease' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: GOLD, letterSpacing: 3, lineHeight: 1, animation: 'goldPulse 2s ease-in-out infinite' }}>BE RIGHT BACK</div>
+              {brbMsg ? (
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 16, color: TEXT, marginTop: 10, opacity: .85 }}>{brbMsg}</div>
+              ) : null}
+              <div style={{ display: 'flex', gap: 6, marginTop: 14 }}>
+                {['', '', ''].map(function(_, i) {
+                  return (
+                    <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: GOLD, opacity: .7, animation: 'goldPulse 1.4s ease-in-out ' + (i * 0.35) + 's infinite' }} />
+                  );
+                })}
+              </div>
+            </div>
           )}
           {/* Host countdown floating chip */}
           {role === 'host' && stageCountdownMs > 0 && (function() {
@@ -4997,6 +5110,65 @@ export default function LiveRoomPage({
                 </div>
               )}
             </div>
+          )}
+          {role !== 'viewer' && (
+            <IconBtn
+              icon="🎚"
+              label={noiseSuppOn ? 'NS ✓' : 'NS'}
+              active={noiseSuppOn}
+              activeColor={TEAL}
+              onPress={toggleNoiseSuppression}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="🌙"
+                label={brbActive ? 'BRB ✓' : 'BRB'}
+                active={brbActive}
+                activeColor={GOLD}
+                onPress={function() {
+                  if (brbActive) {
+                    if (socket) socket.emit('brb-end');
+                  } else {
+                    setShowBrbInput(function(v) { return !v; });
+                  }
+                }}
+              />
+              {showBrbInput && !brbActive && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 180, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 6, textAlign: 'center' }}>BRB MESSAGE (optional)</div>
+                  <input
+                    value={brbInput}
+                    onChange={function(e) { setBrbInput(e.target.value.slice(0, 80)); }}
+                    placeholder="Back in 5 min…"
+                    style={{ width: '100%', boxSizing: 'border-box', background: DIM, border: '1px solid ' + BORDER, borderRadius: 6, padding: '5px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, outline: 'none', marginBottom: 8 }}
+                  />
+                  <button
+                    onClick={function() {
+                      if (socket) socket.emit('brb-start', { msg: brbInput });
+                      setShowBrbInput(false);
+                      setBrbInput('');
+                    }}
+                    style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 6, padding: '6px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                    GO BRB
+                  </button>
+                  <button onClick={function() { setShowBrbInput(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 4 }}>
+                    cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {typeof document !== 'undefined' && document.pictureInPictureEnabled && role !== 'viewer' && (
+            <IconBtn
+              icon="🖼"
+              label={pipActive ? 'PiP ✓' : 'PiP'}
+              active={pipActive}
+              activeColor={TEAL}
+              onPress={toggleBrowserPip}
+            />
           )}
           {(role === 'host' || role === 'cohost') && (
             <IconBtn

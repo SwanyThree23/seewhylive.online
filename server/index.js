@@ -3792,6 +3792,22 @@ io.on('connection', function(socket) {
     targetSockets.forEach(function(s) { s.emit('stage-join-denied', { reason: 'host_denied' }); });
   });
 
+  // ── brb-start / brb-end ────────────────────────────────────────────────
+  socket.on('brb-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var msg = data && data.msg ? String(data.msg).slice(0, 100) : '';
+    io.to(roomId).emit('brb', { active: true, msg: msg, from: socket.data.username || 'Host' });
+  });
+
+  socket.on('brb-end', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('brb', { active: false });
+  });
+
   // ── spotlight-guest / spotlight-end ────────────────────────────────────
   // Host broadcasts a featured-view directive so all viewers focus on one guest.
   socket.on('spotlight-guest', function(data) {
