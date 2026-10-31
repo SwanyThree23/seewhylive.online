@@ -423,6 +423,7 @@ export default function LiveRoomPage({
   var [isScreenSharing,    setIsScreenSharing]    = useState(false);
   var [screenShareHost,    setScreenShareHost]    = useState(null);  // { username } when remote host is sharing
   var [autoFocusSpeaker,   setAutoFocusSpeaker]   = useState(false); // auto-track dominant speaker in featured mode
+  var [producerQuality,    setProducerQuality]    = useState({});   // { [producerId]: 'green'|'yellow'|'red' }
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -1144,6 +1145,27 @@ export default function LiveRoomPage({
     }, 1400);
     return function() { clearTimeout(autoFocusTimerRef.current); };
   }, [speakingIds, stageLayout, autoFocusSpeaker, isScreenSharing, screenShareHost]);
+
+  // ── Per-consumer network quality tracking ────────────────────────────────
+  // Collect incoming bitrate/jitter/loss from webrtc.js consumerStats events
+  // and build a producerId → quality map rendered as a dot on each remote tile.
+  useEffect(function() {
+    if (!rtcReady) return;
+    var onStats = function(data) {
+      if (!data || !data.producerId) return;
+      var q = 'green';
+      if (data.bitratekbps < 60 || data.packetsLost > 5) q = 'red';
+      else if (data.bitratekbps < 200 || data.jitter > 30) q = 'yellow';
+      setProducerQuality(function(prev) {
+        if (prev[data.producerId] === q) return prev;
+        var next = Object.assign({}, prev);
+        next[data.producerId] = q;
+        return next;
+      });
+    };
+    rtcManager.on('consumerStats', onStats);
+    return function() { rtcManager.off('consumerStats', onStats); };
+  }, [rtcReady]);
 
   // ── Local mic level analyzer (for GlobalMicButtonV49) ──
   useEffect(function() {
@@ -1922,6 +1944,7 @@ export default function LiveRoomPage({
                             activeEffect={panelEffects[gid] || null}
                             onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                             isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
+                            remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
                           />
                         )}
                       </div>
@@ -2064,6 +2087,7 @@ export default function LiveRoomPage({
                                 activeEffect={panelEffects[gid] || null}
                                 onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                                 isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
+                                remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
                               />
                             )}
                           </div>
@@ -2147,6 +2171,7 @@ export default function LiveRoomPage({
                         handRaised={!!(raisedHands && raisedHands[featuredGid])}
                         activeEffect={panelEffects[featuredGid] || null}
                         isScreenSharing={featuredIsScreenSharing}
+                        remoteQuality={featuredGid === userId ? null : (producerQuality[featuredGuest.producerId] || null)}
                       />
                       <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGid} />
                     </div>
@@ -2173,6 +2198,7 @@ export default function LiveRoomPage({
                     handRaised={!!(raisedHands && raisedHands[featuredGid])}
                     activeEffect={panelEffects[featuredGid] || null}
                     isScreenSharing={false}
+                    remoteQuality={featuredGid === userId ? null : (producerQuality[featuredGuest.producerId] || null)}
                   />
                   <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGid} />
                 </div>
@@ -2225,6 +2251,7 @@ export default function LiveRoomPage({
                           activeEffect={panelEffects[gid] || null}
                           onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
                           isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
+                          remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
                         />
                         <div style={{ padding: '3px 5px 5px' }}>
                           <span style={{ fontSize: 10, color: MUTED, fontWeight: 500, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -3687,6 +3714,7 @@ export default function LiveRoomPage({
                     giftTotal={guestGiftTotals[gid] || 0}
                     activeEffect={panelEffects[gid] || null}
                     onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                    remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
                   />
                 </div>
               )}

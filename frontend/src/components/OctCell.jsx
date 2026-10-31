@@ -10,7 +10,7 @@ var _PP_ANIM =
   '@keyframes ppCrown{0%{transform:translateY(-8px) scale(.8);opacity:0}60%{transform:translateY(2px) scale(1.1);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}' +
   '@keyframes ppEject{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-120%) scale(.4);opacity:0}}';
 
-function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay, isScreenSharing }) {
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay, isScreenSharing, remoteQuality }) {
   var videoRef       = useRef(null);
   var analyserRef    = useRef(null);
   var animRef        = useRef(null);
@@ -527,6 +527,10 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
   var connDotColor = connQuality === 'green' ? '#6DBF7E' : (connQuality === 'yellow' ? '#F0A500' : '#FF1A3C');
   var connDotTitle = connQuality === 'green' ? 'Good connection' : (connQuality === 'yellow' ? 'Fair connection' : 'Poor connection');
+  var remoteDotColor = remoteQuality === 'red' ? '#FF1A3C' : remoteQuality === 'yellow' ? '#F0A500' : remoteQuality === 'green' ? '#6DBF7E' : null;
+  var remoteDotTitle = remoteQuality === 'red' ? 'Poor incoming quality' : remoteQuality === 'yellow' ? 'Fair incoming quality' : 'Good incoming quality';
+  var activeDotColor = isOwnCell ? connDotColor : remoteDotColor;
+  var activeDotTitle = isOwnCell ? connDotTitle : remoteDotTitle;
   var avatarSz = fill ? '38%' : (Math.round(size * 0.38) + 'px');
   var avatarFs = fill ? '18px' : (Math.round(size * 0.18) + 'px');
   var nameFs   = fill ? '10px' : (Math.max(8, Math.round(size * 0.07)) + 'px');
@@ -735,7 +739,9 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         )}
 
         {/* Connection quality dot */}
-        <div title={connDotTitle} style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: connDotColor, boxShadow: '0 0 4px ' + connDotColor, border: '1px solid rgba(0,0,0,.5)' }} />
+        {activeDotColor && (
+          <div title={activeDotTitle} style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: activeDotColor, boxShadow: '0 0 4px ' + activeDotColor, border: '1px solid rgba(0,0,0,.5)' }} />
+        )}
         {isHost && (
           <div style={{ position: 'absolute', top: 6, left: 6, fontSize: 11, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.8))', zIndex: 5 }}>
             👑
@@ -842,6 +848,7 @@ function areOctCellPropsEqual(prev, next) {
     prev.onCameraTrack  === next.onCameraTrack &&
     prev.activeEffect   === next.activeEffect  &&
     prev.isScreenSharing === next.isScreenSharing &&
+    prev.remoteQuality   === next.remoteQuality   &&
     prev.socket         === next.socket
   );
 }
