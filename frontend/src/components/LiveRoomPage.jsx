@@ -480,6 +480,11 @@ export default function LiveRoomPage({
   var [lowBwMode,          setLowBwMode]          = useState(false); // cap remote simulcast to lowest layer
   var [gridDensity,        setGridDensity]        = useState(0);     // -1=wider, 0=auto, +1=tighter column count
   var [spotlightElapsed,   setSpotlightElapsed]   = useState(0);     // seconds spotlight has been active
+  var [avMics,             setAvMics]             = useState([]);    // available audioinput devices for hot-swap
+  var [micDevIdx,          setMicDevIdx]          = useState(0);     // index into avMics currently active
+  var [showNotes,          setShowNotes]          = useState(false); // host-only presenter notes overlay
+  var [noteText,           setNoteText]           = useState('');    // content of host notes (never transmitted)
+  var [joinSoundEnabled,   setJoinSoundEnabled]   = useState(true);  // play ping when guest joins stage
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -524,6 +529,8 @@ export default function LiveRoomPage({
   var prevStageGidsRef       = useRef(new Set()); // Set<guestId> — previous render's on-stage set for new-joiner detection
   var stageLimitWarnedRef    = useRef({});   // { [guestId]: true } — guests already warned about time limit
   var spotlightStartRef      = useRef(null); // Date.now() when spotlight last activated
+  var joinSoundEnabledRef    = useRef(true); // always-fresh mirror of joinSoundEnabled
+  joinSoundEnabledRef.current = joinSoundEnabled;
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Trivia ──────────────────────────────────────────────────────────────
@@ -1371,6 +1378,14 @@ export default function LiveRoomPage({
     } catch(e) {}
   }, [stageLayout, stageSort, stageLimitSec, gridDensity]);
 
+  // ── Presenter notes: restore from localStorage on mount ─────────────────
+  useEffect(function() {
+    try {
+      var saved = localStorage.getItem('sw_notes');
+      if (saved) setNoteText(saved);
+    } catch(e) {}
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Low-bandwidth mode: cap/restore simulcast layers for all consumers ───
   useEffect(function() {
     if (!socket) return;
@@ -1439,7 +1454,9 @@ export default function LiveRoomPage({
     var doEnum = function() {
       navigator.mediaDevices.enumerateDevices().then(function(devs) {
         var cams = devs.filter(function(d) { return d.kind === 'videoinput'; });
+        var mics = devs.filter(function(d) { return d.kind === 'audioinput'; });
         setAvCameras(cams);
+        setAvMics(mics);
       }).catch(function() {});
     };
     doEnum();
@@ -1535,6 +1552,24 @@ export default function LiveRoomPage({
           if (announceTimerRef.current) clearTimeout(announceTimerRef.current);
           setStageAnnounce({ username: _announceName });
           announceTimerRef.current = setTimeout(function() { setStageAnnounce(null); }, 3500);
+          // Stage join ping — two ascending tones
+          if (joinSoundEnabledRef.current) {
+            try {
+              var _jctx = new (window.AudioContext || window.webkitAudioContext)();
+              [440, 660].forEach(function(freq, i) {
+                var _o = _jctx.createOscillator();
+                var _g = _jctx.createGain();
+                _o.connect(_g); _g.connect(_jctx.destination);
+                _o.frequency.value = freq;
+                _o.type = 'sine';
+                _g.gain.setValueAtTime(0.18, _jctx.currentTime + i * 0.12);
+                _g.gain.exponentialRampToValueAtTime(0.001, _jctx.currentTime + i * 0.12 + 0.25);
+                _o.start(_jctx.currentTime + i * 0.12);
+                _o.stop(_jctx.currentTime + i * 0.12 + 0.25);
+              });
+              setTimeout(function() { _jctx.close(); }, 800);
+            } catch(e) {}
+          }
         }
       }
     });
@@ -2024,6 +2059,24 @@ export default function LiveRoomPage({
     var nextCam = avCameras[nextIdx];
     setMedConf(function(prev) { return Object.assign({}, prev || {}, { camId: nextCam.deviceId }); });
     if (addToast) addToast('Camera: ' + (nextCam.label || 'Camera ' + (nextIdx + 1)), 'info');
+  };
+
+  // Cycle to next available microphone
+  var handleMicFlip = function() {
+    if (avMics.length < 2) return;
+    var nextIdx = (micDevIdx + 1) % avMics.length;
+    var nextMic = avMics[nextIdx];
+    setMicDevIdx(nextIdx);
+    navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: nextMic.deviceId } } }).then(function(stream) {
+      var track = stream.getAudioTracks()[0];
+      if (!track) return;
+      if (rtcManager && rtcManager.producers && rtcManager.producers['audio']) {
+        rtcManager.replaceTrack('audio', track).catch(function() {});
+      }
+      if (addToast) addToast('Mic: ' + (nextMic.label || 'Mic ' + (nextIdx + 1)), 'info');
+    }).catch(function(e) {
+      if (addToast) addToast('Mic swap failed: ' + e.message, 'error');
+    });
   };
 
   // Merged lower-thirds: local host overrides merged over server overlayConfig
@@ -2630,6 +2683,11 @@ export default function LiveRoomPage({
                           <span style={{ fontSize: 7, lineHeight: 1 }}>👑</span>
                         </div>
                       )}
+                      {gid === topGifterId && topGiftMax > 0 && (
+                        <div style={{ background: 'rgba(100,200,120,.9)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <span style={{ fontSize: 7, lineHeight: 1 }}>🏆</span>
+                        </div>
+                      )}
                       {isHand && (
                         <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋{handPos > 0 ? ' #' + handPos : ''}</div>
                       )}
@@ -2904,6 +2962,7 @@ export default function LiveRoomPage({
                         </div>
                         <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
                           {gid === topSpeakerId && <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}><span style={{ fontSize: 7, lineHeight: 1 }}>👑</span></div>}
+                          {gid === topGifterId && topGiftMax > 0 && <div style={{ background: 'rgba(100,200,120,.9)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}><span style={{ fontSize: 7, lineHeight: 1 }}>🏆</span></div>}
                           {isHand && <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋{handPos > 0 ? ' #' + handPos : ''}</div>}
                           {isPinned && <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09' }}>📌</div>}
                           {isSp && <div style={{ background: 'rgba(212,133,74,.85)', borderRadius: 999, padding: '1px 5px', display: 'flex', alignItems: 'center' }}><SpeakBars color='#fff' small /></div>}
@@ -4020,6 +4079,31 @@ export default function LiveRoomPage({
               icon="📷"
               label="Flip Cam"
               onPress={handleCamFlip}
+            />
+          )}
+          {role !== 'viewer' && avMics.length > 1 && (
+            <IconBtn
+              icon="🎙"
+              label="Flip Mic"
+              onPress={handleMicFlip}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="📝"
+              label="Notes"
+              active={showNotes}
+              activeColor={GOLD}
+              onPress={function() { setShowNotes(function(v) { return !v; }); }}
+            />
+          )}
+          {role === 'host' && (
+            <IconBtn
+              icon={joinSoundEnabled ? '🔔' : '🔕'}
+              label="Join SFX"
+              active={joinSoundEnabled}
+              activeColor={GOLD}
+              onPress={function() { setJoinSoundEnabled(function(v) { return !v; }); }}
             />
           )}
           <IconBtn
@@ -5173,6 +5257,26 @@ export default function LiveRoomPage({
             <span style={{ position: 'absolute', top: 2, right: 2, background: '#C9A84C', color: '#0E0C09', borderRadius: 999, fontSize: 8, fontWeight: 700, minWidth: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', fontFamily: "'DM Mono',monospace", lineHeight: 1 }}>{clipLog.length > 99 ? '99+' : clipLog.length}</span>
           )}
         </button>
+      )}
+
+      {/* ════════════════ PRESENTER NOTES OVERLAY ════════════════ */}
+      {showNotes && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom,0px) + 200px)', right: 12, zIndex: 9998, width: 260, background: 'rgba(26,21,16,.97)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 14, boxShadow: '4px 4px 24px rgba(0,0,0,.6)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ padding: '9px 14px 7px', borderBottom: '1px solid rgba(201,168,76,.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 2 }}>📝 NOTES</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>host-only · not broadcast</span>
+          </div>
+          <textarea
+            value={noteText}
+            onChange={function(e) {
+              var v = e.target.value;
+              setNoteText(v);
+              try { localStorage.setItem('sw_notes', v); } catch(err) {}
+            }}
+            placeholder="Run-of-show notes, talking points, talking order…"
+            style={{ flex: 1, minHeight: 180, resize: 'vertical', background: 'transparent', border: 'none', outline: 'none', padding: '10px 14px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, lineHeight: 1.5 }}
+          />
+        </div>
       )}
 
       {/* ════════════════ CLIP LOG OVERLAY ════════════════ */}
