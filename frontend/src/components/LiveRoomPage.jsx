@@ -471,6 +471,8 @@ export default function LiveRoomPage({
   var [spotlight,          setSpotlight]          = useState(null); // { guestId, username } | null — host-broadcast spotlight
   var [speakingSnapshots,  setSpeakingSnapshots]  = useState({});   // { [guestId]: totalSeconds } — polled every 5s from speakingTimeRef
   var [stageSort,          setStageSort]          = useState('joined'); // 'joined' | 'speaking' | 'quality'
+  var [showStageStats,     setShowStageStats]     = useState(false); // host stage analytics sheet
+  var [statsSortCol,       setStatsSortCol]       = useState('speaking'); // 'name'|'speaking'|'stage'|'quality'|'gifts'
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -508,8 +510,10 @@ export default function LiveRoomPage({
   var stageJoinTimesRef  = useRef({});   // { [guestId]: epochMs } — when each guest appeared on stage
   var speakingTimeRef    = useRef({});   // { [guestId]: totalSeconds } — cumulative speaking time
   var speakingStartRef   = useRef({});   // { [guestId]: epochMs | null } — current speaking start
-  var micTrackRef        = useRef(null); // saved mic track for restoration after screen audio
-  var autoFocusTimerRef  = useRef(null);
+  var micTrackRef            = useRef(null); // saved mic track for restoration after screen audio
+  var autoFocusTimerRef      = useRef(null);
+  var prevQualityRef         = useRef({});   // { [producerId]: quality } — last known quality for change-detection
+  var qualityToastCoolRef    = useRef({});   // { [producerId]: true } — cooldown: suppress repeat toasts < 30 s
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Trivia ──────────────────────────────────────────────────────────────
@@ -1280,6 +1284,25 @@ export default function LiveRoomPage({
       return changed ? next : prev;
     });
   }, [consumerRawStats]);
+
+  // ── Quality-drop toasts (host only, 30 s cooldown per producer) ──────────
+  useEffect(function() {
+    if (role !== 'host') return;
+    Object.keys(producerQuality).forEach(function(pid) {
+      var cur  = producerQuality[pid];
+      var prev = prevQualityRef.current[pid];
+      var worsened = (cur === 'red' && prev !== 'red') || (cur === 'yellow' && prev === 'green');
+      if (worsened && !qualityToastCoolRef.current[pid]) {
+        var g = guestsRef.current.find(function(guest) { return guest.producerId === pid; });
+        var label = g ? (g.username || g.guestId || pid) : pid;
+        var msg   = cur === 'red' ? (label + ': POOR signal') : (label + ': FAIR signal');
+        if (addToastRef.current) addToastRef.current(msg, cur === 'red' ? 'error' : 'warning');
+        qualityToastCoolRef.current[pid] = true;
+        setTimeout(function() { delete qualityToastCoolRef.current[pid]; }, 30000);
+      }
+    });
+    prevQualityRef.current = Object.assign({}, producerQuality);
+  }, [producerQuality, role]);
 
   // ── Auto-reconnect: host-only, fires after 15 s of sustained freeze ─────
   useEffect(function() {
@@ -3032,12 +3055,25 @@ export default function LiveRoomPage({
                   </span>
                 )}
               </div>
-              {audienceList.length > 8 && (
-                <button onClick={function() { setShowAllAud(function(v) { return !v; }); }}
-                  style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold, background: 'none', border: 'none', cursor: 'pointer', padding: 0, letterSpacing: .5 }}>
-                  {showAllAud ? 'COLLAPSE' : 'SEE ALL (' + audienceList.length + ')'}
-                </button>
-              )}
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                {role === 'host' && audienceList.length > 0 && onStage.length < MAX_STAGE && (
+                  <button
+                    onClick={function() {
+                      if (socket) socket.emit('stage-invite-all', { roomId: roomId });
+                      if (addToast) addToast('Stage invite sent to all (' + audienceList.length + ')', 'success');
+                    }}
+                    title="Invite everyone in the audience to stage"
+                    style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, background: 'rgba(212,133,74,.12)', border: '1px solid rgba(212,133,74,.35)', borderRadius: 5, padding: '3px 8px', cursor: 'pointer', letterSpacing: .5, flexShrink: 0 }}>
+                    + INVITE ALL
+                  </button>
+                )}
+                {audienceList.length > 8 && (
+                  <button onClick={function() { setShowAllAud(function(v) { return !v; }); }}
+                    style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold, background: 'none', border: 'none', cursor: 'pointer', padding: 0, letterSpacing: .5 }}>
+                    {showAllAud ? 'COLLAPSE' : 'SEE ALL (' + audienceList.length + ')'}
+                  </button>
+                )}
+              </div>
             </div>
             {showAllAud ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10 }}>
@@ -3771,6 +3807,15 @@ export default function LiveRoomPage({
             active={showKeyHelp}
             onPress={function() { setShowKeyHelp(function(v) { return !v; }); }}
           />
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="📊"
+              label="Stats"
+              active={showStageStats}
+              activeColor={gold}
+              onPress={function() { setShowStageStats(function(v) { return !v; }); }}
+            />
+          )}
           {(role === 'host' || role === 'cohost' || role === 'owner') && (
             <IconBtn
               icon={isScreenSharing ? '🛑' : '🖥'}
@@ -4734,6 +4779,101 @@ export default function LiveRoomPage({
               style={{ marginTop: 14, width: '100%', padding: '9px 0', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer', letterSpacing: 0.5 }}>
               CLOSE
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ STAGE STATS SHEET (host/cohost) ════════════════ */}
+      {showStageStats && (role === 'host' || role === 'cohost') && (
+        <div
+          style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 92, display: 'flex', alignItems: 'flex-end', animation: 'fadeSlideIn .18s ease' }}
+          onClick={function() { setShowStageStats(false); }}>
+          <div style={{ width: '100%', maxHeight: '72vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: SURF, borderRadius: '16px 16px 0 0', border: '1px solid ' + BORDER, boxShadow: '0 -10px 40px rgba(0,0,0,.7)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: TEXT, letterSpacing: 1 }}>Stage Stats</span>
+              <button onClick={function() { setShowStageStats(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', padding: '2px 4px', lineHeight: 1 }}>✕</button>
+            </div>
+            {(function() {
+              var now = Date.now();
+              var rows = onStage.map(function(g) {
+                var gid       = g.guestId || g.userId || 'x';
+                var speakSecs = speakingSnapshots[gid] || 0;
+                var joinMs    = stageJoinTimesRef.current[gid] || now;
+                var stageSecs = Math.floor((now - joinMs) / 1000);
+                var q         = producerQuality[g.producerId] || null;
+                var gifts     = guestGiftTotals[gid] || 0;
+                return { gid: gid, name: g.username || gid, speakSecs: speakSecs, stageSecs: stageSecs, q: q, gifts: gifts, isOwn: gid === userId };
+              });
+              rows.sort(function(a, b) {
+                if (statsSortCol === 'name')     return a.name.localeCompare(b.name);
+                if (statsSortCol === 'speaking') return b.speakSecs - a.speakSecs;
+                if (statsSortCol === 'stage')    return b.stageSecs - a.stageSecs;
+                if (statsSortCol === 'gifts')    return b.gifts - a.gifts;
+                var qRank = function(q) { return q === 'green' ? 0 : q === 'yellow' ? 1 : q === 'red' ? 2 : 3; };
+                return qRank(a.q) - qRank(b.q);
+              });
+              var fmtS = function(s) { var m = Math.floor(s / 60); var sec = s % 60; return m + ':' + (sec < 10 ? '0' : '') + sec; };
+              var qColor = function(q) { return q === 'green' ? '#6DBF7E' : q === 'yellow' ? '#F0A500' : q === 'red' ? RED : MUTED; };
+              var ColHd = function(col, label) {
+                return (
+                  <th key={col}
+                    onClick={function() { setStatsSortCol(col); }}
+                    style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: statsSortCol === col ? GOLD : MUTED, letterSpacing: .5, textAlign: col === 'name' ? 'left' : 'right', padding: '6px 8px', cursor: 'pointer', borderBottom: '1px solid ' + (statsSortCol === col ? GOLD + '55' : BORDER), userSelect: 'none', whiteSpace: 'nowrap' }}>
+                    {label}{statsSortCol === col ? ' ↓' : ''}
+                  </th>
+                );
+              };
+              return (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      {ColHd('name',     'NAME')}
+                      {ColHd('speaking', '🗣 TALK')}
+                      {ColHd('stage',    '⏱ STAGE')}
+                      {ColHd('quality',  '📶 SIG')}
+                      {ColHd('gifts',    '🎁 GIFTS')}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map(function(r) {
+                      return (
+                        <tr key={r.gid} style={{ borderBottom: '1px solid ' + DIM }}>
+                          <td style={{ padding: '7px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {r.gid === topSpeakerId && <span style={{ marginRight: 4 }}>👑</span>}
+                            {r.name}
+                            {r.isOwn && <span style={{ color: MUTED, fontWeight: 400, fontSize: 9, marginLeft: 4 }}>(you)</span>}
+                          </td>
+                          <td style={{ padding: '7px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.speakSecs >= 30 ? TEAL : TEXT, textAlign: 'right' }}>{fmtS(r.speakSecs)}</td>
+                          <td style={{ padding: '7px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'right' }}>{fmtS(r.stageSecs)}</td>
+                          <td style={{ padding: '7px 8px', textAlign: 'right' }}>
+                            {r.q ? (
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: qColor(r.q), flexShrink: 0 }} />
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: qColor(r.q), letterSpacing: .3 }}>
+                                  {r.q === 'green' ? 'GOOD' : r.q === 'yellow' ? 'FAIR' : 'POOR'}
+                                </span>
+                              </div>
+                            ) : <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: DIM }}>—</span>}
+                          </td>
+                          <td style={{ padding: '7px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.gifts > 0 ? GOLD : MUTED, textAlign: 'right' }}>
+                            {r.gifts > 0 ? '$' + (r.gifts / 100).toFixed(0) : '—'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              );
+            })()}
+            <div style={{ padding: '10px 16px 16px', borderTop: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, flex: 1, letterSpacing: .3 }}>Tap column header to sort · Speaking time updates every 5 s</span>
+              <button onClick={function() { setShowStageStats(false); }}
+                style={{ padding: '6px 14px', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 7, color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: .5 }}>
+                CLOSE
+              </button>
+            </div>
           </div>
         </div>
       )}
