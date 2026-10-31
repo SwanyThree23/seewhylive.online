@@ -256,6 +256,21 @@ function WaveBars({ color }) {
   );
 }
 
+function StageTimer({ startMs }) {
+  var [elapsed, setElapsed] = useState(function() { return startMs ? Math.floor((Date.now() - startMs) / 1000) : 0; });
+  useEffect(function() {
+    if (!startMs) return;
+    var id = setInterval(function() { setElapsed(Math.floor((Date.now() - startMs) / 1000)); }, 1000);
+    return function() { clearInterval(id); };
+  }, [startMs]);
+  if (!startMs) return null;
+  var m = Math.floor(elapsed / 60);
+  var s = elapsed % 60;
+  return React.createElement('span', {
+    style: { fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, flexShrink: 0, letterSpacing: 0.3 },
+  }, (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+}
+
 function OverlayBanner({ banner }) {
   if (!banner || !banner.visible || !banner.text) return null;
   var isTop = banner.position === 'top';
@@ -451,6 +466,9 @@ export default function LiveRoomPage({
   var cameraTrackRef     = useRef(null);
   var pipVideoRef        = useRef(null);
   var screenStreamRef    = useRef(null);
+  var stageJoinTimesRef  = useRef({});   // { [guestId]: epochMs } — when each guest appeared on stage
+  var speakingTimeRef    = useRef({});   // { [guestId]: totalSeconds } — cumulative speaking time
+  var speakingStartRef   = useRef({});   // { [guestId]: epochMs | null } — current speaking start
   var micTrackRef        = useRef(null); // saved mic track for restoration after screen audio
   var autoFocusTimerRef  = useRef(null);
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
@@ -1191,6 +1209,25 @@ export default function LiveRoomPage({
     return function() { rtcManager.off('consumerStats', onStats); };
   }, [rtcReady]);
 
+  // ── Speaking time accumulation ───────────────────────────────────────────
+  // Track when each guest starts/stops speaking; accumulate seconds into
+  // speakingTimeRef so the expanded-cell modal can show total speaking time.
+  useEffect(function() {
+    var now = Date.now();
+    Object.keys(speakingIds).forEach(function(gid) {
+      if (speakingIds[gid] && !speakingStartRef.current[gid]) {
+        speakingStartRef.current[gid] = now;
+      }
+    });
+    Object.keys(speakingStartRef.current).forEach(function(gid) {
+      if (speakingStartRef.current[gid] && !speakingIds[gid]) {
+        var elapsed = Math.floor((now - speakingStartRef.current[gid]) / 1000);
+        speakingTimeRef.current[gid] = (speakingTimeRef.current[gid] || 0) + elapsed;
+        delete speakingStartRef.current[gid];
+      }
+    });
+  }, [speakingIds]);
+
   // Persist chosen layout to localStorage so it survives page reloads
   useEffect(function() {
     try { localStorage.setItem('sw_layout', stageLayout); } catch(e) {}
@@ -1225,8 +1262,18 @@ export default function LiveRoomPage({
     };
   }, [rtcReady, isMuted]);
 
-  // Auto-dismiss raised hand when a guest appears on stage (gets a producer)
+  // Auto-dismiss raised hand when a guest appears on stage (gets a producer);
+  // also record their stage join time for the StageTimer display.
   useEffect(function() {
+    var now = Date.now();
+    // Record own join time once
+    if (!stageJoinTimesRef.current[userId]) stageJoinTimesRef.current[userId] = now;
+    guests.forEach(function(g) {
+      var gid = g.guestId || g.userId;
+      if (gid && (g.producerId || g.audioProducerId) && !stageJoinTimesRef.current[gid]) {
+        stageJoinTimesRef.current[gid] = now;
+      }
+    });
     setRaisedHands(function(prev) {
       var changed = false;
       var next = Object.assign({}, prev);
@@ -2144,6 +2191,7 @@ export default function LiveRoomPage({
                       </span>
                       <RolePill role={g.role || (isOwn ? role : 'guest')} />
                       {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 9 }}>🔇</span>}
+                      <StageTimer startMs={stageJoinTimesRef.current[gid]} />
                     </div>
                   </div>
                 );
@@ -2231,6 +2279,7 @@ export default function LiveRoomPage({
                           </span>
                           <RolePill role={g.role || (isOwn ? role : 'guest')} />
                           {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 9 }}>🔇</span>}
+                          <StageTimer startMs={stageJoinTimesRef.current[gid]} />
                         </div>
                       </div>
                     );
@@ -3927,6 +3976,24 @@ export default function LiveRoomPage({
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2 }}>
                     <RolePill role={g.role || (isOwn ? role : 'guest')} />
                     {isSp && <SpeakBars color={TEAL} />}
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
+                    {(function() {
+                      var joinMs = stageJoinTimesRef.current[gid];
+                      if (!joinMs) return null;
+                      return React.createElement('span', {
+                        style: { fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }
+                      }, '⏱ On stage: ', React.createElement(StageTimer, { startMs: joinMs }));
+                    })()}
+                    {(function() {
+                      var secs = speakingTimeRef.current[gid] || 0;
+                      if (!secs) return null;
+                      var m = Math.floor(secs / 60);
+                      var s = secs % 60;
+                      return React.createElement('span', {
+                        style: { fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }
+                      }, '🗣 Speaking: ' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+                    })()}
                   </div>
                 </div>
                 {isOwn && (
