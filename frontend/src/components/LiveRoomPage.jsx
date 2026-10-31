@@ -490,6 +490,9 @@ export default function LiveRoomPage({
   var [stageCountdownMs,   setStageCountdownMs]   = useState(0);     // 0=off; epoch ms of countdown end
   var [countdownInput,     setCountdownInput]     = useState('5:00'); // text input for countdown setting
   var [showCountdownInput, setShowCountdownInput] = useState(false);  // show the countdown set panel
+  var [activityLog,        setActivityLog]        = useState([]);    // [{ id, type, msg, ts }] — host activity feed
+  var [showActivityLog,    setShowActivityLog]    = useState(false); // toggle activity log drawer
+  var [cellColors,         setCellColors]         = useState({});    // { [guestId]: '#hex' } — host-local cell accent color
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -740,6 +743,11 @@ export default function LiveRoomPage({
           return next;
         });
       }
+      setActivityLog(function(prev) {
+        var from = gift.fromUsername || 'someone';
+        var val  = gift.valueCents ? ('$' + (Math.floor(gift.valueCents) / 100).toFixed(2)) : '';
+        return [{ id: Date.now() + '_gift', type: 'gift', msg: '🎁 ' + from + ' sent a gift' + (val ? ' ' + val : ''), ts: Date.now() }].concat(prev).slice(0, 100);
+      });
     });
 
     socket.on('power-play', function(pp) {
@@ -804,6 +812,7 @@ export default function LiveRoomPage({
       if (!data) return;
       if (role === 'host' && addToastRef.current) addToastRef.current('✋ ' + (data.username || data.guestId) + ' wants on stage', 'info');
       setRaisedHands(function(h) { var n = Object.assign({}, h); n[data.guestId] = data.ts || Date.now(); return n; });
+      setActivityLog(function(prev) { return [{ id: Date.now() + '_hand_' + data.guestId, type: 'hand', msg: '✋ ' + (data.username || data.guestId) + ' raised hand', ts: Date.now() }].concat(prev).slice(0, 100); });
     });
 
     socket.on('hand-lower', function(data) {
@@ -1591,6 +1600,8 @@ export default function LiveRoomPage({
               setTimeout(function() { _jctx.close(); }, 800);
             } catch(e) {}
           }
+          // Activity log entry
+          setActivityLog(function(prev) { return [{ id: Date.now() + '_join_' + gid, type: 'join', msg: '🎤 ' + _announceName + ' joined stage', ts: Date.now() }].concat(prev).slice(0, 100); });
         }
       }
     });
@@ -1836,16 +1847,22 @@ export default function LiveRoomPage({
       else if (e.key === 'x' || e.key === 'X') { setMirrorSelf(function(v) { return !v; }); }
       else if ((e.key === '[' || e.key === 'ArrowLeft') && stageLayout === 'featured') { prevGuest(); }
       else if ((e.key === ']' || e.key === 'ArrowRight') && stageLayout === 'featured') { nextGuest(); }
+      else if (e.key === '1') { setStageLayout('grid'); }
+      else if (e.key === '2') { setStageLayout('featured'); }
+      else if (e.key === '3') { setStageLayout('split'); }
+      else if (e.key === '+' || e.key === '=') { setGridDensity(function(d) { return Math.min(2, d + 1); }); }
+      else if (e.key === '-' || e.key === '_') { setGridDensity(function(d) { return Math.max(-2, d - 1); }); }
       else if (e.key === '?') { setShowKeyHelp(function(v) { return !v; }); }
       else if (e.key === 'Escape') {
         if (showKeyHelp) { setShowKeyHelp(false); }
+        else if (showActivityLog) { setShowActivityLog(false); }
         else if (expandedCell) { setExpandedCell(null); }
         else if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); }
       }
     };
     document.addEventListener('keydown', onKey);
     return function() { document.removeEventListener('keydown', onKey); };
-  }, [expandedCell, cellMenuId, stageLayout, featuredId, showKeyHelp]);
+  }, [expandedCell, cellMenuId, stageLayout, featuredId, showKeyHelp, showActivityLog]);
 
   var shareRoom = function() {
     var url = window.location.origin + (roomId !== '6990f5f2-4823-453e-a1fc-dc9d00000000' ? ('?room=' + roomId) : '');
@@ -2732,7 +2749,7 @@ export default function LiveRoomPage({
                       borderRadius: 10,
                       overflow: 'hidden',
                       cursor: 'pointer',
-                      border: '2px solid ' + (isSp ? TEAL + 'BB' : isPinned ? GOLD + '66' : isHand ? 'rgba(255,140,0,.65)' : BORDER),
+                      border: '2px solid ' + (cellColors[gid] ? cellColors[gid] + '99' : isSp ? TEAL + 'BB' : isPinned ? GOLD + '66' : isHand ? 'rgba(255,140,0,.65)' : BORDER),
                       animation: isSp ? 'speakPulseGrid 1.4s ease-in-out infinite' : 'fadeSlideIn .22s ease',
                       transition: 'border-color .2s',
                     }}>
@@ -2823,6 +2840,16 @@ export default function LiveRoomPage({
                       )}
                     </div>
 
+                    {/* Own-cell ✋ raise-hand shortcut (guest/viewer) */}
+                    {isOwn && role !== 'host' && role !== 'cohost' && (
+                      <button
+                        onClick={function(e) { e.stopPropagation(); raiseHand(); }}
+                        title={handRaised ? 'Lower hand' : 'Raise hand'}
+                        style={{ position: 'absolute', bottom: 5, left: 5, zIndex: 10, width: 22, height: 22, borderRadius: '50%', background: handRaised ? 'rgba(255,140,0,.9)' : 'rgba(0,0,0,.65)', border: '1px solid ' + (handRaised ? 'rgba(255,140,0,.9)' : 'rgba(255,255,255,.2)'), cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, animation: handRaised ? 'handBadgePulse 1.2s ease-in-out infinite' : 'none' }}>
+                        ✋
+                      </button>
+                    )}
+
                     {/* Top-right buttons: expand + host ⋮ menu */}
                     <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 3, zIndex: 10 }}>
                       <button onClick={function(e) { e.stopPropagation(); setExpandedCell(gid); }}
@@ -2851,6 +2878,7 @@ export default function LiveRoomPage({
                           { label: producerQuality[g.producerId] === 'red' ? '↺ Request Reconnect' : null, action: 'reconnect', hide: producerQuality[g.producerId] !== 'red' },
                           { label: '📸 Snapshot', action: 'snapshot' },
                           { label: '✂️ Mark Clip', action: 'clip' },
+                          { label: '🎨 Cell Color', action: 'color' },
                           { label: '🚫 Remove from Stage', action: 'remove' },
                         ].filter(function(item) { return !item.hide; }).map(function(item) {
                           return (
@@ -2911,6 +2939,9 @@ export default function LiveRoomPage({
                                   if (socket) socket.emit('clip-marker', { label: clipLabel });
                                   setClipLog(function(prev) { return [{ id: Date.now() + '', label: clipLabel, ts: Date.now() }].concat(prev); });
                                   if (addToastRef.current) addToastRef.current(clipLabel, 'success');
+                                } else if (item.action === 'color') {
+                                  // color picker handled inline — just close the main menu items
+                                  return;
                                 }
                               }}
                               style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 13px', background: 'none', border: 'none', borderBottom: '1px solid ' + DIM, color: item.action === 'remove' ? RED : TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, cursor: 'pointer', letterSpacing: .3 }}>
@@ -2918,6 +2949,30 @@ export default function LiveRoomPage({
                             </button>
                           );
                         })}
+                        {/* Cell accent color swatches */}
+                        <div style={{ padding: '7px 10px 6px', borderTop: '1px solid ' + DIM }}>
+                          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, marginBottom: 5 }}>🎨 CELL COLOR</div>
+                          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                            {['', '#C9A84C', '#FF1A3C', '#00C3FF', '#00E676', '#FF6D00', '#CE93D8'].map(function(hex) {
+                              var isActive = hex ? (cellColors[gid] === hex) : !cellColors[gid];
+                              return (
+                                <button key={hex || 'default'}
+                                  onClick={function(e) {
+                                    e.stopPropagation();
+                                    setCellColors(function(prev) {
+                                      var next = Object.assign({}, prev);
+                                      if (hex) { next[gid] = hex; } else { delete next[gid]; }
+                                      return next;
+                                    });
+                                  }}
+                                  title={hex || 'Default'}
+                                  style={{ width: 18, height: 18, borderRadius: '50%', background: hex || DIM, border: '2px solid ' + (isActive ? TEXT : 'transparent'), cursor: 'pointer', flexShrink: 0, outline: 'none', padding: 0 }}>
+                                  {!hex && <span style={{ fontSize: 8, lineHeight: 1, color: MUTED }}>✕</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
                         {removeConfirmId === gid && (
                           <div style={{ padding: '8px 12px', background: 'rgba(255,26,60,.08)', borderTop: '1px solid rgba(255,26,60,.25)' }}>
                             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, marginBottom: 6, letterSpacing: .3 }}>
@@ -4218,6 +4273,15 @@ export default function LiveRoomPage({
               onPress={function() { setShowNotes(function(v) { return !v; }); }}
             />
           )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="📋"
+              label={'Activity' + (activityLog.length > 0 ? ' ' + activityLog.length : '')}
+              active={showActivityLog}
+              activeColor={GOLD}
+              onPress={function() { setShowActivityLog(function(v) { return !v; }); }}
+            />
+          )}
           {role === 'host' && (
             <IconBtn
               icon={joinSoundEnabled ? '🔔' : '🔕'}
@@ -5198,6 +5262,11 @@ export default function LiveRoomPage({
               { key: 'V',       desc: 'Toggle camera on / off' },
               { key: 'F',       desc: 'Enter / exit fullscreen' },
               { key: 'X',       desc: 'Mirror own camera view' },
+              { key: '1',       desc: 'Grid layout' },
+              { key: '2',       desc: 'Featured layout' },
+              { key: '3',       desc: 'Split layout' },
+              { key: '+ / =',   desc: 'More grid columns' },
+              { key: '- / _',   desc: 'Fewer grid columns' },
               { key: '[ / ←',  desc: 'Previous guest (featured view)' },
               { key: '] / →',  desc: 'Next guest (featured view)' },
               { key: '?',       desc: 'Show / hide this guide' },
@@ -5442,6 +5511,48 @@ export default function LiveRoomPage({
                 <div key={entry.id} style={{ padding: '8px 14px', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', flexShrink: 0, marginTop: 1, letterSpacing: .5 }}>{timeStr}</span>
                   <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', lineHeight: 1.35, wordBreak: 'break-word' }}>{entry.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ ACTIVITY LOG OVERLAY ════════════════ */}
+      {showActivityLog && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom,0px) + 200px)', left: 280, zIndex: 9998, width: 260, maxHeight: 340, background: 'rgba(26,21,16,.97)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 14, boxShadow: '4px 4px 24px rgba(0,0,0,.6)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(201,168,76,.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 2 }}>📋 ACTIVITY</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {activityLog.length > 0 && (
+                <button
+                  onClick={function() { setActivityLog([]); }}
+                  title="Clear activity log"
+                  style={{ background: 'none', border: '1px solid rgba(255,255,255,.15)', borderRadius: 5, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, cursor: 'pointer', letterSpacing: .3 }}>
+                  CLEAR
+                </button>
+              )}
+              <button
+                onClick={function() { setShowActivityLog(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>
+                ×
+              </button>
+            </div>
+          </div>
+          <div style={{ overflowY: 'auto', flex: 1 }}>
+            {activityLog.length === 0 && (
+              <div style={{ padding: '18px 14px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center' }}>No activity yet</div>
+            )}
+            {activityLog.map(function(entry) {
+              var d = new Date(entry.ts);
+              var hh = d.getHours();
+              var mm = d.getMinutes();
+              var ss = d.getSeconds();
+              var timeStr = (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss;
+              return (
+                <div key={entry.id} style={{ padding: '7px 14px', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, flexShrink: 0, marginTop: 1, letterSpacing: .5 }}>{timeStr}</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, lineHeight: 1.35, wordBreak: 'break-word' }}>{entry.msg}</span>
                 </div>
               );
             })}
