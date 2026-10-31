@@ -424,6 +424,7 @@ export default function LiveRoomPage({
   var [screenShareHost,    setScreenShareHost]    = useState(null);  // { username } when remote host is sharing
   var [autoFocusSpeaker,   setAutoFocusSpeaker]   = useState(false); // auto-track dominant speaker in featured mode
   var [producerQuality,    setProducerQuality]    = useState({});   // { [producerId]: 'green'|'yellow'|'red' }
+  var [consumerRawStats,   setConsumerRawStats]   = useState({});   // { [producerId]: { bitratekbps, jitter, packetsLost } }
   var [spotlight,          setSpotlight]          = useState(null); // { guestId, username } | null — host-broadcast spotlight
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
@@ -1177,6 +1178,11 @@ export default function LiveRoomPage({
         if (prev[data.producerId] === q) return prev;
         var next = Object.assign({}, prev);
         next[data.producerId] = q;
+        return next;
+      });
+      setConsumerRawStats(function(prev) {
+        var next = Object.assign({}, prev);
+        next[data.producerId] = { bitratekbps: data.bitratekbps, jitter: data.jitter, packetsLost: data.packetsLost };
         return next;
       });
     };
@@ -1969,12 +1975,20 @@ export default function LiveRoomPage({
                 var showMenu = cellMenuId === gid;
                 return (
                   <div key={gid}
+                    onClick={function(e) {
+                      if (cellMenuId === gid) { setCellMenuId(null); return; }
+                      if (cellMenuId) setCellMenuId(null);
+                      setFeaturedId(gid);
+                      setStageLayout('featured');
+                      setAutoFocusSpeaker(false);
+                    }}
                     style={{
                       gridColumn: isPinned && cols > 1 ? 'span 2' : 'span 1',
                       position: 'relative',
                       background: CARD,
                       borderRadius: 10,
                       overflow: 'hidden',
+                      cursor: 'pointer',
                       border: '2px solid ' + (isSp ? TEAL + 'BB' : isPinned ? GOLD + '66' : isHand ? 'rgba(255,140,0,.65)' : BORDER),
                       animation: isSp ? 'speakPulseGrid 1.4s ease-in-out infinite' : 'fadeSlideIn .22s ease',
                       transition: 'border-color .2s',
@@ -2087,6 +2101,31 @@ export default function LiveRoomPage({
                             </button>
                           );
                         })}
+                        {(function() {
+                          var rs = g.producerId && consumerRawStats[g.producerId];
+                          if (!rs) return null;
+                          var dotColor = producerQuality[g.producerId] === 'red' ? '#FF1A3C' : producerQuality[g.producerId] === 'yellow' ? '#F0A500' : '#6DBF7E';
+                          return (
+                            <div style={{ padding: '7px 13px 8px', borderTop: '1px solid ' + DIM, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                                <div style={{ width: 7, height: 7, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>CONNECTION</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>bitrate</span>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEXT }}>{Math.round(rs.bitratekbps)} kbps</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>jitter</span>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEXT }}>{Math.round(rs.jitter)} ms</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>pkt loss</span>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: rs.packetsLost > 5 ? RED : TEXT }}>{rs.packetsLost}</span>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     )}
 
