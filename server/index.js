@@ -3856,6 +3856,59 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('brb', { active: false });
   });
 
+  // ── soundboard ─────────────────────────────────────────────────────────
+  socket.on('soundboard', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var VALID = { applause: 1, drumroll: 1, airhorn: 1, chaching: 1, fanfare: 1, boom: 1 };
+    var sound = data && data.sound && VALID[data.sound] ? data.sound : null;
+    if (!sound) return;
+    io.to(roomId).emit('soundboard', { sound: sound });
+  });
+
+  // ── sentiment-start / sentiment-vote / sentiment-end ───────────────────
+  socket.on('sentiment-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var question = data && data.question ? String(data.question).slice(0, 120) : 'Quick check-in!';
+    var endTs = Date.now() + 30000;
+    // Track votes in memory for this room during the poll
+    if (!socket.nsp._sentimentState) socket.nsp._sentimentState = {};
+    socket.nsp._sentimentState[roomId] = { yesCount: 0, noCount: 0, voters: new Set() };
+    io.to(roomId).emit('sentiment-poll', { active: true, question: question, yesCount: 0, noCount: 0, endTs: endTs });
+    setTimeout(function() {
+      var state = socket.nsp._sentimentState && socket.nsp._sentimentState[roomId];
+      if (!state) return;
+      io.to(roomId).emit('sentiment-poll', { active: false, yesCount: state.yesCount, noCount: state.noCount });
+      delete socket.nsp._sentimentState[roomId];
+    }, 30000);
+  });
+
+  socket.on('sentiment-vote', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.vote) return;
+    var vote = data.vote === 'yes' ? 'yes' : 'no';
+    var state = socket.nsp._sentimentState && socket.nsp._sentimentState[roomId];
+    if (!state) return;
+    var uid = socket.data.userId || socket.id;
+    if (state.voters.has(uid)) return;
+    state.voters.add(uid);
+    if (vote === 'yes') state.yesCount++;
+    else state.noCount++;
+    io.to(roomId).emit('sentiment-update', { yesCount: state.yesCount, noCount: state.noCount });
+  });
+
+  socket.on('sentiment-end', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var state = socket.nsp._sentimentState && socket.nsp._sentimentState[roomId];
+    io.to(roomId).emit('sentiment-poll', { active: false, yesCount: state ? state.yesCount : 0, noCount: state ? state.noCount : 0 });
+    if (socket.nsp._sentimentState) delete socket.nsp._sentimentState[roomId];
+  });
+
   // ── spotlight-guest / spotlight-end ────────────────────────────────────
   // Host broadcasts a featured-view directive so all viewers focus on one guest.
   socket.on('spotlight-guest', function(data) {

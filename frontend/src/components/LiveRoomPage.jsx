@@ -556,6 +556,11 @@ export default function LiveRoomPage({
   var [showWordFilter,     setShowWordFilter]     = useState(false); // word filter editor visible
   var [wordFilterInput,    setWordFilterInput]    = useState('');    // new word input
   var [showGiftStrip,      setShowGiftStrip]      = useState(false); // gift leaderboard strip visible
+  var [showSoundboard,     setShowSoundboard]     = useState(false); // soundboard popover visible
+  var [sentimentPoll,      setSentimentPoll]      = useState(null);  // { question, yesCount, noCount, endTs } | null
+  var [sentimentVoted,     setSentimentVoted]     = useState(null);  // 'yes' | 'no' | null
+  var [sentimentInput,     setSentimentInput]     = useState('');    // host input for sentiment question
+  var [showSentimentInput, setShowSentimentInput] = useState(false); // host sentiment trigger popover
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -980,6 +985,34 @@ export default function LiveRoomPage({
       }, 1000);
     });
 
+    socket.on('soundboard', function(data) {
+      if (!data || !data.sound) return;
+      playSoundboardEffect(data.sound);
+    });
+
+    socket.on('sentiment-poll', function(data) {
+      if (!data) return;
+      if (!data.active) {
+        setTimeout(function() { setSentimentPoll(null); setSentimentVoted(null); }, 3000);
+        return;
+      }
+      setSentimentVoted(null);
+      setSentimentPoll({
+        question: data.question ? String(data.question).slice(0, 120) : 'Quick check-in!',
+        yesCount: data.yesCount || 0,
+        noCount: data.noCount || 0,
+        endTs: data.endTs || (Date.now() + 30000),
+      });
+    });
+
+    socket.on('sentiment-update', function(data) {
+      if (!data) return;
+      setSentimentPoll(function(prev) {
+        if (!prev) return prev;
+        return Object.assign({}, prev, { yesCount: data.yesCount || 0, noCount: data.noCount || 0 });
+      });
+    });
+
     socket.on('stage-join-requested', function(data) {
       if (!data || !data.guestId) return;
       setJoinRequests(function(prev) {
@@ -1337,6 +1370,9 @@ export default function LiveRoomPage({
       socket.off('unmute-all');
       socket.off('confetti-burst');
       socket.off('room-timer');
+      socket.off('soundboard');
+      socket.off('sentiment-poll');
+      socket.off('sentiment-update');
       clearInterval(roomTimerRef.current);
       if (mediaRecRef.current && mediaRecRef.current.state !== 'inactive') {
         try { mediaRecRef.current.stop(); } catch(e) {}
@@ -1583,6 +1619,15 @@ export default function LiveRoomPage({
   useEffect(function() {
     try { localStorage.setItem('sw_word_filter', JSON.stringify(wordFilter)); } catch(e) {}
   }, [wordFilter]);
+
+  // ── Sentiment poll: auto-expire when endTs is reached ───────────────────
+  useEffect(function() {
+    if (!sentimentPoll || !sentimentPoll.endTs) return;
+    var remaining = sentimentPoll.endTs - Date.now();
+    if (remaining <= 0) { setSentimentPoll(null); setSentimentVoted(null); return; }
+    var tid = setTimeout(function() { setSentimentPoll(null); setSentimentVoted(null); }, remaining);
+    return function() { clearTimeout(tid); };
+  }, [sentimentPoll && sentimentPoll.endTs]);
 
   // ── Presenter notes: restore from localStorage on mount ─────────────────
   useEffect(function() {
@@ -2495,6 +2540,45 @@ export default function LiveRoomPage({
   };
 
   // Noise suppression: HighPass + DynamicsCompressor chain over live mic track
+  var playSoundboardEffect = function(name) {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var now = ctx.currentTime;
+      var mkOsc = function(freq, start, end, type) {
+        var o = ctx.createOscillator();
+        var g = ctx.createGain();
+        o.type = type || 'sine';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0, now + start);
+        g.gain.linearRampToValueAtTime(0.18, now + start + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, now + end);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(now + start); o.stop(now + end + 0.05);
+      };
+      if (name === 'applause') {
+        var buf = ctx.createBuffer(1, ctx.sampleRate * 1.2, ctx.sampleRate);
+        var ch = buf.getChannelData(0);
+        for (var i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * Math.min(1, i / (ctx.sampleRate * 0.1)) * Math.max(0, 1 - i / (ctx.sampleRate * 1.2));
+        var src = ctx.createBufferSource();
+        var lpf = ctx.createBiquadFilter(); lpf.type = 'bandpass'; lpf.frequency.value = 1200; lpf.Q.value = 0.5;
+        var gn = ctx.createGain(); gn.gain.value = 0.6;
+        src.buffer = buf; src.connect(lpf); lpf.connect(gn); gn.connect(ctx.destination);
+        src.start(now); src.stop(now + 1.2);
+      } else if (name === 'drumroll') {
+        for (var di = 0; di < 32; di++) { mkOsc(60 + Math.random() * 20, di * 0.03, di * 0.03 + 0.05, 'sawtooth'); }
+      } else if (name === 'airhorn') {
+        mkOsc(233, 0, 0.8, 'sawtooth'); mkOsc(466, 0, 0.8, 'sawtooth'); mkOsc(116, 0, 0.8, 'square');
+      } else if (name === 'chaching') {
+        mkOsc(1318, 0, 0.12); mkOsc(1047, 0.05, 0.18); mkOsc(1568, 0.1, 0.28); mkOsc(2093, 0.15, 0.36);
+      } else if (name === 'fanfare') {
+        mkOsc(523, 0, 0.18); mkOsc(659, 0.16, 0.34); mkOsc(784, 0.32, 0.5); mkOsc(1046, 0.48, 0.72);
+      } else if (name === 'boom') {
+        mkOsc(55, 0, 0.6, 'sine'); mkOsc(40, 0, 0.5, 'sine');
+      }
+      setTimeout(function() { try { ctx.close(); } catch(e) {} }, 2000);
+    } catch(e) {}
+  };
+
   var toggleNoiseSuppression = function() {
     if (noiseSuppOn) {
       if (nsAudioCtxRef.current) {
@@ -3000,6 +3084,57 @@ export default function LiveRoomPage({
               <div key={p.id} style={{ position: 'absolute', top: 0, left: p.x + '%', zIndex: 65, pointerEvents: 'none', width: p.size, height: p.size, background: p.color, borderRadius: 2, animation: 'confettiFall 2.8s ' + p.delay + 's ease-in forwards', opacity: 0 }} />
             );
           })}
+
+          {/* ── Sentiment poll overlay ── */}
+          {sentimentPoll && (function() {
+            var total = (sentimentPoll.yesCount || 0) + (sentimentPoll.noCount || 0);
+            var yesPct = total > 0 ? Math.round(sentimentPoll.yesCount * 100 / total) : 50;
+            var noPct  = total > 0 ? Math.round(sentimentPoll.noCount  * 100 / total) : 50;
+            var secLeft = Math.max(0, Math.round((sentimentPoll.endTs - Date.now()) / 1000));
+            return (
+              <div style={{ position: 'absolute', bottom: 48, left: '50%', transform: 'translateX(-50%)', zIndex: 62, width: 220, background: 'rgba(14,12,9,.92)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 14, padding: '12px 14px', boxShadow: '0 6px 28px rgba(0,0,0,.7)', animation: 'fadeSlideIn .25s ease' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 2, marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
+                  <span>QUICK POLL</span>
+                  <span style={{ color: secLeft <= 5 ? RED : MUTED }}>{secLeft}s</span>
+                </div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 14, color: TEXT, marginBottom: 10, lineHeight: 1.3 }}>{sentimentPoll.question}</div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  <button
+                    disabled={!!sentimentVoted}
+                    onClick={function() {
+                      if (sentimentVoted || !socket) return;
+                      setSentimentVoted('yes');
+                      socket.emit('sentiment-vote', { vote: 'yes' });
+                    }}
+                    style={{ flex: 1, background: sentimentVoted === 'yes' ? 'rgba(109,191,126,.25)' : 'rgba(255,255,255,.06)', border: '1.5px solid ' + (sentimentVoted === 'yes' ? '#6DBF7E' : 'rgba(255,255,255,.12)'), borderRadius: 8, padding: '7px 4px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: sentimentVoted ? 'default' : 'pointer', opacity: sentimentVoted && sentimentVoted !== 'yes' ? 0.5 : 1 }}>
+                    👍
+                  </button>
+                  <button
+                    disabled={!!sentimentVoted}
+                    onClick={function() {
+                      if (sentimentVoted || !socket) return;
+                      setSentimentVoted('no');
+                      socket.emit('sentiment-vote', { vote: 'no' });
+                    }}
+                    style={{ flex: 1, background: sentimentVoted === 'no' ? 'rgba(255,26,60,.2)' : 'rgba(255,255,255,.06)', border: '1.5px solid ' + (sentimentVoted === 'no' ? RED : 'rgba(255,255,255,.12)'), borderRadius: 8, padding: '7px 4px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: sentimentVoted ? 'default' : 'pointer', opacity: sentimentVoted && sentimentVoted !== 'no' ? 0.5 : 1 }}>
+                    👎
+                  </button>
+                </div>
+                {total > 0 && (
+                  <div>
+                    <div style={{ display: 'flex', height: 6, borderRadius: 3, overflow: 'hidden', marginBottom: 4 }}>
+                      <div style={{ width: yesPct + '%', background: '#6DBF7E', transition: 'width .4s ease' }} />
+                      <div style={{ flex: 1, background: RED, opacity: .7, transition: 'width .4s ease' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>
+                      <span style={{ color: '#6DBF7E' }}>👍 {yesPct}% ({sentimentPoll.yesCount})</span>
+                      <span style={{ color: RED }}>👎 {noPct}% ({sentimentPoll.noCount})</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Scrolling ticker strip */}
           {tickerActive && tickerText && (
@@ -4474,8 +4609,23 @@ export default function LiveRoomPage({
           <div style={{ margin: '0 14px 10px', background: 'rgba(255,140,0,.06)', border: '1px solid rgba(255,140,0,.28)', borderRadius: 12, padding: '10px 12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 1.5, color: '#D4854A' }}>✋ STAGE QUEUE</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{handQueue.length} waiting</span>
+                {onStage.length < MAX_STAGE && handQueue.length > 0 && (
+                  <button
+                    onClick={function() {
+                      var nextGid = handQueue[0];
+                      if (!nextGid || !socket) return;
+                      var nextEntry = allGuestMap[nextGid] || { guestId: nextGid, username: nextGid };
+                      socket.emit('stage-invite', { roomId: roomId, guestId: nextGid });
+                      socket.emit('spotlight-guest', { roomId: roomId, guestId: nextGid, username: nextEntry.username || nextGid });
+                      setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[nextGid]; return n; });
+                    }}
+                    title="Invite #1 and spotlight them"
+                    style={{ background: TEAL, border: 'none', borderRadius: 5, padding: '2px 8px', fontSize: 7, color: BG, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .5, fontWeight: 700, flexShrink: 0 }}>
+                    CALL NEXT
+                  </button>
+                )}
                 <button
                   onClick={function() {
                     if (socket) socket.emit('lower-all-hands', { roomId: roomId });
@@ -4945,10 +5095,15 @@ export default function LiveRoomPage({
                   </div>
                 );
               }
+              var isMention = username && (m.message || '').toLowerCase().indexOf('@' + username.toLowerCase()) !== -1 && m.userId !== userId;
+              if (isMention) {
+                playTone([440], 0.1);
+              }
               return (
-                <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease', position: 'relative' }}>
+                <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease', position: 'relative', background: isMention ? 'rgba(201,168,76,.09)' : 'transparent', border: isMention ? '1px solid rgba(201,168,76,.25)' : '1px solid transparent', borderRadius: isMention ? 8 : 0, padding: isMention ? '4px 8px' : 0, marginLeft: isMention ? -8 : 0, marginRight: isMention ? -8 : 0 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
                     <span style={{ fontWeight: 700, fontSize: 13, color: gold }}>{m.username || 'Guest'}</span>
+                    {isMention && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: .5 }}>@you</span>}
                     {m.ts && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>
                       {new Date(m.ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>}
@@ -5589,6 +5744,87 @@ export default function LiveRoomPage({
                   <button onClick={function() { setShowBgPicker(false); }}
                     style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer' }}>
                     close
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="🔊"
+                label="Sounds"
+                active={showSoundboard}
+                activeColor={TEAL}
+                onPress={function() { setShowSoundboard(function(v) { return !v; }); }}
+              />
+              {showSoundboard && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 12px', zIndex: 20, width: 178, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 8, textAlign: 'center' }}>SOUNDBOARD</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {[
+                      { name: 'applause',  label: '👏 Applause'  },
+                      { name: 'drumroll',  label: '🥁 Drum Roll' },
+                      { name: 'airhorn',   label: '📯 Air Horn'  },
+                      { name: 'chaching',  label: '💰 Cha-Ching' },
+                      { name: 'fanfare',   label: '🎺 Fanfare'   },
+                      { name: 'boom',      label: '💥 Boom'      },
+                    ].map(function(s) {
+                      return (
+                        <button key={s.name}
+                          onClick={function() { if (socket) socket.emit('soundboard', { sound: s.name, roomId: roomId }); }}
+                          style={{ flex: '1 1 44%', background: DIM, border: '1px solid ' + BORDER, borderRadius: 7, padding: '6px 4px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, color: TEXT, cursor: 'pointer', textAlign: 'center', letterSpacing: .3 }}>
+                          {s.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button onClick={function() { setShowSoundboard(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 6 }}>
+                    close
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="📊"
+                label={sentimentPoll ? 'Poll ✓' : 'Poll'}
+                active={!!sentimentPoll}
+                activeColor={GOLD}
+                onPress={sentimentPoll
+                  ? function() { if (socket) socket.emit('sentiment-end', { roomId: roomId }); }
+                  : function() { setShowSentimentInput(function(v) { return !v; }); }}
+              />
+              {showSentimentInput && !sentimentPoll && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 200, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 6, textAlign: 'center' }}>AUDIENCE POLL (30s 👍/👎)</div>
+                  <input
+                    value={sentimentInput}
+                    onChange={function(e) { setSentimentInput(e.target.value.slice(0, 120)); }}
+                    placeholder="How's everyone feeling?"
+                    onKeyDown={function(e) {
+                      if (e.key === 'Enter') {
+                        if (socket) socket.emit('sentiment-start', { roomId: roomId, question: sentimentInput });
+                        setShowSentimentInput(false);
+                      } else if (e.key === 'Escape') { setShowSentimentInput(false); }
+                    }}
+                    style={{ width: '100%', boxSizing: 'border-box', background: DIM, border: '1px solid ' + BORDER, borderRadius: 6, padding: '5px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, outline: 'none', marginBottom: 8 }}
+                  />
+                  <button
+                    onClick={function() {
+                      if (socket) socket.emit('sentiment-start', { roomId: roomId, question: sentimentInput });
+                      setShowSentimentInput(false);
+                      setSentimentInput('');
+                    }}
+                    style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 6, padding: '6px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                    LAUNCH POLL
+                  </button>
+                  <button onClick={function() { setShowSentimentInput(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 4 }}>
+                    cancel
                   </button>
                 </div>
               )}
