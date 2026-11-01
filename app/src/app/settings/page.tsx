@@ -70,12 +70,12 @@ export default function SettingsPage() {
       .then(r => r.json())
       .then(d => {
         if (d.success) setProfile({
-          displayName: d.data.displayName ?? '',
-          bio: d.data.bio ?? '',
-          avatarUrl: d.data.avatarUrl ?? null,
-          twitterHandle: d.data.twitterHandle ?? '',
-          instagramHandle: d.data.instagramHandle ?? '',
-          websiteUrl: d.data.websiteUrl ?? '',
+          displayName: d.data.user.displayName ?? '',
+          bio: d.data.user.bio ?? '',
+          avatarUrl: d.data.user.avatarUrl ?? null,
+          twitterHandle: d.data.user.twitterHandle ?? '',
+          instagramHandle: d.data.user.instagramHandle ?? '',
+          websiteUrl: d.data.user.websiteUrl ?? '',
         })
       })
     fetch('/api/creator/sub-tiers')
