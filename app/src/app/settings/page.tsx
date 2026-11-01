@@ -6,7 +6,13 @@ import { useRouter } from 'next/navigation'
 import { Btn } from '@/components/ui/Btn'
 import { Input } from '@/components/ui/Input'
 
-type Tab = 'profile' | 'password' | 'notifications' | 'monetization' | 'danger'
+type Tab = 'profile' | 'password' | 'notifications' | 'monetization' | 'moderation' | 'danger'
+
+interface FilterWord {
+  id: string
+  word: string
+  createdAt: string
+}
 
 interface Profile {
   displayName: string
@@ -40,6 +46,12 @@ export default function SettingsPage() {
     description: string | null; isActive: boolean
   }>>([])
 
+  // Word filters
+  const [filters, setFilters] = useState<FilterWord[]>([])
+  const [filterWord, setFilterWord] = useState('')
+  const [filterLoading, setFilterLoading] = useState(false)
+  const [filtersLoaded, setFiltersLoaded] = useState(false)
+
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -64,6 +76,14 @@ export default function SettingsPage() {
       .then(r => r.json())
       .then(d => { if (d.success) setSubTiers(d.data.tiers) })
   }, [status])
+
+  useEffect(() => {
+    if (tab !== 'moderation' || filtersLoaded) return
+    fetch('/api/moderation/filters')
+      .then(r => r.json())
+      .then(d => { if (d.success) { setFilters(d.data.filters); setFiltersLoaded(true) } })
+      .catch(() => {})
+  }, [tab, filtersLoaded])
 
   function flash(type: 'ok' | 'err', text: string) {
     setMsg({ type, text })
@@ -132,11 +152,46 @@ export default function SettingsPage() {
     flash('ok', 'Avatar uploaded — save profile to apply.')
   }
 
+  async function addFilterWord() {
+    const word = filterWord.trim().toLowerCase()
+    if (!word) return
+    setFilterLoading(true)
+    try {
+      const res = await fetch('/api/moderation/filters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word }),
+      })
+      const d = await res.json()
+      if (d.success) {
+        setFilters(prev => [...prev, d.data.filter])
+        setFilterWord('')
+        flash('ok', `"${word}" added to word filter.`)
+      } else {
+        flash('err', d.error?.message ?? 'Failed to add word')
+      }
+    } finally {
+      setFilterLoading(false)
+    }
+  }
+
+  async function removeFilterWord(id: string, word: string) {
+    const res = await fetch(`/api/moderation/filters?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+    const d = await res.json()
+    if (d.success) {
+      setFilters(prev => prev.filter(f => f.id !== id))
+      flash('ok', `"${word}" removed.`)
+    } else {
+      flash('err', d.error?.message ?? 'Failed to remove word')
+    }
+  }
+
   const TABS: { id: Tab; label: string }[] = [
     { id: 'profile', label: 'PROFILE' },
     { id: 'password', label: 'PASSWORD' },
     { id: 'notifications', label: 'ALERTS' },
     { id: 'monetization', label: 'MONETIZE' },
+    { id: 'moderation', label: 'MODERATION' },
     { id: 'danger', label: 'DANGER' },
   ]
 
@@ -358,6 +413,62 @@ export default function SettingsPage() {
                       {t.isActive ? 'ACTIVE' : 'INACTIVE'}
                     </span>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── MODERATION ── */}
+      {tab === 'moderation' && (
+        <div className="space-y-6">
+          <div className="rounded border border-border bg-card p-5">
+            <p className="font-bebas text-section tracking-widest text-text mb-1">WORD FILTER</p>
+            <p className="font-barlow text-body text-muted mb-4">
+              Messages containing these words are automatically removed from your chat.
+              <span className="ml-2 font-semibold text-text">{filters.length}/200 words</span>
+            </p>
+
+            {/* Add word */}
+            <div className="flex gap-2 mb-5">
+              <Input
+                value={filterWord}
+                onChange={e => setFilterWord(e.target.value)}
+                placeholder="Enter a word to block..."
+                maxLength={50}
+                className="max-w-xs"
+                onKeyDown={e => { if (e.key === 'Enter') addFilterWord() }}
+              />
+              <Btn
+                onClick={addFilterWord}
+                loading={filterLoading}
+                disabled={!filterWord.trim() || filters.length >= 200}
+                size="sm"
+              >
+                Add Word
+              </Btn>
+            </div>
+
+            {/* Filter list */}
+            {filters.length === 0 ? (
+              <p className="font-barlow text-body text-muted">No words filtered yet.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {filters.map(f => (
+                  <span
+                    key={f.id}
+                    className="flex items-center gap-1.5 rounded border border-border bg-surface px-2.5 py-1 font-barlow text-body text-text"
+                  >
+                    {f.word}
+                    <button
+                      onClick={() => removeFilterWord(f.id, f.word)}
+                      className="ml-1 text-muted hover:text-red-400 transition-colors leading-none"
+                      aria-label={`Remove ${f.word}`}
+                    >
+                      ×
+                    </button>
+                  </span>
                 ))}
               </div>
             )}
