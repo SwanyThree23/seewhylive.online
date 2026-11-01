@@ -65,15 +65,21 @@ export default async function ProfilePage({ params }: Props) {
           </div>
           <p className="mt-0.5 font-barlow text-body text-muted">@{user.username}</p>
           {user.bio && <p className="mt-2 font-barlow text-body text-text/80 max-w-lg">{user.bio}</p>}
-          <div className="mt-3 flex gap-4">
+          <div className="mt-3 flex gap-4 flex-wrap">
             <span className="font-barlow text-body">
               <span className="font-semibold text-text">{user._count.followers.toLocaleString()}</span>
               <span className="ml-1 text-muted">followers</span>
             </span>
-            {videos.length > 0 && (
+            {user._count.following > 0 && (
               <span className="font-barlow text-body">
-                <span className="font-semibold text-text">{videos.length}</span>
-                <span className="ml-1 text-muted">videos</span>
+                <span className="font-semibold text-text">{user._count.following.toLocaleString()}</span>
+                <span className="ml-1 text-muted">following</span>
+              </span>
+            )}
+            {user._count.streams > 0 && (
+              <span className="font-barlow text-body">
+                <span className="font-semibold text-text">{user._count.streams.toLocaleString()}</span>
+                <span className="ml-1 text-muted">streams</span>
               </span>
             )}
           </div>

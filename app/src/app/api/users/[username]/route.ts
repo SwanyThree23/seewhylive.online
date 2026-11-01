@@ -28,7 +28,7 @@ export async function GET(
       instagramHandle: true,
       websiteUrl: true,
       createdAt: true,
-      _count: { select: { followers: true } },
+      _count: { select: { followers: true, following: true, streams: true } },
       streams: {
         where: { status: 'LIVE' },
         take: 1,
