@@ -5,7 +5,11 @@ import { redis, REDIS_KEYS } from '@/lib/redis'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { z } from 'zod'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+let _anthropic: Anthropic | null = null
+function getAnthropic() {
+  if (!_anthropic) _anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  return _anthropic
+}
 
 const auraSchema = z.object({
   trigger: z.enum(['chat', 'tip', 'join', 'command']),
@@ -64,7 +68,7 @@ export async function POST(
 
   const userMessage = buildAuraPrompt(trigger, context, recentMessages)
 
-  const message = await anthropic.messages.create({
+  const message = await getAnthropic().messages.create({
     model: 'claude-haiku-5-5',
     max_tokens: 150,
     system: systemPrompt,
