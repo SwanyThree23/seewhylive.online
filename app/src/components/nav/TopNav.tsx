@@ -124,7 +124,7 @@ export function TopNav() {
                     </p>
                   </div>
                   {[
-                    { href: `/profile`, label: 'My Profile', badge: 0 },
+                    { href: `/${(session.user as { username?: string }).username ?? 'profile'}`, label: 'My Profile', badge: 0 },
                     { href: '/notifications', label: 'Notifications', badge: unreadCount },
                     { href: '/analytics', label: 'Analytics', badge: 0 },
                     { href: '/wallet', label: 'Wallet', badge: 0 },
