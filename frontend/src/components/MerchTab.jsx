@@ -52,10 +52,10 @@ export default function MerchTab({ addToast, isLive, socket, roomId, username })
   }, []);
 
   var cartTotal = cart.reduce(function(s, ci) { return s + ci.price * ci.qty; }, 0);
-  var cartCreator = Math.floor(cartTotal * CREATOR);
-  var cartPlatform = cartTotal - cartCreator;
+  var cartCreator = Math.floor(cartTotal * 90) / 100;
+  var cartPlatform = Math.floor(cartTotal * 10) / 100;
   var totalSold = items.reduce(function(s, it) { return s + it.sold; }, 0);
-  var creatorEarned = Math.floor(totalSold * 45 * CREATOR);
+  var creatorEarned = Math.floor(totalSold * 45 * 90) / 100;
 
   var addToCart = function(item) {
     if (item.stock <= 0) {
@@ -112,7 +112,7 @@ export default function MerchTab({ addToast, isLive, socket, roomId, username })
 
   var placeOrder = function() {
     var totalCents = Math.floor(cartTotal * 100);
-    var earned = Math.floor(cartCreator);
+    var earned = cartCreator;
     if (socket && roomId && totalCents > 0) {
       var itemName = cart.length === 1 ? cart[0].name : cart.length + ' items';
       socket.emit('merch-order', { roomId: roomId, itemName: itemName, priceCents: totalCents });
