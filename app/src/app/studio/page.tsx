@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
@@ -21,9 +21,29 @@ export default function StudioPage() {
     paywallAmountCents: 500,
     auraEnabled: false,
     auraPersonality: 'HYPE' as 'SASSY' | 'HYPE' | 'CALM' | 'KIND',
+    thumbnailUrl: '',
   })
   const [loading, setLoading] = useState(false)
+  const [thumbnailUploading, setThumbnailUploading] = useState(false)
   const [error, setError] = useState('')
+  const thumbRef = useRef<HTMLInputElement>(null)
+
+  async function uploadThumbnail(file: File) {
+    setThumbnailUploading(true)
+    try {
+      const presignRes = await fetch('/api/upload/presign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contentType: file.type, fileSizeMB: file.size / 1048576, purpose: 'thumbnail' }),
+      })
+      const presign = await presignRes.json()
+      if (!presign.success) { setError('Failed to get upload URL'); return }
+      await fetch(presign.data.uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
+      setForm(f => ({ ...f, thumbnailUrl: presign.data.cdnUrl }))
+    } finally {
+      setThumbnailUploading(false)
+    }
+  }
 
   if (status === 'loading') return null
   if (status === 'unauthenticated') {
@@ -45,6 +65,7 @@ export default function StudioPage() {
       body: JSON.stringify({
         ...form,
         paywallAmountCents: form.isPaywalled ? form.paywallAmountCents : undefined,
+        thumbnailUrl: form.thumbnailUrl || undefined,
       }),
     })
     const data = await res.json()
@@ -66,6 +87,47 @@ export default function StudioPage() {
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Left column — stream setup */}
         <div className="flex flex-col gap-5">
+          {/* Thumbnail */}
+          <div>
+            <label className="mb-1 block font-bebas text-label tracking-widest text-muted">THUMBNAIL</label>
+            <div
+              onClick={() => thumbRef.current?.click()}
+              className="relative flex h-32 cursor-pointer items-center justify-center overflow-hidden rounded border-2 border-dashed border-border bg-surface transition-colors hover:border-accent/50"
+            >
+              {form.thumbnailUrl
+                ? <img src={form.thumbnailUrl} alt="Thumbnail" className="h-full w-full object-cover" />
+                : (
+                  <div className="text-center">
+                    <p className="font-bebas text-section tracking-widest text-muted">
+                      {thumbnailUploading ? 'UPLOADING…' : 'CLICK TO UPLOAD'}
+                    </p>
+                    <p className="font-barlow text-caption text-muted">16:9 · JPG/PNG · Max 10MB</p>
+                  </div>
+                )
+              }
+              {thumbnailUploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-bg/60">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+                </div>
+              )}
+            </div>
+            <input
+              ref={thumbRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) uploadThumbnail(f) }}
+            />
+            {form.thumbnailUrl && (
+              <button
+                onClick={() => setForm(f => ({ ...f, thumbnailUrl: '' }))}
+                className="mt-1 font-barlow text-caption text-muted hover:text-red transition-colors"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+
           <Input
             label="Stream Title"
             value={form.title}

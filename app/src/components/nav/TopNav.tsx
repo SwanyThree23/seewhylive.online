@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
 import { SignalBars } from '@/components/brand/SignalBars'
@@ -20,6 +20,23 @@ export function TopNav() {
   const { data: session } = useSession()
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    if (!session) return
+    fetch('/api/notifications?unread=1&limit=1')
+      .then(r => r.json())
+      .then(d => { if (d.success) setUnreadCount(d.data.unreadCount ?? 0) })
+      .catch(() => {})
+    // Refresh every 60s while the tab is open
+    const id = setInterval(() => {
+      fetch('/api/notifications?unread=1&limit=1')
+        .then(r => r.json())
+        .then(d => { if (d.success) setUnreadCount(d.data.unreadCount ?? 0) })
+        .catch(() => {})
+    }, 60_000)
+    return () => clearInterval(id)
+  }, [session])
 
   return (
     <nav className="no-select sticky top-[2px] z-50 border-b border-border bg-bg/90 backdrop-blur-md">
@@ -56,7 +73,7 @@ export function TopNav() {
           <div className="relative flex items-center gap-3">
             {/* Wallet */}
             <Link
-              href="/settings/wallet"
+              href="/wallet"
               className="hidden items-center gap-1 rounded border border-border bg-surface px-2.5 py-1 font-bebas text-label tracking-widest text-gold transition-colors hover:border-gold/30 sm:flex"
             >
               <span>$</span>
@@ -93,18 +110,24 @@ export function TopNav() {
                     </p>
                   </div>
                   {[
-                    { href: `/profile`, label: 'My Profile' },
-                    { href: '/notifications', label: 'Notifications' },
-                    { href: '/analytics', label: 'Analytics' },
-                    { href: '/settings', label: 'Settings' },
+                    { href: `/profile`, label: 'My Profile', badge: 0 },
+                    { href: '/notifications', label: 'Notifications', badge: unreadCount },
+                    { href: '/analytics', label: 'Analytics', badge: 0 },
+                    { href: '/wallet', label: 'Wallet', badge: 0 },
+                    { href: '/settings', label: 'Settings', badge: 0 },
                   ].map(item => (
                     <Link
                       key={item.href}
                       href={item.href}
                       onClick={() => setMenuOpen(false)}
-                      className="block px-4 py-2.5 font-barlow text-body text-muted transition-colors hover:bg-cardHi hover:text-text"
+                      className="flex items-center justify-between px-4 py-2.5 font-barlow text-body text-muted transition-colors hover:bg-cardHi hover:text-text"
                     >
                       {item.label}
+                      {item.badge > 0 && (
+                        <span className="ml-2 rounded-full bg-accent px-1.5 py-0.5 font-bebas text-[10px] leading-none text-bg">
+                          {item.badge > 99 ? '99+' : item.badge}
+                        </span>
+                      )}
                     </Link>
                   ))}
                   <button

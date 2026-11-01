@@ -46,6 +46,12 @@ export default function SettingsPage() {
     description: string | null; isActive: boolean
   }>>([])
 
+  // Sub-tier form
+  const [tierForm, setTierForm] = useState<{
+    tier: 'FAN' | 'SUPPORTER' | 'RIDE_OR_DIE'; name: string; priceCents: number; description: string
+  }>({ tier: 'FAN', name: '', priceCents: 499, description: '' })
+  const [tierSaving, setTierSaving] = useState(false)
+
   // Word filters
   const [filters, setFilters] = useState<FilterWord[]>([])
   const [filterWord, setFilterWord] = useState('')
@@ -397,9 +403,9 @@ export default function SettingsPage() {
           <div>
             <p className="font-bebas text-section tracking-widest text-text mb-4">SUBSCRIPTION TIERS</p>
             {subTiers.length === 0 ? (
-              <p className="font-barlow text-body text-muted">No subscription tiers configured yet.</p>
+              <p className="font-barlow text-body text-muted mb-4">No subscription tiers configured yet.</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2 mb-6">
                 {subTiers.map(t => (
                   <div key={t.id} className="flex items-center justify-between rounded border border-border bg-card px-4 py-3">
                     <div>
@@ -409,13 +415,116 @@ export default function SettingsPage() {
                         ${(t.priceCents / 100).toFixed(2)}/mo
                       </span>
                     </div>
-                    <span className={`font-bebas text-caption ${t.isActive ? 'text-green' : 'text-muted'}`}>
-                      {t.isActive ? 'ACTIVE' : 'INACTIVE'}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className={`font-bebas text-caption ${t.isActive ? 'text-green' : 'text-muted'}`}>
+                        {t.isActive ? 'ACTIVE' : 'INACTIVE'}
+                      </span>
+                      <button
+                        onClick={async () => {
+                          const res = await fetch(`/api/creator/sub-tiers/${t.tier}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ isActive: !t.isActive }),
+                          })
+                          const d = await res.json()
+                          if (d.success) {
+                            setSubTiers(prev => prev.map(s => s.id === t.id ? { ...s, isActive: !s.isActive } : s))
+                          } else flash('err', d.error?.message ?? 'Failed to update tier')
+                        }}
+                        className="font-bebas text-caption text-muted hover:text-text transition-colors"
+                      >
+                        Toggle
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
+
+            {/* Add new tier */}
+            {subTiers.length < 3 && (() => {
+              const existing = new Set(subTiers.map(t => t.tier))
+              const available = (['FAN', 'SUPPORTER', 'RIDE_OR_DIE'] as const).filter(t => !existing.has(t))
+              if (available.length === 0) return null
+              return (
+                <div className="rounded border border-border bg-card p-4 space-y-4">
+                  <p className="font-bebas text-label tracking-widest text-muted">ADD TIER</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block font-bebas text-caption tracking-widest text-muted">TIER</label>
+                      <select
+                        value={tierForm.tier}
+                        onChange={e => setTierForm(f => ({ ...f, tier: e.target.value as 'FAN' | 'SUPPORTER' | 'RIDE_OR_DIE' }))}
+                        className="w-full rounded border border-border bg-surface px-3 py-2 font-barlow text-body text-text focus:border-accent focus:outline-none"
+                      >
+                        {available.map(v => (
+                          <option key={v} value={v}>{v}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-1 block font-bebas text-caption tracking-widest text-muted">DISPLAY NAME</label>
+                      <Input
+                        value={tierForm.name}
+                        onChange={e => setTierForm(f => ({ ...f, name: e.target.value }))}
+                        placeholder="e.g. Fan Club"
+                        maxLength={60}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block font-bebas text-caption tracking-widest text-muted">PRICE / MONTH ($)</label>
+                      <Input
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        value={(tierForm.priceCents / 100).toFixed(2)}
+                        onChange={e => setTierForm(f => ({ ...f, priceCents: Math.round(Number(e.target.value) * 100) }))}
+                        prefix="$"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block font-bebas text-caption tracking-widest text-muted">DESCRIPTION</label>
+                      <Input
+                        value={tierForm.description}
+                        onChange={e => setTierForm(f => ({ ...f, description: e.target.value }))}
+                        placeholder="What subscribers get..."
+                        maxLength={200}
+                      />
+                    </div>
+                  </div>
+                  <Btn
+                    size="sm"
+                    loading={tierSaving}
+                    disabled={!tierForm.name.trim()}
+                    onClick={async () => {
+                      setTierSaving(true)
+                      try {
+                        const res = await fetch('/api/creator/sub-tiers', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            tier: tierForm.tier,
+                            name: tierForm.name,
+                            priceCents: tierForm.priceCents,
+                            description: tierForm.description || undefined,
+                          }),
+                        })
+                        const d = await res.json()
+                        if (d.success) {
+                          setSubTiers(prev => [...prev, d.data.tier])
+                          setTierForm({ tier: 'FAN', name: '', priceCents: 499, description: '' })
+                          flash('ok', 'Subscription tier created.')
+                        } else flash('err', d.error?.message ?? 'Failed to create tier')
+                      } finally {
+                        setTierSaving(false)
+                      }
+                    }}
+                  >
+                    Create Tier
+                  </Btn>
+                </div>
+              )
+            })()}
           </div>
         </div>
       )}
