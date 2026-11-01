@@ -15,7 +15,7 @@ interface StudioStats {
 
 const GENRES = ['TALK_SHOW', 'MUSIC', 'LIFESTYLE', 'COMMUNITY', 'PANEL', 'COMEDY', 'SPORTS', 'GAMING', 'EDUCATION', 'OTHER']
 
-type StudioTab = 'live' | 'video'
+type StudioTab = 'live' | 'video' | 'schedule'
 
 export default function StudioPage() {
   const { data: session, status } = useSession()
@@ -52,6 +52,17 @@ export default function StudioPage() {
   const [videoThumbUploading, setVideoThumbUploading] = useState(false)
   const [videoError, setVideoError] = useState('')
   const [videoLoading, setVideoLoading] = useState(false)
+  const [schedForm, setSchedForm] = useState({
+    title: '',
+    description: '',
+    genre: 'TALK_SHOW',
+    panelCount: 4,
+    scheduledAt: '',
+    notifyFollowers: true,
+  })
+  const [schedLoading, setSchedLoading] = useState(false)
+  const [schedError, setSchedError] = useState('')
+  const [schedSuccess, setSchedSuccess] = useState(false)
 
   useEffect(() => {
     fetch('/api/creator/dashboard?days=30')
@@ -178,6 +189,28 @@ export default function StudioPage() {
     }
   }
 
+  async function handleSchedule() {
+    if (!schedForm.title.trim()) { setSchedError('Title is required'); return }
+    if (!schedForm.scheduledAt) { setSchedError('Schedule date/time is required'); return }
+    const scheduledAt = new Date(schedForm.scheduledAt)
+    if (scheduledAt <= new Date()) { setSchedError('Scheduled time must be in the future'); return }
+    setSchedLoading(true)
+    setSchedError('')
+    try {
+      const res = await fetch('/api/scheduled-streams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...schedForm, scheduledAt: scheduledAt.toISOString() }),
+      })
+      const d = await res.json()
+      if (!d.success) { setSchedError(d.error?.message ?? 'Failed to schedule'); return }
+      setSchedSuccess(true)
+      setSchedForm(f => ({ ...f, title: '', description: '', scheduledAt: '' }))
+    } finally {
+      setSchedLoading(false)
+    }
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <h1 className="mb-2 font-bebas text-hero text-text">STUDIO</h1>
@@ -185,14 +218,18 @@ export default function StudioPage() {
 
       {/* Studio mode tabs */}
       <div className="mb-8 flex gap-1 border-b border-border">
-        {(['live', 'video'] as StudioTab[]).map(t => (
+        {([
+          { id: 'live', label: '📡 GO LIVE' },
+          { id: 'video', label: '🎬 UPLOAD VIDEO' },
+          { id: 'schedule', label: '📅 SCHEDULE' },
+        ] as { id: StudioTab; label: string }[]).map(t => (
           <button
-            key={t}
-            onClick={() => setStudioTab(t)}
+            key={t.id}
+            onClick={() => setStudioTab(t.id)}
             className={`px-5 py-2.5 font-bebas text-section tracking-widest border-b-2 transition-colors
-              ${studioTab === t ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
+              ${studioTab === t.id ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-text'}`}
           >
-            {t === 'live' ? '📡 GO LIVE' : '🎬 UPLOAD VIDEO'}
+            {t.label}
           </button>
         ))}
       </div>
@@ -326,6 +363,89 @@ export default function StudioPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {studioTab === 'schedule' && (
+        <div className="max-w-lg">
+          {schedSuccess && (
+            <div className="mb-6 rounded border border-green/30 bg-green/5 p-4">
+              <p className="font-bebas text-section tracking-widest text-green">STREAM SCHEDULED!</p>
+              <p className="mt-1 font-barlow text-body text-muted">
+                Your stream has been added to the schedule. View it on the{' '}
+                <a href="/scheduled" className="text-accent hover:underline">schedule page</a>.
+              </p>
+            </div>
+          )}
+          <div className="flex flex-col gap-5">
+            <Input
+              label="Stream Title"
+              value={schedForm.title}
+              onChange={e => setSchedForm(f => ({ ...f, title: e.target.value }))}
+              placeholder="What will you be streaming?"
+              maxLength={120}
+            />
+            <div>
+              <label className="mb-1 block font-bebas text-label tracking-widest text-muted">DESCRIPTION (optional)</label>
+              <textarea
+                value={schedForm.description}
+                onChange={e => setSchedForm(f => ({ ...f, description: e.target.value }))}
+                maxLength={2000}
+                rows={2}
+                placeholder="Describe your upcoming stream..."
+                className="w-full rounded border border-border bg-surface px-3 py-2 font-barlow text-body text-text placeholder:text-muted focus:border-accent focus:outline-none resize-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block font-bebas text-label tracking-widest text-muted">GENRE</label>
+              <select
+                value={schedForm.genre}
+                onChange={e => setSchedForm(f => ({ ...f, genre: e.target.value }))}
+                className="w-full rounded border border-border bg-surface px-3 py-2 font-barlow text-body text-text focus:border-accent focus:outline-none"
+              >
+                {GENRES.map(g => (
+                  <option key={g} value={g}>{g.replace('_', ' ')}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block font-bebas text-label tracking-widest text-muted">DATE & TIME</label>
+              <input
+                type="datetime-local"
+                value={schedForm.scheduledAt}
+                onChange={e => setSchedForm(f => ({ ...f, scheduledAt: e.target.value }))}
+                min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+                className="w-full rounded border border-border bg-surface px-3 py-2 font-barlow text-body text-text focus:border-accent focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block font-bebas text-label tracking-widest text-muted">PANEL SLOTS: {schedForm.panelCount}</label>
+              <input
+                type="range"
+                min="1"
+                max="9"
+                value={schedForm.panelCount}
+                onChange={e => setSchedForm(f => ({ ...f, panelCount: Number(e.target.value) }))}
+                className="w-full accent-accent"
+              />
+            </div>
+            <div className="flex items-center justify-between rounded border border-border bg-surface p-3">
+              <div>
+                <p className="font-bebas text-section tracking-widest text-text">NOTIFY FOLLOWERS</p>
+                <p className="font-barlow text-label text-muted">Send notification when stream starts</p>
+              </div>
+              <button
+                onClick={() => setSchedForm(f => ({ ...f, notifyFollowers: !f.notifyFollowers }))}
+                className={`relative h-6 w-11 rounded-full transition-colors ${schedForm.notifyFollowers ? 'bg-accent' : 'bg-border'}`}
+              >
+                <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${schedForm.notifyFollowers ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+            {schedError && <p className="font-barlow text-label text-red">{schedError}</p>}
+            <Btn onClick={handleSchedule} loading={schedLoading} size="lg" className="w-full">
+              SCHEDULE STREAM
+            </Btn>
           </div>
         </div>
       )}

@@ -15,21 +15,26 @@ const createVideoSchema = z.object({
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const creatorId = searchParams.get('creatorId')
+  const creatorId = searchParams.get('creatorId') ?? undefined
   const cursor = searchParams.get('cursor') ?? undefined
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '12', 10), 24)
-
-  if (!creatorId) return err('INVALID', 'creatorId is required', 400)
+  const sort = searchParams.get('sort') === 'views' ? 'views' : 'publishedAt'
 
   const posts = await prisma.videoPost.findMany({
-    where: { creatorId, isPublished: true, deletedAt: null },
+    where: {
+      ...(creatorId ? { creatorId } : {}),
+      isPublished: true,
+      deletedAt: null,
+    },
     take: limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-    orderBy: { publishedAt: 'desc' },
+    orderBy: sort === 'views'
+      ? [{ views: 'desc' }, { id: 'asc' }]
+      : { publishedAt: 'desc' },
     select: {
       id: true, title: true, description: true, thumbnailUrl: true,
       durationSeconds: true, views: true, isPaywalled: true, paywallAmountCents: true,
-      publishedAt: true,
+      publishedAt: true, createdAt: true,
       creator: { select: { username: true, displayName: true, avatarUrl: true } },
     },
   })
