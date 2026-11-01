@@ -570,6 +570,12 @@ export default function LiveRoomPage({
   var [reactionPickerSlot, setReactionPickerSlot] = useState(0);     // which of the 6 slots is being edited
   var [reactionPickerInput,setReactionPickerInput]= useState('');    // emoji input for selected slot
 
+  var [guestNotes,        setGuestNotes]        = useState(function() { try { var s = localStorage.getItem('sw_guest_notes'); return s ? JSON.parse(s) : {}; } catch(e) { return {}; } }); // { [guestId]: string }
+  var [editingGuestNote,  setEditingGuestNote]  = useState(null);    // guestId whose note panel is open
+  var [guestTags,         setGuestTags]         = useState({});       // { [guestId]: 'red'|'yellow'|'green' }
+  var [chatSparkline,     setChatSparkline]     = useState([0,0,0,0,0,0,0,0,0,0]); // rolling 10×6s message counts
+  var chatLenRef2          = useRef(0);          // last chat.length for sparkline delta tracking
+
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
   var ccRecogRef = useRef(null);
@@ -1648,6 +1654,36 @@ export default function LiveRoomPage({
   useEffect(function() {
     try { localStorage.setItem('sw_reactions', JSON.stringify(customReactions)); } catch(e) {}
   }, [customReactions]);
+
+  // ── Guest notes: persist to localStorage ────────────────────────────────
+  useEffect(function() {
+    try { localStorage.setItem('sw_guest_notes', JSON.stringify(guestNotes)); } catch(e) {}
+  }, [guestNotes]);
+
+  // ── Chat sparkline: tally new messages into current bucket ───────────────
+  useEffect(function() {
+    var newLen = chat ? chat.length : 0;
+    var delta = newLen - chatLenRef2.current;
+    if (delta <= 0) { chatLenRef2.current = newLen; return; }
+    chatLenRef2.current = newLen;
+    setChatSparkline(function(prev) {
+      var next = prev.slice();
+      next[next.length - 1] = (next[next.length - 1] || 0) + delta;
+      return next;
+    });
+  }, [chat && chat.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Chat sparkline: advance bucket every 6 s ────────────────────────────
+  useEffect(function() {
+    var id = setInterval(function() {
+      setChatSparkline(function(prev) {
+        var next = prev.slice(1);
+        next.push(0);
+        return next;
+      });
+    }, 6000);
+    return function() { clearInterval(id); };
+  }, []);
 
   // ── Presenter notes: restore from localStorage on mount ─────────────────
   useEffect(function() {
@@ -3949,6 +3985,7 @@ export default function LiveRoomPage({
                           { label: '📨 Message', action: 'msg' },
                           { label: '✏️ Rename (local)', action: 'rename' },
                           { label: '🎨 Cell Color', action: 'color' },
+                          { label: guestNotes[gid] ? '📓 Note ✓' : '📓 Note', action: 'note' },
                           { label: '🚫 Remove from Stage', action: 'remove' },
                         ].filter(function(item) { return !item.hide; }).map(function(item) {
                           return (
@@ -4033,6 +4070,9 @@ export default function LiveRoomPage({
                                 } else if (item.action === 'color') {
                                   // color picker handled inline — just close the main menu items
                                   return;
+                                } else if (item.action === 'note') {
+                                  setEditingGuestNote(function(p) { return p === gid ? null : gid; });
+                                  return; // keep menu open
                                 }
                               }}
                               style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 13px', background: 'none', border: 'none', borderBottom: '1px solid ' + DIM, color: item.action === 'remove' ? RED : TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, cursor: 'pointer', letterSpacing: .3 }}>
@@ -4202,6 +4242,29 @@ export default function LiveRoomPage({
                             })}
                           </div>
                         </div>
+                        {/* Per-guest private note (host-local, never transmitted) */}
+                        {editingGuestNote === gid && (
+                          <div style={{ padding: '7px 10px 8px', borderTop: '1px solid ' + DIM }} onClick={function(e) { e.stopPropagation(); }}>
+                            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, marginBottom: 5 }}>📓 GUEST NOTE (private)</div>
+                            <textarea
+                              value={guestNotes[gid] || ''}
+                              onChange={function(e) {
+                                var val = e.target.value.slice(0, 400);
+                                setGuestNotes(function(prev) { var next = Object.assign({}, prev); if (val) { next[gid] = val; } else { delete next[gid]; } return next; });
+                              }}
+                              onClick={function(e) { e.stopPropagation(); }}
+                              placeholder="Private notes about this guest…"
+                              rows={3}
+                              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '5px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, outline: 'none', resize: 'none', lineHeight: 1.4 }}
+                            />
+                            {guestNotes[gid] && (
+                              <button onClick={function(e) { e.stopPropagation(); setGuestNotes(function(prev) { var next = Object.assign({}, prev); delete next[gid]; return next; }); }}
+                                style={{ marginTop: 4, background: 'none', border: 'none', fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED + '99', cursor: 'pointer', padding: 0, letterSpacing: .3 }}>
+                                clear note
+                              </button>
+                            )}
+                          </div>
+                        )}
                         {removeConfirmId === gid && (
                           <div style={{ padding: '8px 12px', background: 'rgba(255,26,60,.08)', borderTop: '1px solid rgba(255,26,60,.25)' }}>
                             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, marginBottom: 6, letterSpacing: .3 }}>
@@ -4297,6 +4360,23 @@ export default function LiveRoomPage({
                       })()}
                       {!isOwn && g.producerId && producerQuality[g.producerId] && (
                         <SignalBars quality={producerQuality[g.producerId]} />
+                      )}
+                      {(role === 'host' || role === 'cohost') && guestNotes[gid] && (
+                        <span title="Has note" style={{ width: 6, height: 6, borderRadius: '50%', background: '#6DBF7E', display: 'inline-block', flexShrink: 0 }} />
+                      )}
+                      {(role === 'host' || role === 'cohost') && (
+                        <button
+                          onClick={function(e) {
+                            e.stopPropagation();
+                            var seq = ['red', 'yellow', 'green', null];
+                            var cur = guestTags[gid] || null;
+                            var idx = seq.indexOf(cur);
+                            var nxt = seq[(idx + 1) % seq.length];
+                            setGuestTags(function(prev) { var n = Object.assign({}, prev); if (nxt) { n[gid] = nxt; } else { delete n[gid]; } return n; });
+                          }}
+                          title={guestTags[gid] ? 'Tag: ' + guestTags[gid] + ' — click to change' : 'Click to tag'}
+                          style={{ width: 8, height: 8, borderRadius: '50%', background: guestTags[gid] === 'red' ? RED : guestTags[gid] === 'yellow' ? '#F0A500' : guestTags[gid] === 'green' ? '#6DBF7E' : DIM, border: guestTags[gid] ? 'none' : '1px solid ' + BORDER, cursor: 'pointer', padding: 0, outline: 'none', flexShrink: 0 }}
+                        />
                       )}
                     </div>
                   </div>
@@ -5092,6 +5172,20 @@ export default function LiveRoomPage({
               <span style={{ fontWeight: 700, fontSize: 18, color: TEXT, letterSpacing: .3 }}>Chat</span>
               {slowModeSec > 0 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, background: 'rgba(255,255,255,.07)', borderRadius: 4, padding: '2px 5px', letterSpacing: 1 }}>🐌 {slowModeSec}s</span>}
               {subscriberOnly && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '2px 5px', letterSpacing: 1 }}>⭐ SUB ONLY</span>}
+              {(function() {
+                var maxVal = Math.max.apply(null, chatSparkline.concat([1]));
+                return (
+                  <div title="Chat activity (last 60s)" style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 12, marginLeft: 2 }}>
+                    {chatSparkline.map(function(v, i) {
+                      var pct = maxVal > 0 ? v / maxVal : 0;
+                      var isLast = i === chatSparkline.length - 1;
+                      return (
+                        <div key={i} style={{ width: 3, borderRadius: 1, background: isLast ? GOLD : 'rgba(201,168,76,.35)', height: Math.max(2, Math.round(pct * 12)), alignSelf: 'flex-end', transition: 'height .3s ease' }} />
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               {(role === 'host' || role === 'cohost') && (
@@ -5277,6 +5371,16 @@ export default function LiveRoomPage({
                         <button onClick={function() {
                           if (socket) socket.emit('pin-chat-message', { id: m.id || '', username: m.username || 'Guest', message: m.message || '', ts: m.ts || 0 });
                         }} title="Pin message" style={{ background: 'none', border: 'none', color: pinnedMsg && pinnedMsg.id === m.id ? gold : MUTED, fontSize: 11, cursor: 'pointer', padding: '0 2px', lineHeight: 1, opacity: .75 }}>📌</button>
+                        {m.message && (
+                          <button onClick={function() {
+                            var d = new Date(m.ts ? m.ts * 1000 : Date.now());
+                            var hh = (d.getHours() < 10 ? '0' : '') + d.getHours();
+                            var mm2 = (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+                            var line = '[' + hh + ':' + mm2 + '] ' + (m.username || '?') + ': ' + (m.message || '');
+                            setNoteText(function(prev) { return (prev ? prev + '\n' : '') + line; });
+                            if (addToastRef.current) addToastRef.current('Saved to notes', 'success');
+                          }} title="Save to notes" style={{ background: 'none', border: 'none', color: MUTED, fontSize: 11, cursor: 'pointer', padding: '0 2px', lineHeight: 1, opacity: .7 }}>📝</button>
+                        )}
                         {m.id && (
                           <button onClick={function() {
                             if (socket) socket.emit('chat-delete', { id: m.id });
