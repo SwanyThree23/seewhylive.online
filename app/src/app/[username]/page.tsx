@@ -80,7 +80,7 @@ export default async function ProfilePage({ params }: Props) {
         </div>
 
         {/* Client-side follow button */}
-        <ProfileActions userId={user.id} username={user.username} />
+        <ProfileActions userId={user.id} username={user.username} displayName={user.displayName ?? user.username} />
       </div>
 
       {/* Social links */}

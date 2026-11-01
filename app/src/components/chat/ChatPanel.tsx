@@ -1,145 +1,224 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { ChatMessage, type ChatMessageData } from './ChatMessage'
-import { Btn } from '@/components/ui/Btn'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
+import { Avatar } from '@/components/ui/Avatar'
+import { Btn } from '@/components/ui/Btn'
+import { GiftPanel } from '@/components/payment/GiftPanel'
+import { connectSocket } from '@/lib/socket-client'
+import type { Socket } from 'socket.io-client'
 
-interface ChatPanelProps {
-  streamId: string
-  isCreator?: boolean
+interface ChatMessage {
+  id: string
+  body: string
+  lang: string
+  isPinned: boolean
+  createdAt: string
+  isAura?: boolean
+  author: {
+    id: string
+    username: string
+    displayName: string | null
+    avatarUrl: string | null
+    tier: string | null
+  }
 }
 
-export function ChatPanel({ streamId, isCreator = false }: ChatPanelProps) {
+interface Props {
+  streamId: string
+  toUserId?: string
+  creatorName?: string
+}
+
+const AURA_ID = '__aura__'
+
+export function ChatPanel({ streamId, toUserId, creatorName }: Props) {
   const { data: session } = useSession()
-  const [messages, setMessages] = useState<ChatMessageData[]>([])
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
-  const [scrolledUp, setScrolledUp] = useState(false)
-  const [newCount, setNewCount] = useState(0)
-  const listRef = useRef<HTMLDivElement>(null)
+  const [translateId, setTranslateId] = useState<string | null>(null)
+  const [translations, setTranslations] = useState<Record<string, string>>({})
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const socketRef = useRef<Socket | null>(null)
 
-  const scrollToBottom = () => {
-    const el = listRef.current
-    if (el) el.scrollTop = el.scrollHeight
-    setScrolledUp(false)
-    setNewCount(0)
-  }
-
-  const handleScroll = () => {
-    const el = listRef.current
-    if (!el) return
-    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60
-    setScrolledUp(!isAtBottom)
-  }
-
-  const appendMessage = (msg: ChatMessageData) => {
-    setMessages(prev => [...prev.slice(-199), msg])
-    if (scrolledUp) setNewCount(n => n + 1)
-    else scrollToBottom()
-  }
-
+  // Load recent chat history
   useEffect(() => {
-    // Load initial messages
     fetch(`/api/streams/${streamId}/chat?limit=50`)
       .then(r => r.json())
       .then(d => {
-        if (d.success) setMessages(d.data.items.reverse())
+        if (d.success) {
+          // API returns newest-first; reverse for display
+          setMessages([...d.data.items].reverse())
+        }
       })
+      .catch(() => {})
   }, [streamId])
 
+  // Socket real-time chat
   useEffect(() => {
-    if (!scrolledUp) scrollToBottom()
-  }, [messages.length])
+    const token = (session as { accessToken?: string } | null)?.accessToken
+    const s = connectSocket(token)
+    socketRef.current = s
 
-  const sendMessage = async () => {
+    s.emit('join-chat', { streamId })
+
+    s.on('chat-message', (msg: ChatMessage) => {
+      setMessages(prev => [...prev.slice(-199), msg])
+    })
+
+    s.on('aura-message', (msg: { body: string; streamId: string }) => {
+      if (msg.streamId !== streamId) return
+      setMessages(prev => [
+        ...prev.slice(-199),
+        {
+          id: `aura-${Date.now()}`,
+          body: msg.body,
+          lang: 'en',
+          isPinned: false,
+          createdAt: new Date().toISOString(),
+          isAura: true,
+          author: {
+            id: AURA_ID,
+            username: 'AURA',
+            displayName: 'AURA AI',
+            avatarUrl: null,
+            tier: null,
+          },
+        },
+      ])
+    })
+
+    s.on('chat-delete', ({ messageId }: { messageId: string }) => {
+      setMessages(prev => prev.filter(m => m.id !== messageId))
+    })
+
+    return () => {
+      s.emit('leave-chat', { streamId })
+      s.off('chat-message')
+      s.off('aura-message')
+      s.off('chat-delete')
+    }
+  }, [streamId, session])
+
+  // Auto-scroll
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const sendMessage = useCallback(async () => {
     if (!input.trim() || !session) return
+    const body = input.trim()
+    setInput('')
     setSending(true)
     try {
-      const res = await fetch(`/api/streams/${streamId}/chat`, {
+      await fetch(`/api/streams/${streamId}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: input.trim() }),
+        body: JSON.stringify({ body }),
       })
-      const data = await res.json()
-      if (data.success) {
-        appendMessage(data.data)
-        setInput('')
-      }
     } finally {
       setSending(false)
     }
-  }
+  }, [input, session, streamId])
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
-    }
-  }
-
-  const handleDelete = async (id: string) => {
-    setMessages(prev => prev.filter(m => m.id !== id))
+  async function translate(msg: ChatMessage) {
+    if (translations[msg.id]) { setTranslateId(msg.id); return }
+    setTranslateId(msg.id)
+    try {
+      const res = await fetch('/api/chat/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: msg.body, targetLang: 'en' }),
+      })
+      const d = await res.json()
+      if (d.success) {
+        setTranslations(prev => ({ ...prev, [msg.id]: d.data.translatedText }))
+      }
+    } catch { /* ignore */ }
   }
 
   return (
-    <div className="flex h-full flex-col bg-surface">
+    <div className="flex h-full flex-col bg-bg">
       {/* Header */}
-      <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2">
-        <span className="font-bebas text-section tracking-widest text-muted">LIVE CHAT</span>
+      <div className="border-b border-border px-3 py-2">
+        <p className="font-bebas text-label tracking-widest text-muted">LIVE CHAT</p>
       </div>
 
       {/* Messages */}
-      <div
-        ref={listRef}
-        onScroll={handleScroll}
-        className="relative flex-1 overflow-y-auto py-2"
-      >
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
+        {messages.length === 0 && (
+          <p className="py-4 text-center font-barlow text-caption text-muted">
+            No messages yet. Say hello!
+          </p>
+        )}
         {messages.map(msg => (
-          <ChatMessage
+          <div
             key={msg.id}
-            message={msg}
-            isOwn={msg.author.id === session?.user?.id}
-            isMod={isCreator}
-            onDelete={isCreator ? handleDelete : undefined}
-          />
+            className={`group flex gap-2 rounded p-1.5 transition-colors hover:bg-surface ${msg.isPinned ? 'border border-gold/30 bg-gold/5' : ''}`}
+          >
+            {msg.isAura ? (
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-purple/20 text-xs font-bebas text-purple">
+                AI
+              </div>
+            ) : (
+              <Avatar src={msg.author.avatarUrl} alt={msg.author.username} size={28} />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className={`font-bebas text-caption leading-none ${msg.isAura ? 'text-purple' : 'text-accent'}`}>
+                  {msg.author.displayName ?? msg.author.username}
+                </span>
+                {msg.author.tier && (
+                  <span className="rounded bg-gold/20 px-1 font-bebas text-[9px] text-gold">
+                    {msg.author.tier}
+                  </span>
+                )}
+              </div>
+              <p className="font-barlow text-body text-text break-words">
+                {translateId === msg.id && translations[msg.id]
+                  ? translations[msg.id]
+                  : msg.body}
+              </p>
+              {msg.lang !== 'en' && (
+                <button
+                  onClick={() => translate(msg)}
+                  className="mt-0.5 font-barlow text-[10px] text-muted hover:text-accent transition-colors"
+                >
+                  Translate
+                </button>
+              )}
+            </div>
+          </div>
         ))}
+        <div ref={bottomRef} />
       </div>
 
-      {/* Scroll-to-bottom jump button */}
-      {scrolledUp && newCount > 0 && (
-        <button
-          onClick={scrollToBottom}
-          className="mx-3 mb-1 rounded border border-border bg-surface py-1 font-bebas text-label tracking-widest text-muted transition-colors hover:text-text"
-        >
-          ↓ {newCount} NEW
-        </button>
+      {/* Gifts */}
+      {toUserId && creatorName && (
+        <GiftPanel streamId={streamId} toUserId={toUserId} creatorName={creatorName} />
       )}
 
       {/* Input */}
-      <div className="shrink-0 border-t border-border p-3">
+      <div className="border-t border-border p-2">
         {session ? (
           <div className="flex gap-2">
             <input
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Say something…"
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
+              placeholder="Say something..."
               maxLength={500}
-              className="min-w-0 flex-1 rounded border border-border bg-card px-3 py-2 font-barlow text-body text-text placeholder:text-dim focus:border-cyan/50 focus:outline-none"
+              className="min-w-0 flex-1 rounded border border-border bg-surface px-2.5 py-1.5 font-barlow text-body text-text placeholder:text-muted focus:border-accent focus:outline-none"
             />
-            <Btn
-              size="sm"
-              variant="primary"
-              onClick={sendMessage}
-              disabled={!input.trim()}
-              loading={sending}
-            >
-              SEND
+            <Btn size="sm" onClick={sendMessage} loading={sending} disabled={!input.trim()}>
+              Send
             </Btn>
           </div>
         ) : (
-          <p className="text-center font-barlow text-label text-muted">Sign in to chat</p>
+          <p className="text-center font-barlow text-caption text-muted">
+            <a href="/login" className="text-accent hover:underline">Sign in</a> to chat
+          </p>
         )}
       </div>
     </div>

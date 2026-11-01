@@ -12,6 +12,8 @@ import { Btn } from '@/components/ui/Btn'
 const NAV_LINKS = [
   { href: '/discover', label: 'DISCOVER' },
   { href: '/rooms', label: 'ROOMS' },
+  { href: '/videos', label: 'VIDEOS' },
+  { href: '/scheduled', label: 'SCHEDULE' },
   { href: '/search', label: 'SEARCH' },
   { href: '/studio', label: 'STUDIO' },
 ]

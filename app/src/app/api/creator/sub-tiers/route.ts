@@ -18,6 +18,19 @@ const updateTierSchema = createTierSchema.partial().extend({
 })
 
 export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const publicCreatorId = searchParams.get('creatorId')
+
+  if (publicCreatorId) {
+    // Public endpoint — show only active tiers for a specific creator
+    const tiers = await prisma.creatorSubTier.findMany({
+      where: { creatorId: publicCreatorId, isActive: true },
+      orderBy: { tier: 'asc' },
+      select: { id: true, tier: true, name: true, priceCents: true, description: true, perks: true },
+    })
+    return ok({ tiers })
+  }
+
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
 

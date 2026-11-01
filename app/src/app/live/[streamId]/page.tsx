@@ -99,7 +99,11 @@ export default async function LiveStreamPage({ params }: Props) {
 
       {/* Chat sidebar */}
       <div className="h-64 w-full border-t border-border lg:h-auto lg:w-80 lg:border-l lg:border-t-0">
-        <ChatPanel streamId={stream.id} />
+        <ChatPanel
+          streamId={stream.id}
+          toUserId={stream.creator.id}
+          creatorName={stream.creator.displayName ?? stream.creator.username}
+        />
       </div>
 
       {/* Client-side socket + tip overlay (portals up) */}
