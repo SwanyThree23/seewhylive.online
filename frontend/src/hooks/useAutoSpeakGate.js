@@ -18,10 +18,12 @@ export function useAutoSpeakGate(opts) {
   var s2 = useState(0);      var micLevel   = s2[0]; var setMicLevel   = s2[1];
   var s3 = useState(false);  var gateOpen   = s3[0]; var setGateOpen   = s3[1];
   var s4 = useState(false);  var raisedHand = s4[0]; var setRaisedHand = s4[1];
-  var aRef = useRef(null); var rafRef = useRef(null); var aboveRef = useRef(false); var dataRef = useRef(null);
+  var aRef = useRef(null); var rafRef = useRef(null); var aboveRef = useRef(false); var dataRef = useRef(null); var holdTimerRef = useRef(null);
   useEffect(function() {
     if (aRef.current) { try { aRef.current.ctx.close(); } catch(e) {} aRef.current = null; }
     cancelAnimationFrame(rafRef.current);
+    clearTimeout(holdTimerRef.current); holdTimerRef.current = null;
+    aboveRef.current = false;
     if (!stream) { setIsSpeaking(false); setMicLevel(0); return; }
     var h = createAnalyser(stream);
     if (!h) return;
@@ -34,13 +36,22 @@ export function useAutoSpeakGate(opts) {
       for (var i = 0; i < dataRef.current.length; i++) { var v = (dataRef.current[i]-128)/128; sum += v*v; }
       var rms = Math.sqrt(sum/dataRef.current.length);
       setMicLevel(Math.min(100, Math.floor(rms*600)));
-      var above = rms > threshold;
-      if (above && !aboveRef.current) { aboveRef.current = true; setIsSpeaking(true); }
-      else if (!above && aboveRef.current) { aboveRef.current = false; setIsSpeaking(false); }
+      if (rms > threshold) {
+        clearTimeout(holdTimerRef.current); holdTimerRef.current = null;
+        if (!aboveRef.current) { aboveRef.current = true; setIsSpeaking(true); }
+      } else if (aboveRef.current && !holdTimerRef.current) {
+        holdTimerRef.current = setTimeout(function() {
+          holdTimerRef.current = null; aboveRef.current = false; setIsSpeaking(false);
+        }, 400);
+      }
       rafRef.current = requestAnimationFrame(tick);
     }
     rafRef.current = requestAnimationFrame(tick);
-    return function() { cancelAnimationFrame(rafRef.current); if (aRef.current) { try { aRef.current.ctx.close(); } catch(e) {} aRef.current = null; } };
+    return function() {
+      cancelAnimationFrame(rafRef.current);
+      clearTimeout(holdTimerRef.current); holdTimerRef.current = null;
+      if (aRef.current) { try { aRef.current.ctx.close(); } catch(e) {} aRef.current = null; }
+    };
   }, [stream, threshold]);
   var openGate  = useCallback(function() { setGateOpen(true); setRaisedHand(false); }, []);
   var closeGate = useCallback(function() { setGateOpen(false); }, []);

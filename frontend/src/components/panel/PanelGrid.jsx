@@ -47,6 +47,8 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   // panelInvite / setPanelInvite are lifted to App.jsx so the invite fires on all tabs
   var [swapSourceId, setSwapSourceId] = useState(null); // userId selected for swap (host only)
   var [pkBattle, setPkBattle] = useState(null);
+  var [localAudioStream, setLocalAudioStream] = useState(null);
+  var prevSpotlightRef = useRef(null);
   var exitTimersRef = useRef({});
   var localStreamRef = useRef(null);
   var prevSlotKeysRef = useRef(new Set());
@@ -54,7 +56,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
 
   useEffect(function() { injectPanelGridStyles(); }, []);
 
-  // Acquire local mic stream for speaking-level visualization on local tile
+  // Acquire local mic stream for speaking-level visualization on local tile (audio-only rooms)
   useEffect(function() {
     if (!isAudioOnlyRoom || !userId) return;
     var active = true;
@@ -75,7 +77,29 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
     };
   }, [isAudioOnlyRoom, userId]);
 
-  var gate = useAutoSpeakGate({ stream: localStream });
+  // In video-room mode, derive speaking-level stream from the published audio producer track
+  useEffect(function() {
+    if (!rtcManager || isAudioOnlyRoom) { setLocalAudioStream(null); return; }
+    var onPublished = function(data) {
+      var at = data && data.audioTrack;
+      setLocalAudioStream(at && at.readyState !== 'ended' ? new MediaStream([at]) : null);
+    };
+    var onReset = function() { setLocalAudioStream(null); };
+    rtcManager.on('streamPublished', onPublished);
+    rtcManager.on('rtcReset', onReset);
+    // Seed immediately when audio producer already exists (e.g. component mounted after publish)
+    var ap = rtcManager.producers && rtcManager.producers['audio'];
+    if (ap && ap.track && ap.track.readyState !== 'ended') {
+      setLocalAudioStream(new MediaStream([ap.track]));
+    }
+    return function() {
+      rtcManager.off('streamPublished', onPublished);
+      rtcManager.off('rtcReset', onReset);
+      setLocalAudioStream(null);
+    };
+  }, [rtcManager, isAudioOnlyRoom]);
+
+  var gate = useAutoSpeakGate({ stream: isAudioOnlyRoom ? localStream : localAudioStream });
 
   useEffect(function() {
     if (!socket || !roomId) return;
@@ -234,6 +258,18 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       if (pkTimerRef.current) clearTimeout(pkTimerRef.current);
     };
   }, [socket, roomId]);
+
+  // Spotlight → simulcast layer hint: upgrade spotlighted guest to r2, downgrade previous
+  useEffect(function() {
+    if (!socket || !roomId) return;
+    if (prevSpotlightRef.current && prevSpotlightRef.current !== spotlightUserId) {
+      socket.emit('consumer:set-layer', { roomId: roomId, guestId: prevSpotlightRef.current, spatialLayer: 0 });
+    }
+    if (spotlightUserId) {
+      socket.emit('consumer:set-layer', { roomId: roomId, guestId: spotlightUserId, spatialLayer: 2 });
+    }
+    prevSpotlightRef.current = spotlightUserId;
+  }, [spotlightUserId, socket, roomId]);
 
   var hasSlot = slots.some(function(s) { return s.user_id === userId; });
 

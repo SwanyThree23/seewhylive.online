@@ -55,6 +55,11 @@ var ANIM = [
   '@keyframes speakPulseGrid{0%,100%{box-shadow:0 0 0 2px '+TEAL+'99,0 0 8px '+TEAL+'22}50%{box-shadow:0 0 0 3px '+TEAL+',0 0 18px '+TEAL+'44}}',
   '@keyframes handBadgePulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.85}}',
   '@keyframes cellMenuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}',
+  '@keyframes announceIn{from{opacity:0;transform:translateX(-50%) translateY(-14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}',
+  '@keyframes announceOut{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(-10px)}}',
+  '@keyframes reactionFloat{0%{transform:translateY(0) scale(1);opacity:1}70%{transform:translateY(-110px) scale(1.25);opacity:.85}100%{transform:translateY(-150px) scale(.9);opacity:0}}',
+  '@keyframes tickerScroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}',
+  '@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}80%{opacity:1}100%{transform:translateY(110%) rotate(540deg);opacity:0}}',
 ].join('\n');
 
 // ─── Subtle reaction tone for emoji bursts ─────────────────────────────────
@@ -256,6 +261,40 @@ function WaveBars({ color }) {
   );
 }
 
+function StageTimer({ startMs }) {
+  var [elapsed, setElapsed] = useState(function() { return startMs ? Math.floor((Date.now() - startMs) / 1000) : 0; });
+  useEffect(function() {
+    if (!startMs) return;
+    var id = setInterval(function() { setElapsed(Math.floor((Date.now() - startMs) / 1000)); }, 1000);
+    return function() { clearInterval(id); };
+  }, [startMs]);
+  if (!startMs) return null;
+  var m = Math.floor(elapsed / 60);
+  var s = elapsed % 60;
+  return React.createElement('span', {
+    style: { fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, flexShrink: 0, letterSpacing: 0.3 },
+  }, (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+}
+
+function SignalBars({ quality }) {
+  var bars  = quality === 'green' ? 4 : quality === 'yellow' ? 2 : quality === 'red' ? 1 : 0;
+  var color = quality === 'green' ? '#6DBF7E' : quality === 'yellow' ? '#F0A500' : '#FF1A3C';
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5, height: 10, flexShrink: 0 }}>
+      {[1, 2, 3, 4].map(function(i) {
+        return (
+          <div key={i} style={{
+            width: 3,
+            height: 2 + 2 * i,
+            background: i <= bars ? color : 'rgba(138,122,98,.25)',
+            borderRadius: 1,
+          }} />
+        );
+      })}
+    </div>
+  );
+}
+
 function OverlayBanner({ banner }) {
   if (!banner || !banner.visible || !banner.text) return null;
   var isTop = banner.position === 'top';
@@ -348,8 +387,10 @@ export default function LiveRoomPage({
   var [medConf,       setMedConf]       = useState(mediaConfig || null);
   var [reactsOpen,    setReactsOpen]    = useState(false);
   var [floatReacts,   setFloatReacts]   = useState([]);
-  var [stageLayout,    setStageLayout]    = useState('grid');   // 'grid' | 'featured'
+  var [stageLayout,    setStageLayout]    = useState(function() { try { return localStorage.getItem('sw_layout') || 'grid'; } catch(e) { return 'grid'; } });   // 'grid' | 'featured'
   var [featuredId,     setFeaturedId]     = useState(userId);
+  var [cinemaMode,     setCinemaMode]     = useState(false);  // hide thumbnail strip in featured layout
+  var [stageLocked,    setStageLocked]    = useState(false);  // stage entry locked by host
   var [showLiveModal,  setShowLiveModal]  = useState(false);
   var [stageGuests,    setStageGuests]    = useState([userId]);
   var [showMediaConf,  setShowMediaConf]  = useState(false);
@@ -366,7 +407,7 @@ export default function LiveRoomPage({
   var [qaMyVotes,      setQaMyVotes]      = useState({});
   var [showShareSheet, setShowShareSheet] = useState(false);
   var [panelMode,      setPanelMode]      = useState('grid'); // grid | list — for 20-person layout hint
-  var [raisedHands,    setRaisedHands]    = useState({});    // { [guestId]: true } — persistent raised-hand indicators
+  var [raisedHands,    setRaisedHands]    = useState({});    // { [guestId]: timestamp } — persistent raised-hand indicators
   var [pinnedId,       setPinnedId]       = useState(null);  // guestId | null — pinned/spotlight cell in grid
   var [cellMenuId,     setCellMenuId]     = useState(null);  // guestId | null — host cell action menu
   var [musicBanner,    setMusicBanner]    = useState(null);   // {title,style,emoji,sharedBy} | null
@@ -422,6 +463,125 @@ export default function LiveRoomPage({
   var [theaterChatVisible, setTheaterChatVisible] = useState(true);
   var [isScreenSharing,    setIsScreenSharing]    = useState(false);
   var [screenShareHost,    setScreenShareHost]    = useState(null);  // { username } when remote host is sharing
+  var [autoFocusSpeaker,   setAutoFocusSpeaker]   = useState(false); // auto-track dominant speaker in featured mode
+  var [producerQuality,    setProducerQuality]    = useState({});   // { [producerId]: 'green'|'yellow'|'red' }
+  var [consumerRawStats,   setConsumerRawStats]   = useState({});   // { [producerId]: { bitratekbps, jitter, packetsLost } }
+  var [frozenProducers,    setFrozenProducers]    = useState({});   // { [producerId]: true } — bitrate near-zero last sample
+  var [avCameras,          setAvCameras]          = useState([]);   // available video input devices for hot-swap
+  var [camDevIdx,          setCamDevIdx]          = useState(0);    // index into avCameras currently active
+  var [guestVolumes,       setGuestVolumes]       = useState({});   // { [guestId]: 0..1 } — per-guest local volume override
+  var [showKeyHelp,        setShowKeyHelp]        = useState(false); // keyboard shortcut guide modal
+  var [spotlight,          setSpotlight]          = useState(null); // { guestId, username } | null — host-broadcast spotlight
+  var [speakingSnapshots,  setSpeakingSnapshots]  = useState({});   // { [guestId]: totalSeconds } — polled every 5s from speakingTimeRef
+  var [stageSort,          setStageSort]          = useState('joined'); // 'joined' | 'speaking' | 'quality'
+  var [showStageStats,     setShowStageStats]     = useState(false); // host stage analytics sheet
+  var [statsSortCol,       setStatsSortCol]       = useState('speaking'); // 'name'|'speaking'|'stage'|'quality'|'gifts'
+  var [autoMuteJoin,       setAutoMuteJoin]       = useState(false); // host: auto-mute new guests on stage join
+  var [stageLimitSec,      setStageLimitSec]      = useState(0);     // 0 = off; 180/300/600 = 3/5/10 min
+  var [reactionBurst,      setReactionBurst]      = useState([]);    // [{ id, emoji, x }] — flying emoji over stage
+  var [lowBwMode,          setLowBwMode]          = useState(false); // cap remote simulcast to lowest layer
+  var [gridDensity,        setGridDensity]        = useState(0);     // -1=wider, 0=auto, +1=tighter column count
+  var [spotlightElapsed,   setSpotlightElapsed]   = useState(0);     // seconds spotlight has been active
+  var [avMics,             setAvMics]             = useState([]);    // available audioinput devices for hot-swap
+  var [micDevIdx,          setMicDevIdx]          = useState(0);     // index into avMics currently active
+  var [showNotes,          setShowNotes]          = useState(false); // host-only presenter notes overlay
+  var [noteText,           setNoteText]           = useState('');    // content of host notes (never transmitted)
+  var [joinSoundEnabled,   setJoinSoundEnabled]   = useState(true);  // play ping when guest joins stage
+  var [streamDuration,     setStreamDuration]     = useState(0);     // seconds since isLive became true
+  var [cellAspect,         setCellAspect]         = useState('16:9'); // '16:9' | '4:3' | '9:16'
+  var [stageCountdownMs,   setStageCountdownMs]   = useState(0);     // 0=off; epoch ms of countdown end
+  var [countdownInput,     setCountdownInput]     = useState('5:00'); // text input for countdown setting
+  var [showCountdownInput, setShowCountdownInput] = useState(false);  // show the countdown set panel
+  var [activityLog,        setActivityLog]        = useState([]);    // [{ id, type, msg, ts }] — host activity feed
+  var [showActivityLog,    setShowActivityLog]    = useState(false); // toggle activity log drawer
+  var [cellColors,         setCellColors]         = useState({});    // { [guestId]: '#hex' } — host-local cell accent color
+  var [localGuestNames,    setLocalGuestNames]    = useState({});    // { [guestId]: 'string' } — host-local display name override
+  var [renamingGid,        setRenamingGid]        = useState(null);  // guestId currently being renamed (inline input)
+  var [renameInput,        setRenameInput]        = useState('');    // controlled input for rename
+  var [showCellStats,      setShowCellStats]      = useState(false); // show speaking-time micro-badge on grid cells
+  var [peakViewers,        setPeakViewers]        = useState(0);     // max viewerCount seen this session
+  var [stageTint,          setStageTint]          = useState('');    // '' | '#hex' — translucent color wash over stage
+  var [msgTargetGid,       setMsgTargetGid]       = useState(null);  // guestId receiving a private host message
+  var [msgInput,           setMsgInput]           = useState('');    // controlled input for private message
+  var [inboundHostMsg,     setInboundHostMsg]     = useState(null);  // { from, text } — private message received from host
+  var [hoverGid,           setHoverGid]           = useState(null);  // guestId under mouse (grid hover tooltip)
+  var [hoverRect,          setHoverRect]          = useState(null);  // { top, left, width } from getBoundingClientRect
+  var [swapPickGid,        setSwapPickGid]        = useState(null);  // first cell selected in swap-mode
+  var [swapMode,           setSwapMode]           = useState(false); // host cell-swap mode active
+  var [stageOrderOverride, setStageOrderOverride] = useState(null);  // null | string[] — custom cell order for grid
+  var [autoLayout,         setAutoLayout]         = useState(false); // auto-switch grid↔featured by stage count
+  var [broadcastText,      setBroadcastText]      = useState('');    // text for host broadcast overlay
+  var [showBroadcastInput, setShowBroadcastInput] = useState(false); // show broadcast input panel
+  var [broadcastOverlay,   setBroadcastOverlay]   = useState(null);  // { text, from } | null — fullscreen text overlay
+  var [hiddenVideos,       setHiddenVideos]       = useState({});    // { [guestId]: true } — host-local video hide
+  var [showEmojiBar,       setShowEmojiBar]       = useState(false); // host quick-emoji fire bar
+  var [showSessionSummary, setShowSessionSummary] = useState(false); // session wrap-up card
+  var [reactionCounts,     setReactionCounts]     = useState({});    // { [emoji]: count } — cumulative session counts
+  var [showReactionBar,    setShowReactionBar]    = useState(true);  // show reaction tally below stage
+  var [showTeleprompter,   setShowTeleprompter]   = useState(false); // host teleprompter overlay
+  var [prompterText,       setPrompterText]       = useState('');    // teleprompter script text
+  var [prompterSpeed,      setPrompterSpeed]      = useState(40);    // scroll speed px/s (20–120)
+  var [prompterRunning,    setPrompterRunning]    = useState(false); // auto-scroll active
+  var [spotlightRotateSec, setSpotlightRotateSec] = useState(0);     // 0=off, or rotation interval seconds
+  var [joinRequests,       setJoinRequests]       = useState([]);    // [{ guestId, username, ts }] — pending stage requests
+  var [bgBlurOn,           setBgBlurOn]           = useState(false); // canvas background blur active
+  var [bgBlurLevel,        setBgBlurLevel]        = useState(8);     // blur radius in px (2–20)
+  var [showBlurSlider,     setShowBlurSlider]     = useState(false); // blur config popover visible
+  var [showDevicePicker,   setShowDevicePicker]   = useState(false); // camera/mic picker sheet
+  var [layoutPresets,      setLayoutPresets]      = useState(function() { try { var s = localStorage.getItem('sw_layout_presets'); return s ? JSON.parse(s) : []; } catch(e) { return []; } });
+  var [showPresetsPanel,   setShowPresetsPanel]   = useState(false); // layout presets sheet
+  var [presetNameInput,    setPresetNameInput]    = useState('');    // name input for saving preset
+  var [brbActive,          setBrbActive]          = useState(false); // BRB overlay visible (from socket brb event)
+  var [brbMsg,             setBrbMsg]             = useState('');    // message shown in BRB overlay
+  var [brbInput,           setBrbInput]           = useState('');    // input text for custom BRB message
+  var [showBrbInput,       setShowBrbInput]       = useState(false); // show BRB config popover
+  var [noiseSuppOn,        setNoiseSuppOn]        = useState(false); // Web Audio noise suppression active
+  var [pipActive,          setPipActive]          = useState(false); // browser native PiP active
+  var [tickerText,         setTickerText]         = useState('');    // current scrolling ticker text
+  var [tickerActive,       setTickerActive]       = useState(false); // ticker strip visible
+  var [tickerInput,        setTickerInput]        = useState('');    // host input for ticker text
+  var [showTickerInput,    setShowTickerInput]    = useState(false); // ticker config popover
+  var [ltEditGid,          setLtEditGid]          = useState(null);  // guestId whose name card is being edited
+  var [ltEditName,         setLtEditName]         = useState('');    // editor name field
+  var [ltEditTitle,        setLtEditTitle]        = useState('');    // editor title field
+  var [autoRecord,         setAutoRecord]         = useState(false); // auto-start recording when going live
+  var [confettiBurst,      setConfettiBurst]      = useState([]);    // array of { id, x, color, delay, size } particles
+  var [roomTimerSec,       setRoomTimerSec]       = useState(0);     // seconds remaining on room countdown
+  var [roomTimerActive,    setRoomTimerActive]    = useState(false); // room timer overlay visible
+  var [showTimerPicker,    setShowTimerPicker]    = useState(false); // host timer preset picker popover
+  var roomTimerRef         = useRef(null);
+  var [stageBg,            setStageBg]            = useState('');    // CSS gradient string or '' for default
+  var [showBgPicker,       setShowBgPicker]       = useState(false); // stage bg picker popover
+  var [wordFilter,         setWordFilter]         = useState(function() { try { var s = localStorage.getItem('sw_word_filter'); return s ? JSON.parse(s) : []; } catch(e) { return []; } });
+  var [showWordFilter,     setShowWordFilter]     = useState(false); // word filter editor visible
+  var [wordFilterInput,    setWordFilterInput]    = useState('');    // new word input
+  var [showGiftStrip,      setShowGiftStrip]      = useState(false); // gift leaderboard strip visible
+  var [showSoundboard,     setShowSoundboard]     = useState(false); // soundboard popover visible
+  var [sentimentPoll,      setSentimentPoll]      = useState(null);  // { question, yesCount, noCount, endTs } | null
+  var [sentimentVoted,     setSentimentVoted]     = useState(null);  // 'yes' | 'no' | null
+  var [sentimentInput,     setSentimentInput]     = useState('');    // host input for sentiment question
+  var [showSentimentInput, setShowSentimentInput] = useState(false); // host sentiment trigger popover
+  var [chatSearch,         setChatSearch]         = useState('');    // live filter string for chat panel
+  var [showChatSearch,     setShowChatSearch]     = useState(false); // chat search bar visible
+  var [showHealthHud,      setShowHealthHud]      = useState(false); // stream health HUD corner overlay
+  var [stageTimerTick,     setStageTimerTick]     = useState(0);     // incremented each second when stageLimitSec > 0
+  var [customReactions,    setCustomReactions]    = useState(function() { try { var s = localStorage.getItem('sw_reactions'); return s ? JSON.parse(s) : ['🔥','❤️','😂','👍','💎','⚡']; } catch(e) { return ['🔥','❤️','😂','👍','💎','⚡']; } });
+  var [showReactionPicker, setShowReactionPicker] = useState(false); // host emoji set config popover
+  var [reactionPickerSlot, setReactionPickerSlot] = useState(0);     // which of the 6 slots is being edited
+  var [reactionPickerInput,setReactionPickerInput]= useState('');    // emoji input for selected slot
+
+  var [guestNotes,        setGuestNotes]        = useState(function() { try { var s = localStorage.getItem('sw_guest_notes'); return s ? JSON.parse(s) : {}; } catch(e) { return {}; } }); // { [guestId]: string }
+  var [editingGuestNote,  setEditingGuestNote]  = useState(null);    // guestId whose note panel is open
+  var [guestTags,         setGuestTags]         = useState({});       // { [guestId]: 'red'|'yellow'|'green' }
+  var [chatSparkline,     setChatSparkline]     = useState([0,0,0,0,0,0,0,0,0,0]); // rolling 10×6s message counts
+  var chatLenRef2          = useRef(0);          // last chat.length for sparkline delta tracking
+
+  var [starredMsgs,    setStarredMsgs]    = useState(function() { try { var s = localStorage.getItem('sw_starred'); return s ? JSON.parse(s) : []; } catch(e) { return []; } }); // array of msg ids
+  var [showStarred,    setShowStarred]    = useState(false);  // show only starred messages
+  var [chatScrolledUp, setChatScrolledUp] = useState(false);  // user scrolled up from bottom
+  var [chatUnread,     setChatUnread]     = useState(0);       // new messages while scrolled up
+  var [chatCmdHint,    setChatCmdHint]    = useState(false);   // slash-command hint dropdown visible
+  var chatScrollRef    = useRef(null);                          // scrollable chat messages container
 
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
@@ -441,10 +601,47 @@ export default function LiveRoomPage({
   var [kicked,             setKicked]             = useState(false);
   var [clipLog,            setClipLog]            = useState([]); // [{ id, label, ts }]
   var [showClipLog,        setShowClipLog]        = useState(false);
+  var [isFullscreen,       setIsFullscreen]       = useState(false);
+  var [removeConfirmId,    setRemoveConfirmId]    = useState(null); // guestId pending removal confirmation
+  var [mirrorSelf,         setMirrorSelf]         = useState(true);  // mirror own camera view
+  var [stageAnnounce,      setStageAnnounce]      = useState(null);  // { username } | null — brief on-stage banner
+  var [pipCorner,          setPipCorner]          = useState('BR');  // 'TL'|'TR'|'BL'|'BR' — PiP position
+  var [localLowerThirds,   setLocalLowerThirds]   = useState({});    // { [guestId]: { visible, name, title } } — host-local name cards
 
-  var chatEndRef      = useRef(null);
-  var cameraTrackRef  = useRef(null);
-  var screenStreamRef = useRef(null);
+  var chatEndRef         = useRef(null);
+  var announceTimerRef   = useRef(null);
+  var guestsRef          = useRef(guests || []);   // always-fresh guests list for async callbacks
+  var freezeTimersRef    = useRef({});             // { [producerId]: timerId } — auto-reconnect on freeze
+  var containerRef       = useRef(null);
+  var cameraTrackRef     = useRef(null);
+  var pipVideoRef        = useRef(null);
+  var screenStreamRef    = useRef(null);
+  var stageJoinTimesRef  = useRef({});   // { [guestId]: epochMs } — when each guest appeared on stage
+  var speakingTimeRef    = useRef({});   // { [guestId]: totalSeconds } — cumulative speaking time
+  var speakingStartRef   = useRef({});   // { [guestId]: epochMs | null } — current speaking start
+  var micTrackRef            = useRef(null); // saved mic track for restoration after screen audio
+  var autoFocusTimerRef      = useRef(null);
+  var prevQualityRef         = useRef({});   // { [producerId]: quality } — last known quality for change-detection
+  var qualityToastCoolRef    = useRef({});   // { [producerId]: true } — cooldown: suppress repeat toasts < 30 s
+  var prevStageGidsRef       = useRef(new Set()); // Set<guestId> — previous render's on-stage set for new-joiner detection
+  var stageLimitWarnedRef    = useRef({});   // { [guestId]: true } — guests already warned about time limit
+  var spotlightStartRef      = useRef(null); // Date.now() when spotlight last activated
+  var joinSoundEnabledRef    = useRef(true); // always-fresh mirror of joinSoundEnabled
+  joinSoundEnabledRef.current = joinSoundEnabled;
+  var liveStartRef           = useRef(null); // Date.now() when isLive first became true
+  var prompterScrollRef      = useRef(null); // teleprompter scrollable div
+  var prompterRafRef         = useRef(null); // requestAnimationFrame id for scroll
+  var prompterLastTs         = useRef(null); // last rAF timestamp for delta-time scroll
+  var spotlightRotateRef     = useRef(null); // interval id for spotlight auto-rotation
+  var spotlightRotateIdxRef  = useRef(0);    // current index in sortedOnStage for rotation
+  var bgBlurVideoRef         = useRef(null); // hidden video element feeding camera into blur canvas
+  var bgBlurRafRef           = useRef(null); // rAF id for blur draw loop
+  var bgBlurStreamRef        = useRef(null); // canvas.captureStream() used as blurred producer source
+  var bgBlurLevelRef         = useRef(8);    // mirrors bgBlurLevel for use inside rAF closure
+  bgBlurLevelRef.current = bgBlurLevel;
+  var nsRawTrackRef          = useRef(null); // raw mic track saved before NS processing
+  var nsAudioCtxRef          = useRef(null); // AudioContext for NS chain
+  var nsDestRef              = useRef(null); // MediaStreamDestination for NS chain
   var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Trivia ──────────────────────────────────────────────────────────────
@@ -648,6 +845,11 @@ export default function LiveRoomPage({
           return next;
         });
       }
+      setActivityLog(function(prev) {
+        var from = gift.fromUsername || 'someone';
+        var val  = gift.valueCents ? ('$' + (Math.floor(gift.valueCents) / 100).toFixed(2)) : '';
+        return [{ id: Date.now() + '_gift', type: 'gift', msg: '🎁 ' + from + ' sent a gift' + (val ? ' ' + val : ''), ts: Date.now() }].concat(prev).slice(0, 100);
+      });
     });
 
     socket.on('power-play', function(pp) {
@@ -711,7 +913,8 @@ export default function LiveRoomPage({
     socket.on('hand-raise', function(data) {
       if (!data) return;
       if (role === 'host' && addToastRef.current) addToastRef.current('✋ ' + (data.username || data.guestId) + ' wants on stage', 'info');
-      setRaisedHands(function(h) { var n = Object.assign({}, h); n[data.guestId] = true; return n; });
+      setRaisedHands(function(h) { var n = Object.assign({}, h); n[data.guestId] = data.ts || Date.now(); return n; });
+      setActivityLog(function(prev) { return [{ id: Date.now() + '_hand_' + data.guestId, type: 'hand', msg: '✋ ' + (data.username || data.guestId) + ' raised hand', ts: Date.now() }].concat(prev).slice(0, 100); });
     });
 
     socket.on('hand-lower', function(data) {
@@ -722,6 +925,135 @@ export default function LiveRoomPage({
     socket.on('mute-all', function() {
       setIsMuted(true);
       if (addToastRef.current) addToastRef.current('🔇 Host muted all participants', 'info');
+    });
+
+    socket.on('please-reconnect', function(data) {
+      var who = (data && data.by) ? data.by : 'Host';
+      if (addToastRef.current) addToastRef.current('⚠️ ' + who + ' is asking you to reconnect — leave and rejoin to fix your stream quality', 'warn');
+    });
+
+    socket.on('stage-lock-update', function(data) {
+      setStageLocked(!!(data && data.locked));
+    });
+
+    socket.on('host-private-msg', function(data) {
+      if (!data || !data.text) return;
+      setInboundHostMsg({ from: data.from || 'Host', text: data.text });
+      if (addToastRef.current) addToastRef.current('📨 ' + (data.from || 'Host') + ': ' + data.text, 'info');
+      setTimeout(function() { setInboundHostMsg(null); }, 8000);
+    });
+
+    socket.on('broadcast-overlay', function(data) {
+      if (!data || !data.text) return;
+      setBroadcastOverlay({ text: String(data.text).slice(0, 200), from: data.from || 'Host' });
+      setTimeout(function() { setBroadcastOverlay(null); }, 6000);
+    });
+
+    socket.on('brb', function(data) {
+      if (!data) return;
+      setBrbActive(!!data.active);
+      if (!data.active) { setBrbMsg(''); return; }
+      setBrbMsg(data.msg ? String(data.msg).slice(0, 100) : '');
+    });
+
+    socket.on('ticker', function(data) {
+      if (!data) return;
+      if (!data.active) { setTickerActive(false); setTickerText(''); return; }
+      setTickerText(data.text ? String(data.text).slice(0, 200) : '');
+      setTickerActive(true);
+    });
+
+    socket.on('unmute-all', function() {
+      setIsMuted(false);
+      if (addToastRef.current) addToastRef.current('🎙 Host unmuted all participants', 'info');
+    });
+
+    socket.on('confetti-burst', function() {
+      var colors = [GOLD, RED, TEAL, '#00e676', '#7c4dff', '#ff6d00', '#00b0ff', '#ff4081'];
+      var particles = [];
+      for (var ci = 0; ci < 32; ci++) {
+        particles.push({
+          id: Date.now() + ci,
+          x: Math.random() * 100,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          delay: Math.random() * 1.2,
+          size: 6 + Math.floor(Math.random() * 8),
+        });
+      }
+      setConfettiBurst(particles);
+      setTimeout(function() { setConfettiBurst([]); }, 3800);
+    });
+
+    socket.on('room-timer', function(data) {
+      if (!data) return;
+      clearInterval(roomTimerRef.current);
+      if (!data.active || !data.seconds) {
+        setRoomTimerActive(false);
+        setRoomTimerSec(0);
+        return;
+      }
+      setRoomTimerSec(data.seconds);
+      setRoomTimerActive(true);
+      roomTimerRef.current = setInterval(function() {
+        setRoomTimerSec(function(prev) {
+          if (prev <= 1) {
+            clearInterval(roomTimerRef.current);
+            setTimeout(function() { setRoomTimerActive(false); }, 800);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    });
+
+    socket.on('soundboard', function(data) {
+      if (!data || !data.sound) return;
+      playSoundboardEffect(data.sound);
+    });
+
+    socket.on('sentiment-poll', function(data) {
+      if (!data) return;
+      if (!data.active) {
+        setTimeout(function() { setSentimentPoll(null); setSentimentVoted(null); }, 3000);
+        return;
+      }
+      setSentimentVoted(null);
+      setSentimentPoll({
+        question: data.question ? String(data.question).slice(0, 120) : 'Quick check-in!',
+        yesCount: data.yesCount || 0,
+        noCount: data.noCount || 0,
+        endTs: data.endTs || (Date.now() + 30000),
+      });
+    });
+
+    socket.on('sentiment-update', function(data) {
+      if (!data) return;
+      setSentimentPoll(function(prev) {
+        if (!prev) return prev;
+        return Object.assign({}, prev, { yesCount: data.yesCount || 0, noCount: data.noCount || 0 });
+      });
+    });
+
+    socket.on('stage-join-requested', function(data) {
+      if (!data || !data.guestId) return;
+      setJoinRequests(function(prev) {
+        if (prev.some(function(r) { return r.guestId === data.guestId; })) return prev;
+        return prev.concat([{ guestId: data.guestId, username: data.username || data.guestId, ts: Date.now() }]);
+      });
+      if (addToastRef.current) addToastRef.current('📩 ' + (data.username || data.guestId) + ' wants to join stage', 'info');
+    });
+
+    socket.on('stage-join-denied', function() {
+      if (addToastRef.current) addToastRef.current('Host declined your stage request', 'info');
+    });
+
+    socket.on('stage-join-approved', function(data) {
+      if (!data || data.guestId !== userId) return;
+      if (addToastRef.current) addToastRef.current('🎤 Host approved — you are now on stage!', 'success');
+    });
+
+    socket.on('lower-all-hands', function() {
+      setRaisedHands({});
     });
 
     var onStageInvite = function(data) {
@@ -927,11 +1259,29 @@ export default function LiveRoomPage({
 
     socket.on('screen-share-active', function(data) {
       if (!data) return;
-      if (data.userId !== userId) setScreenShareHost({ userId: data.userId, username: data.username || 'Host' });
+      if (data.userId !== userId) {
+        setScreenShareHost({ userId: data.userId, username: data.username || 'Host' });
+        setStageLayout('featured');
+        setFeaturedId(data.userId);
+      }
     });
 
     socket.on('screen-share-ended', function() {
       setScreenShareHost(null);
+      setStageLayout('grid');
+    });
+
+    socket.on('spotlight-guest', function(data) {
+      if (!data || !data.guestId) return;
+      setSpotlight({ guestId: data.guestId, username: data.username || data.guestId });
+      setStageLayout('featured');
+      setFeaturedId(data.guestId);
+      setAutoFocusSpeaker(false);
+    });
+
+    socket.on('spotlight-end', function() {
+      setSpotlight(null);
+      setStageLayout('grid');
     });
 
     socket.on('room-audio-only', function(data) {
@@ -1001,7 +1351,16 @@ export default function LiveRoomPage({
       socket.off('power-play:rejected');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
+      socket.off('spotlight-guest');
+      socket.off('spotlight-end');
       socket.off('mute-all');
+      socket.off('please-reconnect');
+      socket.off('stage-lock-update');
+      socket.off('lower-all-hands');
+      socket.off('broadcast-overlay');
+      socket.off('stage-join-requested');
+      socket.off('stage-join-denied');
+      socket.off('stage-join-approved');
       socket.off('room-audio-only');
       socket.off('room-private');
       socket.off('subscriber-only-changed');
@@ -1027,6 +1386,15 @@ export default function LiveRoomPage({
       socket.off('trivia-results');
       socket.off('chat-react-update');
       socket.off('panel:audio_only_changed');
+      socket.off('brb');
+      socket.off('ticker');
+      socket.off('unmute-all');
+      socket.off('confetti-burst');
+      socket.off('room-timer');
+      socket.off('soundboard');
+      socket.off('sentiment-poll');
+      socket.off('sentiment-update');
+      clearInterval(roomTimerRef.current);
       if (mediaRecRef.current && mediaRecRef.current.state !== 'inactive') {
         try { mediaRecRef.current.stop(); } catch(e) {}
       }
@@ -1036,6 +1404,15 @@ export default function LiveRoomPage({
         screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
         screenStreamRef.current = null;
       }
+      if (bgBlurRafRef.current) { cancelAnimationFrame(bgBlurRafRef.current); bgBlurRafRef.current = null; }
+      if (bgBlurVideoRef.current) { bgBlurVideoRef.current.srcObject = null; bgBlurVideoRef.current = null; }
+      if (bgBlurStreamRef.current) { bgBlurStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); bgBlurStreamRef.current = null; }
+      if (nsAudioCtxRef.current) {
+        try { nsAudioCtxRef.current.close(); } catch(e) {}
+        nsAudioCtxRef.current = null;
+        nsRawTrackRef.current = null;
+        nsDestRef.current = null;
+      }
       if (audioCtxRef.current) {
         try { audioCtxRef.current.close(); } catch(e) {}
         audioCtxRef.current = null;
@@ -1043,12 +1420,13 @@ export default function LiveRoomPage({
     };
   }, [socket]);
 
-  // ── Scroll chat to bottom ──
+  // ── Scroll chat to bottom (skip when user has scrolled up) ──
   useEffect(function() {
-    if (chatEndRef.current && chatOpen) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chat, chatOpen]);
+    if (!chatOpen) return;
+    if (chatScrolledUp) { setChatUnread(function(v) { return v + 1; }); return; }
+    setChatUnread(0);
+    if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, [chat, chatOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Update medConf when mediaConfig prop changes ──
   useEffect(function() { setMedConf(mediaConfig || null); }, [mediaConfig]);
@@ -1097,6 +1475,432 @@ export default function LiveRoomPage({
     };
   }, [ccEnabled, role, isLive, socket]);
 
+  // ── RTC reconnect: clear stale screen share state ──────────────────────────
+  // When the transport reconnects, OctCell re-publishes the camera stream.
+  // If screen sharing was active, the screen track is gone but isScreenSharing
+  // is still true. Reset it so the UI and server stay in sync.
+  useEffect(function() {
+    if (!rtcReady) return;
+    var onReady = function() {
+      if (!screenStreamRef.current) return; // nothing to clean up
+      setIsScreenSharing(false);
+      screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
+      screenStreamRef.current = null;
+      if (micTrackRef.current) { micTrackRef.current = null; }
+      if (socket) socket.emit('screen-share-stop', { roomId: roomId });
+    };
+    rtcManager.on('sendTransportReady', onReady);
+    return function() { rtcManager.off('sendTransportReady', onReady); };
+  }, [rtcReady, socket, roomId]);
+
+  // ── Dominant speaker auto-focus ─────────────────────────────────────────
+  // When in featured layout with autoFocusSpeaker enabled (and no active screen
+  // share), watch speakingIds and switch featuredId to whoever starts speaking.
+  // A 1 400 ms debounce prevents rapid hopping when multiple people overlap.
+  useEffect(function() {
+    if (!autoFocusSpeaker || stageLayout !== 'featured' || isScreenSharing || screenShareHost) {
+      clearTimeout(autoFocusTimerRef.current);
+      return;
+    }
+    var nextSpeaker = null;
+    var keys = Object.keys(speakingIds);
+    for (var i = 0; i < keys.length; i++) {
+      if (speakingIds[keys[i]] && allGuestMap[keys[i]]) { nextSpeaker = keys[i]; break; }
+    }
+    if (!nextSpeaker) { clearTimeout(autoFocusTimerRef.current); return; }
+    clearTimeout(autoFocusTimerRef.current);
+    autoFocusTimerRef.current = setTimeout(function() {
+      setFeaturedId(nextSpeaker);
+    }, 1400);
+    return function() { clearTimeout(autoFocusTimerRef.current); };
+  }, [speakingIds, stageLayout, autoFocusSpeaker, isScreenSharing, screenShareHost]);
+
+  // ── Per-consumer network quality tracking ────────────────────────────────
+  // Collect incoming bitrate/jitter/loss from webrtc.js consumerStats events
+  // and build a producerId → quality map rendered as a dot on each remote tile.
+  useEffect(function() {
+    if (!rtcReady) return;
+    var onStats = function(data) {
+      if (!data || !data.producerId) return;
+      var q = 'green';
+      if (data.bitratekbps < 60 || data.packetsLost > 5) q = 'red';
+      else if (data.bitratekbps < 200 || data.jitter > 30) q = 'yellow';
+      setProducerQuality(function(prev) {
+        if (prev[data.producerId] === q) return prev;
+        var next = Object.assign({}, prev);
+        next[data.producerId] = q;
+        return next;
+      });
+      setConsumerRawStats(function(prev) {
+        var next = Object.assign({}, prev);
+        next[data.producerId] = { bitratekbps: data.bitratekbps, jitter: data.jitter, packetsLost: data.packetsLost };
+        return next;
+      });
+    };
+    rtcManager.on('consumerStats', onStats);
+    return function() { rtcManager.off('consumerStats', onStats); };
+  }, [rtcReady]);
+
+  // Keep guestsRef current so async callbacks see fresh guest list
+  useEffect(function() { guestsRef.current = guests || []; }, [guests]);
+
+  // ── Freeze detection: mark producers whose bitrate stays ~0 ─────────────
+  useEffect(function() {
+    setFrozenProducers(function(prev) {
+      var next = Object.assign({}, prev);
+      var changed = false;
+      Object.keys(consumerRawStats).forEach(function(pid) {
+        var isFrozen = consumerRawStats[pid].bitratekbps < 10;
+        if (isFrozen && !next[pid]) { next[pid] = true; changed = true; }
+        else if (!isFrozen && next[pid]) { delete next[pid]; changed = true; }
+      });
+      return changed ? next : prev;
+    });
+  }, [consumerRawStats]);
+
+  // ── Quality-drop toasts (host only, 30 s cooldown per producer) ──────────
+  useEffect(function() {
+    if (role !== 'host') return;
+    Object.keys(producerQuality).forEach(function(pid) {
+      var cur  = producerQuality[pid];
+      var prev = prevQualityRef.current[pid];
+      var worsened = (cur === 'red' && prev !== 'red') || (cur === 'yellow' && prev === 'green');
+      if (worsened && !qualityToastCoolRef.current[pid]) {
+        var g = guestsRef.current.find(function(guest) { return guest.producerId === pid; });
+        var label = g ? (g.username || g.guestId || pid) : pid;
+        var msg   = cur === 'red' ? (label + ': POOR signal') : (label + ': FAIR signal');
+        if (addToastRef.current) addToastRef.current(msg, cur === 'red' ? 'error' : 'warning');
+        qualityToastCoolRef.current[pid] = true;
+        setTimeout(function() { delete qualityToastCoolRef.current[pid]; }, 30000);
+      }
+    });
+    prevQualityRef.current = Object.assign({}, producerQuality);
+  }, [producerQuality, role]);
+
+  // ── Auto-mute new stage joiners (host toggle) ────────────────────────────
+  useEffect(function() {
+    if (role !== 'host' || !autoMuteJoin || !socket) return;
+    var currentGids = new Set(onStage.map(function(g) { return g.guestId || g.userId; }));
+    currentGids.forEach(function(gid) {
+      if (gid === userId) return;
+      if (!prevStageGidsRef.current.has(gid)) {
+        socket.emit('mute-guest', { roomId: roomId, guestId: gid });
+      }
+    });
+    prevStageGidsRef.current = currentGids;
+  }, [onStage, autoMuteJoin, role]);
+
+  // ── Stage time limit: warn + remove guests who exceed the host-set limit ──
+  useEffect(function() {
+    if (role !== 'host' || stageLimitSec === 0) return;
+    var now = Date.now();
+    onStage.forEach(function(g) {
+      var gid = g.guestId || g.userId;
+      if (gid === userId) return;
+      var joinMs = stageJoinTimesRef.current[gid];
+      if (!joinMs) return;
+      var elapsedSec = Math.floor((now - joinMs) / 1000);
+      var warnAt  = stageLimitSec - 60;
+      var warnKey = gid + '_' + stageLimitSec;
+      if (elapsedSec >= stageLimitSec && !stageLimitWarnedRef.current[warnKey + '_removed']) {
+        stageLimitWarnedRef.current[warnKey + '_removed'] = true;
+        if (socket) socket.emit('stage-remove', { roomId: roomId, guestId: gid });
+        if (addToastRef.current) addToastRef.current((g.username || gid) + ': stage time limit reached', 'info');
+      } else if (elapsedSec >= warnAt && warnAt > 0 && !stageLimitWarnedRef.current[warnKey + '_warned']) {
+        stageLimitWarnedRef.current[warnKey + '_warned'] = true;
+        if (addToastRef.current) addToastRef.current((g.username || gid) + ': 60 s left on stage', 'warning');
+      }
+    });
+  }, [speakingSnapshots, stageLimitSec, role]); // piggyback on 5 s snapshot tick
+
+  // ── Stage prefs: restore from localStorage on mount ─────────────────────
+  useEffect(function() {
+    try {
+      var saved = localStorage.getItem('sw_stage_prefs');
+      if (saved) {
+        var prefs = JSON.parse(saved);
+        if (prefs.layout) setStageLayout(prefs.layout);
+        if (prefs.sort)   setStageSort(prefs.sort);
+        if (prefs.limitSec !== undefined) setStageLimitSec(Number(prefs.limitSec) || 0);
+        if (prefs.density !== undefined)  setGridDensity(Number(prefs.density) || 0);
+        if (prefs.aspect)                 setCellAspect(prefs.aspect);
+        if (prefs.tint !== undefined)     setStageTint(prefs.tint || '');
+        if (prefs.bg !== undefined)       setStageBg(prefs.bg || '');
+      }
+    } catch(e) {}
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Stage prefs: persist to localStorage whenever they change ───────────
+  useEffect(function() {
+    try {
+      localStorage.setItem('sw_stage_prefs', JSON.stringify({ layout: stageLayout, sort: stageSort, limitSec: stageLimitSec, density: gridDensity, aspect: cellAspect, tint: stageTint, bg: stageBg }));
+    } catch(e) {}
+  }, [stageLayout, stageSort, stageLimitSec, gridDensity, cellAspect, stageTint, stageBg]);
+
+  // ── Word filter: persist whenever list changes ──────────────────────────
+  useEffect(function() {
+    try { localStorage.setItem('sw_word_filter', JSON.stringify(wordFilter)); } catch(e) {}
+  }, [wordFilter]);
+
+  // ── Sentiment poll: auto-expire when endTs is reached ───────────────────
+  useEffect(function() {
+    if (!sentimentPoll || !sentimentPoll.endTs) return;
+    var remaining = sentimentPoll.endTs - Date.now();
+    if (remaining <= 0) { setSentimentPoll(null); setSentimentVoted(null); return; }
+    var tid = setTimeout(function() { setSentimentPoll(null); setSentimentVoted(null); }, remaining);
+    return function() { clearTimeout(tid); };
+  }, [sentimentPoll && sentimentPoll.endTs]);
+
+  // ── Stage time limit: 1-second tick so badges stay current ─────────────
+  useEffect(function() {
+    if (!stageLimitSec) { setStageTimerTick(0); return; }
+    var id = setInterval(function() { setStageTimerTick(function(v) { return v + 1; }); }, 1000);
+    return function() { clearInterval(id); };
+  }, [stageLimitSec]);
+
+  // ── Custom reactions: persist whenever set changes ──────────────────────
+  useEffect(function() {
+    try { localStorage.setItem('sw_reactions', JSON.stringify(customReactions)); } catch(e) {}
+  }, [customReactions]);
+
+  // ── Guest notes: persist to localStorage ────────────────────────────────
+  useEffect(function() {
+    try { localStorage.setItem('sw_guest_notes', JSON.stringify(guestNotes)); } catch(e) {}
+  }, [guestNotes]);
+
+  // ── Starred messages: persist to localStorage ────────────────────────────
+  useEffect(function() {
+    try { localStorage.setItem('sw_starred', JSON.stringify(starredMsgs)); } catch(e) {}
+  }, [starredMsgs]);
+
+  // ── Chat sparkline: tally new messages into current bucket ───────────────
+  useEffect(function() {
+    var newLen = chat ? chat.length : 0;
+    var delta = newLen - chatLenRef2.current;
+    if (delta <= 0) { chatLenRef2.current = newLen; return; }
+    chatLenRef2.current = newLen;
+    setChatSparkline(function(prev) {
+      var next = prev.slice();
+      next[next.length - 1] = (next[next.length - 1] || 0) + delta;
+      return next;
+    });
+  }, [chat && chat.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Chat sparkline: advance bucket every 6 s ────────────────────────────
+  useEffect(function() {
+    var id = setInterval(function() {
+      setChatSparkline(function(prev) {
+        var next = prev.slice(1);
+        next.push(0);
+        return next;
+      });
+    }, 6000);
+    return function() { clearInterval(id); };
+  }, []);
+
+  // ── Presenter notes: restore from localStorage on mount ─────────────────
+  useEffect(function() {
+    try {
+      var saved = localStorage.getItem('sw_notes');
+      if (saved) setNoteText(saved);
+    } catch(e) {}
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Low-bandwidth mode: cap/restore simulcast layers for all consumers ───
+  useEffect(function() {
+    if (!socket) return;
+    guests.forEach(function(g) {
+      if (!g.producerId) return;
+      socket.emit('consumer-layers', { producerId: g.producerId, spatialLayer: lowBwMode ? 0 : 2, temporalLayer: lowBwMode ? 0 : 2 });
+    });
+  }, [lowBwMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Incoming stage-reaction from remote peers ────────────────────────────
+  useEffect(function() {
+    if (!socket) return;
+    function onRemoteReaction(data) {
+      if (!data || !data.emoji) return;
+      var rid = Date.now() + data.emoji + (Math.random() * 1000 | 0);
+      var x   = 10 + Math.floor(Math.random() * 80);
+      setReactionBurst(function(prev) { return prev.concat([{ id: rid, emoji: data.emoji, x: x }]); });
+      setTimeout(function() { setReactionBurst(function(prev) { return prev.filter(function(r) { return r.id !== rid; }); }); }, 2200);
+      setReactionCounts(function(prev) {
+        var next = Object.assign({}, prev);
+        next[data.emoji] = (next[data.emoji] || 0) + 1;
+        return next;
+      });
+    }
+    socket.on('stage-reaction', onRemoteReaction);
+    return function() { socket.off('stage-reaction', onRemoteReaction); };
+  }, [socket]);
+
+  // ── Stream duration clock: tick every second while live ──────────────────
+  useEffect(function() {
+    if (isLive) {
+      if (!liveStartRef.current) liveStartRef.current = Date.now();
+      var t = setInterval(function() {
+        setStreamDuration(Math.floor((Date.now() - liveStartRef.current) / 1000));
+      }, 1000);
+      return function() { clearInterval(t); };
+    } else {
+      liveStartRef.current = null;
+      setStreamDuration(0);
+    }
+  }, [isLive]);
+
+  // ── Auto-record: start recording when stream goes live ─────────────────
+  useEffect(function() {
+    if (isLive && autoRecord && recState === 'idle') {
+      startRecording();
+    }
+  }, [isLive]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Peak viewer counter ─────────────────────────────────────────────────
+  useEffect(function() {
+    if (viewerCount > peakViewers) setPeakViewers(viewerCount);
+  }, [viewerCount]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Auto-layout: switch grid↔featured by stage count ───────────────────
+  useEffect(function() {
+    if (!autoLayout) return;
+    var n2 = onStage.length;
+    if (n2 <= 1 && stageLayout !== 'featured') { setStageLayout('featured'); }
+    else if (n2 >= 2 && stageLayout === 'featured') { setStageLayout('grid'); }
+  }, [onStage.length, autoLayout]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Spotlight auto-rotation ──────────────────────────────────────────────
+  useEffect(function() {
+    if (spotlightRotateRef.current) { clearInterval(spotlightRotateRef.current); spotlightRotateRef.current = null; }
+    if (!spotlightRotateSec || !socket) return;
+    spotlightRotateRef.current = setInterval(function() {
+      var stage = sortedOnStage;
+      if (stage.length < 2) return;
+      spotlightRotateIdxRef.current = (spotlightRotateIdxRef.current + 1) % stage.length;
+      var g2 = stage[spotlightRotateIdxRef.current];
+      var gid2 = g2.guestId || g2.userId;
+      socket.emit('spotlight-guest', { roomId: roomId, guestId: gid2, username: g2.username || gid2 });
+    }, spotlightRotateSec * 1000);
+    return function() { if (spotlightRotateRef.current) { clearInterval(spotlightRotateRef.current); spotlightRotateRef.current = null; } };
+  }, [spotlightRotateSec, socket]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Teleprompter rAF scroll ──────────────────────────────────────────────
+  useEffect(function() {
+    if (prompterRafRef.current) { cancelAnimationFrame(prompterRafRef.current); prompterRafRef.current = null; }
+    if (!prompterRunning || !prompterScrollRef.current) return;
+    prompterLastTs.current = null;
+    var tick = function(ts) {
+      if (!prompterScrollRef.current) return;
+      if (prompterLastTs.current !== null) {
+        var dt = ts - prompterLastTs.current;
+        prompterScrollRef.current.scrollTop += (prompterSpeed / 1000) * dt;
+      }
+      prompterLastTs.current = ts;
+      prompterRafRef.current = requestAnimationFrame(tick);
+    };
+    prompterRafRef.current = requestAnimationFrame(tick);
+    return function() { if (prompterRafRef.current) { cancelAnimationFrame(prompterRafRef.current); prompterRafRef.current = null; } };
+  }, [prompterRunning, prompterSpeed]);
+
+  // ── Spotlight elapsed timer ──────────────────────────────────────────────
+  useEffect(function() {
+    if (spotlight) {
+      if (!spotlightStartRef.current) spotlightStartRef.current = Date.now();
+      var t = setInterval(function() {
+        setSpotlightElapsed(Math.floor((Date.now() - spotlightStartRef.current) / 1000));
+      }, 1000);
+      return function() { clearInterval(t); };
+    } else {
+      spotlightStartRef.current = null;
+      setSpotlightElapsed(0);
+    }
+  }, [spotlight ? spotlight.guestId : null]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Auto-reconnect: host-only, fires after 15 s of sustained freeze ─────
+  useEffect(function() {
+    if (role !== 'host') return;
+    // Start a 15 s timer for any newly frozen producer
+    Object.keys(frozenProducers).forEach(function(pid) {
+      if (freezeTimersRef.current[pid]) return;
+      freezeTimersRef.current[pid] = setTimeout(function() {
+        delete freezeTimersRef.current[pid];
+        var g = guestsRef.current.find(function(guest) { return guest.producerId === pid; });
+        if (!g) return;
+        var gid = g.guestId || g.userId;
+        if (socket) socket.emit('request-reconnect', { roomId: roomId, guestId: gid });
+        if (addToastRef.current) addToastRef.current('Auto-reconnect → ' + (g.username || gid), 'info');
+      }, 15000);
+    });
+    // Cancel timers for producers that recovered
+    Object.keys(freezeTimersRef.current).forEach(function(pid) {
+      if (!frozenProducers[pid]) {
+        clearTimeout(freezeTimersRef.current[pid]);
+        delete freezeTimersRef.current[pid];
+      }
+    });
+  }, [frozenProducers, role]);
+
+  // ── Camera enumeration for hot-swap ─────────────────────────────────────
+  useEffect(function() {
+    if (role === 'viewer') return;
+    if (!navigator.mediaDevices) return;
+    var doEnum = function() {
+      navigator.mediaDevices.enumerateDevices().then(function(devs) {
+        var cams = devs.filter(function(d) { return d.kind === 'videoinput'; });
+        var mics = devs.filter(function(d) { return d.kind === 'audioinput'; });
+        setAvCameras(cams);
+        setAvMics(mics);
+      }).catch(function() {});
+    };
+    doEnum();
+    navigator.mediaDevices.addEventListener('devicechange', doEnum);
+    return function() { navigator.mediaDevices.removeEventListener('devicechange', doEnum); };
+  }, []);
+
+  // ── Speaking time accumulation ───────────────────────────────────────────
+  // Track when each guest starts/stops speaking; accumulate seconds into
+  // speakingTimeRef so the expanded-cell modal can show total speaking time.
+  useEffect(function() {
+    var now = Date.now();
+    Object.keys(speakingIds).forEach(function(gid) {
+      if (speakingIds[gid] && !speakingStartRef.current[gid]) {
+        speakingStartRef.current[gid] = now;
+      }
+    });
+    Object.keys(speakingStartRef.current).forEach(function(gid) {
+      if (speakingStartRef.current[gid] && !speakingIds[gid]) {
+        var elapsed = Math.floor((now - speakingStartRef.current[gid]) / 1000);
+        speakingTimeRef.current[gid] = (speakingTimeRef.current[gid] || 0) + elapsed;
+        delete speakingStartRef.current[gid];
+      }
+    });
+  }, [speakingIds]);
+
+  // ── Speaking-time snapshots: poll speakingTimeRef every 5 s for badges ────
+  useEffect(function() {
+    var t = setInterval(function() {
+      var snap = {};
+      var now = Date.now();
+      // Include any ongoing speaking session in the snapshot
+      Object.keys(speakingStartRef.current).forEach(function(gid) {
+        if (speakingStartRef.current[gid]) {
+          var live = Math.floor((now - speakingStartRef.current[gid]) / 1000);
+          snap[gid] = (speakingTimeRef.current[gid] || 0) + live;
+        }
+      });
+      Object.keys(speakingTimeRef.current).forEach(function(gid) {
+        if (!snap[gid]) snap[gid] = speakingTimeRef.current[gid] || 0;
+      });
+      setSpeakingSnapshots(snap);
+    }, 5000);
+    return function() { clearInterval(t); };
+  }, []);
+
+  // Persist chosen layout to localStorage so it survives page reloads
+  useEffect(function() {
+    try { localStorage.setItem('sw_layout', stageLayout); } catch(e) {}
+    if (stageLayout !== 'featured') setCinemaMode(false);
+  }, [stageLayout]);
+
   // ── Local mic level analyzer (for GlobalMicButtonV49) ──
   useEffect(function() {
     if (!rtcReady || isMuted) { setMicLevel(0); return; }
@@ -1125,6 +1929,75 @@ export default function LiveRoomPage({
     };
   }, [rtcReady, isMuted]);
 
+  // Auto-dismiss raised hand when a guest appears on stage (gets a producer);
+  // also record their stage join time for the StageTimer display.
+  useEffect(function() {
+    var now = Date.now();
+    // Record own join time once
+    if (!stageJoinTimesRef.current[userId]) stageJoinTimesRef.current[userId] = now;
+    guests.forEach(function(g) {
+      var gid = g.guestId || g.userId;
+      if (gid && (g.producerId || g.audioProducerId) && !stageJoinTimesRef.current[gid]) {
+        stageJoinTimesRef.current[gid] = now;
+        if (gid !== userId) {
+          var _announceName = g.username || gid;
+          if (announceTimerRef.current) clearTimeout(announceTimerRef.current);
+          setStageAnnounce({ username: _announceName });
+          announceTimerRef.current = setTimeout(function() { setStageAnnounce(null); }, 3500);
+          // Stage join ping — two ascending tones
+          if (joinSoundEnabledRef.current) {
+            try {
+              var _jctx = new (window.AudioContext || window.webkitAudioContext)();
+              [440, 660].forEach(function(freq, i) {
+                var _o = _jctx.createOscillator();
+                var _g = _jctx.createGain();
+                _o.connect(_g); _g.connect(_jctx.destination);
+                _o.frequency.value = freq;
+                _o.type = 'sine';
+                _g.gain.setValueAtTime(0.18, _jctx.currentTime + i * 0.12);
+                _g.gain.exponentialRampToValueAtTime(0.001, _jctx.currentTime + i * 0.12 + 0.25);
+                _o.start(_jctx.currentTime + i * 0.12);
+                _o.stop(_jctx.currentTime + i * 0.12 + 0.25);
+              });
+              setTimeout(function() { _jctx.close(); }, 800);
+            } catch(e) {}
+          }
+          // Activity log entry
+          setActivityLog(function(prev) { return [{ id: Date.now() + '_join_' + gid, type: 'join', msg: '🎤 ' + _announceName + ' joined stage', ts: Date.now() }].concat(prev).slice(0, 100); });
+        }
+      }
+    });
+    setRaisedHands(function(prev) {
+      var changed = false;
+      var next = Object.assign({}, prev);
+      guests.forEach(function(g) {
+        var gid = g.guestId || g.userId;
+        if (gid && next[gid] && (g.producerId || g.audioProducerId)) {
+          delete next[gid];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [guests]);
+
+  // Camera PiP: wire own camera feed into the PiP video element while screen sharing
+  useEffect(function() {
+    var vid = pipVideoRef.current;
+    if (!isScreenSharing || !vid) return;
+    var track = cameraTrackRef.current;
+    if (!track || track.readyState === 'ended') return;
+    try {
+      vid.srcObject = new MediaStream([track]);
+      vid.play().catch(function() {});
+    } catch(e) {}
+    return function() {
+      if (pipVideoRef.current) {
+        pipVideoRef.current.srcObject = null;
+      }
+    };
+  }, [isScreenSharing]);
+
   var toggleMute = function() { setIsMuted(function(v) { return !v; }); }
   var toggleCam = function()  { setIsCamOff(function(v) { return !v; }); }
 
@@ -1137,6 +2010,38 @@ export default function LiveRoomPage({
     if (slowWaitSec > 0) return;
     var msg = chatInput.trim();
     if (!msg || !socket) return;
+    // Slash commands (host / cohost only)
+    if ((role === 'host' || role === 'cohost') && msg.charAt(0) === '/') {
+      setChatInput(''); setChatCmdHint(false);
+      var parts = msg.slice(1).split(' ');
+      var cmd = parts[0].toLowerCase();
+      var arg = parts.slice(1).join(' ').trim();
+      if (cmd === 'slow' || cmd === 'slowmode') {
+        var slashSec = parseInt(arg, 10); if (isNaN(slashSec)) slashSec = 0;
+        socket.emit('set-slow-mode', { roomId: roomId, seconds: slashSec });
+        if (addToastRef.current) addToastRef.current('Slow mode: ' + (slashSec > 0 ? slashSec + 's' : 'off'), 'info');
+      } else if (cmd === 'shout' || cmd === 'shoutout') {
+        socket.emit('shoutout', { roomId: roomId, username: arg.replace(/^@/, '') || '?', by: username || 'Host' });
+      } else if (cmd === 'confetti') {
+        socket.emit('confetti-burst', { roomId: roomId });
+      } else if (cmd === 'clip') {
+        socket.emit('clip-marker', { roomId: roomId, label: arg || 'Manual clip' });
+        if (addToastRef.current) addToastRef.current('Clip marked', 'success');
+      } else if (cmd === 'mute') {
+        var muteUn = arg.replace(/^@/, '').toLowerCase();
+        var muteG = onStage.find(function(g) { return (g.username || '').toLowerCase() === muteUn; });
+        if (muteG) socket.emit('mute-guest', { roomId: roomId, guestId: muteG.guestId || muteG.userId });
+        else if (addToastRef.current) addToastRef.current('Not on stage: ' + arg, 'warning');
+      } else if (cmd === 'ticker') {
+        socket.emit('ticker-start', { roomId: roomId, text: arg }); setTickerInput(arg);
+        if (addToastRef.current) addToastRef.current('Ticker started', 'info');
+      } else if (cmd === 'help') {
+        if (addToastRef.current) addToastRef.current('/slow [s]  /shout @user  /confetti  /clip [label]  /mute @user  /ticker [text]', 'info');
+      } else {
+        if (addToastRef.current) addToastRef.current('Unknown command /' + cmd + '  — try /help', 'warning');
+      }
+      return;
+    }
     socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg });
     setChatInput('');
   }
@@ -1168,12 +2073,36 @@ export default function LiveRoomPage({
 
   var stopScreenShare = function() {
     setIsScreenSharing(false);
+    setStageLayout('grid');
     if (screenStreamRef.current) {
       screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
       screenStreamRef.current = null;
     }
-    if (cameraTrackRef.current) {
-      rtcManager.replaceTrack('video', cameraTrackRef.current);
+    // Restore camera simulcast — back to motion-optimized downscale profile
+    var _topBR = medConf && medConf.preset && medConf.preset.bitrate ? Math.min(medConf.preset.bitrate, 5000000) : 900000;
+    rtcManager.setVideoEncodings([
+      { rid: 'r0', maxBitrate: Math.round(_topBR * 0.11), scaleResolutionDownBy: 4 },
+      { rid: 'r1', maxBitrate: Math.round(_topBR * 0.33), scaleResolutionDownBy: 2 },
+      { rid: 'r2', maxBitrate: _topBR, scaleResolutionDownBy: 1 },
+    ]).catch(function() {});
+    // Restore camera: use the saved track if still live, else re-acquire
+    if (cameraTrackRef.current && cameraTrackRef.current.readyState !== 'ended') {
+      if ('contentHint' in cameraTrackRef.current) cameraTrackRef.current.contentHint = 'motion';
+      rtcManager.replaceTrack('video', cameraTrackRef.current).catch(function() {});
+    } else {
+      navigator.mediaDevices.getUserMedia({ video: true }).then(function(s) {
+        var t = s.getVideoTracks()[0];
+        if (t) {
+          if ('contentHint' in t) t.contentHint = 'motion';
+          cameraTrackRef.current = t;
+          rtcManager.replaceTrack('video', t).catch(function() {});
+        }
+      }).catch(function() {});
+    }
+    // Restore microphone if screen audio was captured and replaced the mic track
+    if (micTrackRef.current && rtcManager) {
+      rtcManager.replaceTrack('audio', micTrackRef.current).catch(function() {});
+      micTrackRef.current = null;
     }
     if (socket) socket.emit('screen-share-stop', { roomId: roomId });
     if (addToast) addToast('Screen share ended — camera restored', 'info');
@@ -1185,13 +2114,34 @@ export default function LiveRoomPage({
       return;
     }
     try {
-      var displayStream = await navigator.mediaDevices.getDisplayMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } }, audio: false });
+      var displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
+        audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false }
+      });
       var videoTrack = displayStream.getVideoTracks()[0];
       if (!videoTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
+      // Tell the browser encoder this is screen content (sharp edges, text) not motion video
+      if ('contentHint' in videoTrack) videoTrack.contentHint = 'detail';
       videoTrack.addEventListener('ended', stopScreenShare);
       screenStreamRef.current = displayStream;
       setIsScreenSharing(true);
+      setStageLayout('featured');
+      setFeaturedId(userId);
       rtcManager.replaceTrack('video', videoTrack);
+      // Optimize simulcast for screen content: reduce downscale so low layers remain readable;
+      // increase bitrate so text stays crisp at all layers.
+      rtcManager.setVideoEncodings([
+        { rid: 'r0', maxBitrate: 300000, scaleResolutionDownBy: 2 },
+        { rid: 'r1', maxBitrate: 800000, scaleResolutionDownBy: 1 },
+        { rid: 'r2', maxBitrate: 2000000, scaleResolutionDownBy: 1 },
+      ]).catch(function() {});
+      // If browser provided system/tab audio, route it through the audio producer
+      var screenAudioTrack = displayStream.getAudioTracks()[0];
+      var ap = rtcManager.producers && rtcManager.producers['audio'];
+      if (screenAudioTrack && ap && ap.track) {
+        micTrackRef.current = ap.track;
+        rtcManager.replaceTrack('audio', screenAudioTrack).catch(function() {});
+      }
       if (socket) socket.emit('screen-share-start', { roomId: roomId, userId: userId, username: username });
       if (addToast) addToast('Screen share active — viewers now see your screen', 'success');
     } catch(e) {
@@ -1250,6 +2200,66 @@ export default function LiveRoomPage({
     setJudgeScoreLabel('');
     if (addToast) addToast('Score submitted!', 'success');
   }
+
+  // ── Fullscreen ───────────────────────────────────────────────────────────
+  useEffect(function() {
+    var onFsChange = function() {
+      setIsFullscreen(!!(document.fullscreenElement || document.webkitFullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    return function() {
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
+    };
+  }, []);
+
+  var toggleFullscreen = function() {
+    var el = containerRef.current;
+    if (!el) return;
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      if (el.requestFullscreen) { el.requestFullscreen(); }
+      else if (el.webkitRequestFullscreen) { el.webkitRequestFullscreen(); }
+    } else {
+      if (document.exitFullscreen) { document.exitFullscreen(); }
+      else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+    }
+  };
+
+  // ── Keyboard shortcuts ──────────────────────────────────────────────────
+  // m = mute/unmute, v = cam toggle, f = fullscreen, x = mirror
+  // [/ArrowLeft = prev guest in featured, ]/ArrowRight = next guest, Escape = close modals
+  // Skipped when focus is inside an input or textarea.
+  useEffect(function() {
+    var onKey = function(e) {
+      var tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === 'm' || e.key === 'M') { toggleMute(); }
+      else if (e.key === 'v' || e.key === 'V') { toggleCam(); }
+      else if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); }
+      else if (e.key === 'x' || e.key === 'X') { setMirrorSelf(function(v) { return !v; }); }
+      else if ((e.key === '[' || e.key === 'ArrowLeft') && stageLayout === 'featured') { prevGuest(); }
+      else if ((e.key === ']' || e.key === 'ArrowRight') && stageLayout === 'featured') { nextGuest(); }
+      else if (e.key === '1') { setStageLayout('grid'); }
+      else if (e.key === '2') { setStageLayout('featured'); }
+      else if (e.key === '3') { setStageLayout('split'); }
+      else if (e.key === '+' || e.key === '=') { setGridDensity(function(d) { return Math.min(2, d + 1); }); }
+      else if (e.key === '-' || e.key === '_') { setGridDensity(function(d) { return Math.max(-2, d - 1); }); }
+      else if (e.key === '?') { setShowKeyHelp(function(v) { return !v; }); }
+      else if ((e.key === 'w' || e.key === 'W') && (role === 'host' || role === 'cohost')) { setAutoLayout(function(v) { return !v; }); }
+      else if (e.key === 'Escape') {
+        if (showKeyHelp) { setShowKeyHelp(false); }
+        else if (showBroadcastInput) { setShowBroadcastInput(false); }
+        else if (swapMode) { setSwapMode(false); setSwapPickGid(null); }
+        else if (showActivityLog) { setShowActivityLog(false); }
+        else if (expandedCell) { setExpandedCell(null); }
+        else if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); setRenamingGid(null); setMsgTargetGid(null); }
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return function() { document.removeEventListener('keydown', onKey); };
+  }, [expandedCell, cellMenuId, stageLayout, featuredId, showKeyHelp, showActivityLog, showBroadcastInput, swapMode]);
 
   var shareRoom = function() {
     var url = window.location.origin + (roomId !== '6990f5f2-4823-453e-a1fc-dc9d00000000' ? ('?room=' + roomId) : '');
@@ -1364,6 +2374,21 @@ export default function LiveRoomPage({
     if (addToast) addToast('Stream ended', 'info');
   }
 
+  var exportStageStatsCsv = function(rows) {
+    var lines = ['Name,Role,SpeakSecs,StageSecs,Quality,GiftsCents'];
+    rows.forEach(function(r) {
+      var cols = [r.name, r.guestRole || 'guest', r.speakSecs || 0, r.stageSecs || 0, r.q || '', r.gifts || 0];
+      lines.push(cols.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','));
+    });
+    var blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'stage-stats-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // ── Build participant arrays ──
   var allGuestMap = {};
   allGuestMap[userId] = { guestId: userId, username: username, role: role };
@@ -1400,6 +2425,44 @@ export default function LiveRoomPage({
     return !g.producerId && !g.audioProducerId;
   });
 
+  // Dominant speaker: guest with most speaking time (≥30 s threshold)
+  var topSpeakerId = null;
+  var topSpeakSecs = 30;
+  onStage.forEach(function(g) {
+    var gid  = g.guestId || g.userId;
+    var secs = speakingSnapshots[gid] || 0;
+    if (secs > topSpeakSecs) { topSpeakSecs = secs; topSpeakerId = gid; }
+  });
+
+  // Sorted stage array according to stageSort mode or stageOrderOverride
+  var sortedOnStage = (function() {
+    var arr = onStage.slice();
+    if (stageOrderOverride && stageOrderOverride.length > 0) {
+      arr.sort(function(a, b) {
+        var ia = stageOrderOverride.indexOf(a.guestId || a.userId);
+        var ib = stageOrderOverride.indexOf(b.guestId || b.userId);
+        if (ia < 0) ia = 9999;
+        if (ib < 0) ib = 9999;
+        return ia - ib;
+      });
+      return arr;
+    }
+    if (stageSort === 'speaking') {
+      arr.sort(function(a, b) {
+        var sa = speakingSnapshots[a.guestId || a.userId] || 0;
+        var sb = speakingSnapshots[b.guestId || b.userId] || 0;
+        return sb - sa;
+      });
+    } else if (stageSort === 'quality') {
+      var qRank = function(g) {
+        var q = producerQuality[g.producerId];
+        return q === 'green' ? 0 : q === 'yellow' ? 1 : q === 'red' ? 2 : 3;
+      };
+      arr.sort(function(a, b) { return qRank(a) - qRank(b); });
+    }
+    return arr;
+  })();
+
   // Top gifter this session — show 👑 in audience circle
   var topGifterId = null;
   var topGiftMax  = 0;
@@ -1410,7 +2473,9 @@ export default function LiveRoomPage({
 
   // Grid sizing
   var n    = onStage.length;
-  var cols = n <= 1 ? 1 : n <= 4 ? 2 : n <= 9 ? 3 : n <= 16 ? 4 : 5;
+  var cols = Math.max(1, (n <= 1 ? 1 : n <= 4 ? 2 : n <= 9 ? 3 : n <= 16 ? 4 : 5) + gridDensity);
+  // Cell aspect ratio → CSS padding-bottom trick
+  var cellAspectPb = cellAspect === '4:3' ? '75%' : cellAspect === '9:16' ? '177.78%' : '56.25%';
   var sz   = n <= 2 ? 160 : n <= 4 ? 130 : n <= 9 ? 100 : 80;
 
   // Host info
@@ -1430,10 +2495,363 @@ export default function LiveRoomPage({
 
   var newMsgCount = chat ? chat.length : 0;
 
+  // Sorted queue of raised hands (oldest first = first in line)
+  var handQueue = Object.keys(raisedHands).filter(function(gid) { return !!raisedHands[gid]; })
+    .sort(function(a, b) { return raisedHands[a] - raisedHands[b]; });
+
+  // Featured-mode guest navigator helpers
+  var prevGuest = function() {
+    if (onStage.length <= 1) return;
+    var idx = onStage.findIndex(function(g) { return (g.guestId || g.userId) === featuredId; });
+    var prev = onStage[(idx - 1 + onStage.length) % onStage.length];
+    if (prev) { setFeaturedId(prev.guestId || prev.userId); setAutoFocusSpeaker(false); }
+  };
+  var nextGuest = function() {
+    if (onStage.length <= 1) return;
+    var idx = onStage.findIndex(function(g) { return (g.guestId || g.userId) === featuredId; });
+    var next = onStage[(idx + 1) % onStage.length];
+    if (next) { setFeaturedId(next.guestId || next.userId); setAutoFocusSpeaker(false); }
+  };
+
+  // Cycle to next available camera and update medConf.camId
+  var handleCamFlip = function() {
+    if (avCameras.length < 2) return;
+    var nextIdx = (camDevIdx + 1) % avCameras.length;
+    setCamDevIdx(nextIdx);
+    var nextCam = avCameras[nextIdx];
+    setMedConf(function(prev) { return Object.assign({}, prev || {}, { camId: nextCam.deviceId }); });
+    if (addToast) addToast('Camera: ' + (nextCam.label || 'Camera ' + (nextIdx + 1)), 'info');
+  };
+
+  // Cycle to next available microphone
+  var handleMicFlip = function() {
+    if (avMics.length < 2) return;
+    var nextIdx = (micDevIdx + 1) % avMics.length;
+    var nextMic = avMics[nextIdx];
+    setMicDevIdx(nextIdx);
+    navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: nextMic.deviceId } } }).then(function(stream) {
+      var track = stream.getAudioTracks()[0];
+      if (!track) return;
+      if (rtcManager && rtcManager.producers && rtcManager.producers['audio']) {
+        rtcManager.replaceTrack('audio', track).catch(function() {});
+      }
+      if (addToast) addToast('Mic: ' + (nextMic.label || 'Mic ' + (nextIdx + 1)), 'info');
+    }).catch(function(e) {
+      if (addToast) addToast('Mic swap failed: ' + e.message, 'error');
+    });
+  };
+
+  // Select camera by index (device picker sheet)
+  var handleCamSelect = function(idx) {
+    if (idx === camDevIdx || idx >= avCameras.length) return;
+    var cam = avCameras[idx];
+    setCamDevIdx(idx);
+    setMedConf(function(prev) { return Object.assign({}, prev || {}, { camId: cam.deviceId }); });
+    if (addToast) addToast('Camera: ' + (cam.label || 'Camera ' + (idx + 1)), 'info');
+    setShowDevicePicker(false);
+  };
+
+  // Select mic by index (device picker sheet)
+  var handleMicSelect = function(idx) {
+    if (idx === micDevIdx || idx >= avMics.length) return;
+    var mic = avMics[idx];
+    setMicDevIdx(idx);
+    navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: mic.deviceId } } }).then(function(stream) {
+      var track = stream.getAudioTracks()[0];
+      if (!track) return;
+      if (rtcManager && rtcManager.producers && rtcManager.producers['audio']) {
+        rtcManager.replaceTrack('audio', track).catch(function() {});
+      }
+      if (addToast) addToast('Mic: ' + (mic.label || 'Mic ' + (idx + 1)), 'info');
+    }).catch(function(e) {
+      if (addToast) addToast('Mic swap failed: ' + e.message, 'error');
+    });
+    setShowDevicePicker(false);
+  };
+
+  // Layout preset helpers
+  var saveLayoutPreset = function(name) {
+    var preset = { id: Date.now().toString(), name: name || ('Layout ' + (layoutPresets.length + 1)), layout: stageLayout, order: stageOrderOverride ? stageOrderOverride.slice() : null, ts: Date.now() };
+    var updated = layoutPresets.concat([preset]);
+    setLayoutPresets(updated);
+    try { localStorage.setItem('sw_layout_presets', JSON.stringify(updated)); } catch(e) {}
+    if (addToastRef.current) addToastRef.current('Preset "' + preset.name + '" saved', 'success');
+  };
+  var loadLayoutPreset = function(preset) {
+    setStageLayout(preset.layout || 'grid');
+    setStageOrderOverride(preset.order || null);
+    if (addToastRef.current) addToastRef.current('Loaded "' + preset.name + '"', 'info');
+    setShowPresetsPanel(false);
+  };
+  var deleteLayoutPreset = function(id) {
+    var updated = layoutPresets.filter(function(p) { return p.id !== id; });
+    setLayoutPresets(updated);
+    try { localStorage.setItem('sw_layout_presets', JSON.stringify(updated)); } catch(e) {}
+  };
+
+  // Background blur: canvas-based soft-focus on own camera feed
+  var toggleBgBlur = async function() {
+    if (bgBlurOn) {
+      if (bgBlurRafRef.current) { cancelAnimationFrame(bgBlurRafRef.current); bgBlurRafRef.current = null; }
+      if (bgBlurVideoRef.current) { bgBlurVideoRef.current.srcObject = null; bgBlurVideoRef.current = null; }
+      if (bgBlurStreamRef.current) { bgBlurStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); bgBlurStreamRef.current = null; }
+      setBgBlurOn(false);
+      setShowBlurSlider(false);
+      var rawTrack = cameraTrackRef.current;
+      if (rawTrack && !isCamOff && rtcManager.sendTransport) {
+        var rawStream = new MediaStream([rawTrack]);
+        rtcManager.publishStream(rawStream, { maxBitrate: (medConf && medConf.maxBitrate) || 900000 }).catch(function() {});
+      }
+      return;
+    }
+    var rawTrack = cameraTrackRef.current;
+    if (!rawTrack) { if (addToastRef.current) addToastRef.current('Camera not active', 'error'); return; }
+    if (isCamOff)  { if (addToastRef.current) addToastRef.current('Turn camera on first', 'error'); return; }
+    try {
+      var vid = document.createElement('video');
+      vid.autoplay = true; vid.muted = true; vid.playsInline = true;
+      vid.srcObject = new MediaStream([rawTrack]);
+      await new Promise(function(res, rej) { vid.onloadedmetadata = res; setTimeout(rej, 5000); });
+      vid.play();
+      bgBlurVideoRef.current = vid;
+      var settings = rawTrack.getSettings();
+      var canvas = document.createElement('canvas');
+      canvas.width  = settings.width  || 640;
+      canvas.height = settings.height || 480;
+      var ctx = canvas.getContext('2d');
+      var blurDraw = function() {
+        if (!bgBlurVideoRef.current) return;
+        ctx.filter = 'blur(' + bgBlurLevelRef.current + 'px)';
+        ctx.drawImage(bgBlurVideoRef.current, 0, 0, canvas.width, canvas.height);
+        bgBlurRafRef.current = requestAnimationFrame(blurDraw);
+      };
+      blurDraw();
+      var captured = canvas.captureStream(30);
+      bgBlurStreamRef.current = captured;
+      setBgBlurOn(true);
+      setShowBlurSlider(false);
+      await rtcManager.publishStream(captured, { maxBitrate: (medConf && medConf.maxBitrate) || 900000 });
+      if (addToastRef.current) addToastRef.current('Soft blur active', 'success');
+    } catch(e) {
+      if (bgBlurRafRef.current) { cancelAnimationFrame(bgBlurRafRef.current); bgBlurRafRef.current = null; }
+      if (bgBlurVideoRef.current) { bgBlurVideoRef.current.srcObject = null; bgBlurVideoRef.current = null; }
+      if (bgBlurStreamRef.current) { bgBlurStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); bgBlurStreamRef.current = null; }
+      if (addToastRef.current) addToastRef.current('Blur unavailable', 'error');
+    }
+  };
+
+  // Noise suppression: HighPass + DynamicsCompressor chain over live mic track
+  var playSoundboardEffect = function(name) {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var now = ctx.currentTime;
+      var mkOsc = function(freq, start, end, type) {
+        var o = ctx.createOscillator();
+        var g = ctx.createGain();
+        o.type = type || 'sine';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0, now + start);
+        g.gain.linearRampToValueAtTime(0.18, now + start + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, now + end);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(now + start); o.stop(now + end + 0.05);
+      };
+      if (name === 'applause') {
+        var buf = ctx.createBuffer(1, ctx.sampleRate * 1.2, ctx.sampleRate);
+        var ch = buf.getChannelData(0);
+        for (var i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * Math.min(1, i / (ctx.sampleRate * 0.1)) * Math.max(0, 1 - i / (ctx.sampleRate * 1.2));
+        var src = ctx.createBufferSource();
+        var lpf = ctx.createBiquadFilter(); lpf.type = 'bandpass'; lpf.frequency.value = 1200; lpf.Q.value = 0.5;
+        var gn = ctx.createGain(); gn.gain.value = 0.6;
+        src.buffer = buf; src.connect(lpf); lpf.connect(gn); gn.connect(ctx.destination);
+        src.start(now); src.stop(now + 1.2);
+      } else if (name === 'drumroll') {
+        for (var di = 0; di < 32; di++) { mkOsc(60 + Math.random() * 20, di * 0.03, di * 0.03 + 0.05, 'sawtooth'); }
+      } else if (name === 'airhorn') {
+        mkOsc(233, 0, 0.8, 'sawtooth'); mkOsc(466, 0, 0.8, 'sawtooth'); mkOsc(116, 0, 0.8, 'square');
+      } else if (name === 'chaching') {
+        mkOsc(1318, 0, 0.12); mkOsc(1047, 0.05, 0.18); mkOsc(1568, 0.1, 0.28); mkOsc(2093, 0.15, 0.36);
+      } else if (name === 'fanfare') {
+        mkOsc(523, 0, 0.18); mkOsc(659, 0.16, 0.34); mkOsc(784, 0.32, 0.5); mkOsc(1046, 0.48, 0.72);
+      } else if (name === 'boom') {
+        mkOsc(55, 0, 0.6, 'sine'); mkOsc(40, 0, 0.5, 'sine');
+      }
+      setTimeout(function() { try { ctx.close(); } catch(e) {} }, 2000);
+    } catch(e) {}
+  };
+
+  var toggleNoiseSuppression = function() {
+    if (noiseSuppOn) {
+      if (nsAudioCtxRef.current) {
+        try { nsAudioCtxRef.current.close(); } catch(e) {}
+        nsAudioCtxRef.current = null;
+        nsDestRef.current = null;
+      }
+      setNoiseSuppOn(false);
+      var rawT = nsRawTrackRef.current;
+      nsRawTrackRef.current = null;
+      if (rawT && rtcManager.producers && rtcManager.producers['audio']) {
+        try { rtcManager.replaceTrack('audio', rawT); } catch(e) {}
+      }
+      if (addToastRef.current) addToastRef.current('Noise suppression off', 'info');
+      return;
+    }
+    var prod = rtcManager.producers && rtcManager.producers['audio'];
+    if (!prod || !prod.track) { if (addToastRef.current) addToastRef.current('Mic not active', 'error'); return; }
+    var liveTrack = prod.track;
+    try {
+      var nsCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var src = nsCtx.createMediaStreamSource(new MediaStream([liveTrack]));
+      var hpf = nsCtx.createBiquadFilter();
+      hpf.type = 'highpass';
+      hpf.frequency.value = 100;
+      var comp = nsCtx.createDynamicsCompressor();
+      comp.threshold.value = -30;
+      comp.knee.value = 10;
+      comp.ratio.value = 6;
+      comp.attack.value = 0.003;
+      comp.release.value = 0.25;
+      var dest = nsCtx.createMediaStreamDestination();
+      src.connect(hpf);
+      hpf.connect(comp);
+      comp.connect(dest);
+      nsAudioCtxRef.current = nsCtx;
+      nsDestRef.current = dest;
+      nsRawTrackRef.current = liveTrack;
+      var processedTrack = dest.stream.getAudioTracks()[0];
+      rtcManager.replaceTrack('audio', processedTrack);
+      setNoiseSuppOn(true);
+      if (addToastRef.current) addToastRef.current('Noise suppression on', 'success');
+    } catch(e) {
+      if (nsAudioCtxRef.current) { try { nsAudioCtxRef.current.close(); } catch(ee) {} nsAudioCtxRef.current = null; }
+      nsRawTrackRef.current = null;
+      nsDestRef.current = null;
+      if (addToastRef.current) addToastRef.current('NS unavailable', 'error');
+    }
+  };
+
+  // Browser native PiP: pins featured guest (or first on-stage) into a floating window
+  var toggleBrowserPip = function() {
+    if (!document.pictureInPictureEnabled) {
+      if (addToastRef.current) addToastRef.current('PiP not supported in this browser', 'error');
+      return;
+    }
+    if (pipActive) {
+      try { document.exitPictureInPicture(); } catch(e) {}
+      setPipActive(false);
+      return;
+    }
+    var targetGid = spotlightGid || (sortedOnStage.length > 0 ? sortedOnStage[0].guestId : null);
+    if (!targetGid) { if (addToastRef.current) addToastRef.current('No one on stage', 'error'); return; }
+    var vid = document.querySelector('[data-cell-gid="' + targetGid + '"] video');
+    if (!vid) { if (addToastRef.current) addToastRef.current('Video not found', 'error'); return; }
+    vid.requestPictureInPicture().then(function(pipWin) {
+      setPipActive(true);
+      pipWin.addEventListener('leavepictureinpicture', function() { setPipActive(false); }, { once: true });
+    }).catch(function() {
+      if (addToastRef.current) addToastRef.current('PiP unavailable', 'error');
+    });
+  };
+
+  // Chat export: downloads all chat messages as plain text
+  var downloadChat = function() {
+    if (!chat || chat.length === 0) { if (addToastRef.current) addToastRef.current('No chat to export', 'info'); return; }
+    var lines = chat.map(function(m) {
+      var ts = m.ts ? new Date(m.ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+      return '[' + ts + '] ' + (m.username || 'Guest') + ': ' + (m.message || '');
+    });
+    var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href = url; a.download = 'seewhy-chat-' + new Date().toISOString().slice(0, 10) + '.txt'; a.click();
+    URL.revokeObjectURL(url);
+    if (addToastRef.current) addToastRef.current('Chat exported', 'success');
+  };
+
+  // Stage ticker: host broadcasts a scrolling text banner to all viewers
+  var startTicker = function(text) {
+    if (!text || !text.trim()) return;
+    if (socket) socket.emit('ticker-start', { text: text.trim().slice(0, 200) });
+    setTickerInput('');
+    setShowTickerInput(false);
+  };
+
+  var stopTicker = function() {
+    if (socket) socket.emit('ticker-stop');
+  };
+
+  // Merged lower-thirds: local host overrides merged over server overlayConfig
+  var mergedLowerThirds = (function() {
+    var base = (overlayConfig && overlayConfig.lowerThirds) || {};
+    var hasLocal = Object.keys(localLowerThirds).length > 0;
+    return hasLocal ? Object.assign({}, base, localLowerThirds) : base;
+  })();
+
   // ── Render ──────────────────────────────────────────────────────────────
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, overflow: 'hidden', position: 'relative', fontFamily: "'Barlow Condensed',sans-serif" }}>
+    <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, overflow: 'hidden', position: 'relative', fontFamily: "'Barlow Condensed',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: ANIM }} />
+
+      {/* ── Inbound private host message banner ── */}
+      {inboundHostMsg && role !== 'host' && (
+        <div style={{ position: 'absolute', top: 52, left: '50%', transform: 'translateX(-50%)', zIndex: 62, animation: 'announceIn .3s ease', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(201,168,76,.18)', border: '1px solid rgba(201,168,76,.6)', borderRadius: 20, padding: '8px 18px', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', boxShadow: '0 4px 20px rgba(0,0,0,.6)', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+          <span style={{ fontSize: 14, lineHeight: 1 }}>📨</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, letterSpacing: .5, flexShrink: 0 }}>{inboundHostMsg.from}</span>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis' }}>{inboundHostMsg.text}</span>
+          <button onClick={function() { setInboundHostMsg(null); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 12, padding: 0, lineHeight: 1, flexShrink: 0 }}>×</button>
+        </div>
+      )}
+
+      {/* ── Broadcast overlay (fullscreen text from host) ── */}
+      {broadcastOverlay && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', animation: 'fadeSlideIn .35s ease' }}>
+          <div style={{ background: 'rgba(0,0,0,.82)', borderRadius: 24, padding: '28px 40px', maxWidth: '80%', textAlign: 'center', border: '2px solid ' + GOLD + '55', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', boxShadow: '0 0 60px rgba(201,168,76,.25)' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 2, marginBottom: 10 }}>{broadcastOverlay.from.toUpperCase()}</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: TEXT, lineHeight: 1.15, letterSpacing: 1.5 }}>{broadcastOverlay.text}</div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Hover quick-stats tooltip (host/cohost, grid mode) ── */}
+      {hoverGid && hoverRect && stageLayout === 'grid' && (role === 'host' || role === 'cohost') && (function() {
+        var hg = allGuestMap[hoverGid] || {};
+        var hName = localGuestNames[hoverGid] || hg.username || hoverGid;
+        var hSecs = speakingTimeRef.current[hoverGid] || 0;
+        var hm = Math.floor(hSecs / 60);
+        var hs = hSecs % 60;
+        var hPid = hg.producerId;
+        var hQ = hPid ? producerQuality[hPid] : null;
+        var hRaw = hPid ? (consumerRawStats[hPid] || null) : null;
+        var qColor = hQ === 'green' ? '#00e676' : hQ === 'yellow' ? '#ffc107' : hQ === 'red' ? RED : MUTED;
+        return (
+          <div style={{ position: 'fixed', top: hoverRect.top - 4, left: hoverRect.left + hoverRect.width / 2, transform: 'translate(-50%,-100%)', zIndex: 9999, pointerEvents: 'none', animation: 'fadeSlideIn .15s ease' }}>
+            <div style={{ background: 'rgba(9,7,14,.97)', border: '1px solid ' + BORDER, borderRadius: 8, padding: '6px 10px', minWidth: 120, maxWidth: 200, boxShadow: '0 4px 16px rgba(0,0,0,.7)' }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: TEXT, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hName}</div>
+              {hQ && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: qColor, flexShrink: 0 }} />
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: qColor, letterSpacing: .3 }}>{hQ.toUpperCase()}</span>
+                </div>
+              )}
+              {hRaw && hRaw.bitratekbps != null && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{'📡 ' + hRaw.bitratekbps + ' kbps'}{hRaw.jitter != null ? ' · ' + hRaw.jitter + 'ms' : ''}</div>
+              )}
+              {hSecs > 0 && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{'🗣 ' + (hm < 10 ? '0' : '') + hm + ':' + (hs < 10 ? '0' : '') + hs}</div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── Stage join announcement banner ── */}
+      {stageAnnounce && (
+        <div style={{ position: 'absolute', top: 52, left: '50%', transform: 'translateX(-50%)', zIndex: 60, pointerEvents: 'none', animation: 'announceIn .3s ease', display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(26,21,16,.95)', border: '1px solid rgba(212,133,74,.5)', borderRadius: 20, padding: '7px 16px', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', boxShadow: '0 4px 20px rgba(0,0,0,.55)', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 14, lineHeight: 1 }}>🎤</span>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, letterSpacing: .5 }}>{stageAnnounce.username}</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: .3 }}>joined the stage</span>
+        </div>
+      )}
 
       <HostHUD
         sessionEarningsCents={sessionEarningsCents}
@@ -1510,11 +2928,27 @@ export default function LiveRoomPage({
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: 1 }}>AUDIO</span>
               </div>
             )}
-            {isLive ? (
-              <button onClick={endStream} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite' }} />
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, letterSpacing: 1 }}>LIVE</span>
+            {(role === 'host' || role === 'cohost') && (
+              <button onClick={function() { setShowSessionSummary(true); }}
+                title="Session summary"
+                style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '4px 8px', cursor: 'pointer', fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: .5 }}>
+                📈 SUMMARY
               </button>
+            )}
+            {isLive ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button onClick={endStream} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite' }} />
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, letterSpacing: 1 }}>LIVE</span>
+                </button>
+                {streamDuration > 0 && (function() {
+                  var h = Math.floor(streamDuration / 3600);
+                  var m = Math.floor((streamDuration % 3600) / 60);
+                  var s = streamDuration % 60;
+                  var str = (h > 0 ? (h < 10 ? '0' : '') + h + ':' : '') + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+                  return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>{str}</span>;
+                })()}
+              </div>
             ) : role === 'host' ? (
               <button onClick={function() { setShowLiveModal(true); }} style={{ display: 'flex', alignItems: 'center', gap: 5, background: RED, border: 'none', borderRadius: 999, padding: '5px 12px', cursor: 'pointer' }}>
                 <span style={{ fontSize: 9 }}>▶</span>
@@ -1546,7 +2980,7 @@ export default function LiveRoomPage({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>
-              👥 {viewerCount || allParticipants.length}
+              👥 {viewerCount || allParticipants.length}{peakViewers > (viewerCount || allParticipants.length) ? ' ↑' + peakViewers : ''}
             </span>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>
               {allParticipants.length} here now
@@ -1564,13 +2998,33 @@ export default function LiveRoomPage({
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>·</span>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: TEXT }}>{allParticipants.length} here now</span>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>·</span>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{viewerCount || 0} total</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{viewerCount || 0} total{peakViewers > (viewerCount || 0) ? ' (peak: ' + peakViewers + ')' : ''}</span>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() {
+                  var next = !stageLocked;
+                  if (socket) socket.emit('lock-stage', { roomId: roomId, locked: next });
+                }} title={stageLocked ? 'Unlock stage — let guests join' : 'Lock stage — no new guests'}
+                  style={{ background: stageLocked ? 'rgba(201,168,76,.18)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (stageLocked ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 8px', fontSize: 10, color: stageLocked ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", transition: 'all .15s' }}>
+                  {stageLocked ? '🔒' : '🔓'}
+                </button>
+              )}
               {(role === 'host' || role === 'cohost') && (
                 <button onClick={function() {
                   if (socket) socket.emit('mute-all', { roomId: roomId });
                   if (addToast) addToast('🔇 All participants muted', 'info');
                 }} title="Mute all participants" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🔇</button>
+              )}
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() {
+                  if (socket) socket.emit('unmute-all', { roomId: roomId });
+                  if (addToast) addToast('🎙 All participants unmuted', 'info');
+                }} title="Unmute all participants" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🎙</button>
+              )}
+              {Object.keys(guestGiftTotals).some(function(k) { return guestGiftTotals[k] > 0; }) && (
+                <button onClick={function() { setShowGiftStrip(function(v) { return !v; }); }}
+                  title="Gift leaderboard"
+                  style={{ background: showGiftStrip ? 'rgba(201,168,76,.15)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (showGiftStrip ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 8px', fontSize: 10, color: showGiftStrip ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🎁</button>
               )}
               <button onClick={function() { setShowTTSSheet(true); }} title="Voice SuperChat" style={{ background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: RED, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>🚀</button>
               <button onClick={function() { setShowSuperChatSheet(true); }} title="Super Chat" style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: GOLD, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>💬</button>
@@ -1604,6 +3058,22 @@ export default function LiveRoomPage({
             <span style={{ fontSize: 12, color: TEAL, fontWeight: 600, letterSpacing: 0.5 }}>{screenShareHost.username} is sharing screen</span>
           </div>
         )}
+        {/* Spotlight banner */}
+        {spotlight && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, paddingTop: 7, borderTop: '1px solid ' + BORDER }}>
+            <span style={{ fontSize: 13 }}>🔦</span>
+            <span style={{ fontSize: 12, color: GOLD, fontWeight: 600, letterSpacing: 0.5 }}>{spotlight.username} spotlighted</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginLeft: 2 }}>
+              {Math.floor(spotlightElapsed / 60) + ':' + (spotlightElapsed % 60 < 10 ? '0' : '') + (spotlightElapsed % 60)}
+            </span>
+            {(role === 'host' || role === 'cohost') && (
+              <button onClick={function() { if (socket) socket.emit('spotlight-end', { roomId: roomId }); }}
+                style={{ marginLeft: 'auto', padding: '3px 8px', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 5, color: GOLD, fontSize: 10, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}>
+                END
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ════════════════ STREAM GOAL BAR ════════════════ */}
@@ -1633,19 +3103,322 @@ export default function LiveRoomPage({
         </div>
       )}
 
+      {/* ── Quick emoji fire bar (host/cohost) ── */}
+      {showEmojiBar && (role === 'host' || role === 'cohost') && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '6px 16px', background: 'rgba(9,7,14,.95)', borderBottom: '1px solid ' + BORDER }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, flexShrink: 0 }}>FIRE EMOJI</span>
+          {['🔥', '💯', '👏', '😂', '❤️', '🎉', '💎', '🙌', '😮', '💪'].map(function(em) {
+            return (
+              <button key={em}
+                onClick={function() {
+                  if (socket) socket.emit('stage-reaction', { roomId: roomId, emoji: em });
+                  setReactionBurst(function(prev) {
+                    return prev.concat([{ id: Date.now() + em, emoji: em, x: 20 + Math.random() * 60 }]).slice(-20);
+                  });
+                  setReactionCounts(function(prev) { var next = Object.assign({}, prev); next[em] = (next[em] || 0) + 1; return next; });
+                }}
+                style={{ background: 'none', border: '1px solid ' + DIM, borderRadius: 8, padding: '4px 8px', fontSize: 18, cursor: 'pointer', transition: 'transform .1s, border-color .1s', lineHeight: 1 }}
+                onMouseEnter={function(e) { e.currentTarget.style.transform = 'scale(1.35)'; e.currentTarget.style.borderColor = GOLD + '66'; }}
+                onMouseLeave={function(e) { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = DIM; }}>
+                {em}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* ════════════════ SCROLLABLE BODY ════════════════ */}
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
 
         {/* ── Stage Section ── */}
-        <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden', background: stageBg || 'transparent' }}>
+          {/* Stage tint overlay */}
+          {stageTint && (
+            <div style={{ position: 'absolute', inset: 0, background: stageTint, opacity: 0.08, pointerEvents: 'none', zIndex: 1 }} />
+          )}
+          {/* BRB overlay */}
+          {brbActive && (
+            <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,12,9,.82)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', pointerEvents: 'none', animation: 'fadeSlideIn .3s ease' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: GOLD, letterSpacing: 3, lineHeight: 1, animation: 'goldPulse 2s ease-in-out infinite' }}>BE RIGHT BACK</div>
+              {brbMsg ? (
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 16, color: TEXT, marginTop: 10, opacity: .85 }}>{brbMsg}</div>
+              ) : null}
+              <div style={{ display: 'flex', gap: 6, marginTop: 14 }}>
+                {['', '', ''].map(function(_, i) {
+                  return (
+                    <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: GOLD, opacity: .7, animation: 'goldPulse 1.4s ease-in-out ' + (i * 0.35) + 's infinite' }} />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {/* Host countdown floating chip */}
+          {role === 'host' && stageCountdownMs > 0 && (function() {
+            var remMs = stageCountdownMs - Date.now();
+            var remSec = Math.max(0, Math.ceil(remMs / 1000));
+            var m = Math.floor(remSec / 60);
+            var s = remSec % 60;
+            var str = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            var urgent = remSec <= 30;
+            if (remSec === 0) { setTimeout(function() { setStageCountdownMs(0); }, 100); }
+            return (
+              <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 55, pointerEvents: 'none', background: urgent ? 'rgba(255,26,60,.18)' : 'rgba(14,12,9,.82)', border: '1px solid ' + (urgent ? 'rgba(255,26,60,.5)' : 'rgba(201,168,76,.35)'), borderRadius: 10, padding: '5px 14px', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 10 }}>⏳</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 16, color: urgent ? RED : GOLD, letterSpacing: 2, fontWeight: 700 }}>{str}</span>
+              </div>
+            );
+          })()}
+
+          {/* Room countdown timer overlay */}
+          {roomTimerActive && (
+            <div style={{ position: 'absolute', inset: 0, zIndex: 58, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', background: 'rgba(14,12,9,.65)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)', animation: 'fadeSlideIn .25s ease' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 3, marginBottom: 6, textTransform: 'uppercase' }}>COUNTDOWN</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 80, lineHeight: 1, letterSpacing: 4, color: roomTimerSec <= 5 ? RED : GOLD, animation: roomTimerSec <= 5 ? 'livePulse .6s ease-in-out infinite' : 'none', textShadow: '0 0 40px ' + (roomTimerSec <= 5 ? RED : GOLD) + '55' }}>
+                {roomTimerSec > 59 ? (Math.floor(roomTimerSec / 60) + ':' + (roomTimerSec % 60 < 10 ? '0' : '') + (roomTimerSec % 60)) : roomTimerSec}
+              </div>
+            </div>
+          )}
+
+          {/* Confetti burst */}
+          {confettiBurst.length > 0 && confettiBurst.map(function(p) {
+            return (
+              <div key={p.id} style={{ position: 'absolute', top: 0, left: p.x + '%', zIndex: 65, pointerEvents: 'none', width: p.size, height: p.size, background: p.color, borderRadius: 2, animation: 'confettiFall 2.8s ' + p.delay + 's ease-in forwards', opacity: 0 }} />
+            );
+          })}
+
+          {/* ── Sentiment poll overlay ── */}
+          {sentimentPoll && (function() {
+            var total = (sentimentPoll.yesCount || 0) + (sentimentPoll.noCount || 0);
+            var yesPct = total > 0 ? Math.round(sentimentPoll.yesCount * 100 / total) : 50;
+            var noPct  = total > 0 ? Math.round(sentimentPoll.noCount  * 100 / total) : 50;
+            var secLeft = Math.max(0, Math.round((sentimentPoll.endTs - Date.now()) / 1000));
+            return (
+              <div style={{ position: 'absolute', bottom: 48, left: '50%', transform: 'translateX(-50%)', zIndex: 62, width: 220, background: 'rgba(14,12,9,.92)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 14, padding: '12px 14px', boxShadow: '0 6px 28px rgba(0,0,0,.7)', animation: 'fadeSlideIn .25s ease' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 2, marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
+                  <span>QUICK POLL</span>
+                  <span style={{ color: secLeft <= 5 ? RED : MUTED }}>{secLeft}s</span>
+                </div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 14, color: TEXT, marginBottom: 10, lineHeight: 1.3 }}>{sentimentPoll.question}</div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  <button
+                    disabled={!!sentimentVoted}
+                    onClick={function() {
+                      if (sentimentVoted || !socket) return;
+                      setSentimentVoted('yes');
+                      socket.emit('sentiment-vote', { vote: 'yes' });
+                    }}
+                    style={{ flex: 1, background: sentimentVoted === 'yes' ? 'rgba(109,191,126,.25)' : 'rgba(255,255,255,.06)', border: '1.5px solid ' + (sentimentVoted === 'yes' ? '#6DBF7E' : 'rgba(255,255,255,.12)'), borderRadius: 8, padding: '7px 4px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: sentimentVoted ? 'default' : 'pointer', opacity: sentimentVoted && sentimentVoted !== 'yes' ? 0.5 : 1 }}>
+                    👍
+                  </button>
+                  <button
+                    disabled={!!sentimentVoted}
+                    onClick={function() {
+                      if (sentimentVoted || !socket) return;
+                      setSentimentVoted('no');
+                      socket.emit('sentiment-vote', { vote: 'no' });
+                    }}
+                    style={{ flex: 1, background: sentimentVoted === 'no' ? 'rgba(255,26,60,.2)' : 'rgba(255,255,255,.06)', border: '1.5px solid ' + (sentimentVoted === 'no' ? RED : 'rgba(255,255,255,.12)'), borderRadius: 8, padding: '7px 4px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: sentimentVoted ? 'default' : 'pointer', opacity: sentimentVoted && sentimentVoted !== 'no' ? 0.5 : 1 }}>
+                    👎
+                  </button>
+                </div>
+                {total > 0 && (
+                  <div>
+                    <div style={{ display: 'flex', height: 6, borderRadius: 3, overflow: 'hidden', marginBottom: 4 }}>
+                      <div style={{ width: yesPct + '%', background: '#6DBF7E', transition: 'width .4s ease' }} />
+                      <div style={{ flex: 1, background: RED, opacity: .7, transition: 'width .4s ease' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>
+                      <span style={{ color: '#6DBF7E' }}>👍 {yesPct}% ({sentimentPoll.yesCount})</span>
+                      <span style={{ color: RED }}>👎 {noPct}% ({sentimentPoll.noCount})</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ── Stream health HUD (host only) ── */}
+          {showHealthHud && (role === 'host' || role === 'cohost') && (function() {
+            var st = streamStats;
+            var quality = !st ? null : (st.bitratekbps < 100 || st.lossPct > 5 ? 'red' : st.bitratekbps < 350 || st.lossPct > 1 ? 'yellow' : 'green');
+            var qualColor = quality === 'green' ? '#6DBF7E' : quality === 'yellow' ? '#F0A500' : quality === 'red' ? RED : MUTED;
+            var worstConsumer = (function() {
+              var entries = Object.entries(consumerRawStats);
+              if (!entries.length) return null;
+              return entries.reduce(function(worst, entry) { return (!worst || entry[1].bitratekbps < worst[1].bitratekbps) ? entry : worst; }, null);
+            })();
+            return (
+              <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 52, background: 'rgba(14,12,9,.85)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '6px 10px', minWidth: 110, backdropFilter: 'blur(4px)', pointerEvents: 'none' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, letterSpacing: 2, marginBottom: 4 }}>STREAM HEALTH</div>
+                {st ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: qualColor, flexShrink: 0, boxShadow: '0 0 6px ' + qualColor }} />
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: qualColor, letterSpacing: .5 }}>{st.bitratekbps} kbps</span>
+                    </div>
+                    {st.rttMs != null && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: st.rttMs > 150 ? RED : MUTED }}>RTT {st.rttMs}ms</span>}
+                    {st.lossPct != null && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: st.lossPct > 2 ? RED : MUTED }}>loss {st.lossPct.toFixed(1)}%</span>}
+                    {worstConsumer && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: worstConsumer[1].bitratekbps < 80 ? RED : MUTED }}>↓ {worstConsumer[1].bitratekbps} kbps</span>}
+                  </div>
+                ) : (
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>—</span>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Scrolling ticker strip */}
+          {tickerActive && tickerText && (
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 55, pointerEvents: 'none', overflow: 'hidden', background: 'rgba(14,12,9,.88)', borderTop: '1px solid rgba(201,168,76,.25)', height: 26, display: 'flex', alignItems: 'center' }}>
+              <span style={{ display: 'inline-block', whiteSpace: 'nowrap', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: GOLD, letterSpacing: .8, animation: 'tickerScroll 18s linear infinite' }}>
+                {'⚡ ' + tickerText + '   ·   ⚡ ' + tickerText + '   ·   ⚡ ' + tickerText}
+              </span>
+            </div>
+          )}
+
+          {/* Reaction rain overlay */}
+          {reactionBurst.map(function(r) {
+            return (
+              <div key={r.id} style={{ position: 'absolute', left: r.x + '%', bottom: 0, fontSize: 22, pointerEvents: 'none', zIndex: 60, animation: 'reactionFloat 2.2s ease-out forwards' }}>
+                {r.emoji}
+              </div>
+            );
+          })}
+
+          {/* ── Gift leaderboard strip ── */}
+          {showGiftStrip && (function() {
+            var entries = Object.keys(guestGiftTotals)
+              .filter(function(gid) { return guestGiftTotals[gid] > 0; })
+              .sort(function(a, b) { return guestGiftTotals[b] - guestGiftTotals[a]; })
+              .slice(0, 5)
+              .map(function(gid) {
+                var g = allGuestMap[gid] || {};
+                return { gid: gid, name: localGuestNames[gid] || g.username || gid, cents: guestGiftTotals[gid] };
+              });
+            if (entries.length === 0) return null;
+            var medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+            return (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, marginBottom: 6, flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 1, flexShrink: 0 }}>🎁 TOP GIFTERS</span>
+                {entries.map(function(e, i) {
+                  return (
+                    <span key={e.gid} style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, color: i === 0 ? GOLD : TEXT, display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <span style={{ fontSize: 11 }}>{medals[i]}</span>
+                      <span style={{ maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD }}>${(e.cents / 100).toFixed(0)}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
+          {/* ── Reaction counter bar (host/cohost) ── */}
+          {showReactionBar && (role === 'host' || role === 'cohost') && Object.keys(reactionCounts).length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 8px', background: 'rgba(9,7,14,.8)', borderRadius: 20, border: '1px solid ' + DIM, marginBottom: 6, flexWrap: 'wrap' }}>
+              {Object.entries(reactionCounts).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 8).map(function(entry) {
+                return (
+                  <span key={entry[0]} style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: TEXT, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <span style={{ fontSize: 13 }}>{entry[0]}</span>
+                    <span style={{ color: GOLD }}>{entry[1]}</span>
+                  </span>
+                );
+              })}
+              <button onClick={function() { setReactionCounts({}); }}
+                style={{ marginLeft: 'auto', background: 'none', border: 'none', color: MUTED, fontSize: 9, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}
+                title="Reset reaction counts">✕</button>
+            </div>
+          )}
+
+          {/* ── Join request notifications (host only, when stage locked) ── */}
+          {joinRequests.length > 0 && (role === 'host' || role === 'cohost') && (
+            <div style={{ marginBottom: 6 }}>
+              {joinRequests.slice(0, 3).map(function(req) {
+                return (
+                  <div key={req.guestId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 10px', background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 8, marginBottom: 3, animation: 'fadeSlideIn .2s ease' }}>
+                    <span style={{ fontSize: 12, lineHeight: 1 }}>📩</span>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.username}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, flexShrink: 0 }}>wants on stage</span>
+                    <button onClick={function() {
+                      if (socket) socket.emit('stage-join-approve', { roomId: roomId, guestId: req.guestId });
+                      setJoinRequests(function(prev) { return prev.filter(function(r) { return r.guestId !== req.guestId; }); });
+                      if (addToastRef.current) addToastRef.current('Approved: ' + req.username, 'success');
+                    }} style={{ background: 'rgba(0,200,120,.2)', border: '1px solid rgba(0,200,120,.45)', borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00e676', cursor: 'pointer', letterSpacing: .3, flexShrink: 0 }}>
+                      ✓ LET IN
+                    </button>
+                    <button onClick={function() {
+                      if (socket) socket.emit('stage-join-deny', { roomId: roomId, guestId: req.guestId });
+                      setJoinRequests(function(prev) { return prev.filter(function(r) { return r.guestId !== req.guestId; }); });
+                    }} style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.35)', borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, cursor: 'pointer', letterSpacing: .3, flexShrink: 0 }}>
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+              {joinRequests.length > 3 && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, padding: '2px 10px' }}>+{joinRequests.length - 3} more requests</div>
+              )}
+            </div>
+          )}
 
           {/* Stage header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontWeight: 700, fontSize: 20, color: TEXT, letterSpacing: .3 }}>Stage</span>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: MUTED, letterSpacing: 1 }}>{onStage.length}/{MAX_STAGE}</span>
+              {stageLocked && (
+                <span title="Stage locked — no new guests can join" style={{ fontSize: 12, lineHeight: 1 }}>🔒</span>
+              )}
+              {stageLocked && role !== 'host' && role !== 'cohost' && !onStage.some(function(g) { return (g.guestId || g.userId) === userId; }) && (
+                <button onClick={function() {
+                  if (socket) socket.emit('stage-join-request', { roomId: roomId });
+                  if (addToastRef.current) addToastRef.current('Request sent to host', 'info');
+                }} style={{ background: 'rgba(0,195,255,.15)', border: '1px solid rgba(0,195,255,.4)', borderRadius: 10, padding: '3px 10px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, cursor: 'pointer', letterSpacing: .3 }}>
+                  📩 REQUEST STAGE
+                </button>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {/* Stage sort toggle */}
+              <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
+                {[
+                  { id: 'joined',   icon: '⏱', title: 'Sort by join order' },
+                  { id: 'speaking', icon: '🗣', title: 'Sort by speaking time' },
+                  { id: 'quality',  icon: '📶', title: 'Sort by signal quality' },
+                ].map(function(s) {
+                  return (
+                    <button key={s.id} onClick={function() { setStageSort(s.id); }} title={s.title}
+                      style={{ background: stageSort === s.id ? CARD2 : 'transparent', border: 'none', color: stageSort === s.id ? TEXT : MUTED, cursor: 'pointer', padding: '5px 9px', fontSize: 11, transition: 'background .15s' }}>
+                      {s.icon}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Auto-mute + stage time limit (host only) */}
+              {role === 'host' && (
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                  <button
+                    onClick={function() { setAutoMuteJoin(function(v) { return !v; }); }}
+                    title={autoMuteJoin ? 'Auto-mute ON: new guests join muted' : 'Auto-mute OFF: new guests join with mic open'}
+                    style={{ background: autoMuteJoin ? 'rgba(255,26,60,.18)' : CARD, border: '1px solid ' + (autoMuteJoin ? 'rgba(255,26,60,.4)' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: autoMuteJoin ? RED : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, transition: 'all .15s', whiteSpace: 'nowrap' }}>
+                    🔇{autoMuteJoin ? ' ON' : ' OFF'}
+                  </button>
+                  <select
+                    value={stageLimitSec}
+                    onChange={function(e) {
+                      var v = parseInt(e.target.value, 10) || 0;
+                      setStageLimitSec(v);
+                      stageLimitWarnedRef.current = {};
+                    }}
+                    title="Per-guest stage time limit (0 = off)"
+                    style={{ background: stageLimitSec > 0 ? 'rgba(201,168,76,.15)' : CARD, border: '1px solid ' + (stageLimitSec > 0 ? 'rgba(201,168,76,.4)' : BORDER), borderRadius: 6, padding: '4px 6px', fontSize: 9, color: stageLimitSec > 0 ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace', letterSpacing: .3", outline: 'none', appearance: 'none', WebkitAppearance: 'none' }}>
+                    <option value="0">⏰ OFF</option>
+                    <option value="180">⏰ 3m</option>
+                    <option value="300">⏰ 5m</option>
+                    <option value="600">⏰ 10m</option>
+                  </select>
+                </div>
+              )}
               {/* Panel mode (list vs grid for 20-person) */}
               <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
                 {[
@@ -1660,23 +3433,291 @@ export default function LiveRoomPage({
                   );
                 })}
               </div>
+              {/* Cell aspect ratio toggle */}
+              {stageLayout === 'grid' && panelMode !== 'list' && (
+                <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
+                  {[
+                    { id: '16:9', icon: '▬', title: '16:9 widescreen' },
+                    { id: '4:3',  icon: '▪', title: '4:3 standard' },
+                    { id: '9:16', icon: '▮', title: '9:16 portrait' },
+                  ].map(function(item) {
+                    return (
+                      <button key={item.id} onClick={function() { setCellAspect(item.id); }} title={item.title}
+                        style={{ background: cellAspect === item.id ? CARD2 : 'transparent', border: 'none', color: cellAspect === item.id ? TEXT : MUTED, cursor: 'pointer', padding: '5px 8px', fontSize: 10, transition: 'background .15s', fontFamily: "'DM Mono',monospace", letterSpacing: .3 }}>
+                        {item.id}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Grid density (fewer/auto/more columns) */}
+              {stageLayout === 'grid' && panelMode !== 'list' && (
+                <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
+                  {[
+                    { d: -1, icon: '⊟', title: 'Fewer columns (wider cells)' },
+                    { d:  0, icon: '⊡', title: 'Auto columns' },
+                    { d:  1, icon: '⊞', title: 'More columns (smaller cells)' },
+                  ].map(function(item) {
+                    return (
+                      <button key={item.d} onClick={function() { setGridDensity(item.d); }} title={item.title}
+                        style={{ background: gridDensity === item.d ? CARD2 : 'transparent', border: 'none', color: gridDensity === item.d ? TEXT : MUTED, cursor: 'pointer', padding: '5px 8px', fontSize: 12, transition: 'background .15s' }}>
+                        {item.icon}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Cell stats toggle (grid mode, host/cohost) */}
+              {stageLayout === 'grid' && panelMode !== 'list' && (role === 'host' || role === 'cohost') && (
+                <button
+                  onClick={function() { setShowCellStats(function(v) { return !v; }); }}
+                  title={showCellStats ? 'Hide per-cell speaking stats' : 'Show per-cell speaking time'}
+                  style={{ background: showCellStats ? 'rgba(212,133,74,.18)' : CARD, border: '1px solid ' + (showCellStats ? 'rgba(212,133,74,.5)' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: showCellStats ? TEAL : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap', transition: 'all .15s' }}>
+                  ⏱ STATS
+                </button>
+              )}
+              {/* Stage tint (host/cohost) */}
+              {(role === 'host' || role === 'cohost') && (
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, flexShrink: 0 }}>TINT</span>
+                  {[
+                    { hex: '',        title: 'None'   },
+                    { hex: '#C9A84C', title: 'Gold'   },
+                    { hex: '#FF1A3C', title: 'Red'    },
+                    { hex: '#0066FF', title: 'Blue'   },
+                    { hex: '#00AA44', title: 'Green'  },
+                    { hex: '#9900CC', title: 'Purple' },
+                  ].map(function(t) {
+                    var isActive = stageTint === t.hex;
+                    return (
+                      <button key={t.hex || 'none'}
+                        onClick={function() { setStageTint(t.hex); }}
+                        title={t.title}
+                        style={{ width: 14, height: 14, borderRadius: '50%', background: t.hex || DIM, border: '1.5px solid ' + (isActive ? TEXT : 'transparent'), cursor: 'pointer', padding: 0, outline: 'none', flexShrink: 0 }}>
+                        {!t.hex && <span style={{ fontSize: 7, lineHeight: 1, color: MUTED }}>✕</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Stage countdown (host only) */}
+              {role === 'host' && (
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={function() {
+                      if (stageCountdownMs > 0) { setStageCountdownMs(0); setShowCountdownInput(false); return; }
+                      setShowCountdownInput(function(v) { return !v; });
+                    }}
+                    title={stageCountdownMs > 0 ? 'Stop countdown' : 'Start stage countdown timer'}
+                    style={{ background: stageCountdownMs > 0 ? 'rgba(201,168,76,.2)' : CARD, border: '1px solid ' + (stageCountdownMs > 0 ? 'rgba(201,168,76,.5)' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: stageCountdownMs > 0 ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                    ⏳ {stageCountdownMs > 0 ? 'STOP' : 'TIMER'}
+                  </button>
+                  {showCountdownInput && stageCountdownMs === 0 && (
+                    <div style={{ position: 'absolute', top: '110%', right: 0, background: CARD, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 10px', zIndex: 30, display: 'flex', gap: 6, alignItems: 'center', boxShadow: '0 4px 14px rgba(0,0,0,.5)', whiteSpace: 'nowrap' }}>
+                      <input
+                        value={countdownInput}
+                        onChange={function(e) { setCountdownInput(e.target.value); }}
+                        placeholder="mm:ss"
+                        style={{ width: 60, background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '4px 7px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: TEXT, outline: 'none' }}
+                      />
+                      <button
+                        onClick={function() {
+                          var parts = countdownInput.split(':');
+                          var totalSec = 0;
+                          if (parts.length === 2) { totalSec = (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0); }
+                          else { totalSec = parseInt(parts[0], 10) || 0; }
+                          if (totalSec > 0) { setStageCountdownMs(Date.now() + totalSec * 1000); }
+                          setShowCountdownInput(false);
+                        }}
+                        style={{ background: GOLD, border: 'none', borderRadius: 5, padding: '4px 9px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#0E0C09', cursor: 'pointer', letterSpacing: .5 }}>
+                        START
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* Mute all (host only) */}
+              {role === 'host' && onStage.some(function(g) { var gid = g.guestId || g.userId; return gid !== userId && !g.remoteMuted; }) && (
+                <button
+                  onClick={function() {
+                    onStage.forEach(function(g) {
+                      var gid = g.guestId || g.userId;
+                      if (gid === userId || g.remoteMuted) return;
+                      if (socket) socket.emit('mute-guest', { roomId: roomId, guestId: gid });
+                    });
+                    if (addToastRef.current) addToastRef.current('All guests muted', 'info');
+                  }}
+                  title="Mute all guests on stage"
+                  style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 6, padding: '4px 7px', fontSize: 9, color: MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap', transition: 'all .15s' }}>
+                  🔇 ALL
+                </button>
+              )}
+              {/* Spotlight auto-rotation (host/cohost) */}
+              {(role === 'host' || role === 'cohost') && onStage.length >= 2 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, flexShrink: 0 }}>ROTATE</span>
+                  {[0, 30, 60, 120].map(function(sec) {
+                    return (
+                      <button key={sec}
+                        onClick={function() {
+                          setSpotlightRotateSec(sec);
+                          if (sec === 0 && socket) socket.emit('spotlight-end', { roomId: roomId });
+                          else if (addToastRef.current) addToastRef.current('Spotlight rotation: ' + sec + 's', 'info');
+                        }}
+                        title={sec === 0 ? 'Off' : 'Rotate spotlight every ' + sec + 's'}
+                        style={{ background: spotlightRotateSec === sec ? 'rgba(0,195,255,.2)' : CARD, border: '1px solid ' + (spotlightRotateSec === sec ? TEAL : BORDER), borderRadius: 4, padding: '2px 5px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: spotlightRotateSec === sec ? TEAL : MUTED, cursor: 'pointer', letterSpacing: .3 }}>
+                        {sec === 0 ? 'OFF' : sec + 's'}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Broadcast overlay (host only) */}
+              {role === 'host' && (
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={function() { setShowBroadcastInput(function(v) { return !v; }); }}
+                    title="Send fullscreen text overlay to all viewers"
+                    style={{ background: showBroadcastInput ? 'rgba(201,168,76,.2)' : CARD, border: '1px solid ' + (showBroadcastInput ? 'rgba(201,168,76,.5)' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: showBroadcastInput ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                    📡 BROADCAST
+                  </button>
+                  {showBroadcastInput && (
+                    <div style={{ position: 'absolute', top: '110%', right: 0, background: CARD, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 10px', zIndex: 30, display: 'flex', flexDirection: 'column', gap: 6, boxShadow: '0 4px 14px rgba(0,0,0,.6)', minWidth: 220 }}>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: .5 }}>FULLSCREEN OVERLAY (6s)</div>
+                      <input
+                        value={broadcastText}
+                        onChange={function(e) { setBroadcastText(e.target.value.slice(0, 100)); }}
+                        onKeyDown={function(e) {
+                          if (e.key === 'Enter') {
+                            var txt = broadcastText.trim();
+                            if (txt && socket) { socket.emit('host-broadcast-overlay', { roomId: roomId, text: txt, from: username || 'Host' }); setBroadcastOverlay({ text: txt, from: username || 'Host' }); setTimeout(function() { setBroadcastOverlay(null); }, 6000); }
+                            setBroadcastText(''); setShowBroadcastInput(false);
+                          } else if (e.key === 'Escape') { setShowBroadcastInput(false); }
+                        }}
+                        autoFocus
+                        placeholder="Type message, Enter to broadcast…"
+                        maxLength={100}
+                        style={{ background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '5px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                      />
+                      <button onClick={function() {
+                        var txt = broadcastText.trim();
+                        if (txt && socket) { socket.emit('host-broadcast-overlay', { roomId: roomId, text: txt, from: username || 'Host' }); setBroadcastOverlay({ text: txt, from: username || 'Host' }); setTimeout(function() { setBroadcastOverlay(null); }, 6000); }
+                        setBroadcastText(''); setShowBroadcastInput(false);
+                      }} style={{ background: GOLD, border: 'none', borderRadius: 5, padding: '4px 9px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#0E0C09', cursor: 'pointer', letterSpacing: .5 }}>
+                        SEND
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* Auto-layout toggle (host/cohost) */}
+              {(role === 'host' || role === 'cohost') && (
+                <button
+                  onClick={function() { setAutoLayout(function(v) { return !v; }); }}
+                  title={autoLayout ? 'Auto-layout ON: click to disable' : 'Auto-layout: auto-switch grid/featured by count'}
+                  style={{ background: autoLayout ? 'rgba(0,195,255,.18)' : CARD, border: '1px solid ' + (autoLayout ? 'rgba(0,195,255,.5)' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: autoLayout ? TEAL : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                  {autoLayout ? '⟳ AUTO' : '⟳ AUTO'}
+                </button>
+              )}
+              {/* Cell swap mode (host/cohost, grid only) */}
+              {stageLayout === 'grid' && (role === 'host' || role === 'cohost') && (
+                <button
+                  onClick={function() { setSwapMode(function(v) { var next = !v; if (!next) { setSwapPickGid(null); } return next; }); }}
+                  title={swapMode ? 'Exit swap mode' : 'Swap mode: click two cells to reorder them'}
+                  style={{ background: swapMode ? 'rgba(201,168,76,.25)' : CARD, border: '1px solid ' + (swapMode ? GOLD : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: swapMode ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                  ⇄ {swapMode ? 'SWAP ON' : 'SWAP'}
+                </button>
+              )}
+              {/* Layout presets (host/cohost) */}
+              {(role === 'host' || role === 'cohost') && (
+                <button
+                  onClick={function() { setShowPresetsPanel(function(v) { return !v; }); }}
+                  title="Save and load named layout presets"
+                  style={{ background: showPresetsPanel ? 'rgba(201,168,76,.18)' : CARD, border: '1px solid ' + (showPresetsPanel ? 'rgba(201,168,76,.45)' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: showPresetsPanel ? GOLD : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                  📐 {layoutPresets.length > 0 ? 'PRESETS(' + layoutPresets.length + ')' : 'PRESETS'}
+                </button>
+              )}
               {/* Stage layout (single focus) */}
-              <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
-                {[
-                  { id: 'grid',     icon: '⊞' },
-                  { id: 'featured', icon: '◻' },
-                  { id: 'split',    icon: '⤢' },
-                ].map(function(l) {
+              <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
+                  {[
+                    { id: 'grid',     icon: '⊞' },
+                    { id: 'featured', icon: '◻' },
+                    { id: 'split',    icon: '⤢' },
+                  ].map(function(l) {
+                    return (
+                      <button key={l.id} onClick={function() { setStageLayout(l.id); }}
+                        style={{ background: stageLayout === l.id ? CARD2 : 'transparent', border: 'none', color: stageLayout === l.id ? TEXT : MUTED, cursor: 'pointer', padding: '5px 10px', fontSize: 12, transition: 'background .15s' }}>
+                        {l.icon}
+                      </button>
+                    );
+                  })}
+                </div>
+                {stageLayout === 'featured' && (
+                  <button
+                    onClick={function() { setAutoFocusSpeaker(function(v) { return !v; }); }}
+                    title={autoFocusSpeaker ? 'Auto-focus active — click to disable' : 'Enable auto-focus: featured tile follows the speaker'}
+                    style={{ background: autoFocusSpeaker ? 'rgba(109,191,126,.18)' : CARD, border: '1px solid ' + (autoFocusSpeaker ? '#6DBF7E66' : BORDER), borderRadius: 6, padding: '4px 7px', fontSize: 9, color: autoFocusSpeaker ? '#6DBF7E' : MUTED, cursor: 'pointer', fontFamily: "'DM Mono',monospace", whiteSpace: 'nowrap', transition: 'all .15s', letterSpacing: 0.3 }}>
+                    {autoFocusSpeaker ? '● AUTO' : '○ AUTO'}
+                  </button>
+                )}
+                {(function() {
+                  var n = onStage.length;
+                  var stageColor = n >= MAX_STAGE ? RED : n >= MAX_STAGE - 4 ? '#F0A500' : MUTED;
                   return (
-                    <button key={l.id} onClick={function() { setStageLayout(l.id); }}
-                      style={{ background: stageLayout === l.id ? CARD2 : 'transparent', border: 'none', color: stageLayout === l.id ? TEXT : MUTED, cursor: 'pointer', padding: '5px 10px', fontSize: 12, transition: 'background .15s' }}>
-                      {l.icon}
-                    </button>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: stageColor, letterSpacing: 0.3, whiteSpace: 'nowrap', alignSelf: 'center' }}>
+                      {n}/{MAX_STAGE}
+                    </span>
                   );
-                })}
+                })()}
               </div>
             </div>
           </div>
+
+          {/* ── Stage health bar (host only) ── */}
+          {role === 'host' && onStage.length > 1 && (function() {
+            var cGood = 0; var cFair = 0; var cPoor = 0; var cFroz = 0;
+            onStage.forEach(function(g) {
+              if ((g.guestId || g.userId) === userId) return;
+              var pid = g.producerId;
+              if (!pid) return;
+              if (frozenProducers[pid]) { cFroz++; return; }
+              var q = producerQuality[pid];
+              if (q === 'green') cGood++;
+              else if (q === 'yellow') cFair++;
+              else if (q === 'red') cPoor++;
+            });
+            if (cGood + cFair + cPoor + cFroz === 0) return null;
+            return (
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, padding: '5px 10px', background: 'rgba(14,12,9,.55)', borderRadius: 8, border: '1px solid ' + BORDER }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1, flexShrink: 0 }}>STAGE</span>
+                {cGood > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#6DBF7E', flexShrink: 0 }} />
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#6DBF7E' }}>{cGood}</span>
+                  </div>
+                )}
+                {cFair > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F0A500', flexShrink: 0 }} />
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#F0A500' }}>{cFair}</span>
+                  </div>
+                )}
+                {cPoor > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: RED, flexShrink: 0 }} />
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED }}>{cPoor}</span>
+                  </div>
+                )}
+                {cFroz > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <span style={{ fontSize: 8, lineHeight: 1 }}>❄</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: 'rgba(100,149,237,.9)' }}>{cFroz}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ── LIST MODE ── */}
           {stageLayout === 'grid' && panelMode === 'list' && (
@@ -1701,21 +3742,32 @@ export default function LiveRoomPage({
                     {/* Avatar */}
                     <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg,' + BURG + '55,' + CARD2 + ')', border: '1.5px solid ' + (isSp ? TEAL : DIM), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: GOLD, lineHeight: 1 }}>
-                        {(g.username || gid).charAt(0).toUpperCase()}
+                        {(localGuestNames[gid] || g.username || gid).charAt(0).toUpperCase()}
                       </span>
                     </div>
                     {/* Name + role + hand */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 700, fontSize: 14, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {g.username || gid}
+                        <span style={{ fontWeight: 700, fontSize: 14, color: localGuestNames[gid] ? GOLD : TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {localGuestNames[gid] || g.username || gid}
                           {isOwn && <span style={{ color: MUTED, fontWeight: 400, fontSize: 9, marginLeft: 3 }}>(YOU)</span>}
+                          {localGuestNames[gid] && <span style={{ color: MUTED, fontWeight: 400, fontSize: 8, marginLeft: 2 }}>*</span>}
                         </span>
                         {isHand && <span style={{ fontSize: 13, animation: 'handBadgePulse 1.2s ease-in-out infinite' }} title="Hand raised">✋</span>}
                         {isSp && <SpeakBars color={TEAL} small />}
                       </div>
                       <RolePill role={g.role || (isOwn ? role : 'guest')} />
                     </div>
+                    {/* Stage time limit badge */}
+                    {stageLimitSec > 0 && (function() {
+                      var joined = stageJoinTimesRef.current[gid] || Date.now();
+                      var elapsed = Math.floor((Date.now() - joined) / 1000);
+                      var rem = stageLimitSec - elapsed;
+                      if (rem <= 0) return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED, background: 'rgba(255,26,60,.18)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 4, padding: '1px 4px', flexShrink: 0 }}>TIME</span>;
+                      var urgent = rem < 30;
+                      var minStr = rem >= 60 ? Math.floor(rem / 60) + ':' + String(rem % 60).padStart(2, '0') : rem + 's';
+                      return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: urgent ? RED : MUTED, background: urgent ? 'rgba(255,26,60,.12)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (urgent ? 'rgba(255,26,60,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 4, padding: '1px 4px', flexShrink: 0, animation: urgent ? 'livePulse .8s ease-in-out infinite' : 'none' }}>⏱ {minStr}</span>;
+                    })()}
                     {/* Mute status */}
                     {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 12, color: RED }}>🔇</span>}
                     {/* Own controls */}
@@ -1731,8 +3783,8 @@ export default function LiveRoomPage({
                         </button>
                       </div>
                     )}
-                    {/* Host controls */}
-                    {role === 'host' && !isOwn && (
+                    {/* Host/cohost controls */}
+                    {(role === 'host' || role === 'cohost') && !isOwn && (
                       <div style={{ display: 'flex', gap: 4 }}>
                         {isHand && (
                           <button
@@ -1766,28 +3818,77 @@ export default function LiveRoomPage({
           {stageLayout === 'grid' && panelMode !== 'list' && (
             <div
               style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ',1fr)', gap: 4 }}
-              onClick={function() { if (cellMenuId) setCellMenuId(null); }}>
-              {onStage.map(function(g) {
+              onClick={function() { if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); setRenamingGid(null); setMsgTargetGid(null); } }}>
+              {/* Swap mode banner */}
+              {swapMode && (
+                <div style={{ gridColumn: '1 / -1', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, padding: '5px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: .5 }}>
+                    ⇄ SWAP MODE — {swapPickGid ? 'NOW CLICK THE TARGET CELL' : 'CLICK FIRST CELL TO SWAP'}
+                    {stageOrderOverride ? ' · ORDER SAVED' : ''}
+                  </span>
+                  <div style={{ display: 'flex', gap: 5 }}>
+                    {stageOrderOverride && (
+                      <button onClick={function(e) { e.stopPropagation(); setStageOrderOverride(null); if (addToastRef.current) addToastRef.current('Order reset', 'info'); }} style={{ background: 'rgba(255,255,255,.08)', border: '1px solid ' + BORDER, borderRadius: 4, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer' }}>RESET ORDER</button>
+                    )}
+                    <button onClick={function(e) { e.stopPropagation(); setSwapMode(false); setSwapPickGid(null); }} style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 4, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED, cursor: 'pointer' }}>DONE</button>
+                  </div>
+                </div>
+              )}
+              {sortedOnStage.map(function(g) {
                 var gid      = g.guestId || g.userId || 'x';
                 var isOwn    = gid === userId;
                 var isSp     = !!speakingIds[gid];
                 var isHand   = !!raisedHands[gid];
+                var handPos  = isHand ? handQueue.indexOf(gid) + 1 : 0;
                 var isPinned = gid === pinnedId;
                 var showMenu = cellMenuId === gid;
                 return (
                   <div key={gid}
+                    data-cell-gid={gid}
+                    onMouseEnter={function(e) {
+                      if (role !== 'host' && role !== 'cohost') return;
+                      setHoverGid(gid);
+                      setHoverRect(e.currentTarget.getBoundingClientRect());
+                    }}
+                    onMouseLeave={function() { setHoverGid(null); setHoverRect(null); }}
+                    onClick={function(e) {
+                      if (cellMenuId === gid) { setCellMenuId(null); setRemoveConfirmId(null); return; }
+                      if (cellMenuId) { setCellMenuId(null); setRemoveConfirmId(null); }
+                      if (swapMode) {
+                        if (!swapPickGid) {
+                          setSwapPickGid(gid);
+                        } else if (swapPickGid !== gid) {
+                          var base = stageOrderOverride || sortedOnStage.map(function(x) { return x.guestId || x.userId; });
+                          var ia2 = base.indexOf(swapPickGid);
+                          var ib2 = base.indexOf(gid);
+                          if (ia2 < 0) ia2 = base.length;
+                          if (ib2 < 0) ib2 = base.length;
+                          var next2 = base.slice();
+                          var tmp = next2[ia2]; next2[ia2] = next2[ib2]; next2[ib2] = tmp;
+                          setStageOrderOverride(next2);
+                          setSwapPickGid(null);
+                          if (addToastRef.current) addToastRef.current('Cells swapped', 'info');
+                        }
+                        return;
+                      }
+                      setFeaturedId(gid);
+                      setStageLayout('featured');
+                      setAutoFocusSpeaker(false);
+                    }}
                     style={{
                       gridColumn: isPinned && cols > 1 ? 'span 2' : 'span 1',
                       position: 'relative',
                       background: CARD,
                       borderRadius: 10,
                       overflow: 'hidden',
-                      border: '2px solid ' + (isSp ? TEAL + 'BB' : isPinned ? GOLD + '66' : isHand ? 'rgba(255,140,0,.65)' : BORDER),
+                      cursor: swapMode ? (swapPickGid === gid ? 'copy' : 'crosshair') : 'pointer',
+                      border: '2px solid ' + (swapPickGid === gid ? GOLD : cellColors[gid] ? cellColors[gid] + '99' : isSp ? TEAL + 'BB' : isPinned ? GOLD + '66' : isHand ? 'rgba(255,140,0,.65)' : BORDER),
                       animation: isSp ? 'speakPulseGrid 1.4s ease-in-out infinite' : 'fadeSlideIn .22s ease',
                       transition: 'border-color .2s',
+                      outline: swapMode && swapPickGid !== gid ? '1px dashed rgba(201,168,76,.35)' : 'none',
                     }}>
-                    {/* 16:9 video wrapper */}
-                    <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
+                    {/* Video wrapper — aspect ratio driven by cellAspect */}
+                    <div style={{ position: 'relative', paddingBottom: cellAspectPb }}>
                       <div style={{ position: 'absolute', inset: 0 }}>
                         {audioOnly ? (
                           <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,' + CARD2 + ',' + BG + ')', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
@@ -1818,18 +3919,44 @@ export default function LiveRoomPage({
                             giftTotal={guestGiftTotals[gid] || 0}
                             activeEffect={panelEffects[gid] || null}
                             onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
-                            isScreenSharing={!!(screenShareHost && screenShareHost.userId === gid)}
+                            isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
+                            remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
+                            mirrorOverride={isOwn ? mirrorSelf : undefined}
+                            remoteVolume={isOwn ? undefined : (guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1)}
                           />
                         )}
                       </div>
                     </div>
 
-                    <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={gid} />
+                    <OverlayCustomLT lowerThirds={mergedLowerThirds} guestId={gid} />
+
+                    {/* Host-local video hide overlay */}
+                    {!isOwn && hiddenVideos[gid] && (
+                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,12,9,.92)', zIndex: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: CARD2, border: '1px solid ' + DIM, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🙈</div>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5 }}>VIDEO HIDDEN</span>
+                      </div>
+                    )}
 
                     {/* Overlay badges (top-left) */}
                     <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
+                      {(isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)) && (
+                        <div style={{ background: 'rgba(0,160,255,.92)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff', letterSpacing: .3 }}>📺</span>
+                        </div>
+                      )}
+                      {gid === topSpeakerId && (
+                        <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <span style={{ fontSize: 7, lineHeight: 1 }}>👑</span>
+                        </div>
+                      )}
+                      {gid === topGifterId && topGiftMax > 0 && (
+                        <div style={{ background: 'rgba(100,200,120,.9)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <span style={{ fontSize: 7, lineHeight: 1 }}>🏆</span>
+                        </div>
+                      )}
                       {isHand && (
-                        <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋</div>
+                        <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋{handPos > 0 ? ' #' + handPos : ''}</div>
                       )}
                       {isPinned && (
                         <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09' }}>📌</div>
@@ -1839,7 +3966,36 @@ export default function LiveRoomPage({
                           <SpeakBars color='#fff' small />
                         </div>
                       )}
+                      {!isOwn && g.producerId && (producerQuality[g.producerId] === 'red' || producerQuality[g.producerId] === 'yellow') && (
+                        <div style={{ background: producerQuality[g.producerId] === 'red' ? 'rgba(255,26,60,.88)' : 'rgba(240,165,0,.88)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff', letterSpacing: .3 }}>
+                            {producerQuality[g.producerId] === 'red' ? 'POOR' : 'FAIR'}
+                          </span>
+                        </div>
+                      )}
+                      {!isOwn && g.producerId && frozenProducers[g.producerId] && (
+                        <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(100,149,237,.5)', borderRadius: 999, padding: '2px 6px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <span style={{ fontSize: 7, lineHeight: 1 }}>❄</span>
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(100,149,237,.9)', letterSpacing: .3 }}>FROZEN</span>
+                        </div>
+                      )}
+                      {lowBwMode && !isOwn && (
+                        <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(255,165,0,.4)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center' }}>
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(255,165,0,.9)', letterSpacing: .3 }}>LO</span>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Own-cell ✋ raise-hand shortcut (guest/viewer) */}
+                    {isOwn && role !== 'host' && role !== 'cohost' && (
+                      <button
+                        onClick={function(e) { e.stopPropagation(); raiseHand(); }}
+                        title={handRaised ? 'Lower hand' : 'Raise hand'}
+                        style={{ position: 'absolute', bottom: 5, left: 5, zIndex: 10, width: 22, height: 22, borderRadius: '50%', background: handRaised ? 'rgba(255,140,0,.9)' : 'rgba(0,0,0,.65)', border: '1px solid ' + (handRaised ? 'rgba(255,140,0,.9)' : 'rgba(255,255,255,.2)'), cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, animation: handRaised ? 'handBadgePulse 1.2s ease-in-out infinite' : 'none' }}>
+                        ✋
+                      </button>
+                    )}
 
                     {/* Top-right buttons: expand + host ⋮ menu */}
                     <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 3, zIndex: 10 }}>
@@ -1847,7 +4003,7 @@ export default function LiveRoomPage({
                         style={{ width: 20, height: 20, background: 'rgba(0,0,0,.6)', border: '1px solid rgba(255,255,255,.18)', borderRadius: 4, color: TEXT, fontSize: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         ⤢
                       </button>
-                      {role === 'host' && !isOwn && (
+                      {(role === 'host' || role === 'cohost') && !isOwn && (
                         <button onClick={function(e) { e.stopPropagation(); setCellMenuId(function(p) { return p === gid ? null : gid; }); }}
                           style={{ width: 20, height: 20, background: showMenu ? 'rgba(201,168,76,.25)' : 'rgba(0,0,0,.6)', border: '1px solid ' + (showMenu ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.18)'), borderRadius: 4, color: TEXT, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
                           ⋮
@@ -1860,24 +4016,108 @@ export default function LiveRoomPage({
                       <div style={{ position: 'absolute', top: 28, right: 4, background: CARD, border: '1px solid ' + BORDER, borderRadius: 8, overflow: 'hidden', zIndex: 30, minWidth: 150, boxShadow: '0 6px 22px rgba(0,0,0,.75)', animation: 'cellMenuIn .15s ease' }}
                         onClick={function(e) { e.stopPropagation(); }}>
                         {[
-                          { label: isPinned ? '📌 Unpin' : '📌 Spotlight', action: 'pin' },
+                          { label: isPinned ? '📌 Unpin' : '📌 Pin (local)', action: 'pin' },
+                          { label: spotlight && spotlight.guestId === gid ? '🔦 End spotlight' : '🔦 Spotlight all', action: 'spotlight' },
                           { label: g.remoteMuted ? '🎙 Unmute' : '🔇 Mute', action: 'mute' },
+                          { label: g.role === 'cohost' ? '⬇ Demote to Guest' : '⬆ Promote to Co-host', action: 'promote' },
+                          { label: (localLowerThirds[gid] && localLowerThirds[gid].visible) ? '📛 Hide name card' : '📛 Show name card', action: 'namecard' },
+                          { label: '✏️ Edit name card', action: 'ltEdit' },
                           { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
+                          { label: producerQuality[g.producerId] === 'red' ? '↺ Request Reconnect' : null, action: 'reconnect', hide: producerQuality[g.producerId] !== 'red' },
+                          { label: '📸 Snapshot', action: 'snapshot' },
+                          { label: '✂️ Mark Clip', action: 'clip' },
+                          { label: hiddenVideos[gid] ? '📹 Restore Video' : '🙈 Hide Video (local)', action: 'hidevideo' },
+                          { label: '📨 Message', action: 'msg' },
+                          { label: '✏️ Rename (local)', action: 'rename' },
+                          { label: '🎨 Cell Color', action: 'color' },
+                          { label: guestNotes[gid] ? '📓 Note ✓' : '📓 Note', action: 'note' },
                           { label: '🚫 Remove from Stage', action: 'remove' },
                         ].filter(function(item) { return !item.hide; }).map(function(item) {
                           return (
                             <button key={item.action}
                               onClick={function(e) {
                                 e.stopPropagation();
+                                if (item.action === 'remove') {
+                                  setRemoveConfirmId(gid);
+                                  return;
+                                }
                                 setCellMenuId(null);
                                 if (item.action === 'pin') {
                                   setPinnedId(function(p) { return p === gid ? null : gid; });
+                                } else if (item.action === 'spotlight') {
+                                  var isSpotlit = spotlight && spotlight.guestId === gid;
+                                  if (isSpotlit) {
+                                    if (socket) socket.emit('spotlight-end', { roomId: roomId });
+                                  } else {
+                                    if (socket) socket.emit('spotlight-guest', { roomId: roomId, guestId: gid, username: g.username || gid });
+                                  }
                                 } else if (item.action === 'mute') {
                                   if (socket) socket.emit(g.remoteMuted ? 'unmute-guest' : 'mute-guest', { roomId: roomId, guestId: gid });
                                 } else if (item.action === 'invite') {
                                   if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid });
-                                } else if (item.action === 'remove') {
-                                  if (socket) socket.emit('stage-remove', { roomId: roomId, guestId: gid });
+                                } else if (item.action === 'reconnect') {
+                                  if (socket) socket.emit('request-reconnect', { roomId: roomId, guestId: gid });
+                                  if (addToast) addToast('Reconnect request sent to ' + (g.username || gid), 'info');
+                                } else if (item.action === 'promote') {
+                                  var newRole = g.role === 'cohost' ? 'guest' : 'cohost';
+                                  if (socket) socket.emit('promote-guest', { roomId: roomId, guestId: gid, role: newRole });
+                                  if (addToast) addToast((g.username || gid) + ' → ' + newRole, 'success');
+                                } else if (item.action === 'namecard') {
+                                  setLocalLowerThirds(function(prev) {
+                                    var cur = prev[gid] || {};
+                                    var next = Object.assign({}, prev);
+                                    next[gid] = { visible: !cur.visible, name: g.username || gid, title: (g.role || 'guest').toUpperCase() };
+                                    return next;
+                                  });
+                                } else if (item.action === 'ltEdit') {
+                                  var curLt = localLowerThirds[gid] || {};
+                                  setLtEditName(curLt.name || g.username || gid);
+                                  setLtEditTitle(curLt.title || (g.role || 'guest').toUpperCase());
+                                  setLtEditGid(gid);
+                                  return; // keep menu open
+                                } else if (item.action === 'hidevideo') {
+                                  setHiddenVideos(function(prev) {
+                                    var next = Object.assign({}, prev);
+                                    if (next[gid]) { delete next[gid]; } else { next[gid] = true; }
+                                    return next;
+                                  });
+                                  if (addToastRef.current) addToastRef.current(hiddenVideos[gid] ? 'Video restored' : 'Video hidden (local)', 'info');
+                                } else if (item.action === 'snapshot') {
+                                  var snapEl = document.querySelector('[data-cell-gid="' + gid + '"] video');
+                                  if (snapEl && snapEl.videoWidth > 0) {
+                                    var cv = document.createElement('canvas');
+                                    cv.width = snapEl.videoWidth; cv.height = snapEl.videoHeight;
+                                    cv.getContext('2d').drawImage(snapEl, 0, 0);
+                                    cv.toBlob(function(blob) {
+                                      if (!blob) return;
+                                      var _url = URL.createObjectURL(blob);
+                                      var _a = document.createElement('a');
+                                      _a.href = _url; _a.download = (g.username || gid) + '_snapshot.jpg'; _a.click();
+                                      URL.revokeObjectURL(_url);
+                                    }, 'image/jpeg', 0.9);
+                                    if (addToastRef.current) addToastRef.current('Snapshot saved', 'success');
+                                  } else {
+                                    if (addToastRef.current) addToastRef.current('No video to snapshot', 'warning');
+                                  }
+                                } else if (item.action === 'clip') {
+                                  var clipLabel = '✂️ ' + (g.username || gid);
+                                  if (socket) socket.emit('clip-marker', { label: clipLabel });
+                                  setClipLog(function(prev) { return [{ id: Date.now() + '', label: clipLabel, ts: Date.now() }].concat(prev); });
+                                  if (addToastRef.current) addToastRef.current(clipLabel, 'success');
+                                } else if (item.action === 'msg') {
+                                  setMsgTargetGid(gid);
+                                  setMsgInput('');
+                                  return; // keep menu open
+                                } else if (item.action === 'rename') {
+                                  setRenamingGid(gid);
+                                  setRenameInput(localGuestNames[gid] || g.username || '');
+                                  return; // keep menu open
+                                } else if (item.action === 'color') {
+                                  // color picker handled inline — just close the main menu items
+                                  return;
+                                } else if (item.action === 'note') {
+                                  setEditingGuestNote(function(p) { return p === gid ? null : gid; });
+                                  return; // keep menu open
                                 }
                               }}
                               style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 13px', background: 'none', border: 'none', borderBottom: '1px solid ' + DIM, color: item.action === 'remove' ? RED : TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, cursor: 'pointer', letterSpacing: .3 }}>
@@ -1885,17 +4125,304 @@ export default function LiveRoomPage({
                             </button>
                           );
                         })}
+                        {/* Inline private message input */}
+                        {msgTargetGid === gid && (
+                          <div style={{ padding: '7px 10px 6px', borderTop: '1px solid ' + DIM }}>
+                            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, marginBottom: 5 }}>📨 PRIVATE MSG TO {(localGuestNames[gid] || g.username || gid).toUpperCase()}</div>
+                            <div style={{ display: 'flex', gap: 5 }}>
+                              <input
+                                autoFocus
+                                value={msgInput}
+                                onChange={function(e) { setMsgInput(e.target.value); }}
+                                onKeyDown={function(e) {
+                                  e.stopPropagation();
+                                  if (e.key === 'Enter') {
+                                    var text = msgInput.trim();
+                                    if (text && socket) socket.emit('host-private-msg', { roomId: roomId, toGuestId: gid, text: text, from: username || 'Host' });
+                                    if (text && addToastRef.current) addToastRef.current('Msg sent to ' + (localGuestNames[gid] || g.username || gid), 'success');
+                                    setMsgTargetGid(null); setCellMenuId(null);
+                                  } else if (e.key === 'Escape') { setMsgTargetGid(null); }
+                                }}
+                                onClick={function(e) { e.stopPropagation(); }}
+                                maxLength={120}
+                                placeholder="Type message, Enter to send…"
+                                style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '4px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, outline: 'none', minWidth: 0 }}
+                              />
+                              <button
+                                onClick={function(e) {
+                                  e.stopPropagation();
+                                  var text = msgInput.trim();
+                                  if (text && socket) socket.emit('host-private-msg', { roomId: roomId, toGuestId: gid, text: text, from: username || 'Host' });
+                                  if (text && addToastRef.current) addToastRef.current('Msg sent to ' + (localGuestNames[gid] || g.username || gid), 'success');
+                                  setMsgTargetGid(null); setCellMenuId(null);
+                                }}
+                                style={{ background: GOLD, border: 'none', borderRadius: 5, padding: '4px 9px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#0E0C09', cursor: 'pointer', flexShrink: 0 }}>
+                                ➤
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {/* Inline rename input */}
+                        {renamingGid === gid && (
+                          <div style={{ padding: '7px 10px 6px', borderTop: '1px solid ' + DIM }}>
+                            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, marginBottom: 5 }}>✏️ LOCAL NAME</div>
+                            <div style={{ display: 'flex', gap: 5 }}>
+                              <input
+                                autoFocus
+                                value={renameInput}
+                                onChange={function(e) { setRenameInput(e.target.value); }}
+                                onKeyDown={function(e) {
+                                  e.stopPropagation();
+                                  if (e.key === 'Enter') {
+                                    var trimmed = renameInput.trim();
+                                    setLocalGuestNames(function(prev) {
+                                      var next = Object.assign({}, prev);
+                                      if (trimmed) { next[gid] = trimmed; } else { delete next[gid]; }
+                                      return next;
+                                    });
+                                    setRenamingGid(null); setCellMenuId(null);
+                                  } else if (e.key === 'Escape') { setRenamingGid(null); }
+                                }}
+                                onClick={function(e) { e.stopPropagation(); }}
+                                maxLength={32}
+                                placeholder={g.username || gid}
+                                style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '4px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, outline: 'none', minWidth: 0 }}
+                              />
+                              <button
+                                onClick={function(e) {
+                                  e.stopPropagation();
+                                  var trimmed = renameInput.trim();
+                                  setLocalGuestNames(function(prev) {
+                                    var next = Object.assign({}, prev);
+                                    if (trimmed) { next[gid] = trimmed; } else { delete next[gid]; }
+                                    return next;
+                                  });
+                                  setRenamingGid(null); setCellMenuId(null);
+                                }}
+                                style={{ background: GOLD, border: 'none', borderRadius: 5, padding: '4px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#0E0C09', cursor: 'pointer', flexShrink: 0 }}>
+                                ✓
+                              </button>
+                              {localGuestNames[gid] && (
+                                <button
+                                  onClick={function(e) {
+                                    e.stopPropagation();
+                                    setLocalGuestNames(function(prev) { var next = Object.assign({}, prev); delete next[gid]; return next; });
+                                    setRenamingGid(null); setCellMenuId(null);
+                                  }}
+                                  title="Reset to original name"
+                                  style={{ background: 'rgba(255,26,60,.18)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 5, padding: '4px 7px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: RED, cursor: 'pointer', flexShrink: 0 }}>
+                                  ✕
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        {/* Inline lower-thirds editor */}
+                        {ltEditGid === gid && (
+                          <div style={{ padding: '7px 10px 7px', borderTop: '1px solid ' + DIM }} onClick={function(e) { e.stopPropagation(); }}>
+                            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, marginBottom: 5 }}>✏️ NAME CARD</div>
+                            <input
+                              value={ltEditName}
+                              onChange={function(e) { setLtEditName(e.target.value.slice(0, 40)); }}
+                              placeholder="Display name"
+                              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '4px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, outline: 'none', marginBottom: 4 }}
+                            />
+                            <input
+                              value={ltEditTitle}
+                              onChange={function(e) { setLtEditTitle(e.target.value.slice(0, 40)); }}
+                              placeholder="Title / role"
+                              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '4px 7px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: TEXT, outline: 'none', marginBottom: 6 }}
+                            />
+                            <div style={{ display: 'flex', gap: 5 }}>
+                              <button
+                                onClick={function(e) {
+                                  e.stopPropagation();
+                                  setLocalLowerThirds(function(prev) {
+                                    var next = Object.assign({}, prev);
+                                    next[gid] = { visible: true, name: ltEditName.trim() || g.username || gid, title: ltEditTitle.trim() };
+                                    return next;
+                                  });
+                                  setLtEditGid(null); setCellMenuId(null);
+                                }}
+                                style={{ flex: 1, background: GOLD, border: 'none', borderRadius: 5, padding: '5px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                                SHOW
+                              </button>
+                              <button
+                                onClick={function(e) {
+                                  e.stopPropagation();
+                                  setLocalLowerThirds(function(prev) {
+                                    var next = Object.assign({}, prev);
+                                    next[gid] = { visible: false, name: '', title: '' };
+                                    return next;
+                                  });
+                                  setLtEditGid(null); setCellMenuId(null);
+                                }}
+                                style={{ flex: 1, background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 5, padding: '5px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: RED, cursor: 'pointer', letterSpacing: 1 }}>
+                                CLEAR
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {/* Cell accent color swatches */}
+                        <div style={{ padding: '7px 10px 6px', borderTop: '1px solid ' + DIM }}>
+                          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, marginBottom: 5 }}>🎨 CELL COLOR</div>
+                          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                            {['', '#C9A84C', '#FF1A3C', '#00C3FF', '#00E676', '#FF6D00', '#CE93D8'].map(function(hex) {
+                              var isActive = hex ? (cellColors[gid] === hex) : !cellColors[gid];
+                              return (
+                                <button key={hex || 'default'}
+                                  onClick={function(e) {
+                                    e.stopPropagation();
+                                    setCellColors(function(prev) {
+                                      var next = Object.assign({}, prev);
+                                      if (hex) { next[gid] = hex; } else { delete next[gid]; }
+                                      return next;
+                                    });
+                                  }}
+                                  title={hex || 'Default'}
+                                  style={{ width: 18, height: 18, borderRadius: '50%', background: hex || DIM, border: '2px solid ' + (isActive ? TEXT : 'transparent'), cursor: 'pointer', flexShrink: 0, outline: 'none', padding: 0 }}>
+                                  {!hex && <span style={{ fontSize: 8, lineHeight: 1, color: MUTED }}>✕</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        {/* Per-guest private note (host-local, never transmitted) */}
+                        {editingGuestNote === gid && (
+                          <div style={{ padding: '7px 10px 8px', borderTop: '1px solid ' + DIM }} onClick={function(e) { e.stopPropagation(); }}>
+                            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .3, marginBottom: 5 }}>📓 GUEST NOTE (private)</div>
+                            <textarea
+                              value={guestNotes[gid] || ''}
+                              onChange={function(e) {
+                                var val = e.target.value.slice(0, 400);
+                                setGuestNotes(function(prev) { var next = Object.assign({}, prev); if (val) { next[gid] = val; } else { delete next[gid]; } return next; });
+                              }}
+                              onClick={function(e) { e.stopPropagation(); }}
+                              placeholder="Private notes about this guest…"
+                              rows={3}
+                              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '5px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, outline: 'none', resize: 'none', lineHeight: 1.4 }}
+                            />
+                            {guestNotes[gid] && (
+                              <button onClick={function(e) { e.stopPropagation(); setGuestNotes(function(prev) { var next = Object.assign({}, prev); delete next[gid]; return next; }); }}
+                                style={{ marginTop: 4, background: 'none', border: 'none', fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED + '99', cursor: 'pointer', padding: 0, letterSpacing: .3 }}>
+                                clear note
+                              </button>
+                            )}
+                          </div>
+                        )}
+                        {removeConfirmId === gid && (
+                          <div style={{ padding: '8px 12px', background: 'rgba(255,26,60,.08)', borderTop: '1px solid rgba(255,26,60,.25)' }}>
+                            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, marginBottom: 6, letterSpacing: .3 }}>
+                              Remove {g.username || gid} from stage?
+                            </div>
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              <button
+                                onClick={function(e) { e.stopPropagation(); if (socket) socket.emit('stage-remove', { roomId: roomId, guestId: gid }); setRemoveConfirmId(null); setCellMenuId(null); }}
+                                style={{ flex: 1, padding: '5px 0', background: 'rgba(255,26,60,.25)', border: '1px solid rgba(255,26,60,.5)', borderRadius: 5, color: RED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: .3 }}>
+                                YES, REMOVE
+                              </button>
+                              <button
+                                onClick={function(e) { e.stopPropagation(); setRemoveConfirmId(null); }}
+                                style={{ flex: 1, padding: '5px 0', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 5, color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 11, cursor: 'pointer' }}>
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {!isOwn && (
+                          <div style={{ padding: '7px 13px 6px', borderTop: '1px solid ' + DIM }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span style={{ fontSize: 9, flexShrink: 0 }}>{(guestVolumes[gid] || 1) === 0 ? '🔇' : '🔊'}</span>
+                              <input
+                                type="range" min="0" max="100"
+                                value={Math.round((guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1) * 100)}
+                                onChange={function(e) {
+                                  var vol = parseInt(e.target.value, 10) / 100;
+                                  setGuestVolumes(function(prev) { var next = Object.assign({}, prev); next[gid] = vol; return next; });
+                                }}
+                                onClick={function(e) { e.stopPropagation(); }}
+                                style={{ flex: 1, height: 3, cursor: 'pointer', accentColor: GOLD }} />
+                              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, width: 24, textAlign: 'right', flexShrink: 0 }}>
+                                {Math.round((guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1) * 100)}%
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        {(function() {
+                          var rs = g.producerId && consumerRawStats[g.producerId];
+                          if (!rs) return null;
+                          var dotColor = producerQuality[g.producerId] === 'red' ? '#FF1A3C' : producerQuality[g.producerId] === 'yellow' ? '#F0A500' : '#6DBF7E';
+                          return (
+                            <div style={{ padding: '7px 13px 8px', borderTop: '1px solid ' + DIM, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                                <div style={{ width: 7, height: 7, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>CONNECTION</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>bitrate</span>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEXT }}>{Math.round(rs.bitratekbps)} kbps</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>jitter</span>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEXT }}>{Math.round(rs.jitter)} ms</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>pkt loss</span>
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: rs.packetsLost > 5 ? RED : TEXT }}>{rs.packetsLost}</span>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     )}
 
                     {/* Cell footer */}
                     <div style={{ padding: '4px 8px 6px', background: CARD, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ fontWeight: 700, fontSize: 11, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {g.username || gid}
+                      <span style={{ fontWeight: 700, fontSize: 11, color: localGuestNames[gid] ? GOLD : TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {localGuestNames[gid] || g.username || gid}
                         {isOwn && <span style={{ color: MUTED, fontWeight: 400, fontSize: 9, marginLeft: 3 }}>(YOU)</span>}
+                        {localGuestNames[gid] && <span style={{ color: MUTED, fontWeight: 400, fontSize: 8, marginLeft: 2 }}>*</span>}
                       </span>
                       <RolePill role={g.role || (isOwn ? role : 'guest')} />
                       {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 9 }}>🔇</span>}
+                      {showCellStats && (speakingSnapshots[gid] || 0) > 0 && (
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: TEAL, letterSpacing: .3, flexShrink: 0 }} title="Speaking time">
+                          ⏱{Math.floor((speakingSnapshots[gid] || 0) / 60)}m{(speakingSnapshots[gid] || 0) % 60}s
+                        </span>
+                      )}
+                      {!showCellStats && (speakingSnapshots[gid] || 0) >= 5 && (
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: .3, flexShrink: 0 }}>
+                          🗣{Math.floor((speakingSnapshots[gid] || 0) / 60)}m
+                        </span>
+                      )}
+                      <StageTimer startMs={stageJoinTimesRef.current[gid]} />
+                      {!isOwn && stageLimitSec > 0 && stageJoinTimesRef.current[gid] && (function() {
+                        var elapsed = Math.floor((Date.now() - stageJoinTimesRef.current[gid]) / 1000);
+                        var rem     = stageLimitSec - elapsed;
+                        if (rem <= 0) return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: RED, letterSpacing: .3, flexShrink: 0 }}>⏰0s</span>;
+                        if (rem <= 60) return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#F0A500', letterSpacing: .3, flexShrink: 0 }}>⏰{rem}s</span>;
+                        return null;
+                      })()}
+                      {!isOwn && g.producerId && producerQuality[g.producerId] && (
+                        <SignalBars quality={producerQuality[g.producerId]} />
+                      )}
+                      {(role === 'host' || role === 'cohost') && guestNotes[gid] && (
+                        <span title="Has note" style={{ width: 6, height: 6, borderRadius: '50%', background: '#6DBF7E', display: 'inline-block', flexShrink: 0 }} />
+                      )}
+                      {(role === 'host' || role === 'cohost') && (
+                        <button
+                          onClick={function(e) {
+                            e.stopPropagation();
+                            var seq = ['red', 'yellow', 'green', null];
+                            var cur = guestTags[gid] || null;
+                            var idx = seq.indexOf(cur);
+                            var nxt = seq[(idx + 1) % seq.length];
+                            setGuestTags(function(prev) { var n = Object.assign({}, prev); if (nxt) { n[gid] = nxt; } else { delete n[gid]; } return n; });
+                          }}
+                          title={guestTags[gid] ? 'Tag: ' + guestTags[gid] + ' — click to change' : 'Click to tag'}
+                          style={{ width: 8, height: 8, borderRadius: '50%', background: guestTags[gid] === 'red' ? RED : guestTags[gid] === 'yellow' ? '#F0A500' : guestTags[gid] === 'green' ? '#6DBF7E' : DIM, border: guestTags[gid] ? 'none' : '1px solid ' + BORDER, cursor: 'pointer', padding: 0, outline: 'none', flexShrink: 0 }}
+                        />
+                      )}
                     </div>
                   </div>
                 );
@@ -1922,6 +4449,7 @@ export default function LiveRoomPage({
                     var isOwn    = gid === userId;
                     var isSp     = !!speakingIds[gid];
                     var isHand   = !!raisedHands[gid];
+                    var handPos  = isHand ? handQueue.indexOf(gid) + 1 : 0;
                     var isPinned = gid === pinnedId;
                     return (
                       <div key={gid}
@@ -1960,15 +4488,37 @@ export default function LiveRoomPage({
                                 giftTotal={guestGiftTotals[gid] || 0}
                                 activeEffect={panelEffects[gid] || null}
                                 onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
-                                isScreenSharing={!!(screenShareHost && screenShareHost.userId === gid)}
+                                isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
+                                remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
+                                mirrorOverride={isOwn ? mirrorSelf : undefined}
+                                remoteVolume={isOwn ? undefined : (guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1)}
                               />
                             )}
                           </div>
                         </div>
                         <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
-                          {isHand && <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋</div>}
+                          {gid === topSpeakerId && <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}><span style={{ fontSize: 7, lineHeight: 1 }}>👑</span></div>}
+                          {gid === topGifterId && topGiftMax > 0 && <div style={{ background: 'rgba(100,200,120,.9)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}><span style={{ fontSize: 7, lineHeight: 1 }}>🏆</span></div>}
+                          {isHand && <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋{handPos > 0 ? ' #' + handPos : ''}</div>}
                           {isPinned && <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09' }}>📌</div>}
                           {isSp && <div style={{ background: 'rgba(212,133,74,.85)', borderRadius: 999, padding: '1px 5px', display: 'flex', alignItems: 'center' }}><SpeakBars color='#fff' small /></div>}
+                          {!isOwn && g.producerId && (producerQuality[g.producerId] === 'red' || producerQuality[g.producerId] === 'yellow') && (
+                            <div style={{ background: producerQuality[g.producerId] === 'red' ? 'rgba(255,26,60,.88)' : 'rgba(240,165,0,.88)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
+                              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff', letterSpacing: .3 }}>{producerQuality[g.producerId] === 'red' ? 'POOR' : 'FAIR'}</span>
+                            </div>
+                          )}
+                          {!isOwn && g.producerId && frozenProducers[g.producerId] && (
+                            <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(100,149,237,.5)', borderRadius: 999, padding: '2px 6px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <span style={{ fontSize: 7, lineHeight: 1 }}>❄</span>
+                              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(100,149,237,.9)', letterSpacing: .3 }}>FROZEN</span>
+                            </div>
+                          )}
+                          {lowBwMode && !isOwn && (
+                            <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(255,165,0,.4)', borderRadius: 999, padding: '2px 5px', display: 'flex', alignItems: 'center' }}>
+                              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(255,165,0,.9)', letterSpacing: .3 }}>LO</span>
+                            </div>
+                          )}
                         </div>
                         <button onClick={function(e) { e.stopPropagation(); setExpandedCell(gid); }}
                           style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, background: 'rgba(0,0,0,.6)', border: '1px solid rgba(255,255,255,.18)', borderRadius: 4, color: TEXT, fontSize: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
@@ -1981,6 +4531,22 @@ export default function LiveRoomPage({
                           </span>
                           <RolePill role={g.role || (isOwn ? role : 'guest')} />
                           {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 9 }}>🔇</span>}
+                          {(speakingSnapshots[gid] || 0) >= 5 && (
+                            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: .3, flexShrink: 0 }}>
+                              🗣{Math.floor((speakingSnapshots[gid] || 0) / 60)}m
+                            </span>
+                          )}
+                          <StageTimer startMs={stageJoinTimesRef.current[gid]} />
+                          {!isOwn && stageLimitSec > 0 && stageJoinTimesRef.current[gid] && (function() {
+                            var elapsed = Math.floor((Date.now() - stageJoinTimesRef.current[gid]) / 1000);
+                            var rem     = stageLimitSec - elapsed;
+                            if (rem <= 0) return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: RED, letterSpacing: .3, flexShrink: 0 }}>⏰0s</span>;
+                            if (rem <= 60) return <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#F0A500', letterSpacing: .3, flexShrink: 0 }}>⏰{rem}s</span>;
+                            return null;
+                          })()}
+                          {!isOwn && g.producerId && producerQuality[g.producerId] && (
+                            <SignalBars quality={producerQuality[g.producerId]} />
+                          )}
                         </div>
                       </div>
                     );
@@ -2013,10 +4579,70 @@ export default function LiveRoomPage({
           })()}
 
           {/* Featured layout */}
-          {stageLayout === 'featured' && (
+          {stageLayout === 'featured' && (function() {
+            var featuredGid = featuredGuest.guestId || featuredGuest.userId;
+            var featuredIsScreenSharing = featuredGid === userId ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === featuredGid);
+            var featuredIsSpotlit = !!(spotlight && spotlight.guestId === featuredGid);
+            return (
             <div>
               {/* Big featured cell */}
-              <div style={{ background: CARD, borderRadius: 16, overflow: 'hidden', border: '1.5px solid ' + (speakingIds[featuredGuest.guestId || featuredGuest.userId] ? TEAL + '88' : BORDER), boxShadow: speakingIds[featuredGuest.guestId || featuredGuest.userId] ? ('0 0 24px ' + TEAL + '33') : 'none', marginBottom: 10 }}>
+              <div style={{ background: CARD, borderRadius: 16, overflow: 'hidden', border: '1.5px solid ' + (featuredIsSpotlit ? GOLD + '99' : speakingIds[featuredGid] ? TEAL + '88' : BORDER), boxShadow: featuredIsSpotlit ? ('0 0 28px ' + GOLD + '44') : speakingIds[featuredGid] ? ('0 0 24px ' + TEAL + '33') : 'none', marginBottom: 10 }}>
+                {featuredIsScreenSharing ? (
+                  <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%' }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+                      <OctCell
+                        guest={featuredGuest}
+                        sz={0}
+                        fill={true}
+                        isHost={role === 'host'}
+                        fadesMode={false}
+                        branding={branding}
+                        onTap={null}
+                        socket={socket}
+                        roomId={roomId}
+                        userId={userId}
+                        rtcManager={rtcReady ? rtcManager : null}
+                        mediaConfig={featuredGid === userId ? medConf : null}
+                        isMuted={featuredGid === userId ? isMuted : false}
+                        isCamOff={featuredGid === userId ? isCamOff : false}
+                        onMuteToggle={featuredGid === userId ? toggleMute : null}
+                        onCamToggle={featuredGid === userId ? toggleCam : null}
+                        giftTotal={guestGiftTotals[featuredGid] || 0}
+                        handRaised={!!(raisedHands && raisedHands[featuredGid])}
+                        activeEffect={panelEffects[featuredGid] || null}
+                        isScreenSharing={featuredIsScreenSharing}
+                        remoteQuality={featuredGid === userId ? null : (producerQuality[featuredGuest.producerId] || null)}
+                        mirrorOverride={featuredGid === userId ? mirrorSelf : undefined}
+                        remoteVolume={featuredGid === userId ? undefined : (guestVolumes[featuredGid] !== undefined ? guestVolumes[featuredGid] : 1)}
+                      />
+                      <OverlayCustomLT lowerThirds={mergedLowerThirds} guestId={featuredGid} />
+                    </div>
+                    {/* Camera PiP — own camera while screen sharing */}
+                    {featuredGid === userId && !isCamOff && (
+                      <div style={{
+                        position: 'absolute',
+                        ...(pipCorner === 'BR' ? {bottom:10,right:10} : pipCorner === 'BL' ? {bottom:10,left:10} : pipCorner === 'TR' ? {top:10,right:10} : {top:10,left:10}),
+                        width: 110, zIndex: 20,
+                      }}>
+                        <button
+                          onClick={function() { setPipCorner(function(c) { return c === 'BR' ? 'BL' : c === 'BL' ? 'TL' : c === 'TL' ? 'TR' : 'BR'; }); }}
+                          title="Move camera PiP"
+                          style={{ position: 'absolute', top: -8, left: -8, width: 20, height: 20, borderRadius: '50%', background: 'rgba(14,12,9,.92)', border: '1px solid rgba(201,168,76,.5)', color: GOLD, fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2, lineHeight: 1, padding: 0 }}>
+                          ⤡
+                        </button>
+                        <div style={{ borderRadius: 8, overflow: 'hidden', border: '2px solid rgba(201,168,76,.7)', boxShadow: '0 4px 18px rgba(0,0,0,.7)', background: '#0E0C09' }}>
+                          <video
+                            ref={pipVideoRef}
+                            autoPlay={true}
+                            playsInline={true}
+                            muted={true}
+                            style={{ width: '100%', display: 'block', transform: mirrorSelf ? 'scaleX(-1)' : 'none' }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
                 <div style={{ position: 'relative' }}>
                   <OctCell
                     guest={featuredGuest}
@@ -2029,30 +4655,66 @@ export default function LiveRoomPage({
                     roomId={roomId}
                     userId={userId}
                     rtcManager={rtcReady ? rtcManager : null}
-                    mediaConfig={(featuredGuest.guestId || featuredGuest.userId) === userId ? medConf : null}
-                    isMuted={(featuredGuest.guestId || featuredGuest.userId) === userId ? isMuted : false}
-                    isCamOff={(featuredGuest.guestId || featuredGuest.userId) === userId ? isCamOff : false}
-                    onMuteToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleMute : null}
-                    onCamToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleCam : null}
-                    giftTotal={guestGiftTotals[featuredGuest.guestId || featuredGuest.userId] || 0}
-                    handRaised={!!(raisedHands && raisedHands[featuredGuest.guestId || featuredGuest.userId])}
-                    activeEffect={panelEffects[featuredGuest.guestId || featuredGuest.userId] || null}
-                    isScreenSharing={!!(screenShareHost && screenShareHost.userId === (featuredGuest.guestId || featuredGuest.userId))}
+                    mediaConfig={featuredGid === userId ? medConf : null}
+                    isMuted={featuredGid === userId ? isMuted : false}
+                    isCamOff={featuredGid === userId ? isCamOff : false}
+                    onMuteToggle={featuredGid === userId ? toggleMute : null}
+                    onCamToggle={featuredGid === userId ? toggleCam : null}
+                    giftTotal={guestGiftTotals[featuredGid] || 0}
+                    handRaised={!!(raisedHands && raisedHands[featuredGid])}
+                    activeEffect={panelEffects[featuredGid] || null}
+                    isScreenSharing={false}
+                    remoteQuality={featuredGid === userId ? null : (producerQuality[featuredGuest.producerId] || null)}
+                    mirrorOverride={featuredGid === userId ? mirrorSelf : undefined}
+                    remoteVolume={featuredGid === userId ? undefined : (guestVolumes[featuredGid] !== undefined ? guestVolumes[featuredGid] : 1)}
                   />
-                  <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGuest.guestId || featuredGuest.userId} />
+                  <OverlayCustomLT lowerThirds={mergedLowerThirds} guestId={featuredGid} />
                 </div>
+                )}
                 <div style={{ padding: '8px 12px 10px', background: CARD }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontWeight: 700, fontSize: 16, color: TEXT }}>
+                    <button
+                      onClick={function() { setStageLayout('grid'); }}
+                      title="Back to grid"
+                      style={{ flexShrink: 0, background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 13, padding: '0 4px 0 0', lineHeight: 1 }}>
+                      ←
+                    </button>
+                    {onStage.length > 1 && (
+                      <div style={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+                        <button onClick={prevGuest} title="Previous guest  [  or  ←" style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16, padding: '0 2px', lineHeight: 1 }}>‹</button>
+                        <button onClick={nextGuest} title="Next guest  ]  or  →" style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 16, padding: '0 2px', lineHeight: 1 }}>›</button>
+                      </div>
+                    )}
+                    <span style={{ fontWeight: 700, fontSize: 16, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {featuredGuest.username || featuredGuest.guestId}
+                    </span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .3, flexShrink: 0 }}>
+                      {onStage.findIndex(function(g) { return (g.guestId || g.userId) === featuredId; }) + 1}/{onStage.length}
                     </span>
                     <RolePill role={featuredGuest.role || role} />
                     {speakingIds[featuredGuest.guestId || featuredGuest.userId] && <SpeakBars color={TEAL} small />}
+                    {featuredGid !== userId && featuredGuest.producerId && frozenProducers[featuredGuest.producerId] && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: 'rgba(14,12,9,.88)', border: '1px solid rgba(100,149,237,.4)', borderRadius: 999, padding: '2px 6px', flexShrink: 0 }}>
+                        <span style={{ fontSize: 8, lineHeight: 1 }}>❄</span>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: 'rgba(100,149,237,.9)', letterSpacing: .3 }}>FROZEN</span>
+                      </div>
+                    )}
+                    {featuredGid !== userId && featuredGuest.producerId && producerQuality[featuredGuest.producerId] && (
+                      <SignalBars quality={producerQuality[featuredGuest.producerId]} />
+                    )}
+                    {onStage.length > 1 && (
+                      <button
+                        onClick={function() { setCinemaMode(function(v) { return !v; }); }}
+                        title={cinemaMode ? 'Show thumbnails' : 'Cinema mode'}
+                        style={{ flexShrink: 0, background: cinemaMode ? 'rgba(201,168,76,.18)' : 'none', border: '1px solid ' + (cinemaMode ? 'rgba(201,168,76,.4)' : 'transparent'), borderRadius: 5, color: cinemaMode ? GOLD : MUTED, cursor: 'pointer', fontSize: 10, padding: '2px 6px', fontFamily: "'DM Mono',monospace", letterSpacing: 0.3, lineHeight: 1 }}>
+                        {cinemaMode ? '⊡' : '⊡'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
               {/* Thumbnail strip */}
-              {onStage.length > 1 && (
+              {onStage.length > 1 && !cinemaMode && (
                 <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch' }}>
                   {onStage.filter(function(g) {
                     return (g.guestId || g.userId) !== (featuredGuest.guestId || featuredGuest.userId);
@@ -2061,13 +4723,19 @@ export default function LiveRoomPage({
                     var isOwn = gid === userId;
                     var isSp  = !!speakingIds[gid];
                     return (
-                      <div key={gid} onClick={function() { setFeaturedId(gid); }}
+                      <div key={gid} onClick={function() { setAutoFocusSpeaker(false); setFeaturedId(gid); }}
                         style={{
                           flexShrink: 0, width: 90,
                           background: CARD2, borderRadius: 10, overflow: 'hidden',
                           border: '1.5px solid ' + (isSp ? TEAL + '66' : BORDER),
-                          cursor: 'pointer',
+                          cursor: 'pointer', position: 'relative',
                         }}>
+                        {!isOwn && g.producerId && (producerQuality[g.producerId] === 'red' || producerQuality[g.producerId] === 'yellow') && (
+                          <div style={{ position: 'absolute', top: 3, left: 3, zIndex: 12, pointerEvents: 'none', background: producerQuality[g.producerId] === 'red' ? 'rgba(255,26,60,.88)' : 'rgba(240,165,0,.88)', borderRadius: 999, padding: '1px 4px', display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
+                            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff' }}>{producerQuality[g.producerId] === 'red' ? 'POOR' : 'FAIR'}</span>
+                          </div>
+                        )}
                         <OctCell
                           guest={g}
                           sz={90}
@@ -2088,7 +4756,9 @@ export default function LiveRoomPage({
                           handRaised={!!(raisedHands && raisedHands[gid])}
                           activeEffect={panelEffects[gid] || null}
                           onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
-                          isScreenSharing={!!(screenShareHost && screenShareHost.userId === gid)}
+                          isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
+                          remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
+                          remoteVolume={isOwn ? undefined : (guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1)}
                         />
                         <div style={{ padding: '3px 5px 5px' }}>
                           <span style={{ fontSize: 10, color: MUTED, fontWeight: 500, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -2101,7 +4771,7 @@ export default function LiveRoomPage({
                 </div>
               )}
             </div>
-          )}
+          );}())}
           <OverlayBanner banner={overlayConfig && overlayConfig.banner} />
           <OverlayCountdown countdown={overlayConfig && overlayConfig.countdown} />
           <OverlayScoreBug scoreBug={overlayConfig && overlayConfig.scoreBug} />
@@ -2119,6 +4789,71 @@ export default function LiveRoomPage({
           )}
         </div>
 
+        {/* ── Hand-Raise Queue (host only) ── */}
+        {role === 'host' && handQueue.length > 0 && (
+          <div style={{ margin: '0 14px 10px', background: 'rgba(255,140,0,.06)', border: '1px solid rgba(255,140,0,.28)', borderRadius: 12, padding: '10px 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 1.5, color: '#D4854A' }}>✋ STAGE QUEUE</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{handQueue.length} waiting</span>
+                {onStage.length < MAX_STAGE && handQueue.length > 0 && (
+                  <button
+                    onClick={function() {
+                      var nextGid = handQueue[0];
+                      if (!nextGid || !socket) return;
+                      var nextEntry = allGuestMap[nextGid] || { guestId: nextGid, username: nextGid };
+                      socket.emit('stage-invite', { roomId: roomId, guestId: nextGid });
+                      socket.emit('spotlight-guest', { roomId: roomId, guestId: nextGid, username: nextEntry.username || nextGid });
+                      setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[nextGid]; return n; });
+                    }}
+                    title="Invite #1 and spotlight them"
+                    style={{ background: TEAL, border: 'none', borderRadius: 5, padding: '2px 8px', fontSize: 7, color: BG, cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .5, fontWeight: 700, flexShrink: 0 }}>
+                    CALL NEXT
+                  </button>
+                )}
+                <button
+                  onClick={function() {
+                    if (socket) socket.emit('lower-all-hands', { roomId: roomId });
+                  }}
+                  title="Lower all raised hands"
+                  style={{ background: 'none', border: '1px solid rgba(255,140,0,.35)', borderRadius: 5, padding: '2px 7px', fontSize: 7, color: '#D4854A', cursor: 'pointer', fontFamily: "'DM Mono',monospace", letterSpacing: .5 }}>
+                  CLEAR ALL
+                </button>
+              </div>
+            </div>
+            {handQueue.map(function(gid, idx) {
+              var entry = allGuestMap[gid] || audienceList.find(function(x) { return (x.guestId || x.userId) === gid; }) || { guestId: gid, username: gid };
+              var uname = entry.username || gid;
+              var canInvite = onStage.length < MAX_STAGE;
+              return (
+                <div key={gid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: idx < handQueue.length - 1 ? '1px solid rgba(255,140,0,.1)' : 'none' }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#D4854A', minWidth: 18, textAlign: 'right' }}>#{idx + 1}</span>
+                  <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(212,133,74,.3),rgba(14,12,9,.8))', border: '1px solid rgba(255,140,0,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: GOLD }}>{uname.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <span style={{ flex: 1, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{uname}</span>
+                  {canInvite && (
+                    <button
+                      onClick={function() { if (socket) { socket.emit('stage-invite', { roomId: roomId, guestId: gid }); setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[gid]; return n; }); } }}
+                      style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#0E0C09', background: GOLD, border: 'none', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', letterSpacing: .5, flexShrink: 0 }}>
+                      INVITE
+                    </button>
+                  )}
+                  {!canInvite && (
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>FULL</span>
+                  )}
+                  <button
+                    onClick={function() { setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[gid]; return n; }); }}
+                    title="Dismiss — skip this guest"
+                    style={{ width: 20, height: 20, background: 'none', border: '1px solid rgba(255,255,255,.15)', borderRadius: 4, color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, lineHeight: 1, padding: 0 }}>
+                    ×
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* ── Audience Section ── */}
         {(audienceList.length > 0 || (role !== 'host' && onStage.every(function(g) { return (g.guestId || g.userId) !== userId; }))) && (
           <div style={{ padding: '10px 14px 10px' }}>
@@ -2127,19 +4862,50 @@ export default function LiveRoomPage({
                 <span style={{ fontSize: 15, fontWeight: 500, color: MUTED, letterSpacing: .3 }}>
                   In the Room
                 </span>
-                {Object.keys(raisedHands).length > 0 && (
+                {handQueue.length > 0 && (
                   <span style={{ background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#D4854A', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>
-                    ✋ {Object.keys(raisedHands).length} raised
+                    ✋ {handQueue.length} in queue
                   </span>
                 )}
               </div>
-              {audienceList.length > 8 && (
-                <button onClick={function() { setShowAllAud(function(v) { return !v; }); }}
-                  style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold, background: 'none', border: 'none', cursor: 'pointer', padding: 0, letterSpacing: .5 }}>
-                  {showAllAud ? 'COLLAPSE' : 'SEE ALL (' + audienceList.length + ')'}
-                </button>
-              )}
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                {role === 'host' && audienceList.length > 0 && onStage.length < MAX_STAGE && (
+                  <button
+                    onClick={function() {
+                      if (socket) socket.emit('stage-invite-all', { roomId: roomId });
+                      if (addToast) addToast('Stage invite sent to all (' + audienceList.length + ')', 'success');
+                    }}
+                    title="Invite everyone in the audience to stage"
+                    style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, background: 'rgba(212,133,74,.12)', border: '1px solid rgba(212,133,74,.35)', borderRadius: 5, padding: '3px 8px', cursor: 'pointer', letterSpacing: .5, flexShrink: 0 }}>
+                    + INVITE ALL
+                  </button>
+                )}
+                {audienceList.length > 8 && (
+                  <button onClick={function() { setShowAllAud(function(v) { return !v; }); }}
+                    style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold, background: 'none', border: 'none', cursor: 'pointer', padding: 0, letterSpacing: .5 }}>
+                    {showAllAud ? 'COLLAPSE' : 'SEE ALL (' + audienceList.length + ')'}
+                  </button>
+                )}
+              </div>
             </div>
+            {/* Emoji reaction bar */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+              {['🔥','❤️','👏','💯','🎉','😂'].map(function(em) {
+                return (
+                  <button key={em} onClick={function() {
+                    var rid = Date.now() + em;
+                    var x   = 10 + Math.floor(Math.random() * 80);
+                    setReactionBurst(function(prev) { return prev.concat([{ id: rid, emoji: em, x: x }]); });
+                    setTimeout(function() { setReactionBurst(function(prev) { return prev.filter(function(r) { return r.id !== rid; }); }); }, 2200);
+                    if (socket) socket.emit('stage-reaction', { roomId: roomId, emoji: em });
+                  }}
+                    style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 999, padding: '4px 9px', fontSize: 13, cursor: 'pointer', lineHeight: 1 }}>
+                    {em}
+                  </button>
+                );
+              })}
+            </div>
+
             {showAllAud ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10 }}>
                 {audienceList.map(function(g) {
@@ -2348,7 +5114,7 @@ export default function LiveRoomPage({
           boxShadow: '0 8px 32px rgba(0,0,0,.5)',
           animation: 'fadeSlideIn .2s ease',
         }}>
-          {['❤️','🔥','👏','😂','💯','🎉','👑','💰'].map(function(e) {
+          {customReactions.map(function(e) {
             return (
               <button key={e} onClick={function() { sendReact(e); }}
                 style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', padding: '2px 3px', borderRadius: 8, transition: 'transform .1s' }}>
@@ -2356,6 +5122,84 @@ export default function LiveRoomPage({
               </button>
             );
           })}
+          {(role === 'host' || role === 'cohost') && (
+            <button onClick={function() { setShowReactionPicker(function(v) { return !v; }); setReactsOpen(false); }}
+              title="Customise reactions"
+              style={{ background: 'none', border: '1px dashed rgba(255,255,255,.2)', borderRadius: 8, fontSize: 12, cursor: 'pointer', padding: '2px 5px', color: MUTED, lineHeight: 1 }}>
+              ✎
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ════════════════ REACTION EMOJI PICKER ════════════════ */}
+      {showReactionPicker && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 93, display: 'flex', alignItems: 'flex-end', animation: 'fadeSlideIn .18s ease' }}
+          onClick={function() { setShowReactionPicker(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '16px 16px 0 0', border: '1px solid ' + BORDER, padding: '16px', boxShadow: '0 -10px 40px rgba(0,0,0,.7)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: TEXT, letterSpacing: 1 }}>🎭 Reaction Emojis</span>
+              <button onClick={function() { setShowReactionPicker(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', lineHeight: 1, padding: '2px 4px' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 10 }}>TAP A SLOT TO CHANGE IT</div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+              {customReactions.map(function(em, idx) {
+                var isActive = reactionPickerSlot === idx;
+                return (
+                  <button key={idx}
+                    onClick={function() { setReactionPickerSlot(idx); setReactionPickerInput(em); }}
+                    style={{ flex: 1, background: isActive ? 'rgba(201,168,76,.18)' : CARD, border: '1.5px solid ' + (isActive ? GOLD : BORDER), borderRadius: 10, padding: '8px 4px', fontSize: 22, cursor: 'pointer', textAlign: 'center' }}>
+                    {em}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+              <input
+                value={reactionPickerInput}
+                onChange={function(e) { setReactionPickerInput(e.target.value.slice(0, 4)); }}
+                placeholder="Paste emoji…"
+                style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 12px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 16, color: TEXT, outline: 'none', textAlign: 'center' }}
+              />
+              <button
+                onClick={function() {
+                  if (!reactionPickerInput) return;
+                  setCustomReactions(function(prev) {
+                    var next = prev.slice();
+                    next[reactionPickerSlot] = reactionPickerInput;
+                    return next;
+                  });
+                  setReactionPickerInput('');
+                }}
+                style={{ background: GOLD, border: 'none', borderRadius: 8, padding: '8px 18px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                SET
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+              {['🔥','❤️','😂','👍','💎','⚡','🎉','💯','👏','🙌','😮','💪','🫶','🤩','🥳','🫡','💸','👑','🚀','✨'].map(function(em) {
+                return (
+                  <button key={em}
+                    onClick={function() {
+                      setCustomReactions(function(prev) {
+                        var next = prev.slice();
+                        next[reactionPickerSlot] = em;
+                        return next;
+                      });
+                    }}
+                    style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 8, padding: '5px 6px', fontSize: 18, cursor: 'pointer' }}>
+                    {em}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={function() { setCustomReactions(['🔥','❤️','😂','👍','💎','⚡']); setShowReactionPicker(false); }}
+              style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+              RESET TO DEFAULT
+            </button>
+          </div>
         </div>
       )}
 
@@ -2373,6 +5217,20 @@ export default function LiveRoomPage({
               <span style={{ fontWeight: 700, fontSize: 18, color: TEXT, letterSpacing: .3 }}>Chat</span>
               {slowModeSec > 0 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, background: 'rgba(255,255,255,.07)', borderRadius: 4, padding: '2px 5px', letterSpacing: 1 }}>🐌 {slowModeSec}s</span>}
               {subscriberOnly && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '2px 5px', letterSpacing: 1 }}>⭐ SUB ONLY</span>}
+              {(function() {
+                var maxVal = Math.max.apply(null, chatSparkline.concat([1]));
+                return (
+                  <div title="Chat activity (last 60s)" style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 12, marginLeft: 2 }}>
+                    {chatSparkline.map(function(v, i) {
+                      var pct = maxVal > 0 ? v / maxVal : 0;
+                      var isLast = i === chatSparkline.length - 1;
+                      return (
+                        <div key={i} style={{ width: 3, borderRadius: 1, background: isLast ? GOLD : 'rgba(201,168,76,.35)', height: Math.max(2, Math.round(pct * 12)), alignSelf: 'flex-end', transition: 'height .3s ease' }} />
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               {(role === 'host' || role === 'cohost') && (
@@ -2382,6 +5240,29 @@ export default function LiveRoomPage({
                   if (socket) socket.emit('set-slow-mode', { seconds: next });
                 }} style={{ background: slowModeSec > 0 ? 'rgba(201,168,76,.15)' : 'rgba(255,255,255,.05)', border: '1px solid ' + (slowModeSec > 0 ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 7px', color: slowModeSec > 0 ? gold : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 1 }}>
                   🐌 {slowModeSec > 0 ? (slowModeSec + 's') : 'OFF'}
+                </button>
+              )}
+              {starredMsgs.length > 0 && (
+                <button onClick={function() { setShowStarred(function(v) { return !v; }); }}
+                  title="Show starred messages"
+                  style={{ background: showStarred ? 'rgba(240,165,0,.2)' : 'rgba(255,255,255,.05)', border: '1px solid ' + (showStarred ? 'rgba(240,165,0,.5)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 7px', color: showStarred ? '#F0A500' : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>
+                  ⭐{starredMsgs.length}
+                </button>
+              )}
+              <button onClick={function() { setShowChatSearch(function(v) { return !v; }); if (showChatSearch) setChatSearch(''); }}
+                title="Search chat"
+                style={{ background: showChatSearch ? 'rgba(201,168,76,.15)' : 'rgba(255,255,255,.05)', border: '1px solid ' + (showChatSearch ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 7px', color: showChatSearch ? GOLD : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>
+                🔍
+              </button>
+              <button onClick={downloadChat} title="Export chat as .txt"
+                style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, padding: '3px 7px', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>
+                📥
+              </button>
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() { setShowWordFilter(function(v) { return !v; }); }}
+                  title={wordFilter.length > 0 ? ('Word filter: ' + wordFilter.length + ' words') : 'Word filter (none)'}
+                  style={{ background: wordFilter.length > 0 ? 'rgba(255,140,0,.15)' : 'rgba(255,255,255,.05)', border: '1px solid ' + (wordFilter.length > 0 ? 'rgba(255,140,0,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 7px', color: wordFilter.length > 0 ? 'rgba(255,140,0,.9)' : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>
+                  🚫{wordFilter.length > 0 ? (' ' + wordFilter.length) : ''}
                 </button>
               )}
               <button onClick={function() {
@@ -2396,6 +5277,73 @@ export default function LiveRoomPage({
                 style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
             </div>
           </div>
+          {/* Chat search bar */}
+          {showChatSearch && (
+            <div style={{ padding: '7px 12px', borderBottom: '1px solid ' + DIM, background: 'rgba(201,168,76,.04)', flexShrink: 0 }}>
+              <input
+                autoFocus
+                value={chatSearch}
+                onChange={function(e) { setChatSearch(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === 'Escape') { setChatSearch(''); setShowChatSearch(false); } }}
+                placeholder="Search by name or message…"
+                style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, outline: 'none' }}
+              />
+              {chatSearch && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginTop: 4, letterSpacing: .3 }}>
+                  {(function() {
+                    var q = chatSearch.toLowerCase();
+                    var count = (chat || []).filter(function(m) { return (m.message || '').toLowerCase().indexOf(q) !== -1 || (m.username || '').toLowerCase().indexOf(q) !== -1; }).length;
+                    return count + ' match' + (count !== 1 ? 'es' : '');
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
+          {/* Word filter editor (host/cohost) */}
+          {showWordFilter && (role === 'host' || role === 'cohost') && (
+            <div style={{ padding: '8px 12px', borderBottom: '1px solid ' + DIM, background: 'rgba(255,140,0,.06)', flexShrink: 0 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: 'rgba(255,140,0,.8)', letterSpacing: .5, marginBottom: 6 }}>🚫 WORD FILTER — messages containing these words show as [filtered]</div>
+              <div style={{ display: 'flex', gap: 5, marginBottom: 6 }}>
+                <input
+                  value={wordFilterInput}
+                  onChange={function(e) { setWordFilterInput(e.target.value.slice(0, 40)); }}
+                  onKeyDown={function(e) {
+                    if (e.key === 'Enter') {
+                      var w = wordFilterInput.trim().toLowerCase();
+                      if (w && !wordFilter.includes(w)) setWordFilter(function(prev) { return prev.concat([w]); });
+                      setWordFilterInput('');
+                    }
+                  }}
+                  placeholder="Add word…"
+                  style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 5, padding: '4px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, outline: 'none' }}
+                />
+                <button
+                  onClick={function() {
+                    var w = wordFilterInput.trim().toLowerCase();
+                    if (w && !wordFilter.includes(w)) setWordFilter(function(prev) { return prev.concat([w]); });
+                    setWordFilterInput('');
+                  }}
+                  style={{ background: 'rgba(255,140,0,.2)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 5, padding: '4px 10px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: 'rgba(255,140,0,.9)', cursor: 'pointer', letterSpacing: 1 }}>
+                  ADD
+                </button>
+              </div>
+              {wordFilter.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {wordFilter.map(function(w) {
+                    return (
+                      <div key={w} style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(255,140,0,.12)', border: '1px solid rgba(255,140,0,.3)', borderRadius: 4, padding: '2px 6px' }}>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: 'rgba(255,140,0,.9)' }}>{w}</span>
+                        <button onClick={function() { setWordFilter(function(prev) { return prev.filter(function(x) { return x !== w; }); }); }}
+                          style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 9, padding: 0, lineHeight: 1 }}>✕</button>
+                      </div>
+                    );
+                  })}
+                  <button onClick={function() { setWordFilter([]); }}
+                    style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}>clear all</button>
+                </div>
+              )}
+            </div>
+          )}
           {/* Pinned message banner */}
           {pinnedMsg && (
             <div style={{ padding: '7px 14px', background: 'rgba(201,168,76,.10)', borderBottom: '1px solid rgba(201,168,76,.22)', display: 'flex', alignItems: 'flex-start', gap: 8, flexShrink: 0 }}>
@@ -2411,11 +5359,36 @@ export default function LiveRoomPage({
             </div>
           )}
           {/* Messages */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+          <div ref={chatScrollRef}
+            onScroll={function() {
+              var el = chatScrollRef.current;
+              if (!el) return;
+              var fromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+              if (fromBottom > 120) { setChatScrolledUp(true); }
+              else { setChatScrolledUp(false); setChatUnread(0); }
+            }}
+            style={{ flex: 1, overflowY: 'auto', padding: '8px 14px', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', position: 'relative' }}>
+            {chatScrolledUp && chatUnread > 0 && (
+              <div style={{ position: 'sticky', top: 0, zIndex: 5, display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
+                <button
+                  onClick={function() {
+                    setChatScrolledUp(false); setChatUnread(0);
+                    if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  style={{ background: GOLD, border: 'none', borderRadius: 999, padding: '4px 14px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: BG, cursor: 'pointer', letterSpacing: 1, boxShadow: '0 2px 10px rgba(201,168,76,.45)' }}>
+                  ↓ {chatUnread} NEW
+                </button>
+              </div>
+            )}
             {(!chat || chat.length === 0) && (
               <div style={{ textAlign: 'center', padding: '28px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>No messages yet</div>
             )}
-            {chat && chat.map(function(m, i) {
+            {chat && (function() {
+              var msgs = chat;
+              if (chatSearch) msgs = msgs.filter(function(m) { var q = chatSearch.toLowerCase(); return (m.message || '').toLowerCase().indexOf(q) !== -1 || (m.username || '').toLowerCase().indexOf(q) !== -1; });
+              if (showStarred && starredMsgs.length > 0) msgs = msgs.filter(function(m) { return m.id && starredMsgs.indexOf(m.id) >= 0; });
+              return msgs;
+            })().map(function(m, i) {
               if (m.type === 'super') {
                 var scColor = m.tierColor || '#C9A84C';
                 var scDollars = '$' + (Math.floor(m.amountCents || 0) / 100).toFixed(2);
@@ -2458,18 +5431,46 @@ export default function LiveRoomPage({
                   </div>
                 );
               }
+              var isMention = username && (m.message || '').toLowerCase().indexOf('@' + username.toLowerCase()) !== -1 && m.userId !== userId;
+              if (isMention) {
+                playTone([440], 0.1);
+              }
               return (
-                <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease', position: 'relative' }}>
+                <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease', position: 'relative', background: isMention ? 'rgba(201,168,76,.09)' : 'transparent', border: isMention ? '1px solid rgba(201,168,76,.25)' : '1px solid transparent', borderRadius: isMention ? 8 : 0, padding: isMention ? '4px 8px' : 0, marginLeft: isMention ? -8 : 0, marginRight: isMention ? -8 : 0 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
                     <span style={{ fontWeight: 700, fontSize: 13, color: gold }}>{m.username || 'Guest'}</span>
+                    {isMention && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: .5 }}>@you</span>}
                     {m.ts && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>
                       {new Date(m.ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>}
+                    {m.id && (
+                      <button onClick={function() {
+                        var key = m.id;
+                        setStarredMsgs(function(prev) {
+                          var idx = prev.indexOf(key);
+                          if (idx >= 0) { var n = prev.slice(); n.splice(idx, 1); return n; }
+                          return prev.concat([key]);
+                        });
+                      }} title={starredMsgs.indexOf(m.id) >= 0 ? 'Unstar' : 'Star'}
+                      style={{ background: 'none', border: 'none', color: starredMsgs.indexOf(m.id) >= 0 ? '#F0A500' : 'transparent', fontSize: 10, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>
+                        ⭐
+                      </button>
+                    )}
                     {(role === 'host' || role === 'cohost') && (
                       <span style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
                         <button onClick={function() {
                           if (socket) socket.emit('pin-chat-message', { id: m.id || '', username: m.username || 'Guest', message: m.message || '', ts: m.ts || 0 });
                         }} title="Pin message" style={{ background: 'none', border: 'none', color: pinnedMsg && pinnedMsg.id === m.id ? gold : MUTED, fontSize: 11, cursor: 'pointer', padding: '0 2px', lineHeight: 1, opacity: .75 }}>📌</button>
+                        {m.message && (
+                          <button onClick={function() {
+                            var d = new Date(m.ts ? m.ts * 1000 : Date.now());
+                            var hh = (d.getHours() < 10 ? '0' : '') + d.getHours();
+                            var mm2 = (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+                            var line = '[' + hh + ':' + mm2 + '] ' + (m.username || '?') + ': ' + (m.message || '');
+                            setNoteText(function(prev) { return (prev ? prev + '\n' : '') + line; });
+                            if (addToastRef.current) addToastRef.current('Saved to notes', 'success');
+                          }} title="Save to notes" style={{ background: 'none', border: 'none', color: MUTED, fontSize: 11, cursor: 'pointer', padding: '0 2px', lineHeight: 1, opacity: .7 }}>📝</button>
+                        )}
                         {m.id && (
                           <button onClick={function() {
                             if (socket) socket.emit('chat-delete', { id: m.id });
@@ -2478,7 +5479,16 @@ export default function LiveRoomPage({
                       </span>
                     )}
                   </div>
-                  <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45 }}>{m.message}</p>
+                  <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45 }}>{(function() {
+                    if (!wordFilter || wordFilter.length === 0) return m.message;
+                    var filtered = m.message || '';
+                    wordFilter.forEach(function(w) {
+                      if (!w) return;
+                      var re = new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                      filtered = filtered.replace(re, '[filtered]');
+                    });
+                    return filtered;
+                  })()}</p>
                   {m.translated && m.translated !== m.message && (
                     <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, margin: '2px 0 0', fontStyle: 'italic' }}>{m.translated}</p>
                   )}
@@ -2514,7 +5524,7 @@ export default function LiveRoomPage({
               );
             })}
             <div ref={chatEndRef} />
-          </div>
+          </div>{/* end messages scroll container */}
           {/* GIF input bar */}
           {showGifInput && (
             <div style={{ padding: '6px 12px', display: 'flex', gap: 8, borderTop: '1px solid rgba(255,255,255,.06)', flexShrink: 0 }}>
@@ -2528,13 +5538,35 @@ export default function LiveRoomPage({
               <button onClick={sendGif} style={{ background: '#C9A84C', border: 'none', borderRadius: 999, padding: '7px 14px', fontWeight: 700, fontSize: 12, color: '#0E0C09', cursor: 'pointer' }}>GIF</button>
             </div>
           )}
+          {/* Slash-command hint (host/cohost only) */}
+          {chatCmdHint && (role === 'host' || role === 'cohost') && (
+            <div style={{ padding: '6px 12px', borderTop: '1px solid ' + DIM, background: 'rgba(201,168,76,.06)', flexShrink: 0 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: .5, marginBottom: 5 }}>⌨ COMMANDS</div>
+              {[
+                { cmd: '/slow 5', desc: 'Slow mode 5s' },
+                { cmd: '/shout @user', desc: 'Shoutout' },
+                { cmd: '/confetti', desc: 'Burst' },
+                { cmd: '/clip [label]', desc: 'Mark clip' },
+                { cmd: '/mute @user', desc: 'Mute on stage' },
+                { cmd: '/ticker [text]', desc: 'Start ticker' },
+              ].map(function(item) {
+                return (
+                  <button key={item.cmd} onClick={function() { setChatInput(item.cmd.split(' ')[0] + ' '); setChatCmdHint(false); }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginRight: 6, marginBottom: 4, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 6, padding: '3px 7px', cursor: 'pointer' }}>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD }}>{item.cmd.split(' ')[0]}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>{item.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {/* Input */}
           <div style={{ padding: '8px 12px', borderTop: '1px solid ' + BORDER, display: 'flex', gap: 8, flexShrink: 0 }}>
             <input
               value={chatInput}
-              onChange={function(e) { setChatInput(e.target.value); }}
-              onKeyDown={function(e) { if (e.key === 'Enter') sendChat(); }}
-              placeholder="Say something..."
+              onChange={function(e) { setChatInput(e.target.value); setChatCmdHint((role === 'host' || role === 'cohost') && e.target.value.charAt(0) === '/'); }}
+              onKeyDown={function(e) { if (e.key === 'Enter') sendChat(); if (e.key === 'Escape') { setChatCmdHint(false); } }}
+              placeholder={(role === 'host' || role === 'cohost') ? 'Say something or /command…' : 'Say something...'}
               style={{
                 flex: 1, background: CARD2, border: '1px solid ' + DIM, borderRadius: 999,
                 padding: '9px 16px', fontSize: 13, color: TEXT, outline: 'none',
@@ -2751,6 +5783,19 @@ export default function LiveRoomPage({
         </div>
       )}
 
+      {/* Queue position hint for waiting panelists */}
+      {handRaised && role !== 'host' && (function() {
+        var myPos = handQueue.indexOf(userId) + 1;
+        if (!myPos) return null;
+        return (
+          <div style={{ position: 'absolute', bottom: 62, left: '50%', transform: 'translateX(-50%)', zIndex: 41, pointerEvents: 'none' }}>
+            <div style={{ background: 'rgba(14,12,9,.9)', border: '1px solid rgba(255,140,0,.5)', borderRadius: 999, padding: '4px 14px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#D4854A', whiteSpace: 'nowrap', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>
+              ✋ You are #{myPos} in queue
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ════════════════ BOTTOM TOOLBAR ════════════════ */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -2808,7 +5853,7 @@ export default function LiveRoomPage({
             icon="✋"
             label="Hand"
             active={handRaised}
-            activeColor={gold}
+            badge={role === 'host' ? handQueue.length : 0}
             onPress={raiseHand}
           />
           <IconBtn
@@ -2838,7 +5883,427 @@ export default function LiveRoomPage({
             active={showMediaConf}
             onPress={function() { setShowMediaConf(function(v) { return !v; }); }}
           />
+          {role !== 'viewer' && (
+            <IconBtn
+              icon="⇔"
+              label={mirrorSelf ? 'Mirrored' : 'Normal'}
+              active={mirrorSelf}
+              onPress={function() { setMirrorSelf(function(v) { return !v; }); }}
+            />
+          )}
+          {role !== 'viewer' && avCameras.length > 1 && (
+            <IconBtn
+              icon="📷"
+              label="Flip Cam"
+              onPress={handleCamFlip}
+            />
+          )}
+          {role !== 'viewer' && avMics.length > 1 && (
+            <IconBtn
+              icon="🎙"
+              label="Flip Mic"
+              onPress={handleMicFlip}
+            />
+          )}
+          {role !== 'viewer' && (avCameras.length > 0 || avMics.length > 0) && (
+            <IconBtn
+              icon="🎛"
+              label="Devices"
+              active={showDevicePicker}
+              activeColor={TEAL}
+              onPress={function() { setShowDevicePicker(function(v) { return !v; }); }}
+            />
+          )}
+          {role !== 'viewer' && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="🌫"
+                label={bgBlurOn ? 'Blur ✓' : 'Blur'}
+                active={bgBlurOn}
+                activeColor={TEAL}
+                onPress={bgBlurOn ? toggleBgBlur : function() { setShowBlurSlider(function(v) { return !v; }); }}
+              />
+              {showBlurSlider && !bgBlurOn && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 148, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 6, textAlign: 'center' }}>BLUR STRENGTH</div>
+                  <input type="range" min={2} max={20} value={bgBlurLevel}
+                    onChange={function(e) { setBgBlurLevel(Number(e.target.value)); }}
+                    style={{ width: '100%', accentColor: TEAL }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3, marginBottom: 8 }}>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>SOFT</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL }}>{bgBlurLevel}px</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>HEAVY</span>
+                  </div>
+                  <button onClick={toggleBgBlur}
+                    style={{ width: '100%', background: TEAL, border: 'none', borderRadius: 6, padding: '6px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                    APPLY BLUR
+                  </button>
+                  <button onClick={function() { setShowBlurSlider(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 4 }}>
+                    cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {role !== 'viewer' && (
+            <IconBtn
+              icon="🎚"
+              label={noiseSuppOn ? 'NS ✓' : 'NS'}
+              active={noiseSuppOn}
+              activeColor={TEAL}
+              onPress={toggleNoiseSuppression}
+            />
+          )}
           {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="🌙"
+                label={brbActive ? 'BRB ✓' : 'BRB'}
+                active={brbActive}
+                activeColor={GOLD}
+                onPress={function() {
+                  if (brbActive) {
+                    if (socket) socket.emit('brb-end');
+                  } else {
+                    setShowBrbInput(function(v) { return !v; });
+                  }
+                }}
+              />
+              {showBrbInput && !brbActive && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 180, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 6, textAlign: 'center' }}>BRB MESSAGE (optional)</div>
+                  <input
+                    value={brbInput}
+                    onChange={function(e) { setBrbInput(e.target.value.slice(0, 80)); }}
+                    placeholder="Back in 5 min…"
+                    style={{ width: '100%', boxSizing: 'border-box', background: DIM, border: '1px solid ' + BORDER, borderRadius: 6, padding: '5px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, outline: 'none', marginBottom: 8 }}
+                  />
+                  <button
+                    onClick={function() {
+                      if (socket) socket.emit('brb-start', { msg: brbInput });
+                      setShowBrbInput(false);
+                      setBrbInput('');
+                    }}
+                    style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 6, padding: '6px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                    GO BRB
+                  </button>
+                  <button onClick={function() { setShowBrbInput(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 4 }}>
+                    cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {typeof document !== 'undefined' && document.pictureInPictureEnabled && role !== 'viewer' && (
+            <IconBtn
+              icon="🖼"
+              label={pipActive ? 'PiP ✓' : 'PiP'}
+              active={pipActive}
+              activeColor={TEAL}
+              onPress={toggleBrowserPip}
+            />
+          )}
+          {role !== 'host' && (
+            <IconBtn
+              icon="✋"
+              label={handRaised ? 'Hand ✓' : 'Hand'}
+              active={handRaised}
+              activeColor='rgba(255,140,0,.9)'
+              onPress={raiseHand}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="🎊"
+              label="Confetti"
+              onPress={function() {
+                if (socket) socket.emit('confetti-burst', { roomId: roomId });
+              }}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="⏱"
+                label={roomTimerActive ? 'Timer ✓' : 'Timer'}
+                active={roomTimerActive}
+                activeColor={GOLD}
+                onPress={roomTimerActive
+                  ? function() { if (socket) socket.emit('room-timer-stop', { roomId: roomId }); }
+                  : function() { setShowTimerPicker(function(v) { return !v; }); }}
+              />
+              {showTimerPicker && !roomTimerActive && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 160, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 8, textAlign: 'center' }}>COUNTDOWN TIMER</div>
+                  {[[15,'15s'],[30,'30s'],[60,'1m'],[180,'3m'],[300,'5m']].map(function(preset) {
+                    return (
+                      <button key={preset[0]}
+                        onClick={function() {
+                          if (socket) socket.emit('room-timer-start', { roomId: roomId, seconds: preset[0] });
+                          setShowTimerPicker(false);
+                        }}
+                        style={{ display: 'block', width: '100%', background: DIM, border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: TEXT, cursor: 'pointer', letterSpacing: 1, marginBottom: 4 }}>
+                        {preset[1]}
+                      </button>
+                    );
+                  })}
+                  <button onClick={function() { setShowTimerPicker(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 2 }}>
+                    cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="📰"
+                label={tickerActive ? 'Ticker ✓' : 'Ticker'}
+                active={tickerActive}
+                activeColor={GOLD}
+                onPress={tickerActive ? stopTicker : function() { setShowTickerInput(function(v) { return !v; }); }}
+              />
+              {showTickerInput && !tickerActive && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 200, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 6, textAlign: 'center' }}>STAGE TICKER</div>
+                  <input
+                    value={tickerInput}
+                    onChange={function(e) { setTickerInput(e.target.value.slice(0, 200)); }}
+                    placeholder="Scrolling message…"
+                    onKeyDown={function(e) { if (e.key === 'Enter') { startTicker(tickerInput); } else if (e.key === 'Escape') { setShowTickerInput(false); } }}
+                    style={{ width: '100%', boxSizing: 'border-box', background: DIM, border: '1px solid ' + BORDER, borderRadius: 6, padding: '5px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, outline: 'none', marginBottom: 8 }}
+                  />
+                  <button
+                    onClick={function() { startTicker(tickerInput); }}
+                    style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 6, padding: '6px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                    START TICKER
+                  </button>
+                  <button onClick={function() { setShowTickerInput(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 4 }}>
+                    cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="🎨"
+                label={stageBg ? 'BG ✓' : 'Stage BG'}
+                active={!!stageBg}
+                activeColor={TEAL}
+                onPress={function() { setShowBgPicker(function(v) { return !v; }); }}
+              />
+              {showBgPicker && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 194, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 8, textAlign: 'center' }}>STAGE BACKGROUND</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                    {[
+                      { label: 'Default', val: '' },
+                      { label: 'Deep Space', val: 'linear-gradient(135deg,#0a0015 0%,#0e0c09 50%,#0a0820 100%)' },
+                      { label: 'Sunset', val: 'linear-gradient(160deg,#1a0a00 0%,#3d1200 40%,#1a0020 100%)' },
+                      { label: 'Ocean', val: 'linear-gradient(160deg,#001428 0%,#002244 50%,#001020 100%)' },
+                      { label: 'Forest', val: 'linear-gradient(160deg,#041a08 0%,#0a2412 50%,#041008 100%)' },
+                      { label: 'Crimson', val: 'linear-gradient(160deg,#1a0008 0%,#2d0012 50%,#1a0005 100%)' },
+                      { label: 'Neon', val: 'linear-gradient(135deg,#07001a 0%,#0e0028 50%,#1a0a00 100%)' },
+                      { label: 'Gold', val: 'linear-gradient(160deg,#100c00 0%,#1e1600 50%,#0e0a00 100%)' },
+                    ].map(function(opt) {
+                      var isActive = stageBg === opt.val;
+                      return (
+                        <button key={opt.label}
+                          onClick={function() { setStageBg(opt.val); setShowBgPicker(false); }}
+                          style={{ flex: '1 1 40%', background: opt.val || DIM, border: '1.5px solid ' + (isActive ? GOLD : BORDER), borderRadius: 6, padding: '7px 4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: isActive ? GOLD : TEXT, cursor: 'pointer', letterSpacing: .3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button onClick={function() { setShowBgPicker(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer' }}>
+                    close
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="🔊"
+                label="Sounds"
+                active={showSoundboard}
+                activeColor={TEAL}
+                onPress={function() { setShowSoundboard(function(v) { return !v; }); }}
+              />
+              {showSoundboard && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 12px', zIndex: 20, width: 178, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 8, textAlign: 'center' }}>SOUNDBOARD</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {[
+                      { name: 'applause',  label: '👏 Applause'  },
+                      { name: 'drumroll',  label: '🥁 Drum Roll' },
+                      { name: 'airhorn',   label: '📯 Air Horn'  },
+                      { name: 'chaching',  label: '💰 Cha-Ching' },
+                      { name: 'fanfare',   label: '🎺 Fanfare'   },
+                      { name: 'boom',      label: '💥 Boom'      },
+                    ].map(function(s) {
+                      return (
+                        <button key={s.name}
+                          onClick={function() { if (socket) socket.emit('soundboard', { sound: s.name, roomId: roomId }); }}
+                          style={{ flex: '1 1 44%', background: DIM, border: '1px solid ' + BORDER, borderRadius: 7, padding: '6px 4px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, color: TEXT, cursor: 'pointer', textAlign: 'center', letterSpacing: .3 }}>
+                          {s.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button onClick={function() { setShowSoundboard(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 6 }}>
+                    close
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ position: 'relative' }}>
+              <IconBtn
+                icon="📊"
+                label={sentimentPoll ? 'Poll ✓' : 'Poll'}
+                active={!!sentimentPoll}
+                activeColor={GOLD}
+                onPress={sentimentPoll
+                  ? function() { if (socket) socket.emit('sentiment-end', { roomId: roomId }); }
+                  : function() { setShowSentimentInput(function(v) { return !v; }); }}
+              />
+              {showSentimentInput && !sentimentPoll && (
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: SURF, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 14px', zIndex: 20, width: 200, boxShadow: '0 4px 16px rgba(0,0,0,.7)', animation: 'fadeSlideIn .15s ease' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5, marginBottom: 6, textAlign: 'center' }}>AUDIENCE POLL (30s 👍/👎)</div>
+                  <input
+                    value={sentimentInput}
+                    onChange={function(e) { setSentimentInput(e.target.value.slice(0, 120)); }}
+                    placeholder="How's everyone feeling?"
+                    onKeyDown={function(e) {
+                      if (e.key === 'Enter') {
+                        if (socket) socket.emit('sentiment-start', { roomId: roomId, question: sentimentInput });
+                        setShowSentimentInput(false);
+                      } else if (e.key === 'Escape') { setShowSentimentInput(false); }
+                    }}
+                    style={{ width: '100%', boxSizing: 'border-box', background: DIM, border: '1px solid ' + BORDER, borderRadius: 6, padding: '5px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, outline: 'none', marginBottom: 8 }}
+                  />
+                  <button
+                    onClick={function() {
+                      if (socket) socket.emit('sentiment-start', { roomId: roomId, question: sentimentInput });
+                      setShowSentimentInput(false);
+                      setSentimentInput('');
+                    }}
+                    style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 6, padding: '6px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                    LAUNCH POLL
+                  </button>
+                  <button onClick={function() { setShowSentimentInput(false); }}
+                    style={{ width: '100%', background: 'none', border: 'none', padding: '4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', marginTop: 4 }}>
+                    cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {(role === 'host' || role === 'cohost') && role !== 'viewer' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '0 4px' }}>
+              <input
+                type="checkbox"
+                id="sw-autorecord"
+                checked={autoRecord}
+                onChange={function(e) { setAutoRecord(e.target.checked); }}
+                style={{ accentColor: RED, cursor: 'pointer' }}
+              />
+              <label htmlFor="sw-autorecord" style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: autoRecord ? RED : MUTED, cursor: 'pointer', letterSpacing: .3, whiteSpace: 'nowrap' }}>
+                Auto-REC
+              </label>
+            </div>
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="📡"
+              label={showHealthHud ? 'HUD ✓' : 'HUD'}
+              active={showHealthHud}
+              activeColor={TEAL}
+              onPress={function() { setShowHealthHud(function(v) { return !v; }); }}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="📝"
+              label="Notes"
+              active={showNotes}
+              activeColor={GOLD}
+              onPress={function() { setShowNotes(function(v) { return !v; }); }}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="📜"
+              label={showTeleprompter ? 'Prompt ×' : 'Prompt'}
+              active={showTeleprompter}
+              activeColor={TEAL}
+              onPress={function() { setShowTeleprompter(function(v) { return !v; }); }}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="📋"
+              label={'Activity' + (activityLog.length > 0 ? ' ' + activityLog.length : '')}
+              active={showActivityLog}
+              activeColor={GOLD}
+              onPress={function() { setShowActivityLog(function(v) { return !v; }); }}
+            />
+          )}
+          {role === 'host' && (
+            <IconBtn
+              icon={joinSoundEnabled ? '🔔' : '🔕'}
+              label="Join SFX"
+              active={joinSoundEnabled}
+              activeColor={GOLD}
+              onPress={function() { setJoinSoundEnabled(function(v) { return !v; }); }}
+            />
+          )}
+          <IconBtn
+            icon="?"
+            label="Shortcuts"
+            active={showKeyHelp}
+            onPress={function() { setShowKeyHelp(function(v) { return !v; }); }}
+          />
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="🎉"
+              label={showEmojiBar ? 'Emoji ×' : 'Emojis'}
+              active={showEmojiBar}
+              activeColor={GOLD}
+              onPress={function() { setShowEmojiBar(function(v) { return !v; }); }}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="📊"
+              label="Stats"
+              active={showStageStats}
+              activeColor={gold}
+              onPress={function() { setShowStageStats(function(v) { return !v; }); }}
+            />
+          )}
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon="📶"
+              label={lowBwMode ? 'LO-BW' : 'HD'}
+              active={lowBwMode}
+              danger={lowBwMode}
+              onPress={function() { setLowBwMode(function(v) { return !v; }); }}
+            />
+          )}
+          {(role === 'host' || role === 'cohost' || role === 'owner') && (
             <IconBtn
               icon={isScreenSharing ? '🛑' : '🖥'}
               label={isScreenSharing ? 'Stop' : 'Screen'}
@@ -2853,6 +6318,12 @@ export default function LiveRoomPage({
             active={theaterMode}
             activeColor={gold}
             onPress={function() { setTheaterMode(function(v) { return !v; }); }}
+          />
+          <IconBtn
+            icon={isFullscreen ? '⊠' : '⤢'}
+            label={isFullscreen ? 'Exit FS' : 'Full'}
+            active={isFullscreen}
+            onPress={toggleFullscreen}
           />
         </div>
       </div>
@@ -3551,6 +7022,9 @@ export default function LiveRoomPage({
                     giftTotal={guestGiftTotals[gid] || 0}
                     activeEffect={panelEffects[gid] || null}
                     onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                    remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
+                    mirrorOverride={isOwn ? mirrorSelf : undefined}
+                    remoteVolume={isOwn ? undefined : (guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1)}
                   />
                 </div>
               )}
@@ -3562,10 +7036,53 @@ export default function LiveRoomPage({
             <div style={{ padding: '14px 20px 28px', background: 'rgba(9,7,14,.97)', borderTop: '1px solid ' + BORDER }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 22, color: TEXT }}>{g.username || gid}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 22, color: localGuestNames[gid] ? GOLD : TEXT }}>
+                    {localGuestNames[gid] || g.username || gid}
+                    {localGuestNames[gid] && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD, marginLeft: 5, opacity: .7 }}>*</span>}
+                  </div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2 }}>
                     <RolePill role={g.role || (isOwn ? role : 'guest')} />
                     {isSp && <SpeakBars color={TEAL} />}
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 6, flexWrap: 'wrap' }}>
+                    {(function() {
+                      var joinMs = stageJoinTimesRef.current[gid];
+                      if (!joinMs) return null;
+                      return React.createElement('span', {
+                        style: { fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }
+                      }, '⏱ On stage: ', React.createElement(StageTimer, { startMs: joinMs }));
+                    })()}
+                    {(function() {
+                      var secs = speakingTimeRef.current[gid] || 0;
+                      if (!secs) return null;
+                      var m = Math.floor(secs / 60);
+                      var s = secs % 60;
+                      return React.createElement('span', {
+                        style: { fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }
+                      }, '🗣 Speaking: ' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+                    })()}
+                    {(function() {
+                      var gifts = guestGiftTotals[gid] || 0;
+                      if (!gifts) return null;
+                      return React.createElement('span', {
+                        style: { fontFamily: "'DM Mono',monospace", fontSize: 9, color: GOLD }
+                      }, '🎁 $' + (Math.floor(gifts) / 100).toFixed(2));
+                    })()}
+                    {(function() {
+                      if (!isOwn && (role === 'host' || role === 'cohost') && g.producerId) {
+                        var raw = consumerRawStats[g.producerId];
+                        if (!raw) return null;
+                        var br = raw.bitratekbps != null ? raw.bitratekbps + ' kbps' : null;
+                        var jt = raw.jitter != null ? raw.jitter + 'ms jit' : null;
+                        var pl = raw.packetsLost != null ? raw.packetsLost + ' lost' : null;
+                        var parts = [br, jt, pl].filter(Boolean).join(' · ');
+                        if (!parts) return null;
+                        return React.createElement('span', {
+                          style: { fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }
+                        }, '📡 ' + parts);
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
                 {isOwn && (
@@ -3745,6 +7262,154 @@ export default function LiveRoomPage({
         </div>
       )}
 
+      {/* ════════════════ KEYBOARD SHORTCUT GUIDE ════════════════ */}
+      {showKeyHelp && (
+        <div
+          style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 92, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeSlideIn .18s ease' }}
+          onClick={function() { setShowKeyHelp(false); }}>
+          <div style={{ background: SURF, borderRadius: 16, border: '1px solid ' + BORDER, padding: '22px 24px 24px', width: '92%', maxWidth: 360, maxHeight: '80vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', boxShadow: '0 16px 60px rgba(0,0,0,.8)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1, marginBottom: 14 }}>Keyboard Shortcuts</div>
+            {[
+              { key: 'M',       desc: 'Mute / unmute microphone' },
+              { key: 'V',       desc: 'Toggle camera on / off' },
+              { key: 'F',       desc: 'Enter / exit fullscreen' },
+              { key: 'X',       desc: 'Mirror own camera view' },
+              { key: '1',       desc: 'Grid layout' },
+              { key: '2',       desc: 'Featured layout' },
+              { key: '3',       desc: 'Split layout' },
+              { key: '+ / =',   desc: 'More grid columns' },
+              { key: '- / _',   desc: 'Fewer grid columns' },
+              { key: '[ / ←',  desc: 'Previous guest (featured view)' },
+              { key: '] / →',  desc: 'Next guest (featured view)' },
+              { key: 'W',       desc: 'Toggle auto-layout (host/cohost)' },
+              { key: '?',       desc: 'Show / hide this guide' },
+              { key: 'Esc',     desc: 'Close modals / exit swap mode' },
+            ].map(function(row) {
+              return (
+                <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '7px 0', borderBottom: '1px solid ' + DIM }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 5, padding: '3px 8px', color: GOLD, letterSpacing: 0.5, flexShrink: 0, minWidth: 56, textAlign: 'center' }}>{row.key}</div>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 500, fontSize: 13, color: TEXT, letterSpacing: 0.3 }}>{row.desc}</span>
+                </div>
+              );
+            })}
+            <button onClick={function() { setShowKeyHelp(false); }}
+              style={{ marginTop: 14, width: '100%', padding: '9px 0', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 10, cursor: 'pointer', letterSpacing: 0.5 }}>
+              CLOSE
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ STAGE STATS SHEET (host/cohost) ════════════════ */}
+      {showStageStats && (role === 'host' || role === 'cohost') && (
+        <div
+          style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 92, display: 'flex', alignItems: 'flex-end', animation: 'fadeSlideIn .18s ease' }}
+          onClick={function() { setShowStageStats(false); }}>
+          <div style={{ width: '100%', maxHeight: '72vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: SURF, borderRadius: '16px 16px 0 0', border: '1px solid ' + BORDER, boxShadow: '0 -10px 40px rgba(0,0,0,.7)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: TEXT, letterSpacing: 1 }}>Stage Stats</span>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button onClick={function() {
+                  var now2 = Date.now();
+                  var csvRows = onStage.map(function(g) {
+                    var gid2 = g.guestId || g.userId || 'x';
+                    var joinMs2 = stageJoinTimesRef.current[gid2] || now2;
+                    return { name: localGuestNames[gid2] || g.username || gid2, guestRole: g.role || 'guest', speakSecs: speakingSnapshots[gid2] || 0, stageSecs: Math.floor((now2 - joinMs2) / 1000), q: producerQuality[g.producerId] || '', gifts: guestGiftTotals[gid2] || 0 };
+                  });
+                  exportStageStatsCsv(csvRows);
+                  if (addToastRef.current) addToastRef.current('Stats exported', 'success');
+                }} style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 9px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, cursor: 'pointer', letterSpacing: .5 }}>
+                  ↓ CSV
+                </button>
+                <button onClick={function() { setShowStageStats(false); }}
+                  style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', padding: '2px 4px', lineHeight: 1 }}>✕</button>
+              </div>
+            </div>
+            {(function() {
+              var now = Date.now();
+              var rows = onStage.map(function(g) {
+                var gid       = g.guestId || g.userId || 'x';
+                var speakSecs = speakingSnapshots[gid] || 0;
+                var joinMs    = stageJoinTimesRef.current[gid] || now;
+                var stageSecs = Math.floor((now - joinMs) / 1000);
+                var q         = producerQuality[g.producerId] || null;
+                var gifts     = guestGiftTotals[gid] || 0;
+                return { gid: gid, name: localGuestNames[gid] || g.username || gid, speakSecs: speakSecs, stageSecs: stageSecs, q: q, gifts: gifts, isOwn: gid === userId };
+              });
+              rows.sort(function(a, b) {
+                if (statsSortCol === 'name')     return a.name.localeCompare(b.name);
+                if (statsSortCol === 'speaking') return b.speakSecs - a.speakSecs;
+                if (statsSortCol === 'stage')    return b.stageSecs - a.stageSecs;
+                if (statsSortCol === 'gifts')    return b.gifts - a.gifts;
+                var qRank = function(q) { return q === 'green' ? 0 : q === 'yellow' ? 1 : q === 'red' ? 2 : 3; };
+                return qRank(a.q) - qRank(b.q);
+              });
+              var fmtS = function(s) { var m = Math.floor(s / 60); var sec = s % 60; return m + ':' + (sec < 10 ? '0' : '') + sec; };
+              var qColor = function(q) { return q === 'green' ? '#6DBF7E' : q === 'yellow' ? '#F0A500' : q === 'red' ? RED : MUTED; };
+              var ColHd = function(col, label) {
+                return (
+                  <th key={col}
+                    onClick={function() { setStatsSortCol(col); }}
+                    style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: statsSortCol === col ? GOLD : MUTED, letterSpacing: .5, textAlign: col === 'name' ? 'left' : 'right', padding: '6px 8px', cursor: 'pointer', borderBottom: '1px solid ' + (statsSortCol === col ? GOLD + '55' : BORDER), userSelect: 'none', whiteSpace: 'nowrap' }}>
+                    {label}{statsSortCol === col ? ' ↓' : ''}
+                  </th>
+                );
+              };
+              return (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      {ColHd('name',     'NAME')}
+                      {ColHd('speaking', '🗣 TALK')}
+                      {ColHd('stage',    '⏱ STAGE')}
+                      {ColHd('quality',  '📶 SIG')}
+                      {ColHd('gifts',    '🎁 GIFTS')}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map(function(r) {
+                      return (
+                        <tr key={r.gid} style={{ borderBottom: '1px solid ' + DIM }}>
+                          <td style={{ padding: '7px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {r.gid === topSpeakerId && <span style={{ marginRight: 4 }}>👑</span>}
+                            {r.name}
+                            {r.isOwn && <span style={{ color: MUTED, fontWeight: 400, fontSize: 9, marginLeft: 4 }}>(you)</span>}
+                          </td>
+                          <td style={{ padding: '7px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.speakSecs >= 30 ? TEAL : TEXT, textAlign: 'right' }}>{fmtS(r.speakSecs)}</td>
+                          <td style={{ padding: '7px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'right' }}>{fmtS(r.stageSecs)}</td>
+                          <td style={{ padding: '7px 8px', textAlign: 'right' }}>
+                            {r.q ? (
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: qColor(r.q), flexShrink: 0 }} />
+                                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: qColor(r.q), letterSpacing: .3 }}>
+                                  {r.q === 'green' ? 'GOOD' : r.q === 'yellow' ? 'FAIR' : 'POOR'}
+                                </span>
+                              </div>
+                            ) : <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: DIM }}>—</span>}
+                          </td>
+                          <td style={{ padding: '7px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.gifts > 0 ? GOLD : MUTED, textAlign: 'right' }}>
+                            {r.gifts > 0 ? '$' + (r.gifts / 100).toFixed(0) : '—'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              );
+            })()}
+            <div style={{ padding: '10px 16px 16px', borderTop: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, flex: 1, letterSpacing: .3 }}>Tap column header to sort · Speaking time updates every 5 s</span>
+              <button onClick={function() { setShowStageStats(false); }}
+                style={{ padding: '6px 14px', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 7, color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: .5 }}>
+                CLOSE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ════════════════ MEDIA CONFIG PANEL ════════════════ */}
       {showMediaConf && (
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 80, display: 'flex', alignItems: 'flex-end' }}>
@@ -3812,12 +7477,53 @@ export default function LiveRoomPage({
         </button>
       )}
 
+      {/* ════════════════ PRESENTER NOTES OVERLAY ════════════════ */}
+      {showNotes && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom,0px) + 200px)', right: 12, zIndex: 9998, width: 260, background: 'rgba(26,21,16,.97)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 14, boxShadow: '4px 4px 24px rgba(0,0,0,.6)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ padding: '9px 14px 7px', borderBottom: '1px solid rgba(201,168,76,.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 2 }}>📝 NOTES</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>host-only · not broadcast</span>
+          </div>
+          <textarea
+            value={noteText}
+            onChange={function(e) {
+              var v = e.target.value;
+              setNoteText(v);
+              try { localStorage.setItem('sw_notes', v); } catch(err) {}
+            }}
+            placeholder="Run-of-show notes, talking points, talking order…"
+            style={{ flex: 1, minHeight: 180, resize: 'vertical', background: 'transparent', border: 'none', outline: 'none', padding: '10px 14px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, lineHeight: 1.5 }}
+          />
+        </div>
+      )}
+
       {/* ════════════════ CLIP LOG OVERLAY ════════════════ */}
       {showClipLog && (role === 'host' || role === 'cohost') && (
         <div style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom,0px) + 200px)', left: 12, zIndex: 9998, width: 270, maxHeight: 320, background: 'rgba(26,21,16,.97)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 14, boxShadow: '-4px 4px 24px rgba(0,0,0,.6)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'fadeSlideIn .2s ease' }}>
           <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(201,168,76,.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
             <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 2 }}>✂️ CLIP LOG</span>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{clipLog.length} clip{clipLog.length !== 1 ? 's' : ''}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{clipLog.length} clip{clipLog.length !== 1 ? 's' : ''}</span>
+              {clipLog.length > 0 && (
+                <button
+                  onClick={function() {
+                    var lines = clipLog.map(function(entry) {
+                      var d = new Date(entry.ts * 1000);
+                      var ts = d.toISOString().substring(11, 19);
+                      return ts + '  ' + entry.label;
+                    });
+                    var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url; a.download = 'clips.txt'; a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  title="Export clip log as .txt"
+                  style={{ background: 'none', border: '1px solid rgba(201,168,76,.3)', borderRadius: 5, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', cursor: 'pointer', letterSpacing: .3 }}>
+                  ⬇ EXPORT
+                </button>
+              )}
+            </div>
           </div>
           <div style={{ overflowY: 'auto', flex: 1 }}>
             {clipLog.length === 0 && (
@@ -3833,6 +7539,48 @@ export default function LiveRoomPage({
                 <div key={entry.id} style={{ padding: '8px 14px', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', flexShrink: 0, marginTop: 1, letterSpacing: .5 }}>{timeStr}</span>
                   <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', lineHeight: 1.35, wordBreak: 'break-word' }}>{entry.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ ACTIVITY LOG OVERLAY ════════════════ */}
+      {showActivityLog && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom,0px) + 200px)', left: 280, zIndex: 9998, width: 260, maxHeight: 340, background: 'rgba(26,21,16,.97)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 14, boxShadow: '4px 4px 24px rgba(0,0,0,.6)', display: 'flex', flexDirection: 'column', overflow: 'hidden', animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid rgba(201,168,76,.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 2 }}>📋 ACTIVITY</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {activityLog.length > 0 && (
+                <button
+                  onClick={function() { setActivityLog([]); }}
+                  title="Clear activity log"
+                  style={{ background: 'none', border: '1px solid rgba(255,255,255,.15)', borderRadius: 5, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, cursor: 'pointer', letterSpacing: .3 }}>
+                  CLEAR
+                </button>
+              )}
+              <button
+                onClick={function() { setShowActivityLog(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>
+                ×
+              </button>
+            </div>
+          </div>
+          <div style={{ overflowY: 'auto', flex: 1 }}>
+            {activityLog.length === 0 && (
+              <div style={{ padding: '18px 14px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center' }}>No activity yet</div>
+            )}
+            {activityLog.map(function(entry) {
+              var d = new Date(entry.ts);
+              var hh = d.getHours();
+              var mm = d.getMinutes();
+              var ss = d.getSeconds();
+              var timeStr = (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss;
+              return (
+                <div key={entry.id} style={{ padding: '7px 14px', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, flexShrink: 0, marginTop: 1, letterSpacing: .5 }}>{timeStr}</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, lineHeight: 1.35, wordBreak: 'break-word' }}>{entry.msg}</span>
                 </div>
               );
             })}
@@ -3944,6 +7692,233 @@ export default function LiveRoomPage({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ════════════════ SESSION SUMMARY OVERLAY ════════════════ */}
+      {showSessionSummary && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.86)', zIndex: 98, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeSlideIn .2s ease' }}
+          onClick={function() { setShowSessionSummary(false); }}>
+          <div style={{ background: SURF, borderRadius: 20, border: '1px solid ' + BORDER, padding: '28px 28px 32px', width: '90%', maxWidth: 360, boxShadow: '0 20px 60px rgba(0,0,0,.9)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 1 }}>📈 Session Summary</span>
+              <button onClick={function() { setShowSessionSummary(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', lineHeight: 1 }}>✕</button>
+            </div>
+            {(function() {
+              var topSpeakerName = null;
+              var bestSecs = 0;
+              onStage.forEach(function(g) {
+                var gid = g.guestId || g.userId;
+                var s = speakingSnapshots[gid] || 0;
+                if (s > bestSecs) { bestSecs = s; topSpeakerName = localGuestNames[gid] || g.username || gid; }
+              });
+              var totalGifts = Object.values(guestGiftTotals).reduce(function(sum, v) { return sum + (v || 0); }, 0);
+              var durH = Math.floor(streamDuration / 3600);
+              var durM = Math.floor((streamDuration % 3600) / 60);
+              var durS = streamDuration % 60;
+              var durStr = streamDuration > 0 ? ((durH > 0 ? (durH < 10 ? '0' : '') + durH + ':' : '') + (durM < 10 ? '0' : '') + durM + ':' + (durS < 10 ? '0' : '') + durS) : '—';
+              var rows2 = [
+                { label: '👥 Peak Viewers',  value: peakViewers || '—' },
+                { label: '🎤 On Stage',      value: onStage.length },
+                { label: '🗣 Top Speaker',   value: topSpeakerName || '—' },
+                { label: '🎁 Total Gifts',   value: totalGifts ? ('$' + (Math.floor(totalGifts) / 100).toFixed(2)) : '—' },
+                { label: '✂️ Clips',         value: clipLog.length || '0' },
+                { label: '⏱ Stream Time',   value: durStr },
+              ];
+              return (
+                <div>
+                  {rows2.map(function(row) {
+                    return (
+                      <div key={row.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid ' + DIM }}>
+                        <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 14, color: MUTED }}>{row.label}</span>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: TEXT }}>{row.value}</span>
+                      </div>
+                    );
+                  })}
+                  <button onClick={function() {
+                    var text = rows2.map(function(r) { return r.label + ' ' + r.value; }).join('\n');
+                    navigator.clipboard.writeText(text).then(function() {
+                      if (addToastRef.current) addToastRef.current('Summary copied!', 'success');
+                    });
+                  }} style={{ marginTop: 18, width: '100%', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 10, padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: GOLD, cursor: 'pointer', letterSpacing: .5 }}>
+                    📋 COPY TO CLIPBOARD
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ TELEPROMPTER OVERLAY (host-local) ════════════════ */}
+      {showTeleprompter && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 95, background: 'rgba(9,7,14,.94)', borderBottom: '2px solid ' + TEAL + '44', animation: 'fadeSlideIn .2s ease' }}>
+          {/* Controls bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderBottom: '1px solid ' + DIM }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: .5, flexShrink: 0 }}>📜 TELEPROMPTER</span>
+            <button onClick={function() { setPrompterRunning(function(v) { return !v; }); }}
+              style={{ background: prompterRunning ? 'rgba(0,195,255,.2)' : CARD, border: '1px solid ' + (prompterRunning ? TEAL : BORDER), borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: prompterRunning ? TEAL : MUTED, cursor: 'pointer', letterSpacing: .3 }}>
+              {prompterRunning ? '⏸ PAUSE' : '▶ SCROLL'}
+            </button>
+            <button onClick={function() { if (prompterScrollRef.current) prompterScrollRef.current.scrollTop = 0; setPrompterRunning(false); }}
+              style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 6, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, cursor: 'pointer' }}>
+              ↑ RESET
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>SPEED</span>
+              <input type="range" min={10} max={120} value={prompterSpeed}
+                onChange={function(e) { setPrompterSpeed(Number(e.target.value)); }}
+                style={{ width: 60, accentColor: TEAL }} />
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>{prompterSpeed}</span>
+            </div>
+            <div style={{ flex: 1 }} />
+            <button onClick={function() { setShowTeleprompter(false); setPrompterRunning(false); }}
+              style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '0 2px' }}>✕</button>
+          </div>
+          {/* Scrollable script (when text is set) */}
+          {prompterText ? (
+            <div>
+              <div ref={prompterScrollRef} style={{ maxHeight: 130, overflowY: 'auto', padding: '10px 14px', scrollbarWidth: 'none' }}>
+                <p style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 20, color: TEXT, lineHeight: 1.5, margin: 0, whiteSpace: 'pre-wrap', letterSpacing: .3 }}>{prompterText}</p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, padding: '4px 14px 8px' }}>
+                <button onClick={function() { setPrompterRunning(false); setPrompterText(''); }}
+                  style={{ background: 'none', border: '1px solid ' + BORDER, borderRadius: 5, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer' }}>
+                  ✏ EDIT SCRIPT
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: '8px 14px 10px' }}>
+              <textarea
+                value={prompterText}
+                onChange={function(e) { setPrompterText(e.target.value); }}
+                placeholder="Paste your script here, then press ▶ SCROLL…"
+                rows={3}
+                style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 6, padding: '8px 10px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, resize: 'none', outline: 'none' }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ════════════════ DEVICE PICKER SHEET ════════════════ */}
+      {showDevicePicker && role !== 'viewer' && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 93, display: 'flex', alignItems: 'flex-end', animation: 'fadeSlideIn .18s ease' }}
+          onClick={function() { setShowDevicePicker(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '16px 16px 0 0', border: '1px solid ' + BORDER, maxHeight: '70vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', boxShadow: '0 -10px 40px rgba(0,0,0,.7)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid ' + DIM, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: TEXT, letterSpacing: 1 }}>🎛 Input Devices</span>
+              <button onClick={function() { setShowDevicePicker(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', lineHeight: 1, padding: '2px 4px' }}>✕</button>
+            </div>
+            {avCameras.length > 0 && (
+              <div style={{ padding: '12px 16px' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1, marginBottom: 8 }}>📷 CAMERA</div>
+                {avCameras.map(function(cam, idx) {
+                  var isActive = idx === camDevIdx;
+                  return (
+                    <button key={cam.deviceId} onClick={function() { handleCamSelect(idx); }}
+                      style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, background: isActive ? 'rgba(201,168,76,.12)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (isActive ? 'rgba(201,168,76,.4)' : BORDER), borderRadius: 8, cursor: 'pointer', textAlign: 'left', boxSizing: 'border-box' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: isActive ? GOLD : DIM, flexShrink: 0 }} />
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: isActive ? TEXT : MUTED, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {cam.label || 'Camera ' + (idx + 1)}
+                      </span>
+                      {isActive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, flexShrink: 0 }}>ACTIVE</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {avMics.length > 0 && (
+              <div style={{ padding: '12px 16px', borderTop: avCameras.length > 0 ? '1px solid ' + DIM : 'none' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1, marginBottom: 8 }}>🎙 MICROPHONE</div>
+                {avMics.map(function(mic, idx) {
+                  var isActive = idx === micDevIdx;
+                  return (
+                    <button key={mic.deviceId} onClick={function() { handleMicSelect(idx); }}
+                      style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, background: isActive ? 'rgba(201,168,76,.12)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (isActive ? 'rgba(201,168,76,.4)' : BORDER), borderRadius: 8, cursor: 'pointer', textAlign: 'left', boxSizing: 'border-box' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: isActive ? GOLD : DIM, flexShrink: 0 }} />
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: isActive ? TEXT : MUTED, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {mic.label || 'Mic ' + (idx + 1)}
+                      </span>
+                      {isActive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, flexShrink: 0 }}>ACTIVE</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <div style={{ padding: '8px 16px 20px', borderTop: '1px solid ' + DIM }}>
+              <button onClick={function() { setShowDevicePicker(false); }}
+                style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '10px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+                CLOSE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ LAYOUT PRESETS PANEL (host/cohost) ════════════════ */}
+      {showPresetsPanel && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.72)', zIndex: 93, display: 'flex', alignItems: 'flex-end', animation: 'fadeSlideIn .18s ease' }}
+          onClick={function() { setShowPresetsPanel(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '16px 16px 0 0', border: '1px solid ' + BORDER, maxHeight: '75vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', boxShadow: '0 -10px 40px rgba(0,0,0,.7)' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid ' + DIM, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: TEXT, letterSpacing: 1 }}>📐 Layout Presets</span>
+              <button onClick={function() { setShowPresetsPanel(false); }}
+                style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', lineHeight: 1, padding: '2px 4px' }}>✕</button>
+            </div>
+            {/* Save current layout */}
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid ' + DIM }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1, marginBottom: 8 }}>SAVE CURRENT LAYOUT</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input type="text" value={presetNameInput}
+                  onChange={function(e) { setPresetNameInput(e.target.value); }}
+                  placeholder={'Layout ' + (layoutPresets.length + 1)}
+                  style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 6, padding: '7px 10px', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, outline: 'none' }} />
+                <button onClick={function() { saveLayoutPreset(presetNameInput || null); setPresetNameInput(''); }}
+                  style={{ background: GOLD, border: 'none', borderRadius: 6, padding: '7px 14px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: BG, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                  SAVE
+                </button>
+              </div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginTop: 5, letterSpacing: .3 }}>
+                Captures: {stageLayout} layout{stageOrderOverride ? ' · custom order (' + stageOrderOverride.length + ' guests)' : ''}
+              </div>
+            </div>
+            {/* Saved presets list */}
+            <div style={{ padding: '12px 16px' }}>
+              {layoutPresets.length === 0 ? (
+                <div style={{ padding: '16px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center' }}>No presets yet — save one above</div>
+              ) : layoutPresets.map(function(p) {
+                return (
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 10px', marginBottom: 6, background: CARD, border: '1px solid ' + BORDER, borderRadius: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginTop: 1 }}>
+                        {p.layout}{p.order ? ' · ' + p.order.length + ' guests' : ' · default order'}
+                      </div>
+                    </div>
+                    <button onClick={function() { loadLayoutPreset(p); }}
+                      style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, padding: '5px 10px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, cursor: 'pointer', letterSpacing: .3, flexShrink: 0 }}>
+                      LOAD
+                    </button>
+                    <button onClick={function() { deleteLayoutPreset(p.id); }}
+                      style={{ background: 'none', border: 'none', color: MUTED, fontSize: 14, cursor: 'pointer', padding: '2px 4px', lineHeight: 1, flexShrink: 0 }}>×</button>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ padding: '8px 16px 20px', borderTop: '1px solid ' + DIM }}>
+              <button onClick={function() { setShowPresetsPanel(false); }}
+                style={{ width: '100%', background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '10px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+                CLOSE
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

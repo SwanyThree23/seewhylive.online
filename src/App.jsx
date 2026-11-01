@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { lazy } from 'react';
+import InjectStyles from '@/components/shared/InjectStyles';
 const Login        = lazy(() => import('@/pages/Login'));
 const Register     = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
@@ -110,6 +111,7 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <BackgroundProvider>
+        <InjectStyles />
         <Router>
           <NavigationTracker />
           <AuthenticatedApp />

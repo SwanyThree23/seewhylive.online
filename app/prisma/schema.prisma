@@ -1,0 +1,450 @@
+// SeeWhy LIVE — Prisma Schema
+// PostgreSQL + NextAuth Prisma Adapter
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  VIEWER
+  CREATOR
+  ADMIN
+}
+
+enum UserTier {
+  FREE
+  CREATOR
+  PRO
+  STUDIO
+}
+
+enum StreamStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+}
+
+enum StreamGenre {
+  TALK_SHOW
+  MUSIC
+  LIFESTYLE
+  COMMUNITY
+  PANEL
+  COMEDY
+  SPORTS
+  GAMING
+  EDUCATION
+  OTHER
+}
+
+enum WatchTier {
+  FREE
+  CREATOR
+  PRO
+  STUDIO
+}
+
+enum PanelRole {
+  HOST
+  COHOST
+  GUEST
+}
+
+enum PaymentType {
+  TIP
+  SUBSCRIPTION
+  PAYWALL_UNLOCK
+  GIFT
+  PAYOUT
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum SubTier {
+  FAN
+  SUPPORTER
+  RIDE_OR_DIE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+}
+
+enum NotificationType {
+  NEW_FOLLOWER
+  TIP_RECEIVED
+  SUBSCRIPTION
+  STREAM_STARTING
+  PAYOUT_PROCESSED
+  GIFT_RECEIVED
+}
+
+// ── NextAuth tables ──────────────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ── Core application tables ──────────────────────────────────────────────────
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  username         String    @unique
+  displayName      String?
+  passwordHash     String?
+  avatarUrl        String?
+  bio              String?   @db.Text
+  role             UserRole  @default(VIEWER)
+  tier             UserTier  @default(FREE)
+  verified         Boolean   @default(false)
+  stripeCustomerId String?
+  stripeConnectId  String?
+  walletCents      Int       @default(0)
+  twitterHandle    String?
+  instagramHandle  String?
+  websiteUrl       String?
+  isShadowBanned   Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+
+  accounts         Account[]
+  sessions         Session[]
+  streams          Stream[]         @relation("HostedStreams")
+  streamPanels     StreamPanel[]
+  messages         Message[]
+  sentPayments     Payment[]        @relation("SentPayments")
+  receivedPayments Payment[]        @relation("ReceivedPayments")
+  subscriptions    Subscription[]   @relation("UserSubscriptions")
+  subscribers      Subscription[]   @relation("CreatorSubscriptions")
+  creatorSubTiers  CreatorSubTier[]
+  videoPosts       VideoPost[]
+  audioRooms       AudioRoom[]
+  notifications    Notification[]
+  scheduledStreams ScheduledStream[]
+  following        Follow[]         @relation("Follower")
+  followers        Follow[]         @relation("Following")
+  auditLogs        AuditLog[]
+  creatorBans      CreatorBan[]     @relation("BannedBy")
+  bannedFrom       CreatorBan[]     @relation("BannedUser")
+  creatorFilters   CreatorFilter[]
+
+  @@index([email])
+  @@index([username])
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Stream {
+  id                 String       @id @default(uuid())
+  creatorId          String
+  title              String
+  description        String?      @db.Text
+  genre              StreamGenre  @default(OTHER)
+  status             StreamStatus @default(SCHEDULED)
+  watchTier          WatchTier    @default(FREE)
+  panelCount         Int          @default(1)
+  isPaywalled        Boolean      @default(false)
+  paywallAmountCents Int?
+  thumbnailUrl       String?
+  viewerCount        Int          @default(0)
+  playbackUrl        String?
+  startedAt          DateTime?
+  endedAt            DateTime?
+  scheduledAt        DateTime?
+  auraEnabled        Boolean      @default(false)
+  auraPersonality    String       @default("HYPE")
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  creator  User          @relation("HostedStreams", fields: [creatorId], references: [id])
+  panels   StreamPanel[]
+  messages Message[]
+  payments Payment[]
+
+  @@index([creatorId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model StreamPanel {
+  id       String    @id @default(uuid())
+  streamId String
+  userId   String
+  slot     Int
+  role     PanelRole @default(GUEST)
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+
+  stream Stream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([streamId])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  streamId  String
+  authorId  String
+  body      String   @db.Text
+  lang      String   @default("en")
+  isPinned  Boolean  @default(false)
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+
+  stream Stream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  author User   @relation(fields: [authorId], references: [id])
+
+  @@index([streamId, createdAt])
+  @@index([authorId])
+}
+
+model Payment {
+  id                    String        @id @default(uuid())
+  fromUserId            String?
+  toUserId              String?
+  streamId              String?
+  videoPostId           String?
+  type                  PaymentType
+  amountCents           Int
+  platformFeeCents      Int
+  creatorAmountCents    Int
+  stripePaymentIntentId String?       @unique
+  stripeTransferId      String?
+  note                  String?       @db.Text
+  status                PaymentStatus @default(PENDING)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  fromUser  User?      @relation("SentPayments", fields: [fromUserId], references: [id])
+  toUser    User?      @relation("ReceivedPayments", fields: [toUserId], references: [id])
+  stream    Stream?    @relation(fields: [streamId], references: [id])
+  videoPost VideoPost? @relation(fields: [videoPostId], references: [id])
+
+  @@index([toUserId])
+  @@index([fromUserId])
+  @@index([streamId])
+  @@index([videoPostId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  subscriberId         String
+  creatorId            String
+  tier                 SubTier
+  status               SubscriptionStatus @default(ACTIVE)
+  stripeSubscriptionId String?            @unique
+  currentPeriodEnd     DateTime
+  cancelledAt          DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  subscriber User @relation("UserSubscriptions", fields: [subscriberId], references: [id])
+  creator    User @relation("CreatorSubscriptions", fields: [creatorId], references: [id])
+
+  @@index([subscriberId])
+  @@index([creatorId])
+}
+
+model CreatorSubTier {
+  id            String   @id @default(uuid())
+  creatorId     String
+  tier          SubTier
+  name          String
+  priceCents    Int
+  stripePriceId String?
+  description   String?
+  perks         Json     @default("[]")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  creator User @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@unique([creatorId, tier])
+  @@index([creatorId])
+}
+
+model VideoPost {
+  id                 String    @id @default(uuid())
+  creatorId          String
+  title              String
+  description        String?   @db.Text
+  thumbnailUrl       String?
+  videoUrl           String?
+  durationSeconds    Int?
+  isPaywalled        Boolean   @default(false)
+  paywallAmountCents Int?
+  views              Int       @default(0)
+  isPublished        Boolean   @default(false)
+  publishedAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
+  creator  User      @relation(fields: [creatorId], references: [id])
+  payments Payment[]
+
+  @@index([creatorId])
+  @@index([isPublished, publishedAt])
+}
+
+model AudioRoom {
+  id            String   @id @default(uuid())
+  hostId        String
+  title         String
+  isLive        Boolean  @default(false)
+  listenerCount Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  host User @relation(fields: [hostId], references: [id])
+
+  @@index([hostId])
+  @@index([isLive])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model ScheduledStream {
+  id              String      @id @default(uuid())
+  hostId          String
+  title           String
+  description     String?     @db.Text
+  scheduledAt     DateTime
+  panelCount      Int         @default(1)
+  notifyFollowers Boolean     @default(true)
+  genre           StreamGenre @default(OTHER)
+  createdAt       DateTime    @default(now())
+
+  host User @relation(fields: [hostId], references: [id])
+
+  @@index([hostId])
+  @@index([scheduledAt])
+}
+
+model GiftType {
+  id          String  @id @default(uuid())
+  name        String
+  icon        String
+  amountCents Int
+  auraMessage String?
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  userId       String?
+  action       String
+  resourceType String?
+  resourceId   String?
+  metadata     Json?
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([action])
+}
+
+model CreatorBan {
+  id           String    @id @default(uuid())
+  creatorId    String
+  bannedUserId String
+  reason       String?
+  expiresAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  creator    User @relation("BannedBy", fields: [creatorId], references: [id])
+  bannedUser User @relation("BannedUser", fields: [bannedUserId], references: [id])
+
+  @@unique([creatorId, bannedUserId])
+  @@index([creatorId])
+}
+
+model CreatorFilter {
+  id        String   @id @default(uuid())
+  creatorId String
+  word      String
+  createdAt DateTime @default(now())
+
+  creator User @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([creatorId])
+}

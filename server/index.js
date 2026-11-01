@@ -2626,6 +2626,33 @@ io.on('connection', function(socket) {
       });
   });
 
+  // ── close-transport ────────────────────────────────────────────────────
+  // ── restart-ice ────────────────────────────────────────────────────────
+  // Called by the client when its WebRTC transport enters 'disconnected' state to
+  // trigger an ICE restart — much faster than a full transport teardown/reconnect.
+  // Server re-generates ICE credentials; client re-runs candidate gathering using them.
+  socket.on('restart-ice', function(data, ack) {
+    if (!data || !data.transportId) { if (ack) ack({ error: 'transportId required' }); return; }
+    var tid = data.transportId;
+    if (!socket.data.ownedTransportIds || !socket.data.ownedTransportIds.includes(tid)) {
+      if (ack) ack({ error: 'forbidden' });
+      return;
+    }
+    mediasoup.restartTransportIce(tid)
+      .then(function(iceParameters) { if (ack) ack({ iceParameters: iceParameters }); })
+      .catch(function(err) { if (ack) ack({ error: err.message }); });
+  });
+
+  // Client emits this before reconnecting (same socket) to free the old server-side
+  // transport and its UDP port allocation. Only the owning socket may close its transport.
+  socket.on('close-transport', function(data) {
+    if (!data || !data.transportId) return;
+    var tid = data.transportId;
+    if (!socket.data.ownedTransportIds || !socket.data.ownedTransportIds.includes(tid)) return;
+    mediasoup.closeTransport(tid);
+    socket.data.ownedTransportIds = socket.data.ownedTransportIds.filter(function(id) { return id !== tid; });
+  });
+
   // ── produce ────────────────────────────────────────────────────────────
   socket.on('produce', function(data, ack) {
     if (!data) { if (ack) ack({ error: 'data required' }); return; }
@@ -2698,6 +2725,15 @@ io.on('connection', function(socket) {
 
     mediasoup.createConsumer(roomId, transportId, producerId, rtpCapabilities)
       .then(function(result) {
+        if (result.consumer && result.consumer.kind === 'video') {
+          mediasoup.indexConsumerBySocket(socket.id, result.consumer.id);
+          // Boost to layer 2 if this producer belongs to an active screen sharer
+          var _producerGuestId = producerOwners.get(producerId);
+          var _ss = screenShareState.get(roomId);
+          if (_producerGuestId && _ss && _ss.userId === _producerGuestId) {
+            result.consumer.setPreferredLayers({ spatialLayer: 2 }).catch(function() {});
+          }
+        }
         if (ack) ack(result.params);
       })
       .catch(function(err) {
@@ -3609,9 +3645,44 @@ io.on('connection', function(socket) {
     speakingThrottle.set(socket.data.userId, _spNow);
     var _isSpeaking = data && !!data.speaking;
     io.volatile.to(roomId).emit('speaking', { guestId: guestId, speaking: _isSpeaking });
-    // Upgrade active-speaker video to r2 (900 kbps) while speaking;
-    // drop back to r0 (100 kbps) when silent — O(subscribers) but fine for ≤20 seats.
-    mediasoup.setPreferredLayersByGuestId(guestId, _isSpeaking ? 2 : 0).catch(function() {});
+    // Upgrade active-speaker video to r2 (900 kbps) while speaking; drop back to r1
+    // (300 kbps default) when silent — O(subscribers) but fine for ≤20 seats.
+    // While screen sharing keep layer 2 regardless of voice activity: dropping the
+    // sharer's video quality mid-presentation because they paused speaking is distracting.
+    var _ssNow = screenShareState.get(roomId);
+    var _targetLayer = (_isSpeaking || (_ssNow && _ssNow.userId === guestId)) ? 2 : 1;
+    mediasoup.setPreferredLayersByGuestId(guestId, _targetLayer).catch(function() {});
+  });
+
+  // ── consumer:adapt-layer ──────────────────────────────────────────────
+  // Viewer requests a layer change across ALL their video consumers (adaptive quality).
+  // Emitted by the client when recv bandwidth is poor (spatialLayer 0) or recovering (2).
+  socket.on('consumer:adapt-layer', function(data) {
+    if (!data) return;
+    var layer = Math.min(2, Math.max(0, Number(data.spatialLayer) || 0));
+    var _roomId = socket.data.roomId;
+    var _ss = _roomId ? screenShareState.get(_roomId) : null;
+    // Don't let adaptive bandwidth downgrade a screen-share consumer — it was boosted
+    // to layer 2 intentionally and dropping it makes shared content unreadable.
+    if (_ss && _ss.userId && layer < 2) {
+      mediasoup.setSocketConsumerPreferredLayersExcept(socket.id, layer, _ss.userId).catch(function() {});
+    } else {
+      mediasoup.setSocketConsumerPreferredLayers(socket.id, layer).catch(function() {});
+    }
+  });
+
+  // ── consumer:set-layer ────────────────────────────────────────────────
+  // Allows a viewer to request a specific simulcast layer for a single guest's video
+  // (e.g. upgrade when spotlighted, downgrade when un-spotlighted).
+  // Only affects THIS viewer's consumer — uses per-viewer per-guest setter so other
+  // viewers of the same guest are unaffected.
+  socket.on('consumer:set-layer', function(data) {
+    if (!data) return;
+    var roomId = socket.data.roomId;
+    var guestId = String(data.guestId || '');
+    if (!roomId || !guestId) return;
+    var layer = Math.min(2, Math.max(0, Number(data.spatialLayer) || 0));
+    mediasoup.setSocketConsumerPreferredLayerForGuest(socket.id, guestId, layer).catch(function() {});
   });
 
   // ── hand-raise ─────────────────────────────────────────────────────────
@@ -3657,6 +3728,224 @@ io.on('connection', function(socket) {
       username: 'SeeWhy LIVE',
       message:  '🔇 ' + (socket.data.username || 'Host') + ' muted all participants',
       ts:       Math.floor(Date.now() / 1000)
+    });
+  });
+
+  // ── host-private-msg (host→specific guest) ──────────────────────────────
+  socket.on('host-private-msg', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.text || !data.toGuestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var text = String(data.text).slice(0, 120);
+    var toSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
+      return s.data.roomId === roomId && s.data.userId === data.toGuestId;
+    });
+    toSockets.forEach(function(s) {
+      s.emit('host-private-msg', { text: text, from: data.from || socket.data.username || 'Host' });
+    });
+  });
+
+  // ── host-broadcast-overlay ────────────────────────────────────────────
+  socket.on('host-broadcast-overlay', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.text) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var text = String(data.text).slice(0, 200);
+    io.to(roomId).emit('broadcast-overlay', { text: text, from: socket.data.username || 'Host' });
+  });
+
+  // ── stage-join-request (viewer requests to join locked stage) ──────────
+  socket.on('stage-join-request', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var room = rooms.get(roomId);
+    if (!room || !room.stageLocked) {
+      socket.emit('stage-join-denied', { reason: 'stage_not_locked' });
+      return;
+    }
+    var hostSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
+      return s.data.roomId === roomId && (s.data.role === 'host' || s.data.role === 'owner');
+    });
+    hostSockets.forEach(function(s) {
+      s.emit('stage-join-requested', { guestId: socket.data.userId, username: socket.data.username || socket.data.userId });
+    });
+  });
+
+  socket.on('stage-join-approve', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.guestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('stage-join-approved', { guestId: data.guestId });
+    var targetSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
+      return s.data.roomId === roomId && s.data.userId === data.guestId;
+    });
+    targetSockets.forEach(function(s) { s.emit('stage-join-approved', { guestId: data.guestId }); });
+  });
+
+  socket.on('stage-join-deny', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.guestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var targetSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
+      return s.data.roomId === roomId && s.data.userId === data.guestId;
+    });
+    targetSockets.forEach(function(s) { s.emit('stage-join-denied', { reason: 'host_denied' }); });
+  });
+
+  // ── confetti-burst ─────────────────────────────────────────────────────
+  socket.on('confetti-burst', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('confetti-burst');
+  });
+
+  // ── room-timer-start / room-timer-stop ─────────────────────────────────
+  socket.on('room-timer-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var seconds = data && data.seconds ? Math.min(Math.max(parseInt(data.seconds, 10) || 30, 5), 3600) : 30;
+    io.to(roomId).emit('room-timer', { active: true, seconds: seconds });
+  });
+
+  socket.on('room-timer-stop', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('room-timer', { active: false });
+  });
+
+  // ── ticker-start / ticker-stop ─────────────────────────────────────────
+  socket.on('ticker-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var text = data && data.text ? String(data.text).slice(0, 200) : '';
+    io.to(roomId).emit('ticker', { active: true, text: text, from: socket.data.username || 'Host' });
+  });
+
+  socket.on('ticker-stop', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('ticker', { active: false });
+  });
+
+  // ── unmute-all ─────────────────────────────────────────────────────────
+  socket.on('unmute-all', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('unmute-all');
+  });
+
+  // ── brb-start / brb-end ────────────────────────────────────────────────
+  socket.on('brb-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var msg = data && data.msg ? String(data.msg).slice(0, 100) : '';
+    io.to(roomId).emit('brb', { active: true, msg: msg, from: socket.data.username || 'Host' });
+  });
+
+  socket.on('brb-end', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('brb', { active: false });
+  });
+
+  // ── soundboard ─────────────────────────────────────────────────────────
+  socket.on('soundboard', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var VALID = { applause: 1, drumroll: 1, airhorn: 1, chaching: 1, fanfare: 1, boom: 1 };
+    var sound = data && data.sound && VALID[data.sound] ? data.sound : null;
+    if (!sound) return;
+    io.to(roomId).emit('soundboard', { sound: sound });
+  });
+
+  // ── sentiment-start / sentiment-vote / sentiment-end ───────────────────
+  socket.on('sentiment-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var question = data && data.question ? String(data.question).slice(0, 120) : 'Quick check-in!';
+    var endTs = Date.now() + 30000;
+    // Track votes in memory for this room during the poll
+    if (!socket.nsp._sentimentState) socket.nsp._sentimentState = {};
+    socket.nsp._sentimentState[roomId] = { yesCount: 0, noCount: 0, voters: new Set() };
+    io.to(roomId).emit('sentiment-poll', { active: true, question: question, yesCount: 0, noCount: 0, endTs: endTs });
+    setTimeout(function() {
+      var state = socket.nsp._sentimentState && socket.nsp._sentimentState[roomId];
+      if (!state) return;
+      io.to(roomId).emit('sentiment-poll', { active: false, yesCount: state.yesCount, noCount: state.noCount });
+      delete socket.nsp._sentimentState[roomId];
+    }, 30000);
+  });
+
+  socket.on('sentiment-vote', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.vote) return;
+    var vote = data.vote === 'yes' ? 'yes' : 'no';
+    var state = socket.nsp._sentimentState && socket.nsp._sentimentState[roomId];
+    if (!state) return;
+    var uid = socket.data.userId || socket.id;
+    if (state.voters.has(uid)) return;
+    state.voters.add(uid);
+    if (vote === 'yes') state.yesCount++;
+    else state.noCount++;
+    io.to(roomId).emit('sentiment-update', { yesCount: state.yesCount, noCount: state.noCount });
+  });
+
+  socket.on('sentiment-end', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var state = socket.nsp._sentimentState && socket.nsp._sentimentState[roomId];
+    io.to(roomId).emit('sentiment-poll', { active: false, yesCount: state ? state.yesCount : 0, noCount: state ? state.noCount : 0 });
+    if (socket.nsp._sentimentState) delete socket.nsp._sentimentState[roomId];
+  });
+
+  // ── spotlight-guest / spotlight-end ────────────────────────────────────
+  // Host broadcasts a featured-view directive so all viewers focus on one guest.
+  socket.on('spotlight-guest', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.guestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('spotlight-guest', { guestId: data.guestId, username: data.username || '' });
+  });
+
+  socket.on('spotlight-end', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('spotlight-end');
+  });
+
+  // ── lower-all-hands ────────────────────────────────────────────────────
+  // Host clears every raised hand in the room at once.
+  socket.on('lower-all-hands', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('lower-all-hands');
+  });
+
+  // ── request-reconnect ──────────────────────────────────────────────────
+  // Host asks a specific guest to reconnect (e.g. their stream quality is poor).
+  // Delivers a 'please-reconnect' event directly to that user's socket room.
+  socket.on('request-reconnect', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.guestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var targetId = String(data.guestId || '').trim().slice(0, 64);
+    if (!targetId) return;
+    io.to('user:' + targetId).emit('please-reconnect', {
+      by: socket.data.username || 'Host',
+      roomId: roomId,
     });
   });
 
@@ -5109,21 +5398,34 @@ io.on('connection', function(socket) {
   });
 
   // ── Screen share handlers ──────────────────────────────────────────────
+  // Allow any panelist (host, cohost, guest, owner, admin) to share their screen.
+  // Only 'viewer' sockets are blocked — they don't have a video slot to share from.
   socket.on('screen-share-start', function(data) {
-    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (socket.data.role === 'viewer') return;
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
-    var _ssState = { roomId: sRoomId, userId: socket.data.userId, username: socket.data.username || 'Host' };
+    var _ssState = { roomId: sRoomId, userId: socket.data.userId, username: socket.data.username || socket.data.userId };
     screenShareState.set(sRoomId, _ssState);
     io.to(sRoomId).emit('screen-share-active', _ssState);
+    // Boost all subscribers to the sharer's video stream to layer 2.
+    // Screen content (especially text/slides) is sharper at 2M bps than the
+    // 800k default layer 1; the layer persists until screen-share-stop or
+    // a new consumer:adapt-layer from each viewer.
+    mediasoup.setPreferredLayersByGuestId(socket.data.userId, 2).catch(function() {});
   });
 
   socket.on('screen-share-stop', function(data) {
-    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (socket.data.role === 'viewer') return;
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
+    // Only clear if THIS user is the current sharer (prevents a late 'stop' from
+    // a different session clearing another panelist's active screen share).
+    var _ssCur = screenShareState.get(sRoomId);
+    if (_ssCur && _ssCur.userId !== socket.data.userId) return;
     screenShareState.delete(sRoomId);
     io.to(sRoomId).emit('screen-share-ended', {});
+    // Restore subscribers to the camera-default layer (1).
+    mediasoup.setPreferredLayersByGuestId(socket.data.userId, 1).catch(function() {});
   });
 
   // ── Watch sync handler ─────────────────────────────────────────────────
@@ -5889,6 +6191,8 @@ io.on('connection', function(socket) {
   socket.on('disconnect', function(reason) {
     logger.info('[socket] Disconnected: ' + socket.id + ' reason=' + reason);
 
+    mediasoup.cleanupSocketConsumers(socket.id);
+
     // Always purge throttle entries regardless of room state (prevents memory leak)
     var _tKey = socket.data.userId || socket.id;
     viewerReactThrottle.delete(_tKey); viewerReactThrottle.delete(socket.id);
@@ -6004,6 +6308,7 @@ io.on('connection', function(socket) {
           io.to(roomId).emit('watch-party-pause', { position: room.watchParty.position, reason: 'host_disconnected' });
         }
         // Clear screen share indicator
+        screenShareState.delete(roomId);
         io.to(roomId).emit('screen-share-ended', {});
         // Notify room that host fully disconnected
         io.to(roomId).emit('host-disconnected', { ts: Math.floor(Date.now() / 1000) });
@@ -6018,8 +6323,17 @@ io.on('connection', function(socket) {
         room.watchParty.ts = Date.now();
         io.to(roomId).emit('watch-party-pause', { position: room.watchParty.position, reason: 'host_disconnected' });
       }
+      screenShareState.delete(roomId);
       io.to(roomId).emit('screen-share-ended', {});
       io.to(roomId).emit('host-disconnected', { ts: Math.floor(Date.now() / 1000) });
+    }
+
+    // If this user was screen sharing, clear the room-level screen share state so
+    // new joiners don't receive a stale screen-share-active event.
+    var _dcSS = screenShareState.get(roomId);
+    if (_dcSS && _dcSS.userId === _dcUserId) {
+      screenShareState.delete(roomId);
+      io.to(roomId).emit('screen-share-ended', {});
     }
 
     // Close only this socket's producers (per-socket ownedProducerIds list).

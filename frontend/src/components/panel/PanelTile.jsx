@@ -31,24 +31,74 @@ export default function PanelTile({
   var [remoteSpeaking, setRemoteSpeaking] = useState(false);
   var [connQuality, setConnQuality] = useState('green');
   var [screenSharing, setScreenSharing] = useState(false);
-  var [subscribeKey, setSubscribeKey] = useState(0);
+  var [videoSubscribeKey, setVideoSubscribeKey] = useState(0);
+  var [audioSubscribeKey, setAudioSubscribeKey] = useState(0);
+  var camActiveRef = useRef(false);
+  useEffect(function() { camActiveRef.current = camActive; }, [camActive]);
+  var remoteCamOffRef = useRef(false);
+  useEffect(function() { remoteCamOffRef.current = !!remoteCamOff; }, [remoteCamOff]);
+
+  // Reconnect: re-publish the local panel stream after RTC transport cycling.
+  // PanelJoinModal publishes once at join; after reconnect those producers are gone.
+  // We save track refs just before reconnect (beforeReconnect event fires before producer.close())
+  // and re-publish them once the new send transport is ready.
+  var localTrackRefs = useRef({ video: null, audio: null });
+  var screenSharingRef = useRef(false);
+  useEffect(function() { screenSharingRef.current = screenSharing; }, [screenSharing]);
+
+  useEffect(function() {
+    if (!isLocal || !rtcManager) return;
+    var onBefore = function(tracks) {
+      if (tracks.video) localTrackRefs.current.video = tracks.video;
+      if (tracks.audio) localTrackRefs.current.audio = tracks.audio;
+    };
+    rtcManager.on('beforeReconnect', onBefore);
+    return function() { rtcManager.off('beforeReconnect', onBefore); };
+  }, [isLocal, rtcManager]);
+
+  useEffect(function() {
+    if (!isLocal || !rtcManager) return;
+    var onReady = function() {
+      // If producers already exist this is the initial sendTransportReady (not a reconnect).
+      var hasProducers = !!(rtcManager.producers &&
+        (rtcManager.producers['video'] || rtcManager.producers['audio']));
+      if (hasProducers) return;
+      var video = localTrackRefs.current.video;
+      var audio = localTrackRefs.current.audio;
+      if (!video && !audio) return;
+      var s = new MediaStream();
+      if (video && video.readyState !== 'ended') s.addTrack(video);
+      if (audio && audio.readyState !== 'ended') s.addTrack(audio);
+      if (s.getTracks().length === 0) return;
+      rtcManager.publishStream(s).then(function() {
+        // Restore server-side layer boost if screen share was active when reconnect happened
+        if (screenSharingRef.current && socket && roomId) {
+          socket.emit('screen-share-start', { roomId: roomId });
+        }
+      }).catch(function() {});
+    };
+    rtcManager.on('sendTransportReady', onReady);
+    return function() { rtcManager.off('sendTransportReady', onReady); };
+  }, [isLocal, rtcManager, socket, roomId]);
 
   // Force re-subscription when mediasoup reconnects (consumers cleared by connect())
   useEffect(function() {
     if (isLocal || !rtcManager) return;
-    var onReset = function() { setSubscribeKey(function(k) { return k + 1; }); };
+    var onReset = function() {
+      setVideoSubscribeKey(function(k) { return k + 1; });
+      setAudioSubscribeKey(function(k) { return k + 1; });
+    };
     rtcManager.on('rtcReset', onReset);
     return function() { rtcManager.off('rtcReset', onReset); };
   }, [isLocal, rtcManager]);
 
-  // Re-subscribe when a consumer closes unexpectedly
+  // Re-subscribe only the affected stream when a consumer closes unexpectedly
   useEffect(function() {
     if (isLocal || !rtcManager) return;
     var onClosed = function(data) {
       if (!data) return;
-      if (data.producerId === producerId || data.producerId === audioProducerId) {
-        setSubscribeKey(function(k) { return k + 1; });
-      }
+      if (data.producerId === producerId)      setVideoSubscribeKey(function(k) { return k + 1; });
+      if (data.producerId === audioProducerId) setAudioSubscribeKey(function(k) { return k + 1; });
     };
     rtcManager.on('consumerClosed', onClosed);
     return function() { rtcManager.off('consumerClosed', onClosed); };
@@ -94,6 +144,14 @@ export default function PanelTile({
           if (!active) return;
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
+            videoRef.current.play().catch(function() {});
+            // Re-attempt play if browser pauses the element
+            videoRef.current.onpause = function() {
+              if (active && videoRef.current && videoRef.current.srcObject) {
+                videoRef.current.play().catch(function() {});
+              }
+            };
+            setConnQuality('green');
             setCamActive(true);
           }
         })
@@ -101,8 +159,10 @@ export default function PanelTile({
           if (!active) return;
           retryCount++;
           if (retryCount <= 3) {
+            setConnQuality(retryCount >= 2 ? 'red' : 'yellow');
             retryTimer = setTimeout(doSubscribe, retryCount * 2000);
           } else {
+            setConnQuality('red');
             setCamActive(false);
           }
         });
@@ -115,7 +175,7 @@ export default function PanelTile({
       if (videoRef.current) videoRef.current.srcObject = null;
       setCamActive(false);
     };
-  }, [producerId, rtcManager, isAudioOnlyRoom, isLocal, subscribeKey]);
+  }, [producerId, rtcManager, isAudioOnlyRoom, isLocal, videoSubscribeKey]);
 
   // Subscribe to remote audio producer for playback and speaking detection
   useEffect(function() {
@@ -136,6 +196,11 @@ export default function PanelTile({
           if (audioRef.current) {
             audioRef.current.srcObject = stream;
             audioRef.current.play().catch(function() {});
+            audioRef.current.onpause = function() {
+              if (active && audioRef.current && audioRef.current.srcObject) {
+                audioRef.current.play().catch(function() {});
+              }
+            };
           }
           var tracks = stream.getAudioTracks();
           if (!tracks.length) return;
@@ -185,7 +250,37 @@ export default function PanelTile({
       try { if (ctx) ctx.close(); } catch (e) {}
       if (audioRef.current) audioRef.current.srcObject = null;
     };
-  }, [audioProducerId, rtcManager, isLocal, subscribeKey]);
+  }, [audioProducerId, rtcManager, isLocal, audioSubscribeKey]);
+
+  // Freeze detection: re-subscribe remote tile if video currentTime stops advancing for ~10s
+  useEffect(function() {
+    if (isLocal || !producerId || !rtcManager) return;
+    var prevTime = -1;
+    var stuckCount = 0;
+    var timer = setInterval(function() {
+      var v = videoRef.current;
+      if (!v || !v.srcObject || !camActiveRef.current || remoteCamOffRef.current) { stuckCount = 0; prevTime = -1; return; }
+      var ct = v.currentTime;
+      if (ct > 0 && ct === prevTime) {
+        stuckCount++;
+        if (stuckCount >= 2) {
+          stuckCount = 0;
+          prevTime = -1;
+          setVideoSubscribeKey(function(k) { return k + 1; });
+        }
+      } else {
+        stuckCount = 0;
+        prevTime = ct;
+      }
+    }, 5000);
+    return function() { clearInterval(timer); };
+  }, [isLocal, producerId, rtcManager]);
+
+  // Emit speaking event for local panelist so server upgrades simulcast layer
+  useEffect(function() {
+    if (!isLocal || !socket || !roomId || !user_id) return;
+    socket.emit('speaking', { roomId: roomId, guestId: user_id, speaking: isSpeaking && !is_muted });
+  }, [isLocal, isSpeaking, socket, roomId, user_id]);
 
   // Connection quality from RTC stats (local tile only)
   useEffect(function() {
@@ -211,6 +306,22 @@ export default function PanelTile({
     rtcManager.on('transportState', onState);
     return function() { rtcManager.off('transportState', onState); };
   }, [rtcManager]);
+
+  // Per-consumer recv quality indicator for remote tiles
+  useEffect(function() {
+    if (isLocal || !rtcManager || !producerId) return;
+    var onConsumerStats = function(data) {
+      if (!data || data.producerId !== producerId) return;
+      if (!data.bitratekbps) return; // producer paused or no data — don't change indicator
+      var q;
+      if (data.bitratekbps < 80) q = 'red';
+      else if (data.bitratekbps < 250) q = 'yellow';
+      else q = 'green';
+      setConnQuality(q);
+    };
+    rtcManager.on('consumerStats', onConsumerStats);
+    return function() { rtcManager.off('consumerStats', onConsumerStats); };
+  }, [isLocal, rtcManager, producerId]);
 
   var effectiveSpeaking = isLocal ? isSpeaking : remoteSpeaking;
 
@@ -254,6 +365,8 @@ export default function PanelTile({
     if (onRaiseHand) onRaiseHand(next);
   }
 
+  var prevMicTrackRef = useRef(null); // saved mic track for restoration after screen audio
+
   var toggleScreenShare = function() {
     if (!rtcManager) return;
     if (screenSharing) {
@@ -261,30 +374,75 @@ export default function PanelTile({
       if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
       // Restore camera track
       var vp = rtcManager.producers && rtcManager.producers['video'];
+      var _camSimulcast = [
+        { rid: 'r0', maxBitrate: 99000,  scaleResolutionDownBy: 4 },
+        { rid: 'r1', maxBitrate: 297000, scaleResolutionDownBy: 2 },
+        { rid: 'r2', maxBitrate: 900000, scaleResolutionDownBy: 1 },
+      ];
       if (vp && prevCamTrackRef.current) {
-        rtcManager.replaceTrack('video', prevCamTrackRef.current).catch(function() {});
+        var _ct = prevCamTrackRef.current;
+        if ('contentHint' in _ct) _ct.contentHint = 'motion';
+        rtcManager.replaceTrack('video', _ct).catch(function() {});
+        rtcManager.setVideoEncodings(_camSimulcast).catch(function() {});
         prevCamTrackRef.current = null;
       } else if (vp) {
         navigator.mediaDevices.getUserMedia({ video: true }).then(function(s) {
           var t = s.getVideoTracks()[0];
-          if (t) rtcManager.replaceTrack('video', t).catch(function() {});
+          if (t) {
+            if ('contentHint' in t) t.contentHint = 'motion';
+            rtcManager.replaceTrack('video', t).catch(function() {});
+            rtcManager.setVideoEncodings(_camSimulcast).catch(function() {});
+          }
         }).catch(function() {});
       }
+      // Restore microphone if screen audio was captured
+      if (prevMicTrackRef.current) {
+        rtcManager.replaceTrack('audio', prevMicTrackRef.current).catch(function() {});
+        prevMicTrackRef.current = null;
+      }
     } else {
-      navigator.mediaDevices.getDisplayMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } }, audio: false }).then(function(displayStream) {
+      navigator.mediaDevices.getDisplayMedia({
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
+        audio: { sampleRate: 48000, channelCount: 2, echoCancellation: false, noiseSuppression: false }
+      }).then(function(displayStream) {
         var screenTrack = displayStream.getVideoTracks()[0];
         if (!screenTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
+        if ('contentHint' in screenTrack) screenTrack.contentHint = 'detail';
         var vp = rtcManager.producers && rtcManager.producers['video'];
         if (vp) prevCamTrackRef.current = vp.track;
         screenTrack.addEventListener('ended', function() {
           setScreenSharing(false);
           if (socket && roomId) socket.emit('screen-share-stop', { roomId: roomId });
-          if (vp && prevCamTrackRef.current) {
-            rtcManager.replaceTrack('video', prevCamTrackRef.current).catch(function() {});
+          var camTrack = prevCamTrackRef.current;
+          if (vp && camTrack) {
+            if ('contentHint' in camTrack) camTrack.contentHint = 'motion';
+            rtcManager.replaceTrack('video', camTrack).catch(function() {});
+            rtcManager.setVideoEncodings([
+              { rid: 'r0', maxBitrate: 99000,  scaleResolutionDownBy: 4 },
+              { rid: 'r1', maxBitrate: 297000, scaleResolutionDownBy: 2 },
+              { rid: 'r2', maxBitrate: 900000, scaleResolutionDownBy: 1 },
+            ]).catch(function() {});
             prevCamTrackRef.current = null;
+          }
+          if (prevMicTrackRef.current) {
+            rtcManager.replaceTrack('audio', prevMicTrackRef.current).catch(function() {});
+            prevMicTrackRef.current = null;
           }
         });
         rtcManager.replaceTrack('video', screenTrack).then(function() {
+          // Switch to screen-optimized simulcast (text/slides readable; less resolution downscaling)
+          rtcManager.setVideoEncodings([
+            { rid: 'r0', maxBitrate: 300000,  scaleResolutionDownBy: 2 },
+            { rid: 'r1', maxBitrate: 800000,  scaleResolutionDownBy: 1 },
+            { rid: 'r2', maxBitrate: 2000000, scaleResolutionDownBy: 1 },
+          ]).catch(function() {});
+          // Capture screen audio if available (tab/window audio on Chrome)
+          var screenAudioTrack = displayStream.getAudioTracks()[0];
+          var ap = rtcManager.producers && rtcManager.producers['audio'];
+          if (screenAudioTrack && ap && ap.track) {
+            prevMicTrackRef.current = ap.track;
+            rtcManager.replaceTrack('audio', screenAudioTrack).catch(function() {});
+          }
           setScreenSharing(true);
           if (socket && roomId) socket.emit('screen-share-start', { roomId: roomId });
         }).catch(function() {
@@ -307,7 +465,7 @@ export default function PanelTile({
           pointerEvents: showControls ? 'auto' : 'none',
         }}
       >
-        {!isAudioOnlyRoom && (
+        {!isAudioOnlyRoom && !screenSharing && (
           <button
             onClick={toggleLocalCam}
             style={{
@@ -345,7 +503,7 @@ export default function PanelTile({
         >
           ✋
         </button>
-        {!isAudioOnlyRoom && rtcManager && (isHost || role === 'cohost') && (
+        {!isAudioOnlyRoom && rtcManager && role !== 'viewer' && (
           <button
             onClick={toggleScreenShare}
             style={{
@@ -510,7 +668,8 @@ export default function PanelTile({
             playsInline
             muted={!!isLocal}
             style={{
-              width: '100%', height: '100%', objectFit: 'cover',
+              width: '100%', height: '100%',
+              objectFit: (isScreenSharing || screenSharing) ? 'contain' : 'cover',
               display: camActive ? 'block' : 'none',
             }}
           />
@@ -528,7 +687,7 @@ export default function PanelTile({
                 </div>
               )}
               <span style={{ color: '#666', fontSize: 10, fontFamily: '"DM Sans", sans-serif' }}>
-                {!isLocal && remoteCamOff ? 'Camera off' : 'Camera off'}
+                {(isLocal && !localCamOn) || (!isLocal && remoteCamOff) ? 'Camera off' : 'Connecting...'}
               </span>
             </div>
           )}
@@ -573,8 +732,8 @@ export default function PanelTile({
         )}
       </div>
 
-      {/* Speaking / connection quality indicator */}
-      {!isAudioOnlyRoom && isLocal && rtcManager ? (
+      {/* Speaking / connection quality indicator — shown for all tiles with RTC */}
+      {!isAudioOnlyRoom && rtcManager && (
         <span
           style={{
             position: 'absolute', bottom: 4, right: 4,
@@ -591,10 +750,6 @@ export default function PanelTile({
           }}
           title={effectiveSpeaking ? 'Speaking' : connQuality === 'green' ? 'Connection good' : connQuality === 'yellow' ? 'Connection unstable' : 'Connection poor'}
         />
-      ) : (
-        effectiveSpeaking && !isAudioOnlyRoom && (
-          <span style={{ position: 'absolute', bottom: 4, right: 4, width: 8, height: 8, borderRadius: '50%', background: GOLD, boxShadow: '0 0 6px ' + GOLD }} />
-        )
       )}
 
       {/* Muted badge */}

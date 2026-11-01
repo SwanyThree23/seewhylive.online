@@ -20,10 +20,11 @@ import Login from './components/Login.jsx';
 import WelcomeAudio from './components/WelcomeAudio.jsx';
 import AgeGate from './components/AgeGate.jsx';
 import LoveTap from './components/LoveTap.jsx';
-import GiftLeaderboardOverlay from './components/GiftLeaderboardOverlay.jsx';
 import StreamGoalBar from './components/StreamGoalBar.jsx';
-import DonationAlert from './components/DonationAlert.jsx';
-import GoLiveWizard from './components/GoLiveWizard.jsx';
+/* Conditionally-shown overlays — lazy-split so they don't bloat the initial bundle */
+var GiftLeaderboardOverlay = React.lazy(function() { return import('./components/GiftLeaderboardOverlay.jsx'); });
+var DonationAlert          = React.lazy(function() { return import('./components/DonationAlert.jsx'); });
+var GoLiveWizard           = React.lazy(function() { return import('./components/GoLiveWizard.jsx'); });
 
 /* Lazy-loaded tabs — each splits into its own chunk */
 var FadesTab            = React.lazy(function() { return import('./components/FadesTab.jsx'); });
@@ -663,6 +664,7 @@ export default function App() {
           if (existing.producerId)               merged.producerId      = existing.producerId;
           if (existing.audioProducerId)          merged.audioProducerId = existing.audioProducerId;
           if (existing.remoteMuted !== undefined) merged.remoteMuted    = existing.remoteMuted;
+          if (existing.remoteCamOff)             merged.remoteCamOff   = existing.remoteCamOff;
           return merged;
         });
       });
@@ -844,7 +846,6 @@ export default function App() {
 
     socket.on('new-producer', function(data) {
       if (!data || !data.guestId || !data.producerId) return;
-      var isScreen = data.appData && data.appData.source === 'screen';
       setGuests(function(prev) {
         var found = false;
         var updated = prev.map(function(g) {
@@ -852,18 +853,16 @@ export default function App() {
           if (gid !== data.guestId) return g;
           found = true;
           var update = Object.assign({}, g);
-          if (data.kind === 'video' && isScreen)  update.screenProducerId = data.producerId;
-          if (data.kind === 'video' && !isScreen) update.producerId       = data.producerId;
-          if (data.kind === 'audio')              update.audioProducerId  = data.producerId;
+          if (data.kind === 'video') { update.producerId = data.producerId; update.remoteCamOff = false; }
+          if (data.kind === 'audio') update.audioProducerId = data.producerId;
           return update;
         });
         // Producer arrived before roster-update added this guest — store a placeholder
         // so roster-update's merge logic picks up the producerId when it arrives.
         if (!found) {
           var placeholder = { guestId: data.guestId, userId: data.guestId };
-          if (data.kind === 'video' && isScreen)  placeholder.screenProducerId = data.producerId;
-          if (data.kind === 'video' && !isScreen) placeholder.producerId       = data.producerId;
-          if (data.kind === 'audio')              placeholder.audioProducerId  = data.producerId;
+          if (data.kind === 'video') { placeholder.producerId = data.producerId; placeholder.remoteCamOff = false; }
+          if (data.kind === 'audio') placeholder.audioProducerId = data.producerId;
           return updated.concat([placeholder]);
         }
         return updated;
@@ -888,10 +887,8 @@ export default function App() {
             for (var i = 0; i < ackData.existingProducers.length; i++) {
               var p = ackData.existingProducers[i];
               if (p.guestId !== gid) continue;
-              var isScreen = p.appData && p.appData.source === 'screen';
-              if (p.kind === 'video' && isScreen)  update.screenProducerId = p.producerId;
-              if (p.kind === 'video' && !isScreen) update.producerId       = p.producerId;
-              if (p.kind === 'audio')              update.audioProducerId  = p.producerId;
+              if (p.kind === 'video') { update.producerId = p.producerId; update.remoteCamOff = !!p.paused; }
+              if (p.kind === 'audio') update.audioProducerId = p.producerId;
             }
             return update;
           });
@@ -903,10 +900,8 @@ export default function App() {
             if (!added[p.guestId]) {
               added[p.guestId] = { guestId: p.guestId, userId: p.guestId };
             }
-            var isScreen = p.appData && p.appData.source === 'screen';
-            if (p.kind === 'video' && isScreen)  added[p.guestId].screenProducerId = p.producerId;
-            if (p.kind === 'video' && !isScreen) added[p.guestId].producerId       = p.producerId;
-            if (p.kind === 'audio')              added[p.guestId].audioProducerId  = p.producerId;
+            if (p.kind === 'video') { added[p.guestId].producerId = p.producerId; added[p.guestId].remoteCamOff = !!p.paused; }
+            if (p.kind === 'audio') added[p.guestId].audioProducerId = p.producerId;
           }
           var addedArr = Object.keys(added).map(function(k) { return added[k]; });
           return addedArr.length ? updated.concat(addedArr) : updated;
@@ -930,9 +925,8 @@ export default function App() {
       setGuests(function(prev) {
         return prev.map(function(g) {
           var update = Object.assign({}, g);
-          if (g.producerId       === data.producerId) update.producerId       = null;
-          if (g.audioProducerId  === data.producerId) update.audioProducerId  = null;
-          if (g.screenProducerId === data.producerId) update.screenProducerId = null;
+          if (g.producerId      === data.producerId) { update.producerId = null; update.remoteCamOff = false; }
+          if (g.audioProducerId === data.producerId) update.audioProducerId = null;
           return update;
         });
       });
@@ -1466,14 +1460,16 @@ export default function App() {
     <div style={{ minHeight: '100dvh', background: '#0E0C09', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: '@keyframes tabSlideIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}' }} />
       {showWizard && role === 'host' && (
-        <GoLiveWizard
-          onComplete={function(title, priv) {
-            setShowWizard(false);
-            if (title) setStreamInfo(function(s) { return Object.assign({}, s, { title: title }); });
-            if (priv) { if (socketRef.current) socketRef.current.emit('room-privacy', { roomId: roomId, isPrivate: true }); }
-          }}
-          onDismiss={function() { setShowWizard(false); }}
-        />
+        <Suspense fallback={null}>
+          <GoLiveWizard
+            onComplete={function(title, priv) {
+              setShowWizard(false);
+              if (title) setStreamInfo(function(s) { return Object.assign({}, s, { title: title }); });
+              if (priv) { if (socketRef.current) socketRef.current.emit('room-privacy', { roomId: roomId, isPrivate: true }); }
+            }}
+            onDismiss={function() { setShowWizard(false); }}
+          />
+        </Suspense>
       )}
       <BrandChyron isLive={isLive} streamTitle={streamInfo.title} />
       {/* Header HUD */}
@@ -2236,11 +2232,13 @@ export default function App() {
         />
       )}
       {socketRef.current && (
-        <GiftLeaderboardOverlay
-          socket={socketRef.current}
-          roomId={APP_ID}
-          isLive={isLive}
-        />
+        <Suspense fallback={null}>
+          <GiftLeaderboardOverlay
+            socket={socketRef.current}
+            roomId={APP_ID}
+            isLive={isLive}
+          />
+        </Suspense>
       )}
       {socketRef.current && (
         <StreamGoalBar
@@ -2254,10 +2252,12 @@ export default function App() {
         />
       )}
       {socketRef.current && (
-        <DonationAlert
-          socket={socketRef.current}
-          roomId={APP_ID}
-        />
+        <Suspense fallback={null}>
+          <DonationAlert
+            socket={socketRef.current}
+            roomId={APP_ID}
+          />
+        </Suspense>
       )}
       {activeTab !== 'room' && (
         <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />

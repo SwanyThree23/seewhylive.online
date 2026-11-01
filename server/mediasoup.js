@@ -13,10 +13,12 @@ var ANNOUNCED_IP = process.env.MEDIASOUP_ANNOUNCED_IP || '2.24.194.112';
 // ─── Internal state maps ───────────────────────────────────────────────────
 var workers = [];               // mediasoup.Worker[]
 var routers = {};               // roomId → mediasoup.Router
+var routerWorker = {};          // routerId → worker — tracks which worker owns each router
 var transports = {};            // transportId → mediasoup.WebRtcTransport
 var producers = {};             // producerId → { producer, guestId, kind, roomId }
 var consumers = {};             // consumerId → mediasoup.Consumer  (do not change key scheme)
 var guestVideoConsumers = {};   // producerGuestId → Set<consumerId> — secondary index for layer control
+var socketVideoConsumers = {};  // socketId → Set<consumerId> — per-viewer adaptive layer control
 
 var workerIndex = 0;
 
@@ -62,9 +64,45 @@ async function spawnWorker() {
   worker.on('died', function(error) {
     console.error('mediasoup Worker died, restarting in 2s:', error);
     var idx = workers.indexOf(worker);
-    if (idx !== -1) {
-      workers.splice(idx, 1);
-    }
+    if (idx !== -1) workers.splice(idx, 1);
+
+    // Remove all routers that were running on the dead worker so that affected
+    // rooms don't get stuck with unresolvable router references. Clients that
+    // attempt to reconnect will trigger a fresh router creation on the new worker.
+    var deadRouterIds = Object.keys(routerWorker).filter(function(rid) {
+      return routerWorker[rid] === worker;
+    });
+    deadRouterIds.forEach(function(rid) {
+      delete routerWorker[rid];
+      // Find and evict all room entries pointing to this router
+      var roomIds = Object.keys(routers).filter(function(rmId) {
+        return routers[rmId] && routers[rmId].id === rid;
+      });
+      roomIds.forEach(function(rmId) {
+        delete routers[rmId];
+        // Evict transports/producers/consumers belonging to this room so they
+        // are not referenced after the worker is gone.
+        var tids = Object.keys(transports).filter(function(tid) {
+          return transports[tid] && transports[tid].routerId === rid;
+        });
+        tids.forEach(function(tid) { delete transports[tid]; });
+        var pids = Object.keys(producers).filter(function(pid) {
+          return producers[pid] && producers[pid].roomId === rmId;
+        });
+        pids.forEach(function(pid) {
+          var entry = producers[pid];
+          if (entry && entry.guestId && guestVideoConsumers[entry.guestId]) {
+            delete guestVideoConsumers[entry.guestId];
+          }
+          delete producers[pid];
+        });
+        var cids = Object.keys(consumers).filter(function(cid) {
+          return consumers[cid] && consumers[cid].routerId === rid;
+        });
+        cids.forEach(function(cid) { delete consumers[cid]; });
+      });
+    });
+
     setTimeout(function() {
       spawnWorker().then(function(newWorker) {
         workers.push(newWorker);
@@ -107,6 +145,7 @@ async function getOrCreateRouter(roomId) {
   var worker = pickWorker();
   var router = await worker.createRouter({ mediaCodecs: mediaCodecs });
   routers[roomId] = router;
+  routerWorker[router.id] = worker;
   return router;
 }
 
@@ -212,6 +251,13 @@ function closeTransport(transportId) {
   delete transports[transportId];
 }
 
+async function restartTransportIce(transportId) {
+  var transport = transports[transportId];
+  if (!transport) throw new Error('Transport not found: ' + transportId);
+  var iceParameters = await transport.restartIce();
+  return iceParameters;
+}
+
 function pauseProducer(producerId) {
   var entry = producers[producerId];
   if (!entry) return;
@@ -274,10 +320,13 @@ async function createConsumer(routerId, transportId, producerId, rtpCapabilities
   consumer._producerGuestId = producerGuestId;
 
   if (consumer.kind === 'video') {
-    // Default to the lowest simulcast layer (r0 / 100 kbps) for all grid tiles.
-    // The speaking handler upgrades active speakers to layer 2 (r2 / 900 kbps).
+    // Start at layer 1 (r1, ~300 kbps) — a reasonable default for most viewers.
+    // The adaptive recv system in webrtc.js downgrades to layer 0 within 4s if
+    // bandwidth is insufficient, and upgrades to layer 2 after sustained good bandwidth.
+    // Starting at layer 1 instead of 0 avoids a ~4s window of blurry quality for
+    // viewers on normal connections.
     try {
-      await consumer.setPreferredLayers({ spatialLayer: 0 });
+      await consumer.setPreferredLayers({ spatialLayer: 1 });
     } catch (_) { /* consumer may be audio-only or not yet negotiated */ }
 
     // Add to the secondary guestId → Set<consumerId> index
@@ -286,6 +335,29 @@ async function createConsumer(routerId, transportId, producerId, rtpCapabilities
     }
     guestVideoConsumers[producerGuestId].add(consumer.id);
   }
+
+  // Clean up all indexes when this consumer closes for any reason (producer gone, transport
+  // closed, etc.) — prevents stale entries accumulating in guestVideoConsumers and
+  // socketVideoConsumers that would cause setPreferredLayers calls on dead consumers.
+  var consumerId = consumer.id;
+  consumer.on('close', function() {
+    delete consumers[consumerId];
+    if (producerGuestId && guestVideoConsumers[producerGuestId]) {
+      guestVideoConsumers[producerGuestId].delete(consumerId);
+      if (guestVideoConsumers[producerGuestId].size === 0) {
+        delete guestVideoConsumers[producerGuestId];
+      }
+    }
+    // socketVideoConsumers is keyed by socketId — scan to find and remove the entry
+    var sids = Object.keys(socketVideoConsumers);
+    for (var _i = 0; _i < sids.length; _i++) {
+      var _set = socketVideoConsumers[sids[_i]];
+      if (_set && _set.has(consumerId)) {
+        _set.delete(consumerId);
+        break;
+      }
+    }
+  });
 
   var params = {
     id: consumer.id,
@@ -307,7 +379,7 @@ function getRoomProducers(roomId) {
   for (var i = 0; i < ids.length; i++) {
     var entry = producers[ids[i]];
     if (entry.roomId === roomId) {
-      result.push({ producerId: ids[i], guestId: entry.guestId, kind: entry.kind, appData: entry.appData || {} });
+      result.push({ producerId: ids[i], guestId: entry.guestId, kind: entry.kind, appData: entry.appData || {}, paused: !!(entry.producer && entry.producer.paused) });
     }
   }
   return result;
@@ -350,8 +422,10 @@ function cleanupRoom(roomId) {
       }
     }
 
+    var routerId = router.id;
     try { router.close(); } catch (e) { /* ignore */ }
     delete routers[roomId];
+    delete routerWorker[routerId];
   }
 }
 
@@ -364,6 +438,49 @@ function getWorkerCount() {
 // For every subscriber currently consuming the named guest's video stream,
 // flip to spatialLayer 2 (r2/900 kbps) while speaking or back to 0 (r0/100 kbps)
 // when silent.  Fire-and-forget: wrapped in try/catch in the caller.
+// Track a video consumer under a viewer's socketId for per-viewer adaptive quality.
+// Called from the 'consume' handler in index.js after createConsumer returns.
+function indexConsumerBySocket(socketId, consumerId) {
+  if (!socketVideoConsumers[socketId]) socketVideoConsumers[socketId] = new Set();
+  socketVideoConsumers[socketId].add(consumerId);
+}
+
+// Remove all consumer entries for a socket (called on disconnect).
+function cleanupSocketConsumers(socketId) {
+  delete socketVideoConsumers[socketId];
+}
+
+// For a viewer requesting adaptive quality: set preferred layer on all their video consumers.
+async function setSocketConsumerPreferredLayers(socketId, spatialLayer) {
+  var ids = socketVideoConsumers[socketId];
+  if (!ids || ids.size === 0) return;
+  var promises = [];
+  ids.forEach(function(cid) {
+    var c = consumers[cid];
+    if (c && c.kind === 'video') {
+      promises.push(c.setPreferredLayers({ spatialLayer: spatialLayer }).catch(function() {}));
+    }
+  });
+  await Promise.all(promises);
+}
+
+// Like setSocketConsumerPreferredLayers but skips consumers belonging to skipGuestId.
+// Used by adaptive bandwidth to avoid overriding the layer-2 boost for screen sharers.
+async function setSocketConsumerPreferredLayersExcept(socketId, spatialLayer, skipGuestId) {
+  var ids = socketVideoConsumers[socketId];
+  if (!ids || ids.size === 0) return;
+  var skipSet = (skipGuestId && guestVideoConsumers[skipGuestId]) ? guestVideoConsumers[skipGuestId] : new Set();
+  var promises = [];
+  ids.forEach(function(cid) {
+    if (skipSet.has(cid)) return;
+    var c = consumers[cid];
+    if (c && c.kind === 'video') {
+      promises.push(c.setPreferredLayers({ spatialLayer: spatialLayer }).catch(function() {}));
+    }
+  });
+  await Promise.all(promises);
+}
+
 async function setPreferredLayersByGuestId(producerGuestId, spatialLayer) {
   var ids = guestVideoConsumers[producerGuestId];
   if (!ids || ids.size === 0) return;
@@ -374,6 +491,24 @@ async function setPreferredLayersByGuestId(producerGuestId, spatialLayer) {
       promises.push(
         c.setPreferredLayers({ spatialLayer: spatialLayer }).catch(function() {})
       );
+    }
+  });
+  await Promise.all(promises);
+}
+
+// Set the preferred simulcast layer for the specific consumer that socketId holds for
+// producerGuestId — used by spotlight so only the requesting viewer's quality changes,
+// not every viewer of that guest.
+async function setSocketConsumerPreferredLayerForGuest(socketId, producerGuestId, spatialLayer) {
+  var socketIds = socketVideoConsumers[socketId];
+  var guestIds  = guestVideoConsumers[producerGuestId];
+  if (!socketIds || !guestIds) return;
+  var promises = [];
+  socketIds.forEach(function(cid) {
+    if (!guestIds.has(cid)) return; // not this guest's consumer
+    var c = consumers[cid];
+    if (c && c.kind === 'video') {
+      promises.push(c.setPreferredLayers({ spatialLayer: spatialLayer }).catch(function() {}));
     }
   });
   await Promise.all(promises);
@@ -416,6 +551,7 @@ module.exports = {
   createConsumer: createConsumer,
   closeProducer: closeProducer,
   closeTransport: closeTransport,
+  restartTransportIce: restartTransportIce,
   pauseProducer: pauseProducer,
   resumeProducer: resumeProducer,
   getProducerIdsByGuest: getProducerIdsByGuest,
@@ -423,5 +559,10 @@ module.exports = {
   getRoomProducers: getRoomProducers,
   cleanupRoom: cleanupRoom,
   getWorkerCount: getWorkerCount,
-  setPreferredLayersByGuestId: setPreferredLayersByGuestId
+  setPreferredLayersByGuestId: setPreferredLayersByGuestId,
+  indexConsumerBySocket: indexConsumerBySocket,
+  cleanupSocketConsumers: cleanupSocketConsumers,
+  setSocketConsumerPreferredLayers: setSocketConsumerPreferredLayers,
+  setSocketConsumerPreferredLayersExcept: setSocketConsumerPreferredLayersExcept,
+  setSocketConsumerPreferredLayerForGuest: setSocketConsumerPreferredLayerForGuest
 };

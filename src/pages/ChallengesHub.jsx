@@ -225,6 +225,21 @@ export default function ChallengesHubPage() {
       score: 0,
       completed: false,
     }),
+    onMutate: async (challenge) => {
+      await qc.cancelQueries({ queryKey: ['ch-mine'] });
+      const prev = qc.getQueryData(['ch-mine']);
+      // Optimistically add a placeholder participation record so the Join button
+      // flips to "Joined" immediately without waiting for the server round-trip.
+      qc.setQueryData(['ch-mine'], (old = []) => [
+        ...old,
+        { challenge_id: challenge.id, user_id: user?.id, progress: 0, score: 0, completed: false, id: '__optimistic__' },
+      ]);
+      return { prev };
+    },
+    onError: (_err, _challenge, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(['ch-mine'], ctx.prev);
+      toast.error('Action failed.');
+    },
     onSuccess: (_, challenge) => {
       qc.invalidateQueries({ queryKey: ['ch-mine'] });
       toast.success('Joined challenge!');
@@ -236,7 +251,6 @@ export default function ChallengesHubPage() {
         }).catch(() => {});
       }
     },
-    onError: () => toast.error('Action failed.'),
   });
 
   const myCompleted = myParticipations.filter(p => p.completed);

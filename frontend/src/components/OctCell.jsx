@@ -10,7 +10,7 @@ var _PP_ANIM =
   '@keyframes ppCrown{0%{transform:translateY(-8px) scale(.8);opacity:0}60%{transform:translateY(2px) scale(1.1);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}' +
   '@keyframes ppEject{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-120%) scale(.4);opacity:0}}';
 
-function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay, isScreenSharing }) {
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, activeEffect, onPowerPlay, isScreenSharing, remoteQuality, mirrorOverride, remoteVolume }) {
   var videoRef       = useRef(null);
   var analyserRef    = useRef(null);
   var animRef        = useRef(null);
@@ -18,6 +18,10 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var streamRef      = useRef(null);
   var flyTimersRef   = useRef(new Set());
   var isMutedRef     = useRef(isMuted);
+  var onlineRef      = useRef(false);
+  var remoteCamOffRef = useRef(false);
+  var speakHoldRef    = useRef(null);
+  var speakingLiveRef = useRef(false);
   var [speaking,     setSpeaking]     = useState(false);
   var [online,       setOnline]       = useState(false);
   var [loading,      setLoading]      = useState(false);
@@ -30,6 +34,12 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var [sendTransportKey, setSendTransportKey] = useState(0);
   var [subscribeKey, setSubscribeKey] = useState(0);
   var [facingFront,  setFacingFront]  = useState(true);
+  var [reconnecting,   setReconnecting]   = useState(false);
+  var [sendStats,      setSendStats]      = useState(null); // { bitratekbps, rttMs } for HUD
+  var [autoQuality,    setAutoQuality]    = useState('high'); // 'high' | 'medium' | 'low'
+  var redSamplesRef    = useRef(0);
+  var greenSamplesRef  = useRef(0);
+  var remoteVolumeRef  = useRef(remoteVolume !== undefined && remoteVolume !== null ? remoteVolume : 1);
 
   var size      = fill ? null : (sz || 200);
   var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
@@ -86,7 +96,18 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
         if (onCameraTrack) {
           var vt = stream.getVideoTracks()[0];
-          if (vt) onCameraTrack(vt);
+          if (vt) {
+            if ('contentHint' in vt) vt.contentHint = 'motion';
+            onCameraTrack(vt);
+            // Detect unexpected camera loss (e.g. USB disconnect, permission revoke)
+            vt.addEventListener('ended', function() {
+              if (!cancelled) {
+                setCamError('Camera disconnected');
+                setOnline(false);
+                setStreamReady(false);
+              }
+            });
+          }
         }
 
         if (videoRef.current) {
@@ -188,6 +209,19 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     return function() { rtcManager.off('sendTransportReady', onReady); };
   }, [isOwnCell, rtcManager]);
 
+  // Track auto-reconnect state for own cell status indicator
+  useEffect(function() {
+    if (!isOwnCell || !rtcManager) return;
+    var onReconnecting = function() { setReconnecting(true); };
+    var onReset = function() { setReconnecting(false); };
+    rtcManager.on('reconnecting', onReconnecting);
+    rtcManager.on('rtcReset', onReset);
+    return function() {
+      rtcManager.off('reconnecting', onReconnecting);
+      rtcManager.off('rtcReset', onReset);
+    };
+  }, [isOwnCell, rtcManager]);
+
   // Force remote cells to re-subscribe when mediasoup reconnects (consumers cleared by connect())
   useEffect(function() {
     if (isOwnCell || !rtcManager) return;
@@ -213,8 +247,34 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
   // Keep muted ref in sync for use inside rAF loop
   useEffect(function() { isMutedRef.current = isMuted; }, [isMuted]);
+  useEffect(function() { onlineRef.current = online; }, [online]);
+  useEffect(function() { remoteCamOffRef.current = !!(guest && guest.remoteCamOff); }, [guest && guest.remoteCamOff]);
 
-  // Update connection quality from outbound stats (own cell only)
+  // Freeze detection: re-subscribe remote tile if video currentTime stops advancing for ~10s
+  useEffect(function() {
+    if (isOwnCell) return;
+    var prevTime = -1;
+    var stuckCount = 0;
+    var timer = setInterval(function() {
+      var v = videoRef.current;
+      if (!v || !v.srcObject || !onlineRef.current || remoteCamOffRef.current) { stuckCount = 0; prevTime = -1; return; }
+      var ct = v.currentTime;
+      if (ct > 0 && ct === prevTime) {
+        stuckCount++;
+        if (stuckCount >= 2) {
+          stuckCount = 0;
+          prevTime = -1;
+          setSubscribeKey(function(k) { return k + 1; });
+        }
+      } else {
+        stuckCount = 0;
+        prevTime = ct;
+      }
+    }, 5000);
+    return function() { clearInterval(timer); };
+  }, [isOwnCell]);
+
+  // Update connection quality and stats HUD from outbound stats (own cell only)
   useEffect(function() {
     if (!isOwnCell || !rtcManager) return;
     var onStats = function(stats) {
@@ -227,10 +287,49 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         quality = 'green';
       }
       setConnQuality(quality);
+      setSendStats({ bitratekbps: stats.bitratekbps, rttMs: stats.rttMs, lossPct: stats.lossPct });
+
+      // Auto quality degradation — apply capture constraints on sustained red; restore on green
+      var applyVC = function(w, h, fps) {
+        if (!streamRef.current) return;
+        var vt = streamRef.current.getVideoTracks()[0];
+        if (!vt || !vt.applyConstraints) return;
+        // Don't apply camera constraints to a screen capture track — they don't apply and
+        // some browsers throw on the mismatch.
+        if (vt.contentHint === 'detail') return;
+        vt.applyConstraints({ width: { ideal: w }, height: { ideal: h }, frameRate: { ideal: fps } }).catch(function() {});
+      };
+      if (quality === 'red') {
+        greenSamplesRef.current = 0;
+        redSamplesRef.current = redSamplesRef.current + 1;
+        if (redSamplesRef.current === 3) {
+          applyVC(640, 360, 15);
+          setAutoQuality('medium');
+        } else if (redSamplesRef.current === 6) {
+          applyVC(320, 240, 10);
+          setAutoQuality('low');
+        }
+      } else if (quality === 'green') {
+        redSamplesRef.current = 0;
+        greenSamplesRef.current = greenSamplesRef.current + 1;
+        if (greenSamplesRef.current >= 3) {
+          greenSamplesRef.current = 0;
+          setAutoQuality(function(prev) {
+            if (prev !== 'high') {
+              var preset = mediaConfig && mediaConfig.preset ? mediaConfig.preset : { width: 1280, height: 720, frameRate: 30 };
+              applyVC(preset.width, preset.height, preset.frameRate);
+            }
+            return 'high';
+          });
+        }
+      } else {
+        redSamplesRef.current = 0;
+        greenSamplesRef.current = 0;
+      }
     };
     rtcManager.on('stats', onStats);
     return function() { rtcManager.off('stats', onStats); };
-  }, [isOwnCell, rtcManager]);
+  }, [isOwnCell, rtcManager, mediaConfig]);
 
   // React to transport state changes (own and remote cells share same rtcManager)
   useEffect(function() {
@@ -248,6 +347,32 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     rtcManager.on('transportState', onTransportState);
     return function() { rtcManager.off('transportState', onTransportState); };
   }, [rtcManager, isOwnCell]);
+
+  // Apply remote volume changes (no-op on own cell, iOS silently ignores this)
+  useEffect(function() {
+    remoteVolumeRef.current = (remoteVolume !== undefined && remoteVolume !== null) ? remoteVolume : 1;
+    if (!isOwnCell && videoRef.current) {
+      try { videoRef.current.volume = remoteVolumeRef.current; } catch(e) {}
+    }
+  }, [remoteVolume, isOwnCell]);
+
+  // Per-consumer recv quality for remote tiles
+  useEffect(function() {
+    if (isOwnCell || !rtcManager || !guest) return;
+    var vidId = guest.producerId;
+    if (!vidId) return;
+    var onConsumerStats = function(data) {
+      if (!data || data.producerId !== vidId) return;
+      if (!data.bitratekbps) return;
+      var q;
+      if (data.bitratekbps < 80) q = 'red';
+      else if (data.bitratekbps < 250) q = 'yellow';
+      else q = 'green';
+      setConnQuality(q);
+    };
+    rtcManager.on('consumerStats', onConsumerStats);
+    return function() { rtcManager.off('consumerStats', onConsumerStats); };
+  }, [isOwnCell, rtcManager, guest && guest.producerId]);
 
   // Remote cell: subscribe to video + audio producers
   useEffect(function() {
@@ -281,7 +406,14 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         streamRef.current = combined;
         if (videoRef.current) {
           videoRef.current.srcObject = combined;
+          try { videoRef.current.volume = remoteVolumeRef.current; } catch(e) {}
           videoRef.current.play().catch(function() {});
+          // Re-attempt play if browser pauses the element (e.g. autoplay policy, tab hidden)
+          videoRef.current.onpause = function() {
+            if (!cancelled && videoRef.current && videoRef.current.srcObject) {
+              videoRef.current.play().catch(function() {});
+            }
+          };
         }
         setOnline(true);
         setLoading(false);
@@ -320,6 +452,8 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var initAnalyser = function(stream) {
     if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null; }
     if (audioCtxRef.current) { audioCtxRef.current.close().catch(function(){}); audioCtxRef.current = null; }
+    clearTimeout(speakHoldRef.current); speakHoldRef.current = null;
+    speakingLiveRef.current = false;
     analyserRef.current = null;
     try {
       var AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -328,7 +462,8 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
       audioCtxRef.current = audioCtx;
       var source = audioCtx.createMediaStreamSource(stream);
       var analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 32;
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
       source.connect(analyser);
       analyserRef.current = analyser;
       drawEQ();
@@ -339,7 +474,8 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
   var drawEQ = function() {
     if (!analyserRef.current) return;
-    var dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+    var freqData = new Uint8Array(analyserRef.current.frequencyBinCount);
+    var timeData = new Uint8Array(analyserRef.current.fftSize);
     var tick = function() {
       animRef.current = requestAnimationFrame(tick);
       if (isMutedRef.current) {
@@ -347,21 +483,38 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         setSpeaking(false);
         return;
       }
-      analyserRef.current.getByteFrequencyData(dataArray);
+      analyserRef.current.getByteFrequencyData(freqData);
       var bars = [];
-      var step = Math.floor(dataArray.length / 8);
+      var step = Math.floor(freqData.length / 8);
       for (var i = 0; i < 8; i++) {
-        bars.push(Math.round((dataArray[i * step] / 255) * 100));
+        bars.push(Math.round((freqData[i * step] / 255) * 100));
       }
       setEqBars(bars);
-      var avg = bars.reduce(function(a, b) { return a + b; }, 0) / bars.length;
-      setSpeaking(avg > 20);
+      // Use RMS of time-domain signal for voice detection — less sensitive
+      // to steady-state background noise than frequency-domain average.
+      // 400ms hold timer matches PanelTile, debouncing rapid threshold crossings.
+      analyserRef.current.getByteTimeDomainData(timeData);
+      var sum = 0;
+      for (var j = 0; j < timeData.length; j++) {
+        var v = (timeData[j] - 128) / 128;
+        sum += v * v;
+      }
+      var rms = Math.sqrt(sum / timeData.length);
+      if (rms > 0.01 && !isMutedRef.current) {
+        clearTimeout(speakHoldRef.current); speakHoldRef.current = null;
+        if (!speakingLiveRef.current) { speakingLiveRef.current = true; setSpeaking(true); }
+      } else if (speakingLiveRef.current && !speakHoldRef.current) {
+        speakHoldRef.current = setTimeout(function() {
+          speakHoldRef.current = null; speakingLiveRef.current = false; setSpeaking(false);
+        }, 400);
+      }
     };
     tick();
   };
 
   useEffect(function() {
     return function() {
+      clearTimeout(speakHoldRef.current);
       if (animRef.current) cancelAnimationFrame(animRef.current);
       if (audioCtxRef.current) audioCtxRef.current.close().catch(function(){});
       if (streamRef.current) streamRef.current.getTracks().forEach(function(t) { t.stop(); });
@@ -384,6 +537,10 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
 
   var connDotColor = connQuality === 'green' ? '#6DBF7E' : (connQuality === 'yellow' ? '#F0A500' : '#FF1A3C');
   var connDotTitle = connQuality === 'green' ? 'Good connection' : (connQuality === 'yellow' ? 'Fair connection' : 'Poor connection');
+  var remoteDotColor = remoteQuality === 'red' ? '#FF1A3C' : remoteQuality === 'yellow' ? '#F0A500' : remoteQuality === 'green' ? '#6DBF7E' : null;
+  var remoteDotTitle = remoteQuality === 'red' ? 'Poor incoming quality' : remoteQuality === 'yellow' ? 'Fair incoming quality' : 'Good incoming quality';
+  var activeDotColor = isOwnCell ? connDotColor : remoteDotColor;
+  var activeDotTitle = isOwnCell ? connDotTitle : remoteDotTitle;
   var avatarSz = fill ? '38%' : (Math.round(size * 0.38) + 'px');
   var avatarFs = fill ? '18px' : (Math.round(size * 0.18) + 'px');
   var nameFs   = fill ? '10px' : (Math.max(8, Math.round(size * 0.07)) + 'px');
@@ -394,7 +551,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
       onClick={onTap ? function() { onTap(guest); } : undefined}
     >
       {/* Video container — octagonal clip or full rect depending on fill mode */}
-      <div style={{ clipPath: fill ? 'none' : OCT, width: '100%', height: fill ? '100%' : '100%', position: 'relative', background: '#0E0C09', boxShadow: ringGlow }}>
+      <div style={{ clipPath: (fill || (!isOwnCell && isScreenSharing)) ? 'none' : OCT, width: '100%', height: fill ? '100%' : '100%', position: 'relative', background: '#0E0C09', boxShadow: ringGlow }}>
         {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,12,9,.8)', zIndex: 2 }}>
             <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid ' + color, borderTopColor: 'transparent' }} />
@@ -406,7 +563,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
           autoPlay
           playsInline
           muted={isOwnCell}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: (online && !isCamOff && !(guest && guest.remoteCamOff)) ? 'block' : 'none' }}
+          style={{ width: '100%', height: '100%', objectFit: (!isOwnCell && isScreenSharing) ? 'contain' : 'cover', display: (online && !isCamOff && !(guest && guest.remoteCamOff)) ? 'block' : 'none', transform: (isOwnCell && (mirrorOverride !== undefined ? mirrorOverride : (facingFront && !isScreenSharing))) ? 'scaleX(-1)' : 'none' }}
         />
 
         {/* Cam off overlay — own cell */}
@@ -445,6 +602,29 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
             ) : (
               <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: nameFs, color: '#8A7A62', textAlign: 'center', maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName}</span>
             )}
+          </div>
+        )}
+
+        {/* Send stats HUD — own cell, shown when poor quality or bitrate available */}
+        {isOwnCell && sendStats && sendStats.bitratekbps > 0 && (connQuality !== 'green' || fill) && (
+          <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,.72)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 6, color: connQuality === 'red' ? '#FF1A3C' : connQuality === 'yellow' ? '#F0A500' : '#6DBF7E', whiteSpace: 'nowrap', zIndex: 8, display: 'flex', gap: 5 }}>
+            <span>{'↑ ' + sendStats.bitratekbps + ' kbps'}</span>
+            {sendStats.rttMs !== null && <span>{'RTT ' + sendStats.rttMs + 'ms'}</span>}
+            {sendStats.lossPct > 0 && <span>{'loss ' + sendStats.lossPct + '%'}</span>}
+          </div>
+        )}
+
+        {/* Reconnecting overlay — own cell only */}
+        {isOwnCell && reconnecting && (
+          <div style={{ position: 'absolute', bottom: 22, left: '50%', transform: 'translateX(-50%)', background: 'rgba(240,165,0,.9)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09', whiteSpace: 'nowrap', zIndex: 8 }}>
+            ⟳ RECONNECTING
+          </div>
+        )}
+
+        {/* Auto quality degradation indicator — own cell only */}
+        {isOwnCell && autoQuality !== 'high' && (
+          <div style={{ position: 'absolute', bottom: 38, left: '50%', transform: 'translateX(-50%)', background: 'rgba(240,165,0,.85)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09', whiteSpace: 'nowrap', zIndex: 8 }}>
+            {'⚠ AUTO-' + autoQuality.toUpperCase()}
           </div>
         )}
 
@@ -569,7 +749,9 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
         )}
 
         {/* Connection quality dot */}
-        <div title={connDotTitle} style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: connDotColor, boxShadow: '0 0 4px ' + connDotColor, border: '1px solid rgba(0,0,0,.5)' }} />
+        {activeDotColor && (
+          <div title={activeDotTitle} style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: activeDotColor, boxShadow: '0 0 4px ' + activeDotColor, border: '1px solid rgba(0,0,0,.5)' }} />
+        )}
         {isHost && (
           <div style={{ position: 'absolute', top: 6, left: 6, fontSize: 11, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.8))', zIndex: 5 }}>
             👑
@@ -626,7 +808,7 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
               {isMuted ? '🔇' : '🎙'}
             </button>
           )}
-          {onCamToggle && (
+          {onCamToggle && !isScreenSharing && (
             <button
               onClick={function(e) { e.stopPropagation(); onCamToggle(); }}
               style={{ width: 26, height: 26, borderRadius: '50%', background: isCamOff ? 'rgba(255,26,60,.8)' : 'rgba(201,168,76,.5)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -634,12 +816,14 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
               {isCamOff ? '📵' : '📷'}
             </button>
           )}
-          <button
-            onClick={function(e) { e.stopPropagation(); setFacingFront(function(f) { return !f; }); }}
-            style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(255,255,255,.12)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            title="Flip camera">
-            🔄
-          </button>
+          {!isScreenSharing && (
+            <button
+              onClick={function(e) { e.stopPropagation(); setFacingFront(function(f) { return !f; }); }}
+              style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(255,255,255,.12)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Flip camera">
+              🔄
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -654,7 +838,6 @@ function areOctCellPropsEqual(prev, next) {
   return (
     pg.producerId      === ng.producerId      &&
     pg.audioProducerId === ng.audioProducerId &&
-    pg.speaking        === ng.speaking        &&
     pg.role             === ng.role            &&
     pg.teamColor        === ng.teamColor       &&
     pg.remoteMuted     === ng.remoteMuted     &&
@@ -675,6 +858,7 @@ function areOctCellPropsEqual(prev, next) {
     prev.onCameraTrack  === next.onCameraTrack &&
     prev.activeEffect   === next.activeEffect  &&
     prev.isScreenSharing === next.isScreenSharing &&
+    prev.remoteQuality   === next.remoteQuality   &&
     prev.socket         === next.socket
   );
 }
