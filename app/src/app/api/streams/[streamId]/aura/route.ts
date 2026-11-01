@@ -64,7 +64,7 @@ export async function POST(
   const userMessage = buildAuraPrompt(trigger, context, recentMessages)
 
   const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-haiku-5-5',
     max_tokens: 150,
     system: systemPrompt,
     messages: [{ role: 'user', content: userMessage }],
