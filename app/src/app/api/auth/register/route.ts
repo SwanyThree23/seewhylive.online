@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { writeAuditLog } from '@/lib/audit'
 import { registerSchema } from '@/lib/validations/auth'
 import { rateLimit, ok, err, getIP } from '@/lib/middleware'
+import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   const ip = getIP(req)
@@ -61,6 +62,9 @@ export async function POST(req: NextRequest) {
     targetType: 'User',
     meta: { ip, username },
   })
+
+  // Fire-and-forget; never block registration on email delivery
+  sendWelcomeEmail(user.email, user.username)
 
   return ok({ user }, 201)
 }

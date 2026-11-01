@@ -29,7 +29,7 @@ export async function GET(
       scheduledAt: true,
       playbackUrl: true,
       creator: {
-        select: { id: true, username: true, displayName: true, avatarUrl: true, tier: true },
+        select: { id: true, username: true, displayName: true, avatarUrl: true, tier: true, stripeConnectId: true },
       },
       panels: {
         select: {

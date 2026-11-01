@@ -4,8 +4,9 @@ import { ChatPanel } from '@/components/chat/ChatPanel'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
 import { SignalBars } from '@/components/brand/SignalBars'
+import { LiveStreamClient } from '@/components/stream/LiveStreamClient'
 
-interface Props { params: { streamId: string } }
+interface Props { params: Promise<{ streamId: string }> }
 
 async function getStream(streamId: string) {
   try {
@@ -20,7 +21,8 @@ async function getStream(streamId: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const stream = await getStream(params.streamId)
+  const { streamId } = await params
+  const stream = await getStream(streamId)
   if (!stream) return { title: 'Stream Not Found' }
   return {
     title: stream.title,
@@ -33,7 +35,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function LiveStreamPage({ params }: Props) {
-  const stream = await getStream(params.streamId)
+  const { streamId } = await params
+  const stream = await getStream(streamId)
   if (!stream) notFound()
 
   const isLive = stream.status === 'LIVE'
@@ -98,6 +101,18 @@ export default async function LiveStreamPage({ params }: Props) {
       <div className="h-64 w-full border-t border-border lg:h-auto lg:w-80 lg:border-l lg:border-t-0">
         <ChatPanel streamId={stream.id} />
       </div>
+
+      {/* Client-side socket + tip overlay (portals up) */}
+      <LiveStreamClient
+        streamId={stream.id}
+        initialViewerCount={stream.viewerCount}
+        isPaywalled={stream.isPaywalled}
+        paywallAmountCents={stream.paywallAmountCents}
+        creatorId={stream.creator.id}
+        creatorName={stream.creator.displayName ?? stream.creator.username}
+        stripeConnectId={stream.creator.stripeConnectId ?? null}
+        isLive={isLive}
+      />
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/db'
 import { writeAuditLog } from '@/lib/audit'
+import { sendTipReceivedEmail, sendSubscriptionEmail } from '@/lib/email'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-10-28.endive' })
 
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
 async function handlePaymentIntentSucceeded(pi: Stripe.PaymentIntent) {
   const payment = await prisma.payment.findFirst({
     where: { stripePaymentIntentId: pi.id },
-    select: { id: true, type: true, toUserId: true, creatorAmountCents: true },
+    select: { id: true, type: true, toUserId: true, fromUserId: true, creatorAmountCents: true },
   })
   if (!payment) return
 
@@ -69,6 +70,17 @@ async function handlePaymentIntentSucceeded(pi: Stripe.PaymentIntent) {
         })]
       : []),
   ])
+
+  // Send tip email notification
+  if (payment.type === 'TIP' && payment.toUserId && payment.fromUserId) {
+    const [creator, sender] = await Promise.all([
+      prisma.user.findUnique({ where: { id: payment.toUserId }, select: { email: true, username: true } }),
+      prisma.user.findUnique({ where: { id: payment.fromUserId }, select: { username: true } }),
+    ])
+    if (creator && sender) {
+      sendTipReceivedEmail(creator.email, creator.username, sender.username, pi.amount, null)
+    }
+  }
 
   await writeAuditLog({
     actorId: payment.toUserId ?? 'system',
@@ -136,6 +148,25 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     targetType: 'User',
     meta: { tier, sessionId: session.id },
   })
+
+  // Send subscription email notification
+  const [creator, subscriber, subTierInfo] = await Promise.all([
+    prisma.user.findUnique({ where: { id: creatorId }, select: { email: true, username: true } }),
+    prisma.user.findUnique({ where: { id: subscriberId }, select: { username: true } }),
+    prisma.creatorSubTier.findUnique({
+      where: { creatorId_tier: { creatorId, tier: tier as never } },
+      select: { name: true, priceCents: true },
+    }),
+  ])
+  if (creator && subscriber && subTierInfo) {
+    sendSubscriptionEmail(
+      creator.email,
+      creator.username,
+      subscriber.username,
+      subTierInfo.name,
+      Math.floor(subTierInfo.priceCents * 0.90),
+    )
+  }
 }
 
 async function handleSubscriptionDeleted(sub: Stripe.Subscription) {

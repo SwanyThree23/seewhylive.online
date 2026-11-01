@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
 import { redis, REDIS_KEYS } from '@/lib/redis'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
+import { sendNewFollowerEmail } from '@/lib/email'
 
 export async function POST(
   req: NextRequest,
@@ -27,6 +28,24 @@ export async function POST(
   })
 
   await redis.del(REDIS_KEYS.creatorProfile(params.username))
+
+  // Email notification + follower count (fire-and-forget)
+  const [follower, creatorFull] = await Promise.all([
+    prisma.user.findUnique({ where: { id: ctx.userId }, select: { username: true } }),
+    prisma.user.findUnique({
+      where: { id: target.id },
+      select: { email: true, username: true, _count: { select: { followers: true } } },
+    }),
+  ])
+  if (follower && creatorFull) {
+    sendNewFollowerEmail(
+      creatorFull.email,
+      creatorFull.username,
+      follower.username,
+      creatorFull._count.followers,
+    )
+  }
+
   return ok({ following: true })
 }
 
