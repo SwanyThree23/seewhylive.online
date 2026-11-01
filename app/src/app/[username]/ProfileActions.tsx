@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Btn } from '@/components/ui/Btn'
 import { SubscribeModal } from '@/components/payment/SubscribeModal'
@@ -16,6 +16,14 @@ export function ProfileActions({ userId, username, displayName }: Props) {
   const [following, setFollowing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [subOpen, setSubOpen] = useState(false)
+
+  useEffect(() => {
+    if (!session || session.user.id === userId) return
+    fetch(`/api/users/${username}/follow`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setFollowing(d.data.following ?? false) })
+      .catch(() => {})
+  }, [session, userId, username])
 
   if (!session || session.user.id === userId) return null
 

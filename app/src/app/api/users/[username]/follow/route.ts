@@ -4,6 +4,27 @@ import { redis, REDIS_KEYS } from '@/lib/redis'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { sendNewFollowerEmail } from '@/lib/email'
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { username: string } },
+) {
+  const ctx = await requireAuth(req)
+  if ('status' in ctx) return ctx
+
+  const target = await prisma.user.findUnique({
+    where: { username: params.username, deletedAt: null },
+    select: { id: true },
+  })
+  if (!target) return err('NOT_FOUND', 'User not found', 404)
+
+  const follow = await prisma.follow.findUnique({
+    where: { followerId_followingId: { followerId: ctx.userId, followingId: target.id } },
+    select: { followerId: true },
+  })
+
+  return ok({ following: !!follow })
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: { username: string } },

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { Badge } from '@/components/ui/Badge'
 import { Btn } from '@/components/ui/Btn'
 import { TipModal } from '@/components/payment/TipModal'
+import { PaywallModal } from '@/components/payment/PaywallModal'
 import { connectSocket } from '@/lib/socket-client'
 import type { Socket } from 'socket.io-client'
 
@@ -32,6 +33,7 @@ export function LiveStreamClient({
   const { data: session } = useSession()
   const [viewerCount, setViewerCount] = useState(initialViewerCount)
   const [tipOpen, setTipOpen] = useState(false)
+  const [paywallOpen, setPaywallOpen] = useState(false)
   const [hasAccess, setHasAccess] = useState(!isPaywalled)
   const [checkingAccess, setCheckingAccess] = useState(isPaywalled)
 
@@ -95,10 +97,7 @@ export function LiveStreamClient({
             <Btn
               size="sm"
               variant="gold"
-              onClick={() => {
-                // Trigger paywall payment via TipModal or redirect
-                window.location.href = `/api/payments/paywall?streamId=${streamId}`
-              }}
+              onClick={() => setPaywallOpen(true)}
             >
               UNLOCK — ${((paywallAmountCents ?? 0) / 100).toFixed(2)}
             </Btn>
@@ -123,6 +122,17 @@ export function LiveStreamClient({
           toUserId={creatorId}
           creatorName={creatorName}
           onClose={() => setTipOpen(false)}
+        />
+      )}
+
+      {paywallOpen && paywallAmountCents && (
+        <PaywallModal
+          open={paywallOpen}
+          onClose={() => setPaywallOpen(false)}
+          streamId={streamId}
+          amountCents={paywallAmountCents}
+          creatorName={creatorName}
+          onUnlocked={() => setHasAccess(true)}
         />
       )}
     </>

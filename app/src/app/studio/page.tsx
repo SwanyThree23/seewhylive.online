@@ -137,6 +137,18 @@ export default function StudioPage() {
           />
 
           <div>
+            <label className="mb-1 block font-bebas text-label tracking-widest text-muted">DESCRIPTION (optional)</label>
+            <textarea
+              value={form.description}
+              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+              maxLength={500}
+              rows={2}
+              placeholder="Tell viewers what this stream is about..."
+              className="w-full rounded border border-border bg-surface px-3 py-2 font-barlow text-body text-text placeholder:text-muted focus:border-accent focus:outline-none resize-none"
+            />
+          </div>
+
+          <div>
             <label className="mb-1 block font-bebas text-label tracking-widest text-muted">GENRE</label>
             <select
               value={form.genre}
@@ -188,17 +200,39 @@ export default function StudioPage() {
           )}
 
           {/* AURA toggle */}
-          <div className="flex items-center justify-between rounded border border-purple/30 bg-purple/5 p-3">
-            <div>
-              <p className="font-bebas text-section tracking-widest text-purple">AURA AI CO-HOST</p>
-              <p className="font-barlow text-label text-muted">AI that engages your audience</p>
+          <div className="rounded border border-purple/30 bg-purple/5 p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-bebas text-section tracking-widest text-purple">AURA AI CO-HOST</p>
+                <p className="font-barlow text-label text-muted">AI that engages your audience</p>
+              </div>
+              <button
+                onClick={() => setForm(f => ({ ...f, auraEnabled: !f.auraEnabled }))}
+                className={`relative h-6 w-11 rounded-full transition-colors ${form.auraEnabled ? 'bg-purple' : 'bg-border'}`}
+              >
+                <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${form.auraEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              </button>
             </div>
-            <button
-              onClick={() => setForm(f => ({ ...f, auraEnabled: !f.auraEnabled }))}
-              className={`relative h-6 w-11 rounded-full transition-colors ${form.auraEnabled ? 'bg-purple' : 'bg-border'}`}
-            >
-              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${form.auraEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
-            </button>
+            {form.auraEnabled && (
+              <div className="mt-3">
+                <p className="mb-2 font-bebas text-caption tracking-widest text-purple/70">PERSONALITY</p>
+                <div className="flex gap-2 flex-wrap">
+                  {(['SASSY', 'HYPE', 'CALM', 'KIND'] as const).map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setForm(f => ({ ...f, auraPersonality: p }))}
+                      className={`rounded border px-3 py-1 font-bebas text-label tracking-widest transition-colors
+                        ${form.auraPersonality === p
+                          ? 'border-purple bg-purple/20 text-purple'
+                          : 'border-border bg-surface text-muted hover:border-purple/40'
+                        }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {error && <p className="font-barlow text-label text-red">{error}</p>}
