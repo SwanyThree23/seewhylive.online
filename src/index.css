@@ -86,15 +86,23 @@
     /* Prevent accidental highlight-selection on UI chrome for native app feel */
     -webkit-user-select: none;
     user-select: none;
+    /* Suppress iOS long-press callout (copy/paste bubble) on non-text UI chrome */
+    -webkit-touch-callout: none;
+  }
+
+  /* Kill the blue/grey tap-flash on Android Chrome and iOS WebView */
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Opt back in for readable text and form controls */
   p, li, article, blockquote, .select-text,
   .chat-bubble, .chat-message, .message-body, .message-content,
-  .clip-title, .stream-title, .bio-text,
+  .clip-title, .stream-title, .bio-text, .post-content, .prose,
   input, textarea, [contenteditable="true"], [contenteditable=""] {
     -webkit-user-select: text;
     user-select: text;
+    -webkit-touch-callout: default;
   }
   /* Hide all scrollbars globally for native app feel */
   * {

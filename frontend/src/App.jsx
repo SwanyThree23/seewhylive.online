@@ -20,10 +20,11 @@ import Login from './components/Login.jsx';
 import WelcomeAudio from './components/WelcomeAudio.jsx';
 import AgeGate from './components/AgeGate.jsx';
 import LoveTap from './components/LoveTap.jsx';
-import GiftLeaderboardOverlay from './components/GiftLeaderboardOverlay.jsx';
 import StreamGoalBar from './components/StreamGoalBar.jsx';
-import DonationAlert from './components/DonationAlert.jsx';
-import GoLiveWizard from './components/GoLiveWizard.jsx';
+/* Conditionally-shown overlays — lazy-split so they don't bloat the initial bundle */
+var GiftLeaderboardOverlay = React.lazy(function() { return import('./components/GiftLeaderboardOverlay.jsx'); });
+var DonationAlert          = React.lazy(function() { return import('./components/DonationAlert.jsx'); });
+var GoLiveWizard           = React.lazy(function() { return import('./components/GoLiveWizard.jsx'); });
 
 /* Lazy-loaded tabs — each splits into its own chunk */
 var FadesTab            = React.lazy(function() { return import('./components/FadesTab.jsx'); });
@@ -1459,14 +1460,16 @@ export default function App() {
     <div style={{ minHeight: '100dvh', background: '#0E0C09', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: '@keyframes tabSlideIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}' }} />
       {showWizard && role === 'host' && (
-        <GoLiveWizard
-          onComplete={function(title, priv) {
-            setShowWizard(false);
-            if (title) setStreamInfo(function(s) { return Object.assign({}, s, { title: title }); });
-            if (priv) { if (socketRef.current) socketRef.current.emit('room-privacy', { roomId: roomId, isPrivate: true }); }
-          }}
-          onDismiss={function() { setShowWizard(false); }}
-        />
+        <Suspense fallback={null}>
+          <GoLiveWizard
+            onComplete={function(title, priv) {
+              setShowWizard(false);
+              if (title) setStreamInfo(function(s) { return Object.assign({}, s, { title: title }); });
+              if (priv) { if (socketRef.current) socketRef.current.emit('room-privacy', { roomId: roomId, isPrivate: true }); }
+            }}
+            onDismiss={function() { setShowWizard(false); }}
+          />
+        </Suspense>
       )}
       <BrandChyron isLive={isLive} streamTitle={streamInfo.title} />
       {/* Header HUD */}
@@ -2229,11 +2232,13 @@ export default function App() {
         />
       )}
       {socketRef.current && (
-        <GiftLeaderboardOverlay
-          socket={socketRef.current}
-          roomId={APP_ID}
-          isLive={isLive}
-        />
+        <Suspense fallback={null}>
+          <GiftLeaderboardOverlay
+            socket={socketRef.current}
+            roomId={APP_ID}
+            isLive={isLive}
+          />
+        </Suspense>
       )}
       {socketRef.current && (
         <StreamGoalBar
@@ -2247,10 +2252,12 @@ export default function App() {
         />
       )}
       {socketRef.current && (
-        <DonationAlert
-          socket={socketRef.current}
-          roomId={APP_ID}
-        />
+        <Suspense fallback={null}>
+          <DonationAlert
+            socket={socketRef.current}
+            roomId={APP_ID}
+          />
+        </Suspense>
       )}
       {activeTab !== 'room' && (
         <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
