@@ -28,11 +28,12 @@ interface Props {
   streamId: string
   toUserId?: string
   creatorName?: string
+  creatorId?: string
 }
 
 const AURA_ID = '__aura__'
 
-export function ChatPanel({ streamId, toUserId, creatorName }: Props) {
+export function ChatPanel({ streamId, toUserId, creatorName, creatorId }: Props) {
   const { data: session } = useSession()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
@@ -122,6 +123,12 @@ export function ChatPanel({ streamId, toUserId, creatorName }: Props) {
     }
   }, [input, session, streamId])
 
+  async function deleteMessage(messageId: string) {
+    await fetch(`/api/streams/${streamId}/chat?messageId=${messageId}`, { method: 'DELETE' })
+      .catch(() => {})
+    setMessages(prev => prev.filter(m => m.id !== messageId))
+  }
+
   async function translate(msg: ChatMessage) {
     if (translations[msg.id]) { setTranslateId(msg.id); return }
     setTranslateId(msg.id)
@@ -155,7 +162,7 @@ export function ChatPanel({ streamId, toUserId, creatorName }: Props) {
         {messages.map(msg => (
           <div
             key={msg.id}
-            className={`group flex gap-2 rounded p-1.5 transition-colors hover:bg-surface ${msg.isPinned ? 'border border-gold/30 bg-gold/5' : ''}`}
+            className={`group relative flex gap-2 rounded p-1.5 transition-colors hover:bg-surface ${msg.isPinned ? 'border border-gold/30 bg-gold/5' : ''}`}
           >
             {msg.isAura ? (
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-purple/20 text-xs font-bebas text-purple">
@@ -189,6 +196,16 @@ export function ChatPanel({ streamId, toUserId, creatorName }: Props) {
                 </button>
               )}
             </div>
+            {/* Mod delete — visible on hover for creator/message author */}
+            {!msg.isAura && (session?.user?.id === creatorId || session?.user?.id === msg.author.id) && (
+              <button
+                onClick={() => deleteMessage(msg.id)}
+                className="absolute right-1.5 top-1.5 hidden rounded px-1 font-barlow text-[9px] text-muted transition-colors hover:bg-red-500/20 hover:text-red group-hover:block"
+                title="Delete message"
+              >
+                ✕
+              </button>
+            )}
           </div>
         ))}
         <div ref={bottomRef} />

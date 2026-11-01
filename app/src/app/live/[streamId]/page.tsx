@@ -103,6 +103,7 @@ export default async function LiveStreamPage({ params }: Props) {
           streamId={stream.id}
           toUserId={stream.creator.id}
           creatorName={stream.creator.displayName ?? stream.creator.username}
+          creatorId={stream.creator.id}
         />
       </div>
 
