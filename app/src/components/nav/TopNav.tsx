@@ -23,19 +23,31 @@ export function TopNav() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [walletCents, setWalletCents] = useState(0)
 
   useEffect(() => {
     if (!session) return
-    fetch('/api/notifications?unread=1&limit=1')
-      .then(r => r.json())
-      .then(d => { if (d.success) setUnreadCount(d.data.unreadCount ?? 0) })
-      .catch(() => {})
-    // Refresh every 60s while the tab is open
-    const id = setInterval(() => {
+
+    function refreshNotifications() {
       fetch('/api/notifications?unread=1&limit=1')
         .then(r => r.json())
         .then(d => { if (d.success) setUnreadCount(d.data.unreadCount ?? 0) })
         .catch(() => {})
+    }
+
+    function refreshWallet() {
+      fetch('/api/users/me')
+        .then(r => r.json())
+        .then(d => { if (d.success) setWalletCents(d.data.user?.walletCents ?? 0) })
+        .catch(() => {})
+    }
+
+    refreshNotifications()
+    refreshWallet()
+
+    const id = setInterval(() => {
+      refreshNotifications()
+      refreshWallet()
     }, 60_000)
     return () => clearInterval(id)
   }, [session])
@@ -79,7 +91,7 @@ export function TopNav() {
               className="hidden items-center gap-1 rounded border border-border bg-surface px-2.5 py-1 font-bebas text-label tracking-widest text-gold transition-colors hover:border-gold/30 sm:flex"
             >
               <span>$</span>
-              <span>{((session.user as { walletCents?: number }).walletCents ?? 0) / 100}</span>
+              <span>{(walletCents / 100).toFixed(2)}</span>
             </Link>
 
             {/* Go Live shortcut */}
