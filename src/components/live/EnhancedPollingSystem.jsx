@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, X, RotateCcw, Zap, Plus, Copy, Star, Calendar, Trophy, CheckCircle } from 'lucide-react';
+import { Clock, X, RotateCcw, Plus, Copy, Calendar, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 
 const COLORS = ['#d4af37', '#C0392B', '#C9A84C', '#D4AF37', '#6DBF7E'];
@@ -170,7 +170,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
     navigator.clipboard.writeText(text).then(() => toast.success('Results copied!')).catch(() => toast.error('Copy failed'));
   };
 
-  const useTemplate = (tpl) => {
+  const applyTemplate = (tpl) => {
     setForm({ ...DEFAULT_FORM, ...tpl });
     setShowCreate(true);
   };
@@ -305,7 +305,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
                   {QUICK_TEMPLATES.map(tpl => (
                     <button
                       key={tpl.name}
-                      onClick={() => useTemplate(tpl)}
+                      onClick={() => applyTemplate(tpl)}
                       className="p-2 text-left text-xs rounded-lg transition-all hover:opacity-80"
                       style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)' }}
                     >
