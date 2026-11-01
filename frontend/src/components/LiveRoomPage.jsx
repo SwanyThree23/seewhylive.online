@@ -576,6 +576,13 @@ export default function LiveRoomPage({
   var [chatSparkline,     setChatSparkline]     = useState([0,0,0,0,0,0,0,0,0,0]); // rolling 10×6s message counts
   var chatLenRef2          = useRef(0);          // last chat.length for sparkline delta tracking
 
+  var [starredMsgs,    setStarredMsgs]    = useState(function() { try { var s = localStorage.getItem('sw_starred'); return s ? JSON.parse(s) : []; } catch(e) { return []; } }); // array of msg ids
+  var [showStarred,    setShowStarred]    = useState(false);  // show only starred messages
+  var [chatScrolledUp, setChatScrolledUp] = useState(false);  // user scrolled up from bottom
+  var [chatUnread,     setChatUnread]     = useState(0);       // new messages while scrolled up
+  var [chatCmdHint,    setChatCmdHint]    = useState(false);   // slash-command hint dropdown visible
+  var chatScrollRef    = useRef(null);                          // scrollable chat messages container
+
   var [ccEnabled,  setCcEnabled]  = useState(false);
   var [ccLines,    setCcLines]    = useState([]);
   var ccRecogRef = useRef(null);
@@ -1413,12 +1420,13 @@ export default function LiveRoomPage({
     };
   }, [socket]);
 
-  // ── Scroll chat to bottom ──
+  // ── Scroll chat to bottom (skip when user has scrolled up) ──
   useEffect(function() {
-    if (chatEndRef.current && chatOpen) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chat, chatOpen]);
+    if (!chatOpen) return;
+    if (chatScrolledUp) { setChatUnread(function(v) { return v + 1; }); return; }
+    setChatUnread(0);
+    if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, [chat, chatOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Update medConf when mediaConfig prop changes ──
   useEffect(function() { setMedConf(mediaConfig || null); }, [mediaConfig]);
@@ -1659,6 +1667,11 @@ export default function LiveRoomPage({
   useEffect(function() {
     try { localStorage.setItem('sw_guest_notes', JSON.stringify(guestNotes)); } catch(e) {}
   }, [guestNotes]);
+
+  // ── Starred messages: persist to localStorage ────────────────────────────
+  useEffect(function() {
+    try { localStorage.setItem('sw_starred', JSON.stringify(starredMsgs)); } catch(e) {}
+  }, [starredMsgs]);
 
   // ── Chat sparkline: tally new messages into current bucket ───────────────
   useEffect(function() {
@@ -1997,6 +2010,38 @@ export default function LiveRoomPage({
     if (slowWaitSec > 0) return;
     var msg = chatInput.trim();
     if (!msg || !socket) return;
+    // Slash commands (host / cohost only)
+    if ((role === 'host' || role === 'cohost') && msg.charAt(0) === '/') {
+      setChatInput(''); setChatCmdHint(false);
+      var parts = msg.slice(1).split(' ');
+      var cmd = parts[0].toLowerCase();
+      var arg = parts.slice(1).join(' ').trim();
+      if (cmd === 'slow' || cmd === 'slowmode') {
+        var slashSec = parseInt(arg, 10); if (isNaN(slashSec)) slashSec = 0;
+        socket.emit('set-slow-mode', { roomId: roomId, seconds: slashSec });
+        if (addToastRef.current) addToastRef.current('Slow mode: ' + (slashSec > 0 ? slashSec + 's' : 'off'), 'info');
+      } else if (cmd === 'shout' || cmd === 'shoutout') {
+        socket.emit('shoutout', { roomId: roomId, username: arg.replace(/^@/, '') || '?', by: username || 'Host' });
+      } else if (cmd === 'confetti') {
+        socket.emit('confetti-burst', { roomId: roomId });
+      } else if (cmd === 'clip') {
+        socket.emit('clip-marker', { roomId: roomId, label: arg || 'Manual clip' });
+        if (addToastRef.current) addToastRef.current('Clip marked', 'success');
+      } else if (cmd === 'mute') {
+        var muteUn = arg.replace(/^@/, '').toLowerCase();
+        var muteG = onStage.find(function(g) { return (g.username || '').toLowerCase() === muteUn; });
+        if (muteG) socket.emit('mute-guest', { roomId: roomId, guestId: muteG.guestId || muteG.userId });
+        else if (addToastRef.current) addToastRef.current('Not on stage: ' + arg, 'warning');
+      } else if (cmd === 'ticker') {
+        socket.emit('ticker-start', { roomId: roomId, text: arg }); setTickerInput(arg);
+        if (addToastRef.current) addToastRef.current('Ticker started', 'info');
+      } else if (cmd === 'help') {
+        if (addToastRef.current) addToastRef.current('/slow [s]  /shout @user  /confetti  /clip [label]  /mute @user  /ticker [text]', 'info');
+      } else {
+        if (addToastRef.current) addToastRef.current('Unknown command /' + cmd + '  — try /help', 'warning');
+      }
+      return;
+    }
     socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg });
     setChatInput('');
   }
@@ -5197,6 +5242,13 @@ export default function LiveRoomPage({
                   🐌 {slowModeSec > 0 ? (slowModeSec + 's') : 'OFF'}
                 </button>
               )}
+              {starredMsgs.length > 0 && (
+                <button onClick={function() { setShowStarred(function(v) { return !v; }); }}
+                  title="Show starred messages"
+                  style={{ background: showStarred ? 'rgba(240,165,0,.2)' : 'rgba(255,255,255,.05)', border: '1px solid ' + (showStarred ? 'rgba(240,165,0,.5)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 7px', color: showStarred ? '#F0A500' : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>
+                  ⭐{starredMsgs.length}
+                </button>
+              )}
               <button onClick={function() { setShowChatSearch(function(v) { return !v; }); if (showChatSearch) setChatSearch(''); }}
                 title="Search chat"
                 style={{ background: showChatSearch ? 'rgba(201,168,76,.15)' : 'rgba(255,255,255,.05)', border: '1px solid ' + (showChatSearch ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '3px 7px', color: showChatSearch ? GOLD : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>
@@ -5307,11 +5359,36 @@ export default function LiveRoomPage({
             </div>
           )}
           {/* Messages */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+          <div ref={chatScrollRef}
+            onScroll={function() {
+              var el = chatScrollRef.current;
+              if (!el) return;
+              var fromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+              if (fromBottom > 120) { setChatScrolledUp(true); }
+              else { setChatScrolledUp(false); setChatUnread(0); }
+            }}
+            style={{ flex: 1, overflowY: 'auto', padding: '8px 14px', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', position: 'relative' }}>
+            {chatScrolledUp && chatUnread > 0 && (
+              <div style={{ position: 'sticky', top: 0, zIndex: 5, display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
+                <button
+                  onClick={function() {
+                    setChatScrolledUp(false); setChatUnread(0);
+                    if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  style={{ background: GOLD, border: 'none', borderRadius: 999, padding: '4px 14px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: BG, cursor: 'pointer', letterSpacing: 1, boxShadow: '0 2px 10px rgba(201,168,76,.45)' }}>
+                  ↓ {chatUnread} NEW
+                </button>
+              </div>
+            )}
             {(!chat || chat.length === 0) && (
               <div style={{ textAlign: 'center', padding: '28px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>No messages yet</div>
             )}
-            {chat && (chatSearch ? chat.filter(function(m) { var q = chatSearch.toLowerCase(); return (m.message || '').toLowerCase().indexOf(q) !== -1 || (m.username || '').toLowerCase().indexOf(q) !== -1; }) : chat).map(function(m, i) {
+            {chat && (function() {
+              var msgs = chat;
+              if (chatSearch) msgs = msgs.filter(function(m) { var q = chatSearch.toLowerCase(); return (m.message || '').toLowerCase().indexOf(q) !== -1 || (m.username || '').toLowerCase().indexOf(q) !== -1; });
+              if (showStarred && starredMsgs.length > 0) msgs = msgs.filter(function(m) { return m.id && starredMsgs.indexOf(m.id) >= 0; });
+              return msgs;
+            })().map(function(m, i) {
               if (m.type === 'super') {
                 var scColor = m.tierColor || '#C9A84C';
                 var scDollars = '$' + (Math.floor(m.amountCents || 0) / 100).toFixed(2);
@@ -5366,6 +5443,19 @@ export default function LiveRoomPage({
                     {m.ts && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>
                       {new Date(m.ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>}
+                    {m.id && (
+                      <button onClick={function() {
+                        var key = m.id;
+                        setStarredMsgs(function(prev) {
+                          var idx = prev.indexOf(key);
+                          if (idx >= 0) { var n = prev.slice(); n.splice(idx, 1); return n; }
+                          return prev.concat([key]);
+                        });
+                      }} title={starredMsgs.indexOf(m.id) >= 0 ? 'Unstar' : 'Star'}
+                      style={{ background: 'none', border: 'none', color: starredMsgs.indexOf(m.id) >= 0 ? '#F0A500' : 'transparent', fontSize: 10, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>
+                        ⭐
+                      </button>
+                    )}
                     {(role === 'host' || role === 'cohost') && (
                       <span style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
                         <button onClick={function() {
@@ -5434,7 +5524,7 @@ export default function LiveRoomPage({
               );
             })}
             <div ref={chatEndRef} />
-          </div>
+          </div>{/* end messages scroll container */}
           {/* GIF input bar */}
           {showGifInput && (
             <div style={{ padding: '6px 12px', display: 'flex', gap: 8, borderTop: '1px solid rgba(255,255,255,.06)', flexShrink: 0 }}>
@@ -5448,13 +5538,35 @@ export default function LiveRoomPage({
               <button onClick={sendGif} style={{ background: '#C9A84C', border: 'none', borderRadius: 999, padding: '7px 14px', fontWeight: 700, fontSize: 12, color: '#0E0C09', cursor: 'pointer' }}>GIF</button>
             </div>
           )}
+          {/* Slash-command hint (host/cohost only) */}
+          {chatCmdHint && (role === 'host' || role === 'cohost') && (
+            <div style={{ padding: '6px 12px', borderTop: '1px solid ' + DIM, background: 'rgba(201,168,76,.06)', flexShrink: 0 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: .5, marginBottom: 5 }}>⌨ COMMANDS</div>
+              {[
+                { cmd: '/slow 5', desc: 'Slow mode 5s' },
+                { cmd: '/shout @user', desc: 'Shoutout' },
+                { cmd: '/confetti', desc: 'Burst' },
+                { cmd: '/clip [label]', desc: 'Mark clip' },
+                { cmd: '/mute @user', desc: 'Mute on stage' },
+                { cmd: '/ticker [text]', desc: 'Start ticker' },
+              ].map(function(item) {
+                return (
+                  <button key={item.cmd} onClick={function() { setChatInput(item.cmd.split(' ')[0] + ' '); setChatCmdHint(false); }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginRight: 6, marginBottom: 4, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 6, padding: '3px 7px', cursor: 'pointer' }}>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD }}>{item.cmd.split(' ')[0]}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>{item.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {/* Input */}
           <div style={{ padding: '8px 12px', borderTop: '1px solid ' + BORDER, display: 'flex', gap: 8, flexShrink: 0 }}>
             <input
               value={chatInput}
-              onChange={function(e) { setChatInput(e.target.value); }}
-              onKeyDown={function(e) { if (e.key === 'Enter') sendChat(); }}
-              placeholder="Say something..."
+              onChange={function(e) { setChatInput(e.target.value); setChatCmdHint((role === 'host' || role === 'cohost') && e.target.value.charAt(0) === '/'); }}
+              onKeyDown={function(e) { if (e.key === 'Enter') sendChat(); if (e.key === 'Escape') { setChatCmdHint(false); } }}
+              placeholder={(role === 'host' || role === 'cohost') ? 'Say something or /command…' : 'Say something...'}
               style={{
                 flex: 1, background: CARD2, border: '1px solid ' + DIM, borderRadius: 999,
                 padding: '9px 16px', fontSize: 13, color: TEXT, outline: 'none',
