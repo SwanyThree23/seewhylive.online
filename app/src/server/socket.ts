@@ -31,7 +31,8 @@ async function extractUserId(socket: Socket): Promise<string | null> {
     const mockReq = {
       headers: { authorization: `Bearer ${authHeader}` },
       cookies: {},
-    } as unknown as IncomingMessage
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any
 
     const token = await getToken({
       req: mockReq,
@@ -110,7 +111,7 @@ io.on('connection', async (socket: Socket) => {
   // ── disconnect ────────────────────────────────────────────────────────────
   socket.on('disconnect', () => {
     // Clean up viewer counts for all streams this socket was in
-    for (const [streamId] of viewersByStream) {
+    for (const [streamId] of Array.from(viewersByStream)) {
       const s = viewersByStream.get(streamId)
       if (s?.has(socket.id)) {
         const count = removeViewer(streamId, socket.id)
