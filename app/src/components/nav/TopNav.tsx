@@ -11,6 +11,7 @@ import { Btn } from '@/components/ui/Btn'
 
 const NAV_LINKS = [
   { href: '/discover', label: 'DISCOVER' },
+  { href: '/search', label: 'SEARCH' },
   { href: '/studio', label: 'STUDIO' },
 ]
 
@@ -92,6 +93,7 @@ export function TopNav() {
                   </div>
                   {[
                     { href: `/profile`, label: 'My Profile' },
+                    { href: '/notifications', label: 'Notifications' },
                     { href: '/analytics', label: 'Analytics' },
                     { href: '/settings', label: 'Settings' },
                   ].map(item => (
