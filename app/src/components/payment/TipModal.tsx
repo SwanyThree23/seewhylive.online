@@ -79,7 +79,7 @@ export function TipModal({ open, onClose, toUserId, streamId, creatorName }: Tip
   const [error, setError] = useState('')
   const [checkoutData, setCheckoutData] = useState<CheckoutData | null>(null)
 
-  const amountCents = Math.round(amountDollars * 100)
+  const amountCents = Math.floor(amountDollars * 100)
 
   async function initTip() {
     if (amountCents < 100 || amountCents > 100000) {

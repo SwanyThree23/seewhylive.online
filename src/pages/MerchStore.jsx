@@ -34,8 +34,8 @@ function ProductSheet({ item, onClose, user }) {
   const [success, setSuccess] = useState(false);
   const queryClient         = useQueryClient();
 
-  const total       = (item.price_usd * qty).toFixed(2);
-  const creatorGets = (item.price_usd * qty * 0.9).toFixed(2);
+  const totalUsd    = Math.floor(item.price_usd * qty * 100) / 100;
+  const creatorGets = Math.floor(item.price_usd * qty * 90) / 100;
 
   const orderMutation = useMutation({
     mutationFn: () => base44.entities.MerchandiseOrder.create({
@@ -45,9 +45,9 @@ function ProductSheet({ item, onClose, user }) {
       item_id: item.id,
       item_name: item.name,
       size, quantity: qty,
-      total_usd: parseFloat(total),
-      creator_payout: parseFloat(creatorGets),
-      platform_cut: parseFloat((item.price_usd * qty * 0.1).toFixed(2)),
+      total_usd: totalUsd,
+      creator_payout: creatorGets,
+      platform_cut: Math.floor(item.price_usd * qty * 10) / 100,
       status: 'pending',
     }),
     onSuccess: () => { setSuccess(true); queryClient.invalidateQueries(['merch-items']); },
@@ -135,7 +135,7 @@ function ProductSheet({ item, onClose, user }) {
             <div className="p-3 rounded-xl flex items-center justify-between"
               style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}20` }}>
               <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
-                Creator keeps 90% · Total: <strong style={{ color: GOLD }}>${total}</strong>
+                Creator keeps 90% · Total: <strong style={{ color: GOLD }}>${totalUsd}</strong>
               </span>
             </div>
 
@@ -145,7 +145,7 @@ function ProductSheet({ item, onClose, user }) {
               disabled={orderMutation.isPending}
               className="w-full py-3.5 rounded-xl font-black uppercase text-sm"
               style={{ background: orderMutation.isPending ? 'rgba(128,0,32,0.4)' : `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: orderMutation.isPending ? 'rgba(255,255,255,0.3)' : '#07050A', cursor: orderMutation.isPending ? 'default' : 'pointer', ...T }}>
-              {orderMutation.isPending ? 'Placing Order…' : `Buy Now — $${total}`}
+              {orderMutation.isPending ? 'Placing Order…' : `Buy Now — $${totalUsd}`}
             </motion.button>
           </div>
         )}
