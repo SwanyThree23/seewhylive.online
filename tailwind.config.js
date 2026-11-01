@@ -13,10 +13,11 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Orbitron', 'monospace'],
-        body: ['Rajdhani', 'sans-serif'],
-        'mono-sw': ['Share Tech Mono', 'monospace'],
+        display: ['Syne', 'sans-serif'],
+        stat: ['Bebas Neue', 'sans-serif'],
         heading: ['Barlow Condensed', 'sans-serif'],
+        body: ['Barlow Condensed', 'sans-serif'],
+        'mono-sw': ['DM Mono', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -52,6 +53,23 @@ module.exports = {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        sw: {
+          bg: 'var(--ab)',
+          surface: 'var(--bu)',
+          card: 'var(--cd)',
+          cardhi: 'var(--ch)',
+          line: 'var(--bd)',
+          text: 'var(--tx)',
+          muted: 'var(--mu)',
+          dim: 'var(--di)',
+          accent: 'var(--ac)',
+          gold: 'var(--go)',
+          cyan: 'var(--cy)',
+          green: 'var(--em)',
+          purple: 'var(--pu)',
+          red: 'var(--bl)',
+          warn: 'var(--or)',
+        },
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',

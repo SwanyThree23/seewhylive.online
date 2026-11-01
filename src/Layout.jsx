@@ -20,6 +20,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { usePresenceHeartbeat } from '@/components/shared/PresenceDot';
 import { useBackground } from '@/lib/BackgroundManager';
 import BrandChyron from '@/components/live/BrandChyron';
+import SignalBars from '@/components/live/SignalBars';
 
 // Secondary overlay components — lazy-loaded so they don't bloat the initial bundle
 const GlobalSearch    = lazy(() => import('@/components/shared/GlobalSearch'));
@@ -282,12 +283,12 @@ export default function Layout({ children, currentPageName }) {
       {/* Brand accent line — sits below status bar on notch devices */}
       <div className="fixed top-0 left-0 right-0 z-[101] pt-safe"
         style={{ background: 'rgba(8,11,24,0.97)' }}>
-        <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #d4af37, #CC7755, #6B7C4A, #d4af37)' }} />
+        <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, var(--ac), var(--go), var(--cy), var(--em), var(--pu), transparent)' }} />
       </div>
 
       {/* ── HEADER ── */}
       <header className="sticky z-50 w-full"
-        style={{ top: 0, paddingTop: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
+        style={{ top: 0, paddingTop: 'calc(2px + env(safe-area-inset-top, 0px))', background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid var(--bd)' }}>
 
         <div className="flex h-14 items-center justify-between px-2 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
@@ -305,15 +306,16 @@ export default function Layout({ children, currentPageName }) {
               </div>
               {liveCount > 0 && (
                 <div className="hidden sm:flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full"
-                  style={{ background: 'rgba(139,26,47,0.33)', border: '1px solid #8B1A2F' }}>
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#E74C3C' }} />
-                  <span className="text-[10px] font-bold" style={{ color: '#E74C3C', fontFamily: 'Space Mono, monospace' }}>LIVE</span>
+                  style={{ background: 'rgba(255,21,100,0.16)', border: '1px solid rgba(255,21,100,0.45)' }}>
+                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--ac)' }} />
+                  <span className="text-[10px] font-bold" style={{ color: 'var(--ac)', fontFamily: 'DM Mono, monospace' }}>LIVE</span>
                 </div>
               )}
               <div className="px-1.5 py-0.5 rounded-full hidden sm:flex items-center"
-                style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)' }}>
-                <span className="text-[10px] font-bold" style={{ color: '#d4af37', fontFamily: 'Space Mono, monospace' }}>90/10</span>
+                style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.3)' }}>
+                <span className="text-[10px] font-bold" style={{ color: 'var(--go)', fontFamily: 'DM Mono, monospace' }}>90/10</span>
               </div>
+              <SignalBars count={5} active={liveCount > 0} size="xs" className="ml-0.5" />
             </Link>
           ) : (
             <button onClick={function() { goBack(); }}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,58 +11,70 @@
        the visitor's OS preference is. */
     color-scheme: dark;
     /* SeeWhy LIVE v16 Broadcast Maximalism Design Tokens */
-    --ab: #0B0B18;          /* abyss - deepest bg */
-    --bu: #0D1022;          /* bunker - card bg */
-    --go: #d4af37;          /* gold - primary accent */
-    --bl: #C0392B;          /* blood - live/alert red */
-    --cy: #4A8A7A;          /* cyan - data/info */
-    --em: #6DBF7E;          /* emerald - success/live */
-    --pu: #7B5DA6;          /* purple - AI/AURA */
-    --or: #D4854A;          /* orange - warning/fire */
-    --bg-card: rgba(11,11,24,0.95);
-    --bg-panel: rgba(8,11,24,0.98);
-    --border-gold: rgba(212,175,55,0.2);
-    --border-subtle: rgba(255,255,255,0.06);
+    /* ── SeeWhy LIVE brand scale (surface depth order: bg → surface → card → cardHi) ── */
+    --ab: #03030A;   /* bg — deepest page background */
+    --bu: #07070F;   /* surface — modals, raised panels */
+    --cd: #0B0B18;   /* card */
+    --ch: #10101E;   /* cardHi — elevated card / hover / focus */
+    --bd: #16162A;   /* border */
+    --tx: #F0F0FF;   /* text */
+    --mu: #5A5A7A;   /* muted */
+    --di: #2A2A48;   /* dim — disabled, placeholder */
+    --ac: #FF1564;   /* accent — CTAs, live indicators, active states */
+    --go: #FFB800;   /* gold — earnings, premium, Golden Wall */
+    --cy: #00F5FF;   /* cyan — secondary actions, informational */
+    --em: #00FF88;   /* green — live status, speaking highlight */
+    --pu: #8B5CF6;   /* purple — AURA AI only */
+    --bl: #FF2040;   /* red — danger, recording */
+    --or: #FF8C00;   /* warn */
+    --gr: rgba(255,255,255,0.024); /* grid overlay */
+
+    --bg-card: var(--cd);
+    --bg-card-hi: var(--ch);
+    --bg-panel: var(--bu);
+    --border-gold: rgba(255,184,0,0.2);
+    --border-subtle: var(--bd);
 
     /* Shadcn compat */
-    --background: 0 0% 4%;
-    --foreground: 0 0% 96%;
-    --card: 240 20% 8%;
-    --card-foreground: 0 0% 96%;
-    --popover: 240 20% 6%;
-    --popover-foreground: 0 0% 96%;
-    --primary: 43 65% 53%;
-    --primary-foreground: 0 0% 5%;
-    --secondary: 240 10% 14%;
-    --secondary-foreground: 0 0% 80%;
-    --muted: 240 10% 12%;
-    --muted-foreground: 0 0% 50%;
-    --accent: 340 90% 52%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 10% 14%;
-    --input: 240 10% 12%;
-    --ring: 43 65% 53%;
-    --chart-1: 340 90% 52%;
+    --background: 240 54% 3%;
+    --foreground: 240 100% 97%;
+    --card: 240 37% 7%;
+    --card-foreground: 240 100% 97%;
+    --popover: 240 36% 4%;
+    --popover-foreground: 240 100% 97%;
+    --primary: 340 100% 54%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 30% 9%;
+    --secondary-foreground: 240 100% 97%;
+    --muted: 240 30% 9%;
+    --muted-foreground: 240 11% 42%;
+    --accent: 240 30% 9%;
+    --accent-foreground: 240 100% 97%;
+    --destructive: 351 100% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 5% 13%;
+    --input: 240 30% 9%;
+    --ring: 340 100% 54%;
+    --chart-1: 340 100% 54%;
     --chart-2: 180 100% 50%;
-    --chart-3: 43 65% 53%;
-    --chart-4: 260 80% 60%;
-    --chart-5: 120 100% 55%;
+    --chart-3: 43 100% 50%;
+    --chart-4: 258 90% 66%;
+    --chart-5: 152 100% 50%;
     --radius: 0.5rem;
-    --sidebar-background: 240 20% 6%;
-    --sidebar-foreground: 0 0% 80%;
-    --sidebar-primary: 43 65% 53%;
-    --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 240 10% 12%;
-    --sidebar-accent-foreground: 0 0% 80%;
-    --sidebar-border: 240 10% 14%;
-    --sidebar-ring: 43 65% 53%;
+    --sidebar-background: 240 36% 4%;
+    --sidebar-foreground: 240 11% 42%;
+    --sidebar-primary: 340 100% 54%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 30% 9%;
+    --sidebar-accent-foreground: 240 100% 97%;
+    --sidebar-border: 240 5% 13%;
+    --sidebar-ring: 340 100% 54%;
 
     /* Fonts */
-    --font-display: 'Orbitron', monospace;
-    --font-body: 'Rajdhani', sans-serif;
-    --font-mono: 'Share Tech Mono', monospace;
+    --font-display: 'Syne', sans-serif;
+    --font-stat: 'Bebas Neue', sans-serif;
+    --font-body: 'Barlow Condensed', sans-serif;
+    --font-mono: 'DM Mono', monospace;
     --font-heading: 'Barlow Condensed', sans-serif;
   }
 }
@@ -77,8 +89,8 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
-    background-color: #0B0B18;
-    color: rgba(255,255,255,0.85);
+    background-color: var(--ab);
+    color: var(--tx);
     overscroll-behavior: none;
     touch-action: pan-y;
     scrollbar-width: none;
@@ -127,33 +139,36 @@
   .font-mono-sw { font-family: var(--font-mono); }
   .font-heading { font-family: var(--font-heading); }
 
-  .text-gold { color: #D4AF37; }
-  .text-blood { color: #C0392B; }
-  .text-cyan-sw { color: #4A8A7A; }
-  .text-emerald-sw { color: #6DBF7E; }
-  .text-purple-sw { color: #7B5DA6; }
+  .text-gold { color: var(--go); }
+  .text-blood { color: var(--bl); }
+  .text-cyan-sw { color: var(--cy); }
+  .text-emerald-sw { color: var(--em); }
+  .text-purple-sw { color: var(--pu); }
+  .text-accent-sw { color: var(--ac); }
+  .text-dim { color: var(--di); }
 
-  .bg-abyss { background-color: #0B0B18; }
-  .bg-bunker { background-color: #07070F; }
-  .bg-gold { background-color: #D4AF37; }
-  .bg-blood { background-color: #C0392B; }
+  .bg-abyss { background-color: var(--ab); }
+  .bg-bunker { background-color: var(--bu); }
+  .bg-gold { background-color: var(--go); }
+  .bg-blood { background-color: var(--bl); }
+  .bg-accent-sw { background-color: var(--ac); }
 
-  .border-gold { border-color: rgba(212,175,55,0.2); }
-  .border-blood { border-color: rgba(192,57,43,0.3); }
+  .border-gold { border-color: rgba(255,184,0,0.2); }
+  .border-blood { border-color: rgba(255,32,64,0.3); }
 
-  .glow-gold { box-shadow: 0 0 20px rgba(212,175,55,0.25); }
-  .glow-blood { box-shadow: 0 0 20px rgba(192,57,43,0.3); }
-  .glow-cyan { box-shadow: 0 0 20px rgba(74,138,122,0.2); }
+  .glow-gold { box-shadow: 0 0 20px rgba(255,184,0,0.25); }
+  .glow-blood { box-shadow: 0 0 20px rgba(255,32,64,0.3); }
+  .glow-cyan { box-shadow: 0 0 20px rgba(0,245,255,0.2); }
 
   .gradient-brand {
-    background: linear-gradient(135deg, #C0392B 0%, #D4AF37 35%, #4A8A7A 65%, #7B5DA6 100%);
+    background: linear-gradient(90deg, var(--ac), var(--go), var(--cy), var(--em), var(--pu), transparent);
   }
   .gradient-gold {
-    background: linear-gradient(90deg, #d4af37, #f5e6a3, #d4af37);
+    background: linear-gradient(90deg, var(--go), #FFE39B, var(--go));
   }
   .panel-bg {
-    background: rgba(8,11,24,0.95);
-    border: 1px solid rgba(212,175,55,0.12);
+    background: var(--bu);
+    border: 1px solid var(--bd);
   }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; overscroll-behavior: contain; }
@@ -269,6 +284,68 @@
   input, textarea, select {
     font-size: 16px !important;
   }
+}
+
+/* ============================================================
+   SEEWHY LIVE BRAND SYSTEM
+   ============================================================ */
+
+/* Broadcast corner brackets — reusable card decoration.
+   Two pseudo-elements draw the top-left and bottom-right corners so a
+   primary content card only needs one wrapper element. */
+.sw-bracket {
+  position: relative;
+  border: 1px solid var(--bd);
+  border-radius: 14px;
+}
+.sw-bracket::before,
+.sw-bracket::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  border-style: solid;
+  border-color: var(--sw-bracket-color, rgba(255,184,0,0.55));
+}
+.sw-bracket::before {
+  top: var(--sw-bracket-inset, 0px);
+  left: var(--sw-bracket-inset, 0px);
+  border-width: 1px 0 0 1px;
+  border-top-left-radius: 14px;
+}
+.sw-bracket::after {
+  bottom: var(--sw-bracket-inset, 0px);
+  right: var(--sw-bracket-inset, 0px);
+  border-width: 0 1px 1px 0;
+  border-bottom-right-radius: 14px;
+}
+
+/* Subtle grid overlay for hero sections and stat cards */
+.sw-grid-overlay { position: relative; }
+.sw-grid-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background-image:
+    linear-gradient(to right, var(--gr) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--gr) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Golden Wall scale-in on tip / gift arrival */
+@keyframes swGoldWallIn {
+  from { opacity: 0; transform: scale(0.72); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.sw-gold-wall-in { animation: swGoldWallIn 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+/* Broadcast signal pulse */
+@keyframes swSignalPulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
 }
 
 /* ============================================================

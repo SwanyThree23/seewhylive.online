@@ -46,20 +46,20 @@ export default function BrandChyron() {
       id="sw-chyron"
       className="fixed left-0 right-0 z-[100] h-[34px] flex items-center overflow-hidden bottom-[calc(60px+env(safe-area-inset-bottom,0px))] md:bottom-0"
       style={{
-        background: 'linear-gradient(90deg, #080B18 0%, #0D1022 50%, #080B18 100%)',
-        borderTop: '1px solid rgba(192,57,43,0.25)',
+        background: 'var(--bu)',
+        borderTop: '1px solid var(--bd)',
       }}
     >
-      {/* Top accent line */}
+      {/* Top accent line — brand signature gradient */}
       <div
         className="absolute top-0 left-0 right-0 h-[1px]"
-        style={{ background: 'linear-gradient(90deg, #C0392B, #D4AF37, #C9A84C, #6DBF7E, #D4AF37, transparent)' }}
+        style={{ background: 'linear-gradient(90deg, var(--ac), var(--go), var(--cy), var(--em), var(--pu), transparent)' }}
       />
 
       {/* Left: brand + signal */}
       <div className="shrink-0 flex items-center gap-2 px-3 border-r border-white/5">
         <SignalBars count={5} active={liveCount > 0} size="xs" />
-        <span className="text-[11px] font-bold text-[#C0392B] uppercase tracking-wider whitespace-nowrap">SeeWhy LIVE</span>
+        <span className="text-[11px] font-bold uppercase tracking-wider whitespace-nowrap" style={{ color: 'var(--tx)', fontFamily: 'DM Mono, monospace' }}>SeeWhy LIVE</span>
       </div>
 
       {/* Center: scrolling ticker */}
@@ -83,8 +83,8 @@ export default function BrandChyron() {
         )}
         {liveCount > 0 && (
           <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse" />
-            <span className="text-[11px] text-[#C0392B] font-bold font-mono">{liveCount} LIVE</span>
+            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--ac)' }} />
+            <span className="text-[11px] font-bold" style={{ color: 'var(--ac)', fontFamily: 'DM Mono, monospace' }}>{liveCount} LIVE</span>
           </div>
         )}
         <span className="text-[11px] text-white/30 font-mono">
