@@ -79,8 +79,8 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
         platform_cut: amount - Math.floor(amount * 90) / 100,
         transaction_type: 'direct_support',
         status: 'completed',
-        creator_amount: Math.floor(amount * 0.9),
-        platform_fee: amount - Math.floor(amount * 0.9),
+        creator_amount: Math.floor(amount * 90) / 100,
+        platform_fee: amount - Math.floor(amount * 90) / 100,
       });
 
       if (data.type === 'gift' && data.giftType) {
