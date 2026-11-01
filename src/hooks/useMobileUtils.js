@@ -26,6 +26,23 @@ export function injectFocusRing() {
     '* { -webkit-tap-highlight-color: transparent; }',
     'body { color-scheme: dark; overscroll-behavior-y: contain; }',
     'button, [role="button"] { cursor: pointer; }',
+    /* WebView polish: no accidental selection highlights on app chrome */
+    'body, #root, header, footer, nav, main,',
+    '[role="tablist"], [role="tab"], [role="navigation"], [role="menubar"],',
+    'button, a, label, .app-shell, .app-header, .app-tab, .tap-44 {',
+    '  -webkit-user-select: none;',
+    '  user-select: none;',
+    '  -webkit-text-stroke-color: transparent;',
+    '}',
+    /* …but message bubbles and real content text stay selectable + copyable */
+    'p, li, article, blockquote, span.select-text, .select-text,',
+    '.chat-bubble, .chat-message, .message-body, .message-content,',
+    '.clip-title, .stream-title, .bio-text,',
+    'input, textarea, [contenteditable="true"], [contenteditable=""] {',
+    '  -webkit-user-select: text !important;',
+    '  user-select: text !important;',
+    '  -webkit-text-stroke-color: currentColor;',
+    '}',
   ].join('\n');
   document.head.appendChild(style);
 }

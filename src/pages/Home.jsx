@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { base44 } from '@/api/base44Client';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
-import ActivitySidebar from '../components/shared/ActivitySidebar';
-import QuickActionPanel from '../components/shared/QuickActionPanel';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+
+// ── Secondary panels are code-split into their own chunks ──────────────────
+// They ride along only when needed, so the Home screen paints fast on mobile
+// WebViews instead of waiting on the whole studio/monetization bundle.
+const ActivitySidebar              = lazy(() => import('../components/shared/ActivitySidebar'));
+const QuickActionPanel             = lazy(() => import('../components/shared/QuickActionPanel'));
+const SwanAIRecommendations        = lazy(() => import('../components/live/SwanAIRecommendations'));
 import GridLines from '../components/home/GridLines';
 import NebulaBg from '../components/home/NebulaBg';
 import StarField from '../components/home/StarField';
@@ -17,20 +21,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FeaturedContentSection from '../components/home/FeaturedContent';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
+const MilestoneAlerts              = lazy(() => import('../components/creator/MilestoneAlerts'));
+const AlertConfig                  = lazy(() => import('../components/live/AlertConfig'));
+const ShopDashboard                = lazy(() => import('../components/merch/ShopDashboard'));
+const BackgroundCustomizer         = lazy(() => import('../components/settings/BackgroundCustomizer'));
+const StreamGoals                  = lazy(() => import('../components/live/StreamGoals'));
+const StreamerMonetizationCenter   = lazy(() => import('../components/monetization/StreamerMonetizationCenter'));
+const RewardShop                   = lazy(() => import('../components/loyalty/RewardShop'));
+const HostAlertCenter              = lazy(() => import('../components/live/HostAlertCenter'));
+const ViewerCount                  = lazy(() => import('../components/live/ViewerCount'));
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import CreatorBridge from '../components/social/CreatorBridge';
-import OnboardingFlow from '../components/onboarding/OnboardingFlow';
-import OnlinePresence from '../components/shared/OnlinePresence';
+const CollaborationMatcher         = lazy(() => import('../components/social/CollaborationMatcher'));
+const CreatorBridge                = lazy(() => import('../components/social/CreatorBridge'));
+const OnboardingFlow               = lazy(() => import('../components/onboarding/OnboardingFlow'));
+const OnlinePresence               = lazy(() => import('../components/shared/OnlinePresence'));
 import PullToRefresh from '../components/shared/PullToRefresh';
 
 // ── OCT clip-path constant ─────────────────────────────────────────────────
@@ -783,8 +787,10 @@ export default function Home() {
       <GridLines />
       <ZEGOMobileAppBanner />
       <NotificationBell />
-      <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
-      <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
+      <Suspense fallback={null}>
+        <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
+        <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
+      </Suspense>
       {/* ── NEW USER ONBOARDING BANNER ── */}
       {showOnboardingBanner && (
         <motion.div
@@ -1006,34 +1012,45 @@ export default function Home() {
               </Link>
               {/* AI recommendations when no live rooms */}
               <div className="mt-4 w-full">
-                <SwanAIRecommendations roomId={liveRooms[0]?.id || null} currentLayout="grid" viewerCount={0} />
+                <Suspense fallback={null}>
+                  <SwanAIRecommendations roomId={liveRooms[0]?.id || null} currentLayout="grid" viewerCount={0} />
+                </Suspense>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
       )}
-      <SwanAIRecommendations roomId={null} currentLayout="home" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <Suspense fallback={null}>
+        <SwanAIRecommendations roomId={null} currentLayout="home" viewerCount={0} />
+        <MilestoneAlerts userId={user?.id} roomId={null} />
+        {user?.id && <AlertConfig creatorId={user.id} />}
+        {user?.id && <ShopDashboard creatorId={user.id} />}
+      </Suspense>
       <GridLines />
       <NebulaBg />
       <StarField count={80} />
-      <QuickActionPanel isOpen={showQuickAction} onClose={() => setShowQuickAction(false)} />
-      <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      <Suspense fallback={null}>
+        <QuickActionPanel isOpen={showQuickAction} onClose={() => setShowQuickAction(false)} />
+        <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      </Suspense>
       <SwanyBotWidget />
-      <CollaborationMatcher />
+      {/* ContentRec stays eager — it sits above the fold and must not pop in late */}
       <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
+      <Suspense fallback={null}>
+        <CollaborationMatcher />
+        <CreatorBridge user={user || null} />
+        <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+        <StreamerMonetizationCenter />
+      </Suspense>
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
-      <OnlinePresence userId={user?.id || null} />
+      <Suspense fallback={null}>
+        <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+        <HostAlertCenter />
+        <ViewerCount count={0} peakViewers={0} />
+        <BackgroundCustomizer />
+        <OnlinePresence userId={user?.id || null} />
+      </Suspense>
       </PullToRefresh>
     </div>
   );

@@ -92,6 +92,23 @@ export default function CommunityPage() {
 
   const joinMut = useMutation({
     mutationFn: () => base44.entities.CommunityMember.create({ community_id: community.id, user_id: user.id, role: 'member', joined_date: new Date().toISOString() }),
+    // Optimistic: flip to "member" and bump the count before the server confirms
+    onMutate: async () => {
+      const membershipKey = ['my-membership', community?.id, user?.id];
+      const countKey = ['community-member-count-page', community?.id];
+      await qc.cancelQueries({ queryKey: membershipKey });
+      await qc.cancelQueries({ queryKey: countKey });
+      const prevMembership = qc.getQueryData(membershipKey);
+      const prevCount = qc.getQueryData(countKey);
+      qc.setQueryData(membershipKey, { id: '__optimistic__', community_id: community?.id, user_id: user?.id, role: 'member' });
+      qc.setQueryData(countKey, (n) => (typeof n === 'number' ? n + 1 : 1));
+      return { prevMembership, prevCount, membershipKey, countKey };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prevMembership !== undefined) qc.setQueryData(ctx.membershipKey, ctx.prevMembership);
+      if (ctx?.prevCount !== undefined) qc.setQueryData(ctx.countKey, ctx.prevCount);
+      toast.error('Action failed.');
+    },
     onSuccess: () => {
       toast.success(`Joined ${community.name}!`);
       qc.invalidateQueries({ queryKey: ['my-membership'] });
@@ -103,7 +120,6 @@ export default function CommunityPage() {
         description: community.description || '',
       }).catch(() => {});
     },
-    onError: () => toast.error('Action failed.'),
   });
 
   const leaveMut = useMutation({
