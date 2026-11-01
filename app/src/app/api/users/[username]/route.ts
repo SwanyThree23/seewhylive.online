@@ -32,7 +32,7 @@ export async function GET(
       streams: {
         where: { status: 'LIVE' },
         take: 1,
-        select: { id: true, title: true, genre: true, thumbnailUrl: true, viewerCount: true },
+        select: { id: true, title: true, genre: true, thumbnailUrl: true, viewerCount: true, isPaywalled: true },
       },
     },
   })
