@@ -65,6 +65,14 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user }) {
+      if (!user?.id) return true
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { deletedAt: true },
+      })
+      return !dbUser?.deletedAt
+    },
     async jwt({ token, user }) {
       if (user) {
         // Fresh sign-in — embed role/tier into the token
