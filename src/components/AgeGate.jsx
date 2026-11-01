@@ -4,9 +4,9 @@ import { Radio, ShieldCheck, X } from 'lucide-react';
 import { calcAge, setStoredDob } from '@/lib/ageVerification';
 import NativeSelect from '@/components/shared/NativeSelect';
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const BG      = '#080B18';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
+const BG      = '#03030A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -69,7 +69,7 @@ export default function AgeGate({ minAge = 18, feature = 'access this feature', 
         <span style={{ fontSize: 26, fontWeight: 900, color: GOLD, letterSpacing: '0.04em', ...T }}>SeeWhy LIVE</span>
       </div>
 
-      <div style={{ width: '100%', maxWidth: 380, borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.2)', padding: '28px 26px' }}>
+      <div style={{ width: '100%', maxWidth: 380, borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,184,0,0.2)', padding: '28px 26px' }}>
 
         {status === 'denied_under18' && (
           <div style={{ textAlign: 'center' }}>
@@ -100,7 +100,7 @@ export default function AgeGate({ minAge = 18, feature = 'access this feature', 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {onSkip && (
                 <button onClick={onSkip}
-                  style={{ ...T, width: '100%', height: 46, borderRadius: 10, background: `rgba(212,175,55,0.1)`, border: `1px solid rgba(212,175,55,0.3)`, color: GOLD, fontSize: 13, fontWeight: 900, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  style={{ ...T, width: '100%', height: 46, borderRadius: 10, background: `rgba(255,184,0,0.1)`, border: `1px solid rgba(255,184,0,0.3)`, color: GOLD, fontSize: 13, fontWeight: 900, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   Join as Audience Member
                 </button>
               )}
@@ -111,7 +111,7 @@ export default function AgeGate({ minAge = 18, feature = 'access this feature', 
         {(status === 'idle' || status === 'pass') && (
           <>
             {/* Shield icon */}
-            <div style={{ width: 56, height: 56, borderRadius: '50%', background: `rgba(212,175,55,0.1)`, border: `1px solid rgba(212,175,55,0.25)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: `rgba(255,184,0,0.1)`, border: `1px solid rgba(255,184,0,0.25)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
               <ShieldCheck style={{ width: 24, height: 24, color: GOLD }} />
             </div>
 
@@ -151,7 +151,7 @@ export default function AgeGate({ minAge = 18, feature = 'access this feature', 
             </div>
 
             <button onClick={handleConfirm} disabled={!ready}
-              style={{ ...T, width: '100%', height: 46, borderRadius: 10, background: ready ? `linear-gradient(135deg,${CRIMSON},#A0003A)` : 'rgba(255,255,255,0.06)', border: `1px solid ${ready ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.08)'}`, color: ready ? GOLD : 'rgba(255,255,255,0.25)', fontSize: 14, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', cursor: ready ? 'pointer' : 'not-allowed' }}>
+              style={{ ...T, width: '100%', height: 46, borderRadius: 10, background: ready ? `linear-gradient(135deg,${CRIMSON},#A0003A)` : 'rgba(255,255,255,0.06)', border: `1px solid ${ready ? 'rgba(255,184,0,0.35)' : 'rgba(255,255,255,0.08)'}`, color: ready ? GOLD : 'rgba(255,255,255,0.25)', fontSize: 14, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', cursor: ready ? 'pointer' : 'not-allowed' }}>
               Confirm My Age
             </button>
 

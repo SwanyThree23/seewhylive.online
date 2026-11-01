@@ -3,12 +3,12 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Megaphone } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 const STATUS_COLOR = {
   draft: 'rgba(255,255,255,0.45)',
-  active: '#6DBF7E',
-  fired: '#CC7755',
+  active: '#00FF88',
+  fired: '#FF8C00',
 };
 
 export default function SavedAdTemplates({ user }) {
@@ -21,7 +21,7 @@ export default function SavedAdTemplates({ user }) {
   return (
     <section
       className="rounded-2xl p-4"
-      style={{ background: 'rgba(13,16,34,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}
+      style={{ background: 'rgba(13,16,34,0.95)', border: '1px solid rgba(255,184,0,0.15)' }}
     >
       <div className="flex items-center gap-2 mb-3">
         <Megaphone className="w-4 h-4" style={{ color: G }} />
@@ -47,7 +47,7 @@ export default function SavedAdTemplates({ user }) {
               <img src={tpl.product_image} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
             ) : (
               <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center"
-                style={{ background: 'rgba(212,175,55,0.12)' }}>
+                style={{ background: 'rgba(255,184,0,0.12)' }}>
                 <Megaphone className="w-4 h-4" style={{ color: G }} />
               </div>
             )}

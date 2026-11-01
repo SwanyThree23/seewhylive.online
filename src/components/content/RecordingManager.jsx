@@ -265,12 +265,12 @@ export default function RecordingManager({ userId }) {
                 </div>
 
                 {recording.ai_summary && (
-                  <div className="bg-[#D4854A]/10 p-2 rounded text-xs">
+                  <div className="bg-[#FF8C00]/10 p-2 rounded text-xs">
                     <div className="flex items-center gap-1 mb-1">
-                      <Sparkles className="w-3 h-3 text-[#D4854A]" />
-                      <span className="font-semibold text-[#D4854A]">AI Summary</span>
+                      <Sparkles className="w-3 h-3 text-[#FF8C00]" />
+                      <span className="font-semibold text-[#FF8C00]">AI Summary</span>
                     </div>
-                    <p className="text-[#D4854A] line-clamp-2">{recording.ai_summary}</p>
+                    <p className="text-[#FF8C00] line-clamp-2">{recording.ai_summary}</p>
                   </div>
                 )}
 
@@ -410,7 +410,7 @@ export default function RecordingManager({ userId }) {
                 </p>
               )}
             </div>
-            <div className="bg-[#D4AF37]/5 p-3 rounded-lg">
+            <div className="bg-[#FFB800]/5 p-3 rounded-lg">
               <div className="flex items-start gap-2">
                 <Sparkles className="w-4 h-4 text-[#5B7FA6] mt-0.5" />
                 <div className="text-sm" style={{ color: '#5B7FA6' }}>

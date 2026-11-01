@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Check } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 export default function ChallengeProgress({ user }) {
   const { data: entries = [], isLoading } = useQuery({
@@ -23,7 +23,7 @@ export default function ChallengeProgress({ user }) {
   return (
     <section
       className="rounded-2xl p-4"
-      style={{ background: 'rgba(13,16,34,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}
+      style={{ background: 'rgba(13,16,34,0.95)', border: '1px solid rgba(255,184,0,0.15)' }}
     >
       <div className="flex items-center gap-2 mb-3">
         <Trophy className="w-4 h-4" style={{ color: G }} />
@@ -54,7 +54,7 @@ export default function ChallengeProgress({ user }) {
                   {challenge?.title || 'Challenge'}
                 </p>
                 {entry.completed ? (
-                  <span className="flex items-center gap-1 text-xs font-bold shrink-0" style={{ color: '#6DBF7E' }}>
+                  <span className="flex items-center gap-1 text-xs font-bold shrink-0" style={{ color: '#00FF88' }}>
                     <Check className="w-3 h-3" /> Done
                   </span>
                 ) : (
@@ -64,7 +64,7 @@ export default function ChallengeProgress({ user }) {
 
               <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
                 <div className="h-full rounded-full"
-                  style={{ width: `${entry.completed ? 100 : pct}%`, background: entry.completed ? '#6DBF7E' : G }} />
+                  style={{ width: `${entry.completed ? 100 : pct}%`, background: entry.completed ? '#00FF88' : G }} />
               </div>
 
               <div className="flex items-center gap-3 mt-2 text-xs text-white/40">

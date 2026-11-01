@@ -4,9 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { DollarSign, TrendingUp } from 'lucide-react';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 export default function EarningsBreakdown({ creatorId }) {
   const { data: transactions } = useQuery({
@@ -30,8 +30,8 @@ export default function EarningsBreakdown({ creatorId }) {
 
   const categories = [
     { label: 'Tips', value: breakdown.tips, icon: '💎', color: G },
-    { label: 'Subscriptions', value: breakdown.subscriptions, icon: '👑', color: '#C9A84C' },
-    { label: 'PPV Events', value: breakdown.ppv, icon: '🎫', color: '#6DBF7E' },
+    { label: 'Subscriptions', value: breakdown.subscriptions, icon: '👑', color: '#FFB800' },
+    { label: 'PPV Events', value: breakdown.ppv, icon: '🎫', color: '#00FF88' },
   ];
 
   return (

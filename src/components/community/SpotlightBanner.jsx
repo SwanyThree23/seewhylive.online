@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
-const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
-const TYPE_COLORS = { member:C.gold, content:'#C9A84C', achievement:C.volt, stream:'#C0392B' };
+const C = { burg:'#FF1564', gold:'#FFB800', volt:'#FFB800', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
+const TYPE_COLORS = { member:C.gold, content:'#FFB800', achievement:C.volt, stream:'#FF2040' };
 
 function AddSpotlightModal({ communityId, onClose }) {
   const qc = useQueryClient();
@@ -25,7 +25,7 @@ function AddSpotlightModal({ communityId, onClose }) {
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.8)', zIndex:300, display:'flex', alignItems:'center', justifyContent:'center', padding:16 }} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
       <motion.div initial={{opacity:0,scale:0.95}} animate={{opacity:1,scale:1}}
-        style={{ background:'#111', borderRadius:12, border:`1px solid rgba(212,175,55,0.2)`, width:'100%', maxWidth:400, padding:20 }}>
+        style={{ background:'#111', borderRadius:12, border:`1px solid rgba(255,184,0,0.2)`, width:'100%', maxWidth:400, padding:20 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
           <span style={{ fontFamily:'Barlow Condensed', fontSize:16, color:C.gold }}>✨ ADD SPOTLIGHT</span>
           <button onClick={onClose} style={{ background:'transparent', border:'none', color:C.gray, cursor:'pointer', fontSize:18 }}>✕</button>
@@ -74,7 +74,7 @@ export default function SpotlightBanner({ communityId, isAdmin }) {
         <div style={{ position:'relative', overflow:'hidden', borderRadius:10, marginBottom:12 }}>
           {/* Spotlight beam animation */}
           <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${C.burg}cc, ${C.gold}44)`, zIndex:0 }}>
-            <div style={{ position:'absolute', top:'-50%', left:'30%', width:'40%', height:'200%', background:'rgba(212,175,55,0.08)', transform:'rotate(-15deg)', animation:'beam 3s ease-in-out infinite alternate' }} />
+            <div style={{ position:'absolute', top:'-50%', left:'30%', width:'40%', height:'200%', background:'rgba(255,184,0,0.08)', transform:'rotate(-15deg)', animation:'beam 3s ease-in-out infinite alternate' }} />
           </div>
           <div style={{ position:'relative', zIndex:1, padding:'18px 20px', display:'flex', gap:14, alignItems:'center' }}>
             {/* Avatar */}
@@ -89,20 +89,20 @@ export default function SpotlightBanner({ communityId, isAdmin }) {
               <div style={{ fontSize:11, color:'rgba(255,255,255,0.6)', marginTop:2 }}>{active.user_name} · {active.description}</div>
             </div>
             <Link to={`/CreatorPublicProfile?id=${active.user_id}`} style={{ textDecoration:'none', flexShrink:0 }}>
-              <button style={{ padding:'6px 14px', background:`rgba(212,175,55,0.15)`, border:`1px solid rgba(212,175,55,0.35)`, borderRadius:6, color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>VIEW PROFILE →</button>
+              <button style={{ padding:'6px 14px', background:`rgba(255,184,0,0.15)`, border:`1px solid rgba(255,184,0,0.35)`, borderRadius:6, color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>VIEW PROFILE →</button>
             </Link>
           </div>
         </div>
       ) : (
-        <div style={{ padding:'14px', borderRadius:10, border:`1px dashed rgba(212,175,55,0.2)`, background:'rgba(212,175,55,0.03)', marginBottom:12, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+        <div style={{ padding:'14px', borderRadius:10, border:`1px dashed rgba(255,184,0,0.2)`, background:'rgba(255,184,0,0.03)', marginBottom:12, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <span style={{ fontFamily:'Barlow Condensed', fontSize:12, color:C.gray }}>No active spotlight</span>
-          {isAdmin && <button onClick={()=>setShowAdd(true)} style={{ padding:'5px 12px', background:`rgba(212,175,55,0.1)`, border:`1px solid rgba(212,175,55,0.3)`, borderRadius:6, color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>✨ ADD SPOTLIGHT</button>}
+          {isAdmin && <button onClick={()=>setShowAdd(true)} style={{ padding:'5px 12px', background:`rgba(255,184,0,0.1)`, border:`1px solid rgba(255,184,0,0.3)`, borderRadius:6, color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>✨ ADD SPOTLIGHT</button>}
         </div>
       )}
       {/* Admin add button */}
       {isAdmin && active && (
         <div style={{ marginBottom:12, display:'flex', gap:6 }}>
-          <button onClick={()=>setShowAdd(true)} style={{ padding:'5px 12px', background:`rgba(212,175,55,0.08)`, border:`1px solid rgba(212,175,55,0.2)`, borderRadius:6, color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>✨ NEW SPOTLIGHT</button>
+          <button onClick={()=>setShowAdd(true)} style={{ padding:'5px 12px', background:`rgba(255,184,0,0.08)`, border:`1px solid rgba(255,184,0,0.2)`, borderRadius:6, color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>✨ NEW SPOTLIGHT</button>
         </div>
       )}
       {/* History */}

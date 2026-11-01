@@ -176,7 +176,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
           <button
             onClick={() => createAnnouncementMutation.mutate()}
             disabled={!title || !content}
-            style={{ ...btnBase, flex: 1, background: !title || !content ? 'rgba(255,21,100,0.4)' : '#800020', color: '#fff', opacity: !title || !content ? 0.5 : 1 }}
+            style={{ ...btnBase, flex: 1, background: !title || !content ? 'rgba(255,21,100,0.4)' : '#FF1564', color: '#fff', opacity: !title || !content ? 0.5 : 1 }}
           >
             <Send className="w-4 h-4" />
             Send Now

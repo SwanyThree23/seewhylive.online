@@ -6,7 +6,7 @@ import {
   Radio, Users, Star, DollarSign, Trophy, Award, Activity as ActivityIcon,
 } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 const TYPE_ICON = {
   room_created: Radio,
@@ -28,7 +28,7 @@ export default function ActivityHistory({ user }) {
   return (
     <section
       className="rounded-2xl p-4"
-      style={{ background: 'rgba(13,16,34,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}
+      style={{ background: 'rgba(13,16,34,0.95)', border: '1px solid rgba(255,184,0,0.15)' }}
     >
       <div className="flex items-center gap-2 mb-3">
         <ActivityIcon className="w-4 h-4" style={{ color: G }} />
@@ -53,7 +53,7 @@ export default function ActivityHistory({ user }) {
             <div key={item.id} className="flex items-start gap-3 px-3 py-2.5 rounded-xl"
               style={{ background: 'rgba(255,255,255,0.03)' }}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: 'rgba(212,175,55,0.12)' }}>
+                style={{ background: 'rgba(255,184,0,0.12)' }}>
                 <Icon className="w-4 h-4" style={{ color: G }} />
               </div>
               <div className="min-w-0 flex-1">

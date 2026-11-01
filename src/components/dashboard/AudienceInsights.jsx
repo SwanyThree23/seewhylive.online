@@ -4,9 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Users, TrendingUp, Zap } from 'lucide-react';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 export default function AudienceInsights({ creatorId }) {
   const { data: followers } = useQuery({
@@ -39,9 +39,9 @@ export default function AudienceInsights({ creatorId }) {
   };
 
   const cards = [
-    { label: 'Total Followers', value: insights.followers, icon: '👥', color: '#C9A84C' },
+    { label: 'Total Followers', value: insights.followers, icon: '👥', color: '#FFB800' },
     { label: 'Active Subscribers', value: insights.subscribers, icon: '⭐', color: G },
-    { label: 'Sub Conversion', value: `${insights.retention}%`, icon: '📈', color: '#6DBF7E' },
+    { label: 'Sub Conversion', value: `${insights.retention}%`, icon: '📈', color: '#00FF88' },
   ];
 
   return (

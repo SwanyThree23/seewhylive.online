@@ -5,10 +5,10 @@ import { Megaphone, Radio, Play, Square, Clock, Loader2, Vote } from 'lucide-rea
 import { toast } from 'sonner';
 import { useLiveSync } from '@/hooks/useLiveSync';
 
-const G = '#D4AF37';
-const EM = '#6DBF7E';
-const OR = '#D4854A';
-const BORDER = 'rgba(212,175,55,0.15)';
+const G = '#FFB800';
+const EM = '#00FF88';
+const OR = '#FF8C00';
+const BORDER = 'rgba(255,184,0,0.15)';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function fmtOffset(sec) {
@@ -144,7 +144,7 @@ export default function LiveAdTemplates({ user }) {
           {armedTemplate.status !== 'fired' && (
             <button onClick={standDown} disabled={busy}
               className="flex items-center gap-1 px-3 py-2 rounded-lg text-[11px] font-black uppercase shrink-0 disabled:opacity-40"
-              style={{ background: 'rgba(192,57,43,0.14)', border: '1px solid rgba(192,57,43,0.4)', color: '#ef4444', ...T }}>
+              style={{ background: 'rgba(255,32,64,0.14)', border: '1px solid rgba(255,32,64,0.4)', color: '#ef4444', ...T }}>
               <Square className="w-3 h-3" /> Off air
             </button>
           )}
@@ -190,7 +190,7 @@ export default function LiveAdTemplates({ user }) {
                 <img src={tpl.product_image} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
               ) : (
                 <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center"
-                  style={{ background: 'rgba(212,175,55,0.12)' }}>
+                  style={{ background: 'rgba(255,184,0,0.12)' }}>
                   <Megaphone className="w-4 h-4" style={{ color: G }} />
                 </div>
               )}

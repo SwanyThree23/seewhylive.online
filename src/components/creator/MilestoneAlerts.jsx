@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, X, Star, Users, DollarSign, Radio, Zap } from 'lucide-react';
 
 const MILESTONES = [
-  { type: 'subscribers', thresholds: [1, 5, 10, 25, 50, 100, 250, 500, 1000], icon: Users, label: 'subscribers', color: 'from-[#800020] to-[#FF2040]' },
+  { type: 'subscribers', thresholds: [1, 5, 10, 25, 50, 100, 250, 500, 1000], icon: Users, label: 'subscribers', color: 'from-[#FF1564] to-[#FF2040]' },
   { type: 'rooms', thresholds: [1, 5, 10, 25, 50], icon: Radio, label: 'streams', color: 'from-[#FF2040] to-[#FF8C00]' },
   { type: 'revenue', thresholds: [10, 50, 100, 500, 1000, 5000], icon: DollarSign, label: 'earned', color: 'from-[#4A9B5E] to-[#00FF88]' },
 ];

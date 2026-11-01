@@ -5,9 +5,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare, Heart, MessageCircle, Pin } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 export default function DiscussionFeed({ communityId }) {
   const [newPost, setNewPost] = useState('');
@@ -64,7 +64,7 @@ export default function DiscussionFeed({ communityId }) {
           style={{ background: PANEL, border: `1px solid ${BORDER}` }}
         >
           <div className="flex gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#800020] to-[#D4854A]" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF1564] to-[#FF8C00]" />
             <textarea
               placeholder="Share your thoughts with the community..."
               value={newPost}
@@ -109,7 +109,7 @@ export default function DiscussionFeed({ communityId }) {
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5B7FA6] to-[#4A8A7A]" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5B7FA6] to-[#00F5FF]" />
                 <div>
                   <p className="text-sm font-bold text-white">{post.user_name}</p>
                   <p className="text-[10px] text-white/40">{new Date(post.created_date).toLocaleDateString()}</p>
