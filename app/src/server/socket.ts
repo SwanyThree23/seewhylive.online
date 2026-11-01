@@ -58,7 +58,7 @@ io.on('connection', async (socket: Socket) => {
   const userId = await extractUserId(socket)
 
   // ── join-stream ───────────────────────────────────────────────────────────
-  socket.on('join-stream', (streamId: string) => {
+  socket.on('join-stream', ({ streamId }: { streamId: string }) => {
     if (typeof streamId !== 'string' || streamId.length > 36) return
 
     socket.join(`stream:${streamId}`)
@@ -68,7 +68,7 @@ io.on('connection', async (socket: Socket) => {
   })
 
   // ── leave-stream ──────────────────────────────────────────────────────────
-  socket.on('leave-stream', (streamId: string) => {
+  socket.on('leave-stream', ({ streamId }: { streamId: string }) => {
     if (typeof streamId !== 'string') return
 
     socket.leave(`stream:${streamId}`)

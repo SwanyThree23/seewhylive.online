@@ -273,7 +273,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className="mb-1 block font-bebas text-label tracking-widest text-muted">USERNAME</label>
-              <Input value={session?.user?.name ?? ''} disabled className="opacity-50 cursor-not-allowed" />
+              <Input value={(session?.user as { username?: string })?.username ?? ''} disabled className="opacity-50 cursor-not-allowed" />
             </div>
           </div>
 

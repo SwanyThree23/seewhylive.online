@@ -48,7 +48,7 @@ export function LiveStreamClient({
     fetch(`/api/streams/${streamId}/join`, { method: 'POST' })
       .then(r => r.json())
       .then(d => {
-        setHasAccess(d.success && d.data?.allowed)
+        setHasAccess(d.success && d.data?.joined)
       })
       .finally(() => setCheckingAccess(false))
   }, [streamId, isPaywalled, session])
