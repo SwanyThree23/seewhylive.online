@@ -20,10 +20,10 @@ export default function PollCard({ poll }) {
   });
 
   const { data: userVote } = useQuery({
-    queryKey: ['poll-vote', poll.id, user?.id],
+    queryKey: ['poll-vote', poll?.id, user?.id],
     queryFn: async () => {
       const votes = await base44.entities.PollVote.filter({
-        poll_id: poll.id,
+        poll_id: poll?.id,
         user_id: user.id,
       });
       return votes[0];
@@ -73,6 +73,8 @@ export default function PollCard({ poll }) {
     setSubmitting(true);
     voteMutation.mutate();
   };
+
+  if (!poll) return null;
 
   const hasVoted = !!userVote;
   const isEnded = poll.status === 'ended' || (poll.ends_at && new Date(poll.ends_at) < new Date());
