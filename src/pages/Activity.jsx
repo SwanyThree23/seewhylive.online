@@ -32,12 +32,12 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const GREEN   = '#6DBF7E';
-const AMBER   = '#D4854A';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
+const GREEN   = '#00FF88';
+const AMBER   = '#FF8C00';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
-const BG      = '#080B18';
+const BG      = '#03030A';
 
 const TYPE_CONFIG = {
   room_created:        { icon: Radio,          color: CRIMSON,  label: 'Went Live',        emoji: '🔴' },
@@ -170,7 +170,7 @@ export default function ActivityPage() {
 
       {/* Header */}
       <div className="sticky top-0 z-20 px-4 py-3"
-        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
+        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(255,184,0,0.1)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <ActivityIcon className="w-5 h-5" style={{ color: GOLD }} />
@@ -186,7 +186,7 @@ export default function ActivityPage() {
             {unreadNotifs.length > 0 && (
               <button onClick={() => markAllNotifRead.mutate()}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase"
-                style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>
+                style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)', color: GOLD, ...T }}>
                 <Check className="w-3 h-3" /> Mark read
               </button>
             )}
@@ -212,8 +212,8 @@ export default function ActivityPage() {
               { label: 'Followers', value: totalFollowers, color: AMBER, suffix: 'total' },
             ].map(stat => (
               <div key={stat.label} className="rounded-xl px-3 py-2.5 text-center"
-                style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${stat.color}20` }}>
-                <p className="font-black text-lg leading-none" style={{ color: stat.color, fontFamily: 'Orbitron, monospace' }}>{stat.value}</p>
+                style={{ background: 'rgba(7,7,15,0.9)', border: `1px solid ${stat.color}20` }}>
+                <p className="font-black text-lg leading-none" style={{ color: stat.color, fontFamily: 'Syne, monospace' }}>{stat.value}</p>
                 <p className="text-[9px] uppercase mt-1" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>{stat.label}</p>
               </div>
             ))}
@@ -227,8 +227,8 @@ export default function ActivityPage() {
               className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase border transition-all"
               style={{
                 ...T,
-                background: filter === f.id ? `rgba(212,175,55,0.12)` : 'transparent',
-                border: `1px solid ${filter === f.id ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                background: filter === f.id ? `rgba(255,184,0,0.12)` : 'transparent',
+                border: `1px solid ${filter === f.id ? 'rgba(255,184,0,0.35)' : 'rgba(255,255,255,0.08)'}`,
                 color: filter === f.id ? GOLD : 'rgba(255,255,255,0.4)',
               }}>
               {f.label}
@@ -240,7 +240,7 @@ export default function ActivityPage() {
         {unreadNotifs.length > 0 && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
             className="rounded-xl p-3"
-            style={{ background: 'rgba(128,0,32,0.12)', border: '1px solid rgba(128,0,32,0.3)' }}>
+            style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)' }}>
             <div className="flex items-center gap-3">
               <Bell className="w-4 h-4 shrink-0" style={{ color: CRIMSON }} />
               <div className="flex-1">
@@ -250,7 +250,7 @@ export default function ActivityPage() {
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {unreadNotifs.slice(0, 3).map(n => (
                     <span key={n.id} className="text-[10px] px-2 py-0.5 rounded-full"
-                      style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>
+                      style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.2)', color: GOLD, ...T }}>
                       {n.title}
                     </span>
                   ))}
@@ -263,7 +263,7 @@ export default function ActivityPage() {
               </div>
               <Link to={createPageUrl('Notifications')}>
                 <span className="text-[10px] font-black uppercase px-2 py-1 rounded-lg shrink-0"
-                  style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
+                  style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.25)', color: GOLD, ...T }}>
                   View All
                 </span>
               </Link>
@@ -286,7 +286,7 @@ export default function ActivityPage() {
             {filter === 'all' && (
               <Link to={createPageUrl('GoLive')}>
                 <span className="mt-2 text-[10px] font-black uppercase px-4 py-2 rounded-xl cursor-pointer inline-block"
-                  style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.35)', color: AMBER, ...T }}>
+                  style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.35)', color: AMBER, ...T }}>
                   Go Live to get started
                 </span>
               </Link>
@@ -312,7 +312,7 @@ export default function ActivityPage() {
                           initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.02 }}
                           className="flex items-start gap-3 px-3 py-3 rounded-xl"
-                          style={{ background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                          style={{ background: 'rgba(7,7,15,0.85)', border: '1px solid rgba(255,255,255,0.04)' }}>
                           {/* Icon */}
                           <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                             style={{ background: `${cfg.color}12`, border: `1px solid ${cfg.color}22` }}>
@@ -369,7 +369,7 @@ export default function ActivityPage() {
             { label: '🔔 Notifications', href: 'Notifications'  },
           ].map(item => (
             <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
-              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(255,184,0,0.07)', border: '1px solid rgba(255,184,0,0.2)', color: '#FFB800', cursor: 'pointer' }}>{item.label}</span>
             </Link>
           ))}
         </div>

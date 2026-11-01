@@ -31,10 +31,10 @@ import StreamerMonetizationCenter from '../components/monetization/StreamerMonet
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import ViewerCount from '../components/live/ViewerCount';
 
-const GOLD    = "#D4AF37";
-const CRIMSON = "#800020";
-const PINK    = "#C0392B";
-const CYAN    = "#4A8A7A";
+const GOLD    = "#FFB800";
+const CRIMSON = "#FF1564";
+const PINK    = "#FF2040";
+const CYAN    = "#00F5FF";
 const OCT     = "polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)";
 const T       = { fontFamily: "Barlow Condensed, sans-serif" };
 
@@ -183,13 +183,13 @@ export default function Messages() {
   var totalUnread = threads.reduce((sum, t) => sum + t.unread, 0);
 
   return (
-    <div className="flex flex-col" style={{ minHeight: "100vh", background: "#080B18" }}>
+    <div className="flex flex-col" style={{ minHeight: "100vh", background: "#03030A" }}>
 
       {/* ── Sticky header ──────────────────────────────────────── */}
       <div className="sticky top-0 z-30 flex items-center justify-between px-4 py-3"
         style={{
-          background: "rgba(8,11,24,0.97)",
-          borderBottom: "1px solid rgba(212,175,55,0.1)",
+          background: "rgba(7,7,15,0.97)",
+          borderBottom: "1px solid rgba(255,184,0,0.1)",
           backdropFilter: "blur(12px)",
         }}>
         <div className="flex items-center gap-2.5">
@@ -197,7 +197,7 @@ export default function Messages() {
             <button
               onClick={() => setSelectedThread(null)}
               className="flex items-center justify-center w-8 h-8 rounded-xl transition-all hover:brightness-125"
-              style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", color: GOLD }}>
+              style={{ background: "rgba(255,184,0,0.08)", border: "1px solid rgba(255,184,0,0.2)", color: GOLD }}>
               <ChevronLeft className="w-4 h-4" />
             </button>
           ) : (
@@ -216,7 +216,7 @@ export default function Messages() {
         <button
           onClick={() => setShowCompose(true)}
           className="flex items-center justify-center w-8 h-8 rounded-xl transition-all hover:brightness-125"
-          style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", color: GOLD }}>
+          style={{ background: "rgba(255,184,0,0.08)", border: "1px solid rgba(255,184,0,0.2)", color: GOLD }}>
           <PenSquare className="w-4 h-4" />
         </button>
       </div>
@@ -231,7 +231,7 @@ export default function Messages() {
             width: selectedThread ? "35%" : undefined,
             borderRight: selectedThread ? "1px solid rgba(255,255,255,0.04)" : "none",
             overflowY: "auto",
-            background: "rgba(8,11,24,0.9)",
+            background: "rgba(7,7,15,0.9)",
             minWidth: 0,
           }}>
 
@@ -244,7 +244,7 @@ export default function Messages() {
               <button
                 onClick={() => setShowCompose(true)}
                 className="px-4 py-2 rounded-xl font-black uppercase text-[10px] mt-1"
-                style={{ background: "rgba(212,175,55,0.12)", border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+                style={{ background: "rgba(255,184,0,0.12)", border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
                 Start a conversation
               </button>
             </div>
@@ -259,10 +259,10 @@ export default function Messages() {
                     className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-all"
                     style={{
                       background: isSelected
-                        ? "rgba(212,175,55,0.08)"
+                        ? "rgba(255,184,0,0.08)"
                         : "transparent",
                     }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(212,175,55,0.05)"; }}
+                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(255,184,0,0.05)"; }}
                     onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}>
 
                     {/* Octagonal avatar with optional online dot */}
@@ -280,8 +280,8 @@ export default function Messages() {
                         <div style={{
                           position: "absolute", bottom: 1, right: 1,
                           width: 7, height: 7, borderRadius: "50%",
-                          background: "#6DBF7E",
-                          border: "1.5px solid #080B18",
+                          background: "#00FF88",
+                          border: "1.5px solid #03030A",
                         }} />
                       )}
                     </div>
@@ -330,12 +330,12 @@ export default function Messages() {
 
         {/* ── Active chat view ──────────────────────────────────── */}
         {selectedThread && currentThread && (
-          <div className="flex flex-col flex-1" style={{ background: "#080B18", minWidth: 0, overflow: "hidden" }}>
+          <div className="flex flex-col flex-1" style={{ background: "#03030A", minWidth: 0, overflow: "hidden" }}>
 
             {/* Thread sub-header (visible on desktop alongside list) */}
             <div className="hidden md:flex items-center gap-3 px-4 py-2.5"
               style={{
-                background: "rgba(8,11,24,0.97)",
+                background: "rgba(7,7,15,0.97)",
                 borderBottom: "1px solid rgba(255,255,255,0.04)",
               }}>
               <div style={{
@@ -370,8 +370,8 @@ export default function Messages() {
                         position: "absolute", bottom: "calc(100% + 4px)",
                         [isMe ? "right" : "left"]: 0,
                         zIndex: 10,
-                        background: "rgba(8,11,24,0.97)",
-                        border: "1px solid rgba(212,175,55,0.2)",
+                        background: "rgba(7,7,15,0.97)",
+                        border: "1px solid rgba(255,184,0,0.2)",
                         borderRadius: 12,
                         padding: "4px 8px",
                         display: "flex", gap: 6,
@@ -388,8 +388,8 @@ export default function Messages() {
                     {isGiftNotif ? (
                       <div className="px-3 py-2 rounded-2xl text-[12px]"
                         style={{
-                          background: "rgba(212,175,55,0.1)",
-                          border: `1px solid rgba(212,175,55,0.3)`,
+                          background: "rgba(255,184,0,0.1)",
+                          border: `1px solid rgba(255,184,0,0.3)`,
                           color: GOLD,
                           ...T,
                         }}>
@@ -399,8 +399,8 @@ export default function Messages() {
                       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 4, flexDirection: isMe ? "row-reverse" : "row" }}>
                         <div className="px-3 py-2 rounded-2xl text-[13px] max-w-[75%]"
                           style={{
-                            background: isMe ? "rgba(212,175,55,0.12)" : "rgba(255,255,255,0.06)",
-                            border: `1px solid ${isMe ? "rgba(212,175,55,0.25)" : "rgba(255,255,255,0.08)"}`,
+                            background: isMe ? "rgba(255,184,0,0.12)" : "rgba(255,255,255,0.06)",
+                            border: `1px solid ${isMe ? "rgba(255,184,0,0.25)" : "rgba(255,255,255,0.08)"}`,
                             color: isWhisper ? GOLD : (isMe ? "#fff" : "rgba(255,255,255,0.9)"),
                             fontStyle: isWhisper ? "italic" : "normal",
                             position: "relative",
@@ -411,8 +411,8 @@ export default function Messages() {
                           {reaction && (
                             <span style={{
                               position: "absolute", bottom: -8, [isMe ? "left" : "right"]: -4,
-                              fontSize: 12, background: "rgba(8,11,24,0.9)",
-                              border: "1px solid rgba(212,175,55,0.2)",
+                              fontSize: 12, background: "rgba(7,7,15,0.9)",
+                              border: "1px solid rgba(255,184,0,0.2)",
                               borderRadius: 10, padding: "0 3px", lineHeight: "16px",
                             }}>{reaction}</span>
                           )}
@@ -453,13 +453,13 @@ export default function Messages() {
             <div className="flex items-center gap-2 px-4 py-3"
               style={{
                 borderTop: "1px solid rgba(255,255,255,0.04)",
-                background: "rgba(8,11,24,0.97)",
+                background: "rgba(7,7,15,0.97)",
               }}>
               <input
                 className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/25 px-4 py-2.5 rounded-2xl"
                 style={{
                   background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(212,175,55,0.15)",
+                  border: "1px solid rgba(255,184,0,0.15)",
                   ...T,
                 }}
                 placeholder="Type a message…"
@@ -493,8 +493,8 @@ export default function Messages() {
             padding: "0 16px",
           }}>
           <div style={{
-            background: "rgba(8,11,24,0.98)",
-            border: "1px solid rgba(212,175,55,0.2)",
+            background: "rgba(7,7,15,0.98)",
+            border: "1px solid rgba(255,184,0,0.2)",
             borderRadius: 20, padding: 24, width: "100%", maxWidth: 400,
           }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -511,7 +511,7 @@ export default function Messages() {
                 onChange={e => setComposeName(e.target.value)}
                 placeholder="Recipient name or ID…"
                 className="text-sm text-white outline-none placeholder:text-white/25 px-4 py-2.5 rounded-2xl"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(212,175,55,0.15)", ...T }}
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,184,0,0.15)", ...T }}
               />
               <textarea
                 value={composeMsg}
@@ -519,7 +519,7 @@ export default function Messages() {
                 placeholder="Write a message…"
                 rows={3}
                 className="text-sm text-white outline-none resize-none placeholder:text-white/25 px-4 py-2.5 rounded-2xl"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(212,175,55,0.15)", ...T }}
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,184,0,0.15)", ...T }}
               />
               <button
                 onClick={() => { if (composeName.trim() && composeMsg.trim()) composeMutation.mutate(); }}

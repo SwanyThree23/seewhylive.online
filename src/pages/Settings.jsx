@@ -37,13 +37,13 @@ import SubscriptionCard from '../components/monetization/SubscriptionCard';
 import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import VoiceAISettings from '../components/settings/VoiceAISettings';
 import ApiKeyManager from '../components/settings/ApiKeyManager';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function Section({ icon: Icon, title, description, children }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,184,0,0.1)' }}>
       <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Icon className="w-4 h-4" style={{ color: GOLD }} />
         <div>
@@ -63,7 +63,7 @@ function ToggleRow({ label, description, checked, onChange }) {
         <p className="font-black text-sm text-white" style={T}>{label}</p>
         {description && <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{description}</p>}
       </div>
-      <div onClick={() => onChange(!checked)} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+      <div onClick={() => onChange(!checked)} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
         <div style={{ position: 'absolute', top: 3, left: checked ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
       </div>
     </div>
@@ -74,7 +74,7 @@ function SaveButton({ onClick, disabled, label = 'Save Changes' }) {
   return (
     <button onClick={onClick} disabled={disabled}
       className="px-5 py-2 rounded-xl font-black uppercase text-[11px] disabled:opacity-50"
-      style={{ background: disabled ? 'rgba(212,175,55,0.1)' : CRIMSON, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', boxShadow: disabled ? 'none' : '0 0 12px rgba(128,0,32,0.3)', ...T }}>
+      style={{ background: disabled ? 'rgba(255,184,0,0.1)' : CRIMSON, color: GOLD, border: '1px solid rgba(255,184,0,0.3)', boxShadow: disabled ? 'none' : '0 0 12px rgba(255,21,100,0.3)', ...T }}>
       {label}
     </button>
   );
@@ -84,7 +84,7 @@ function DarkInput({ value, onChange, placeholder, disabled }) {
   return (
     <input value={value} onChange={onChange} placeholder={placeholder} disabled={disabled}
       className="w-full px-3 py-2.5 rounded-xl text-sm text-white outline-none disabled:opacity-40"
-      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.15)' }} />
+      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,184,0,0.15)' }} />
   );
 }
 
@@ -204,10 +204,10 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="min-h-screen pb-10" style={{ background: '#080B18' }}>
+    <div className="min-h-screen pb-10" style={{ background: '#03030A' }}>
       {/* Sticky header */}
       <div className="sticky top-0 z-20 px-4 py-3 flex items-center gap-2"
-        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
+        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(255,184,0,0.1)', backdropFilter: 'blur(12px)' }}>
         <SettingsIcon className="w-5 h-5" style={{ color: GOLD }} />
         <h1 className="font-black text-lg text-white" style={T}>Settings</h1>
       </div>
@@ -256,7 +256,7 @@ export default function SettingsPage() {
             {CREATOR_LINKS.map(item => (
               <Link key={item.href} to={createPageUrl(item.href)}>
                 <div className="px-3 py-2.5 rounded-xl font-black text-[10px] uppercase text-center transition-all"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.12)', color: 'rgba(255,255,255,0.6)', ...T }}>
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,184,0,0.12)', color: 'rgba(255,255,255,0.6)', ...T }}>
                   {item.label}
                 </div>
               </Link>
@@ -273,23 +273,23 @@ export default function SettingsPage() {
         <Section icon={Download} title="Data Export" description="Download your data as PDF, CSV, or JSON">
           <Link to={createPageUrl('DataExport')}>
             <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-black uppercase text-[11px] w-full"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.12)', color: 'rgba(255,255,255,0.6)', ...T }}>
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,184,0,0.12)', color: 'rgba(255,255,255,0.6)', ...T }}>
               <Download className="w-4 h-4" />Export My Data
             </button>
           </Link>
         </Section>
 
         {/* Account */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,184,0,0.1)' }}>
           <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <AlertTriangle className="w-4 h-4" style={{ color: '#EF4444' }} />
+            <AlertTriangle className="w-4 h-4" style={{ color: '#FF2040' }} />
             <p className="font-black text-sm text-white" style={T}>Account</p>
           </div>
           <div className="p-4 space-y-3">
             <button
               onClick={() => base44.auth.logout()}
               className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left"
-              style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#EF4444', userSelect: 'none', ...T }}>
+              style={{ background: 'rgba(255,32,64,0.08)', border: '1px solid rgba(255,32,64,0.2)', color: '#FF2040', userSelect: 'none', ...T }}>
               Log Out
             </button>
             <AccountDeletionFlow user={user} />

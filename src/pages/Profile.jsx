@@ -38,9 +38,9 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK    = '#FF2040';
 const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -49,7 +49,7 @@ const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 function DarkCard({ children, className = '', style = {} }) {
   return (
     <div className={`rounded-2xl ${className}`}
-      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>
+      style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,184,0,0.1)', ...style }}>
       {children}
     </div>
   );
@@ -65,12 +65,12 @@ function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
         style={{
           inset: size <= 48 ? '2px' : '3px',
           clipPath: OCT,
-          background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)`,
+          background: `linear-gradient(145deg, ${CRIMSON}99, #03030A)`,
         }}>
         {src
           ? <img src={src} alt="" className="w-full h-full object-cover" />
           : <span className="font-black text-white"
-              style={{ fontSize: size * 0.3, fontFamily: 'Orbitron, monospace' }}>{initials}</span>}
+              style={{ fontSize: size * 0.3, fontFamily: 'Syne, monospace' }}>{initials}</span>}
       </div>
       {/* hover overlay */}
       {onClick && (
@@ -91,7 +91,7 @@ function StatTile({ label, value, icon: Icon, color = GOLD }) {
       <div className="p-4 flex items-start justify-between gap-2">
         <div>
           <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{label}</p>
-          <p className="text-2xl font-black leading-none" style={{ color, fontFamily: 'Orbitron, monospace' }}>{value}</p>
+          <p className="text-2xl font-black leading-none" style={{ color, fontFamily: 'Syne, monospace' }}>{value}</p>
         </div>
         {Icon && (
           <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
@@ -216,9 +216,9 @@ export default function ProfilePage() {
   /* ── loading ── */
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#080B18' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#03030A' }}>
         <div className="w-12 h-12 rounded-full animate-spin"
-          style={{ border: '3px solid rgba(212,175,55,0.2)', borderTopColor: GOLD }} />
+          style={{ border: '3px solid rgba(255,184,0,0.2)', borderTopColor: GOLD }} />
       </div>
     );
   }
@@ -239,21 +239,21 @@ export default function ProfilePage() {
     subscriptions.length > 0 && {
       id: 'subs',
       icon: TrendingUp,
-      color: '#C9A84C',
+      color: '#FFB800',
       desc: `${subscriptions.length} active subscription${subscriptions.length !== 1 ? 's' : ''}`,
       time: 'Active now',
     },
     completedReferrals > 0 && {
       id: 'refs',
       icon: Gift,
-      color: '#D4AF37',
+      color: '#FFB800',
       desc: `${completedReferrals} completed referral${completedReferrals !== 1 ? 's' : ''}`,
       time: 'Recent',
     },
     inventory.length > 0 && {
       id: 'inv',
       icon: Award,
-      color: '#6DBF7E',
+      color: '#00FF88',
       desc: `${inventory.length} virtual item${inventory.length !== 1 ? 's' : ''} in inventory`,
       time: 'Collected',
     },
@@ -267,22 +267,22 @@ export default function ProfilePage() {
   ].filter(Boolean);
 
   return (
-    <div className="min-h-screen pb-10" style={{ background: '#080B18', ...T }}>
+    <div className="min-h-screen pb-10" style={{ background: '#03030A', ...T }}>
 
       {/* ── sticky header ── */}
       <div className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between"
-        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
+        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(255,184,0,0.1)', backdropFilter: 'blur(12px)' }}>
         <h1 className="font-black text-lg text-white" style={T}>My Profile</h1>
         <button
           onClick={() => setIsEditing(e => !e)}
           className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all"
-          style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+          style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
           {isEditing ? 'Cancel' : 'Edit Profile'}
         </button>
       </div>
 
       {/* ── hero banner ── */}
-      <div className="relative w-full overflow-hidden" style={{ background: 'linear-gradient(145deg, #1a0824, #080B18)', minHeight: 160 }}>
+      <div className="relative w-full overflow-hidden" style={{ background: 'linear-gradient(145deg, #1a0824, #03030A)', minHeight: 160 }}>
         {/* glow spot */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 pointer-events-none"
           style={{ background: `radial-gradient(ellipse at center, ${CRIMSON}33 0%, transparent 70%)` }} />
@@ -306,8 +306,8 @@ export default function ProfilePage() {
                   </p>
                   {isOnline && (
                     <span className="flex items-center gap-1 text-[10px] font-black"
-                      style={{ color: '#6DBF7E', ...T }}>
-                      <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#6DBF7E' }} />
+                      style={{ color: '#00FF88', ...T }}>
+                      <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#00FF88' }} />
                       Online
                     </span>
                   )}
@@ -315,7 +315,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="px-2 py-0.5 rounded-md font-black uppercase text-[11px]"
-                  style={{ background: user?.role === 'admin' ? 'rgba(128,0,32,0.25)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
+                  style={{ background: user?.role === 'admin' ? 'rgba(255,21,100,0.25)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,184,0,0.25)', color: GOLD, ...T }}>
                   {user?.role || 'member'}
                 </span>
                 <button
@@ -349,7 +349,7 @@ export default function ProfilePage() {
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Display name"
                 className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,184,0,0.2)' }}
               />
               <textarea
                 value={bio}
@@ -357,14 +357,14 @@ export default function ProfilePage() {
                 placeholder="Tell us about yourself..."
                 rows={2}
                 className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none resize-none"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,184,0,0.2)' }}
               />
               <div className="flex gap-2">
                 <button
                   onClick={() => updateProfileMutation.mutate({ bio, full_name: displayName })}
                   disabled={updateProfileMutation.isPending}
                   className="px-4 py-1.5 rounded-xl font-black uppercase text-[10px]"
-                  style={{ background: CRIMSON, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', ...T }}>
+                  style={{ background: CRIMSON, color: GOLD, border: '1px solid rgba(255,184,0,0.3)', ...T }}>
                   {updateProfileMutation.isPending ? 'Saving…' : 'Save'}
                 </button>
                 <button onClick={() => setIsEditing(false)}
@@ -380,9 +380,9 @@ export default function ProfilePage() {
         {/* ── stats row ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatTile label="Followers"   value={user?.followers_count || user?.points || 0} icon={User}       color={GOLD} />
-          <StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#C9A84C" />
-          <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#D4AF37" />
-          <StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#6DBF7E" />
+          <StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#FFB800" />
+          <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#FFB800" />
+          <StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#00FF88" />
         </div>
 
         {/* ── section tabs ── */}
@@ -393,7 +393,7 @@ export default function ProfilePage() {
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className="relative shrink-0 px-4 py-2 rounded-full font-black text-[11px] uppercase transition-all"
                 style={{
-                  background: active ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
+                  background: active ? 'rgba(255,184,0,0.12)' : 'rgba(255,255,255,0.04)',
                   border: `1px solid ${active ? GOLD + '50' : 'rgba(255,255,255,0.08)'}`,
                   color: active ? GOLD : 'rgba(255,255,255,0.45)',
                   ...T,
@@ -443,9 +443,9 @@ export default function ProfilePage() {
                 {[
                   { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio,     color: PINK },
                   { label: 'Monetization',       href: createPageUrl('Monetization'),    icon: DollarSign, color: GOLD },
-                  { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: '#7B5DA6' },
-                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#4A8A7A' },
-                  { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#C9A84C' },
+                  { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: '#8B5CF6' },
+                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#00F5FF' },
+                  { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#FFB800' },
                   { label: 'Creator Setup',      href: null,                             icon: Star,       color: GOLD, onClick: () => setSetupOpen(true) },
                 ].map(item => {
                   const inner = (
@@ -479,7 +479,7 @@ export default function ProfilePage() {
                 <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No streams yet</p>
                 <Link to={createPageUrl('GoLive')}>
                   <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
-                    style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+                    style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
                     Go Live
                   </button>
                 </Link>
@@ -511,8 +511,8 @@ export default function ProfilePage() {
                       )}
                       <span className="px-1.5 py-0.5 rounded text-[11px] font-black uppercase shrink-0"
                         style={{
-                          background: isLive ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)',
-                          border: `1px solid ${isLive ? 'rgba(192,57,43,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                          background: isLive ? 'rgba(255,32,64,0.15)' : 'rgba(255,255,255,0.06)',
+                          border: `1px solid ${isLive ? 'rgba(255,32,64,0.3)' : 'rgba(255,255,255,0.1)'}`,
                           color: isLive ? PINK : 'rgba(255,255,255,0.4)',
                           ...T,
                         }}>
@@ -534,7 +534,7 @@ export default function ProfilePage() {
                 <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No clips yet</p>
                 <Link to={createPageUrl('ClipsLibrary')}>
                   <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
-                    style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+                    style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
                     Go to Clips Library
                   </button>
                 </Link>
@@ -594,7 +594,7 @@ export default function ProfilePage() {
                   <div className="flex flex-wrap gap-2">
                     {user.badges.map((badge, idx) => (
                       <span key={idx} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase"
-                        style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>
+                        style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)', color: GOLD, ...T }}>
                         <Award className="w-3 h-3" />{badge}
                       </span>
                     ))}
@@ -613,7 +613,7 @@ export default function ProfilePage() {
                           <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>${sub.price}/month</p>
                         </div>
                         <span className="px-2 py-0.5 rounded-md font-black text-[11px] uppercase"
-                          style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.2)', color: '#6DBF7E', ...T }}>
+                          style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.2)', color: '#00FF88', ...T }}>
                           Active
                         </span>
                       </div>
@@ -646,7 +646,7 @@ export default function ProfilePage() {
               <Link to={createPageUrl('DataExport')}>
                 <button
                   className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.15)', color: 'rgba(255,255,255,0.6)', userSelect: 'none', ...T }}>
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,184,0,0.15)', color: 'rgba(255,255,255,0.6)', userSelect: 'none', ...T }}>
                   <Download className="w-3.5 h-3.5" />
                   Download My Data
                 </button>

@@ -40,11 +40,11 @@ import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 
-const G       = '#D4AF37';
-const BG      = '#080B18';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
-const GREEN   = '#6DBF7E';
+const G       = '#FFB800';
+const BG      = '#03030A';
+const CRIMSON = '#FF1564';
+const PINK    = '#FF2040';
+const GREEN   = '#00FF88';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function fmtDuration(seconds) {
@@ -116,23 +116,23 @@ export default function CreatorDashboardPage() {
       href: createPageUrl('GoLive'),
       gradient: `linear-gradient(135deg, ${CRIMSON}40, ${CRIMSON}10)`,
       border: `${CRIMSON}50`,
-      iconColor: '#C0392B',
+      iconColor: '#FF2040',
     },
     {
       icon: Calendar,
       label: 'Schedule',
       href: createPageUrl('StreamScheduler'),
-      gradient: 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.06))',
-      border: 'rgba(212,175,55,0.45)',
-      iconColor: '#7B5DA6',
+      gradient: 'linear-gradient(135deg, rgba(255,184,0,0.25), rgba(255,184,0,0.06))',
+      border: 'rgba(255,184,0,0.45)',
+      iconColor: '#8B5CF6',
     },
     {
       icon: Send,
       label: 'Newsletter',
       href: createPageUrl('Newsletter'),
-      gradient: 'linear-gradient(135deg, rgba(74,138,122,0.2), rgba(74,138,122,0.05))',
-      border: 'rgba(74,138,122,0.4)',
-      iconColor: '#4A8A7A',
+      gradient: 'linear-gradient(135deg, rgba(0,245,255,0.2), rgba(0,245,255,0.05))',
+      border: 'rgba(0,245,255,0.4)',
+      iconColor: '#00F5FF',
     },
     {
       icon: Scissors,
@@ -146,49 +146,49 @@ export default function CreatorDashboardPage() {
       icon: Bot,
       label: 'Joyce AI',
       href: createPageUrl('JoyceAI'),
-      gradient: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))`,
-      border: 'rgba(212,175,55,0.35)',
+      gradient: `linear-gradient(135deg, rgba(255,184,0,0.2), rgba(255,184,0,0.05))`,
+      border: 'rgba(255,184,0,0.35)',
       iconColor: G,
     },
     {
       icon: Zap,
       label: 'INS Forge',
       href: createPageUrl('INSForge'),
-      gradient: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))`,
-      border: 'rgba(212,175,55,0.35)',
-      iconColor: '#D4AF37',
+      gradient: `linear-gradient(135deg, rgba(255,184,0,0.2), rgba(255,184,0,0.05))`,
+      border: 'rgba(255,184,0,0.35)',
+      iconColor: '#FFB800',
     },
     {
       icon: Mic2,
       label: 'Podcast',
       href: createPageUrl('PodcastStudio'),
-      gradient: `linear-gradient(135deg, rgba(74,138,122,0.15), rgba(74,138,122,0.04))`,
-      border: 'rgba(74,138,122,0.3)',
-      iconColor: '#4A8A7A',
+      gradient: `linear-gradient(135deg, rgba(0,245,255,0.15), rgba(0,245,255,0.04))`,
+      border: 'rgba(0,245,255,0.3)',
+      iconColor: '#00F5FF',
     },
     {
       icon: Globe,
       label: 'AI Site',
       href: createPageUrl('WebsiteGenerator'),
-      gradient: 'linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.04))',
-      border: 'rgba(201,168,76,0.35)',
-      iconColor: '#C9A84C',
+      gradient: 'linear-gradient(135deg, rgba(255,184,0,0.18), rgba(255,184,0,0.04))',
+      border: 'rgba(255,184,0,0.35)',
+      iconColor: '#FFB800',
     },
     {
       icon: Camera,
       label: 'VDO Guests',
       href: createPageUrl('VDONinjaManager'),
-      gradient: 'linear-gradient(135deg, rgba(74,138,122,0.18), rgba(74,138,122,0.04))',
-      border: 'rgba(74,138,122,0.35)',
-      iconColor: '#4A8A7A',
+      gradient: 'linear-gradient(135deg, rgba(0,245,255,0.18), rgba(0,245,255,0.04))',
+      border: 'rgba(0,245,255,0.35)',
+      iconColor: '#00F5FF',
     },
     {
       icon: Lock,
       label: 'Vault',
       href: createPageUrl('VaultPro'),
-      gradient: 'linear-gradient(135deg, rgba(128,0,32,0.15), rgba(128,0,32,0.04))',
-      border: 'rgba(128,0,32,0.3)',
-      iconColor: '#C0392B',
+      gradient: 'linear-gradient(135deg, rgba(255,21,100,0.15), rgba(255,21,100,0.04))',
+      border: 'rgba(255,21,100,0.3)',
+      iconColor: '#FF2040',
     },
   ];
 
@@ -196,7 +196,7 @@ export default function CreatorDashboardPage() {
     <div className="min-h-screen" style={{ background: BG }}>
 
       <div className="sticky top-0 z-20 px-4 py-4 md:px-8 border-b"
-        style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
+        style={{ borderColor: 'rgba(255,184,0,0.12)', background: 'rgba(7,7,15,0.97)', backdropFilter: 'blur(12px)' }}>
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center justify-between flex-wrap gap-3 mb-2">
             <div className="flex items-center gap-3">
@@ -229,7 +229,7 @@ export default function CreatorDashboardPage() {
                     style={{
                       background: timeRange === range ? `${G}20` : 'rgba(255,255,255,0.03)',
                       color: timeRange === range ? G : 'rgba(255,255,255,0.5)',
-                      border: timeRange === range ? `1px solid ${G}40` : '1px solid rgba(212,175,55,0.12)',
+                      border: timeRange === range ? `1px solid ${G}40` : '1px solid rgba(255,184,0,0.12)',
                       ...T,
                     }}>
                     {range === '7d' ? '7D' : range === '30d' ? '30D' : '1Y'}
@@ -291,7 +291,7 @@ export default function CreatorDashboardPage() {
 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                    style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,184,0,0.1)' }}>
                     <div className="px-4 py-3 flex items-center justify-between"
                       style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                       <div className="flex items-center gap-2">
@@ -302,7 +302,7 @@ export default function CreatorDashboardPage() {
                       </div>
                       <Link to={createPageUrl('GoLive')}>
                         <span className="text-[10px] font-black uppercase px-2 py-1 rounded-lg transition-all"
-                          style={{ background: `${CRIMSON}18`, border: `1px solid ${CRIMSON}35`, color: '#D4854A', ...T }}>
+                          style={{ background: `${CRIMSON}18`, border: `1px solid ${CRIMSON}35`, color: '#FF8C00', ...T }}>
                           + Go Live
                         </span>
                       </Link>

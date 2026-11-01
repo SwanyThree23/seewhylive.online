@@ -6,7 +6,7 @@ import ActivityHistory from '@/components/dashboard/ActivityHistory';
 import SavedAdTemplates from '@/components/dashboard/SavedAdTemplates';
 import ChallengeProgress from '@/components/dashboard/ChallengeProgress';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 export default function MyDashboard() {
   const { data: user, isLoading } = useQuery({
@@ -18,7 +18,7 @@ export default function MyDashboard() {
     <div className="max-w-2xl mx-auto px-3 py-5 pb-28 space-y-4">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)' }}>
+          style={{ background: 'linear-gradient(135deg, #B37F00, #FFB800)' }}>
           <LayoutDashboard className="w-5 h-5 text-black" />
         </div>
         <div className="min-w-0">

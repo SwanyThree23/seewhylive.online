@@ -47,8 +47,8 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
 const OCT     = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -140,7 +140,7 @@ export default function CommunitiesPage() {
   const mine     = filtered.filter(c => myMemberships.some(m => m.community_id === c.id));
 
   return (
-    <div className="min-h-screen pb-10" style={{ background: '#080B18' }}
+    <div className="min-h-screen pb-10" style={{ background: '#03030A' }}
       onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
 
       {/* Pull-to-refresh indicator */}
@@ -149,13 +149,13 @@ export default function CommunitiesPage() {
           <motion.div
             animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
             transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
-            style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: '#D4AF37' }} />
+            style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(255,184,0,0.3)', borderTopColor: '#FFB800' }} />
         )}
       </motion.div>
 
       {/* ── Sticky header ─────────────────────────────────────── */}
       <div className="sticky top-0 z-20"
-        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
+        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(255,184,0,0.1)', backdropFilter: 'blur(12px)' }}>
 
         {/* Row 1 – title + Create button */}
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
@@ -166,7 +166,7 @@ export default function CommunitiesPage() {
           <Link to={createPageUrl('CreateCommunity')}>
             <button
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all hover:brightness-110"
-              style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: GOLD, ...T }}>
+              style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.4)', color: GOLD, ...T }}>
               <Plus className="w-3 h-3" />Create
             </button>
           </Link>
@@ -174,7 +174,7 @@ export default function CommunitiesPage() {
 
         {/* Row 2 – search bar */}
         <div className="flex items-center gap-2 mx-4 mb-2 px-3 py-2 rounded-2xl"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}>
+          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,184,0,0.15)' }}>
           <Search className="w-4 h-4 shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
           <input
             value={searchQuery}
@@ -213,7 +213,7 @@ export default function CommunitiesPage() {
                 ...T,
                 color:            activeTab === tab.id ? GOLD : 'rgba(255,255,255,0.35)',
                 borderBottomColor: activeTab === tab.id ? GOLD : 'transparent',
-                background:       activeTab === tab.id ? 'rgba(212,175,55,0.05)' : 'transparent',
+                background:       activeTab === tab.id ? 'rgba(255,184,0,0.05)' : 'transparent',
               }}>
               <tab.icon className="w-3 h-3" />{tab.label}
             </button>
@@ -286,11 +286,11 @@ export default function CommunitiesPage() {
               <div className="flex flex-col items-center justify-center py-24">
                 <div style={{
                   width: 80, height: 80, clipPath: OCT,
-                  background: 'rgba(212,175,55,0.07)',
-                  border: '2px solid rgba(212,175,55,0.15)',
+                  background: 'rgba(255,184,0,0.07)',
+                  border: '2px solid rgba(255,184,0,0.15)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20,
                 }}>
-                  <Users className="w-9 h-9" style={{ color: 'rgba(212,175,55,0.4)' }} />
+                  <Users className="w-9 h-9" style={{ color: 'rgba(255,184,0,0.4)' }} />
                 </div>
                 <p className="font-black text-sm uppercase mb-2" style={{ color: 'rgba(255,255,255,0.45)', ...T }}>
                   You haven't joined any communities yet
@@ -300,7 +300,7 @@ export default function CommunitiesPage() {
                 </p>
                 <button onClick={() => setActiveTab('discover')}
                   className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-black uppercase text-[11px] transition-all hover:brightness-110"
-                  style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD, ...T }}>
+                  style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.35)', color: GOLD, ...T }}>
                   Explore communities →
                 </button>
               </div>
@@ -318,19 +318,19 @@ export default function CommunitiesPage() {
           <div className="mt-6 mb-4 flex flex-wrap gap-3">
             <Link to={createPageUrl('CommunityAdmin')} style={{ textDecoration: 'none' }}>
               <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[10px] uppercase"
-                style={{ background: 'rgba(128,0,32,0.1)', border: '1px solid rgba(128,0,32,0.3)', color: '#ff6666', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                style={{ background: 'rgba(255,21,100,0.1)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
                 ⚙️ Community Admin
               </button>
             </Link>
             <Link to={createPageUrl('CommunityGrowth')} style={{ textDecoration: 'none' }}>
               <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[10px] uppercase"
-                style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                style={{ background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.25)', color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
                 📈 Growth Tools
               </button>
             </Link>
             <Link to={createPageUrl('CommunitySettings')} style={{ textDecoration: 'none' }}>
               <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[10px] uppercase"
-                style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.25)', color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
                 ⚡ Settings
               </button>
             </Link>

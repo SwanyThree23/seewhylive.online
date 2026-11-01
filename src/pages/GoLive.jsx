@@ -187,11 +187,11 @@ import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 import RoomEntryGate from '../components/RoomEntryGate';
-const BG   = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK = '#C0392B';
-const GREEN = '#6DBF7E';
+const BG   = '#03030A';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK = '#FF2040';
+const GREEN = '#00FF88';
 const FONT = 'Barlow Condensed, sans-serif';
 
 const FORMATS = [
@@ -232,7 +232,7 @@ const FORMATS = [
     title: 'Audio Room',
     subtitle: 'Clubhouse-style stage. Speakers + listeners.',
     features: ['🎤 Stage', '✋ Hand Raise', '❤️ Love Tap', '📌 Pin Video'],
-    color: '#4A8A7A',
+    color: '#00F5FF',
     dest: 'AudioRoom',
   },
 ];
@@ -254,7 +254,7 @@ function FormatCard({ fmt, onSelect }) {
         width: '100%',
         padding: '16px 18px',
         borderRadius: 16,
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(7,7,15,0.9)',
         border: `1px solid rgba(255,255,255,0.08)`,
         borderLeft: `4px solid ${fmt.color}`,
         cursor: 'pointer',
@@ -362,7 +362,7 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
       <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', background: '#000' }}>
         {camOn
           ? <video ref={videoRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
-          : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'rgba(8,11,24,0.9)' }}>
+          : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'rgba(7,7,15,0.9)' }}>
               <CameraOff style={{ width: 32, height: 32, color: 'rgba(255,255,255,0.2)' }} />
               <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: FONT }}>Camera off</span>
             </div>}
@@ -374,18 +374,18 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
         )}
 
         <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 5, alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: camOn ? 'rgba(192,57,43,0.85)' : 'rgba(0,0,0,0.5)', fontSize: 11, fontWeight: 900, color: '#fff', fontFamily: FONT, letterSpacing: '0.08em' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: camOn ? 'rgba(255,32,64,0.85)' : 'rgba(0,0,0,0.5)', fontSize: 11, fontWeight: 900, color: '#fff', fontFamily: FONT, letterSpacing: '0.08em' }}>
             {camOn && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', display: 'inline-block' }} />}
             {camOn ? `PREVIEW · ${resolution}` : 'NO SIGNAL'}
           </div>
         </div>
 
         <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 8 }}>
-          <button onClick={toggleMic} aria-label={micOn ? 'Mute microphone' : 'Unmute microphone'} style={{ width: 44, height: 44, borderRadius: '50%', background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)', border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
-            {micOn ? <Mic style={{ width: 18, height: 18, color: GOLD }} /> : <MicOff style={{ width: 18, height: 18, color: '#C0392B' }} />}
+          <button onClick={toggleMic} aria-label={micOn ? 'Mute microphone' : 'Unmute microphone'} style={{ width: 44, height: 44, borderRadius: '50%', background: micOn ? 'rgba(255,184,0,0.2)' : 'rgba(255,32,64,0.2)', border: `1px solid ${micOn ? 'rgba(255,184,0,0.4)' : 'rgba(255,32,64,0.4)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
+            {micOn ? <Mic style={{ width: 18, height: 18, color: GOLD }} /> : <MicOff style={{ width: 18, height: 18, color: '#FF2040' }} />}
           </button>
           {cameras.length > 1 && (
-            <button onClick={handleSwitchCamera} aria-label="Switch camera" style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
+            <button onClick={handleSwitchCamera} aria-label="Switch camera" style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
               <Camera style={{ width: 18, height: 18, color: GOLD }} />
             </button>
           )}
@@ -457,9 +457,9 @@ function RtmpKeyRow({ streamKey }) {
           RTMP Stream Key
         </div>
         {vaultPayload && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 6px', borderRadius: 4, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.2)' }}>
-            <Lock style={{ width: 8, height: 8, color: '#6DBF7E' }} />
-            <span style={{ fontSize: 9, fontWeight: 900, fontFamily: FONT, letterSpacing: '0.06em', color: '#6DBF7E', textTransform: 'uppercase' }}>Vault Pro</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 6px', borderRadius: 4, background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.2)' }}>
+            <Lock style={{ width: 8, height: 8, color: '#00FF88' }} />
+            <span style={{ fontSize: 9, fontWeight: 900, fontFamily: FONT, letterSpacing: '0.06em', color: '#00FF88', textTransform: 'uppercase' }}>Vault Pro</span>
           </div>
         )}
       </div>
@@ -507,7 +507,7 @@ function Countdown({ onDone }) {
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(8,11,24,0.97)',
+        background: 'rgba(7,7,15,0.97)',
       }}
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
@@ -830,8 +830,8 @@ export default function GoLive() {
         position: 'sticky', top: 0, zIndex: 20,
         display: 'flex', alignItems: 'center', gap: 10,
         padding: '12px 16px',
-        background: 'rgba(8,11,24,0.97)',
-        borderBottom: '1px solid rgba(212,175,55,0.1)',
+        background: 'rgba(7,7,15,0.97)',
+        borderBottom: '1px solid rgba(255,184,0,0.1)',
         backdropFilter: 'blur(12px)',
       }}>
         {step === 'setup' ? (
@@ -876,7 +876,7 @@ export default function GoLive() {
 
             {FORMATS.map(fmt => <FormatCard key={fmt.id} fmt={fmt} onSelect={selectFormat} />)}
 
-            <div style={{ marginTop: 8, borderRadius: 16, padding: '14px 16px', background: 'rgba(109,191,126,0.04)', border: '1px solid rgba(109,191,126,0.12)' }}>
+            <div style={{ marginTop: 8, borderRadius: 16, padding: '14px 16px', background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.12)' }}>
               <Link to={createPageUrl('GreenroomEnhanced')} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
                 <span style={{ fontSize: 28 }}>🎬</span>
                 <div>
@@ -913,7 +913,7 @@ export default function GoLive() {
                   disabled={suggestingTitles}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 4,
-                    background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)',
+                    background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.25)',
                     borderRadius: 99, padding: '3px 10px', cursor: 'pointer',
                     color: GOLD, fontSize: 10, fontFamily: FONT, fontWeight: 900,
                     letterSpacing: '0.05em', opacity: suggestingTitles ? 0.6 : 1, transition: 'opacity .15s',
@@ -923,7 +923,7 @@ export default function GoLive() {
                 </button>
               </div>
               <input
-                style={{ ...INPUT, fontSize: 16, fontWeight: 700, borderColor: title ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.1)' }}
+                style={{ ...INPUT, fontSize: 16, fontWeight: 700, borderColor: title ? 'rgba(255,184,0,0.3)' : 'rgba(255,255,255,0.1)' }}
                 placeholder="What's your stream about?"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
@@ -938,12 +938,12 @@ export default function GoLive() {
                       onClick={() => { setTitle(s); setTitleSuggestions([]); }}
                       style={{
                         textAlign: 'left', padding: '8px 12px', borderRadius: 9, cursor: 'pointer',
-                        background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.18)',
+                        background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.18)',
                         color: 'rgba(255,255,255,0.8)', fontSize: 13, fontFamily: FONT, fontWeight: 700,
                         transition: 'all .15s',
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(212,175,55,0.12)'; e.currentTarget.style.color = GOLD; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,175,55,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}>
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,184,0,0.12)'; e.currentTarget.style.color = GOLD; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,184,0,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}>
                       {s}
                     </button>
                   ))}
@@ -990,11 +990,11 @@ export default function GoLive() {
                     <span key={t} style={{
                       display: 'inline-flex', alignItems: 'center', gap: 4,
                       padding: '3px 9px', borderRadius: 999,
-                      background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)',
+                      background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.25)',
                       color: GOLD, fontSize: 11, fontFamily: FONT, fontWeight: 700,
                     }}>
                       #{t}
-                      <button onClick={() => removeTag(t)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(212,175,55,0.5)', fontSize: 11, lineHeight: 1 }}>×</button>
+                      <button onClick={() => removeTag(t)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(255,184,0,0.5)', fontSize: 11, lineHeight: 1 }}>×</button>
                     </span>
                   ))}
                 </div>
@@ -1035,8 +1035,8 @@ export default function GoLive() {
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
-                background: isExclusive ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)',
-                border: isExclusive ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.08)',
+                background: isExclusive ? 'rgba(255,184,0,0.08)' : 'rgba(255,255,255,0.03)',
+                border: isExclusive ? '1px solid rgba(255,184,0,0.3)' : '1px solid rgba(255,255,255,0.08)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -1082,8 +1082,8 @@ export default function GoLive() {
           position: 'fixed', bottom: 0, inset: 0, top: 'auto',
           padding: '12px 16px',
           paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
-          background: 'rgba(8,11,24,0.98)',
-          borderTop: '1px solid rgba(212,175,55,0.12)',
+          background: 'rgba(7,7,15,0.98)',
+          borderTop: '1px solid rgba(255,184,0,0.12)',
           backdropFilter: 'blur(16px)',
         }}>
           <motion.button
@@ -1105,7 +1105,7 @@ export default function GoLive() {
                 ? `linear-gradient(135deg, ${CRIMSON}, ${PINK})`
                 : 'rgba(255,255,255,0.06)',
               color: title.trim() ? '#fff' : 'rgba(255,255,255,0.2)',
-              boxShadow: title.trim() ? `0 4px 24px rgba(192,57,43,0.4)` : 'none',
+              boxShadow: title.trim() ? `0 4px 24px rgba(255,32,64,0.4)` : 'none',
               transition: 'all 0.2s',
               display: 'flex',
               alignItems: 'center',
@@ -1293,12 +1293,12 @@ export default function GoLive() {
         <div style={{ position: 'fixed', bottom: 80, right: 20, zIndex: 9980, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
           <button
             onClick={() => setWhisperTarget(t => t ? null : 'picker')}
-            style={{ background: 'rgba(128,0,32,0.9)', border: '1px solid #D4AF37', borderRadius: 20, padding: '5px 12px', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}
+            style={{ background: 'rgba(255,21,100,0.9)', border: '1px solid #FFB800', borderRadius: 20, padding: '5px 12px', color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}
           >
             🤫 WHISPER
           </button>
           {whisperTarget === 'picker' && (
-            <div style={{ background: '#1A1A1A', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 10, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.6)', maxHeight: 200, overflowY: 'auto', width: 180 }}>
+            <div style={{ background: '#1A1A1A', border: '1px solid rgba(255,184,0,0.3)', borderRadius: 10, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.6)', maxHeight: 200, overflowY: 'auto', width: 180 }}>
               {members.filter(m => m.user_id !== user.id).slice(0, 10).map(m => (
                 <button
                   key={m.user_id || m.id}

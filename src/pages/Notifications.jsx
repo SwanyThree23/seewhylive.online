@@ -30,17 +30,17 @@ import StreamerMonetizationCenter from '../components/monetization/StreamerMonet
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import ViewerCount from '../components/live/ViewerCount';
 
-const GOLD = '#D4AF37';
-const PINK    = '#C0392B';
+const GOLD = '#FFB800';
+const PINK    = '#FF2040';
 const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_CONFIG = {
-  tip:          { icon: Gift,      color: '#D4AF37' },
-  subscription: { icon: Users,     color: '#C9A84C' },
-  room_invite:  { icon: Radio,     color: '#C0392B' },
-  challenge:    { icon: Trophy,    color: '#D4AF37' },
-  announcement: { icon: Megaphone, color: '#D4AF37' },
-  referral:     { icon: Gift,      color: '#6DBF7E' },
+  tip:          { icon: Gift,      color: '#FFB800' },
+  subscription: { icon: Users,     color: '#FFB800' },
+  room_invite:  { icon: Radio,     color: '#FF2040' },
+  challenge:    { icon: Trophy,    color: '#FFB800' },
+  announcement: { icon: Megaphone, color: '#FFB800' },
+  referral:     { icon: Gift,      color: '#00FF88' },
 };
 
 export default function NotificationsPage() {
@@ -104,11 +104,11 @@ export default function NotificationsPage() {
 
   return (
     <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ queryKey: ['notifications'] }); }}>
-    <div className="min-h-screen pb-8" style={{ background: '#080B18', ...T }}>
+    <div className="min-h-screen pb-8" style={{ background: '#03030A', ...T }}>
 
       {/* ── sticky header ── */}
       <div className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between"
-        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
+        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(255,184,0,0.1)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-2">
           <Bell className="w-5 h-5" style={{ color: GOLD }} />
           <h1 className="font-black text-lg text-white leading-none" style={T}>Notifications</h1>
@@ -154,7 +154,7 @@ export default function NotificationsPage() {
                   key={notif.id}
                   className="rounded-2xl flex items-start gap-3 p-4 transition-all cursor-pointer hover:brightness-110"
                   style={{
-                    background: notif.is_read ? 'rgba(8,11,24,0.6)' : 'rgba(8,11,24,0.95)',
+                    background: notif.is_read ? 'rgba(7,7,15,0.6)' : 'rgba(7,7,15,0.95)',
                     border: `1px solid ${notif.is_read ? 'rgba(255,255,255,0.06)' : `${cfg.color}35`}`,
                   }}
                   onClick={() => handleNotifClick(notif)}
@@ -196,7 +196,7 @@ export default function NotificationsPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(notif.id); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:brightness-125"
-                      style={{ background: 'rgba(192,57,43,0.15)', color: 'rgba(212,133,74,0.8)', border: '1px solid rgba(192,57,43,0.3)' }}
+                      style={{ background: 'rgba(255,32,64,0.15)', color: 'rgba(255,140,0,0.8)', border: '1px solid rgba(255,32,64,0.3)' }}
                       title="Delete notification">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
