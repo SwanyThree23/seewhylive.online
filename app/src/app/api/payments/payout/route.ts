@@ -38,25 +38,41 @@ export async function POST(req: NextRequest) {
     destination: user.stripeConnectId,
   })
 
-  const [updatedUser] = await prisma.$transaction([
-    prisma.user.update({
-      where: { id: ctx.userId },
-      data: { walletCents: { decrement: amountCents } },
-      select: { walletCents: true },
-    }),
-    prisma.payment.create({
-      data: {
-        fromUserId: ctx.userId,
-        toUserId: ctx.userId,
-        type: 'PAYOUT',
-        status: 'SUCCEEDED',
-        amountCents,
-        creatorAmountCents: amountCents,
-        platformFeeCents: 0,
-        stripePaymentIntentId: transfer.id,
-      },
-    }),
-  ])
+  // Atomically decrement only if balance is still sufficient (race-safe).
+  // A concurrent request may have spent the balance between our pre-flight
+  // check above and now — the gte condition prevents going negative.
+  let newBalance: number
+  try {
+    newBalance = await prisma.$transaction(async (tx) => {
+      const updated = await tx.user.updateMany({
+        where: { id: ctx.userId, walletCents: { gte: amountCents } },
+        data: { walletCents: { decrement: amountCents } },
+      })
+      if (updated.count === 0) throw Object.assign(new Error('INSUFFICIENT_FUNDS'), { code: 'WALLET_RACE' })
+      await tx.payment.create({
+        data: {
+          fromUserId: ctx.userId,
+          toUserId: ctx.userId,
+          type: 'PAYOUT',
+          status: 'SUCCEEDED',
+          amountCents,
+          creatorAmountCents: amountCents,
+          platformFeeCents: 0,
+          stripePaymentIntentId: transfer.id,
+        },
+      })
+      const refreshed = await tx.user.findUnique({ where: { id: ctx.userId }, select: { walletCents: true } })
+      return refreshed!.walletCents
+    })
+  } catch (e: unknown) {
+    if ((e as { code?: string }).code === 'WALLET_RACE') {
+      // Balance was spent concurrently — reverse the transfer we already created
+      await getStripe().transfers.createReversal(transfer.id).catch(() => {})
+      return err('INSUFFICIENT_FUNDS', 'Insufficient wallet balance', 400)
+    }
+    throw e
+  }
+  const updatedUser = { walletCents: newBalance }
 
   await writeAuditLog({
     actorId: ctx.userId,

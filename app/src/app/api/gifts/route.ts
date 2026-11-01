@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
   const [giftType, recipient] = await Promise.all([
     prisma.giftType.findUnique({ where: { id: giftTypeId } }),
-    prisma.user.findUnique({ where: { id: toUserId }, select: { id: true, stripeConnectId: true } }),
+    prisma.user.findUnique({ where: { id: toUserId, deletedAt: null }, select: { id: true, stripeConnectId: true } }),
   ])
 
   if (!giftType || !giftType.isActive) return err('NOT_FOUND', 'Gift type not found', 404)

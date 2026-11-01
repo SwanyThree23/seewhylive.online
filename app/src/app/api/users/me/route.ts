@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
+import { redis, REDIS_KEYS } from '@/lib/redis'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { writeAuditLog } from '@/lib/audit'
 import { z } from 'zod'
@@ -72,6 +73,9 @@ export async function DELETE(req: NextRequest) {
     where: { id: ctx.userId },
     data: { deletedAt: new Date(), email: `deleted_${ctx.userId}@deleted.invalid` },
   })
+
+  // Immediately revoke the Redis session cache so the user can't keep calling APIs
+  await redis.del(REDIS_KEYS.session(ctx.userId))
 
   await writeAuditLog({
     actorId: ctx.userId,
