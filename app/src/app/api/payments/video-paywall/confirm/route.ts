@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   const { paymentIntentId } = parsed.data
 
   const payment = await prisma.payment.findFirst({
-    where: { stripePaymentIntentId: paymentIntentId, fromUserId: ctx.userId },
+    where: { stripePaymentIntentId: paymentIntentId, fromUserId: ctx.userId, type: 'PAYWALL_UNLOCK' },
     select: { id: true, status: true, toUserId: true, creatorAmountCents: true },
   })
   if (!payment) return err('NOT_FOUND', 'Payment not found', 404)
