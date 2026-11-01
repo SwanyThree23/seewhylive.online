@@ -1,10 +1,9 @@
 import { NextRequest } from 'next/server'
-import Stripe from 'stripe'
+import { getStripe } from '@/lib/stripe'
 import { prisma } from '@/lib/db'
 import { requireAuth, ok, err } from '@/lib/middleware'
 import { writeAuditLog } from '@/lib/audit'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-10-28.endive' })
 
 export async function POST(req: NextRequest) {
   const ctx = await requireAuth(req)
@@ -19,7 +18,7 @@ export async function POST(req: NextRequest) {
   let accountId = user.stripeConnectId
 
   if (!accountId) {
-    const account = await stripe.accounts.create({
+    const account = await getStripe().accounts.create({
       type: 'express',
       email: user.email,
       capabilities: { transfers: { requested: true }, card_payments: { requested: true } },
@@ -40,7 +39,7 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const accountLink = await stripe.accountLinks.create({
+  const accountLink = await getStripe().accountLinks.create({
     account: accountId,
     refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/studio/payouts?refresh=1`,
     return_url: `${process.env.NEXT_PUBLIC_APP_URL}/studio/payouts?connected=1`,
@@ -60,7 +59,7 @@ export async function GET(req: NextRequest) {
   })
   if (!user?.stripeConnectId) return ok({ connected: false, detailsSubmitted: false })
 
-  const account = await stripe.accounts.retrieve(user.stripeConnectId)
+  const account = await getStripe().accounts.retrieve(user.stripeConnectId)
   return ok({
     connected: true,
     detailsSubmitted: account.details_submitted,

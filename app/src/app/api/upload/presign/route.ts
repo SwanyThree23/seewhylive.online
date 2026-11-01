@@ -5,13 +5,17 @@ import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { z } from 'zod'
 import crypto from 'crypto'
 
-const s3 = new S3Client({
-  region: process.env.AWS_REGION!,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-})
+let _s3: S3Client | null = null
+function getS3() {
+  if (!_s3) _s3 = new S3Client({
+    region: process.env.AWS_REGION!,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+  })
+  return _s3
+}
 
 const BUCKET = process.env.AWS_S3_BUCKET!
 
@@ -56,7 +60,7 @@ export async function POST(req: NextRequest) {
   const key = `${allowed.folder}/${purpose}/${ctx.userId}/${crypto.randomUUID()}.${ext}`
 
   const command = new PutObjectCommand({
-    Bucket: BUCKET,
+    Bucket: BUCKET ?? '',
     Key: key,
     ContentType: contentType,
     ContentLength: Math.round(fileSizeMB * 1024 * 1024),
@@ -65,7 +69,7 @@ export async function POST(req: NextRequest) {
     Metadata: { uploadedBy: ctx.userId, purpose },
   })
 
-  const url = await getSignedUrl(s3, command, { expiresIn: 300 })
+  const url = await getSignedUrl(getS3(), command, { expiresIn: 300 })
   const cdnUrl = `https://${process.env.AWS_CLOUDFRONT_DOMAIN}/${key}`
 
   return ok({ uploadUrl: url, cdnUrl, key })

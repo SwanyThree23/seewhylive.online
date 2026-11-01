@@ -5,7 +5,11 @@ import { redis, REDIS_KEYS } from '@/lib/redis'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { z } from 'zod'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+let _anthropic: Anthropic | null = null
+function getAnthropic() {
+  if (!_anthropic) _anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  return _anthropic
+}
 
 const auraSchema = z.object({
   trigger: z.enum(['chat', 'tip', 'join', 'command']),
@@ -25,7 +29,7 @@ const HOURLY_LIMIT = 50
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { streamId: string } },
+  { params }: { params: Promise<{ streamId: string }> },
 ) {
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
@@ -33,9 +37,10 @@ export async function POST(
   const limited = await rateLimit(getIP(req), 'auth')
   if (limited) return limited
 
+  const { streamId } = await params
   // Fetch stream and verify AURA is enabled
   const stream = await prisma.stream.findUnique({
-    where: { id: params.streamId, status: 'LIVE' },
+    where: { id: streamId, status: 'LIVE' },
     select: { auraEnabled: true, auraPersonality: true, creatorId: true },
   })
   if (!stream) return err('NOT_FOUND', 'Stream not found or not live', 404)
@@ -44,7 +49,7 @@ export async function POST(
 
   // Hourly rate limit per stream
   const hour = new Date().toISOString().slice(0, 13)
-  const hourKey = REDIS_KEYS.auraCallCount(params.streamId, hour)
+  const hourKey = REDIS_KEYS.auraCallCount(streamId, hour)
   const callCount = await redis.incr(hourKey)
   if (callCount === 1) await redis.expire(hourKey, 3600)
   if (callCount > HOURLY_LIMIT) {
@@ -63,7 +68,7 @@ export async function POST(
 
   const userMessage = buildAuraPrompt(trigger, context, recentMessages)
 
-  const message = await anthropic.messages.create({
+  const message = await getAnthropic().messages.create({
     model: 'claude-haiku-5-5',
     max_tokens: 150,
     system: systemPrompt,

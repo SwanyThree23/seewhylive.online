@@ -4,7 +4,7 @@ import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { streamId: string } },
+  { params }: { params: Promise<{ streamId: string }> },
 ) {
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
@@ -12,8 +12,9 @@ export async function POST(
   const limited = await rateLimit(getIP(req), 'auth')
   if (limited) return limited
 
+  const { streamId } = await params
   const stream = await prisma.stream.findUnique({
-    where: { id: params.streamId },
+    where: { id: streamId },
     select: {
       id: true,
       status: true,
@@ -34,7 +35,7 @@ export async function POST(
     const paid = await prisma.payment.findFirst({
       where: {
         fromUserId: ctx.userId,
-        streamId: params.streamId,
+        streamId,
         type: 'PAYWALL_UNLOCK',
         status: 'SUCCEEDED',
       },
@@ -44,9 +45,9 @@ export async function POST(
 
   // Increment viewer count atomically
   await prisma.stream.update({
-    where: { id: params.streamId },
+    where: { id: streamId },
     data: { viewerCount: { increment: 1 } },
   })
 
-  return ok({ joined: true, streamId: params.streamId })
+  return ok({ joined: true, streamId })
 }

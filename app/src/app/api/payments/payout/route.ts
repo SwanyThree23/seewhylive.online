@@ -1,12 +1,11 @@
 import { NextRequest } from 'next/server'
-import Stripe from 'stripe'
+import { getStripe } from '@/lib/stripe'
 import { prisma } from '@/lib/db'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { payoutSchema } from '@/lib/validations/payment'
 import { writeAuditLog } from '@/lib/audit'
 import { createNotification } from '@/lib/notifications'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-10-28.endive' })
 
 export async function POST(req: NextRequest) {
   const ctx = await requireAuth(req)
@@ -32,6 +31,13 @@ export async function POST(req: NextRequest) {
   if (!user.stripeConnectId) return err('NO_PAYOUT', 'Stripe Connect account not set up', 400)
   if (user.walletCents < amountCents) return err('INSUFFICIENT_FUNDS', 'Insufficient wallet balance', 400)
 
+  // Create the Stripe transfer first — if it fails, wallet stays intact
+  const transfer = await getStripe().transfers.create({
+    amount: amountCents,
+    currency: 'usd',
+    destination: user.stripeConnectId,
+  })
+
   const [updatedUser] = await prisma.$transaction([
     prisma.user.update({
       where: { id: ctx.userId },
@@ -43,20 +49,14 @@ export async function POST(req: NextRequest) {
         fromUserId: ctx.userId,
         toUserId: ctx.userId,
         type: 'PAYOUT',
-        status: 'PENDING',
+        status: 'SUCCEEDED',
         amountCents,
         creatorAmountCents: amountCents,
         platformFeeCents: 0,
+        stripePaymentIntentId: transfer.id,
       },
     }),
   ])
-
-  // Trigger Stripe Transfer to connected account
-  await stripe.transfers.create({
-    amount: amountCents,
-    currency: 'usd',
-    destination: user.stripeConnectId,
-  })
 
   await writeAuditLog({
     actorId: ctx.userId,

@@ -6,9 +6,6 @@ import { z } from 'zod'
 
 type Params = { params: Promise<{ postId: string }> }
 
-const CREATOR_SPLIT = 0.90
-const PLATFORM_FEE = 0.10
-
 const updateVideoSchema = z.object({
   title: z.string().min(1).max(120).optional(),
   description: z.string().max(2000).optional(),
@@ -44,12 +41,12 @@ export async function GET(req: NextRequest, { params }: Params) {
         })
       : null
     if (!unlock) {
-      return ok({
+      return ok({ post: {
         id: post.id, title: post.title, thumbnailUrl: post.thumbnailUrl,
         isPaywalled: true, paywallAmountCents: post.paywallAmountCents,
         creator: post.creator,
         videoUrl: null,
-      })
+      }})
     }
   }
 
@@ -112,6 +109,4 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   return ok({ deleted: true })
 }
 
-// Suppress unused import warning
-void CREATOR_SPLIT
-void PLATFORM_FEE
+

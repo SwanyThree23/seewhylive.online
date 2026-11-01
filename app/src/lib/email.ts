@@ -1,6 +1,10 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
+let _resend: Resend | null = null
+function getResend() {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY!)
+  return _resend
+}
 const FROM = 'SeeWhy LIVE <noreply@seewhylive.online>'
 
 function dollarFormat(cents: number) {
@@ -9,7 +13,7 @@ function dollarFormat(cents: number) {
 
 export async function sendWelcomeEmail(to: string, username: string) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM,
       to,
       subject: 'Welcome to SeeWhy LIVE 📡',
@@ -43,7 +47,7 @@ export async function sendTipReceivedEmail(
 ) {
   const creatorShare = Math.floor(amountCents * 0.90)
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM,
       to,
       subject: `You received a tip — ${dollarFormat(creatorShare)} from @${senderUsername}`,
@@ -77,7 +81,7 @@ export async function sendNewFollowerEmail(
   followerCount: number,
 ) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM,
       to,
       subject: `@${followerUsername} followed you on SeeWhy LIVE`,
@@ -107,7 +111,7 @@ export async function sendSubscriptionEmail(
   creatorShareCents: number,
 ) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM,
       to,
       subject: `@${subscriberUsername} subscribed — ${dollarFormat(creatorShareCents)}/mo`,
@@ -129,5 +133,29 @@ export async function sendSubscriptionEmail(
     })
   } catch (e) {
     console.error('[email] sendSubscriptionEmail failed:', e)
+  }
+}
+
+export async function sendPasswordResetEmail(to: string, resetToken: string) {
+  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`
+  try {
+    await getResend().emails.send({
+      from: FROM,
+      to,
+      subject: 'Reset your SeeWhy LIVE password',
+      html: `
+        <div style="background:#03030A;color:#F0E8D4;font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px 24px">
+          <h1 style="font-size:28px;letter-spacing:0.1em;margin:0 0 24px">PASSWORD RESET</h1>
+          <p>We received a request to reset your password. Click the link below — it expires in 1 hour.</p>
+          <a href="${resetUrl}"
+             style="display:inline-block;margin-top:16px;background:#FF1564;color:#fff;padding:12px 28px;border-radius:4px;text-decoration:none;font-weight:bold;letter-spacing:0.1em">
+            RESET PASSWORD →
+          </a>
+          <p style="margin-top:24px;color:#9CA3AF;font-size:13px">If you didn't request this, ignore this email — your password is unchanged.</p>
+        </div>
+      `,
+    })
+  } catch (e) {
+    console.error('[email] sendPasswordResetEmail failed:', e)
   }
 }

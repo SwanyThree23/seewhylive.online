@@ -5,9 +5,9 @@ import { ok, err } from '@/lib/middleware'
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { username: string } },
+  { params }: { params: Promise<{ username: string }> },
 ) {
-  const { username } = params
+  const { username } = await params
 
   const cacheKey = REDIS_KEYS.creatorProfile(username)
   const cached = await redis.get(cacheKey)
@@ -32,7 +32,7 @@ export async function GET(
       streams: {
         where: { status: 'LIVE' },
         take: 1,
-        select: { id: true, title: true, genre: true, thumbnailUrl: true, viewerCount: true },
+        select: { id: true, title: true, genre: true, thumbnailUrl: true, viewerCount: true, isPaywalled: true },
       },
     },
   })

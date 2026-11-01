@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
   const items = hasMore ? users.slice(0, limit) : users
   const nextCursor = hasMore ? items[items.length - 1].id : null
 
-  return ok({ items, nextCursor })
+  return ok({ users: items, nextCursor })
 }
 
 export async function DELETE(req: NextRequest) {

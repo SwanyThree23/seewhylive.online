@@ -18,7 +18,7 @@ const GENRES = ['TALK_SHOW', 'MUSIC', 'LIFESTYLE', 'COMMUNITY', 'PANEL', 'COMEDY
 type StudioTab = 'live' | 'video' | 'schedule'
 
 export default function StudioPage() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
   const [studioTab, setStudioTab] = useState<StudioTab>('live')
   const [form, setForm] = useState({

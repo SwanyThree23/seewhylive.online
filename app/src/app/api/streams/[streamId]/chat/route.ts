@@ -10,14 +10,15 @@ const messageSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { streamId: string } },
+  { params }: { params: Promise<{ streamId: string }> },
 ) {
+  const { streamId } = await params
   const { searchParams } = new URL(req.url)
   const cursor = searchParams.get('cursor') ?? undefined
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '50', 10), 100)
 
   const messages = await prisma.message.findMany({
-    where: { streamId: params.streamId, deletedAt: null },
+    where: { streamId, deletedAt: null },
     take: limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     orderBy: { createdAt: 'desc' },
@@ -42,7 +43,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { streamId: string } },
+  { params }: { params: Promise<{ streamId: string }> },
 ) {
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
@@ -50,6 +51,7 @@ export async function POST(
   const limited = await rateLimit(getIP(req), 'auth')
   if (limited) return limited
 
+  const { streamId } = await params
   let body: unknown
   try { body = await req.json() } catch { return err('INVALID_JSON', 'Invalid JSON', 400) }
 
@@ -57,7 +59,7 @@ export async function POST(
   if (!parsed.success) return err('VALIDATION_ERROR', 'Invalid input', 422)
 
   const stream = await prisma.stream.findUnique({
-    where: { id: params.streamId, status: 'LIVE' },
+    where: { id: streamId, status: 'LIVE' },
     select: { id: true, creatorId: true },
   })
   if (!stream) return err('NOT_FOUND', 'Stream not found or not live', 404)
@@ -74,7 +76,7 @@ export async function POST(
 
   const message = await prisma.message.create({
     data: {
-      streamId: params.streamId,
+      streamId,
       authorId: ctx.userId,
       body: parsed.data.body,
       lang: parsed.data.lang,
@@ -95,11 +97,12 @@ export async function POST(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { streamId: string } },
+  { params }: { params: Promise<{ streamId: string }> },
 ) {
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
 
+  const { streamId } = await params
   const { searchParams } = new URL(req.url)
   const messageId = searchParams.get('messageId')
   if (!messageId) return err('INVALID', 'messageId is required', 400)
@@ -109,7 +112,7 @@ export async function DELETE(
     select: { streamId: true, authorId: true, stream: { select: { creatorId: true } } },
   })
   if (!message) return err('NOT_FOUND', 'Message not found', 404)
-  if (message.streamId !== params.streamId) return err('INVALID', 'Message not in this stream', 400)
+  if (message.streamId !== streamId) return err('INVALID', 'Message not in this stream', 400)
 
   const isAuthor = message.authorId === ctx.userId
   const isCreator = message.stream.creatorId === ctx.userId

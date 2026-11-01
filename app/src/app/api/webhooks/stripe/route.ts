@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { getStripe } from '@/lib/stripe'
 import { prisma } from '@/lib/db'
 import { writeAuditLog } from '@/lib/audit'
 import { sendTipReceivedEmail, sendSubscriptionEmail } from '@/lib/email'
 import { createNotification } from '@/lib/notifications'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-10-28.endive' })
 
 export async function POST(req: NextRequest) {
   const body = await req.text()
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   let event: Stripe.Event
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
+    event = getStripe().webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
   } catch (err) {
     console.error('Stripe webhook signature verification failed:', err)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
@@ -58,34 +58,49 @@ async function handlePaymentIntentSucceeded(pi: Stripe.PaymentIntent) {
   })
   if (!payment) return
 
-  await prisma.$transaction([
-    prisma.payment.update({
-      where: { id: payment.id },
-      data: { status: 'SUCCEEDED' },
-    }),
-    // Credit wallet on tip/paywall
-    ...(payment.type !== 'PAYOUT' && payment.toUserId
-      ? [prisma.user.update({
-          where: { id: payment.toUserId },
-          data: { walletCents: { increment: payment.creatorAmountCents } },
-        })]
-      : []),
-  ])
+  // Race-safe: only credit wallet if we are the first to mark it SUCCEEDED
+  const updated = await prisma.payment.updateMany({
+    where: { id: payment.id, status: 'PENDING' },
+    data: { status: 'SUCCEEDED' },
+  })
 
-  if (payment.type === 'TIP' && payment.toUserId && payment.fromUserId) {
+  if (updated.count > 0 && payment.type !== 'PAYOUT' && payment.toUserId) {
+    await prisma.user.update({
+      where: { id: payment.toUserId },
+      data: { walletCents: { increment: payment.creatorAmountCents } },
+    })
+  }
+
+  if (updated.count > 0 && (payment.type === 'TIP' || payment.type === 'GIFT') && payment.toUserId && payment.fromUserId) {
+    const isGift = payment.type === 'GIFT' || pi.metadata?.type === 'gift'
     const [creator, sender] = await Promise.all([
       prisma.user.findUnique({ where: { id: payment.toUserId }, select: { email: true, username: true } }),
       prisma.user.findUnique({ where: { id: payment.fromUserId }, select: { username: true } }),
     ])
     if (creator && sender) {
-      sendTipReceivedEmail(creator.email, creator.username, sender.username, pi.amount, null)
-      createNotification({
-        userId: payment.toUserId,
-        type: 'TIP_RECEIVED' as const,
-        title: 'New Tip',
-        body: `@${sender.username} tipped you $${(payment.creatorAmountCents / 100).toFixed(2)}`,
-        data: { fromUsername: sender.username, amountCents: pi.amount },
-      })
+      if (isGift) {
+        const giftType = pi.metadata?.giftTypeId
+          ? await prisma.giftType.findUnique({ where: { id: pi.metadata.giftTypeId }, select: { name: true, icon: true } })
+          : null
+        createNotification({
+          userId: payment.toUserId,
+          type: 'GIFT_RECEIVED' as const,
+          title: 'Gift Received',
+          body: giftType
+            ? `@${sender.username} sent you a ${giftType.icon} ${giftType.name}`
+            : `@${sender.username} sent you a gift`,
+          data: { fromUsername: sender.username, amountCents: pi.amount },
+        })
+      } else {
+        sendTipReceivedEmail(creator.email, creator.username, sender.username, pi.amount, null)
+        createNotification({
+          userId: payment.toUserId,
+          type: 'TIP_RECEIVED' as const,
+          title: 'New Tip',
+          body: `@${sender.username} tipped you $${(payment.creatorAmountCents / 100).toFixed(2)}`,
+          data: { fromUsername: sender.username, amountCents: pi.amount },
+        })
+      }
     }
   }
 

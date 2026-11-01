@@ -10,7 +10,7 @@ import { loginSchema } from '@/lib/validations/auth'
 import { writeAuditLog } from '@/lib/audit'
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
+  adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
   session: { strategy: 'jwt', maxAge: 60 * 60 * 24 * 7 },
   providers: [
     CredentialsProvider({
@@ -65,7 +65,15 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    async signIn({ user }) {
+      if (!user?.id) return true
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { deletedAt: true },
+      })
+      return !dbUser?.deletedAt
+    },
+    async jwt({ token, user }) {
       if (user) {
         // Fresh sign-in — embed role/tier into the token
         const dbUser = await prisma.user.findUnique({

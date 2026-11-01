@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { redis } from '@/lib/redis'
 import { forgotPasswordSchema } from '@/lib/validations/auth'
 import { rateLimit, ok, err, getIP } from '@/lib/middleware'
+import { sendPasswordResetEmail } from '@/lib/email'
 
 const TTL = 60 * 60 // 1 hour
 
@@ -31,7 +32,8 @@ export async function POST(req: NextRequest) {
   const token = crypto.randomBytes(32).toString('hex')
   await redis.setex(`pw_reset:${token}`, TTL, user.id)
 
-  // In production, send via Resend. Log token for now.
+  sendPasswordResetEmail(email, token).catch(() => {})
+
   if (process.env.NODE_ENV !== 'production') {
     console.log(`[dev] password reset token for ${email}: ${token}`)
   }

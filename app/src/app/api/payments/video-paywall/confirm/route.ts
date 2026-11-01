@@ -1,11 +1,10 @@
 import { NextRequest } from 'next/server'
-import Stripe from 'stripe'
+import { getStripe } from '@/lib/stripe'
 import { prisma } from '@/lib/db'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { writeAuditLog } from '@/lib/audit'
 import { z } from 'zod'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-10-28.endive' as never })
 
 const confirmSchema = z.object({
   paymentIntentId: z.string().min(1).regex(/^pi_/),
@@ -34,7 +33,7 @@ export async function POST(req: NextRequest) {
 
   if (payment.status === 'SUCCEEDED') return ok({ confirmed: true })
 
-  const pi = await stripe.paymentIntents.retrieve(paymentIntentId)
+  const pi = await getStripe().paymentIntents.retrieve(paymentIntentId)
   if (pi.status !== 'succeeded') {
     return err('NOT_CONFIRMED', 'Payment has not succeeded', 402)
   }

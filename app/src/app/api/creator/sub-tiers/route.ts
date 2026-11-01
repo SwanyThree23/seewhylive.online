@@ -13,9 +13,6 @@ const createTierSchema = z.object({
   stripePriceId: z.string().optional(),
 })
 
-const updateTierSchema = createTierSchema.partial().extend({
-  isActive: z.boolean().optional(),
-})
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
