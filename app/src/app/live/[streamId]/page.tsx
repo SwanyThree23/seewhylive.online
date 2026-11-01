@@ -116,6 +116,7 @@ export default async function LiveStreamPage({ params }: Props) {
         creatorName={stream.creator.displayName ?? stream.creator.username}
         stripeConnectId={stream.creator.stripeConnectId ?? null}
         isLive={isLive}
+        auraEnabled={!!stream.auraEnabled}
       />
     </div>
   )

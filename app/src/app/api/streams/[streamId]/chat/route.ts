@@ -92,3 +92,35 @@ export async function POST(
 
   return ok(message, 201)
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { streamId: string } },
+) {
+  const ctx = await requireAuth(req)
+  if ('status' in ctx) return ctx
+
+  const { searchParams } = new URL(req.url)
+  const messageId = searchParams.get('messageId')
+  if (!messageId) return err('INVALID', 'messageId is required', 400)
+
+  const message = await prisma.message.findUnique({
+    where: { id: messageId },
+    select: { streamId: true, authorId: true, stream: { select: { creatorId: true } } },
+  })
+  if (!message) return err('NOT_FOUND', 'Message not found', 404)
+  if (message.streamId !== params.streamId) return err('INVALID', 'Message not in this stream', 400)
+
+  const isAuthor = message.authorId === ctx.userId
+  const isCreator = message.stream.creatorId === ctx.userId
+  if (!isAuthor && !isCreator && ctx.role !== 'ADMIN') {
+    return err('FORBIDDEN', 'Not authorized', 403)
+  }
+
+  await prisma.message.update({
+    where: { id: messageId },
+    data: { deletedAt: new Date() },
+  })
+
+  return ok({ deleted: true })
+}

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Btn } from '@/components/ui/Btn'
 import { TipModal } from '@/components/payment/TipModal'
 import { PaywallModal } from '@/components/payment/PaywallModal'
+import { CreatorControls } from '@/components/stream/CreatorControls'
 import { connectSocket } from '@/lib/socket-client'
 import type { Socket } from 'socket.io-client'
 
@@ -18,6 +19,7 @@ interface Props {
   creatorName: string
   stripeConnectId: string | null
   isLive: boolean
+  auraEnabled: boolean
 }
 
 export function LiveStreamClient({
@@ -29,6 +31,7 @@ export function LiveStreamClient({
   creatorName,
   stripeConnectId,
   isLive,
+  auraEnabled,
 }: Props) {
   const { data: session } = useSession()
   const [viewerCount, setViewerCount] = useState(initialViewerCount)
@@ -134,6 +137,10 @@ export function LiveStreamClient({
           creatorName={creatorName}
           onUnlocked={() => setHasAccess(true)}
         />
+      )}
+
+      {isLive && session?.user?.id === creatorId && (
+        <CreatorControls streamId={streamId} auraEnabled={auraEnabled} />
       )}
     </>
   )
