@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-const CREATOR_SPLIT = 0.90
 const PLATFORM_FEE = 0.10
 
 export function calcSplit(amountCents: number): {

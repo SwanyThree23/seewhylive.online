@@ -9,7 +9,7 @@ export const redis =
   new IORedis(process.env.REDIS_URL!, {
     maxRetriesPerRequest: 3,
     enableReadyCheck: false,
-    lazyConnect: false,
+    lazyConnect: true,
   })
 
 if (process.env.NODE_ENV !== 'production') globalForRedis.redis = redis

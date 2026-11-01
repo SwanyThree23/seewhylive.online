@@ -2,11 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { z } from 'zod'
-import Stripe from 'stripe'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-10-28.endive' as never,
-})
+import { getStripe } from '@/lib/stripe'
 
 const CREATOR_SPLIT = 0.90
 const PLATFORM_FEE = 0.10
@@ -56,7 +52,7 @@ export async function POST(req: NextRequest) {
   const platformFeeCents = Math.floor(giftType.amountCents * PLATFORM_FEE)
   const creatorShareCents = Math.floor(giftType.amountCents * CREATOR_SPLIT)
 
-  const paymentIntent = await stripe.paymentIntents.create({
+  const paymentIntent = await getStripe().paymentIntents.create({
     amount: giftType.amountCents,
     currency: 'usd',
     automatic_payment_methods: { enabled: true },

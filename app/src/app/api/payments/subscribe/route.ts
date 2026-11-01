@@ -1,11 +1,10 @@
 import { NextRequest } from 'next/server'
-import Stripe from 'stripe'
+import { getStripe } from '@/lib/stripe'
 import { prisma } from '@/lib/db'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { subscribeSchema } from '@/lib/validations/payment'
 import { writeAuditLog } from '@/lib/audit'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-10-28.endive' })
 
 export async function POST(req: NextRequest) {
   const ctx = await requireAuth(req)
@@ -49,7 +48,7 @@ export async function POST(req: NextRequest) {
   if (existing) return err('ALREADY_SUBSCRIBED', 'Already subscribed', 409)
 
   // Create Stripe Checkout Session for subscription
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: 'subscription',
     line_items: [{ price: subTier.stripePriceId, quantity: 1 }],
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,

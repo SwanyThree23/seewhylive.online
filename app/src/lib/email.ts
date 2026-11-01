@@ -1,6 +1,10 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
+let _resend: Resend | null = null
+function getResend() {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY!)
+  return _resend
+}
 const FROM = 'SeeWhy LIVE <noreply@seewhylive.online>'
 
 function dollarFormat(cents: number) {
@@ -9,7 +13,7 @@ function dollarFormat(cents: number) {
 
 export async function sendWelcomeEmail(to: string, username: string) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM,
       to,
       subject: 'Welcome to SeeWhy LIVE 📡',
@@ -43,7 +47,7 @@ export async function sendTipReceivedEmail(
 ) {
   const creatorShare = Math.floor(amountCents * 0.90)
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM,
       to,
       subject: `You received a tip — ${dollarFormat(creatorShare)} from @${senderUsername}`,
@@ -77,7 +81,7 @@ export async function sendNewFollowerEmail(
   followerCount: number,
 ) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM,
       to,
       subject: `@${followerUsername} followed you on SeeWhy LIVE`,
@@ -107,7 +111,7 @@ export async function sendSubscriptionEmail(
   creatorShareCents: number,
 ) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM,
       to,
       subject: `@${subscriberUsername} subscribed — ${dollarFormat(creatorShareCents)}/mo`,

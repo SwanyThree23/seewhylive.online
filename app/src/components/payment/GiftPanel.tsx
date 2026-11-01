@@ -77,7 +77,7 @@ function GiftPaymentForm({ data, onSuccess, onCancel }: {
   )
 }
 
-export function GiftPanel({ streamId, toUserId, creatorName: _creatorName }: Props) {
+export function GiftPanel({ streamId, toUserId }: Props) {
   const { data: session } = useSession()
   const [gifts, setGifts] = useState<GiftType[]>([])
   const [checkoutData, setCheckoutData] = useState<CheckoutData | null>(null)

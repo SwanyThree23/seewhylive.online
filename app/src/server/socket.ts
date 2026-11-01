@@ -1,7 +1,6 @@
 import { createServer } from 'http'
 import { Server, type Socket } from 'socket.io'
 import { getToken } from 'next-auth/jwt'
-import type { IncomingMessage } from 'http'
 
 const PORT = parseInt(process.env.SOCKET_PORT ?? '4001', 10)
 

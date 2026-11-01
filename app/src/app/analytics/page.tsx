@@ -39,7 +39,7 @@ function formatDuration(start: string | null, end: string | null): string {
 }
 
 export default function AnalyticsPage() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
   const [data, setData] = useState<DashboardData | null>(null)
   const [days, setDays] = useState(30)

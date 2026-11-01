@@ -1,11 +1,10 @@
 import { NextRequest } from 'next/server'
-import Stripe from 'stripe'
+import { getStripe } from '@/lib/stripe'
 import { prisma } from '@/lib/db'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { tipSchema, calcSplit } from '@/lib/validations/payment'
 import { writeAuditLog } from '@/lib/audit'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-10-28.endive' })
 
 export async function POST(req: NextRequest) {
   const ctx = await requireAuth(req)
@@ -40,7 +39,7 @@ export async function POST(req: NextRequest) {
   const { creatorAmountCents, platformFeeCents } = calcSplit(amountCents)
 
   // Create PaymentIntent with application_fee_amount (platform earns 10%)
-  const paymentIntent = await stripe.paymentIntents.create({
+  const paymentIntent = await getStripe().paymentIntents.create({
     amount: amountCents,
     currency: 'usd',
     automatic_payment_methods: { enabled: true },
