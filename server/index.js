@@ -1221,6 +1221,12 @@ app.post('/api/fuel/purchase', requireAuth, fuelRateLimit, function(req, res) {
     var amountCents = parseInt(req.body && req.body.amountCents, 10);
     var amountFuel = FUEL_PACKAGES[amountCents];
     if (!amountFuel) return res.status(400).json({ error: 'Invalid package — use a valid amountCents' });
+    var paymentIntentId = String((req.body && req.body.paymentIntentId) || '').trim();
+    if (!paymentIntentId || !/^pi_[A-Za-z0-9]{10,}$/.test(paymentIntentId)) {
+      return res.status(400).json({ error: 'Valid paymentIntentId required' });
+    }
+    var dup = db.prepare('SELECT id FROM fuel_transactions WHERE type = ? AND ref_id = ?').get('purchase', paymentIntentId);
+    if (dup) return res.status(409).json({ error: 'Payment already applied' });
     var now = Math.floor(Date.now() / 1000);
     var txId = uuidv4();
     var credit = db.transaction(function() {
@@ -1230,7 +1236,7 @@ app.post('/api/fuel/purchase', requireAuth, fuelRateLimit, function(req, res) {
       } else {
         db.prepare('INSERT INTO fuel_balances (user_id, balance, updated_at) VALUES (?, ?, ?)').run(userId, amountFuel, now);
       }
-      db.prepare('INSERT INTO fuel_transactions (id, user_id, amount, type, ref_id, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(txId, userId, amountFuel, 'purchase', String((req.body && req.body.paymentIntentId) || ''), now);
+      db.prepare('INSERT INTO fuel_transactions (id, user_id, amount, type, ref_id, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(txId, userId, amountFuel, 'purchase', paymentIntentId, now);
     });
     credit();
     var newRow = db.prepare('SELECT balance FROM fuel_balances WHERE user_id = ?').get(userId);
