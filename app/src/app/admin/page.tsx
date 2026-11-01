@@ -66,7 +66,7 @@ export default function AdminPage() {
     const c = reset ? undefined : cursor
     try {
       const params = new URLSearchParams({ limit: '20' })
-      if (search) params.set('search', search)
+      if (search) params.set('q', search)
       if (c) params.set('cursor', c)
       const res = await fetch(`/api/admin/users?${params}`)
       const d = await res.json()

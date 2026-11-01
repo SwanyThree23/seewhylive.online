@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
+import { createNotification } from '@/lib/notifications'
 import { z } from 'zod'
 
 const createScheduledSchema = z.object({
@@ -65,6 +66,29 @@ export async function POST(req: NextRequest) {
       scheduledAt,
     },
   })
+
+  if (parsed.data.notifyFollowers) {
+    const host = await prisma.user.findUnique({
+      where: { id: ctx.userId },
+      select: { username: true, displayName: true },
+    })
+    prisma.follow.findMany({
+      where: { followingId: ctx.userId },
+      select: { followerId: true },
+      take: 500,
+    }).then(follows => {
+      const displayName = host?.displayName ?? host?.username ?? 'Someone'
+      return Promise.all(follows.map(f =>
+        createNotification({
+          userId: f.followerId,
+          type: 'STREAM_STARTING',
+          title: `${displayName} scheduled a stream`,
+          body: `"${parsed.data.title}" — ${scheduledAt.toLocaleString()}`,
+          data: { scheduledStreamId: stream.id, hostId: ctx.userId },
+        })
+      ))
+    }).catch(() => { /* non-critical */ })
+  }
 
   return ok({ stream }, 201)
 }

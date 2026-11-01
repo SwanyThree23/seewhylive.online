@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { payoutSchema } from '@/lib/validations/payment'
 import { writeAuditLog } from '@/lib/audit'
+import { createNotification } from '@/lib/notifications'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-10-28.endive' })
 
@@ -63,6 +64,14 @@ export async function POST(req: NextRequest) {
     targetId: ctx.userId,
     targetType: 'User',
     meta: { amountCents },
+  })
+
+  createNotification({
+    userId: ctx.userId,
+    type: 'PAYOUT_PROCESSED',
+    title: 'Payout Initiated',
+    body: `$${(amountCents / 100).toFixed(2)} payout is on its way to your bank account`,
+    data: { amountCents },
   })
 
   return ok({ newBalance: updatedUser.walletCents })
