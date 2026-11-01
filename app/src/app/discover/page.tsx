@@ -23,9 +23,10 @@ async function getLiveStreams(genre?: string) {
 export default async function DiscoverPage({
   searchParams,
 }: {
-  searchParams: { genre?: string }
+  searchParams: Promise<{ genre?: string }>
 }) {
-  const genre = searchParams.genre ?? 'ALL'
+  const { genre: genreParam } = await searchParams
+  const genre = genreParam ?? 'ALL'
   const streams = await getLiveStreams(genre)
 
   return (
