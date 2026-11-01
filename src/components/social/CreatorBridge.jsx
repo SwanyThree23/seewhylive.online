@@ -29,10 +29,10 @@ export default function CreatorBridge({ user }) {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Youtube className="w-4 h-4 text-[#C0392B]" />
+          <Youtube className="w-4 h-4 text-[#FF2040]" />
           <h3 className="text-sm font-bold text-white">Connect YouTube Channel</h3>
         </div>
-        {linked && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
+        {linked && <CheckCircle2 className="w-4 h-4 text-[#00FF88]" />}
       </div>
 
       {!linked ? (
@@ -46,14 +46,14 @@ export default function CreatorBridge({ user }) {
               setError('');
             }}
             style={{
-              width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
+              width: '100%', padding: '10px 14px', background: 'rgba(7,7,15,0.85)',
               border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
               fontSize: 13, outline: 'none', boxSizing: 'border-box',
               fontFamily: 'Barlow Condensed, sans-serif',
             }}
           />
           {error && (
-            <div className="flex items-center gap-1 text-[10px] text-[#C0392B]">
+            <div className="flex items-center gap-1 text-[10px] text-[#FF2040]">
               <AlertCircle className="w-3 h-3" />
               {error}
             </div>
@@ -72,10 +72,10 @@ export default function CreatorBridge({ user }) {
           </button>
         </div>
       ) : (
-        <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(109,191,126,0.1)' }}>
-          <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />
+        <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(0,255,136,0.1)' }}>
+          <CheckCircle2 className="w-4 h-4 text-[#00FF88]" />
           <div>
-            <p className="text-xs font-semibold text-[#6DBF7E]">Connected</p>
+            <p className="text-xs font-semibold text-[#00FF88]">Connected</p>
             <p className="text-[11px] text-green-300/70">Your YouTube content syncs to SeeWhy LIVE</p>
           </div>
         </div>

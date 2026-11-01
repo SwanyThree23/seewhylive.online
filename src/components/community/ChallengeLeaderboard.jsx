@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Trophy, Medal, Award } from 'lucide-react';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function ChallengeLeaderboard({ challengeId }) {
@@ -20,17 +20,17 @@ export default function ChallengeLeaderboard({ challengeId }) {
 
   const getRankIcon = (rank) => {
     switch(rank) {
-      case 1: return <Trophy className="w-5 h-5" style={{ color: '#D4AF37' }} />;
+      case 1: return <Trophy className="w-5 h-5" style={{ color: '#FFB800' }} />;
       case 2: return <Medal className="w-5 h-5" style={{ color: '#9ca3af' }} />;
-      case 3: return <Medal className="w-5 h-5" style={{ color: '#C0392B' }} />;
+      case 3: return <Medal className="w-5 h-5" style={{ color: '#FF2040' }} />;
       default: return <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>#{rank}</span>;
     }
   };
 
   const getRankBadgeStyle = (rank) => {
-    if (rank === 1) return { background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' };
+    if (rank === 1) return { background: 'rgba(255,184,0,0.2)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.3)' };
     if (rank === 2) return { background: 'rgba(156,163,175,0.2)', color: '#9ca3af', border: '1px solid rgba(156,163,175,0.3)' };
-    if (rank === 3) return { background: 'rgba(212,133,74,0.2)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)' };
+    if (rank === 3) return { background: 'rgba(255,140,0,0.2)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.3)' };
     return { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' };
   };
 
@@ -47,7 +47,7 @@ export default function ChallengeLeaderboard({ challengeId }) {
       {/* Header */}
       <div style={{ padding: '16px 16px 0' }}>
         <h3 style={{ fontWeight: 700, fontSize: 15, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 2px', ...T }}>
-          <Trophy className="w-5 h-5" style={{ color: '#7B5DA6' }} />
+          <Trophy className="w-5 h-5" style={{ color: '#8B5CF6' }} />
           Leaderboard
         </h3>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0, ...T }}>Top performers in this challenge</p>
@@ -62,8 +62,8 @@ export default function ChallengeLeaderboard({ challengeId }) {
               key={participant.id}
               style={{
                 display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 8,
-                background: rank <= 3 ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)',
-                border: rank <= 3 ? '1px solid rgba(212,175,55,0.2)' : '1px solid transparent',
+                background: rank <= 3 ? 'rgba(255,184,0,0.08)' : 'rgba(255,255,255,0.03)',
+                border: rank <= 3 ? '1px solid rgba(255,184,0,0.2)' : '1px solid transparent',
               }}
             >
               {/* Rank */}
@@ -72,7 +72,7 @@ export default function ChallengeLeaderboard({ challengeId }) {
               </div>
 
               {/* Avatar */}
-              <div style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', background: 'rgba(212,175,55,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: GOLD, flexShrink: 0 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', background: 'rgba(255,184,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: GOLD, flexShrink: 0 }}>
                 {initials}
               </div>
 
@@ -94,7 +94,7 @@ export default function ChallengeLeaderboard({ challengeId }) {
                   {participant.score} pts
                 </span>
                 {participant.completed && (
-                  <div style={{ fontSize: 10, color: '#6DBF7E', marginTop: 2, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end' }}>
+                  <div style={{ fontSize: 10, color: '#00FF88', marginTop: 2, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end' }}>
                     <Award className="w-3 h-3" />
                     Completed
                   </div>

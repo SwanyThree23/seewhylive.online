@@ -6,10 +6,10 @@ import { toast } from 'sonner';
 import { X, Bell, CheckCircle2, Zap, Users, Target, Trophy, Gift, Heart, Star, Radio, Check } from 'lucide-react';
 import { isSafeUrl } from '@/lib/security';
 
-const G = '#D4AF37';
-const BG = '#080B18';
-const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const G = '#FFB800';
+const BG = '#03030A';
+const PANEL = '#07070F';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 const ICON_MAP = {
   poll_created:          <Target className="w-4 h-4" />,
@@ -17,11 +17,11 @@ const ICON_MAP = {
   raid_incoming:         <Users className="w-4 h-4" />,
   raid_outgoing:         <Zap className="w-4 h-4" />,
   engagement_milestone:  <Trophy className="w-4 h-4" />,
-  tip:                   <Heart className="w-4 h-4" style={{ color: '#C0392B' }} />,
-  love_tap:              <Heart className="w-4 h-4" style={{ color: '#C0392B' }} />,
-  gift:                  <Gift className="w-4 h-4" style={{ color: '#D4AF37' }} />,
-  subscription:          <Star className="w-4 h-4" style={{ color: '#D4AF37' }} />,
-  live_started:          <Radio className="w-4 h-4" style={{ color: '#C0392B' }} />,
+  tip:                   <Heart className="w-4 h-4" style={{ color: '#FF2040' }} />,
+  love_tap:              <Heart className="w-4 h-4" style={{ color: '#FF2040' }} />,
+  gift:                  <Gift className="w-4 h-4" style={{ color: '#FFB800' }} />,
+  subscription:          <Star className="w-4 h-4" style={{ color: '#FFB800' }} />,
+  live_started:          <Radio className="w-4 h-4" style={{ color: '#FF2040' }} />,
   system:                <Bell className="w-4 h-4" />,
 };
 
@@ -34,16 +34,16 @@ const CATEGORY_TYPES = {
 
 const PRIORITY_COLORS = {
   low: 'rgba(100,116,139,0.1)',
-  normal: 'rgba(212,175,55,0.1)',
-  high: 'rgba(212,133,74,0.15)',
-  urgent: 'rgba(192,57,43,0.15)',
+  normal: 'rgba(255,184,0,0.1)',
+  high: 'rgba(255,140,0,0.15)',
+  urgent: 'rgba(255,32,64,0.15)',
 };
 
 const PRIORITY_BORDERS = {
   low: 'rgba(100,116,139,0.2)',
   normal: `${G}20`,
-  high: 'rgba(212,133,74,0.3)',
-  urgent: 'rgba(192,57,43,0.4)',
+  high: 'rgba(255,140,0,0.3)',
+  urgent: 'rgba(255,32,64,0.4)',
 };
 
 function timeAgo(dateStr) {
@@ -173,13 +173,13 @@ export default function NotificationHub() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        <Bell className="w-4 h-4" style={{ color: unreadCount > 0 ? '#D4854A' : 'rgba(255,255,255,0.5)' }} />
+        <Bell className="w-4 h-4" style={{ color: unreadCount > 0 ? '#FF8C00' : 'rgba(255,255,255,0.5)' }} />
         {unreadCount > 0 && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
-            style={{ background: '#D4854A', color: '#000' }}
+            style={{ background: '#FF8C00', color: '#000' }}
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </motion.div>
@@ -199,7 +199,7 @@ export default function NotificationHub() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3" style={{ background: PANEL, borderBottom: `1px solid ${BORDER}` }}>
               <h3 className="text-sm font-bold uppercase" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                Notifications {unreadCount > 0 && <span style={{ color: '#D4854A' }}>({unreadCount})</span>}
+                Notifications {unreadCount > 0 && <span style={{ color: '#FF8C00' }}>({unreadCount})</span>}
               </h3>
               <div className="flex items-center gap-1">
                 {unreadCount > 0 && (
@@ -207,7 +207,7 @@ export default function NotificationHub() {
                     onClick={() => markAllMutation.mutate()}
                     disabled={markAllMutation.isPending}
                     className="flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg font-bold"
-                    style={{ background: 'rgba(212,175,55,0.1)', color: G, border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                    style={{ background: 'rgba(255,184,0,0.1)', color: G, border: '1px solid rgba(255,184,0,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
                     title="Mark all read"
                   >
                     <Check className="w-3 h-3" /> All
@@ -220,7 +220,7 @@ export default function NotificationHub() {
             </div>
 
             {/* Category filter tabs */}
-            <div className="flex border-b" style={{ borderColor: BORDER, background: '#08080F' }}>
+            <div className="flex border-b" style={{ borderColor: BORDER, background: '#07070F' }}>
               {[['all','All'], ['tips','Tips'], ['subs','Subs'], ['live','Live'], ['system','System']].map(([id, label]) => (
                 <button key={id} onClick={() => { setCategory(id); try { localStorage.setItem('notif_category', id); } catch {} }}
                   className="flex-1 py-1.5 text-[11px] font-black uppercase transition-all"
@@ -228,7 +228,7 @@ export default function NotificationHub() {
                     fontFamily: 'Barlow Condensed, sans-serif',
                     color: category === id ? G : 'rgba(255,255,255,0.3)',
                     borderBottom: category === id ? `2px solid ${G}` : '2px solid transparent',
-                    background: category === id ? 'rgba(212,175,55,0.05)' : 'transparent',
+                    background: category === id ? 'rgba(255,184,0,0.05)' : 'transparent',
                   }}>
                   {label}
                 </button>
@@ -265,7 +265,7 @@ export default function NotificationHub() {
                         <p className="text-[10px] text-white/60 mt-0.5 leading-snug">{notif.message}</p>
                         <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{timeAgo(notif.created_date)}</p>
                         {notif.metadata?.amount && (
-                          <p className="text-[10px] text-[#D4AF37]/80 mt-1">
+                          <p className="text-[10px] text-[#FFB800]/80 mt-1">
                             {notif.metadata.amount}
                           </p>
                         )}

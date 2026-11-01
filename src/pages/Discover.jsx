@@ -40,32 +40,32 @@ import PullToRefresh from '../components/shared/PullToRefresh';
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#4A8A7A', Education: '#6B7C4A', Tech: '#4A8A7A', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#FF2040', Gaming: '#FFB800', Talk: '#00F5FF', Education: '#00FF88', Tech: '#00F5FF', Art: '#FF6B8A', Fitness: '#FF8C00', IRL: '#FFB800' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
-  var tagColor = tag ? (CAT_COLOR[tag] || '#D4AF37') : '#D4AF37';
+  var tagColor = tag ? (CAT_COLOR[tag] || '#FFB800') : '#FFB800';
   var viewers = room.viewer_count || room.participant_count || 0;
   return (
     <motion.div whileTap={{ scale: 0.98 }} className="rounded-2xl overflow-hidden cursor-pointer"
-      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+      style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,184,0,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
       <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
         <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded-full"
           style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif' }}>
           {tag || 'Live'}
         </span>
         <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-full"
-          style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ background: 'rgba(255,184,0,0.15)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           Join
         </span>
       </div>
-      <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
+      <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0F1428, #03030A)' }}>
         {room.thumbnail_url
           ? <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
-          : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(8,11,24,0.85) 0%, transparent 60%)' }} />
+          : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(255,184,0,0.2)' }} /></div>}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,7,15,0.85) 0%, transparent 60%)' }} />
         <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
-          style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ background: 'rgba(255,32,64,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
         </div>
         {viewers > 0 && (
@@ -79,7 +79,7 @@ function FanbaseRoomCard({ room }) {
         <p className="font-black text-white leading-tight text-sm line-clamp-2"
           style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{room.title}</p>
         {room.host_name && (
-          <p className="text-[10px] mt-0.5" style={{ color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{room.host_name}</p>
+          <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,184,0,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{room.host_name}</p>
         )}
       </div>
     </motion.div>
@@ -162,10 +162,10 @@ export default function DiscoverPage() {
   const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
 
   return (
-    <div className="min-h-screen bg-[#080B18] text-white" style={{ overscrollBehavior: 'contain' }}>
+    <div className="min-h-screen bg-[#03030A] text-white" style={{ overscrollBehavior: 'contain' }}>
       <PullToRefresh onRefresh={async function() { await queryClient.invalidateQueries(); }}>
       {/* Dark header */}
-      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #080B18 0%, #080B18 60%, #080B18 100%)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #03030A 0%, #03030A 60%, #03030A 100%)', borderBottom: '1px solid rgba(255,184,0,0.1)' }}>
         {/* Subtle grid overlay */}
         <div className="absolute inset-0 opacity-[0.025]" style={{
           backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
@@ -178,9 +178,9 @@ export default function DiscoverPage() {
               Discover
             </h1>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-[#FF2040] animate-pulse" />
               <span className="text-sm font-bold text-white/70" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-                {liveRooms.length} <span style={{ color: '#C0392B' }}>LIVE</span>
+                {liveRooms.length} <span style={{ color: '#FF2040' }}>LIVE</span>
               </span>
             </div>
           </div>
@@ -188,19 +188,19 @@ export default function DiscoverPage() {
           {/* Stats row */}
           <div className="flex items-center gap-4 sm:gap-6 mb-5 overflow-x-auto scrollbar-hide pb-1">
             <div className="flex items-center gap-2">
-              <Eye className="w-4 h-4 text-[#C9A84C]" />
+              <Eye className="w-4 h-4 text-[#FFB800]" />
               <span className="text-2xl font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {totalViewers.toLocaleString()}
               </span>
-              <span className="text-[#C9A84C] text-xs font-bold uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Viewers</span>
+              <span className="text-[#FFB800] text-xs font-bold uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Viewers</span>
             </div>
             <div className="w-px h-6 bg-white/10" />
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4" style={{ color: '#D4AF37' }} />
+              <Users className="w-4 h-4" style={{ color: '#FFB800' }} />
               <span className="text-2xl font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {communities.length}
               </span>
-              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>Communities</span>
+              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif' }}>Communities</span>
             </div>
           </div>
 
@@ -208,10 +208,10 @@ export default function DiscoverPage() {
           {trending.length > 0 && (
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="w-4 h-4" style={{ color: '#C9A84C' }} />
-                <span className="text-[13px] font-black uppercase tracking-wide" style={{ color: '#C9A84C', fontFamily: 'Barlow Condensed, sans-serif' }}>Trending Now</span>
+                <TrendingUp className="w-4 h-4" style={{ color: '#FFB800' }} />
+                <span className="text-[13px] font-black uppercase tracking-wide" style={{ color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif' }}>Trending Now</span>
                 <span className="flex items-center gap-1 ml-2">
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: liveHomeSocketOn ? '#6DBF7E' : '#FFB000' }} />
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: liveHomeSocketOn ? '#00FF88' : '#FFB000' }} />
                   <span className="text-[10px] font-mono" style={{ color: 'rgba(255,255,255,0.3)' }}>{liveHomeSocketOn ? 'Live' : 'Polling'}</span>
                 </span>
               </div>
@@ -232,7 +232,7 @@ export default function DiscoverPage() {
               onChange={e => setSearch(e.target.value)}
               className="w-full rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-white/30 outline-none transition-all"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', fontFamily: 'Barlow Condensed, sans-serif' }}
-              onFocus={e => { e.target.style.borderColor = 'rgba(212,175,55,0.5)'; e.target.style.background = 'rgba(255,255,255,0.07)'; }}
+              onFocus={e => { e.target.style.borderColor = 'rgba(255,184,0,0.5)'; e.target.style.background = 'rgba(255,255,255,0.07)'; }}
               onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.background = 'rgba(255,255,255,0.05)'; }}
             />
           </div>
@@ -240,15 +240,15 @@ export default function DiscoverPage() {
       </div>
 
       {/* Tournament & Battle Feature Strip */}
-      <div style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.08)', overflowX: 'auto', scrollbarWidth: 'none' }}>
+      <div style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(255,184,0,0.08)', overflowX: 'auto', scrollbarWidth: 'none' }}>
         <div style={{ display: 'flex', gap: 8, padding: '10px 16px', width: 'max-content' }}>
           {[
-            { emoji: '⚔️', label: 'SVS Tournaments', sub: 'State vs State', page: 'StateVsState',    color: '#C0392B' },
-            { emoji: '🏟️', label: 'Battle Arena',    sub: 'Vote Live Battles', page: 'PKBattleArena',  color: '#C0392B' },
-            { emoji: '🏆', label: 'Live Battles',    sub: 'PK Showdowns',   page: 'LiveBattles',     color: '#D4854A' },
-            { emoji: '👑', label: 'Elite League',    sub: 'Creator Rankings', page: 'Leaderboard',    color: '#D4AF37' },
+            { emoji: '⚔️', label: 'SVS Tournaments', sub: 'State vs State', page: 'StateVsState',    color: '#FF2040' },
+            { emoji: '🏟️', label: 'Battle Arena',    sub: 'Vote Live Battles', page: 'PKBattleArena',  color: '#FF2040' },
+            { emoji: '🏆', label: 'Live Battles',    sub: 'PK Showdowns',   page: 'LiveBattles',     color: '#FF8C00' },
+            { emoji: '👑', label: 'Elite League',    sub: 'Creator Rankings', page: 'Leaderboard',    color: '#FFB800' },
             { emoji: '🕊️', label: 'Tribute Wall',   sub: 'Honor Legends',  page: 'TributeWall',     color: '#8B6F47' },
-            { emoji: '🎬', label: 'VOD Library',     sub: 'Past Streams',   page: 'VODLibrary',      color: '#D4854A' },
+            { emoji: '🎬', label: 'VOD Library',     sub: 'Past Streams',   page: 'VODLibrary',      color: '#FF8C00' },
             { emoji: '🎟️', label: 'PPV Events',      sub: 'Pay-Per-View',   page: 'PayPerViewEvents',color: '#8B6F00' },
           ].map(item => (
             <Link key={item.page} to={createPageUrl(item.page)} style={{ textDecoration: 'none', flexShrink: 0 }}>
@@ -269,7 +269,7 @@ export default function DiscoverPage() {
         {/* Tab bar + genre filter */}
         {/* Tabs — scrollable on mobile */}
         <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
-          <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
+          <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
             {[
               { id: 'live', label: 'Live', icon: Radio },
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
@@ -282,7 +282,7 @@ export default function DiscoverPage() {
                 <button key={t.id} onClick={() => setTab(t.id)}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                     tab === t.id ? 'text-white' : 'text-white/40 hover:text-white/70'
-                  }`} style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', borderBottom: tab === t.id ? '2px solid #D4AF37' : '2px solid transparent', borderRadius: 0, paddingBottom: 6 }}>
+                  }`} style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', borderBottom: tab === t.id ? '2px solid #FFB800' : '2px solid transparent', borderRadius: 0, paddingBottom: 6 }}>
                   <Icon className="w-3.5 h-3.5" />
                   {t.label}
                   {t.id === 'live' && liveRooms.length > 0 && (
@@ -301,7 +301,7 @@ export default function DiscoverPage() {
               <button key={g} onClick={() => setGenre(g)}
                 className="shrink-0 text-[11px] px-3.5 py-1.5 rounded-full transition-all active:scale-95 whitespace-nowrap font-bold"
                 style={genre === g
-                  ? { background: '#D4AF37', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', border: '1px solid #D4AF37' }
+                  ? { background: '#FFB800', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', border: '1px solid #FFB800' }
                   : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }
                 }>
                 {g}
@@ -317,7 +317,7 @@ export default function DiscoverPage() {
               {loadingLive ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#0D1022]" />
+                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#07070F]" />
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
@@ -325,11 +325,11 @@ export default function DiscoverPage() {
                   <EmptyState icon={Radio} title="No live rooms yet" desc="Try a different search" />
                 ) : (
                   <div className="text-center py-20">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)' }}>
-                      <Radio className="w-7 h-7" style={{ color: 'rgba(212,175,55,0.3)' }} />
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.15)' }}>
+                      <Radio className="w-7 h-7" style={{ color: 'rgba(255,184,0,0.3)' }} />
                     </div>
                     <h3 className="text-lg font-black text-white/60 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>No live rooms yet</h3>
-                    <Link to={createPageUrl('BroadcastStudio')} className="text-sm font-bold transition-colors" style={{ color: '#D4AF37' }}>Be the first to go live →</Link>
+                    <Link to={createPageUrl('BroadcastStudio')} className="text-sm font-bold transition-colors" style={{ color: '#FFB800' }}>Be the first to go live →</Link>
                   </div>
                 )
               ) : (
@@ -414,25 +414,25 @@ export default function DiscoverPage() {
 }
 
 function TrendingCard({ room, rank }) {
-  const rankColors = ['#D4AF37', '#D4AF37', '#D4854A'];
+  const rankColors = ['#FFB800', '#FFB800', '#FF8C00'];
   return (
     <Link to={`${createPageUrl('LiveRoom')}?id=${room.id}`}>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="relative rounded-xl overflow-hidden border border-[#0D1022] hover:border-[#C0392B]/30 transition-all cursor-pointer"
-        style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #0D1022 100%)' }}
+        className="relative rounded-xl overflow-hidden border border-[#07070F] hover:border-[#FF2040]/30 transition-all cursor-pointer"
+        style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #07070F 100%)' }}
       >
         {room.thumbnail_url && (
           <img src={room.thumbnail_url} alt="" className="w-full h-28 object-cover opacity-60" />
         )}
         {!room.thumbnail_url && (
-          <div className="w-full h-28 bg-gradient-to-br from-[#1a0010] to-[#0B0B18] flex items-center justify-center">
-            <Radio className="w-10 h-10 text-[#C0392B]/30" />
+          <div className="w-full h-28 bg-gradient-to-br from-[#07070F] to-[#0B0B18] flex items-center justify-center">
+            <Radio className="w-10 h-10 text-[#FF2040]/30" />
           </div>
         )}
         <div className="absolute top-2 left-2 flex items-center gap-1.5">
           <span className="text-xs font-black font-mono" style={{ color: rankColors[rank - 1] }}>#{rank}</span>
-          <span style={{ background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, border: 'none', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+          <span style={{ background: '#FF2040', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, border: 'none', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
             <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
           </span>
         </div>
@@ -440,7 +440,7 @@ function TrendingCard({ room, rank }) {
           <p className="text-sm font-bold text-white truncate">{room.title}</p>
           <div className="flex items-center justify-between mt-1">
             <SignalBars count={5} active={true} size="xs" />
-            <span className="text-[10px] text-[#C9A84C] font-mono">{(room.viewer_count || 0).toLocaleString()} viewers</span>
+            <span className="text-[10px] text-[#FFB800] font-mono">{(room.viewer_count || 0).toLocaleString()} viewers</span>
           </div>
         </div>
       </motion.div>
@@ -453,10 +453,10 @@ function ScheduledRow({ room }) {
     <Link to={`${createPageUrl('Room')}?id=${room.id}`}>
       <motion.div
         whileHover={{ x: 4 }}
-        className="flex items-center gap-4 p-4 rounded-xl border border-[#0D1022] hover:border-[#D4AF37]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
+        className="flex items-center gap-4 p-4 rounded-xl border border-[#07070F] hover:border-[#FFB800]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
       >
-        <div className="w-12 h-12 rounded-lg bg-[#0D1022] border border-[#0D1022] flex items-center justify-center shrink-0">
-          <Calendar className="w-5 h-5 text-[#D4AF37]" />
+        <div className="w-12 h-12 rounded-lg bg-[#07070F] border border-[#07070F] flex items-center justify-center shrink-0">
+          <Calendar className="w-5 h-5 text-[#FFB800]" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white truncate">{room.title}</p>
@@ -479,17 +479,17 @@ function CreatorCard({ creator }) {
     <Link to={`${createPageUrl('PublicProfile')}?id=${creator.user_id}`}>
       <motion.div whileTap={{ scale: 0.97 }}
         className="relative p-4 rounded-2xl cursor-pointer text-center"
-        style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
+        style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,184,0,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
-            style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(255,32,64,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
           </div>
         )}
         {/* Octagonal avatar */}
-        <div className="mx-auto mb-3" style={{ width: 64, height: 64, clipPath: OCT, background: 'rgba(212,175,55,0.25)' }}>
+        <div className="mx-auto mb-3" style={{ width: 64, height: 64, clipPath: OCT, background: 'rgba(255,184,0,0.25)' }}>
           <div style={{ width: '100%', height: '100%', clipPath: OCT,
-            background: creator.avatar_url ? 'transparent' : 'linear-gradient(135deg, #800020, #D4AF37)',
+            background: creator.avatar_url ? 'transparent' : 'linear-gradient(135deg, #FF1564, #FFB800)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 22, fontWeight: 900, color: 'white', overflow: 'hidden' }}>
             {creator.avatar_url
@@ -498,10 +498,10 @@ function CreatorCard({ creator }) {
           </div>
         </div>
         <p className="text-sm font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.03em' }}>{creator.display_name}</p>
-        <p className="text-[10px] mt-0.5 capitalize" style={{ color: 'rgba(212,175,55,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>{creator.category}</p>
+        <p className="text-[10px] mt-0.5 capitalize" style={{ color: 'rgba(255,184,0,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>{creator.category}</p>
         <div className="flex items-center justify-center gap-1 mt-2">
-          <Users className="w-3 h-3" style={{ color: '#D4AF37' }} />
-          <span className="text-[11px] font-bold" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>{(creator.follower_count || 0).toLocaleString()}</span>
+          <Users className="w-3 h-3" style={{ color: '#FFB800' }} />
+          <span className="text-[11px] font-bold" style={{ color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif' }}>{(creator.follower_count || 0).toLocaleString()}</span>
         </div>
       </motion.div>
     </Link>
@@ -512,8 +512,8 @@ function EmptyState({ icon: Icon, title, desc }) {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   return (
     <div className="text-center py-20">
-      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)' }}>
-        <Icon className="w-7 h-7" style={{ color: 'rgba(212,175,55,0.3)' }} />
+      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.12)' }}>
+        <Icon className="w-7 h-7" style={{ color: 'rgba(255,184,0,0.3)' }} />
       </div>
       <h3 className="text-lg font-black text-white/60 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{title}</h3>
       <p className="text-sm text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{desc}</p>

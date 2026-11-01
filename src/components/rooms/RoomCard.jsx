@@ -21,7 +21,7 @@ export default function RoomCard({ room, onJoin }) {
       <motion.div
         whileTap={{ scale: 0.97 }}
         className="relative rounded-2xl overflow-hidden cursor-pointer transition-all active:opacity-90"
-        style={{ background: 'rgba(28,18,12,0.95)', border: isLive ? '1px solid rgba(204,119,85,0.35)' : '1px solid rgba(255,255,255,0.07)' }}
+        style={{ background: 'rgba(28,18,12,0.95)', border: isLive ? '1px solid rgba(255,140,0,0.35)' : '1px solid rgba(255,255,255,0.07)' }}
       >
         {/* Thumbnail */}
         <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
@@ -30,11 +30,11 @@ export default function RoomCard({ room, onJoin }) {
           ) : (
             <div className="w-full h-full flex items-center justify-center"
               style={{ background: isLive
-                ? 'linear-gradient(135deg, #2C1810 0%, #3D2B1F 100%)'
+                ? 'linear-gradient(135deg, #0B0B18 0%, #10101E 100%)'
                 : 'linear-gradient(135deg, #16100A 0%, #1A1200 100%)' }}>
               {room.type === 'audio'
-                ? <Mic className="w-10 h-10 opacity-20" style={{ color: '#d4af37' }} />
-                : <Video className="w-10 h-10 opacity-20" style={{ color: '#d4af37' }} />
+                ? <Mic className="w-10 h-10 opacity-20" style={{ color: '#FFB800' }} />
+                : <Video className="w-10 h-10 opacity-20" style={{ color: '#FFB800' }} />
               }
             </div>
           )}
@@ -43,13 +43,13 @@ export default function RoomCard({ room, onJoin }) {
           <div className="absolute top-2 left-2">
             {isLive ? (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black"
-                style={{ background: 'rgba(180,50,30,0.9)', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+                style={{ background: 'rgba(255,32,64,0.9)', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
                 <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                 LIVE
               </span>
             ) : isScheduled ? (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
-                style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: 'rgba(255,184,0,0.15)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 <Clock className="w-2.5 h-2.5" /> SOON
               </span>
             ) : (
@@ -85,7 +85,7 @@ export default function RoomCard({ room, onJoin }) {
               style={{ color: 'rgba(255,255,255,0.9)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               {room.title}
             </p>
-            <ChevronRight className="w-4 h-4 mt-0.5 shrink-0" style={{ color: isLive ? '#CC7755' : 'rgba(255,255,255,0.2)' }} />
+            <ChevronRight className="w-4 h-4 mt-0.5 shrink-0" style={{ color: isLive ? '#FF8C00' : 'rgba(255,255,255,0.2)' }} />
           </div>
 
           {room.description && (
@@ -99,7 +99,7 @@ export default function RoomCard({ room, onJoin }) {
             <div className="flex flex-wrap gap-1 mt-2">
               {room.tags.slice(0, 3).map((tag, idx) => (
                 <span key={idx} className="text-[11px] px-1.5 py-0.5 rounded-full capitalize"
-                  style={{ background: 'rgba(212,175,55,0.08)', color: 'rgba(196,168,130,0.6)', border: '1px solid rgba(212,175,55,0.12)' }}>
+                  style={{ background: 'rgba(255,184,0,0.08)', color: 'rgba(196,168,130,0.6)', border: '1px solid rgba(255,184,0,0.12)' }}>
                   {tag}
                 </span>
               ))}
@@ -109,8 +109,8 @@ export default function RoomCard({ room, onJoin }) {
           {/* Schedule time */}
           {isScheduled && room.scheduled_start && (
             <div className="flex items-center gap-1.5 mt-2">
-              <Clock className="w-3 h-3" style={{ color: '#d4af37' }} />
-              <span className="text-[11px]" style={{ color: '#d4af37' }}>
+              <Clock className="w-3 h-3" style={{ color: '#FFB800' }} />
+              <span className="text-[11px]" style={{ color: '#FFB800' }}>
                 {format(new Date(room.scheduled_start), 'MMM d · h:mm a')}
               </span>
             </div>
@@ -119,7 +119,7 @@ export default function RoomCard({ room, onJoin }) {
           {/* Join CTA */}
           {isLive && (
             <div className="mt-2.5 w-full py-2 rounded-xl text-xs font-black text-center uppercase tracking-wide"
-              style={{ background: 'linear-gradient(135deg, rgba(107,68,35,0.6), rgba(212,175,55,0.3))', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
+              style={{ background: 'linear-gradient(135deg, rgba(107,68,35,0.6), rgba(255,184,0,0.3))', color: '#FFB800', border: '1px solid rgba(255,184,0,0.2)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
               <Radio className="inline w-3 h-3 mr-1" />Join Live
             </div>
           )}

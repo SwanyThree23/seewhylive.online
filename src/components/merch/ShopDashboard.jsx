@@ -5,13 +5,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
-  burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
-  white: "#FFF", gray: "#888", dim: "#444", green: "#6DBF7E", red: "#FF3B30",
+  burgundy: "#800020", gold: "#FFB800", volt: "#FFB800",
+  white: "#FFF", gray: "#888", dim: "#444", green: "#00FF88", red: "#FF3B30",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
 };
 
-var STATUS_COLORS = { pending: C.gold, confirmed: "#6DBF7E", shipped: C.volt, delivered: C.green, cancelled: C.red, refunded: C.gray };
+var STATUS_COLORS = { pending: C.gold, confirmed: "#00FF88", shipped: C.volt, delivered: C.green, cancelled: C.red, refunded: C.gray };
 
 export default function ShopDashboard({ creatorId }) {
   var [view, setView] = useState("items"); // items | orders
@@ -73,7 +73,7 @@ export default function ShopDashboard({ creatorId }) {
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, padding: "12px 0 8px" }}>
         {[
-          { label: "ITEMS", value: items.length, color: "#6DBF7E" },
+          { label: "ITEMS", value: items.length, color: "#00FF88" },
           { label: "SOLD", value: totalSold, color: C.volt },
           { label: "REVENUE", value: "$" + totalRevenue.toFixed(0), color: C.gold },
         ].map(s => (
@@ -93,7 +93,7 @@ export default function ShopDashboard({ creatorId }) {
 
       {view === "items" && (
         <div>
-          <button onClick={() => setShowAdd(true)} style={{ width: "100%", padding: "10px", background: "rgba(128,0,32,0.3)", border: "1px dashed " + C.burgundy, borderRadius: 8, color: C.gold, fontFamily: C.fMon, fontSize: 10, cursor: "pointer", marginBottom: 10 }}>+ ADD ITEM</button>
+          <button onClick={() => setShowAdd(true)} style={{ width: "100%", padding: "10px", background: "rgba(255,21,100,0.3)", border: "1px dashed " + C.burgundy, borderRadius: 8, color: C.gold, fontFamily: C.fMon, fontSize: 10, cursor: "pointer", marginBottom: 10 }}>+ ADD ITEM</button>
 
           {showAdd && (
             <div style={{ background: C.card, border: "1px solid " + C.burgundy, borderRadius: 10, padding: 14, marginBottom: 10 }}>

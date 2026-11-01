@@ -7,7 +7,7 @@ import NativeSelect from '@/components/shared/NativeSelect';
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const inputStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
+  width: '100%', padding: '10px 14px', background: 'rgba(7,7,15,0.85)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box', ...T,
 };
@@ -90,7 +90,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
       {/* Header */}
       <div style={{ padding: '20px 20px 0' }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 4px', ...T }}>
-          <Megaphone className="w-5 h-5" style={{ color: '#7B5DA6' }} />
+          <Megaphone className="w-5 h-5" style={{ color: '#8B5CF6' }} />
           Create Announcement
         </h3>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0, ...T }}>
@@ -163,7 +163,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
         {/* Preview */}
         {(title || content) && (
           <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: 16, border: '1px solid rgba(255,255,255,0.1)' }}>
-            <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: '#D4AF37', display: 'inline-block', marginBottom: 8, ...T }}>
+            <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,184,0,0.2)', color: '#FFB800', display: 'inline-block', marginBottom: 8, ...T }}>
               {priority.toUpperCase()}
             </span>
             <h4 style={{ fontWeight: 700, color: '#fff', margin: '0 0 4px', ...T }}>{title || 'Untitled'}</h4>
@@ -176,7 +176,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
           <button
             onClick={() => createAnnouncementMutation.mutate()}
             disabled={!title || !content}
-            style={{ ...btnBase, flex: 1, background: !title || !content ? 'rgba(128,0,32,0.4)' : '#800020', color: '#fff', opacity: !title || !content ? 0.5 : 1 }}
+            style={{ ...btnBase, flex: 1, background: !title || !content ? 'rgba(255,21,100,0.4)' : '#800020', color: '#fff', opacity: !title || !content ? 0.5 : 1 }}
           >
             <Send className="w-4 h-4" />
             Send Now
@@ -196,11 +196,11 @@ export default function AnnouncementPanel({ communityId, userId }) {
         </div>
 
         {/* Info */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(212,175,55,0.1)', borderRadius: 8, padding: 12, fontSize: 13 }}>
-          <AlertCircle className="w-4 h-4" style={{ color: '#D4AF37', marginTop: 2, flexShrink: 0 }} />
-          <div style={{ color: 'rgba(212,175,55,0.9)' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(255,184,0,0.1)', borderRadius: 8, padding: 12, fontSize: 13 }}>
+          <AlertCircle className="w-4 h-4" style={{ color: '#FFB800', marginTop: 2, flexShrink: 0 }} />
+          <div style={{ color: 'rgba(255,184,0,0.9)' }}>
             <p style={{ fontWeight: 600, margin: '0 0 2px', ...T }}>Targeting: {targetAudience.replace('_', ' ')}</p>
-            <p style={{ fontSize: 11, color: 'rgba(212,175,55,0.6)', margin: 0, ...T }}>
+            <p style={{ fontSize: 11, color: 'rgba(255,184,0,0.6)', margin: 0, ...T }}>
               This will notify members via in-app notifications
             </p>
           </div>

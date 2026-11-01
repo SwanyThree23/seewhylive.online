@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 
 /**
  * Reusable pull-to-refresh wrapper.
@@ -52,7 +52,7 @@ export default function PullToRefresh({ onRefresh, children, threshold = 80, max
           <motion.div
             animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
             transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
-            style={{ width: 28, height: 28, borderRadius: '50%', border: `2px solid rgba(212,175,55,0.3)`, borderTopColor: GOLD }}
+            style={{ width: 28, height: 28, borderRadius: '50%', border: `2px solid rgba(255,184,0,0.3)`, borderTopColor: GOLD }}
           />
         )}
       </motion.div>

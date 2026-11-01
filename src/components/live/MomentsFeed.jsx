@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Share2, Eye, TrendingUp, Users, Play, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD   = '#C9A84C';
-const BURG   = '#6B1F2A';
+const GOLD   = '#FFB800';
+const BURG   = '#2A2A48';
 const OBS    = '#07050A';
 const DIM    = 'rgba(255,255,255,0.4)';
 
@@ -29,7 +29,7 @@ function MomentCard({ clip, currentUserId, onLike }) {
       style={{
         borderRadius: 12,
         overflow: 'hidden',
-        border: '1px solid rgba(201,168,76,0.12)',
+        border: '1px solid rgba(255,184,0,0.12)',
         background: 'rgba(13,6,24,0.92)',
         cursor: 'pointer',
       }}
@@ -66,8 +66,8 @@ function MomentCard({ clip, currentUserId, onLike }) {
           <div style={{
             position: 'absolute', top: 6, left: 8,
             padding: '2px 8px', borderRadius: 4,
-            background: 'rgba(201,168,76,0.15)',
-            border: '1px solid rgba(201,168,76,0.35)',
+            background: 'rgba(255,184,0,0.15)',
+            border: '1px solid rgba(255,184,0,0.35)',
             fontFamily: 'Barlow Condensed, sans-serif',
             fontSize: 10, color: GOLD, letterSpacing: 1,
             display: 'flex', alignItems: 'center', gap: 3,
@@ -108,8 +108,8 @@ function MomentCard({ clip, currentUserId, onLike }) {
             onClick={() => onLike(clip)}
             style={{
               flex: 1, padding: '5px 8px', borderRadius: 6, cursor: 'pointer',
-              background: liked ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.04)',
-              border: liked ? '1px solid rgba(201,168,76,0.35)' : '1px solid rgba(255,255,255,0.08)',
+              background: liked ? 'rgba(255,184,0,0.15)' : 'rgba(255,255,255,0.04)',
+              border: liked ? '1px solid rgba(255,184,0,0.35)' : '1px solid rgba(255,255,255,0.08)',
               color: liked ? GOLD : DIM,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, letterSpacing: 0.5,
@@ -218,8 +218,8 @@ export default function MomentsFeed({ currentUserId, followingIds = [] }) {
             style={{
               padding: '6px 16px',
               borderRadius: 8, cursor: 'pointer',
-              background: mode === key ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.04)',
-              border: mode === key ? `1px solid rgba(201,168,76,0.4)` : '1px solid rgba(255,255,255,0.08)',
+              background: mode === key ? 'rgba(255,184,0,0.15)' : 'rgba(255,255,255,0.04)',
+              border: mode === key ? `1px solid rgba(255,184,0,0.4)` : '1px solid rgba(255,255,255,0.08)',
               color: mode === key ? GOLD : DIM,
               fontFamily: 'Barlow Condensed, sans-serif',
               fontSize: 12, fontWeight: 700, letterSpacing: 1,

@@ -17,7 +17,7 @@ const REWARD_LABELS = {
   discount_code: 'Discount Code', exclusive_content: 'Exclusive Content',
 };
 
-const INPUT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const INPUT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(7,7,15,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 
 export default function RewardShop({ creatorId, roomId, currentUser }) {
   const [redeeming, setRedeeming] = useState(null);
@@ -92,9 +92,9 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
         <span style={{ fontSize:10, fontWeight:700, textTransform:'uppercase', color:'rgba(255,255,255,0.4)', fontFamily:'Barlow Condensed, sans-serif', letterSpacing:'0.1em' }}>
           Reward Shop
         </span>
-        <div style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 8px', borderRadius:8, background:'rgba(212,175,55,0.1)', border:'1px solid rgba(212,175,55,0.2)' }}>
-          <Zap style={{ width:12, height:12, color:'#d4af37' }} />
-          <span style={{ fontSize:12, fontWeight:900, fontFamily:'monospace', color:'#d4af37' }}>{balance.toLocaleString()}</span>
+        <div style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 8px', borderRadius:8, background:'rgba(255,184,0,0.1)', border:'1px solid rgba(255,184,0,0.2)' }}>
+          <Zap style={{ width:12, height:12, color:'#FFB800' }} />
+          <span style={{ fontSize:12, fontWeight:900, fontFamily:'monospace', color:'#FFB800' }}>{balance.toLocaleString()}</span>
           <span style={{ fontSize:11, color:'rgba(255,255,255,0.4)' }}>pts</span>
         </div>
       </div>
@@ -108,8 +108,8 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
               style={{
                 borderRadius:12, padding:12, display:'flex', alignItems:'center', gap:12,
-                background: canAfford ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${canAfford ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                background: canAfford ? 'rgba(255,184,0,0.06)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${canAfford ? 'rgba(255,184,0,0.2)' : 'rgba(255,255,255,0.06)'}`,
                 transition:'all 0.15s',
               }}>
               <div style={{ fontSize:24, width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', borderRadius:12, background:'rgba(0,0,0,0.3)', flexShrink:0 }}>
@@ -124,8 +124,8 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
               </div>
               <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:4, flexShrink:0 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:2 }}>
-                  <Zap style={{ width:10, height:10, color:'#d4af37' }} />
-                  <span style={{ fontSize:10, fontWeight:900, color:'#d4af37', fontFamily:'monospace' }}>{reward.points_required.toLocaleString()}</span>
+                  <Zap style={{ width:10, height:10, color:'#FFB800' }} />
+                  <span style={{ fontSize:10, fontWeight:900, color:'#FFB800', fontFamily:'monospace' }}>{reward.points_required.toLocaleString()}</span>
                 </div>
                 <button
                   onClick={() => handleRedeem(reward)}
@@ -134,7 +134,7 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
                     fontSize:11, fontWeight:900, textTransform:'uppercase', padding:'4px 10px', borderRadius:8,
                     border:'none', cursor: (!canAfford || isRedeeming) ? 'not-allowed' : 'pointer',
                     fontFamily:'Barlow Condensed, sans-serif',
-                    background: canAfford ? '#d4af37' : 'rgba(255,255,255,0.06)',
+                    background: canAfford ? '#FFB800' : 'rgba(255,255,255,0.06)',
                     color: canAfford ? '#000' : 'rgba(255,255,255,0.3)',
                     opacity: (!canAfford || isRedeeming) ? 0.6 : 1,
                     transition:'all 0.15s',
@@ -155,7 +155,7 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
             onClick={() => setShowMessage(null)}>
             <motion.div initial={{ y: 40 }} animate={{ y: 0 }} exit={{ y: 40 }}
               onClick={e => e.stopPropagation()}
-              style={{ width:'100%', maxWidth:384, borderRadius:16, padding:20, background:'#080B18', border:'1px solid rgba(212,175,55,0.2)', display:'flex', flexDirection:'column', gap:16 }}>
+              style={{ width:'100%', maxWidth:384, borderRadius:16, padding:20, background:'#03030A', border:'1px solid rgba(255,184,0,0.2)', display:'flex', flexDirection:'column', gap:16 }}>
               <p style={{ fontSize:14, fontWeight:700, color:'#fff', margin:0 }}>
                 {showMessage.reward_type === 'song_request' ? '🎵 Request a Song' : '📌 Pin Your Message'}
               </p>
@@ -174,7 +174,7 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
                   Cancel
                 </button>
                 <button
-                  style={{ flex:1, padding:'10px', background:'#d4af37', color:'#000', border:'none', borderRadius:8, fontWeight:700, cursor: (!messageInput.trim() || redeemMutation.isPending) ? 'not-allowed' : 'pointer', opacity: (!messageInput.trim() || redeemMutation.isPending) ? 0.6 : 1, fontSize:13, fontFamily:'Barlow Condensed, sans-serif', display:'flex', alignItems:'center', justifyContent:'center' }}
+                  style={{ flex:1, padding:'10px', background:'#FFB800', color:'#000', border:'none', borderRadius:8, fontWeight:700, cursor: (!messageInput.trim() || redeemMutation.isPending) ? 'not-allowed' : 'pointer', opacity: (!messageInput.trim() || redeemMutation.isPending) ? 0.6 : 1, fontSize:13, fontFamily:'Barlow Condensed, sans-serif', display:'flex', alignItems:'center', justifyContent:'center' }}
                   disabled={!messageInput.trim() || redeemMutation.isPending}
                   onClick={() => confirmWithMessage(showMessage)}>
                   {redeemMutation.isPending ? <Loader2 style={{ width:16, height:16 }} className="animate-spin" /> : 'Redeem'}

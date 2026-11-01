@@ -7,11 +7,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Send, Mic, ChevronDown, Sparkles, Volume2, Clock, Trash2, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
-const G = '#D4AF37';
-const BG = '#080B18';
-const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
-const CREAM = '#F5F0E8';
+const G = '#FFB800';
+const BG = '#03030A';
+const PANEL = '#07070F';
+const BORDER = 'rgba(255,184,0,0.18)';
+const CREAM = '#F0F0FF';
 
 const ARIA_PROMPTS = [
   'How do I go live? 🎙',
@@ -423,11 +423,11 @@ export default function SwanyBotWidget({ pageName }) {
             aria-label="Open SwanyBot chat"
             className="fixed bottom-36 left-4 z-40 w-14 h-14 rounded-2xl flex items-center justify-center md:bottom-20 md:left-6"
             style={{
-              background: 'linear-gradient(135deg, #080B18 0%, #0D1022 50%, #080B18 100%)',
+              background: 'linear-gradient(135deg, #03030A 0%, #07070F 50%, #03030A 100%)',
               border: `1px solid ${G}40`,
               boxShadow: pulse
-                ? `0 0 0 0 ${G}60, 0 4px 24px rgba(212,175,55,0.5)`
-                : '0 4px 20px rgba(212,175,55,0.35)',
+                ? `0 0 0 0 ${G}60, 0 4px 24px rgba(255,184,0,0.5)`
+                : '0 4px 20px rgba(255,184,0,0.35)',
             }}
           >
             {pulse && (
@@ -454,7 +454,7 @@ export default function SwanyBotWidget({ pageName }) {
             style={{
               background: BG,
               border: `1px solid ${BORDER}`,
-              boxShadow: '0 8px 60px rgba(0,0,0,0.8), 0 0 40px rgba(212,175,55,0.15)',
+              boxShadow: '0 8px 60px rgba(0,0,0,0.8), 0 0 40px rgba(255,184,0,0.15)',
               maxHeight: minimized ? '56px' : '520px',
             }}
           >
@@ -466,10 +466,10 @@ export default function SwanyBotWidget({ pageName }) {
             >
               <div className="flex items-center gap-2.5">
                 <div className="relative w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #800020, #6B4423)', border: `1px solid ${G}30` }}>
+                  style={{ background: 'linear-gradient(135deg, #FF1564, #B37F00)', border: `1px solid ${G}30` }}>
                   <Sparkles className="w-4 h-4" style={{ color: G }} />
                   {audioEnabled && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#6DBF7E] border-2 border-black animate-pulse" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#00FF88] border-2 border-black animate-pulse" />
                   )}
                 </div>
                 <div>
@@ -527,7 +527,7 @@ export default function SwanyBotWidget({ pageName }) {
                      <div className="space-y-3">
                        <div className="text-center pt-4 pb-2">
                          <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center"
-                           style={{ background: 'linear-gradient(135deg, #800020, #6B4423)' }}>
+                           style={{ background: 'linear-gradient(135deg, #FF1564, #B37F00)' }}>
                            <Sparkles className="w-6 h-6" style={{ color: G }} />
                          </div>
                          <p className="font-black text-sm uppercase tracking-wider" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -540,12 +540,12 @@ export default function SwanyBotWidget({ pageName }) {
 
                          {/* SwanyBot Pro launcher */}
                          <Link to="/SwanyBotPro" onClick={() => { setOpen(false); setMinimized(false); }} className="block">
-                         <div className="rounded-xl p-3 flex items-center gap-3 transition-all" style={{ background: 'linear-gradient(135deg, rgba(123,93,166,0.18), rgba(212,175,55,0.10))', border: '1px solid rgba(123,93,166,0.45)' }}>
-                           <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #7B5DA6, #D4AF37)' }}>
+                         <div className="rounded-xl p-3 flex items-center gap-3 transition-all" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.18), rgba(255,184,0,0.10))', border: '1px solid rgba(139,92,246,0.45)' }}>
+                           <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #8B5CF6, #FFB800)' }}>
                              <Sparkles className="w-4 h-4 text-white" />
                            </div>
                            <div className="flex-1 min-w-0">
-                             <p className="text-xs font-black uppercase tracking-wider" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>SwanyBot Pro <span style={{ color: '#7B5DA6' }}>·</span> SwanyThree</p>
+                             <p className="text-xs font-black uppercase tracking-wider" style={{ color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif' }}>SwanyBot Pro <span style={{ color: '#8B5CF6' }}>·</span> SwanyThree</p>
                              <p className="text-[10px] mt-0.5 leading-tight" style={{ color: 'rgba(255,255,255,0.55)' }}>Real-time video transform, voice clone, music videos, product ads — open the studio →</p>
                            </div>
                          </div>
@@ -601,7 +601,7 @@ export default function SwanyBotWidget({ pageName }) {
                            <button key={q} onClick={() => quickAsk(q)}
                              className="text-left px-2.5 py-2 rounded-lg text-[10px] font-bold transition-all active:scale-95 leading-tight"
                              style={{
-                               background: 'rgba(212,175,55,0.06)',
+                               background: 'rgba(255,184,0,0.06)',
                                border: `1px solid ${G}18`,
                                color: 'rgba(255,255,255,0.5)',
                                fontFamily: 'Barlow Condensed, sans-serif'
@@ -625,7 +625,7 @@ export default function SwanyBotWidget({ pageName }) {
                       >
                         {!isUser && (
                           <div className="w-6 h-6 rounded-lg shrink-0 mt-0.5 flex items-center justify-center"
-                            style={{ background: 'linear-gradient(135deg, #800020, #6B4423)', border: `1px solid ${G}20` }}>
+                            style={{ background: 'linear-gradient(135deg, #FF1564, #B37F00)', border: `1px solid ${G}20` }}>
                             <Sparkles className="w-3 h-3" style={{ color: G }} />
                           </div>
                         )}
@@ -633,7 +633,7 @@ export default function SwanyBotWidget({ pageName }) {
                           <div
                             className="rounded-2xl px-3 py-2 text-[11px] leading-relaxed"
                             style={isUser
-                              ? { background: 'rgba(212,175,55,0.12)', border: `1px solid ${G}25`, color: CREAM }
+                              ? { background: 'rgba(255,184,0,0.12)', border: `1px solid ${G}25`, color: CREAM }
                               : { background: PANEL, border: `1px solid rgba(255,255,255,0.07)`, color: 'rgba(255,255,255,0.8)' }
                             }
                           >
@@ -667,7 +667,7 @@ export default function SwanyBotWidget({ pageName }) {
                               <button onClick={() => setFeedback(prev => ({ ...prev, [i]: prev[i] === 'down' ? null : 'down' }))}
                                 className="w-6 h-6 rounded-lg flex items-center justify-center transition-all hover:bg-white/10"
                                 title="Not helpful">
-                                <ThumbsDown className="w-3 h-3" style={{ color: feedback[i] === 'down' ? '#C0392B' : 'rgba(255,255,255,0.25)' }} />
+                                <ThumbsDown className="w-3 h-3" style={{ color: feedback[i] === 'down' ? '#FF2040' : 'rgba(255,255,255,0.25)' }} />
                               </button>
                             </div>
                           )}
@@ -679,7 +679,7 @@ export default function SwanyBotWidget({ pageName }) {
                   {loading && (
                     <div className="flex justify-start gap-2">
                       <div className="w-6 h-6 rounded-lg shrink-0 flex items-center justify-center"
-                        style={{ background: 'linear-gradient(135deg, #800020, #6B4423)', border: `1px solid ${G}20` }}>
+                        style={{ background: 'linear-gradient(135deg, #FF1564, #B37F00)', border: `1px solid ${G}20` }}>
                         <Sparkles className="w-3 h-3" style={{ color: G }} />
                       </div>
                       <div className="rounded-2xl" style={{ background: PANEL, border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -699,16 +699,16 @@ export default function SwanyBotWidget({ pageName }) {
                       onClick={toggleVoice}
                       className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90"
                       style={{
-                        background: listening ? 'rgba(192,57,43,0.2)' : 'rgba(212,175,55,0.08)',
-                        border: `1px solid ${listening ? 'rgba(192,57,43,0.4)' : G + '20'}`,
-                        boxShadow: listening ? '0 0 12px rgba(192,57,43,0.4)' : 'none'
+                        background: listening ? 'rgba(255,32,64,0.2)' : 'rgba(255,184,0,0.08)',
+                        border: `1px solid ${listening ? 'rgba(255,32,64,0.4)' : G + '20'}`,
+                        boxShadow: listening ? '0 0 12px rgba(255,32,64,0.4)' : 'none'
                       }}
                       title={listening ? 'Stop listening' : 'Speak your question'}
                       aria-label={listening ? 'Stop listening' : 'Speak your question'}
                     >
                       {listening
                         ? <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.7 }}>
-                            <Mic className="w-3.5 h-3.5 text-[#C0392B]" />
+                            <Mic className="w-3.5 h-3.5 text-[#FF2040]" />
                           </motion.div>
                         : <Mic className="w-3.5 h-3.5" style={{ color: G }} />
                       }
@@ -728,7 +728,7 @@ export default function SwanyBotWidget({ pageName }) {
                       onClick={() => sendMessage()}
                       disabled={!input.trim() || loading}
                       className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90 disabled:opacity-30"
-                      style={{ background: input.trim() ? G : 'rgba(212,175,55,0.15)', border: `1px solid ${G}30` }}
+                      style={{ background: input.trim() ? G : 'rgba(255,184,0,0.15)', border: `1px solid ${G}30` }}
                       aria-label="Send message"
                     >
                       <Send className="w-3.5 h-3.5" style={{ color: input.trim() ? '#000' : G }} />
@@ -739,7 +739,7 @@ export default function SwanyBotWidget({ pageName }) {
                     <motion.p
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                       className="text-[11px] text-center mt-1.5"
-                      style={{ color: 'rgba(192,57,43,0.7)' }}
+                      style={{ color: 'rgba(255,32,64,0.7)' }}
                     >
                       🔴 Voice active — speak now, or tap mic to stop
                     </motion.p>

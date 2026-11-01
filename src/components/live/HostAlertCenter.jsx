@@ -30,17 +30,17 @@ export default function HostAlertCenter() {
   const dismiss = (id) => setAlerts(prev => prev.filter(a => a.id !== id));
 
   const typeStyle = {
-    tip: { bg: 'from-yellow-900/90 to-amber-900/70', border: 'border-[#d4af37]', icon: '💰', iconColor: '#d4af37' },
-    sub: { bg: 'from-[#7B5DA6]/90 to-[#7B5DA6]/70', border: 'border-[#7B5DA6]', icon: '⭐', iconColor: '#7B5DA6' },
-    stage: { bg: 'from-blue-900/90 to-[#4A8A7A]/70', border: 'border-[#4A8A7A]', icon: '🎤', iconColor: '#4A8A7A' },
-    health: { bg: 'from-yellow-900/90 to-orange-900/70', border: 'border-yellow-500', icon: '⚠️', iconColor: '#C9A84C' },
-    moderation: { bg: 'from-red-900/90 to-rose-900/70', border: 'border-red-500', icon: '🚫', iconColor: '#C0392B' },
-    milestone: { bg: 'from-yellow-900/90 to-amber-900/70', border: 'border-[#d4af37]', icon: '🎉', iconColor: '#d4af37' },
-    clip:      { bg: 'from-[#4A8A7A]/90 to-[#4A8A7A]/70',  border: 'border-[#4A8A7A]', icon: '✂️', iconColor: '#4A8A7A' },
-    gift:      { bg: 'from-yellow-900/90 to-amber-900/70',  border: 'border-[#d4af37]', icon: '🎁', iconColor: '#D4AF37' },
-    handraise: { bg: 'from-[#0D1022]/90 to-[#1A1422]/70',  border: 'border-[#C9A84C]', icon: '🖐', iconColor: '#C9A84C' },
-    poll:      { bg: 'from-[#4A3A8A]/90 to-[#3A2A7A]/70',  border: 'border-[#7B5DA6]', icon: '📊', iconColor: '#7B5DA6' },
-    battle:    { bg: 'from-red-900/90 to-[#800020]/70',    border: 'border-[#C0392B]', icon: '⚔️', iconColor: '#C0392B' },
+    tip: { bg: 'from-yellow-900/90 to-amber-900/70', border: 'border-[#FFB800]', icon: '💰', iconColor: '#FFB800' },
+    sub: { bg: 'from-[#8B5CF6]/90 to-[#8B5CF6]/70', border: 'border-[#8B5CF6]', icon: '⭐', iconColor: '#8B5CF6' },
+    stage: { bg: 'from-blue-900/90 to-[#00F5FF]/70', border: 'border-[#00F5FF]', icon: '🎤', iconColor: '#00F5FF' },
+    health: { bg: 'from-yellow-900/90 to-orange-900/70', border: 'border-yellow-500', icon: '⚠️', iconColor: '#FFB800' },
+    moderation: { bg: 'from-red-900/90 to-rose-900/70', border: 'border-red-500', icon: '🚫', iconColor: '#FF2040' },
+    milestone: { bg: 'from-yellow-900/90 to-amber-900/70', border: 'border-[#FFB800]', icon: '🎉', iconColor: '#FFB800' },
+    clip:      { bg: 'from-[#00F5FF]/90 to-[#00F5FF]/70',  border: 'border-[#00F5FF]', icon: '✂️', iconColor: '#00F5FF' },
+    gift:      { bg: 'from-yellow-900/90 to-amber-900/70',  border: 'border-[#FFB800]', icon: '🎁', iconColor: '#FFB800' },
+    handraise: { bg: 'from-[#0D1022]/90 to-[#1A1422]/70',  border: 'border-[#FFB800]', icon: '🖐', iconColor: '#FFB800' },
+    poll:      { bg: 'from-[#4A3A8A]/90 to-[#3A2A7A]/70',  border: 'border-[#8B5CF6]', icon: '📊', iconColor: '#8B5CF6' },
+    battle:    { bg: 'from-red-900/90 to-[#800020]/70',    border: 'border-[#FF2040]', icon: '⚔️', iconColor: '#FF2040' },
   };
 
   return (
@@ -65,7 +65,7 @@ export default function HostAlertCenter() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             className="pointer-events-auto rounded-xl overflow-hidden"
-            style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', maxHeight: 220, overflowY: 'auto' }}
+            style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', maxHeight: 220, overflowY: 'auto' }}
           >
             {historyLog.map(a => {
               const s = typeStyle[a.type] || typeStyle.tip;

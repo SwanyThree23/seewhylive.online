@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const QUALITY_COLOR = {
   excellent: '#22c55e',
-  good:      '#6DBF7E',
+  good:      '#00FF88',
   fair:      '#F59E0B',
   poor:      '#EF4444',
   offline:   '#6B7280',

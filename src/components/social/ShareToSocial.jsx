@@ -72,17 +72,17 @@ export default function ShareToSocial({ content }) {
         whileHover={{ scale: 1.02 }}
         onClick={handleCopyLink}
         className="w-full flex items-center justify-center gap-2 p-2 rounded-lg transition-all"
-        style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', cursor: 'pointer' }}
+        style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.3)', cursor: 'pointer' }}
       >
         {copied ? (
           <>
-            <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />
-            <span className="text-xs font-semibold text-[#6DBF7E]">Copied!</span>
+            <CheckCircle2 className="w-4 h-4 text-[#00FF88]" />
+            <span className="text-xs font-semibold text-[#00FF88]">Copied!</span>
           </>
         ) : (
           <>
-            <LinkIcon className="w-4 h-4 text-[#d4af37]" />
-            <span className="text-xs font-semibold text-[#d4af37]">Copy Link</span>
+            <LinkIcon className="w-4 h-4 text-[#FFB800]" />
+            <span className="text-xs font-semibold text-[#FFB800]">Copy Link</span>
           </>
         )}
       </motion.button>

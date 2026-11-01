@@ -18,7 +18,7 @@ export default function UserMenu({ user, isAdmin }) {
       <button
         onClick={() => base44.auth.redirectToLogin()}
         style={{
-          padding:'8px 18px', background:'#D4AF37', color:'#000', border:'none',
+          padding:'8px 18px', background:'#FFB800', color:'#000', border:'none',
           borderRadius:8, fontWeight:700, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:14,
         }}
       >
@@ -86,7 +86,7 @@ export default function UserMenu({ user, isAdmin }) {
         aria-label="Open account menu"
         style={{
           width:40, height:40, borderRadius:'50%', overflow:'hidden',
-          background:'linear-gradient(135deg,#800020,#D4854A)', border:'none', cursor:'pointer',
+          background:'linear-gradient(135deg,#FF1564,#FF8C00)', border:'none', cursor:'pointer',
           display:'flex', alignItems:'center', justifyContent:'center',
           color:'#fff', fontWeight:700, fontSize:14, padding:0,
         }}
@@ -102,7 +102,7 @@ export default function UserMenu({ user, isAdmin }) {
           <div
             style={{
               position:'absolute', top:'calc(100% + 8px)', right:0, zIndex:100,
-              background:'rgba(8,11,24,0.98)', border:'1px solid rgba(255,255,255,0.1)',
+              background:'rgba(7,7,15,0.98)', border:'1px solid rgba(255,255,255,0.1)',
               borderRadius:12, boxShadow:'0 12px 40px rgba(0,0,0,0.7)',
               width:224, maxHeight:'85vh', overflowY:'auto',
             }}
@@ -153,8 +153,8 @@ export default function UserMenu({ user, isAdmin }) {
             <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)' }} />
             <button
               onClick={handleLogout}
-              style={{ ...menuItemStyle, color:'#C0392B', marginBottom:4 }}
-              onMouseEnter={e => e.currentTarget.style.background='rgba(192,57,43,0.1)'}
+              style={{ ...menuItemStyle, color:'#FF2040', marginBottom:4 }}
+              onMouseEnter={e => e.currentTarget.style.background='rgba(255,32,64,0.1)'}
               onMouseLeave={e => e.currentTarget.style.background='transparent'}
             >
               <LogOut style={{ width:16, height:16 }} />

@@ -62,7 +62,7 @@ export default function ContentRecommendations() {
       className="space-y-3"
     >
       <div className="flex items-center gap-2 px-4">
-        <Brain className="w-4 h-4 text-[#6DBF7E]" />
+        <Brain className="w-4 h-4 text-[#00FF88]" />
         <h3 className="text-sm font-bold text-white">Recommended for You</h3>
       </div>
 
@@ -78,7 +78,7 @@ export default function ContentRecommendations() {
             transition={{ delay: i * 0.05 }}
             whileHover={{ scale: 1.02 }}
             className="flex gap-2 p-2 rounded-lg transition-all group"
-            style={{ background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.15)' }}
+            style={{ background: 'rgba(255,184,0,0.05)', border: '1px solid rgba(255,184,0,0.15)' }}
           >
             {/* Thumbnail */}
             <div className="relative flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-black">
@@ -98,7 +98,7 @@ export default function ContentRecommendations() {
               <h4 className="text-xs font-bold text-white truncate">{rec.title}</h4>
               <p className="text-[11px] text-white/60">{rec.channel}</p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[11px] text-[#6DBF7E]/70">{rec.duration}</span>
+                <span className="text-[11px] text-[#00FF88]/70">{rec.duration}</span>
                 <span className="text-[11px] text-white/40">•</span>
                 <span className="text-[11px] text-white/40">{rec.views} views</span>
               </div>
@@ -113,13 +113,13 @@ export default function ContentRecommendations() {
               whileHover={{ scale: 1.1 }}
               className="flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all"
               style={{
-                background: liked.has(rec.id) ? 'rgba(192,57,43,0.2)' : 'rgba(255,255,255,0.05)',
-                border: liked.has(rec.id) ? '1px solid rgba(192,57,43,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                background: liked.has(rec.id) ? 'rgba(255,32,64,0.2)' : 'rgba(255,255,255,0.05)',
+                border: liked.has(rec.id) ? '1px solid rgba(255,32,64,0.4)' : '1px solid rgba(255,255,255,0.1)',
               }}
             >
               <ThumbsUp
                 className="w-3 h-3"
-                style={{ color: liked.has(rec.id) ? '#C0392B' : 'rgba(255,255,255,0.4)', fill: liked.has(rec.id) ? '#C0392B' : 'none' }}
+                style={{ color: liked.has(rec.id) ? '#FF2040' : 'rgba(255,255,255,0.4)', fill: liked.has(rec.id) ? '#FF2040' : 'none' }}
               />
             </motion.button>
           </motion.a>

@@ -42,7 +42,7 @@ export default function StarField({ count = 120 }) {
         if (s.r > 1.2) {
           ctx.beginPath();
           ctx.arc(s.x * w, s.y * h, s.r * 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(212,175,55,${opacity * 0.15})`;
+          ctx.fillStyle = `rgba(255,184,0,${opacity * 0.15})`;
           ctx.fill();
         }
       });

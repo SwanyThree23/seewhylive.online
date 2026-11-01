@@ -5,12 +5,12 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const BG = '#080B18';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
+const BG = '#03030A';
 const BG2 = '#0d0618';
 
-const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#C0392B','#D4854A','#C9A84C'];
+const PALETTE = ['#B37F00','#00FF88','#FF8C00','#4A6B7C','#7C4A6B','#FF2040','#FF8C00','#FFB800'];
 function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
 }
@@ -50,7 +50,7 @@ function UserOctTile({ user, stream, size = 72, isLive = false, isSpeaking = fal
         {/* Content shell */}
         <div
           className="absolute inset-[2.5px] overflow-hidden flex items-center justify-center"
-          style={{ clipPath: OCT, background: `linear-gradient(145deg, rgba(30,15,30,0.97), rgba(8,11,24,0.97))` }}
+          style={{ clipPath: OCT, background: `linear-gradient(145deg, rgba(30,15,30,0.97), rgba(7,7,15,0.97))` }}
         >
           {stream ? (
             <video
@@ -106,7 +106,7 @@ function UserOctTile({ user, stream, size = 72, isLive = false, isSpeaking = fal
 
         {/* Online dot */}
         <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center"
-          style={{ background: '#6DBF7E', border: `2px solid ${BG}` }} />
+          style={{ background: '#00FF88', border: `2px solid ${BG}` }} />
       </div>
 
       {/* Name */}
@@ -253,7 +253,7 @@ export default function OnlineUsersGrid({
       {/* Section header */}
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ background: '#6DBF7E', boxShadow: '0 0 6px #6DBF7E' }} />
+          <div className="w-2 h-2 rounded-full" style={{ background: '#00FF88', boxShadow: '0 0 6px #00FF88' }} />
           <span style={{
             fontFamily: 'Barlow Condensed, sans-serif',
             fontSize: compact ? 12 : 14,
@@ -279,7 +279,7 @@ export default function OnlineUsersGrid({
             <>
               <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10 }}>·</span>
               <Radio className="w-3 h-3 text-red-400" />
-              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 700, color: '#EF4444' }}>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 700, color: '#FF2040' }}>
                 {liveUserIds.size} live
               </span>
             </>

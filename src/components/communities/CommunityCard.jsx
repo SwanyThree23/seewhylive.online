@@ -3,21 +3,21 @@ import { Users, CheckCircle, Lock, Globe, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
 const OCT     = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const CATEGORY_COLORS = {
-  music:         '#C0392B',
-  gaming:        '#4A8A7A',
-  tech:          '#D4AF37',
-  education:     '#6DBF7E',
-  business:      '#fb923c',
-  entertainment: '#7B5DA6',
-  sports:        '#38bdf8',
-  lifestyle:     '#D4854A',
-  all:           '#D4AF37',
+  music:         '#FF2040',
+  gaming:        '#00F5FF',
+  tech:          '#FFB800',
+  education:     '#00FF88',
+  business:      '#FF8C00',
+  entertainment: '#8B5CF6',
+  sports:        '#00F5FF',
+  lifestyle:     '#FF8C00',
+  all:           '#FFB800',
 };
 
 export default function CommunityCard({ community, isMember, isAdmin, onJoin }) {
@@ -31,8 +31,8 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
     <div
       className="rounded-2xl overflow-hidden flex flex-col transition-all duration-200 hover:scale-[1.01]"
       style={{
-        background: 'rgba(8,11,24,0.9)',
-        border: `1px solid rgba(212,175,55,0.18)`,
+        background: 'rgba(7,7,15,0.9)',
+        border: `1px solid rgba(255,184,0,0.18)`,
         boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
       }}
     >
@@ -41,13 +41,13 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
         {community.cover_url ? (
           <img src={community.cover_url} alt={community.name} className="w-full h-full object-cover" />
         ) : (
-          <div style={{ background: `linear-gradient(135deg,${CRIMSON}55,rgba(212,175,55,0.12))`, width: '100%', height: '100%' }} />
+          <div style={{ background: `linear-gradient(135deg,${CRIMSON}55,rgba(255,184,0,0.12))`, width: '100%', height: '100%' }} />
         )}
         {/* badges top-right */}
         <div className="absolute top-2 right-2 flex gap-1.5">
           {community.verified && (
             <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-black uppercase"
-              style={{ background: 'rgba(74,138,122,0.15)', border: '1px solid rgba(74,138,122,0.35)', color: '#4A8A7A', ...T }}>
+              style={{ background: 'rgba(0,245,255,0.15)', border: '1px solid rgba(0,245,255,0.35)', color: '#00F5FF', ...T }}>
               <CheckCircle className="w-2.5 h-2.5" />Verified
             </span>
           )}
@@ -109,7 +109,7 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
           </span>
           {community.tags?.slice(0, 2).map((tag, i) => (
             <span key={i} className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase"
-              style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)', color: 'rgba(212,175,55,0.6)', ...T }}>
+              style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.12)', color: 'rgba(255,184,0,0.6)', ...T }}>
               #{tag}
             </span>
           ))}
@@ -138,8 +138,8 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
                 Promise.resolve(onJoin?.(community)).finally(() => setJoinPending(false));
               }}
               style={{
-                background: joinPending ? 'rgba(212,175,55,0.05)' : 'rgba(212,175,55,0.1)',
-                border: `1px solid rgba(212,175,55,0.4)`, color: GOLD,
+                background: joinPending ? 'rgba(255,184,0,0.05)' : 'rgba(255,184,0,0.1)',
+                border: `1px solid rgba(255,184,0,0.4)`, color: GOLD,
                 opacity: joinPending ? 0.7 : 1,
                 ...T,
               }}>
@@ -148,7 +148,7 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
           )}
           {effectiveMember && !isMember && (
             <span className="flex-1 py-2 rounded-xl font-black uppercase text-[10px] text-center"
-              style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E', ...T }}>
+              style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.3)', color: '#00FF88', ...T }}>
               ✓ Joined!
             </span>
           )}
@@ -156,7 +156,7 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
           {isMember && isAdmin && (
             <Link to={createPageUrl(`CommunityAdmin?id=${community.id}`)} className="flex-1">
               <button className="w-full py-2 rounded-xl font-black uppercase text-[10px] transition-all"
-                style={{ background: `rgba(128,0,32,0.18)`, border: `1px solid rgba(128,0,32,0.4)`, color: '#C0392B', ...T }}>
+                style={{ background: `rgba(255,21,100,0.18)`, border: `1px solid rgba(255,21,100,0.4)`, color: '#FF2040', ...T }}>
                 Admin
               </button>
             </Link>
@@ -165,7 +165,7 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
           {isMember && (
             <Link to={createPageUrl(`CommunityGrowth?id=${community.id}`)}>
               <button className="p-2 rounded-xl transition-all"
-                style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD }}>
+                style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)', color: GOLD }}>
                 <TrendingUp className="w-3.5 h-3.5" />
               </button>
             </Link>

@@ -128,11 +128,11 @@ export default function GlobalChatWidget() {
         onClick={() => { setOpen(true); setMinimized(false); }}
         aria-label="Open global chat"
         className="fixed bottom-32 left-4 z-40 w-13 h-13 flex items-center justify-center rounded-2xl shadow-xl md:bottom-10"
-        style={{ width: 52, height: 52, background: 'linear-gradient(135deg, #2C1810, #6B4423)', border: '1px solid rgba(212,175,55,0.35)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
-        <MessageSquare className="w-5 h-5" style={{ color: '#d4af37' }} />
+        style={{ width: 52, height: 52, background: 'linear-gradient(135deg, #2C1810, #B37F00)', border: '1px solid rgba(255,184,0,0.35)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+        <MessageSquare className="w-5 h-5" style={{ color: '#FFB800' }} />
         {unread > 0 && (
           <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black"
-            style={{ background: '#CC7755', color: '#fff' }}>{unread > 9 ? '9+' : unread}</span>
+            style={{ background: '#FF8C00', color: '#fff' }}>{unread > 9 ? '9+' : unread}</span>
         )}
       </motion.button>
 
@@ -153,20 +153,20 @@ export default function GlobalChatWidget() {
               maxWidth: 440,
               margin: '0 auto',
               height: minimized ? 52 : 'min(520px, 70vh)',
-              background: 'rgba(8,11,24,0.97)',
-              border: '1px solid rgba(212,175,55,0.2)',
+              background: 'rgba(7,7,15,0.97)',
+              border: '1px solid rgba(255,184,0,0.2)',
               backdropFilter: 'blur(20px)',
             }}>
 
             {/* Header */}
             <div className="shrink-0 flex items-center justify-between px-4 py-3"
-              style={{ borderBottom: '1px solid rgba(212,175,55,0.1)', background: 'rgba(28,18,12,0.8)' }}>
+              style={{ borderBottom: '1px solid rgba(255,184,0,0.1)', background: 'rgba(7,7,15,0.8)' }}>
               <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4" style={{ color: '#d4af37' }} />
-                <span className="font-black text-sm" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+                <Globe className="w-4 h-4" style={{ color: '#FFB800' }} />
+                <span className="font-black text-sm" style={{ color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
                   GLOBAL CHAT
                 </span>
-                <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#00FF88] animate-pulse" />
               </div>
               <div className="flex items-center gap-1.5">
                 {/* Language picker */}
@@ -174,7 +174,7 @@ export default function GlobalChatWidget() {
                   <button onClick={() => setShowLangPicker(!showLangPicker)}
                     aria-label="Select language"
                     className="flex items-center gap-1 px-2 py-1 rounded-xl text-xs font-bold transition-all"
-                    style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#d4af37' }}>
+                    style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.2)', color: '#FFB800' }}>
                     <span>{selectedLang.flag}</span>
                     <span className="hidden sm:inline" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{selectedLang.code.toUpperCase()}</span>
                     <ChevronDown className="w-3 h-3" />
@@ -183,11 +183,11 @@ export default function GlobalChatWidget() {
                     {showLangPicker && (
                       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                         className="absolute right-0 top-9 z-10 rounded-2xl overflow-hidden shadow-2xl"
-                        style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(212,175,55,0.2)', width: 180, maxHeight: 280, overflowY: 'auto' }}>
+                        style={{ background: 'rgba(7,7,15,0.99)', border: '1px solid rgba(255,184,0,0.2)', width: 180, maxHeight: 280, overflowY: 'auto' }}>
                         {LANGUAGES.map(l => (
                           <button key={l.code} onClick={() => { setLang(l.code); setShowLangPicker(false); try { localStorage.setItem('gcw_lang', l.code); } catch {} }}
                             className="w-full flex items-center gap-2 px-3 py-2 text-xs transition-all"
-                            style={{ background: lang === l.code ? 'rgba(212,175,55,0.1)' : 'transparent', color: lang === l.code ? '#d4af37' : 'rgba(255,255,255,0.6)' }}>
+                            style={{ background: lang === l.code ? 'rgba(255,184,0,0.1)' : 'transparent', color: lang === l.code ? '#FFB800' : 'rgba(255,255,255,0.6)' }}>
                             <span className="text-base">{l.flag}</span>
                             <span>{l.label}</span>
                           </button>
@@ -219,7 +219,7 @@ export default function GlobalChatWidget() {
                   style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
                   {messages.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full gap-2 py-10">
-                      <Globe className="w-10 h-10 opacity-20" style={{ color: '#d4af37' }} />
+                      <Globe className="w-10 h-10 opacity-20" style={{ color: '#FFB800' }} />
                       <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
                         No messages yet.<br />Be the first to say hello! 👋
                       </p>
@@ -231,7 +231,7 @@ export default function GlobalChatWidget() {
                     return (
                       <div key={msg.id} className={`flex gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
                         <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black mt-1"
-                          style={{ background: isMe ? 'rgba(201,168,76,0.2)' : 'rgba(212,175,55,0.15)', color: isMe ? '#C9A84C' : '#d4af37' }}>
+                          style={{ background: isMe ? 'rgba(255,184,0,0.2)' : 'rgba(255,184,0,0.15)', color: isMe ? '#FFB800' : '#FFB800' }}>
                           {(msg.user_name || '?').charAt(0).toUpperCase()}
                         </div>
                         <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-0.5`}>
@@ -239,14 +239,14 @@ export default function GlobalChatWidget() {
                             {msgLang && msgLang !== 'en' && (
                               <span className="text-[11px]">{LANGUAGES.find(l => l.code === msgLang)?.flag}</span>
                             )}
-                            <span className="text-[10px] font-bold" style={{ color: isMe ? '#C9A84C' : '#d4af37' }}>
+                            <span className="text-[10px] font-bold" style={{ color: isMe ? '#FFB800' : '#FFB800' }}>
                               {msg.user_name}
                             </span>
                           </div>
                           <div className={`px-3 py-2 rounded-2xl text-xs leading-relaxed`}
                             style={{
-                              background: isMe ? 'rgba(201,168,76,0.1)' : 'rgba(255,255,255,0.07)',
-                              border: isMe ? '1px solid rgba(201,168,76,0.2)' : '1px solid rgba(255,255,255,0.07)',
+                              background: isMe ? 'rgba(255,184,0,0.1)' : 'rgba(255,255,255,0.07)',
+                              border: isMe ? '1px solid rgba(255,184,0,0.2)' : '1px solid rgba(255,255,255,0.07)',
                               color: 'rgba(255,255,255,0.85)',
                             }}>
                             {msg.translated || msg.content}
@@ -254,7 +254,7 @@ export default function GlobalChatWidget() {
                           {!isMe && lang !== 'en' && !msg.translated && (
                             <button onClick={() => translateMessage(msg)} disabled={translating}
                               className="text-[11px] px-1.5 py-0.5 rounded"
-                              style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                              style={{ color: 'rgba(255,184,0,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                               {translating ? '…' : `Translate →${selectedLang.flag}`}
                             </button>
                           )}
@@ -287,8 +287,8 @@ export default function GlobalChatWidget() {
                     <button onClick={() => setShowEmoji(!showEmoji)}
                       aria-label="Emoji picker"
                       className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: showEmoji ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                      <Smile className="w-4 h-4" style={{ color: showEmoji ? '#d4af37' : 'rgba(255,255,255,0.4)' }} />
+                      style={{ background: showEmoji ? 'rgba(255,184,0,0.12)' : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <Smile className="w-4 h-4" style={{ color: showEmoji ? '#FFB800' : 'rgba(255,255,255,0.4)' }} />
                     </button>
                     <div className="flex-1 relative">
                       <input
@@ -304,8 +304,8 @@ export default function GlobalChatWidget() {
                     <button onClick={sendMessage} disabled={!input.trim() || translating}
                       aria-label="Send message"
                       className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90 disabled:opacity-30"
-                      style={{ background: input.trim() ? '#d4af37' : 'rgba(212,175,55,0.12)' }}>
-                      <Send className="w-4 h-4" style={{ color: input.trim() ? '#000' : '#d4af37' }} />
+                      style={{ background: input.trim() ? '#FFB800' : 'rgba(255,184,0,0.12)' }}>
+                      <Send className="w-4 h-4" style={{ color: input.trim() ? '#000' : '#FFB800' }} />
                     </button>
                   </div>
                   <p className="text-[11px] mt-1 text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>

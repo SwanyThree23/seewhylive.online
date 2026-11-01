@@ -6,7 +6,7 @@ export default function GridLines() {
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#d4af37" strokeWidth="0.5" />
+            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#FFB800" strokeWidth="0.5" />
           </pattern>
           <radialGradient id="gridFade" cx="50%" cy="50%" r="60%">
             <stop offset="0%" stopColor="white" stopOpacity="1" />

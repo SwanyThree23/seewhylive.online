@@ -43,9 +43,9 @@ var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75
 function OctTile({ label, size }) {
   var sz = size || 32;
   return (
-    <div style={{ width: sz, height: sz, clipPath: OCT, background: 'rgba(212,175,55,0.2)', flexShrink: 0 }}>
+    <div style={{ width: sz, height: sz, clipPath: OCT, background: 'rgba(255,184,0,0.2)', flexShrink: 0 }}>
       <div style={{ width: '100%', height: '100%', clipPath: OCT,
-        background: 'linear-gradient(135deg, #800020, #3d0010)',
+        background: 'linear-gradient(135deg, #FF1564, #3d0010)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: sz * 0.35, fontWeight: 900, color: 'rgba(255,255,255,0.9)',
         fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -64,7 +64,7 @@ function SignalBars({ count }) {
         return (
           <span key={n} style={{
             width: 3, height: 4 + n * 3, borderRadius: 1,
-            background: n <= level ? '#D4AF37' : 'rgba(255,255,255,0.15)',
+            background: n <= level ? '#FFB800' : 'rgba(255,255,255,0.15)',
             display: 'inline-block'
           }} />
         );
@@ -87,16 +87,16 @@ function streamDuration(room) {
 // Horizontal scroller of the top 8 live rooms — first thing users see.
 function TopLiveStripSkeleton() {
   return (
-    <div style={{ background: 'rgba(8,11,24,0.99)', borderBottom: '1px solid rgba(212,175,55,0.06)' }}>
+    <div style={{ background: 'rgba(7,7,15,0.99)', borderBottom: '1px solid rgba(255,184,0,0.06)' }}>
       <div className="flex items-center gap-2 px-4 pt-2.5 pb-1">
-        <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B' }} />
+        <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#FF2040' }} />
         <div className="h-2 w-16 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.06)' }} />
       </div>
       <div className="overflow-x-auto pb-3" style={{ scrollbarWidth: 'none' }}>
         <div className="flex gap-2.5 px-4" style={{ width: 'max-content' }}>
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="rounded-xl overflow-hidden shrink-0 animate-pulse"
-              style={{ width: 116, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.06)' }}>
+              style={{ width: 116, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,184,0,0.06)' }}>
               <div style={{ height: 72, background: 'rgba(255,255,255,0.04)' }} />
               <div className="px-2 py-1.5 space-y-1.5">
                 <div className="h-2 rounded" style={{ background: 'rgba(255,255,255,0.06)', width: '80%' }} />
@@ -116,14 +116,14 @@ function TopLiveStrip({ rooms, loading }) {
   var top = rooms.slice(0, 8);
 
   return (
-    <div style={{ background: 'rgba(8,11,24,0.99)', borderBottom: '1px solid rgba(212,175,55,0.06)' }}>
+    <div style={{ background: 'rgba(7,7,15,0.99)', borderBottom: '1px solid rgba(255,184,0,0.06)' }}>
       <div className="flex items-center gap-2 px-4 pt-2.5 pb-1">
-        <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B' }} />
+        <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#FF2040' }} />
         <span className="text-[10px] font-black uppercase tracking-widest"
           style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.15em' }}>
           Live Now
         </span>
-        <span className="text-[10px] font-bold" style={{ color: 'rgba(212,175,55,0.55)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <span className="text-[10px] font-bold" style={{ color: 'rgba(255,184,0,0.55)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           {rooms.length}
         </span>
       </div>
@@ -138,23 +138,23 @@ function TopLiveStrip({ rooms, loading }) {
                 <motion.div
                   whileTap={{ scale: 0.95 }}
                   className="relative rounded-xl overflow-hidden shrink-0"
-                  style={{ width: 116, background: 'rgba(13,6,24,0.97)', border: '1px solid rgba(212,175,55,0.10)' }}>
+                  style={{ width: 116, background: 'rgba(13,6,24,0.97)', border: '1px solid rgba(255,184,0,0.10)' }}>
 
                   {/* Thumbnail / placeholder */}
-                  <div className="relative" style={{ height: 72, background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
+                  <div className="relative" style={{ height: 72, background: 'linear-gradient(135deg, #0B0B18, #03030A)' }}>
                     {room.thumbnail_url ? (
                       <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Radio className="w-5 h-5" style={{ color: 'rgba(212,175,55,0.18)' }} />
+                        <Radio className="w-5 h-5" style={{ color: 'rgba(255,184,0,0.18)' }} />
                       </div>
                     )}
                     <div className="absolute inset-0"
-                      style={{ background: 'linear-gradient(to top, rgba(8,11,24,0.88) 0%, transparent 55%)' }} />
+                      style={{ background: 'linear-gradient(to top, rgba(7,7,15,0.88) 0%, transparent 55%)' }} />
 
                     {/* LIVE badge */}
                     <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded"
-                      style={{ background: '#C0392B' }}>
+                      style={{ background: '#FF2040' }}>
                       <div className="w-1 h-1 rounded-full bg-white animate-pulse" />
                       <span className="text-[8px] font-black text-white"
                         style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
@@ -179,7 +179,7 @@ function TopLiveStrip({ rooms, loading }) {
                     </p>
                     {room.host_name && (
                       <p className="text-[9px] mt-0.5 truncate"
-                        style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        style={{ color: 'rgba(255,184,0,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                         {room.host_name}
                       </p>
                     )}
@@ -233,7 +233,7 @@ function isRising(room) {
 }
 
 var RANK_STYLES = [
-  { label: '#1', bg: 'linear-gradient(135deg, #B8860B, #D4AF37)', color: '#000', glow: 'rgba(212,175,55,0.45)' },
+  { label: '#1', bg: 'linear-gradient(135deg, #B8860B, #FFB800)', color: '#000', glow: 'rgba(255,184,0,0.45)' },
   { label: '#2', bg: 'linear-gradient(135deg, #6B6B6B, #B0B0B0)', color: '#000', glow: 'rgba(176,176,176,0.35)' },
   { label: '#3', bg: 'linear-gradient(135deg, #7B3F00, #CD7F32)', color: '#fff', glow: 'rgba(205,127,50,0.35)' },
 ];
@@ -246,29 +246,29 @@ function FanbaseRoomCard({ room, rank, rising }) {
   var isTrending = participantCount >= 500;
   var rankStyle = rank != null && rank < 3 ? RANK_STYLES[rank] : null;
   var categoryColor = {
-    Music: '#C0392B', Gaming: '#D4AF37', Tech: '#4A8A7A',
-    Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
-    Lifestyle: '#D4854A', Tournament: '#CC7755', Domino: '#D4AF37'
+    Music: '#FF2040', Gaming: '#FFB800', Tech: '#00F5FF',
+    Education: '#00FF88', Business: '#FFB800', Sports: '#FF8C00',
+    Lifestyle: '#FF8C00', Tournament: '#FF8C00', Domino: '#FFB800'
   };
   var tag = room.tags && room.tags[0];
-  var tagColor = tag ? (categoryColor[tag] || '#D4AF37') : '#D4AF37';
+  var tagColor = tag ? (categoryColor[tag] || '#FFB800') : '#FFB800';
   var duration = streamDuration(room);
   var accessLabel = room.ppv_price ? 'PPV' : room.is_fan_only ? 'FAN' : 'FREE';
   var accessStyle = accessLabel === 'PPV'
-    ? { background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }
+    ? { background: 'rgba(255,184,0,0.15)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.3)' }
     : accessLabel === 'FAN'
-    ? { background: 'rgba(128,0,32,0.2)', color: '#D4854A', border: '1px solid rgba(128,0,32,0.4)' }
-    : { background: 'rgba(109,191,126,0.1)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.25)' };
+    ? { background: 'rgba(255,21,100,0.2)', color: '#FF8C00', border: '1px solid rgba(255,21,100,0.4)' }
+    : { background: 'rgba(0,255,136,0.1)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.25)' };
 
   return (
     <Link to={`/LiveRoom?id=${room.id}`}>
       <motion.div whileTap={{ scale: 0.98 }}
         className="rounded-2xl overflow-hidden cursor-pointer"
         style={{
-          background: 'rgba(8,11,24,0.9)',
+          background: 'rgba(7,7,15,0.9)',
           border: rankStyle
             ? `1px solid ${rankStyle.glow.replace('0.', '0.3').replace('rgba', 'rgba')}`
-            : '1px solid rgba(212,175,55,0.12)',
+            : '1px solid rgba(255,184,0,0.12)',
           boxShadow: rankStyle
             ? `0 4px 24px ${rankStyle.glow}, 0 0 0 1px rgba(0,0,0,0.4)`
             : '0 4px 20px rgba(0,0,0,0.4)',
@@ -284,38 +284,38 @@ function FanbaseRoomCard({ room, rank, rising }) {
               </span>
             )}
             <span className="flex items-center gap-1 text-[11px] font-black px-1.5 py-0.5 rounded-full"
-              style={{ background: 'rgba(192,57,43,0.18)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(255,32,64,0.18)', color: '#FF2040', border: '1px solid rgba(255,32,64,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
             {rising && !isTrending && (
               <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(109,191,126,0.12)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: 'rgba(0,255,136,0.12)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 ↑ RISING
               </span>
             )}
             {isTrending && (
               <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: 'rgba(255,140,0,0.15)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 🔥 TRENDING
               </span>
             )}
           </div>
           <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-full"
-            style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+            style={{ background: 'rgba(255,184,0,0.15)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
             Join
           </span>
         </div>
 
         {/* Thumbnail / placeholder */}
-        <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
+        <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0B0B18, #03030A)' }}>
           {room.thumbnail_url ? (
             <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} />
+              <Radio className="w-8 h-8" style={{ color: 'rgba(255,184,0,0.2)' }} />
             </div>
           )}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(8,11,24,0.85) 0%, transparent 60%)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(7,7,15,0.85) 0%, transparent 60%)' }} />
         </div>
 
         {/* Room title + host */}
@@ -325,7 +325,7 @@ function FanbaseRoomCard({ room, rank, rising }) {
             {room.title}
           </p>
           {room.host_name && (
-            <p className="text-[10px] mt-0.5" style={{ color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,184,0,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               {room.host_name}
             </p>
           )}
@@ -362,7 +362,7 @@ function FanbaseRoomCard({ room, rank, rising }) {
             {displayNames.map(function(name, i) { return <OctTile key={i} label={name} size={32} />; })}
             {displayNames.length === 0 && <OctTile label="?" size={32} />}
             {extra > 0 && (
-              <span className="text-[11px] font-black ml-0.5" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <span className="text-[11px] font-black ml-0.5" style={{ color: 'rgba(255,184,0,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 +{extra}
               </span>
             )}
@@ -377,12 +377,12 @@ function FanbaseRoomCard({ room, rank, rising }) {
 var SPOTLIGHT_ITEMS = [
   { emoji: '⚔️', label: 'State vs State', sub: 'Domino Tournaments', color: '#5B7FA6', page: 'StateVsState' },
   { emoji: '🕊️', label: 'Tribute Wall',   sub: 'Honor Legends',       color: '#7B5EA7', page: 'TributeWall' },
-  { emoji: '🤖', label: 'Joyce AI',        sub: 'Co-Host Assistant',   color: '#D4AF37', page: 'JoyceAI' },
-  { emoji: '🛡️', label: 'Guardian AI',    sub: 'Live Moderation',     color: '#C0392B', page: 'GuardianAI' },
-  { emoji: '🎙️', label: 'AI Podcast',     sub: 'Create Episodes',     color: '#4A8A7A', page: 'PodcastStudio' },
-  { emoji: '🎵', label: 'Music Studio',   sub: 'AI Music Creation',   color: '#7B5DA6', page: 'AIMusic' },
+  { emoji: '🤖', label: 'Joyce AI',        sub: 'Co-Host Assistant',   color: '#FFB800', page: 'JoyceAI' },
+  { emoji: '🛡️', label: 'Guardian AI',    sub: 'Live Moderation',     color: '#FF2040', page: 'GuardianAI' },
+  { emoji: '🎙️', label: 'AI Podcast',     sub: 'Create Episodes',     color: '#00F5FF', page: 'PodcastStudio' },
+  { emoji: '🎵', label: 'Music Studio',   sub: 'AI Music Creation',   color: '#8B5CF6', page: 'AIMusic' },
   { emoji: '⚡', label: 'INS Forge',      sub: 'AI Graphics',         color: '#F59E0B', page: 'INSForge' },
-  { emoji: '📡', label: 'Multi-Platform', sub: 'Stream Everywhere',   color: '#6DBF7E', page: 'MultiPlatform' },
+  { emoji: '📡', label: 'Multi-Platform', sub: 'Stream Everywhere',   color: '#00FF88', page: 'MultiPlatform' },
 ];
 
 function SpotlightStrip() {
@@ -452,7 +452,7 @@ function MomentsStrip() {
         <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)' }}>
           ✂️ Moments
         </span>
-        <Link to={createPageUrl('ClipsLibrary')} style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(212,175,55,0.45)', textDecoration: 'none' }}>
+        <Link to={createPageUrl('ClipsLibrary')} style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,184,0,0.45)', textDecoration: 'none' }}>
           See all →
         </Link>
       </div>
@@ -465,8 +465,8 @@ function MomentsStrip() {
           var yt = !thumb ? ytIdFromUrl(clip.clip_url || '') : null;
           return (
             <Link key={clip.id} to={createPageUrl('ClipsLibrary')} style={{ textDecoration: 'none', flexShrink: 0 }}>
-              <motion.div whileTap={{ scale: 0.96 }} style={{ width: 126, borderRadius: 10, overflow: 'hidden', background: 'rgba(8,11,24,0.92)', border: '1px solid rgba(212,175,55,0.1)' }}>
-                <div style={{ height: 71, position: 'relative', background: 'linear-gradient(135deg, rgba(128,0,32,0.3), rgba(8,11,24,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <motion.div whileTap={{ scale: 0.96 }} style={{ width: 126, borderRadius: 10, overflow: 'hidden', background: 'rgba(7,7,15,0.92)', border: '1px solid rgba(255,184,0,0.1)' }}>
+                <div style={{ height: 71, position: 'relative', background: 'linear-gradient(135deg, rgba(255,21,100,0.3), rgba(7,7,15,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {(thumb || yt) ? (
                     <img src={yt ? ('https://img.youtube.com/vi/' + yt + '/mqdefault.jpg') : thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
                   ) : (
@@ -498,29 +498,29 @@ function WashingtonClassicHero() {
           borderRadius: 20,
           overflow: 'hidden',
           background: 'linear-gradient(135deg, #0A0005 0%, #1A0008 40%, #0D0A00 100%)',
-          border: '1px solid rgba(212,175,55,0.28)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(212,175,55,0.12)',
+          border: '1px solid rgba(255,184,0,0.28)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,184,0,0.12)',
           position: 'relative',
         }}
       >
         {/* Background texture lines */}
-        <div style={{ position: 'absolute', inset: 0, opacity: 0.06, backgroundImage: 'repeating-linear-gradient(45deg, #D4AF37 0, #D4AF37 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.06, backgroundImage: 'repeating-linear-gradient(45deg, #FFB800 0, #FFB800 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
 
         {/* Top badges row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 0', position: 'relative' }}>
           <span style={{
             fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 10,
             letterSpacing: '0.14em', textTransform: 'uppercase',
-            color: '#D4AF37', background: 'rgba(212,175,55,0.12)',
-            border: '1px solid rgba(212,175,55,0.3)', borderRadius: 99,
+            color: '#FFB800', background: 'rgba(255,184,0,0.12)',
+            border: '1px solid rgba(255,184,0,0.3)', borderRadius: 99,
             padding: '3px 10px',
           }}>
             🏆 UPCOMING EVENT
           </span>
           <span style={{
-            fontFamily: 'Space Mono, monospace', fontWeight: 700, fontSize: 10,
-            color: '#6DBF7E', background: 'rgba(109,191,126,0.12)',
-            border: '1px solid rgba(109,191,126,0.3)', borderRadius: 99,
+            fontFamily: 'DM Mono, monospace', fontWeight: 700, fontSize: 10,
+            color: '#00FF88', background: 'rgba(0,255,136,0.12)',
+            border: '1px solid rgba(0,255,136,0.3)', borderRadius: 99,
             padding: '3px 10px', letterSpacing: '0.06em',
           }}>
             WA #1 RANKED
@@ -529,10 +529,10 @@ function WashingtonClassicHero() {
 
         {/* Title block */}
         <div style={{ padding: '10px 16px 4px', position: 'relative' }}>
-          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 28, color: '#F0E8D4', letterSpacing: '0.02em', lineHeight: 1.05 }}>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 28, color: '#F0F0FF', letterSpacing: '0.02em', lineHeight: 1.05 }}>
             Washington Classic
           </div>
-          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 22, color: '#D4AF37', letterSpacing: '0.04em', lineHeight: 1, marginTop: 2 }}>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 22, color: '#FFB800', letterSpacing: '0.04em', lineHeight: 1, marginTop: 2 }}>
             2026
           </div>
           <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 6, letterSpacing: '0.02em' }}>
@@ -541,27 +541,27 @@ function WashingtonClassicHero() {
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'rgba(212,175,55,0.1)', margin: '10px 16px' }} />
+        <div style={{ height: 1, background: 'rgba(255,184,0,0.1)', margin: '10px 16px' }} />
 
         {/* Info row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '0 16px 14px', position: 'relative' }}>
           <div>
             <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>Venue</div>
-            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4' }}>Jamar's Sports Bar</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0F0FF' }}>Jamar's Sports Bar</div>
             <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Des Moines, WA</div>
           </div>
-          <div style={{ width: 1, height: 36, background: 'rgba(212,175,55,0.15)' }} />
+          <div style={{ width: 1, height: 36, background: 'rgba(255,184,0,0.15)' }} />
           <div>
             <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>Format</div>
-            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4' }}>5-pt / 150-pt Games</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0F0FF' }}>5-pt / 150-pt Games</div>
             <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Live on SeeWhy LIVE</div>
           </div>
           <div style={{ marginLeft: 'auto' }}>
             <div style={{
               fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13,
-              color: '#000', background: 'linear-gradient(135deg, #D4AF37, #C9A84C)',
+              color: '#000', background: 'linear-gradient(135deg, #FFB800, #FFB800)',
               borderRadius: 10, padding: '8px 14px', letterSpacing: '0.06em',
-              textTransform: 'uppercase', boxShadow: '0 2px 12px rgba(212,175,55,0.4)',
+              textTransform: 'uppercase', boxShadow: '0 2px 12px rgba(255,184,0,0.4)',
             }}>
               View →
             </div>
@@ -587,33 +587,33 @@ var DOMINO_FEATURES = [
 ];
 
 var DOMINO_OFFERINGS = [
-  { title: 'Social Lights', badge: 'WEEKLY', badgeColor: '#D4AF37', desc: 'Weekly spotlight show featuring influencers & organizers from Social Audio & Social Gaming communities.' },
-  { title: 'Domino Entertainment', badge: 'EVENTS', badgeColor: '#800020', desc: 'Hybrid events & tournaments bridging diverse communities with mobile livestream production.' },
+  { title: 'Social Lights', badge: 'WEEKLY', badgeColor: '#FFB800', desc: 'Weekly spotlight show featuring influencers & organizers from Social Audio & Social Gaming communities.' },
+  { title: 'Domino Entertainment', badge: 'EVENTS', badgeColor: '#FF1564', desc: 'Hybrid events & tournaments bridging diverse communities with mobile livestream production.' },
 ];
 
 var DOMINO_SPONSORSHIPS = [
   { tier: 'Universal Chat', price: '$100', desc: 'Chat branding' },
   { tier: 'Segment',        price: '$200', desc: 'Branded segment' },
   { tier: 'Title Sponsor',  price: '$500', desc: 'Full event branding' },
-  { tier: 'Affiliate',      price: '10%',  desc: 'Per ticket sold', accent: '#D4854A' },
+  { tier: 'Affiliate',      price: '10%',  desc: 'Per ticket sold', accent: '#FF8C00' },
 ];
 
 function DominoExpoSection() {
   return (
-    <div style={{ background: 'rgba(13,6,2,0.98)', borderTop: '1px solid rgba(201,168,76,0.12)', borderBottom: '1px solid rgba(201,168,76,0.12)' }}>
+    <div style={{ background: 'rgba(13,6,2,0.98)', borderTop: '1px solid rgba(255,184,0,0.12)', borderBottom: '1px solid rgba(255,184,0,0.12)' }}>
 
       {/* Header */}
       <div style={{ padding: '16px 16px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#C9A84C', padding: '2px 8px', background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.28)', borderRadius: 99 }}>
+          <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#FFB800', padding: '2px 8px', background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.28)', borderRadius: 99 }}>
             Featured Partner
           </span>
           <a href="https://youtube.com/@dominoentertainment5513" target="_blank" rel="noopener noreferrer"
-            style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 700, color: '#D4854A', letterSpacing: '0.04em', textDecoration: 'none' }}>
+            style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 700, color: '#FF8C00', letterSpacing: '0.04em', textDecoration: 'none' }}>
             Follow →
           </a>
         </div>
-        <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 26, color: '#F0E8D4', letterSpacing: '0.02em', margin: '0 0 2px', lineHeight: 1.1 }}>
+        <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 26, color: '#F0F0FF', letterSpacing: '0.02em', margin: '0 0 2px', lineHeight: 1.1 }}>
           Domino Social Expo
         </h2>
         <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, color: 'rgba(255,255,255,0.4)', margin: '0 0 12px', letterSpacing: '0.02em' }}>
@@ -628,9 +628,9 @@ function DominoExpoSection() {
       <div style={{ overflowX: 'auto', padding: '0 16px 14px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {DOMINO_FEATURES.map(function(f) {
           return (
-            <div key={f.title} style={{ flexShrink: 0, width: 140, background: 'rgba(36,22,8,0.8)', border: '1px solid rgba(201,168,76,0.11)', borderRadius: 12, padding: '12px 12px 10px' }}>
+            <div key={f.title} style={{ flexShrink: 0, width: 140, background: 'rgba(36,22,8,0.8)', border: '1px solid rgba(255,184,0,0.11)', borderRadius: 12, padding: '12px 12px 10px' }}>
               <div style={{ fontSize: 22, marginBottom: 6 }}>{f.icon}</div>
-              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 14, color: '#F0E8D4', margin: '0 0 3px', letterSpacing: '0.02em' }}>{f.title}</p>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 14, color: '#F0F0FF', margin: '0 0 3px', letterSpacing: '0.02em' }}>{f.title}</p>
               <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.38)', margin: 0, lineHeight: 1.35 }}>{f.desc}</p>
             </div>
           );
@@ -638,7 +638,7 @@ function DominoExpoSection() {
       </div>
 
       {/* Divider */}
-      <div style={{ height: 1, background: 'rgba(201,168,76,0.07)', margin: '0 16px 14px' }} />
+      <div style={{ height: 1, background: 'rgba(255,184,0,0.07)', margin: '0 16px 14px' }} />
 
       {/* Videos */}
       <div style={{ padding: '0 16px 8px' }}>
@@ -650,11 +650,11 @@ function DominoExpoSection() {
         {DOMINO_VIDEOS.map(function(v) {
           return (
             <a key={v.id} href={'https://youtu.be/' + v.id} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0, textDecoration: 'none' }}>
-              <div style={{ width: 150, borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(201,168,76,0.14)', position: 'relative' }}>
+              <div style={{ width: 150, borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,184,0,0.14)', position: 'relative' }}>
                 <img src={'https://img.youtube.com/vi/' + v.id + '/mqdefault.jpg'} alt="Domino Entertainment"
                   style={{ width: '100%', display: 'block', aspectRatio: '16/9', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,6,2,0.65) 0%, transparent 50%)' }} />
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 32, height: 32, borderRadius: '50%', background: 'rgba(128,0,32,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,21,100,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ color: '#fff', fontSize: 13, marginLeft: 2 }}>▶</span>
                 </div>
               </div>
@@ -664,17 +664,17 @@ function DominoExpoSection() {
       </div>
 
       {/* Divider */}
-      <div style={{ height: 1, background: 'rgba(201,168,76,0.07)', margin: '0 16px 14px' }} />
+      <div style={{ height: 1, background: 'rgba(255,184,0,0.07)', margin: '0 16px 14px' }} />
 
       {/* Offerings */}
       <div style={{ padding: '0 16px 14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         {DOMINO_OFFERINGS.map(function(o) {
           return (
-            <div key={o.title} style={{ background: 'rgba(36,22,8,0.8)', border: '1px solid rgba(201,168,76,0.1)', borderRadius: 10, padding: '12px 10px' }}>
+            <div key={o.title} style={{ background: 'rgba(36,22,8,0.8)', border: '1px solid rgba(255,184,0,0.1)', borderRadius: 10, padding: '12px 10px' }}>
               <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.12em', color: o.badgeColor, background: o.badgeColor + '18', border: '1px solid ' + o.badgeColor + '33', borderRadius: 99, padding: '2px 7px', textTransform: 'uppercase' }}>
                 {o.badge}
               </span>
-              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 15, color: '#F0E8D4', margin: '7px 0 4px', letterSpacing: '0.02em', lineHeight: 1.2 }}>{o.title}</p>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 15, color: '#F0F0FF', margin: '7px 0 4px', letterSpacing: '0.02em', lineHeight: 1.2 }}>{o.title}</p>
               <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.38)', margin: 0, lineHeight: 1.35 }}>{o.desc}</p>
             </div>
           );
@@ -689,11 +689,11 @@ function DominoExpoSection() {
       </div>
       <div style={{ overflowX: 'auto', padding: '0 16px 20px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {DOMINO_SPONSORSHIPS.map(function(s) {
-          var accent = s.accent || '#C9A84C';
+          var accent = s.accent || '#FFB800';
           return (
-            <div key={s.tier} style={{ flexShrink: 0, minWidth: 110, background: 'rgba(128,0,32,0.07)', border: '1px solid rgba(128,0,32,0.18)', borderRadius: 10, padding: '10px 14px' }}>
+            <div key={s.tier} style={{ flexShrink: 0, minWidth: 110, background: 'rgba(255,21,100,0.07)', border: '1px solid rgba(255,21,100,0.18)', borderRadius: 10, padding: '10px 14px' }}>
               <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 20, color: accent, margin: '0 0 2px' }}>{s.price}</p>
-              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4', margin: '0 0 2px', letterSpacing: '0.02em' }}>{s.tier}</p>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0F0FF', margin: '0 0 2px', letterSpacing: '0.02em' }}>{s.tier}</p>
               <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: 0 }}>{s.desc}</p>
             </div>
           );
@@ -779,7 +779,7 @@ export default function Home() {
   return (
     <div
       className="min-h-screen relative"
-      style={{ background: '#080B18', overscrollBehavior: 'contain' }}
+      style={{ background: '#03030A', overscrollBehavior: 'contain' }}
     >
       <PullToRefresh onRefresh={async function() { await qc.invalidateQueries(); }}>
       <StarField />
@@ -797,12 +797,12 @@ export default function Home() {
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           className="relative z-20 mx-4 mt-3 mb-1 rounded-2xl overflow-hidden cursor-pointer"
-          style={{ background: 'linear-gradient(135deg, rgba(128,0,32,0.35) 0%, rgba(212,175,55,0.18) 100%)', border: '1px solid rgba(212,175,55,0.3)' }}
+          style={{ background: 'linear-gradient(135deg, rgba(255,21,100,0.35) 0%, rgba(255,184,0,0.18) 100%)', border: '1px solid rgba(255,184,0,0.3)' }}
           onClick={() => { window.location.href = '/Onboarding'; }}
         >
           <div className="flex items-center gap-3 px-4 py-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)' }}>
+              style={{ background: 'rgba(255,184,0,0.15)', border: '1px solid rgba(255,184,0,0.3)' }}>
               <span style={{ fontSize: 20 }}>📡</span>
             </div>
             <div className="flex-1 min-w-0">
@@ -815,23 +815,23 @@ export default function Home() {
               </p>
             </div>
             <div className="px-3 py-1.5 rounded-full font-black text-xs shrink-0"
-              style={{ background: '#D4AF37', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+              style={{ background: '#FFB800', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
               START →
             </div>
           </div>
-          <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #800020, #D4AF37, #6DBF7E, #D4AF37)' }} />
+          <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, var(--ac), var(--go), var(--cy), var(--em), var(--pu), transparent)' }} />
         </motion.div>
       )}
 
       {/* ── HERO STRIP ── */}
       <div className="flex items-center justify-between px-4"
-        style={{ height: 48, background: 'rgba(8,11,24,0.98)', borderBottom: '1px solid rgba(212,175,55,0.10)' }}>
+        style={{ height: 48, background: 'rgba(7,7,15,0.98)', borderBottom: '1px solid rgba(255,184,0,0.10)' }}>
         <div className="flex items-center gap-2">
           {liveCount > 0 ? (
             <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(139,26,47,0.33)', border: '1px solid #8B1A2F' }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#E74C3C' }} />
-              <span className="text-[10px] font-bold" style={{ color: '#E74C3C', fontFamily: 'Space Mono, monospace' }}>
+              style={{ background: 'rgba(255,21,100,0.33)', border: '1px solid #FF1564' }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#FF2040' }} />
+              <span className="text-[10px] font-bold" style={{ color: '#FF2040', fontFamily: 'DM Mono, monospace' }}>
                 {liveCount} LIVE
               </span>
             </span>
@@ -845,7 +845,7 @@ export default function Home() {
         <Link to={createPageUrl('GoLive')}>
           <motion.div whileTap={{ scale: 0.93 }}
             className="px-4 py-1.5 rounded-full text-xs font-black uppercase cursor-pointer"
-            style={{ background: 'linear-gradient(90deg, #6B4423, #D4AF37)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+            style={{ background: 'linear-gradient(90deg, #B37F00, #FFB800)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
             Go Live →
           </motion.div>
         </Link>
@@ -867,7 +867,7 @@ export default function Home() {
 
       {/* ── FILTER PILLS ── */}
       <div className="overflow-x-auto scrollbar-hide"
-        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.07)' }}>
+        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(255,184,0,0.07)' }}>
         <div className="flex items-center gap-2 px-4 py-2.5" style={{ width: 'max-content', minWidth: '100%' }}>
           {FILTERS.map(function(filter) {
             var active = activeFilter === filter;
@@ -879,15 +879,15 @@ export default function Home() {
                 style={{
                   fontFamily: 'Barlow Condensed, sans-serif',
                   letterSpacing: '0.07em',
-                  background: active ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)',
-                  color: active ? '#D4AF37' : 'rgba(255,255,255,0.45)',
-                  border: active ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.08)',
+                  background: active ? 'rgba(255,184,0,0.12)' : 'rgba(255,255,255,0.05)',
+                  color: active ? '#FFB800' : 'rgba(255,255,255,0.45)',
+                  border: active ? '1px solid rgba(255,184,0,0.3)' : '1px solid rgba(255,255,255,0.08)',
                 }}>
                 {filter.toUpperCase()}
                 {active && (
                   <span style={{
                     position: 'absolute', bottom: -1, left: '50%', transform: 'translateX(-50%)',
-                    width: '60%', height: 2, background: '#D4AF37', borderRadius: 1,
+                    width: '60%', height: 2, background: '#FFB800', borderRadius: 1,
                   }} />
                 )}
               </button>
@@ -922,15 +922,15 @@ export default function Home() {
               return (
                 <Link key={c.id} to={createPageUrl('Communities')}>
                   <motion.div whileTap={{ scale: 0.97 }} className="rounded-2xl overflow-hidden"
-                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
+                    style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,184,0,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
                     <div className="h-20 flex items-center justify-center"
-                      style={{ background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
-                      <Users className="w-7 h-7" style={{ color: 'rgba(212,175,55,0.3)' }} />
+                      style={{ background: 'linear-gradient(135deg, #0B0B18, #03030A)' }}>
+                      <Users className="w-7 h-7" style={{ color: 'rgba(255,184,0,0.3)' }} />
                     </div>
                     <div className="p-2.5">
                       <p className="font-black text-white text-sm line-clamp-1"
                         style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{c.name}</p>
-                      <p className="text-[10px] mt-0.5" style={{ color: 'rgba(212,175,55,0.55)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,184,0,0.55)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                         {(c.member_count || 0).toLocaleString()} members
                       </p>
                     </div>
@@ -957,8 +957,8 @@ export default function Home() {
               style={{ color: 'rgba(255,255,255,0.22)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               🏆 Ranked Live
             </span>
-            <div className="flex-1 h-px" style={{ background: 'rgba(212,175,55,0.08)' }} />
-            <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.18)', fontFamily: 'Space Mono, monospace' }}>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,184,0,0.08)' }} />
+            <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.18)', fontFamily: 'DM Mono, monospace' }}>
               {filteredRooms.length} streams
             </span>
           </div>
@@ -1006,7 +1006,7 @@ export default function Home() {
               <Link to={createPageUrl('GoLive')}>
                 <motion.div whileTap={{ scale: 0.93 }}
                   className="px-6 py-2.5 rounded-full text-sm font-black uppercase cursor-pointer"
-                  style={{ background: 'linear-gradient(90deg, #6B4423, #D4AF37)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+                  style={{ background: 'linear-gradient(90deg, #B37F00, #FFB800)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
                   Be the first → Go Live
                 </motion.div>
               </Link>

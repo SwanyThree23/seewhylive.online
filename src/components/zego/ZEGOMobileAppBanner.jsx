@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Smartphone, Zap } from 'lucide-react';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function ZEGOMobileAppBanner() {
@@ -12,12 +12,12 @@ export default function ZEGOMobileAppBanner() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
       className="rounded-2xl p-5"
-      style={{ background: '#0F0F1A', border: `1px solid ${GOLD}35`, boxShadow: `0 0 24px rgba(212,175,55,0.07)` }}>
+      style={{ background: '#0F0F1A', border: `1px solid ${GOLD}35`, boxShadow: `0 0 24px rgba(255,184,0,0.07)` }}>
 
       <div className="flex items-start gap-4">
         {/* Icon */}
         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
+          style={{ background: 'linear-gradient(135deg, #FF1564, #FFB800)' }}>
           <Smartphone className="w-5 h-5 text-black" />
         </div>
 
@@ -26,7 +26,7 @@ export default function ZEGOMobileAppBanner() {
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>SeeWhy LIVE Mobile</h3>
             <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
-              style={{ background: 'rgba(201,168,76,0.1)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.2)', ...T }}>
+              style={{ background: 'rgba(255,184,0,0.1)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.2)', ...T }}>
               Coming Soon
             </span>
           </div>
@@ -35,7 +35,7 @@ export default function ZEGOMobileAppBanner() {
 
           {/* Tech tag */}
           <div className="flex items-center gap-1.5 mb-4">
-            <Zap className="w-3 h-3" style={{ color: '#C9A84C' }} />
+            <Zap className="w-3 h-3" style={{ color: '#FFB800' }} />
             <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Share Tech Mono, monospace' }}>
               Built on ZEGOCLOUD Ultra-Low Latency · React Native
             </p>

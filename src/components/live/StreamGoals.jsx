@@ -126,7 +126,7 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
       if (target > 0 && current >= target) {
         setCompleted(prev => new Set([...prev, goal.id]));
         completeMut.mutate(goal.id);
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.4 }, colors: ['#6DBF7E', '#d4af37', '#D4AF37'] });
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.4 }, colors: ['#00FF88', '#FFB800', '#FFB800'] });
         fireAlert({ type: 'milestone', duration: 8000, title: `🎯 GOAL REACHED: ${goal.title}!`, body: goal.reward_text });
       }
     });
@@ -148,19 +148,19 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
     <div className="p-4 space-y-4 h-full overflow-y-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-[#6DBF7E]" />
+          <Target className="w-5 h-5 text-[#00FF88]" />
           <h3 className="font-semibold text-white">Stream Goals</h3>
         </div>
         {isHost && creatorId && (
           <div className="flex gap-1">
             <button onClick={() => { setShowPresets(v => !v); setShowForm(false); }}
               className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all"
-              style={{ background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.25)', color: '#C9A84C' }}
+              style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.25)', color: '#FFB800' }}
               title="Quick presets">
               <Zap className="w-3 h-3" /> Quick
             </button>
             <button onClick={() => { setShowForm(v => !v); setShowPresets(false); }}
-              className="w-7 h-7 rounded-lg bg-[#6DBF7E]/10 border border-[#6DBF7E]/30 flex items-center justify-center text-[#6DBF7E] hover:bg-[#6DBF7E]/20">
+              className="w-7 h-7 rounded-lg bg-[#00FF88]/10 border border-[#00FF88]/30 flex items-center justify-center text-[#00FF88] hover:bg-[#00FF88]/20">
               <Plus className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -176,7 +176,7 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
               {QUICK_PRESETS.map((p, i) => (
                 <button key={i} onClick={() => addGoal(p)}
                   className="text-left px-2 py-2 rounded-lg text-[10px] font-bold transition-all hover:opacity-80"
-                  style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)', color: '#6DBF7E' }}>
+                  style={{ background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.2)', color: '#00FF88' }}>
                   <p className="truncate">{p.title}</p>
                   <p className="text-[9px] text-white/30 truncate mt-0.5">{p.reward_text}</p>
                 </button>
@@ -193,12 +193,12 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
             initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-white/5 border border-[#6DBF7E]/20 rounded-xl p-4 space-y-3">
+            <div className="bg-white/5 border border-[#00FF88]/20 rounded-xl p-4 space-y-3">
               <div className="grid grid-cols-2 gap-1.5">
                 {GOAL_TYPES.map(gt => (
                   <button key={gt.id} onClick={() => { setForm(f => ({ ...f, goal_type: gt.id })); try { localStorage.setItem('sg_goal_type', gt.id); } catch {} }}
                     className={`text-xs py-1.5 px-2 rounded-lg border transition-all text-left ${
-                      form.goal_type === gt.id ? 'border-[#6DBF7E] bg-[#6DBF7E]/10 text-white' : 'border-white/10 text-white/40'
+                      form.goal_type === gt.id ? 'border-[#00FF88] bg-[#00FF88]/10 text-white' : 'border-white/10 text-white/40'
                     }`}>
                     {gt.label}
                   </button>
@@ -206,18 +206,18 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
               </div>
               <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 placeholder="Goal title (e.g. New Mic Fund!)"
-                style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
+                style={{ width:'100%', padding:'10px 14px', background:'rgba(7,7,15,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
               <div className="flex gap-2">
                 <input type="number" value={form.target_amount} onChange={e => { const v = Number(e.target.value); setForm(f => ({ ...f, target_amount: v })); try { localStorage.setItem('sg_target_amount', String(v)); } catch {} }}
                   placeholder="Target"
-                  style={{ flex:1, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
+                  style={{ flex:1, padding:'10px 14px', background:'rgba(7,7,15,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
                 <span className="text-sm text-white/40 flex items-center">{GOAL_TYPES.find(g => g.id === form.goal_type)?.unit}</span>
               </div>
               <input value={form.reward_text} onChange={e => setForm(f => ({ ...f, reward_text: e.target.value }))}
                 placeholder="Reward: I'll dance at goal! 🎉"
-                style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
+                style={{ width:'100%', padding:'10px 14px', background:'rgba(7,7,15,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
               <div className="flex gap-2">
-                <button onClick={() => addGoal()} style={{ flex:1, padding:'6px 14px', borderRadius:8, border:'none', background:'#6DBF7E', color:'#000', fontWeight:700, cursor:'pointer', fontSize:13, display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
+                <button onClick={() => addGoal()} style={{ flex:1, padding:'6px 14px', borderRadius:8, border:'none', background:'#00FF88', color:'#000', fontWeight:700, cursor:'pointer', fontSize:13, display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
                   <Check className="w-3.5 h-3.5" /> Add Goal
                 </button>
                 <button onClick={() => setShowForm(false)} style={{ padding:'6px 14px', borderRadius:8, border:'none', background:'transparent', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:13 }}>Cancel</button>
@@ -244,8 +244,8 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
 
         return (
           <motion.div key={goal.id} layout
-            className={`p-4 rounded-xl border space-y-3 ${isCompleted ? 'border-[#6DBF7E]/50 bg-[#6DBF7E]/5' : pct >= 80 ? 'border-[#C9A84C]/40 bg-[#C9A84C]/5' : 'border-white/10 bg-white/3'}`}
-            style={pct >= 80 && !isCompleted ? { boxShadow: '0 0 16px rgba(201,168,76,0.15)' } : {}}
+            className={`p-4 rounded-xl border space-y-3 ${isCompleted ? 'border-[#00FF88]/50 bg-[#00FF88]/5' : pct >= 80 ? 'border-[#FFB800]/40 bg-[#FFB800]/5' : 'border-white/10 bg-white/3'}`}
+            style={pct >= 80 && !isCompleted ? { boxShadow: '0 0 16px rgba(255,184,0,0.15)' } : {}}
           >
             <div className="flex items-start justify-between">
               <div>
@@ -253,14 +253,14 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
                 {goal.reward_text && <p className="text-[10px] text-white/40 mt-0.5">{goal.reward_text}</p>}
               </div>
               <div className="flex items-center gap-2">
-                {isCompleted && <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.2)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.3)' }}>✓ REACHED</span>}
+                {isCompleted && <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(0,255,136,0.2)', color:'#00FF88', border:'1px solid rgba(0,255,136,0.3)' }}>✓ REACHED</span>}
                 {isHost && roomId && (
-                  <button onClick={() => shareGoalMut.mutate(goal)} className="text-white/30 hover:text-[#C9A84C]" title="Share progress to chat">
+                  <button onClick={() => shareGoalMut.mutate(goal)} className="text-white/30 hover:text-[#FFB800]" title="Share progress to chat">
                     <Share2 className="w-3.5 h-3.5" />
                   </button>
                 )}
                 {isHost && (
-                  <button onClick={() => deleteMut.mutate(goal.id)} className="text-white/20 hover:text-[#C0392B]">
+                  <button onClick={() => deleteMut.mutate(goal.id)} className="text-white/20 hover:text-[#FF2040]">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 )}
@@ -271,7 +271,7 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
             <div>
               <div className="flex justify-between text-xs mb-1">
                 <span className="text-white/50">{gt?.prefix}{current.toLocaleString()}</span>
-                <span className="text-[#6DBF7E]">{pct.toFixed(0)}%</span>
+                <span className="text-[#00FF88]">{pct.toFixed(0)}%</span>
                 <span className="text-white/50">{gt?.prefix}{target.toLocaleString()}</span>
               </div>
               <div className="h-4 bg-white/5 rounded-full overflow-hidden relative">
@@ -280,7 +280,7 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
                   animate={{ width: `${pct}%` }}
                   transition={{ duration: 0.8, ease: 'easeOut' }}
                   className="h-full rounded-full relative"
-                  style={{ background: isCompleted ? '#6DBF7E' : 'linear-gradient(90deg, #4A9B5E, #6DBF7E, #6DBF7E)' }}
+                  style={{ background: isCompleted ? '#00FF88' : 'linear-gradient(90deg, #4A9B5E, #00FF88, #00FF88)' }}
                 >
                   {pct > 10 && (
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
@@ -298,7 +298,7 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
             {/* Remaining callout + ETA */}
             {!isCompleted && remaining > 0 && (
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-bold" style={{ color: '#C9A84C' }}>
+                <p className="text-[10px] font-bold" style={{ color: '#FFB800' }}>
                   Just {gt?.prefix}{remaining.toLocaleString()} more!
                 </p>
                 {minsLeft != null && minsLeft > 0 && (

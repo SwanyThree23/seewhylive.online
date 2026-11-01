@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, Zap, Heart, Gift, Users, TrendingUp, DollarSign } from 'lucide-react';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const RevenueCard = ({ icon: IconComponent, label, amount, growth, color }) => (
@@ -18,7 +18,7 @@ const RevenueCard = ({ icon: IconComponent, label, amount, growth, color }) => (
       </div>
     </div>
     <p style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: '0 0 4px', ...T }}>${amount.toLocaleString()}</p>
-    <p style={{ fontSize: 11, color: '#6DBF7E', fontWeight: 600, margin: 0, ...T }}>↑ {growth}% this month</p>
+    <p style={{ fontSize: 11, color: '#00FF88', fontWeight: 600, margin: 0, ...T }}>↑ {growth}% this month</p>
   </motion.div>
 );
 
@@ -30,10 +30,10 @@ const StreamerMonetizationCenter = () => {
   const [activeTab, setActiveTab] = useState('subscriptions');
 
   const revenueBreakdown = [
-    { label: 'Tips', amount: 1250, growth: 35, color: '#C0392B' },
-    { label: 'Subscriptions', amount: 3420, growth: 22, color: '#C9A84C' },
+    { label: 'Tips', amount: 1250, growth: 35, color: '#FF2040' },
+    { label: 'Subscriptions', amount: 3420, growth: 22, color: '#FFB800' },
     { label: 'Virtual Goods', amount: 890, growth: 15, color: GOLD },
-    { label: 'Sponsorships', amount: 2100, growth: 48, color: '#D4AF37' }
+    { label: 'Sponsorships', amount: 2100, growth: 48, color: '#FFB800' }
   ];
 
   const subscriptionTiers = [
@@ -54,7 +54,7 @@ const StreamerMonetizationCenter = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      style={{ background: 'rgba(26,10,46,0.5)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}
+      style={{ background: 'rgba(26,10,46,0.5)', border: '1px solid rgba(255,184,0,0.15)', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}
     >
       {/* Header */}
       <div>
@@ -66,13 +66,13 @@ const StreamerMonetizationCenter = () => {
       </div>
 
       {/* Total Revenue Banner */}
-      <div style={{ background: 'linear-gradient(to right, rgba(212,175,55,0.2), rgba(212,175,55,0.2))', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, padding: 16 }}>
+      <div style={{ background: 'linear-gradient(to right, rgba(255,184,0,0.2), rgba(255,184,0,0.2))', border: '1px solid rgba(255,184,0,0.3)', borderRadius: 8, padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 600, margin: '0 0 4px', ...T }}>Total This Month</p>
             <p style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, ...T }}>${totalRevenue.toLocaleString()}</p>
           </div>
-          <TrendingUp className="w-8 h-8" style={{ color: '#6DBF7E' }} />
+          <TrendingUp className="w-8 h-8" style={{ color: '#00FF88' }} />
         </div>
       </div>
 
@@ -145,7 +145,7 @@ const StreamerMonetizationCenter = () => {
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(to bottom right, #800020, #D4854A)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(to bottom right, #800020, #FF8C00)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', ...T }}>#{idx + 1}</span>
                 </div>
                 <div>
@@ -182,11 +182,11 @@ const StreamerMonetizationCenter = () => {
       </div>
 
       {/* Payout Info */}
-      <div style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, padding: 12 }}>
-        <p style={{ fontSize: 10, color: '#C9A84C', fontWeight: 600, margin: '0 0 4px', ...T }}>Next Payout</p>
+      <div style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.2)', borderRadius: 8, padding: 12 }}>
+        <p style={{ fontSize: 10, color: '#FFB800', fontWeight: 600, margin: '0 0 4px', ...T }}>Next Payout</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 11, color: '#C9A84C', ...T }}>$3,847 on May 31, 2026</span>
-          <span style={{ fontSize: 11, background: 'rgba(201,168,76,0.2)', color: '#C9A84C', padding: '4px 8px', borderRadius: 4, ...T }}>Ready to withdraw</span>
+          <span style={{ fontSize: 11, color: '#FFB800', ...T }}>$3,847 on May 31, 2026</span>
+          <span style={{ fontSize: 11, background: 'rgba(255,184,0,0.2)', color: '#FFB800', padding: '4px 8px', borderRadius: 4, ...T }}>Ready to withdraw</span>
         </div>
       </div>
     </motion.div>
