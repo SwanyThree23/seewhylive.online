@@ -6,10 +6,11 @@ import { writeAuditLog } from '@/lib/audit'
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { streamId: string } },
+  { params }: { params: Promise<{ streamId: string }> },
 ) {
+  const { streamId } = await params
   const stream = await prisma.stream.findUnique({
-    where: { id: params.streamId },
+    where: { id: streamId },
     select: {
       id: true,
       title: true,
@@ -41,18 +42,23 @@ export async function GET(
   })
 
   if (!stream) return err('NOT_FOUND', 'Stream not found', 404)
-  return ok(stream)
+
+  // Expose hasStripe boolean rather than the raw account ID
+  const { creator, ...rest } = stream
+  const { stripeConnectId, ...creatorPublic } = creator
+  return ok({ ...rest, creator: { ...creatorPublic, hasStripe: !!stripeConnectId } })
 }
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { streamId: string } },
+  { params }: { params: Promise<{ streamId: string }> },
 ) {
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
 
+  const { streamId } = await params
   const stream = await prisma.stream.findUnique({
-    where: { id: params.streamId },
+    where: { id: streamId },
     select: { creatorId: true },
   })
   if (!stream) return err('NOT_FOUND', 'Stream not found', 404)
@@ -67,7 +73,7 @@ export async function PATCH(
   if (!parsed.success) return err('VALIDATION_ERROR', 'Invalid input', 422)
 
   const updated = await prisma.stream.update({
-    where: { id: params.streamId },
+    where: { id: streamId },
     data: parsed.data,
     select: { id: true, title: true, status: true },
   })
@@ -77,13 +83,14 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { streamId: string } },
+  { params }: { params: Promise<{ streamId: string }> },
 ) {
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
 
+  const { streamId } = await params
   const stream = await prisma.stream.findUnique({
-    where: { id: params.streamId },
+    where: { id: streamId },
     select: { creatorId: true, title: true },
   })
   if (!stream) return err('NOT_FOUND', 'Stream not found', 404)
@@ -92,14 +99,14 @@ export async function DELETE(
   }
 
   await prisma.stream.update({
-    where: { id: params.streamId },
+    where: { id: streamId },
     data: { status: 'ENDED', endedAt: new Date() },
   })
 
   await writeAuditLog({
     actorId: ctx.userId,
     action: 'stream.end',
-    targetId: params.streamId,
+    targetId: streamId,
     targetType: 'Stream',
     meta: { title: stream.title },
   })

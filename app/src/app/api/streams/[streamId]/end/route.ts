@@ -5,13 +5,14 @@ import { writeAuditLog } from '@/lib/audit'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { streamId: string } },
+  { params }: { params: Promise<{ streamId: string }> },
 ) {
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
 
+  const { streamId } = await params
   const stream = await prisma.stream.findUnique({
-    where: { id: params.streamId },
+    where: { id: streamId },
     select: { creatorId: true, status: true, title: true },
   })
   if (!stream) return err('NOT_FOUND', 'Stream not found', 404)
@@ -21,7 +22,7 @@ export async function POST(
   if (stream.status === 'ENDED') return ok({ ended: true, alreadyEnded: true })
 
   const updated = await prisma.stream.update({
-    where: { id: params.streamId },
+    where: { id: streamId },
     data: { status: 'ENDED', endedAt: new Date(), viewerCount: 0 },
     select: { id: true, status: true, endedAt: true },
   })
@@ -29,7 +30,7 @@ export async function POST(
   await writeAuditLog({
     actorId: ctx.userId,
     action: 'stream.end',
-    targetId: params.streamId,
+    targetId: streamId,
     targetType: 'Stream',
     meta: { title: stream.title },
   })

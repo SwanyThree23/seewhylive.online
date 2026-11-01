@@ -115,7 +115,7 @@ export default async function LiveStreamPage({ params }: Props) {
         paywallAmountCents={stream.paywallAmountCents}
         creatorId={stream.creator.id}
         creatorName={stream.creator.displayName ?? stream.creator.username}
-        stripeConnectId={stream.creator.stripeConnectId ?? null}
+        hasStripe={!!stream.creator.hasStripe}
         isLive={isLive}
         auraEnabled={!!stream.auraEnabled}
       />

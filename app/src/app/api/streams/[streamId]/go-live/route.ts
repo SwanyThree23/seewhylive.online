@@ -6,13 +6,14 @@ import { createNotification } from '@/lib/notifications'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { streamId: string } },
+  { params }: { params: Promise<{ streamId: string }> },
 ) {
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
 
+  const { streamId } = await params
   const stream = await prisma.stream.findUnique({
-    where: { id: params.streamId },
+    where: { id: streamId },
     select: { creatorId: true, status: true, title: true, thumbnailUrl: true },
   })
   if (!stream) return err('NOT_FOUND', 'Stream not found', 404)
@@ -23,7 +24,7 @@ export async function POST(
   if (stream.status === 'ENDED') return err('ENDED', 'Cannot restart an ended stream', 400)
 
   const updated = await prisma.stream.update({
-    where: { id: params.streamId },
+    where: { id: streamId },
     data: { status: 'LIVE', startedAt: new Date() },
     select: { id: true, status: true, startedAt: true },
   })
@@ -31,7 +32,7 @@ export async function POST(
   await writeAuditLog({
     actorId: ctx.userId,
     action: 'stream.go_live',
-    targetId: params.streamId,
+    targetId: streamId,
     targetType: 'Stream',
     meta: { title: stream.title },
   })
@@ -54,7 +55,7 @@ export async function POST(
           type: 'STREAM_STARTING',
           title: `${displayName} is live`,
           body: stream.title ?? 'Live stream started',
-          data: { streamId: params.streamId, creatorId: stream.creatorId },
+          data: { streamId, creatorId: stream.creatorId },
         })
       ))
     })

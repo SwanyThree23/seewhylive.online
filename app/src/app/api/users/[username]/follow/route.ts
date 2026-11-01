@@ -5,15 +5,18 @@ import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { sendNewFollowerEmail } from '@/lib/email'
 import { createNotification } from '@/lib/notifications'
 
+type Params = { params: Promise<{ username: string }> }
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { username: string } },
+  { params }: Params,
 ) {
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
 
+  const { username } = await params
   const target = await prisma.user.findUnique({
-    where: { username: params.username, deletedAt: null },
+    where: { username, deletedAt: null },
     select: { id: true },
   })
   if (!target) return err('NOT_FOUND', 'User not found', 404)
@@ -28,7 +31,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { username: string } },
+  { params }: Params,
 ) {
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
@@ -36,8 +39,9 @@ export async function POST(
   const limited = await rateLimit(getIP(req), 'auth')
   if (limited) return limited
 
+  const { username } = await params
   const target = await prisma.user.findUnique({
-    where: { username: params.username, deletedAt: null },
+    where: { username, deletedAt: null },
     select: { id: true },
   })
   if (!target) return err('NOT_FOUND', 'User not found', 404)
@@ -49,7 +53,7 @@ export async function POST(
     update: {},
   })
 
-  await redis.del(REDIS_KEYS.creatorProfile(params.username))
+  await redis.del(REDIS_KEYS.creatorProfile(username))
 
   // Email notification + follower count (fire-and-forget)
   const [follower, creatorFull] = await Promise.all([
@@ -80,13 +84,14 @@ export async function POST(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { username: string } },
+  { params }: Params,
 ) {
   const ctx = await requireAuth(req)
   if ('status' in ctx) return ctx
 
+  const { username } = await params
   const target = await prisma.user.findUnique({
-    where: { username: params.username },
+    where: { username },
     select: { id: true },
   })
   if (!target) return err('NOT_FOUND', 'User not found', 404)
@@ -95,6 +100,6 @@ export async function DELETE(
     where: { followerId: ctx.userId, followingId: target.id },
   })
 
-  await redis.del(REDIS_KEYS.creatorProfile(params.username))
+  await redis.del(REDIS_KEYS.creatorProfile(username))
   return ok({ following: false })
 }

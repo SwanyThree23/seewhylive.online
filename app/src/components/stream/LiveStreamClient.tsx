@@ -17,7 +17,7 @@ interface Props {
   paywallAmountCents: number | null
   creatorId: string
   creatorName: string
-  stripeConnectId: string | null
+  hasStripe: boolean
   isLive: boolean
   auraEnabled: boolean
 }
@@ -29,7 +29,7 @@ export function LiveStreamClient({
   paywallAmountCents,
   creatorId,
   creatorName,
-  stripeConnectId,
+  hasStripe,
   isLive,
   auraEnabled,
 }: Props) {
@@ -107,7 +107,7 @@ export function LiveStreamClient({
           </div>
         )}
 
-        {stripeConnectId && session && (
+        {hasStripe && session && (
           <Btn
             size="sm"
             variant="gold"
@@ -118,7 +118,7 @@ export function LiveStreamClient({
         )}
       </div>
 
-      {tipOpen && stripeConnectId && (
+      {tipOpen && hasStripe && (
         <TipModal
           open={tipOpen}
           streamId={streamId}
