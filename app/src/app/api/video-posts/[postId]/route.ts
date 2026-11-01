@@ -40,7 +40,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   if (post.isPaywalled && post.creatorId !== userId) {
     const unlock = userId
       ? await prisma.payment.findFirst({
-          where: { fromUserId: userId, toUserId: post.creatorId, type: 'PAYWALL_UNLOCK', status: 'SUCCEEDED' },
+          where: { fromUserId: userId, videoPostId: post.id, type: 'PAYWALL_UNLOCK', status: 'SUCCEEDED' },
         })
       : null
     if (!unlock) {

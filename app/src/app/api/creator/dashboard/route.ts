@@ -10,8 +10,19 @@ export async function GET(req: NextRequest) {
   const days = Math.min(parseInt(searchParams.get('days') ?? '30', 10), 90)
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
-  const [earnings, streams, followerCount, subCount] = await Promise.all([
+  const [earnings, earningsByType, streams, followerCount, subCount] = await Promise.all([
     prisma.payment.aggregate({
+      where: {
+        toUserId: ctx.userId,
+        status: 'SUCCEEDED',
+        createdAt: { gte: since },
+        type: { in: ['TIP', 'PAYWALL_UNLOCK', 'SUBSCRIPTION'] },
+      },
+      _sum: { creatorAmountCents: true },
+      _count: { id: true },
+    }),
+    prisma.payment.groupBy({
+      by: ['type'],
       where: {
         toUserId: ctx.userId,
         status: 'SUCCEEDED',
@@ -33,10 +44,21 @@ export async function GET(req: NextRequest) {
 
   if (earnings === null) return err('NOT_FOUND', 'Creator not found', 404)
 
+  const byType: Record<string, { cents: number; count: number }> = {}
+  for (const row of earningsByType) {
+    byType[row.type] = {
+      cents: row._sum.creatorAmountCents ?? 0,
+      count: row._count.id,
+    }
+  }
+
   return ok({
     earnings: {
       totalCents: earnings._sum.creatorAmountCents ?? 0,
       transactionCount: earnings._count.id,
+      tips: byType['TIP'] ?? { cents: 0, count: 0 },
+      paywall: byType['PAYWALL_UNLOCK'] ?? { cents: 0, count: 0 },
+      subscriptions: byType['SUBSCRIPTION'] ?? { cents: 0, count: 0 },
     },
     streams,
     followerCount,

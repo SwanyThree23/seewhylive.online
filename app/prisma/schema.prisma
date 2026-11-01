@@ -263,6 +263,7 @@ model Payment {
   fromUserId            String?
   toUserId              String?
   streamId              String?
+  videoPostId           String?
   type                  PaymentType
   amountCents           Int
   platformFeeCents      Int
@@ -274,13 +275,15 @@ model Payment {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
-  fromUser User?   @relation("SentPayments", fields: [fromUserId], references: [id])
-  toUser   User?   @relation("ReceivedPayments", fields: [toUserId], references: [id])
-  stream   Stream? @relation(fields: [streamId], references: [id])
+  fromUser  User?      @relation("SentPayments", fields: [fromUserId], references: [id])
+  toUser    User?      @relation("ReceivedPayments", fields: [toUserId], references: [id])
+  stream    Stream?    @relation(fields: [streamId], references: [id])
+  videoPost VideoPost? @relation(fields: [videoPostId], references: [id])
 
   @@index([toUserId])
   @@index([fromUserId])
   @@index([streamId])
+  @@index([videoPostId])
   @@index([status])
   @@index([createdAt])
 }
@@ -339,7 +342,8 @@ model VideoPost {
   updatedAt          DateTime  @updatedAt
   deletedAt          DateTime?
 
-  creator User @relation(fields: [creatorId], references: [id])
+  creator  User      @relation(fields: [creatorId], references: [id])
+  payments Payment[]
 
   @@index([creatorId])
   @@index([isPublished, publishedAt])

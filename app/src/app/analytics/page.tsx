@@ -6,8 +6,16 @@ import { useRouter } from 'next/navigation'
 import { StatCard } from '@/components/ui/StatCard'
 import { Badge } from '@/components/ui/Badge'
 
+interface EarningsBreakdown { cents: number; count: number }
+
 interface DashboardData {
-  earnings: { totalCents: number; transactionCount: number }
+  earnings: {
+    totalCents: number
+    transactionCount: number
+    tips: EarningsBreakdown
+    paywall: EarningsBreakdown
+    subscriptions: EarningsBreakdown
+  }
   streams: Array<{
     id: string; title: string; status: string
     viewerCount: number; startedAt: string | null; endedAt: string | null
@@ -148,6 +156,26 @@ export default function AnalyticsPage() {
           </div>
         )}
       </div>
+
+      {/* Earnings breakdown */}
+      {data && (data.earnings.tips.count > 0 || data.earnings.paywall.count > 0 || data.earnings.subscriptions.count > 0) && (
+        <div className="mt-8">
+          <h2 className="mb-4 font-bebas text-section tracking-widest text-muted">EARNINGS BREAKDOWN</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {[
+              { label: 'Tips', key: data.earnings.tips, color: 'text-gold' },
+              { label: 'Paywall Unlocks', key: data.earnings.paywall, color: 'text-purple' },
+              { label: 'Subscriptions', key: data.earnings.subscriptions, color: 'text-cyan' },
+            ].map(({ label, key, color }) => (
+              <div key={label} className="rounded border border-border bg-card p-4">
+                <p className="font-bebas text-label tracking-widest text-muted">{label.toUpperCase()}</p>
+                <p className={`mt-1 font-bebas text-stat ${color}`}>{formatDollars(key.cents)}</p>
+                <p className="font-barlow text-caption text-muted">{key.count} transaction{key.count !== 1 ? 's' : ''}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Revenue split reminder */}
       <div className="mt-8 rounded border border-border bg-card p-4">

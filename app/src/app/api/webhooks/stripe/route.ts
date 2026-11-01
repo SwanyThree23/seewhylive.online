@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { prisma } from '@/lib/db'
 import { writeAuditLog } from '@/lib/audit'
 import { sendTipReceivedEmail, sendSubscriptionEmail } from '@/lib/email'
+import { createNotification } from '@/lib/notifications'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-10-28.endive' })
 
@@ -71,7 +72,6 @@ async function handlePaymentIntentSucceeded(pi: Stripe.PaymentIntent) {
       : []),
   ])
 
-  // Send tip email notification
   if (payment.type === 'TIP' && payment.toUserId && payment.fromUserId) {
     const [creator, sender] = await Promise.all([
       prisma.user.findUnique({ where: { id: payment.toUserId }, select: { email: true, username: true } }),
@@ -79,6 +79,13 @@ async function handlePaymentIntentSucceeded(pi: Stripe.PaymentIntent) {
     ])
     if (creator && sender) {
       sendTipReceivedEmail(creator.email, creator.username, sender.username, pi.amount, null)
+      createNotification({
+        userId: payment.toUserId,
+        type: 'TIP_RECEIVED' as const,
+        title: 'New Tip',
+        body: `@${sender.username} tipped you $${(payment.creatorAmountCents / 100).toFixed(2)}`,
+        data: { fromUsername: sender.username, amountCents: pi.amount },
+      })
     }
   }
 
@@ -166,6 +173,13 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       subTierInfo.name,
       Math.floor(subTierInfo.priceCents * 0.90),
     )
+    createNotification({
+      userId: creatorId,
+      type: 'SUBSCRIPTION' as const,
+      title: 'New Subscriber',
+      body: `@${subscriber.username} subscribed at ${subTierInfo.name}`,
+      data: { subscriberUsername: subscriber.username, tier, tierName: subTierInfo.name },
+    })
   }
 }
 

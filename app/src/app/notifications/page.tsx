@@ -16,11 +16,12 @@ interface Notification {
 }
 
 const TYPE_ICON: Record<string, string> = {
-  TIP: '💰',
+  TIP_RECEIVED: '💰',
   NEW_FOLLOWER: '👤',
   SUBSCRIPTION: '⭐',
-  STREAM_LIVE: '📡',
-  SYSTEM: '🔔',
+  STREAM_STARTING: '📡',
+  PAYOUT_PROCESSED: '💳',
+  GIFT_RECEIVED: '🎁',
 }
 
 function timeAgo(iso: string): string {

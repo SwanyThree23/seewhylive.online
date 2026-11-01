@@ -1,11 +1,17 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
 import { Btn } from '@/components/ui/Btn'
 import { StatCard } from '@/components/ui/StatCard'
+
+interface StudioStats {
+  followerCount: number
+  activeSubscribers: number
+  earnings: { totalCents: number }
+}
 
 const GENRES = ['TALK_SHOW', 'MUSIC', 'LIFESTYLE', 'COMMUNITY', 'PANEL', 'COMEDY', 'SPORTS', 'GAMING', 'EDUCATION', 'OTHER']
 
@@ -27,6 +33,14 @@ export default function StudioPage() {
   const [thumbnailUploading, setThumbnailUploading] = useState(false)
   const [error, setError] = useState('')
   const thumbRef = useRef<HTMLInputElement>(null)
+  const [stats, setStats] = useState<StudioStats | null>(null)
+
+  useEffect(() => {
+    fetch('/api/creator/dashboard?days=30')
+      .then(r => r.json())
+      .then(d => { if (d.success) setStats(d.data) })
+      .catch(() => {})
+  }, [])
 
   async function uploadThumbnail(file: File) {
     setThumbnailUploading(true)
@@ -245,9 +259,20 @@ export default function StudioPage() {
         {/* Right column — stats */}
         <div className="flex flex-col gap-4">
           <p className="font-bebas text-section tracking-widest text-muted">YOUR STATS</p>
-          <StatCard label="Followers" value="—" />
-          <StatCard label="Total Earned (30d)" value="$—" accent="gold" />
-          <StatCard label="Active Subscribers" value="—" accent="cyan" />
+          <StatCard
+            label="Followers"
+            value={stats ? stats.followerCount.toLocaleString() : '—'}
+          />
+          <StatCard
+            label="Total Earned (30d)"
+            value={stats ? `$${(stats.earnings.totalCents / 100).toFixed(2)}` : '—'}
+            accent="gold"
+          />
+          <StatCard
+            label="Active Subscribers"
+            value={stats ? stats.activeSubscribers.toLocaleString() : '—'}
+            accent="cyan"
+          />
 
           <div className="rounded border border-border bg-card p-4">
             <p className="mb-2 font-bebas text-section tracking-widest text-muted">REVENUE SPLIT</p>

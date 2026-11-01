@@ -23,6 +23,10 @@ export const paywallSchema = z.object({
   streamId: z.string().uuid(),
 })
 
+export const videoPaywallSchema = z.object({
+  postId: z.string().uuid(),
+})
+
 export const giftSchema = z.object({
   toUserId: z.string().uuid(),
   streamId: z.string().uuid(),

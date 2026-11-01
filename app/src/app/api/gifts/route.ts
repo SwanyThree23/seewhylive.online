@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
+import { createNotification } from '@/lib/notifications'
 import { z } from 'zod'
 import Stripe from 'stripe'
 
@@ -94,6 +95,16 @@ export async function POST(req: NextRequest) {
       where: { id: recipientId },
       data: { walletCents: { increment: creatorShareCents } },
     })
+    const sender = await prisma.user.findUnique({ where: { id: ctx.userId }, select: { username: true } })
+    if (sender) {
+      createNotification({
+        userId: recipientId,
+        type: 'GIFT_RECEIVED' as const,
+        title: 'Gift Received',
+        body: `@${sender.username} sent you a ${giftType.icon} ${giftType.name}`,
+        data: { senderUsername: sender.username, giftName: giftType.name, amountCents: giftType.amountCents },
+      })
+    }
   }
 
   return ok({

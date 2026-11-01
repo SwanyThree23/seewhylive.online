@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { redis, REDIS_KEYS } from '@/lib/redis'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
 import { sendNewFollowerEmail } from '@/lib/email'
+import { createNotification } from '@/lib/notifications'
 
 export async function GET(
   req: NextRequest,
@@ -65,6 +66,13 @@ export async function POST(
       follower.username,
       creatorFull._count.followers,
     )
+    createNotification({
+      userId: target.id,
+      type: 'NEW_FOLLOWER' as const,
+      title: 'New Follower',
+      body: `@${follower.username} started following you`,
+      data: { followerUsername: follower.username },
+    })
   }
 
   return ok({ following: true })
