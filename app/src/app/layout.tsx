@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { BrandBar } from '@/components/brand/BrandBar'
 import { BrandChyron } from '@/components/brand/BrandChyron'
+import { TopNav } from '@/components/nav/TopNav'
 import { Providers } from './providers'
 
 export const metadata: Metadata = {
@@ -24,8 +25,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Brand signature — never remove or conditionally render */}
           <BrandBar />
 
-          {/* Main content — padded for bar (2px top) and chyron (34px bottom) */}
-          <main className="min-h-screen pt-[2px] pb-[34px]">
+          <TopNav />
+
+          {/* Main content — padded for chyron (34px bottom) */}
+          <main className="min-h-screen pb-[34px]">
             {children}
           </main>
 
