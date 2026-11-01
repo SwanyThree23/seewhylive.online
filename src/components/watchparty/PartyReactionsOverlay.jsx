@@ -72,7 +72,7 @@ function SuperChatModal({ emoji, currentUser, partyId, onClose, onSent }) {
       reaction_category: 'superchat',
       animation_style: 'burst',
       is_premium: true,
-      tip_amount: Math.round(parseFloat(amount || 0) * 100),
+      tip_amount: Math.floor(parseFloat(amount || 0) * 100),
       message: msg.trim(),
       screen_x: Math.random(),
     }),
