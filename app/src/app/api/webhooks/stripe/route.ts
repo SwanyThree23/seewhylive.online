@@ -58,22 +58,21 @@ async function handlePaymentIntentSucceeded(pi: Stripe.PaymentIntent) {
   })
   if (!payment) return
 
-  await prisma.$transaction([
-    prisma.payment.update({
-      where: { id: payment.id },
-      data: { status: 'SUCCEEDED' },
-    }),
-    // Credit wallet on tip/paywall
-    ...(payment.type !== 'PAYOUT' && payment.toUserId
-      ? [prisma.user.update({
-          where: { id: payment.toUserId },
-          data: { walletCents: { increment: payment.creatorAmountCents } },
-        })]
-      : []),
-  ])
+  // Race-safe: only credit wallet if we are the first to mark it SUCCEEDED
+  const updated = await prisma.payment.updateMany({
+    where: { id: payment.id, status: 'PENDING' },
+    data: { status: 'SUCCEEDED' },
+  })
 
-  if (payment.type === 'TIP' && payment.toUserId && payment.fromUserId) {
-    const isGift = pi.metadata?.type === 'gift'
+  if (updated.count > 0 && payment.type !== 'PAYOUT' && payment.toUserId) {
+    await prisma.user.update({
+      where: { id: payment.toUserId },
+      data: { walletCents: { increment: payment.creatorAmountCents } },
+    })
+  }
+
+  if (updated.count > 0 && (payment.type === 'TIP' || payment.type === 'GIFT') && payment.toUserId && payment.fromUserId) {
+    const isGift = payment.type === 'GIFT' || pi.metadata?.type === 'gift'
     const [creator, sender] = await Promise.all([
       prisma.user.findUnique({ where: { id: payment.toUserId }, select: { email: true, username: true } }),
       prisma.user.findUnique({ where: { id: payment.fromUserId }, select: { username: true } }),

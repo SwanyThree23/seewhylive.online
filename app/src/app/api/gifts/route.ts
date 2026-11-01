@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     data: {
       fromUserId: ctx.userId,
       toUserId,
-      type: 'TIP',
+      type: 'GIFT',
       amountCents: giftType.amountCents,
       platformFeeCents,
       creatorAmountCents: creatorShareCents,

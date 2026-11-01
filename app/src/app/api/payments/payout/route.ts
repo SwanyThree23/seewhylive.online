@@ -32,6 +32,13 @@ export async function POST(req: NextRequest) {
   if (!user.stripeConnectId) return err('NO_PAYOUT', 'Stripe Connect account not set up', 400)
   if (user.walletCents < amountCents) return err('INSUFFICIENT_FUNDS', 'Insufficient wallet balance', 400)
 
+  // Create the Stripe transfer first — if it fails, wallet stays intact
+  const transfer = await stripe.transfers.create({
+    amount: amountCents,
+    currency: 'usd',
+    destination: user.stripeConnectId,
+  })
+
   const [updatedUser] = await prisma.$transaction([
     prisma.user.update({
       where: { id: ctx.userId },
@@ -43,20 +50,14 @@ export async function POST(req: NextRequest) {
         fromUserId: ctx.userId,
         toUserId: ctx.userId,
         type: 'PAYOUT',
-        status: 'PENDING',
+        status: 'SUCCEEDED',
         amountCents,
         creatorAmountCents: amountCents,
         platformFeeCents: 0,
+        stripePaymentIntentId: transfer.id,
       },
     }),
   ])
-
-  // Trigger Stripe Transfer to connected account
-  await stripe.transfers.create({
-    amount: amountCents,
-    currency: 'usd',
-    destination: user.stripeConnectId,
-  })
 
   await writeAuditLog({
     actorId: ctx.userId,
