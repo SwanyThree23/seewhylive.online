@@ -32,7 +32,6 @@ var { Server }    = require('socket.io');
 var helmet        = require('helmet');
 var cors          = require('cors');
 var { rateLimit } = require('express-rate-limit');
-var xssClean      = require('xss-clean');
 var jwt           = require('jsonwebtoken');
 var { v4: uuidv4 } = require('uuid');
 var crypto        = require('crypto');
@@ -492,7 +491,6 @@ var referralRegisterLimit = rateLimit({
 // NOTE: stripeOnboardRateLimit is applied on the route itself (after requireAuth)
 // so req.user.id is available for per-user keying.
 app.use(express.json({ limit: '2mb' }));
-app.use(xssClean());
 app.use('/api/battles', battleRoutes);
 app.use('/api/rewards', rewardsRoutes);
 const usersRoutes = require('./routes/users');
