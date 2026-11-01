@@ -73,19 +73,35 @@ async function handlePaymentIntentSucceeded(pi: Stripe.PaymentIntent) {
   ])
 
   if (payment.type === 'TIP' && payment.toUserId && payment.fromUserId) {
+    const isGift = pi.metadata?.type === 'gift'
     const [creator, sender] = await Promise.all([
       prisma.user.findUnique({ where: { id: payment.toUserId }, select: { email: true, username: true } }),
       prisma.user.findUnique({ where: { id: payment.fromUserId }, select: { username: true } }),
     ])
     if (creator && sender) {
-      sendTipReceivedEmail(creator.email, creator.username, sender.username, pi.amount, null)
-      createNotification({
-        userId: payment.toUserId,
-        type: 'TIP_RECEIVED' as const,
-        title: 'New Tip',
-        body: `@${sender.username} tipped you $${(payment.creatorAmountCents / 100).toFixed(2)}`,
-        data: { fromUsername: sender.username, amountCents: pi.amount },
-      })
+      if (isGift) {
+        const giftType = pi.metadata?.giftTypeId
+          ? await prisma.giftType.findUnique({ where: { id: pi.metadata.giftTypeId }, select: { name: true, icon: true } })
+          : null
+        createNotification({
+          userId: payment.toUserId,
+          type: 'GIFT_RECEIVED' as const,
+          title: 'Gift Received',
+          body: giftType
+            ? `@${sender.username} sent you a ${giftType.icon} ${giftType.name}`
+            : `@${sender.username} sent you a gift`,
+          data: { fromUsername: sender.username, amountCents: pi.amount },
+        })
+      } else {
+        sendTipReceivedEmail(creator.email, creator.username, sender.username, pi.amount, null)
+        createNotification({
+          userId: payment.toUserId,
+          type: 'TIP_RECEIVED' as const,
+          title: 'New Tip',
+          body: `@${sender.username} tipped you $${(payment.creatorAmountCents / 100).toFixed(2)}`,
+          data: { fromUsername: sender.username, amountCents: pi.amount },
+        })
+      }
     }
   }
 

@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAuth, rateLimit, ok, err, getIP } from '@/lib/middleware'
-import { createNotification } from '@/lib/notifications'
 import { z } from 'zod'
 import Stripe from 'stripe'
 
@@ -14,10 +13,9 @@ const PLATFORM_FEE = 0.10
 
 const sendGiftSchema = z.object({
   giftTypeId: z.string().uuid(),
-  recipientId: z.string().uuid(),
+  toUserId: z.string().uuid(),
   streamId: z.string().uuid().optional(),
   message: z.string().max(200).optional(),
-  paymentMethodId: z.string(),
 })
 
 export async function GET() {
@@ -42,13 +40,13 @@ export async function POST(req: NextRequest) {
   const parsed = sendGiftSchema.safeParse(body)
   if (!parsed.success) return err('VALIDATION_ERROR', 'Invalid input', 422)
 
-  const { giftTypeId, recipientId, streamId, message, paymentMethodId } = parsed.data
+  const { giftTypeId, toUserId, streamId, message } = parsed.data
 
-  if (recipientId === ctx.userId) return err('INVALID', 'Cannot send gift to yourself', 400)
+  if (toUserId === ctx.userId) return err('INVALID', 'Cannot send gift to yourself', 400)
 
   const [giftType, recipient] = await Promise.all([
     prisma.giftType.findUnique({ where: { id: giftTypeId } }),
-    prisma.user.findUnique({ where: { id: recipientId }, select: { id: true, stripeConnectId: true } }),
+    prisma.user.findUnique({ where: { id: toUserId }, select: { id: true, stripeConnectId: true } }),
   ])
 
   if (!giftType || !giftType.isActive) return err('NOT_FOUND', 'Gift type not found', 404)
@@ -61,16 +59,14 @@ export async function POST(req: NextRequest) {
   const paymentIntent = await stripe.paymentIntents.create({
     amount: giftType.amountCents,
     currency: 'usd',
-    payment_method: paymentMethodId,
-    confirm: true,
-    automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
+    automatic_payment_methods: { enabled: true },
     application_fee_amount: platformFeeCents,
     transfer_data: { destination: recipient.stripeConnectId },
     metadata: {
       type: 'gift',
       giftTypeId,
       senderId: ctx.userId,
-      recipientId,
+      recipientId: toUserId,
       streamId: streamId ?? '',
     },
   })
@@ -78,38 +74,22 @@ export async function POST(req: NextRequest) {
   const payment = await prisma.payment.create({
     data: {
       fromUserId: ctx.userId,
-      toUserId: recipientId,
+      toUserId,
       type: 'TIP',
       amountCents: giftType.amountCents,
       platformFeeCents,
       creatorAmountCents: creatorShareCents,
       stripePaymentIntentId: paymentIntent.id,
-      status: paymentIntent.status === 'succeeded' ? 'SUCCEEDED' : 'PENDING',
+      status: 'PENDING',
       streamId: streamId ?? null,
       note: message,
     },
   })
 
-  if (paymentIntent.status === 'succeeded') {
-    await prisma.user.update({
-      where: { id: recipientId },
-      data: { walletCents: { increment: creatorShareCents } },
-    })
-    const sender = await prisma.user.findUnique({ where: { id: ctx.userId }, select: { username: true } })
-    if (sender) {
-      createNotification({
-        userId: recipientId,
-        type: 'GIFT_RECEIVED' as const,
-        title: 'Gift Received',
-        body: `@${sender.username} sent you a ${giftType.icon} ${giftType.name}`,
-        data: { senderUsername: sender.username, giftName: giftType.name, amountCents: giftType.amountCents },
-      })
-    }
-  }
-
   return ok({
+    clientSecret: paymentIntent.client_secret,
+    paymentIntentId: paymentIntent.id,
     paymentId: payment.id,
-    status: payment.status,
     giftName: giftType.name,
     giftIcon: giftType.icon,
     auraMessage: giftType.auraMessage,

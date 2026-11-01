@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
   const paymentIntent = await stripe.paymentIntents.create({
     amount: amountCents,
     currency: 'usd',
+    automatic_payment_methods: { enabled: true },
     application_fee_amount: platformFeeCents,
     transfer_data: { destination: stream.creator.stripeConnectId },
     metadata: {
@@ -86,5 +87,5 @@ export async function POST(req: NextRequest) {
     meta: { amountCents, streamId },
   })
 
-  return ok({ clientSecret: paymentIntent.client_secret, paymentId: payment.id })
+  return ok({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id, paymentId: payment.id })
 }
