@@ -5,7 +5,11 @@ import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
 import crypto from 'crypto'
 
-const client = new Anthropic()
+let _anthropic: Anthropic | null = null
+function getAnthropic() {
+  if (!_anthropic) _anthropic = new Anthropic()
+  return _anthropic
+}
 
 const SUPPORTED_LANGS: Record<string, string> = {
   en: 'English', es: 'Spanish', fr: 'French', de: 'German',
@@ -40,7 +44,7 @@ export async function POST(req: NextRequest) {
   const cached = await redis.get(cacheKey)
   if (cached) return ok({ translated: cached, cached: true })
 
-  const message = await client.messages.create({
+  const message = await getAnthropic().messages.create({
     model: 'claude-haiku-5-5',
     max_tokens: 512,
     messages: [{
