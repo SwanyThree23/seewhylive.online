@@ -8,13 +8,13 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const q = (searchParams.get('q') ?? '').trim().slice(0, 100)
-  const type = searchParams.get('type') ?? 'all' // all | streams | users
+  const type = searchParams.get('type') ?? 'all' // all | streams | users | videos
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '10', 10), 25)
 
-  if (!q) return ok({ streams: [], users: [] })
+  if (!q) return ok({ streams: [], users: [], videos: [] })
 
-  const [streams, users] = await Promise.all([
-    type !== 'users'
+  const [streams, users, videos] = await Promise.all([
+    (type === 'all' || type === 'streams')
       ? prisma.stream.findMany({
           where: {
             status: 'LIVE',
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
           },
         })
       : Promise.resolve([]),
-    type !== 'streams'
+    (type === 'all' || type === 'users')
       ? prisma.user.findMany({
           where: {
             deletedAt: null,
@@ -48,7 +48,26 @@ export async function GET(req: NextRequest) {
           },
         })
       : Promise.resolve([]),
+    (type === 'all' || type === 'videos')
+      ? prisma.videoPost.findMany({
+          where: {
+            isPublished: true,
+            deletedAt: null,
+            OR: [
+              { title: { contains: q, mode: 'insensitive' } },
+              { description: { contains: q, mode: 'insensitive' } },
+            ],
+          },
+          take: limit,
+          orderBy: { views: 'desc' },
+          select: {
+            id: true, title: true, thumbnailUrl: true,
+            views: true, isPaywalled: true, paywallAmountCents: true,
+            creator: { select: { username: true, displayName: true, avatarUrl: true } },
+          },
+        })
+      : Promise.resolve([]),
   ])
 
-  return ok({ streams, users })
+  return ok({ streams, users, videos })
 }

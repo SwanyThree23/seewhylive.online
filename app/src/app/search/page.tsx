@@ -25,17 +25,28 @@ interface UserResult {
   _count: { followers: number }
 }
 
+interface VideoResult {
+  id: string
+  title: string
+  thumbnailUrl: string | null
+  views: number
+  isPaywalled: boolean
+  paywallAmountCents: number | null
+  creator: { username: string; displayName: string | null; avatarUrl: string | null }
+}
+
 export default function SearchPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [q, setQ] = useState(searchParams.get('q') ?? '')
-  const [type, setType] = useState<'all' | 'streams' | 'users'>('all')
+  const [type, setType] = useState<'all' | 'streams' | 'users' | 'videos'>('all')
   const [streams, setStreams] = useState<StreamResult[]>([])
   const [users, setUsers] = useState<UserResult[]>([])
+  const [videos, setVideos] = useState<VideoResult[]>([])
   const [loading, setLoading] = useState(false)
 
   const search = useCallback(async (query: string, t: typeof type) => {
-    if (!query.trim()) { setStreams([]); setUsers([]); return }
+    if (!query.trim()) { setStreams([]); setUsers([]); setVideos([]); return }
     setLoading(true)
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&type=${t}&limit=15`)
@@ -43,6 +54,7 @@ export default function SearchPage() {
       if (d.success) {
         setStreams(d.data.streams ?? [])
         setUsers(d.data.users ?? [])
+        setVideos(d.data.videos ?? [])
       }
     } finally {
       setLoading(false)
@@ -68,9 +80,10 @@ export default function SearchPage() {
     { id: 'all', label: 'ALL' },
     { id: 'streams', label: 'LIVE STREAMS' },
     { id: 'users', label: 'CREATORS' },
+    { id: 'videos', label: 'VIDEOS' },
   ]
 
-  const empty = !loading && q.trim() && streams.length === 0 && users.length === 0
+  const empty = !loading && q.trim() && streams.length === 0 && users.length === 0 && videos.length === 0
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
@@ -156,7 +169,7 @@ export default function SearchPage() {
 
       {/* Users */}
       {(type === 'all' || type === 'users') && users.length > 0 && (
-        <section>
+        <section className="mb-10">
           <h2 className="mb-4 font-bebas text-section tracking-widest text-muted">CREATORS</h2>
           <div className="space-y-2">
             {users.map(u => (
@@ -181,6 +194,42 @@ export default function SearchPage() {
                     </div>
                     <p className="font-barlow text-caption text-muted">
                       @{u.username} · {u._count.followers.toLocaleString()} followers
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Videos */}
+      {(type === 'all' || type === 'videos') && videos.length > 0 && (
+        <section>
+          <h2 className="mb-4 font-bebas text-section tracking-widest text-muted">VIDEOS</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {videos.map(v => (
+              <Link key={v.id} href={`/videos/${v.id}`} className="group">
+                <div className="rounded border border-border bg-card overflow-hidden transition-colors hover:border-accent/50">
+                  <div className="relative aspect-video bg-surface">
+                    {v.thumbnailUrl
+                      ? <img src={v.thumbnailUrl} alt={v.title} className="h-full w-full object-cover" />
+                      : <div className="h-full w-full flex items-center justify-center">
+                          <span className="font-bebas text-muted text-sm">VIDEO</span>
+                        </div>
+                    }
+                    {v.isPaywalled && (
+                      <div className="absolute top-2 left-2">
+                        <Badge variant="gold">PPV</Badge>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <p className="font-barlow text-body text-text truncate group-hover:text-accent transition-colors">
+                      {v.title}
+                    </p>
+                    <p className="font-barlow text-caption text-muted mt-0.5">
+                      {v.creator.displayName ?? v.creator.username} · {v.views.toLocaleString()} views
                     </p>
                   </div>
                 </div>
