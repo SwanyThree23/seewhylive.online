@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Custom Properties (design tokens) ────────────────────────────────── */
+:root {
+  --font-syne:     'Syne', sans-serif;
+  --font-barlow:   'Barlow Condensed', sans-serif;
+  --font-bebas:    'Bebas Neue', sans-serif;
+  --font-dm-mono:  'DM Mono', monospace;
+
+  color-scheme: dark;
+}
+
+/* ── Base reset ───────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #03030A;
+    color: #F0F0FF;
+    font-family: var(--font-barlow);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+    scrollbar-width: none;
+  }
+
+  body::-webkit-scrollbar { display: none; }
+
+  /* Prevent accidental text selection on chrome/UI elements */
+  nav, header, button, [role="tab"], [role="tablist"],
+  .no-select { -webkit-user-select: none; user-select: none; }
+
+  /* Re-enable for readable content */
+  p, li, article, blockquote, .prose, .chat-content,
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* Suppress scrollbars globally */
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+  *::-webkit-scrollbar { display: none; }
+
+  h1, h2, h3 { font-family: var(--font-bebas); }
+  code, pre, kbd { font-family: var(--font-dm-mono); }
+}
+
+/* ── Brand signature top bar ──────────────────────────────────────────────── */
+/* Applied via BrandBar component — never remove */
+.brand-top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #FF1564, #FFB800, #00F5FF, #00FF88, #8B5CF6, transparent);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* ── Chyron bar (fixed bottom) ────────────────────────────────────────────── */
+/* Applied via BrandChyron component — never remove */
+.brand-chyron {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 34px;
+  z-index: 9998;
+  background: #07070F;
+  border-top: 1px solid #16162A;
+}
+
+/* ── Broadcast corner brackets ────────────────────────────────────────────── */
+.bcast-bracket {
+  position: relative;
+}
+.bcast-bracket::before,
+.bcast-bracket::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: #FFB800;
+  border-style: solid;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.bcast-bracket::before {
+  top: 4px;
+  left: 4px;
+  border-width: 1.5px 0 0 1.5px;
+}
+.bcast-bracket::after {
+  bottom: 4px;
+  right: 4px;
+  border-width: 0 1.5px 1.5px 0;
+}
+
+/* ── Speaking highlight ───────────────────────────────────────────────────── */
+.speaking-ring {
+  animation: speakingRing 1s ease-in-out infinite;
+  border: 2px solid #00FF88;
+}
+
+/* ── Live pulse dot ───────────────────────────────────────────────────────── */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #FF1564;
+  animation: pulseLive 1.5s ease-in-out infinite;
+}
+
+/* ── Utility: gradient text ───────────────────────────────────────────────── */
+.text-gradient-brand {
+  background: linear-gradient(135deg, #FF1564, #FFB800);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #FFB800, #FF8C00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
