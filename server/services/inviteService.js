@@ -18,7 +18,7 @@ async function sendInvitation({ tenantId, fromUserId, toUserId, roomId, message,
   const MAX_EXPIRY_HOURS = 168; // 7 days
   const _rawHours = Math.floor(Number(expiryHours) || DEFAULT_EXPIRY_HOURS);
   const hours = Math.min(Math.max(1, _rawHours), MAX_EXPIRY_HOURS);
-  const target = await db.query('SELECT id FROM users WHERE id = $1 AND tenant_id = $2', [toUserId, tenantId]);
+  const target = await db.query('SELECT id FROM users WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL', [toUserId, tenantId]);
   if (!target.rows[0]) { const e = new Error('user not found'); e.status = 404; throw e; }
   const result = await db.query(
     `INSERT INTO guest_invitations (from_user_id, to_user_id, room_id, message, status, expires_at, tenant_id)
