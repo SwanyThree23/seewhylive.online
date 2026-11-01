@@ -20,8 +20,9 @@ const ALLOWED_TYPES: Record<string, { maxMB: number; folder: string }> = {
   'image/png':   { maxMB: 10, folder: 'images' },
   'image/webp':  { maxMB: 10, folder: 'images' },
   'image/gif':   { maxMB: 5,  folder: 'images' },
-  'video/mp4':   { maxMB: 500, folder: 'videos' },
-  'video/webm':  { maxMB: 500, folder: 'videos' },
+  'video/mp4':       { maxMB: 2000, folder: 'videos' },
+  'video/webm':      { maxMB: 2000, folder: 'videos' },
+  'video/quicktime': { maxMB: 2000, folder: 'videos' },
 }
 
 const presignSchema = z.object({
