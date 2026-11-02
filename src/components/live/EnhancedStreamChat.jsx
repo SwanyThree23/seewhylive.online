@@ -44,10 +44,10 @@ function userColor(uid = '') {
 }
 
 const BADGE_TYPES = {
-  admin: { color: '#D4854A', label: 'Admin', icon: '👑' },
+  admin: { color: '#FF8C00', label: 'Admin', icon: '👑' },
   moderator: { color: '#6B5CF6', label: 'Mod', icon: '🛡️' },
-  subscriber: { color: '#d4af37', label: 'Sub', icon: '⭐' },
-  verified: { color: '#C9A84C', label: 'VIP', icon: '✓' }
+  subscriber: { color: '#FFB800', label: 'Sub', icon: '⭐' },
+  verified: { color: '#FFB800', label: 'VIP', icon: '✓' }
 };
 
 const filterMessage = (text) => {
@@ -89,7 +89,7 @@ const ChatMessage = ({ message, isOwn, flagged }) => {
       {!isOwn && (
         <div className="w-6 h-6 rounded-full flex-shrink-0"
           style={{
-            background: `linear-gradient(135deg, ${message.user_color || '#D4AF37'}, ${message.user_color || '#6B4423'})`
+            background: `linear-gradient(135deg, ${message.user_color || '#FFB800'}, ${message.user_color || '#6B4423'})`
           }} />
       )}
       <div className={`flex flex-col gap-1 ${isOwn ? 'items-end' : 'items-start'}`}>
@@ -98,7 +98,7 @@ const ChatMessage = ({ message, isOwn, flagged }) => {
           {flagged && (
             <span
               className="px-1.5 py-0.5 rounded text-[11px] font-bold"
-              style={{ background: 'rgba(212,133,74,0.2)', border: '1px solid rgba(212,133,74,0.45)', color: '#D4854A' }}
+              style={{ background: 'rgba(255,140,0,0.2)', border: '1px solid rgba(255,140,0,0.45)', color: '#FF8C00' }}
               title="Flagged by the word filter"
             >
               ⚠️
@@ -121,8 +121,8 @@ const ChatMessage = ({ message, isOwn, flagged }) => {
         <div
           className="rounded-lg px-2.5 py-1.5 text-[11px] leading-relaxed max-w-xs break-words"
           style={{
-            background: isOwn ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
-            border: isOwn ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.1)',
+            background: isOwn ? 'rgba(255,184,0,0.15)' : 'rgba(255,255,255,0.05)',
+            border: isOwn ? '1px solid rgba(255,184,0,0.3)' : '1px solid rgba(255,255,255,0.1)',
             color: 'rgba(255,255,255,0.9)'
           }}
         >
@@ -136,9 +136,9 @@ const ChatMessage = ({ message, isOwn, flagged }) => {
 const HiddenMessage = () => (
   <div
     className="mx-3 my-1 px-2.5 py-1.5 rounded-lg flex items-center gap-2 text-[10px]"
-    style={{ background: 'rgba(192,57,43,0.1)', border: '1px dashed rgba(192,57,43,0.35)' }}
+    style={{ background: 'rgba(255,32,64,0.1)', border: '1px dashed rgba(255,32,64,0.35)' }}
   >
-    <Shield className="w-3 h-3 flex-shrink-0" style={{ color: '#C0392B' }} />
+    <Shield className="w-3 h-3 flex-shrink-0" style={{ color: '#FF2040' }} />
     <span style={{ color: 'rgba(255,255,255,0.35)' }}>Message hidden by the word filter</span>
   </div>
 );
@@ -149,13 +149,13 @@ const ModerationAlert = ({ message, onDismiss }) => (
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -10 }}
     className="mx-3 mb-2 p-2 rounded-lg flex items-center gap-2 text-[10px]"
-    style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)' }}
+    style={{ background: 'rgba(255,32,64,0.15)', border: '1px solid rgba(255,32,64,0.3)' }}
   >
-    <AlertCircle className="w-3 h-3 text-[#C0392B] flex-shrink-0" />
+    <AlertCircle className="w-3 h-3 text-[#FF2040] flex-shrink-0" />
     <span className="text-red-300 flex-1">{message}</span>
     <button
       onClick={onDismiss}
-      className="text-[#C0392B]/50 hover:text-[#C0392B] transition"
+      className="text-[#FF2040]/50 hover:text-[#FF2040] transition"
     >
       ✕
     </button>
@@ -282,11 +282,11 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'rgba(8,11,24,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <div className="flex flex-col h-full" style={{ background: 'rgba(3,3,10,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}>
       {/* Header */}
       <div className="px-4 py-2 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#D4854A]" />
+          <Sparkles className="w-4 h-4 text-[#FF8C00]" />
           <h3 className="text-xs font-bold uppercase tracking-wide text-white/70" style={{ fontFamily: 'Barlow Condensed' }}>
             Live Chat
           </h3>
@@ -295,7 +295,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
             <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase" style={{ background: 'rgba(107,92,246,0.2)', color: '#6B5CF6', border: '1px solid rgba(107,92,246,0.35)' }}>MOD</span>
           )}
         </div>
-        <Shield className="w-3 h-3 text-[#6DBF7E]" title="Automated moderation active" />
+        <Shield className="w-3 h-3 text-[#00FF88]" title="Automated moderation active" />
       </div>
 
       {/* Moderation Alerts */}
@@ -347,7 +347,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
           }}
           className="mx-auto mb-1 flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-all"
-          style={{ background: 'rgba(212,175,55,0.18)', border: '1px solid rgba(212,175,55,0.35)', color: '#d4af37' }}
+          style={{ background: 'rgba(255,184,0,0.18)', border: '1px solid rgba(255,184,0,0.35)', color: '#FFB800' }}
         >
           ↓ {unreadDisplay > 0 ? `${unreadDisplay} new` : 'Latest'}
         </button>
@@ -360,7 +360,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
             Emotes: {Object.keys(EMOTES).slice(0, 5).join(' ')}...
           </span>
           {input.length > 160 && (
-            <span className="text-[10px] font-mono" style={{ color: input.length > 190 ? '#FF4444' : '#D4AF37' }}>
+            <span className="text-[10px] font-mono" style={{ color: input.length > 190 ? '#FF4444' : '#FFB800' }}>
               {200 - input.length}
             </span>
           )}
@@ -380,11 +380,11 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
             disabled={!input.trim() || loading}
             className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all active:scale-90 disabled:opacity-30"
             style={{
-              background: input.trim() ? '#d4af37' : 'rgba(212,175,55,0.15)',
-              border: '1px solid rgba(212,175,55,0.3)'
+              background: input.trim() ? '#FFB800' : 'rgba(255,184,0,0.15)',
+              border: '1px solid rgba(255,184,0,0.3)'
             }}
           >
-            <Send className="w-3.5 h-3.5" style={{ color: input.trim() ? '#000' : '#d4af37' }} />
+            <Send className="w-3.5 h-3.5" style={{ color: input.trim() ? '#000' : '#FFB800' }} />
           </button>
         </div>
       </div>

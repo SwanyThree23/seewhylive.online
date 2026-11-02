@@ -94,27 +94,27 @@ const REACTION_EMOJIS = ['❤️', '🔥', '😂', '😮', '👏', '💯'];
 function getReactionKey(msgId) { return `rxn_${msgId}`; }
 
 const MSG_BG = {
-  poll: { background: 'rgba(109,191,126,0.15)' },
+  poll: { background: 'rgba(0,255,136,0.15)' },
 };
 
 const MSG_STYLES = {
   regular: '',
-  tip: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
-  subscription: 'border-l-2 border-[#D4AF37] bg-[#800020]/15',
+  tip: 'border-l-2 border-[#FFB800] bg-[#FFB800]/8',
+  subscription: 'border-l-2 border-[#FFB800] bg-[#FF1564]/15',
   moderation: 'border-l-2 border-red-600 bg-red-900/15',
   qa: 'border-l-2 border-blue-500 bg-blue-900/15',
   poll: 'border-l-2 border-green-500',
-  cohost: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
+  cohost: 'border-l-2 border-[#FFB800] bg-[#FFB800]/8',
 };
 
 function MessageBadge({ type }) {
   const badges = {
-    tip: <span className="text-[11px] bg-[#d4af37] text-black px-1 py-0.5 rounded font-black">💰 TIP</span>,
-    subscription: <span className="text-[11px] bg-[#800020] text-[#D4AF37] px-1 py-0.5 rounded font-black">⭐ SUB</span>,
+    tip: <span className="text-[11px] bg-[#FFB800] text-black px-1 py-0.5 rounded font-black">💰 TIP</span>,
+    subscription: <span className="text-[11px] bg-[#FF1564] text-[#FFB800] px-1 py-0.5 rounded font-black">⭐ SUB</span>,
     moderation: <span className="text-[11px] bg-red-700 text-white px-1 py-0.5 rounded font-black">🚫 SYS</span>,
     qa: <span className="text-[11px] bg-blue-700 text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
-    poll: <span className="text-[11px] px-1 py-0.5 rounded font-black" style={{ background: 'rgba(109,191,126,0.15)', color: '#6DBF7E' }}>📊 POLL</span>,
-    cohost: <span className="text-[11px] bg-[#d4af37]/80 text-black px-1 py-0.5 rounded font-black">🤖 AI</span>,
+    poll: <span className="text-[11px] px-1 py-0.5 rounded font-black" style={{ background: 'rgba(0,255,136,0.15)', color: '#00FF88' }}>📊 POLL</span>,
+    cohost: <span className="text-[11px] bg-[#FFB800]/80 text-black px-1 py-0.5 rounded font-black">🤖 AI</span>,
   };
   return badges[type] || null;
 }
@@ -246,17 +246,17 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   const activeLang = LANGUAGES.find(l => l.code === translateLang);
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'rgba(8,11,24,0.97)' }}>
+    <div className="flex flex-col h-full" style={{ background: 'rgba(3,3,10,0.97)' }}>
 
       {/* Guardian AI badge + search */}
       <div className="flex items-center gap-1.5 px-3 pt-2 pb-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-        <Shield className="w-2.5 h-2.5 text-[#6DBF7E]" />
-        <span className="text-[9px] font-black uppercase tracking-wider flex-1" style={{ color: 'rgba(109,191,126,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <Shield className="w-2.5 h-2.5 text-[#00FF88]" />
+        <span className="text-[9px] font-black uppercase tracking-wider flex-1" style={{ color: 'rgba(0,255,136,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           Guardian AI active · {messages.length} msgs
         </span>
         <button onClick={() => { setShowSearch(s => !s); if (showSearch) setSearchQuery(''); }}
           className="text-[10px] px-2 py-0.5 rounded-lg transition-all"
-          style={{ color: showSearch ? '#D4AF37' : 'rgba(255,255,255,0.3)', background: showSearch ? 'rgba(212,175,55,0.1)' : 'transparent', border: `1px solid ${showSearch ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.08)'}` }}>
+          style={{ color: showSearch ? '#FFB800' : 'rgba(255,255,255,0.3)', background: showSearch ? 'rgba(255,184,0,0.1)' : 'transparent', border: `1px solid ${showSearch ? 'rgba(255,184,0,0.3)' : 'rgba(255,255,255,0.08)'}` }}>
           🔍
         </button>
       </div>
@@ -286,7 +286,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
         <div className="px-3 pt-2 pb-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <button onClick={() => setShowControls(!showControls)}
             className="flex items-center gap-1.5 text-[10px] transition-colors"
-            style={{ color: showControls ? '#d4af37' : 'rgba(212,175,55,0.5)' }}>
+            style={{ color: showControls ? '#FFB800' : 'rgba(255,184,0,0.5)' }}>
             <Sliders className="w-3 h-3" /> Controls
             <ChevronDown className={`w-3 h-3 transition-transform ${showControls ? 'rotate-180' : ''}`} />
           </button>
@@ -306,18 +306,18 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                       />
                     )}
                   </div>
-                  <div onClick={() => setSlowMode(!slowMode)} style={{ width:40, height:22, borderRadius:99, background: slowMode ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                  <div onClick={() => setSlowMode(!slowMode)} style={{ width:40, height:22, borderRadius:99, background: slowMode ? '#FF1564' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
                     <div style={{ position:'absolute', top:3, left: slowMode ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-white/50">Subs Only</span>
-                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#D4AF37' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#FFB800' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
                     <div style={{ position:'absolute', top:3, left: subOnly ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                   </div>
                 </div>
-                <button onClick={clearChat} className="w-full text-[10px] py-1.5 rounded-lg text-[#C0392B] flex items-center justify-center gap-1"
-                  style={{ border: '1px solid rgba(192,57,43,0.2)', background: 'rgba(192,57,43,0.05)' }}>
+                <button onClick={clearChat} className="w-full text-[10px] py-1.5 rounded-lg text-[#FF2040] flex items-center justify-center gap-1"
+                  style={{ border: '1px solid rgba(255,32,64,0.2)', background: 'rgba(255,32,64,0.05)' }}>
                   <Trash2 className="w-3 h-3" /> Clear Chat
                 </button>
               </motion.div>
@@ -331,10 +331,10 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
         {pinnedMsg && (
           <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
             <div className="mx-3 my-1 px-3 py-2 rounded-xl flex items-start gap-2"
-              style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
-              <Pin className="w-3 h-3 mt-0.5 shrink-0 text-[#d4af37]" />
+              style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)' }}>
+              <Pin className="w-3 h-3 mt-0.5 shrink-0 text-[#FFB800]" />
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-bold mb-0.5" style={{ color: '#d4af37' }}>Pinned</p>
+                <p className="text-[11px] font-bold mb-0.5" style={{ color: '#FFB800' }}>Pinned</p>
                 <p className="text-xs text-white/75 line-clamp-2">{pinnedMsg.content}</p>
               </div>
               {isHost && (
@@ -361,23 +361,23 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
               <div className="flex items-start gap-2">
                 {/* Avatar dot */}
                 <div className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black mt-0.5"
-                  style={{ background: msg.user_id === currentUser?.id ? 'rgba(201,168,76,0.2)' : 'rgba(212,175,55,0.15)', color: msg.user_id === currentUser?.id ? '#C9A84C' : '#d4af37' }}>
+                  style={{ background: msg.user_id === currentUser?.id ? 'rgba(255,184,0,0.2)' : 'rgba(255,184,0,0.15)', color: msg.user_id === currentUser?.id ? '#FFB800' : '#FFB800' }}>
                   {(msg.user_name || '?').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[11px] font-bold"
-                      style={{ color: msg.user_id === currentUser?.id ? '#C9A84C' : userColor(msg.user_id) }}>
+                      style={{ color: msg.user_id === currentUser?.id ? '#FFB800' : userColor(msg.user_id) }}>
                       {msg.user_name}
                     </span>
                     <MessageBadge type={msg.message_type} />
                     {msg.message_type === 'tip' && msg.tip_amount && (
-                      <span className="text-xs font-black text-[#d4af37]">${msg.tip_amount}</span>
+                      <span className="text-xs font-black text-[#FFB800]">${msg.tip_amount}</span>
                     )}
                   </div>
                   <p className="text-xs text-white/80 break-words leading-relaxed mt-0.5">{msg.content}</p>
                   {translateLang && translationMap[msg.id] && (
-                    <p className="text-xs italic break-words leading-relaxed mt-0.5" style={{ color: activeLang ? activeLang.flag + ' ' : '', color: 'rgba(109,191,126,0.7)' }}>
+                    <p className="text-xs italic break-words leading-relaxed mt-0.5" style={{ color: activeLang ? activeLang.flag + ' ' : '', color: 'rgba(0,255,136,0.7)' }}>
                       {activeLang?.flag} {translationMap[msg.id]}
                     </p>
                   )}
@@ -387,7 +387,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                       {Object.entries(reactions[msg.id]).map(([emoji, count]) => (
                         <button key={emoji} onClick={() => addReaction(msg.id, emoji)}
                           className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] transition-all active:scale-90"
-                          style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: 'rgba(255,255,255,0.7)' }}>
+                          style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.2)', color: 'rgba(255,255,255,0.7)' }}>
                           {emoji} <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 9 }}>{count}</span>
                         </button>
                       ))}
@@ -396,7 +396,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                   {/* Reaction picker popup */}
                   {reactionPickerFor === msg.id && (
                     <div className="flex gap-1 mt-1 p-1.5 rounded-xl z-20"
-                      style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', width: 'fit-content' }}
+                      style={{ background: '#03030A', border: '1px solid rgba(255,184,0,0.2)', width: 'fit-content' }}
                       onClick={e => e.stopPropagation()}>
                       {REACTION_EMOJIS.map(e => (
                         <button key={e} onClick={() => addReaction(msg.id, e)}
@@ -450,7 +450,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
         {showEmojiPicker && (
           <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10 }}
             className="mx-3 mb-1 rounded-2xl p-3 grid grid-cols-5 gap-2 z-20"
-            style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)' }}>
+            style={{ background: '#03030A', border: '1px solid rgba(255,184,0,0.2)' }}>
             {EMOJIS.map(e => (
               <button key={e} onClick={() => { setInput(prev => prev + e); setShowEmojiPicker(false); }}
                 className="text-xl text-center py-1 rounded-lg active:scale-90 transition-transform hover:bg-white/5">
@@ -467,8 +467,8 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
           {/* Emoji toggle */}
           <button onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90"
-            style={{ background: showEmojiPicker ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <Smile className="w-4 h-4" style={{ color: showEmojiPicker ? '#d4af37' : 'rgba(255,255,255,0.4)' }} />
+            style={{ background: showEmojiPicker ? 'rgba(255,184,0,0.15)' : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <Smile className="w-4 h-4" style={{ color: showEmojiPicker ? '#FFB800' : 'rgba(255,255,255,0.4)' }} />
           </button>
 
           {/* Language translate toggle */}
@@ -476,15 +476,15 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
             className="rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90"
             title={translateLang ? `Translating to ${activeLang?.label}` : 'Translate chat'}
             style={{
-              background: translateLang ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${translateLang ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.08)'}`,
+              background: translateLang ? 'rgba(0,255,136,0.15)' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${translateLang ? 'rgba(0,255,136,0.4)' : 'rgba(255,255,255,0.08)'}`,
               width: translateLang ? 'auto' : 40, height: 40, padding: translateLang ? '0 10px' : 0,
               gap: 4,
             }}>
             {translateLang ? (
               <>
                 <span className="text-base leading-none">{activeLang?.flag}</span>
-                <span className="text-[10px] font-bold" style={{ color: '#6DBF7E' }}>{activeLang?.label?.split(' ')[0]}</span>
+                <span className="text-[10px] font-bold" style={{ color: '#00FF88' }}>{activeLang?.label?.split(' ')[0]}</span>
               </>
             ) : (
               <Languages className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
@@ -506,8 +506,8 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
 
           <button onClick={sendMessage} disabled={!input.trim()}
             className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90 disabled:opacity-30"
-            style={{ background: input.trim() ? '#d4af37' : 'rgba(212,175,55,0.15)' }}>
-            <Send className="w-4 h-4" style={{ color: input.trim() ? '#000' : '#d4af37' }} />
+            style={{ background: input.trim() ? '#FFB800' : 'rgba(255,184,0,0.15)' }}>
+            <Send className="w-4 h-4" style={{ color: input.trim() ? '#000' : '#FFB800' }} />
           </button>
         </div>
 
@@ -525,7 +525,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
           <Drawer.Overlay className="fixed inset-0 z-[190]" style={{ background: 'rgba(0,0,0,0.6)' }} />
           <Drawer.Content
             className="fixed bottom-0 left-0 right-0 z-[200] rounded-t-2xl pb-8"
-            style={{ background: '#0D1022', border: '1px solid rgba(212,175,55,0.18)', maxHeight: '80vh', overflowY: 'auto' }}
+            style={{ background: '#0D1022', border: '1px solid rgba(255,184,0,0.18)', maxHeight: '80vh', overflowY: 'auto' }}
           >
             <Drawer.Handle className="mx-auto mt-3 mb-4 w-10 h-1 rounded-full bg-white/15" />
             <div className="px-4 pb-4 space-y-2">
@@ -538,8 +538,8 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                 onClick={() => { setTranslateLang(null); setTranslationMap({}); setLangSheetOpen(false); try { localStorage.setItem('chat_translate_lang', ''); } catch {} }}
                 className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all"
                 style={{
-                  background: !translateLang ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${!translateLang ? '#D4AF37' : 'rgba(255,255,255,0.08)'}`,
+                  background: !translateLang ? 'rgba(255,184,0,0.1)' : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${!translateLang ? '#FFB800' : 'rgba(255,255,255,0.08)'}`,
                 }}
               >
                 <span className="text-xl">🌐</span>
@@ -547,7 +547,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                   <p className="text-sm font-bold text-white">Original (no translation)</p>
                   <p className="text-[11px] text-white/40">Show messages as sent</p>
                 </div>
-                {!translateLang && <div className="w-2 h-2 rounded-full bg-[#D4AF37] shrink-0" />}
+                {!translateLang && <div className="w-2 h-2 rounded-full bg-[#FFB800] shrink-0" />}
               </button>
 
               {/* Language options */}
@@ -557,13 +557,13 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                   onClick={() => { setTranslateLang(lang.code); setTranslationMap({}); setLangSheetOpen(false); try { localStorage.setItem('chat_translate_lang', lang.code); } catch {} }}
                   className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all"
                   style={{
-                    background: translateLang === lang.code ? 'rgba(109,191,126,0.1)' : 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${translateLang === lang.code ? '#6DBF7E' : 'rgba(255,255,255,0.08)'}`,
+                    background: translateLang === lang.code ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${translateLang === lang.code ? '#00FF88' : 'rgba(255,255,255,0.08)'}`,
                   }}
                 >
                   <span className="text-xl">{lang.flag}</span>
                   <p className="text-sm font-bold text-white flex-1">{lang.label}</p>
-                  {translateLang === lang.code && <div className="w-2 h-2 rounded-full bg-[#6DBF7E] shrink-0" />}
+                  {translateLang === lang.code && <div className="w-2 h-2 rounded-full bg-[#00FF88] shrink-0" />}
                 </button>
               ))}
             </div>

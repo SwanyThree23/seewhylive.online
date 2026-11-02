@@ -36,11 +36,11 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
-const GOLD  = '#D4AF37';
-const BURG  = '#800020';
-const GREEN = '#6DBF7E';
-const RED   = '#C0392B';
-const BG    = '#080B18';
+const GOLD  = '#FFB800';
+const BURG  = '#FF1564';
+const GREEN = '#00FF88';
+const RED   = '#FF2040';
+const BG    = '#03030A';
 const FONT  = 'Barlow Condensed, sans-serif';
 
 // ─── Emoji reaction palette ────────────────────────────────────────────────
@@ -410,13 +410,13 @@ function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal,
         <div className="w-2 h-2 rounded-full shrink-0" style={{ background: qualityColor }} title={`Network: ${quality}`} />
         {/* Per-seat gift total — real-time DB aggregate */}
         {giftTotal > 0 && (
-          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD, fontFamily: FONT }}>
+          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(255,184,0,0.2)', border: '1px solid rgba(255,184,0,0.35)', color: GOLD, fontFamily: FONT }}>
             🎁 {giftTotal}
           </span>
         )}
         {/* Muted badge */}
         {isMuted && (
-          <span className="flex items-center gap-1 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(192,57,43,0.85)', fontFamily: FONT }}>
+          <span className="flex items-center gap-1 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,32,64,0.85)', fontFamily: FONT }}>
             <MicOff className="w-2.5 h-2.5" /> Muted
           </span>
         )}
@@ -424,7 +424,7 @@ function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal,
 
       {/* LIVE badge — local publisher only */}
       {isLocal && (
-        <div className="absolute top-2 left-2 flex items-center gap-1 text-white text-[9px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(128,0,32,0.85)', border: '1px solid rgba(128,0,32,0.6)', fontFamily: FONT }}>
+        <div className="absolute top-2 left-2 flex items-center gap-1 text-white text-[9px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,21,100,0.85)', border: '1px solid rgba(255,21,100,0.6)', fontFamily: FONT }}>
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
           LIVE
         </div>
@@ -440,8 +440,8 @@ function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal,
             ${isPinned ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
           style={{
             width: 44, height: 44, minWidth: 44, minHeight: 44,
-            background: isPinned ? 'rgba(212,175,55,0.2)' : 'rgba(0,0,0,0.5)',
-            border: `1px solid ${isPinned ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)'}`,
+            background: isPinned ? 'rgba(255,184,0,0.2)' : 'rgba(0,0,0,0.5)',
+            border: `1px solid ${isPinned ? 'rgba(255,184,0,0.5)' : 'rgba(255,255,255,0.15)'}`,
           }}
         >
           <Pin className="w-3.5 h-3.5" style={{ color: isPinned ? GOLD : 'rgba(255,255,255,0.6)' }} />
@@ -498,7 +498,7 @@ function ChatPanel({ messages, onSend, onClose }) {
   return (
     <motion.div
       className="flex flex-col shrink-0 w-64 min-h-0 overflow-hidden"
-      style={{ background: 'rgba(8,11,24,0.97)', borderLeft: '1px solid rgba(212,175,55,0.12)' }}
+      style={{ background: 'rgba(3,3,10,0.97)', borderLeft: '1px solid rgba(255,184,0,0.12)' }}
       initial={{ width: 0, opacity: 0 }}
       animate={{ width: 256, opacity: 1 }}
       exit={{ width: 0, opacity: 0 }}
@@ -531,8 +531,8 @@ function ChatPanel({ messages, onSend, onClose }) {
             <div
               className="max-w-[90%] px-2.5 py-1.5 rounded-xl text-[11px]"
               style={{
-                background:  msg.local ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.05)',
-                border:      `1px solid ${msg.local ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.08)'}`,
+                background:  msg.local ? 'rgba(255,184,0,0.1)' : 'rgba(255,255,255,0.05)',
+                border:      `1px solid ${msg.local ? 'rgba(255,184,0,0.2)' : 'rgba(255,255,255,0.08)'}`,
                 color:       'rgba(255,255,255,0.82)',
                 fontFamily:  FONT,
                 wordBreak:   'break-word',
@@ -559,7 +559,7 @@ function ChatPanel({ messages, onSend, onClose }) {
           onClick={handleSend}
           aria-label="Send message"
           className="rounded-lg flex items-center justify-center shrink-0 transition-all"
-          style={{ width: 44, height: 44, minWidth: 44, minHeight: 44, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.28)' }}
+          style={{ width: 44, height: 44, minWidth: 44, minHeight: 44, background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.28)' }}
         >
           <Send className="w-3 h-3" style={{ color: GOLD }} />
         </button>
@@ -764,18 +764,18 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
                 onClick={upgradeToParticipant}
                 className="w-full h-full flex flex-col items-center justify-center rounded-xl transition-all group"
                 style={{
-                  background: 'rgba(212,175,55,0.03)',
-                  border: '1.5px dashed rgba(212,175,55,0.25)',
+                  background: 'rgba(255,184,0,0.03)',
+                  border: '1.5px dashed rgba(255,184,0,0.25)',
                   minHeight: 80,
                 }}
               >
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all group-hover:scale-110"
-                  style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)' }}
+                  style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.3)' }}
                 >
                   <span className="text-xl" style={{ color: GOLD }}>+</span>
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ fontFamily: FONT, color: 'rgba(212,175,55,0.6)' }}>
+                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ fontFamily: FONT, color: 'rgba(255,184,0,0.6)' }}>
                   Request to Join
                 </span>
               </button>
@@ -794,7 +794,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               <button
                 onClick={upgradeToParticipant}
                 className="mt-4 flex items-center gap-1.5 px-4 rounded-xl font-black uppercase text-xs transition-all"
-                style={{ minHeight: 44, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD, fontFamily: FONT }}
+                style={{ minHeight: 44, background: 'rgba(255,184,0,0.15)', border: '1px solid rgba(255,184,0,0.35)', color: GOLD, fontFamily: FONT }}
               >
                 <Zap className="w-3.5 h-3.5" /> Go on Stage
               </button>
@@ -822,7 +822,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
           </div>
 
           {/* Stage capacity: N/20 */}
-          <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.18)' }}>
+          <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'rgba(255,184,0,0.07)', border: '1px solid rgba(255,184,0,0.18)' }}>
             <Radio className="w-3 h-3" style={{ color: GOLD }} />
             <span className="text-[10px] font-bold" style={{ color: GOLD }}>
               Stage {cameraTiles.length}/20
@@ -839,7 +839,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
                 exit={{ opacity: 0, x: -6 }}
                 transition={{ duration: 0.2 }}
                 className="flex items-center gap-1.5 px-2 py-1 rounded-lg"
-                style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.22)' }}
+                style={{ background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.22)' }}
               >
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: GREEN }} />
                 <span className="text-[10px] font-bold truncate max-w-[100px]" style={{ color: GREEN }}>
@@ -867,8 +867,8 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
             className="flex items-center gap-1.5 px-2.5 rounded-lg transition-all"
             style={{
               minHeight: 44,
-              background: showChat ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
-              border:     `1px solid ${showChat ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.08)'}`,
+              background: showChat ? 'rgba(255,184,0,0.15)' : 'rgba(255,255,255,0.05)',
+              border:     `1px solid ${showChat ? 'rgba(255,184,0,0.35)' : 'rgba(255,255,255,0.08)'}`,
             }}
           >
             <MessageSquare className="w-3.5 h-3.5" style={{ color: showChat ? GOLD : 'rgba(255,255,255,0.4)' }} />
@@ -907,7 +907,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
             <button
               onClick={upgradeToParticipant}
               className="flex items-center gap-1.5 px-3 rounded-xl font-black uppercase text-xs transition-all"
-              style={{ minHeight: 44, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD }}
+              style={{ minHeight: 44, background: 'rgba(255,184,0,0.15)', border: '1px solid rgba(255,184,0,0.35)', color: GOLD }}
             >
               <Zap className="w-3.5 h-3.5" />
               Go on Stage
@@ -936,7 +936,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               onClick={onLeave}
               aria-label="Leave stage"
               className="flex items-center gap-1.5 px-3 rounded-xl font-black uppercase text-xs transition-all"
-              style={{ minHeight: 44, background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)', color: '#C0392B' }}
+              style={{ minHeight: 44, background: 'rgba(255,32,64,0.15)', border: '1px solid rgba(255,32,64,0.35)', color: '#FF2040' }}
             >
               Leave
             </button>
@@ -1030,8 +1030,8 @@ function StageBtn({ icon, label, onClick, active = true, danger = false }) {
       style={{
         fontFamily: FONT,
         minHeight: 44, minWidth: 44,
-        background: danger ? 'rgba(192,57,43,0.14)' : 'rgba(255,255,255,0.05)',
-        border:     `1px solid ${danger ? 'rgba(192,57,43,0.3)' : 'rgba(255,255,255,0.1)'}`,
+        background: danger ? 'rgba(255,32,64,0.14)' : 'rgba(255,255,255,0.05)',
+        border:     `1px solid ${danger ? 'rgba(255,32,64,0.3)' : 'rgba(255,255,255,0.1)'}`,
         color:      danger ? RED : 'rgba(255,255,255,0.6)',
       }}
     >

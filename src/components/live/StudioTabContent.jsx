@@ -84,7 +84,7 @@ import ShareToSocial from '../social/ShareToSocial';
 import RTMPFanoutPanel from '../live/RTMPFanoutPanel';
 import AccessibilityPanel from '../live/AccessibilityPanel';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /**
@@ -121,7 +121,7 @@ export default function StudioTabContent({ s }) {
         hostSettings.chatEnabled ? (
           <div className="flex flex-col h-full">
             {pinnedMessage && (
-              <div className="shrink-0 flex items-center gap-2 px-3 py-2 mx-2 mt-2 rounded-lg" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)' }}>
+              <div className="shrink-0 flex items-center gap-2 px-3 py-2 mx-2 mt-2 rounded-lg" style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.25)' }}>
                 <span className="text-[10px]">📌</span>
                 <span className="flex-1 text-[10px]" style={{ color: 'rgba(255,255,255,0.8)', fontFamily: 'Barlow Condensed, sans-serif' }}>{pinnedMessage}</span>
               </div>
@@ -201,14 +201,14 @@ export default function StudioTabContent({ s }) {
               {members.length} / 20 panelists
             </span>
             <button onClick={() => setShowInviteSheet(true)} className="text-[11px] px-2 py-0.5 rounded"
-              style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
+              style={{ background: 'rgba(255,184,0,0.08)', color: GOLD, border: '1px solid rgba(255,184,0,0.2)', ...T }}>
               + Invite
             </button>
           </div>
 
           {/* Raised hands queue */}
           {canManage && raisedHands.size > 0 && (
-            <div className="rounded-xl p-2 mb-1" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+            <div className="rounded-xl p-2 mb-1" style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)' }}>
               <div className="flex items-center gap-1 mb-1.5">
                 <Hand className="w-3 h-3" style={{ color: GOLD }} />
                 <span className="text-[11px] font-black uppercase" style={{ color: GOLD, ...T }}>
@@ -220,23 +220,23 @@ export default function StudioTabContent({ s }) {
                 return (
                   <div key={uid} className="flex items-center gap-2 py-1">
                     <div className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black"
-                      style={{ background: 'rgba(212,175,55,0.2)', color: GOLD }}>
+                      style={{ background: 'rgba(255,184,0,0.2)', color: GOLD }}>
                       {(mem?.user_name || '?')[0].toUpperCase()}
                     </div>
                     <span className="flex-1 text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>{mem?.user_name || uid}</span>
                     <button onClick={() => { if (mem) promoteSpeaker(mem); dismissRaisedHand(uid); }}
                       className="text-[11px] px-1.5 py-0.5 rounded"
-                      style={{ background: 'rgba(212,133,74,0.1)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', ...T }}>
+                      style={{ background: 'rgba(255,140,0,0.1)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.25)', ...T }}>
                       ✓ Panel
                     </button>
                     <button onClick={() => { if (mem) promoteCoHost(mem); dismissRaisedHand(uid); }}
                       className="text-[11px] px-1.5 py-0.5 rounded"
-                      style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
+                      style={{ background: 'rgba(255,184,0,0.08)', color: GOLD, border: '1px solid rgba(255,184,0,0.2)', ...T }}>
                       Co-host
                     </button>
                     <button onClick={() => dismissRaisedHand(uid)}
                       className="text-[11px] px-1.5 py-0.5 rounded"
-                      style={{ background: 'rgba(255,68,68,0.08)', color: '#D4854A', border: '1px solid rgba(255,68,68,0.15)', ...T }}>
+                      style={{ background: 'rgba(255,68,68,0.08)', color: '#FF8C00', border: '1px solid rgba(255,68,68,0.15)', ...T }}>
                       ✕
                     </button>
                   </div>
@@ -252,11 +252,11 @@ export default function StudioTabContent({ s }) {
             const isSpeakerMem = mem.role === 'speaker';
             const isOnStage = isHostMem || isCoHostMem || isSpeakerMem;
             const hasHand = raisedHands.has(mem.user_id);
-            const avatarBg = isHostMem ? 'rgba(212,175,55,0.2)' : isCoHostMem ? 'rgba(212,175,55,0.12)' : isSpeakerMem ? 'rgba(212,133,74,0.18)' : 'rgba(255,255,255,0.08)';
-            const avatarColor = isHostMem ? GOLD : isCoHostMem ? GOLD : isSpeakerMem ? '#D4854A' : 'rgba(255,255,255,0.4)';
+            const avatarBg = isHostMem ? 'rgba(255,184,0,0.2)' : isCoHostMem ? 'rgba(255,184,0,0.12)' : isSpeakerMem ? 'rgba(255,140,0,0.18)' : 'rgba(255,255,255,0.08)';
+            const avatarColor = isHostMem ? GOLD : isCoHostMem ? GOLD : isSpeakerMem ? '#FF8C00' : 'rgba(255,255,255,0.4)';
             return (
               <div key={mem.id} className="flex items-center gap-2 p-2 rounded-lg"
-                style={{ background: 'rgba(255,255,255,0.03)', border: hasHand ? '1px solid rgba(212,175,55,0.25)' : '1px solid rgba(255,255,255,0.05)' }}>
+                style={{ background: 'rgba(255,255,255,0.03)', border: hasHand ? '1px solid rgba(255,184,0,0.25)' : '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs shrink-0 relative"
                   style={{ background: avatarBg, color: avatarColor }}>
                   {(mem.user_name || '?')[0].toUpperCase()}
@@ -273,26 +273,26 @@ export default function StudioTabContent({ s }) {
                     {isOnStage ? (
                       <button onClick={() => demoteToAudience(mem)}
                         className="text-[11px] px-1.5 py-0.5 rounded"
-                        style={{ background: 'rgba(255,68,68,0.08)', color: '#D4854A', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
+                        style={{ background: 'rgba(255,68,68,0.08)', color: '#FF8C00', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
                         Remove
                       </button>
                     ) : (
                       <>
                         <button onClick={() => promoteSpeaker(mem)}
                           className="text-[11px] px-1.5 py-0.5 rounded"
-                          style={{ background: 'rgba(212,133,74,0.1)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', ...T }}>
+                          style={{ background: 'rgba(255,140,0,0.1)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.25)', ...T }}>
                           Panel
                         </button>
                         <button onClick={() => promoteCoHost(mem)}
                           className="text-[11px] px-1.5 py-0.5 rounded"
-                          style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
+                          style={{ background: 'rgba(255,184,0,0.08)', color: GOLD, border: '1px solid rgba(255,184,0,0.2)', ...T }}>
                           Co-host
                         </button>
                       </>
                     )}
                     <button onClick={() => kickMember(mem)}
                       className="text-[11px] px-1.5 py-0.5 rounded"
-                      style={{ background: 'rgba(192,57,43,0.08)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)', ...T }}
+                      style={{ background: 'rgba(255,32,64,0.08)', color: '#FF2040', border: '1px solid rgba(255,32,64,0.2)', ...T }}
                       title="Remove from broadcast">
                       Kick
                     </button>
@@ -324,14 +324,14 @@ export default function StudioTabContent({ s }) {
 
           {/* Golden wall — live gift/superchat feed */}
           {partyId && (
-            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
+            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.15)' }}>
               <GoldenWall roomId={partyId} isExpanded />
             </div>
           )}
 
           {/* Engagement badges */}
           {partyId && user?.id && (
-            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.1)' }}>
               <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={party?.host_id || user.id} />
             </div>
           )}
@@ -346,7 +346,7 @@ export default function StudioTabContent({ s }) {
           <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>📌 Pinned Message</p>
             {pinnedMessage ? (
-              <div className="rounded-lg p-2 mb-2 flex items-start gap-2" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+              <div className="rounded-lg p-2 mb-2 flex items-start gap-2" style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)' }}>
                 <span className="text-[10px] flex-1" style={{ color: 'rgba(255,255,255,0.8)' }}>{pinnedMessage}</span>
                 <button onClick={() => setPinnedMessage(null)}
                   style={{ color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, lineHeight: 1 }}>×</button>
@@ -363,7 +363,7 @@ export default function StudioTabContent({ s }) {
               />
               <button
                 onClick={e => { const inp = e.currentTarget.previousSibling; if (inp?.value?.trim()) { setPinnedMessage(inp.value.trim()); inp.value = ''; } }}
-                style={{ height: 28, padding: '0 10px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, color: GOLD, fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, cursor: 'pointer' }}>
+                style={{ height: 28, padding: '0 10px', background: 'rgba(255,184,0,0.15)', border: '1px solid rgba(255,184,0,0.3)', borderRadius: 6, color: GOLD, fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, cursor: 'pointer' }}>
                 📌
               </button>
             </div>
@@ -402,21 +402,21 @@ export default function StudioTabContent({ s }) {
 
           {/* Points earn widget */}
           {user?.id && partyId && (
-            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.1)' }}>
               <PointsEarnWidget userId={user.id} creatorId={party?.host_id || user.id} roomId={partyId} isHost={isHost} />
             </div>
           )}
 
           {/* Greenroom guest queue */}
           {canManage && partyId && (
-            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.1)' }}>
               <GreenroomQueue roomId={partyId} isHost={isHost} />
             </div>
           )}
 
           {/* Host alert center */}
           {isHost && (
-            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.1)' }}>
               <HostAlertCenter />
             </div>
           )}
@@ -561,11 +561,11 @@ export default function StudioTabContent({ s }) {
 
           {/* Danger zone */}
           {isHost && (
-            <div className="rounded-xl p-3" style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)' }}>
-              <p className="text-[11px] font-black uppercase mb-2" style={{ color: '#C0392B', ...T }}>End Broadcast</p>
+            <div className="rounded-xl p-3" style={{ background: 'rgba(255,32,64,0.06)', border: '1px solid rgba(255,32,64,0.15)' }}>
+              <p className="text-[11px] font-black uppercase mb-2" style={{ color: '#FF2040', ...T }}>End Broadcast</p>
               <button onClick={() => endMut.mutate()}
                 className="w-full py-2 rounded-lg text-[10px] font-black uppercase flex items-center justify-center gap-1"
-                style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', ...T }}>
+                style={{ background: 'rgba(255,32,64,0.12)', border: '1px solid rgba(255,32,64,0.3)', color: '#FF2040', ...T }}>
                 <LogOut className="w-3.5 h-3.5" /> End Broadcast for Everyone
               </button>
             </div>
@@ -697,9 +697,9 @@ export default function StudioTabContent({ s }) {
                 style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                 <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</span>
                 <div className="w-8 h-4 rounded-full relative transition-colors shrink-0"
-                  style={{ background: state ? 'rgba(109,191,126,0.6)' : 'rgba(255,255,255,0.12)', border: `1px solid ${state ? 'rgba(109,191,126,0.8)' : 'rgba(255,255,255,0.15)'}` }}>
+                  style={{ background: state ? 'rgba(0,255,136,0.6)' : 'rgba(255,255,255,0.12)', border: `1px solid ${state ? 'rgba(0,255,136,0.8)' : 'rgba(255,255,255,0.15)'}` }}>
                   <div className="absolute top-0.5 w-3 h-3 rounded-full transition-all"
-                    style={{ background: state ? '#6DBF7E' : 'rgba(255,255,255,0.35)', left: state ? 'calc(100% - 14px)' : '2px' }} />
+                    style={{ background: state ? '#00FF88' : 'rgba(255,255,255,0.35)', left: state ? 'calc(100% - 14px)' : '2px' }} />
                 </div>
               </button>
             ))}
@@ -737,7 +737,7 @@ export default function StudioTabContent({ s }) {
               <button key={t.id} onClick={() => setAiSubTab(t.id)}
                 className="flex-1 py-2 flex flex-col items-center gap-0.5 transition-all"
                 style={{
-                  background: aiSubTab === t.id ? 'rgba(212,175,55,0.1)' : 'transparent',
+                  background: aiSubTab === t.id ? 'rgba(255,184,0,0.1)' : 'transparent',
                   borderBottom: aiSubTab === t.id ? `2px solid ${GOLD}` : '2px solid transparent',
                   fontFamily: 'Barlow Condensed, sans-serif',
                 }}>
@@ -754,7 +754,7 @@ export default function StudioTabContent({ s }) {
             {aiSubTab === 'music' && (
               <div className="space-y-3">
                 {/* Genre picker */}
-                <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.18)' }}>
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.18)' }}>
                   <p className="text-[11px] font-black uppercase mb-2" style={{ color: GOLD, ...T }}>Genre</p>
                   <div className="flex flex-wrap gap-1.5">
                     {['Lo-Fi','Trap','Gospel','Afrobeats','R&B','Chill','Hype','Jazz','Soul','Drill'].map(g => (
@@ -762,7 +762,7 @@ export default function StudioTabContent({ s }) {
                         onClick={() => setAiMusicGenre(prev => prev === g ? null : g)}
                         className="px-2 py-0.5 rounded-full text-[11px] font-bold transition-all"
                         style={aiMusicGenre === g
-                          ? { background: 'rgba(212,175,55,0.25)', color: GOLD, border: `1px solid rgba(212,175,55,0.5)` }
+                          ? { background: 'rgba(255,184,0,0.25)', color: GOLD, border: `1px solid rgba(255,184,0,0.5)` }
                           : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
                         {g}
                       </button>
@@ -779,7 +779,7 @@ export default function StudioTabContent({ s }) {
                       onChange={e => setAiMusicPrompt(e.target.value)}
                       placeholder="e.g. dark ambient trap beat 90bpm…"
                       maxLength={120}
-                      style={{ flex: 1, height: 32, padding: '0 10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontSize: 11, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
+                      style={{ flex: 1, height: 32, padding: '0 10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,184,0,0.2)', borderRadius: 8, color: '#fff', fontSize: 11, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
                     />
                   </div>
                 </div>
@@ -790,7 +790,7 @@ export default function StudioTabContent({ s }) {
                     onClick={generateAiTrack}
                     disabled={aiMusicGenerating}
                     className="flex-1 py-2.5 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-1"
-                    style={{ background: aiMusicGenerating ? 'rgba(212,175,55,0.08)' : 'rgba(212,175,55,0.18)', color: GOLD, border: `1px solid rgba(212,175,55,0.35)`, fontFamily: 'Barlow Condensed, sans-serif', cursor: aiMusicGenerating ? 'not-allowed' : 'pointer' }}>
+                    style={{ background: aiMusicGenerating ? 'rgba(255,184,0,0.08)' : 'rgba(255,184,0,0.18)', color: GOLD, border: `1px solid rgba(255,184,0,0.35)`, fontFamily: 'Barlow Condensed, sans-serif', cursor: aiMusicGenerating ? 'not-allowed' : 'pointer' }}>
                     {aiMusicGenerating ? '⏳ Generating…' : '✨ Generate Track'}
                   </button>
                   <button
@@ -798,14 +798,14 @@ export default function StudioTabContent({ s }) {
                     disabled={aiMoodDetecting}
                     className="px-3 py-2.5 rounded-xl text-[11px] font-black"
                     title="Detect vibe from chat"
-                    style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)', fontFamily: 'Barlow Condensed, sans-serif', cursor: aiMoodDetecting ? 'not-allowed' : 'pointer' }}>
+                    style={{ background: 'rgba(255,140,0,0.15)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif', cursor: aiMoodDetecting ? 'not-allowed' : 'pointer' }}>
                     {aiMoodDetecting ? '⏳' : '🎭 Vibe'}
                   </button>
                 </div>
 
                 {/* Now playing card */}
                 {aiMusicTrack && (
-                  <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)' }}>
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.25)' }}>
                     <div className="flex items-center gap-2 mb-2">
                       <div className="flex items-end gap-[2px]">
                         {[3,5,4,6,3,5,4].map((h, i) => (
@@ -819,7 +819,7 @@ export default function StudioTabContent({ s }) {
                       </div>
                       <button onClick={() => setAiMusicPlaying(v => !v)}
                         className="w-8 h-8 rounded-full flex items-center justify-center"
-                        style={{ background: 'rgba(212,175,55,0.2)', border: `1px solid rgba(212,175,55,0.4)`, color: GOLD, fontSize: 14 }}>
+                        style={{ background: 'rgba(255,184,0,0.2)', border: `1px solid rgba(255,184,0,0.4)`, color: GOLD, fontSize: 14 }}>
                         {aiMusicPlaying ? '⏸' : '▶'}
                       </button>
                     </div>
@@ -835,7 +835,7 @@ export default function StudioTabContent({ s }) {
                     </div>
                     {/* Broadcast to panel badge */}
                     {canManage && (
-                      <div className="mt-2 flex items-center gap-1.5 text-[10px]" style={{ color: 'rgba(212,133,74,0.8)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      <div className="mt-2 flex items-center gap-1.5 text-[10px]" style={{ color: 'rgba(255,140,0,0.8)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                         <span>📡</span>
                         <span>Broadcasting to all {members.length} panel members</span>
                       </div>
@@ -848,7 +848,7 @@ export default function StudioTabContent({ s }) {
                   <div className="flex flex-wrap gap-1">
                     {aiMusicTrack.tags.map(tag => (
                       <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded-full"
-                        style={{ background: 'rgba(212,175,55,0.08)', color: 'rgba(212,175,55,0.6)', border: '1px solid rgba(212,175,55,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        style={{ background: 'rgba(255,184,0,0.08)', color: 'rgba(255,184,0,0.6)', border: '1px solid rgba(255,184,0,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                         #{tag}
                       </span>
                     ))}
@@ -874,11 +874,11 @@ export default function StudioTabContent({ s }) {
             {/* ── COPILOT ── */}
             {aiSubTab === 'copilot' && (
               <div className="space-y-3">
-                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
+                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.15)' }}>
                   <AICopilotSidebar roomId={partyId} isHost={canManage} viewerCount={members.length} />
                 </div>
                 {/* ARIA toggle */}
-                <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.15)' }}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span>🤖</span>
@@ -901,9 +901,9 @@ export default function StudioTabContent({ s }) {
                           <button key={t} onClick={() => setAriaTopicIdx(i)}
                             className="text-[11px] px-2 py-0.5 rounded-full font-bold"
                             style={{
-                              background: ariaTopicIdx === i ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)',
+                              background: ariaTopicIdx === i ? 'rgba(255,184,0,0.2)' : 'rgba(255,255,255,0.05)',
                               color: ariaTopicIdx === i ? GOLD : 'rgba(255,255,255,0.35)',
-                              border: ariaTopicIdx === i ? `1px solid rgba(212,175,55,0.4)` : '1px solid rgba(255,255,255,0.08)',
+                              border: ariaTopicIdx === i ? `1px solid rgba(255,184,0,0.4)` : '1px solid rgba(255,255,255,0.08)',
                               fontFamily: 'Barlow Condensed, sans-serif',
                             }}>
                             {t}
@@ -914,7 +914,7 @@ export default function StudioTabContent({ s }) {
                         {ariaSuggestions.map((sg, i) => (
                           <button key={i}
                             className="w-full text-left text-[11px] px-2 py-1.5 rounded-lg"
-                            style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                            style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.15)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}
                             onClick={() => toast.success('ARIA sent: ' + sg)}>
                             💬 {sg}
                           </button>
@@ -946,11 +946,11 @@ export default function StudioTabContent({ s }) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span>🛡️</span>
-                      <span className="text-[11px] font-black uppercase" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI</span>
+                      <span className="text-[11px] font-black uppercase" style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI</span>
                     </div>
                     <button onClick={() => setGuardianEnabled(v => !v)}
                       className="relative w-9 h-5 rounded-full transition-all"
-                      style={{ background: guardianEnabled ? '#6DBF7E' : 'rgba(255,255,255,0.1)' }}>
+                      style={{ background: guardianEnabled ? '#00FF88' : 'rgba(255,255,255,0.1)' }}>
                       <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
                         style={{ left: guardianEnabled ? '17px' : '2px' }} />
                     </button>
@@ -963,7 +963,7 @@ export default function StudioTabContent({ s }) {
                       <div className="flex gap-3 text-center">
                         {[['Blocked', guardianStats.blocked + guardianWords.length], ['Warned', guardianStats.warned], ['Muted', guardianStats.muted]].map(([l, v]) => (
                           <div key={l} className="flex-1">
-                            <div className="text-sm font-black" style={{ color: '#6DBF7E' }}>{v}</div>
+                            <div className="text-sm font-black" style={{ color: '#00FF88' }}>{v}</div>
                             <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>{l}</div>
                           </div>
                         ))}
@@ -973,7 +973,7 @@ export default function StudioTabContent({ s }) {
                         <div className="flex flex-wrap gap-1 mb-1.5">
                           {guardianWords.map(w => (
                             <span key={w} className="flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-full"
-                              style={{ background: 'rgba(107,191,126,0.12)', color: '#6DBF7E', border: '1px solid rgba(107,191,126,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                              style={{ background: 'rgba(107,191,126,0.12)', color: '#00FF88', border: '1px solid rgba(107,191,126,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                               {w}
                               <button onClick={() => setGuardianWords(ws => ws.filter(x => x !== w))} style={{ lineHeight: 1 }}>×</button>
                             </span>
@@ -1003,7 +1003,7 @@ export default function StudioTabContent({ s }) {
                                 setGuardianWordInput('');
                               }
                             }}
-                            style={{ padding: '4px 10px', background: 'rgba(107,191,126,0.15)', border: '1px solid rgba(107,191,126,0.3)', borderRadius: 6, color: '#6DBF7E', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, cursor: 'pointer' }}>
+                            style={{ padding: '4px 10px', background: 'rgba(107,191,126,0.15)', border: '1px solid rgba(107,191,126,0.3)', borderRadius: 6, color: '#00FF88', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, cursor: 'pointer' }}>
                             +
                           </button>
                         </div>
@@ -1017,11 +1017,11 @@ export default function StudioTabContent({ s }) {
             {/* ── DIRECTOR ── */}
             {aiSubTab === 'director' && (
               <div className="space-y-3">
-                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,133,74,0.2)' }}>
+                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,140,0,0.2)' }}>
                   <SwanDirectorHUD roomId={partyId} hostId={party?.host_id} onOpenPanel={() => setActiveTab('manage')} />
                 </div>
-                <div className="rounded-xl p-3" style={{ background: 'rgba(212,133,74,0.06)', border: '1px solid rgba(212,133,74,0.15)' }}>
-                  <p className="text-[11px] font-black uppercase mb-1" style={{ color: '#D4854A', fontFamily: 'Barlow Condensed, sans-serif' }}>Director Mode</p>
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,140,0,0.06)', border: '1px solid rgba(255,140,0,0.15)' }}>
+                  <p className="text-[11px] font-black uppercase mb-1" style={{ color: '#FF8C00', fontFamily: 'Barlow Condensed, sans-serif' }}>Director Mode</p>
                   <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>AI-assisted scene switching, layout suggestions, and audience engagement cues — synced across all {members.length} panel slots.</p>
                 </div>
               </div>
@@ -1030,7 +1030,7 @@ export default function StudioTabContent({ s }) {
             {/* ── SUMMARY ── */}
             {aiSubTab === 'summary' && (
               <div className="space-y-3">
-                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
+                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.15)' }}>
                   <AIStreamSummary
                     roomId={partyId}
                     isHost={canManage}
@@ -1039,7 +1039,7 @@ export default function StudioTabContent({ s }) {
                     elapsedSeconds={elapsed}
                   />
                 </div>
-                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.1)' }}>
                   <LiveTranscription isLive={party?.status === 'live'} roomId={partyId} />
                 </div>
               </div>
@@ -1048,7 +1048,7 @@ export default function StudioTabContent({ s }) {
             {/* ── CLIPS ── */}
             {aiSubTab === 'clips' && (
               <div className="space-y-3">
-                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,133,74,0.2)' }}>
+                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,140,0,0.2)' }}>
                   <ClipGeneratorAI sessionId={partyId} roomId={partyId} creatorId={user?.id} />
                 </div>
                 {partyId && user?.id && (
@@ -1060,8 +1060,8 @@ export default function StudioTabContent({ s }) {
                     isHost={isHost}
                   />
                 )}
-                <div className="rounded-xl p-3" style={{ background: 'rgba(212,133,74,0.06)', border: '1px solid rgba(212,133,74,0.15)' }}>
-                  <p className="text-[11px] font-black uppercase mb-1" style={{ color: '#D4854A', fontFamily: 'Barlow Condensed, sans-serif' }}>AI Clip Generator</p>
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,140,0,0.06)', border: '1px solid rgba(255,140,0,0.15)' }}>
+                  <p className="text-[11px] font-black uppercase mb-1" style={{ color: '#FF8C00', fontFamily: 'Barlow Condensed, sans-serif' }}>AI Clip Generator</p>
                   <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Automatically detects highlight moments and creates shareable clips from your live session.</p>
                 </div>
               </div>
@@ -1069,7 +1069,7 @@ export default function StudioTabContent({ s }) {
 
             {/* ── AI PERSONA ── */}
             {aiSubTab === 'persona' && (
-              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
+              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.15)' }}>
                 <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => {}} />
               </div>
             )}
@@ -1147,7 +1147,7 @@ export default function StudioTabContent({ s }) {
             </div>
             <button onClick={copyLink}
               className="h-9 px-3 rounded-xl text-[10px] font-black transition-all"
-              style={{ background: linkCopied ? 'rgba(109,191,126,0.2)' : 'rgba(212,175,55,0.15)', color: linkCopied ? '#6DBF7E' : '#D4AF37', border: `1px solid ${linkCopied ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.3)'}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: linkCopied ? 'rgba(0,255,136,0.2)' : 'rgba(255,184,0,0.15)', color: linkCopied ? '#00FF88' : '#FFB800', border: `1px solid ${linkCopied ? 'rgba(0,255,136,0.3)' : 'rgba(255,184,0,0.3)'}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
               {linkCopied ? '✓ Copied' : 'Copy'}
             </button>
           </div>
@@ -1180,7 +1180,7 @@ export default function StudioTabContent({ s }) {
             <button
               onClick={() => navigator.share({ title: 'Join me LIVE on SeeWhy!', url: window.location.href }).catch(() => {})}
               className="w-full py-2.5 rounded-xl text-[11px] font-black uppercase"
-              style={{ background: 'linear-gradient(135deg, #800020, #A0003A)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'linear-gradient(135deg, #FF1564, #A0003A)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               📱 Share via Phone
             </button>
           )}
@@ -1193,21 +1193,21 @@ export default function StudioTabContent({ s }) {
             </code>
             <button onClick={() => { navigator.clipboard.writeText(`<iframe src="${window.location.href}" width="100%" height="600" frameborder="0" allow="camera;microphone"></iframe>`).catch(() => {}); }}
               className="mt-1.5 text-[11px] px-2 py-0.5 rounded"
-              style={{ background: 'rgba(212,175,55,0.08)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(255,184,0,0.08)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Copy Embed
             </button>
           </div>
 
           {/* Guest invite links with QR codes (host/co-host only) */}
           {canManage && partyId && (
-            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
+            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.15)' }}>
               <GuestInviteGenerator roomId={partyId} isHost={canManage} />
             </div>
           )}
 
           {/* Multi-platform RTMP fanout (host/co-host only) */}
           {canManage && partyId && (
-            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.12)' }}>
+            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.12)' }}>
               <RTMPFanoutPanel roomId={partyId} isHost={isHost} />
             </div>
           )}

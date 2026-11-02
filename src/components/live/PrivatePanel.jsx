@@ -3,10 +3,10 @@ import { Lock, Users, Plus, X, MessageSquare, Crown, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PANEL_TYPES = [
-  { id: 'vip', label: 'VIP Room', icon: '👑', desc: 'Invite-only private chat & stage', color: '#d4af37' },
-  { id: 'backstage', label: 'Backstage', icon: '🎭', desc: 'Host + guests only', color: '#800020' },
-  { id: 'subscriber', label: 'Subscribers', icon: '⭐', desc: 'Paid subscribers only', color: '#7B5DA6' },
-  { id: 'custom', label: 'Custom Group', icon: '🔒', desc: 'Manually invite users', color: '#D4AF37' },
+  { id: 'vip', label: 'VIP Room', icon: '👑', desc: 'Invite-only private chat & stage', color: '#FFB800' },
+  { id: 'backstage', label: 'Backstage', icon: '🎭', desc: 'Host + guests only', color: '#FF1564' },
+  { id: 'subscriber', label: 'Subscribers', icon: '⭐', desc: 'Paid subscribers only', color: '#8B5CF6' },
+  { id: 'custom', label: 'Custom Group', icon: '🔒', desc: 'Manually invite users', color: '#FFB800' },
 ];
 
 const PANEL_CAPS = { vip: 5, backstage: 10, subscriber: 20, custom: 15 };
@@ -47,12 +47,12 @@ function PanelChat({ panel, currentUser, onSend }) {
             <div key={msg.id} className="flex gap-1.5">
               <div
                 className="w-4 h-4 rounded-full shrink-0 flex items-center justify-center text-[8px] font-black"
-                style={{ background: 'rgba(212,175,55,0.25)', color: '#D4AF37', marginTop: 1 }}
+                style={{ background: 'rgba(255,184,0,0.25)', color: '#FFB800', marginTop: 1 }}
               >
                 {msg.sender[0]?.toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] font-bold" style={{ color: '#D4AF37' }}>{msg.sender} </span>
+                <span className="text-[10px] font-bold" style={{ color: '#FFB800' }}>{msg.sender} </span>
                 <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.7)' }}>{msg.text}</span>
               </div>
             </div>
@@ -72,7 +72,7 @@ function PanelChat({ panel, currentUser, onSend }) {
           style={{
             flex: 1, height: 30, padding: '0 10px',
             background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(212,175,55,0.2)',
+            border: '1px solid rgba(255,184,0,0.2)',
             borderRadius: 8, color: '#fff', fontSize: 11, outline: 'none',
             fontFamily: 'Barlow Condensed, sans-serif',
           }}
@@ -82,8 +82,8 @@ function PanelChat({ panel, currentUser, onSend }) {
           disabled={!text.trim()}
           style={{
             width: 30, height: 30, borderRadius: 8, border: 'none',
-            background: text.trim() ? '#800020' : 'rgba(128,0,32,0.3)',
-            color: '#D4AF37', cursor: text.trim() ? 'pointer' : 'not-allowed',
+            background: text.trim() ? '#FF1564' : 'rgba(255,21,100,0.3)',
+            color: '#FFB800', cursor: text.trim() ? 'pointer' : 'not-allowed',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
@@ -93,7 +93,7 @@ function PanelChat({ panel, currentUser, onSend }) {
 
       {/* Invite code */}
       <p className="text-[10px] text-center" style={{ color: 'rgba(255,255,255,0.25)' }}>
-        Invite code: <span className="font-mono font-bold" style={{ color: '#D4AF37' }}>#{panel.code}</span>
+        Invite code: <span className="font-mono font-bold" style={{ color: '#FFB800' }}>#{panel.code}</span>
       </p>
     </div>
   );
@@ -160,10 +160,10 @@ export default function PrivatePanel({ isHost, currentUser }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Lock className="w-4 h-4 text-[#d4af37]" />
+          <Lock className="w-4 h-4 text-[#FFB800]" />
           <span className="text-sm font-semibold text-white">Private Panels</span>
           {activePanels.length > 0 && (
-            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(212,175,55,0.2)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.3)' }}>
+            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(255,184,0,0.2)', color:'#FFB800', border:'1px solid rgba(255,184,0,0.3)' }}>
               {activePanels.length}
             </span>
           )}
@@ -171,9 +171,9 @@ export default function PrivatePanel({ isHost, currentUser }) {
         {isHost && (
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="w-6 h-6 rounded-full bg-[#d4af37]/10 hover:bg-[#d4af37]/20 flex items-center justify-center"
+            className="w-6 h-6 rounded-full bg-[#FFB800]/10 hover:bg-[#FFB800]/20 flex items-center justify-center"
           >
-            <Plus className="w-3.5 h-3.5 text-[#d4af37]" />
+            <Plus className="w-3.5 h-3.5 text-[#FFB800]" />
           </button>
         )}
       </div>
@@ -187,7 +187,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-[rgba(212,175,55,0.05)] border border-[#d4af37]/20 rounded-xl p-3 space-y-3">
+            <div className="bg-[rgba(255,184,0,0.05)] border border-[#FFB800]/20 rounded-xl p-3 space-y-3">
               <p className="text-[10px] text-white/50 uppercase tracking-wider">Create Private Panel</p>
 
               <div className="grid grid-cols-2 gap-1.5">
@@ -197,7 +197,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
                     onClick={() => setSelectedType(type)}
                     className={`p-2 rounded-lg border text-left transition-all ${
                       selectedType?.id === type.id
-                        ? 'border-[#d4af37] bg-[#d4af37]/10'
+                        ? 'border-[#FFB800] bg-[#FFB800]/10'
                         : 'border-white/10 hover:border-white/20 bg-white/5'
                     }`}
                   >
@@ -213,12 +213,12 @@ export default function PrivatePanel({ isHost, currentUser }) {
                 value={panelName}
                 onChange={e => setPanelName(e.target.value)}
                 placeholder="Panel name..."
-                style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                style={{ width:'100%', padding:'10px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
               />
 
               <div className="flex gap-2">
                 <button
-                  style={{ flex:1, padding:'6px 12px', borderRadius:8, border:'none', background: (!selectedType || !panelName.trim()) ? 'rgba(212,175,55,0.4)' : '#d4af37', color:'#000', fontWeight:700, cursor: (!selectedType || !panelName.trim()) ? 'not-allowed' : 'pointer', fontSize:12 }}
+                  style={{ flex:1, padding:'6px 12px', borderRadius:8, border:'none', background: (!selectedType || !panelName.trim()) ? 'rgba(255,184,0,0.4)' : '#FFB800', color:'#000', fontWeight:700, cursor: (!selectedType || !panelName.trim()) ? 'not-allowed' : 'pointer', fontSize:12 }}
                   onClick={createPanel}
                   disabled={!selectedType || !panelName.trim()}
                 >
@@ -240,9 +240,9 @@ export default function PrivatePanel({ isHost, currentUser }) {
             value={inviteCode}
             onChange={e => setInviteCode(e.target.value)}
             placeholder="Enter invite code..."
-            style={{ flex:1, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+            style={{ flex:1, padding:'10px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
           />
-          <button style={{ padding:'6px 14px', borderRadius:8, border:'none', background:'#d4af37', color:'#000', fontWeight:700, cursor:'pointer', fontSize:12 }} onClick={joinPanel}>
+          <button style={{ padding:'6px 14px', borderRadius:8, border:'none', background:'#FFB800', color:'#000', fontWeight:700, cursor:'pointer', fontSize:12 }} onClick={joinPanel}>
             Join
           </button>
         </div>
@@ -265,7 +265,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
                   <div className="flex items-center gap-1.5">
                     <p className="text-xs font-semibold text-white truncate">{panel.name}</p>
                     {unread > 0 && (
-                      <span style={{ fontSize:9, fontWeight:900, padding:'1px 5px', borderRadius:99, background:'#800020', color:'#D4AF37' }}>
+                      <span style={{ fontSize:9, fontWeight:900, padding:'1px 5px', borderRadius:99, background:'#FF1564', color:'#FFB800' }}>
                         {unread}
                       </span>
                     )}
@@ -278,18 +278,18 @@ export default function PrivatePanel({ isHost, currentUser }) {
                       <Users className="w-2.5 h-2.5" />
                       {panel.members.length}/{PANEL_CAPS[panel.type?.id || panel.type] || 10}
                       {panel.members.length >= (PANEL_CAPS[panel.type?.id || panel.type] || 10) && (
-                        <span className="ml-1 text-[9px] text-[#C0392B]">FULL</span>
+                        <span className="ml-1 text-[9px] text-[#FF2040]">FULL</span>
                       )}
                     </button>
-                    <span className="ml-1 font-mono text-[#d4af37] text-[10px]">#{panel.code}</span>
+                    <span className="ml-1 font-mono text-[#FFB800] text-[10px]">#{panel.code}</span>
                     {panel.lastJoined && (
-                      <span className="ml-1 text-[9px] text-[#6DBF7E] animate-pulse">+{panel.lastJoined.split(' ')[0]} joined</span>
+                      <span className="ml-1 text-[9px] text-[#00FF88] animate-pulse">+{panel.lastJoined.split(' ')[0]} joined</span>
                     )}
                   </div>
                 </div>
                 {isHost && (
                   <button onClick={e => { e.stopPropagation(); removePanel(panel.id); }}>
-                    <X className="w-3.5 h-3.5 text-white/30 hover:text-[#C0392B]" />
+                    <X className="w-3.5 h-3.5 text-white/30 hover:text-[#FF2040]" />
                   </button>
                 )}
               </div>
@@ -304,7 +304,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
                   >
                     <div className="px-3 py-2 border-t border-white/5 flex flex-wrap gap-1.5">
                       {panel.members.map((m, i) => (
-                        <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)' }}>{m}</span>
+                        <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,184,0,0.12)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.2)' }}>{m}</span>
                       ))}
                     </div>
                   </motion.div>

@@ -9,12 +9,12 @@ import {
 import { toast } from 'sonner';
 
 const INSIGHT_CONFIG = {
-  conversation_starter: { icon: MessageSquare, color: '#C9A84C', label: 'Talk About',  bg: 'rgba(201,168,76,0.08)' },
-  thank_you:            { icon: Heart,          color: '#C0392B', label: 'Thank You',   bg: 'rgba(192,57,43,0.08)' },
-  chat_spike:           { icon: Zap,            color: '#D4AF37', label: '⚡ Spike',    bg: 'rgba(212,175,55,0.08)' },
-  trending_topic:       { icon: TrendingUp,     color: '#D4AF37', label: 'Trending',    bg: 'rgba(212,175,55,0.08)' },
-  performance_tip:      { icon: TrendingUp,     color: '#6DBF7E', label: 'Pro Tip',     bg: 'rgba(109,191,126,0.08)' },
-  sentiment_shift:      { icon: AlertTriangle,  color: '#D4854A', label: 'Mood Shift',  bg: 'rgba(212,133,74,0.08)' },
+  conversation_starter: { icon: MessageSquare, color: '#FFB800', label: 'Talk About',  bg: 'rgba(255,184,0,0.08)' },
+  thank_you:            { icon: Heart,          color: '#FF2040', label: 'Thank You',   bg: 'rgba(255,32,64,0.08)' },
+  chat_spike:           { icon: Zap,            color: '#FFB800', label: '⚡ Spike',    bg: 'rgba(255,184,0,0.08)' },
+  trending_topic:       { icon: TrendingUp,     color: '#FFB800', label: 'Trending',    bg: 'rgba(255,184,0,0.08)' },
+  performance_tip:      { icon: TrendingUp,     color: '#00FF88', label: 'Pro Tip',     bg: 'rgba(0,255,136,0.08)' },
+  sentiment_shift:      { icon: AlertTriangle,  color: '#FF8C00', label: 'Mood Shift',  bg: 'rgba(255,140,0,0.08)' },
 };
 
 const QUICK_RESPONSES = [
@@ -27,7 +27,7 @@ const QUICK_RESPONSES = [
 ];
 
 function SentimentMeter({ score }) {
-  const color = score >= 70 ? '#6DBF7E' : score >= 40 ? '#D4AF37' : '#C0392B';
+  const color = score >= 70 ? '#00FF88' : score >= 40 ? '#FFB800' : '#FF2040';
   const label = score >= 70 ? 'Positive' : score >= 40 ? 'Neutral' : 'Negative';
   return (
     <div className="space-y-1.5">
@@ -71,13 +71,13 @@ function InsightCard({ insight, onDismiss, onCopy, onPin, pinned }) {
           <p className="text-[11px] text-white/80 leading-relaxed mt-0.5">{insight.content}</p>
         </div>
         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-          <button onClick={() => onPin(insight.id)} className="w-5 h-5 flex items-center justify-center rounded text-white/30 hover:text-[#D4AF37] transition-colors" title={pinned ? 'Unpin' : 'Pin'}>
+          <button onClick={() => onPin(insight.id)} className="w-5 h-5 flex items-center justify-center rounded text-white/30 hover:text-[#FFB800] transition-colors" title={pinned ? 'Unpin' : 'Pin'}>
             {pinned ? <PinOff className="w-3 h-3" /> : <Pin className="w-3 h-3" />}
           </button>
           <button onClick={() => onCopy(insight.content)} className="w-5 h-5 flex items-center justify-center rounded text-white/30 hover:text-white transition-colors">
             <Copy className="w-3 h-3" />
           </button>
-          <button onClick={() => onDismiss(insight.id)} className="w-5 h-5 flex items-center justify-center rounded text-white/30 hover:text-[#C0392B] transition-colors">
+          <button onClick={() => onDismiss(insight.id)} className="w-5 h-5 flex items-center justify-center rounded text-white/30 hover:text-[#FF2040] transition-colors">
             <X className="w-3 h-3" />
           </button>
         </div>
@@ -209,20 +209,20 @@ Messages:\n${msgLines}`,
   if (!isHost) return null;
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(11,11,24,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(11,11,24,0.95)', border: '1px solid rgba(255,184,0,0.2)' }}>
       {/* Header */}
       <button onClick={() => { const n = !collapsed; setCollapsed(n); try { localStorage.setItem('ai_copilot_collapsed', String(n)); } catch {} }}
         className="w-full flex items-center justify-between px-3 py-2.5 transition-all hover:bg-white/5">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.3), rgba(201,168,76,0.3))' }}>
-            <Sparkles className="w-3.5 h-3.5 text-[#D4854A]" />
+            style={{ background: 'linear-gradient(135deg, rgba(255,184,0,0.3), rgba(255,184,0,0.3))' }}>
+            <Sparkles className="w-3.5 h-3.5 text-[#FF8C00]" />
           </div>
-          <span className="text-xs font-black uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#D4AF37', letterSpacing: '0.08em' }}>
+          <span className="text-xs font-black uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#FFB800', letterSpacing: '0.08em' }}>
             AI Copilot
           </span>
           {visibleInsights.length > 0 && (
-            <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37' }}>
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,184,0,0.2)', color: '#FFB800' }}>
               {visibleInsights.length}
             </span>
           )}
@@ -232,7 +232,7 @@ Messages:\n${msgLines}`,
           <button
             onClick={(e) => { e.stopPropagation(); const n = !autoAnalyze; setAutoAnalyze(n); try { localStorage.setItem('ai_copilot_auto_analyze', String(n)); } catch {}; }}
             className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold transition-all"
-            style={{ color: autoAnalyze ? '#6DBF7E' : 'rgba(255,255,255,0.25)' }}
+            style={{ color: autoAnalyze ? '#00FF88' : 'rgba(255,255,255,0.25)' }}
             title={autoAnalyze ? 'Auto-analyze ON' : 'Auto-analyze OFF'}
           >
             {autoAnalyze ? <ToggleRight className="w-3.5 h-3.5" /> : <ToggleLeft className="w-3.5 h-3.5" />}
@@ -242,7 +242,7 @@ Messages:\n${msgLines}`,
             onClick={(e) => { e.stopPropagation(); analyzeMutation.mutate(); }}
             disabled={analyzeMutation.isPending || recentMessages.length < 3}
             className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-40"
-            style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)' }}>
+            style={{ background: 'rgba(255,184,0,0.15)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.2)' }}>
             <RefreshCw className={`w-2.5 h-2.5 ${analyzeMutation.isPending ? 'animate-spin' : ''}`} />
             Analyze
           </button>
@@ -262,7 +262,7 @@ Messages:\n${msgLines}`,
                   <span className="text-white/40 uppercase font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Viewer Retention (5min)
                   </span>
-                  <span className="font-black" style={{ color: retentionPrediction >= 70 ? '#6DBF7E' : retentionPrediction >= 40 ? '#D4AF37' : '#C0392B' }}>
+                  <span className="font-black" style={{ color: retentionPrediction >= 70 ? '#00FF88' : retentionPrediction >= 40 ? '#FFB800' : '#FF2040' }}>
                     {retentionPrediction}%
                   </span>
                 </div>
@@ -278,9 +278,9 @@ Messages:\n${msgLines}`,
                         className="px-2 py-0.5 rounded-full font-bold"
                         style={{
                           fontSize: `${Math.max(9, 12 - i * 0.6)}px`,
-                          background: 'rgba(212,175,55,0.12)',
-                          color: '#D4AF37',
-                          border: '1px solid rgba(212,175,55,0.18)',
+                          background: 'rgba(255,184,0,0.12)',
+                          color: '#FFB800',
+                          border: '1px solid rgba(255,184,0,0.18)',
                           opacity: 1 - i * 0.12,
                         }}
                       >
@@ -296,7 +296,7 @@ Messages:\n${msgLines}`,
                 <button
                   onClick={() => setShowResponses(v => !v)}
                   className="flex items-center gap-1.5 text-[11px] font-bold uppercase transition-colors"
-                  style={{ color: showResponses ? '#D4AF37' : 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                  style={{ color: showResponses ? '#FFB800' : 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}
                 >
                   <Send className="w-3 h-3" />
                   Quick Responses
@@ -331,20 +331,20 @@ Messages:\n${msgLines}`,
                     onChange={e => setCustomPrompt(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && customPrompt.trim() && customMutation.mutate(customPrompt.trim())}
                     placeholder="e.g. Should I take a break soon?"
-                    style={{ flex: 1, padding: '6px 8px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 11, outline: 'none' }}
+                    style={{ flex: 1, padding: '6px 8px', background: 'rgba(3,3,10,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 11, outline: 'none' }}
                   />
                   <button
                     onClick={() => customPrompt.trim() && customMutation.mutate(customPrompt.trim())}
                     disabled={!customPrompt.trim() || customMutation.isPending}
                     className="px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-40"
-                    style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)' }}>
+                    style={{ background: 'rgba(255,184,0,0.15)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.2)' }}>
                     <Send className="w-3 h-3" />
                   </button>
                 </div>
                 {customAnswer && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                     className="px-2 py-2 rounded-lg text-[11px] text-white/70 leading-relaxed"
-                    style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                    style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.15)' }}>
                     {customAnswer}
                   </motion.div>
                 )}

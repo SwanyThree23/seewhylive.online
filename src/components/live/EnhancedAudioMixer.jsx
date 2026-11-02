@@ -103,7 +103,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
   }, [gain, noiseSuppression, echoCancellation, bgMusic, bgMusicVol, mono, reverb, stereoEnhance, bass, treble]);
 
   const avgLevel = vuLevels.reduce((a, b) => a + b) / vuLevels.length;
-  const levelColor = avgLevel > 0.8 ? '#C0392B' : avgLevel > 0.5 ? '#C9A84C' : '#6DBF7E';
+  const levelColor = avgLevel > 0.8 ? '#FF2040' : avgLevel > 0.5 ? '#FFB800' : '#00FF88';
   const isClipping = avgLevel > 0.9;
 
   // Peak hold: update peak upward immediately, decay slowly
@@ -112,14 +112,14 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
   }, [avgLevel]);
 
   return (
-    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
+    <div className="bg-[rgba(3,3,10,0.9)] border border-[rgba(255,184,0,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
         onClick={() => { const next = !collapsed; setCollapsed(next); try { localStorage.setItem('eam_collapsed', String(next)); } catch {} }}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
         <div className="flex items-center gap-2">
-          <Headphones className="w-4 h-4 text-[#d4af37]" />
-          <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Audio Mixer</span>
+          <Headphones className="w-4 h-4 text-[#FFB800]" />
+          <span className="text-xs font-semibold text-[#FFB800] uppercase tracking-wider">Audio Mixer</span>
           <div className="w-8 h-4 rounded-full bg-black/30 flex items-center" style={{ background: levelColor + '20', borderColor: levelColor + '40', border: '1px solid' }}>
             <motion.div
               animate={{ width: `${avgLevel * 100}%` }}
@@ -143,7 +143,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
                   animate={{ opacity: [1, 0.3, 1] }}
                   transition={{ duration: 0.3, repeat: Infinity }}
                   className="text-[9px] font-black px-1.5 py-0.5 rounded"
-                  style={{ background: 'rgba(192,57,43,0.3)', color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}
+                  style={{ background: 'rgba(255,32,64,0.3)', color: '#FF2040', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}
                 >
                   CLIP
                 </motion.span>
@@ -156,13 +156,13 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
                   animate={{ height: `${(micMuted ? 0.02 : level) * 100}%` }}
                   transition={{ duration: 0.08 }}
                   className="flex-1 rounded-sm"
-                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#C9A84C' : '#6DBF7E' }}
+                  style={{ background: level > 0.8 ? '#FF2040' : level > 0.5 ? '#FFB800' : '#00FF88' }}
                 />
               ))}
               {/* Peak hold needle */}
               <div
                 className="absolute left-2 right-2 h-px rounded-full pointer-events-none"
-                style={{ bottom: `${peakLevel * 100}%`, background: peakLevel > 0.8 ? '#C0392B' : '#D4AF37', opacity: 0.8 }}
+                style={{ bottom: `${peakLevel * 100}%`, background: peakLevel > 0.8 ? '#FF2040' : '#FFB800', opacity: 0.8 }}
               />
             </div>
           </div>
@@ -173,10 +173,10 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               onClick={onMicToggle}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 micMuted
-                  ? 'bg-red-900/50 border border-red-600/50 text-[#C0392B]'
-                  : 'border border-green-600/40 text-[#6DBF7E]'
+                  ? 'bg-red-900/50 border border-red-600/50 text-[#FF2040]'
+                  : 'border border-green-600/40 text-[#00FF88]'
               }`}
-              style={!micMuted ? { background: 'rgba(109,191,126,0.15)' } : undefined}
+              style={!micMuted ? { background: 'rgba(0,255,136,0.15)' } : undefined}
             >
               {micMuted ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
               {micMuted ? 'Unmute' : 'Live'} (M)
@@ -186,7 +186,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 speakerMuted
                   ? 'bg-gray-800 border border-gray-600 text-gray-400'
-                  : 'bg-[#0F1428]/50 border border-[#D4AF37]/25 text-[#D4AF37]'
+                  : 'bg-[#0F1428]/50 border border-[#FFB800]/25 text-[#FFB800]'
               }`}
             >
               {speakerMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
@@ -204,7 +204,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
                   onClick={() => handlePresetChange(p.id)}
                   className={`text-[10px] px-2 py-1 rounded border transition-all ${
                     preset === p.id
-                      ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10'
+                      ? 'border-[#FFB800] text-[#FFB800] bg-[#FFB800]/10'
                       : 'border-white/10 text-white/40 hover:border-white/20'
                   }`}
                 >
@@ -218,24 +218,24 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
           <div className="space-y-1">
             <div className="flex justify-between">
               <p className="text-[10px] text-white/40">Input Gain</p>
-              <p className="text-[10px] font-mono text-[#d4af37]">{gain[0]}%</p>
+              <p className="text-[10px] font-mono text-[#FFB800]">{gain[0]}%</p>
             </div>
-            <input type="range" value={gain[0]} onChange={e => { const v = +e.target.value; setGain([v]); try { localStorage.setItem('eam_gain', String(v)); } catch {} }} min={0} max={200} step={5} style={{ width: '100%', accentColor: '#D4AF37' }} />
+            <input type="range" value={gain[0]} onChange={e => { const v = +e.target.value; setGain([v]); try { localStorage.setItem('eam_gain', String(v)); } catch {} }} min={0} max={200} step={5} style={{ width: '100%', accentColor: '#FFB800' }} />
           </div>
 
           {/* Smart Toggles */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-white/60">Smart Noise Filter</span>
-              <div onClick={() => { const n = !noiseSuppression; setNoiseSuppression(n); try { localStorage.setItem('eam_noise', String(n)); } catch {} }} style={{ width: 40, height: 22, borderRadius: 99, background: noiseSuppression ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: noiseSuppression ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+              <div onClick={() => { const n = !noiseSuppression; setNoiseSuppression(n); try { localStorage.setItem('eam_noise', String(n)); } catch {} }} style={{ width: 40, height: 22, borderRadius: 99, background: noiseSuppression ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: noiseSuppression ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-white/60">Echo Cancellation</span>
-              <div onClick={() => { const n = !echoCancellation; setEchoCancellation(n); try { localStorage.setItem('eam_echo', String(n)); } catch {} }} style={{ width: 40, height: 22, borderRadius: 99, background: echoCancellation ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: echoCancellation ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+              <div onClick={() => { const n = !echoCancellation; setEchoCancellation(n); try { localStorage.setItem('eam_echo', String(n)); } catch {} }} style={{ width: 40, height: 22, borderRadius: 99, background: echoCancellation ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: echoCancellation ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-white/60">Mono Mode (Bandwidth Saver)</span>
-              <div onClick={() => { const n = !mono; setMono(n); try { localStorage.setItem('eam_mono', String(n)); } catch {} }} style={{ width: 40, height: 22, borderRadius: 99, background: mono ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: mono ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+              <div onClick={() => { const n = !mono; setMono(n); try { localStorage.setItem('eam_mono', String(n)); } catch {} }} style={{ width: 40, height: 22, borderRadius: 99, background: mono ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: mono ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
             </div>
           </div>
 
@@ -252,9 +252,9 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               <div className="space-y-1">
                 <div className="flex justify-between">
                   <p className="text-[10px] text-white/40">Music Volume</p>
-                  <p className="text-[10px] font-mono text-[#d4af37]">{bgMusicVol[0]}%</p>
+                  <p className="text-[10px] font-mono text-[#FFB800]">{bgMusicVol[0]}%</p>
                 </div>
-                <input type="range" value={bgMusicVol[0]} onChange={e => { const v = +e.target.value; setBgMusicVol([v]); try { localStorage.setItem('eam_bg_vol', String(v)); } catch {} }} min={0} max={100} step={5} style={{ width: '100%', accentColor: '#D4AF37' }} />
+                <input type="range" value={bgMusicVol[0]} onChange={e => { const v = +e.target.value; setBgMusicVol([v]); try { localStorage.setItem('eam_bg_vol', String(v)); } catch {} }} min={0} max={100} step={5} style={{ width: '100%', accentColor: '#FFB800' }} />
               </div>
             )}
           </div>
@@ -273,24 +273,24 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
             <div className="space-y-2 border-t border-white/5 pt-2">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-white/60 flex items-center gap-1"><Radio className="w-3 h-3" /> Reverb</span>
-                <div onClick={() => { const n = !reverb; setReverb(n); try { localStorage.setItem('eam_reverb', String(n)); } catch {} }} style={{ width: 40, height: 22, borderRadius: 99, background: reverb ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: reverb ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+                <div onClick={() => { const n = !reverb; setReverb(n); try { localStorage.setItem('eam_reverb', String(n)); } catch {} }} style={{ width: 40, height: 22, borderRadius: 99, background: reverb ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: reverb ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-white/60 flex items-center gap-1"><Headphones className="w-3 h-3" /> Stereo Enhance</span>
-                <div onClick={() => { const n = !stereoEnhance; setStereoEnhance(n); try { localStorage.setItem('eam_stereo', String(n)); } catch {} }} style={{ width: 40, height: 22, borderRadius: 99, background: stereoEnhance ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: stereoEnhance ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+                <div onClick={() => { const n = !stereoEnhance; setStereoEnhance(n); try { localStorage.setItem('eam_stereo', String(n)); } catch {} }} style={{ width: 40, height: 22, borderRadius: 99, background: stereoEnhance ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: stereoEnhance ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
               </div>
               {/* EQ sliders */}
               <div className="space-y-1 pt-1">
                 <p className="text-[9px] text-white/30 uppercase tracking-wider">Equalizer</p>
                 <div className="flex justify-between items-center">
                   <span className="text-[10px] text-white/50 w-10">Bass</span>
-                  <input type="range" value={bass} onChange={e => { const v = +e.target.value; setBass(v); try { localStorage.setItem('eam_bass', String(v)); } catch {} }} min={-12} max={12} step={1} style={{ flex: 1, accentColor: '#D4854A', margin: '0 8px' }} />
-                  <span className="text-[9px] font-mono text-[#D4854A] w-7 text-right">{bass > 0 ? '+' : ''}{bass}dB</span>
+                  <input type="range" value={bass} onChange={e => { const v = +e.target.value; setBass(v); try { localStorage.setItem('eam_bass', String(v)); } catch {} }} min={-12} max={12} step={1} style={{ flex: 1, accentColor: '#FF8C00', margin: '0 8px' }} />
+                  <span className="text-[9px] font-mono text-[#FF8C00] w-7 text-right">{bass > 0 ? '+' : ''}{bass}dB</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[10px] text-white/50 w-10">Treble</span>
-                  <input type="range" value={treble} onChange={e => { const v = +e.target.value; setTreble(v); try { localStorage.setItem('eam_treble', String(v)); } catch {} }} min={-12} max={12} step={1} style={{ flex: 1, accentColor: '#D4AF37', margin: '0 8px' }} />
-                  <span className="text-[9px] font-mono text-[#D4AF37] w-7 text-right">{treble > 0 ? '+' : ''}{treble}dB</span>
+                  <input type="range" value={treble} onChange={e => { const v = +e.target.value; setTreble(v); try { localStorage.setItem('eam_treble', String(v)); } catch {} }} min={-12} max={12} step={1} style={{ flex: 1, accentColor: '#FFB800', margin: '0 8px' }} />
+                  <span className="text-[9px] font-mono text-[#FFB800] w-7 text-right">{treble > 0 ? '+' : ''}{treble}dB</span>
                 </div>
               </div>
             </div>

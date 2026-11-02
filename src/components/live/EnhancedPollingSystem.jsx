@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, X, RotateCcw, Plus, Copy, Calendar, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 
-const COLORS = ['#d4af37', '#C0392B', '#C9A84C', '#D4AF37', '#6DBF7E'];
+const COLORS = ['#FFB800', '#FF2040', '#FFB800', '#FFB800', '#00FF88'];
 
 const POLL_TYPES = [
   { id: 'choice',   label: 'Choice',   icon: '📊' },
@@ -236,8 +236,8 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
             onClick={() => voteMutation.mutate({ pollId: activePoll.id, optionIndex: idx })}
             className="w-full p-2.5 rounded-lg text-left transition-all hover:opacity-80"
             style={{
-              background: userVotes[activePoll.id] === idx ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.05)',
-              border: userVotes[activePoll.id] === idx ? '1px solid #d4af37' : '1px solid rgba(255,255,255,0.1)',
+              background: userVotes[activePoll.id] === idx ? 'rgba(255,184,0,0.25)' : 'rgba(255,255,255,0.05)',
+              border: userVotes[activePoll.id] === idx ? '1px solid #FFB800' : '1px solid rgba(255,255,255,0.1)',
             }}
           >
             <div className="flex items-center justify-between">
@@ -264,7 +264,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
     <div className="space-y-3">
       {/* Session poll count */}
       {sessionPollCount > 0 && (
-        <div className="flex items-center gap-1.5 text-[10px]" style={{ color: 'rgba(212,175,55,0.5)' }}>
+        <div className="flex items-center gap-1.5 text-[10px]" style={{ color: 'rgba(255,184,0,0.5)' }}>
           <Trophy className="w-3 h-3" />
           <span>{sessionPollCount} poll{sessionPollCount !== 1 ? 's' : ''} this session</span>
         </div>
@@ -277,23 +277,23 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: -20 }}
             className="p-3 rounded-xl text-center"
-            style={{ background: 'rgba(212,175,55,0.15)', border: '2px solid #d4af37', boxShadow: '0 0 24px rgba(212,175,55,0.4)' }}
+            style={{ background: 'rgba(255,184,0,0.15)', border: '2px solid #FFB800', boxShadow: '0 0 24px rgba(255,184,0,0.4)' }}
           >
-            <Trophy className="w-5 h-5 mx-auto mb-1" style={{ color: '#d4af37' }} />
+            <Trophy className="w-5 h-5 mx-auto mb-1" style={{ color: '#FFB800' }} />
             <p className="text-xs text-white/60 font-bold uppercase tracking-wider">Poll Winner</p>
             <p className="text-sm font-black text-white mt-0.5">{winner.label}</p>
-            <p className="text-xs" style={{ color: '#d4af37' }}>{winner.count} vote{winner.count !== 1 ? 's' : ''}</p>
+            <p className="text-xs" style={{ color: '#FFB800' }}>{winner.count} vote{winner.count !== 1 ? 's' : ''}</p>
           </motion.div>
         )}
       </AnimatePresence>
 
       {!activePoll ? (
-        <div className="p-4 rounded-xl space-y-3" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+        <div className="p-4 rounded-xl space-y-3" style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)' }}>
           {isHost && (
             <>
               <button
                 onClick={() => setShowCreate(!showCreate)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#d4af37', color: '#000', border: 'none', borderRadius: 8, padding: '8px 0', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#FFB800', color: '#000', border: 'none', borderRadius: 8, padding: '8px 0', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}
               >
                 <Plus className="w-4 h-4" /> Create Poll
               </button>
@@ -307,7 +307,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
                       key={tpl.name}
                       onClick={() => applyTemplate(tpl)}
                       className="p-2 text-left text-xs rounded-lg transition-all hover:opacity-80"
-                      style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)' }}
+                      style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.25)' }}
                     >
                       <span className="font-bold text-white/80">{tpl.name}</span>
                       <span className="block text-[10px] text-white/40 mt-0.5 truncate">{tpl.question}</span>
@@ -338,7 +338,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
                         onClick={() => setForm(f => ({ ...f, type: pt.id }))}
                         className="flex-1 py-1.5 rounded text-[11px] font-bold transition-all border"
                         style={form.type === pt.id
-                          ? { background: 'rgba(212,175,55,0.2)', borderColor: '#d4af37', color: '#d4af37' }
+                          ? { background: 'rgba(255,184,0,0.2)', borderColor: '#FFB800', color: '#FFB800' }
                           : { background: 'transparent', borderColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' }
                         }
                       >
@@ -353,7 +353,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
                   value={form.question}
                   onChange={e => setForm(f => ({ ...f, question: e.target.value }))}
                   placeholder="Poll question..."
-                  className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white placeholder-white/20 focus:outline-none focus:border-[#d4af37]/40"
+                  className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white placeholder-white/20 focus:outline-none focus:border-[#FFB800]/40"
                 />
 
                 {/* Options (choice only) */}
@@ -365,7 +365,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
                           value={opt}
                           onChange={e => setForm(f => ({ ...f, options: f.options.map((o, i) => i === idx ? e.target.value : o) }))}
                           placeholder={`Option ${idx + 1}`}
-                          className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white placeholder-white/20 focus:outline-none focus:border-[#d4af37]/40"
+                          className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white placeholder-white/20 focus:outline-none focus:border-[#FFB800]/40"
                         />
                         {form.options.length > 2 && (
                           <button onClick={() => setForm(f => ({ ...f, options: f.options.filter((_, i) => i !== idx) }))}
@@ -400,7 +400,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
                   <select
                     value={form.timeout_seconds}
                     onChange={e => setForm(f => ({ ...f, timeout_seconds: Number(e.target.value) }))}
-                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-[#d4af37]/40"
+                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-[#FFB800]/40"
                     style={{ colorScheme: 'dark' }}
                   >
                     <option value={30}>30 seconds</option>
@@ -419,13 +419,13 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
                     type="datetime-local"
                     value={form.scheduled_at}
                     onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))}
-                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-[#d4af37]/40"
+                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-[#FFB800]/40"
                     style={{ colorScheme: 'dark' }}
                     placeholder="Schedule (optional)"
                   />
                 </div>
                 {form.scheduled_at && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(201,168,76,0.2)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.35)' }}>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,184,0,0.2)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.35)' }}>
                     📅 SCHEDULED
                   </span>
                 )}
@@ -435,7 +435,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
                   <div
                     onClick={() => setForm(f => ({ ...f, allow_re_vote: !f.allow_re_vote }))}
                     className="relative w-8 h-4 rounded-full transition-colors"
-                    style={{ background: form.allow_re_vote ? '#d4af37' : 'rgba(255,255,255,0.12)' }}
+                    style={{ background: form.allow_re_vote ? '#FFB800' : 'rgba(255,255,255,0.12)' }}
                   >
                     <div className="absolute top-0.5 rounded-full w-3 h-3 bg-white transition-transform"
                       style={{ transform: form.allow_re_vote ? 'translateX(18px)' : 'translateX(2px)' }} />
@@ -450,7 +450,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
                     createPollMutation.mutate(form);
                   }}
                   disabled={createPollMutation.isPending}
-                  style={{ width: '100%', background: '#d4af37', color: '#000', border: 'none', borderRadius: 8, padding: '8px 0', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}
+                  style={{ width: '100%', background: '#FFB800', color: '#000', border: 'none', borderRadius: 8, padding: '8px 0', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}
                 >
                   {createPollMutation.isPending ? 'Launching...' : form.scheduled_at ? '📅 Schedule Poll' : '🚀 Launch Poll'}
                 </button>
@@ -463,20 +463,20 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="p-4 rounded-xl space-y-3"
-          style={{ background: 'rgba(11,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}
+          style={{ background: 'rgba(11,11,24,0.95)', border: '1px solid rgba(255,184,0,0.15)' }}
         >
           {/* Header */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
               {activePoll.type && activePoll.type !== 'choice' && (
                 <span className="text-[10px] font-bold uppercase tracking-wider mr-2"
-                  style={{ color: '#C9A84C' }}>
+                  style={{ color: '#FFB800' }}>
                   {POLL_TYPES.find(p => p.id === activePoll.type)?.icon} {activePoll.type}
                 </span>
               )}
               <h3 className="font-bold text-white">{activePoll.question}</h3>
               {timeRemaining !== null && (
-                <div className="flex items-center gap-1.5 text-xs mt-0.5" style={{ color: timeRemaining < 10 ? '#C0392B' : '#d4af37' }}>
+                <div className="flex items-center gap-1.5 text-xs mt-0.5" style={{ color: timeRemaining < 10 ? '#FF2040' : '#FFB800' }}>
                   <Clock className="w-3 h-3" />
                   {formatTime(timeRemaining)}
                 </div>
@@ -484,13 +484,13 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
             </div>
             <div className="flex gap-1">
               {isHost && (
-                <button onClick={copyResults} className="p-1.5 rounded-lg hover:opacity-70 transition-opacity" style={{ background: 'rgba(201,168,76,0.15)' }} title="Copy results">
-                  <Copy className="w-3.5 h-3.5 text-[#C9A84C]" />
+                <button onClick={copyResults} className="p-1.5 rounded-lg hover:opacity-70 transition-opacity" style={{ background: 'rgba(255,184,0,0.15)' }} title="Copy results">
+                  <Copy className="w-3.5 h-3.5 text-[#FFB800]" />
                 </button>
               )}
               {isHost && (
-                <button onClick={closePoll} className="p-1.5 rounded-lg hover:opacity-70 transition-opacity" style={{ background: 'rgba(192,57,43,0.15)' }} title="Close poll">
-                  <X className="w-3.5 h-3.5 text-[#C0392B]" />
+                <button onClick={closePoll} className="p-1.5 rounded-lg hover:opacity-70 transition-opacity" style={{ background: 'rgba(255,32,64,0.15)' }} title="Close poll">
+                  <X className="w-3.5 h-3.5 text-[#FF2040]" />
                 </button>
               )}
             </div>
@@ -504,7 +504,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.4)' }} height={32} />
                 <YAxis tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.4)' }} />
                 <Tooltip
-                  contentStyle={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8 }}
+                  contentStyle={{ background: 'rgba(3,3,10,0.95)', border: '1px solid rgba(255,184,0,0.2)', borderRadius: 8 }}
                   labelStyle={{ color: '#fff', fontSize: 11 }}
                   formatter={(v) => [`${v} votes`, '']}
                 />
@@ -520,7 +520,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
 
           {/* Re-vote notice */}
           {activePoll.allow_re_vote && userVotes[activePoll.id] !== undefined && (
-            <div className="flex items-center gap-2 text-xs" style={{ color: '#C9A84C' }}>
+            <div className="flex items-center gap-2 text-xs" style={{ color: '#FFB800' }}>
               <RotateCcw className="w-3 h-3" />
               You can change your vote
             </div>

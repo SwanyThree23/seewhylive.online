@@ -6,12 +6,12 @@ import { DollarSign, Gift, X, Zap, Star, Crown, Heart, Flame, CheckCircle } from
 import { toast } from 'sonner';
 
 const SUPER_AMOUNTS = [
-  { value: 2,   label: '$2',   color: '#D4AF37', emoji: '💬' },
-  { value: 5,   label: '$5',   color: '#C9A84C', emoji: '💙' },
-  { value: 10,  label: '$10',  color: '#6DBF7E', emoji: '💚' },
-  { value: 20,  label: '$20',  color: '#D4AF37', emoji: '⭐' },
-  { value: 50,  label: '$50',  color: '#D4854A', emoji: '🔥' },
-  { value: 100, label: '$100', color: '#C0392B', emoji: '👑' },
+  { value: 2,   label: '$2',   color: '#FFB800', emoji: '💬' },
+  { value: 5,   label: '$5',   color: '#FFB800', emoji: '💙' },
+  { value: 10,  label: '$10',  color: '#00FF88', emoji: '💚' },
+  { value: 20,  label: '$20',  color: '#FFB800', emoji: '⭐' },
+  { value: 50,  label: '$50',  color: '#FF8C00', emoji: '🔥' },
+  { value: 100, label: '$100', color: '#FF2040', emoji: '👑' },
 ];
 
 const GIFTS = [
@@ -58,7 +58,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
   }, [sentHistory]);
 
   const effectiveAmount = customAmount
-    ? { value: Math.min(500, Math.max(1, Number(customAmount))), label: `$${customAmount}`, color: '#C9A84C', emoji: '💫' }
+    ? { value: Math.min(500, Math.max(1, Number(customAmount))), label: `$${customAmount}`, color: '#FFB800', emoji: '💫' }
     : selectedAmount;
 
   const buildMessage = () => {
@@ -171,8 +171,8 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
           onClick={() => setMode(mode === 'superchat' ? null : 'superchat')}
           className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ${
             mode === 'superchat'
-              ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/10'
-              : 'border-white/10 text-white/40 hover:border-[#D4AF37]/30 hover:text-[#D4AF37]/60'
+              ? 'border-[#FFB800] text-[#FFB800] bg-[#FFB800]/10'
+              : 'border-white/10 text-white/40 hover:border-[#FFB800]/30 hover:text-[#FFB800]/60'
           }`}
         >
           <Star className="w-3 h-3" /> Super Chat
@@ -181,8 +181,8 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
           onClick={() => setMode(mode === 'gift' ? null : 'gift')}
           className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ${
             mode === 'gift'
-              ? 'border-[#C0392B] text-[#C0392B] bg-[#C0392B]/10'
-              : 'border-white/10 text-white/40 hover:border-[#C0392B]/30 hover:text-[#C0392B]/60'
+              ? 'border-[#FF2040] text-[#FF2040] bg-[#FF2040]/10'
+              : 'border-white/10 text-white/40 hover:border-[#FF2040]/30 hover:text-[#FF2040]/60'
           }`}
         >
           <Gift className="w-3 h-3" /> Gift
@@ -205,7 +205,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
           >
             {sentHistory.map(h => (
               <span key={h.id} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
-                style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37' }}>
+                style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.25)', color: '#FFB800' }}>
                 <CheckCircle className="w-2.5 h-2.5" /> {h.emoji} ${h.amount} sent
               </span>
             ))}
@@ -220,7 +220,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-[#D4AF37]/10"
+            className="overflow-hidden border-t border-[#FFB800]/10"
           >
             <div className="p-2 space-y-2">
               {/* Amount grid */}
@@ -249,7 +249,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                 value={customAmount}
                 onChange={e => setCustomAmount(e.target.value)}
                 placeholder="Custom $"
-                className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder-white/20 focus:outline-none focus:border-[#D4AF37]/40"
+                className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder-white/20 focus:outline-none focus:border-[#FFB800]/40"
               />
 
               {/* Message style */}
@@ -260,7 +260,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                     onClick={() => { setMsgStyle(s.id); try { localStorage.setItem('superchat_msg_style', s.id); } catch {} }}
                     className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all border ${
                       msgStyle === s.id
-                        ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/10'
+                        ? 'border-[#FFB800] text-[#FFB800] bg-[#FFB800]/10'
                         : 'border-white/10 text-white/30'
                     }`}
                   >
@@ -289,8 +289,8 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                     value={message}
                     onChange={e => setMessage(e.target.value.slice(0, 100))}
                     placeholder="Add a message..."
-                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder-white/20 focus:outline-none focus:border-[#D4AF37]/40"
-                    style={msgStyle === 'hype' ? { background: 'rgba(192,57,43,0.15)', borderColor: 'rgba(192,57,43,0.4)' } : {}}
+                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder-white/20 focus:outline-none focus:border-[#FFB800]/40"
+                    style={msgStyle === 'hype' ? { background: 'rgba(255,32,64,0.15)', borderColor: 'rgba(255,32,64,0.4)' } : {}}
                   />
                   <button
                     onClick={handleSuperChat}
@@ -302,7 +302,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                 </div>
                 {message.length > 0 && (
                   <div className="flex justify-end">
-                    <span style={{ fontSize: 9, color: message.length > 90 ? '#C0392B' : 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    <span style={{ fontSize: 9, color: message.length > 90 ? '#FF2040' : 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                       {message.length}/100
                     </span>
                   </div>
@@ -325,7 +325,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               className="mx-4 p-5 rounded-xl text-center max-w-xs w-full"
-              style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.3)' }}
+              style={{ background: 'rgba(3,3,10,0.98)', border: '1px solid rgba(255,184,0,0.3)' }}
             >
               <div className="text-3xl mb-2">{effectiveAmount.emoji}</div>
               <p className="text-sm font-black text-white mb-1">Confirm Super Chat</p>
@@ -334,7 +334,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                 {recipientName ? ` to ${recipientName}` : ''}?
               </p>
               <p className="text-[10px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                Creator receives <span style={{ color: '#6DBF7E', fontWeight: 700 }}>${(Math.floor(effectiveAmount.value * 0.9 * 100) / 100).toFixed(2)}</span> (90%)
+                Creator receives <span style={{ color: '#00FF88', fontWeight: 700 }}>${(Math.floor(effectiveAmount.value * 0.9 * 100) / 100).toFixed(2)}</span> (90%)
               </p>
               <div className="flex gap-2">
                 <button
@@ -361,7 +361,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-[#C0392B]/10"
+            className="overflow-hidden border-t border-[#FF2040]/10"
           >
             <div className="p-2">
               <div className="grid grid-cols-6 gap-1">
@@ -370,7 +370,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                     key={gift.id}
                     onClick={() => handleGift(gift)}
                     disabled={sendMutation.isPending}
-                    className="flex flex-col items-center py-1.5 rounded border border-white/10 hover:border-[#C0392B]/40 hover:bg-[#C0392B]/10 transition-all"
+                    className="flex flex-col items-center py-1.5 rounded border border-white/10 hover:border-[#FF2040]/40 hover:bg-[#FF2040]/10 transition-all"
                     title={`${gift.name} — $${gift.price}`}
                   >
                     <span className="text-base">{gift.emoji}</span>

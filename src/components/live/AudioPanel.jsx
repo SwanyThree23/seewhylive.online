@@ -40,16 +40,16 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
   );
 
   return (
-    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+    <div className="bg-[rgba(3,3,10,0.9)] border border-[rgba(255,184,0,0.15)] rounded-xl overflow-hidden">
       {/* Header */}
       <button
         className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-all"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-2">
-          <Headphones className="w-4 h-4 text-[#d4af37]" />
+          <Headphones className="w-4 h-4 text-[#FFB800]" />
           <span className="text-xs font-semibold text-white">Audio Panel</span>
-          {bgMusic && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(128,0,32,0.5)', color: '#C9A84C', border: '1px solid rgba(128,0,32,0.3)' }}>♪ Music</span>}
+          {bgMusic && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,21,100,0.5)', color: '#FFB800', border: '1px solid rgba(255,21,100,0.3)' }}>♪ Music</span>}
         </div>
         <span className="text-white/30 text-[10px]">{expanded ? '▲' : '▼'}</span>
       </button>
@@ -71,10 +71,10 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                     onClick={onMicToggle}
                     className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${
                       micMuted
-                        ? 'bg-red-900/50 border-red-600 text-[#C0392B]'
-                        : 'border-green-600/50 text-[#6DBF7E]'
+                        ? 'bg-red-900/50 border-red-600 text-[#FF2040]'
+                        : 'border-green-600/50 text-[#00FF88]'
                     }`}
-                    style={!micMuted ? { background: 'rgba(109,191,126,0.15)' } : undefined}
+                    style={!micMuted ? { background: 'rgba(0,255,136,0.15)' } : undefined}
                   >
                     {micMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
                   </button>
@@ -89,7 +89,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                   onClick={() => { const n = !noiseCancel; setNoiseCancel(n); try { localStorage.setItem('audiopanel_noise', String(n)); } catch {}; }}
                   className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg border transition-all ${
                     noiseCancel
-                      ? 'border-[#d4af37]/40 text-[#d4af37] bg-[#d4af37]/10'
+                      ? 'border-[#FFB800]/40 text-[#FFB800] bg-[#FFB800]/10'
                       : 'border-white/10 text-white/30'
                   }`}
                 >
@@ -102,12 +102,12 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-white/50">Master Volume</span>
-                  <span className="text-[10px] text-[#d4af37] font-mono">{masterVolume[0]}%</span>
+                  <span className="text-[10px] text-[#FFB800] font-mono">{masterVolume[0]}%</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <VolumeX className="w-3 h-3 text-white/30 shrink-0" />
-                  <input type="range" value={masterVolume[0]} onChange={e => { const v = +e.target.value; setMasterVolume([v]); try { localStorage.setItem('audiopanel_mastervol', String(v)); } catch {} }} min={0} max={100} step={1} style={{ flex: 1, accentColor: '#D4AF37' }} />
-                  <Volume2 className="w-3 h-3 text-[#d4af37] shrink-0" />
+                  <input type="range" value={masterVolume[0]} onChange={e => { const v = +e.target.value; setMasterVolume([v]); try { localStorage.setItem('audiopanel_mastervol', String(v)); } catch {} }} min={0} max={100} step={1} style={{ flex: 1, accentColor: '#FFB800' }} />
+                  <Volume2 className="w-3 h-3 text-[#FFB800] shrink-0" />
                 </div>
               </div>
 
@@ -121,7 +121,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                       onClick={() => { setPreset(p.id); try { localStorage.setItem('audiopanel_preset', p.id); } catch {} }}
                       className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg border transition-all ${
                         preset === p.id
-                          ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10'
+                          ? 'border-[#FFB800] text-[#FFB800] bg-[#FFB800]/10'
                           : 'border-white/10 text-white/40 hover:border-white/20'
                       }`}
                     >
@@ -138,7 +138,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                   {activeEq.map((v, i) => {
                     const pct = Math.max(0, (v + 4) / 8);
                     return (
-                      <div key={i} className="flex-1 rounded-sm transition-all duration-200" style={{ height: `${pct * 100}%`, minHeight: 2, background: v > 2 ? '#C0392B' : v > 0 ? '#C9A84C' : '#6DBF7E' }} />
+                      <div key={i} className="flex-1 rounded-sm transition-all duration-200" style={{ height: `${pct * 100}%`, minHeight: 2, background: v > 2 ? '#FF2040' : v > 0 ? '#FFB800' : '#00FF88' }} />
                     );
                   })}
                 </div>
@@ -147,15 +147,15 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
               {/* Background music genre */}
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <Music className="w-3.5 h-3.5 text-[#D4854A]" />
+                  <Music className="w-3.5 h-3.5 text-[#FF8C00]" />
                   <span className="text-[10px] text-white/60 uppercase tracking-wider">Background Music</span>
-                  {bgMusic && <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37' }}>ON</span>}
+                  {bgMusic && <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,184,0,0.15)', color: '#FFB800' }}>ON</span>}
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {BG_MUSIC_GENRES.map(g => (
                     <button key={g.id} onClick={() => { setBgMusicGenre(g.id); try { localStorage.setItem('audiopanel_bgmusic', g.id); } catch {} }}
                       className={`text-[10px] px-2 py-0.5 rounded border transition-all ${
-                        bgMusicGenre === g.id ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/10 text-white/40 hover:border-white/20'
+                        bgMusicGenre === g.id ? 'border-[#FFB800] text-[#FFB800] bg-[#FFB800]/10' : 'border-white/10 text-white/40 hover:border-white/20'
                       }`}>
                       {g.label}
                     </button>
@@ -169,11 +169,11 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                   <p className="text-[10px] text-white/50 uppercase tracking-wider">Speaker Volumes</p>
                   {audioOnlyParticipants.map(p => (
                     <div key={p.id} className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#FF1564] to-[#FFB800] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
                         {p.user_name?.charAt(0)?.toUpperCase()}
                       </div>
                       <span className="text-[10px] text-white/60 w-16 truncate">{p.user_name}</span>
-                      <input type="range" value={volumes[p.id] ?? 80} onChange={e => setVolumes(prev => ({ ...prev, [p.id]: +e.target.value }))} min={0} max={100} step={5} style={{ flex: 1, accentColor: '#D4AF37' }} />
+                      <input type="range" value={volumes[p.id] ?? 80} onChange={e => setVolumes(prev => ({ ...prev, [p.id]: +e.target.value }))} min={0} max={100} step={5} style={{ flex: 1, accentColor: '#FFB800' }} />
                       <span className="text-[11px] text-white/30 w-7 text-right">{volumes[p.id] ?? 80}%</span>
                     </div>
                   ))}
@@ -186,10 +186,10 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
               </div>
 
               {/* Audio only mode info */}
-              <div className="bg-[#d4af37]/5 border border-[#d4af37]/15 rounded-lg p-2">
+              <div className="bg-[#FFB800]/5 border border-[#FFB800]/15 rounded-lg p-2">
                 <div className="flex items-center gap-1.5">
-                  <Radio className="w-3 h-3 text-[#d4af37]" />
-                  <p className="text-[10px] text-[#d4af37] font-semibold">Audio-Only Mode Active</p>
+                  <Radio className="w-3 h-3 text-[#FFB800]" />
+                  <p className="text-[10px] text-[#FFB800] font-semibold">Audio-Only Mode Active</p>
                 </div>
                 <p className="text-[11px] text-white/30 mt-0.5">Saves bandwidth — video off, audio on</p>
               </div>

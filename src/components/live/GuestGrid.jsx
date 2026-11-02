@@ -7,15 +7,15 @@ import SpeakingIndicator from './SpeakingIndicator';
 import { useVAD } from '../../hooks/useVAD';
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const ROLE_GLOW = {
-  host:     '#D4AF37',
-  'co-host':'#D4AF37',
-  speaker:  '#6DBF7E',
-  guest:    '#D4854A',
+  host:     '#FFB800',
+  'co-host':'#FFB800',
+  speaker:  '#00FF88',
+  guest:    '#FF8C00',
   viewer:   'rgba(255,255,255,0.2)',
 };
 
@@ -86,8 +86,8 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, isHo
       <div
         className={`w-full h-full rounded-lg border-2 overflow-hidden bg-gradient-to-br from-[#1a0a20] to-[#0d0618] flex flex-col relative transition-all duration-200 ${
           speaking && !compact
-            ? 'border-[#4A8A7A] shadow-[0_0_16px_rgba(74,138,122,0.4)]'
-            : 'border-white/10 group-hover:border-[#d4af37]/40'
+            ? 'border-[#00F5FF] shadow-[0_0_16px_rgba(0,245,255,0.4)]'
+            : 'border-white/10 group-hover:border-[#FFB800]/40'
         }`}
       >
         {/* Video feed or avatar */}
@@ -103,7 +103,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, isHo
           )}
           {/* Avatar shown when no video */}
           {!hasVideo && (
-          <div style={{ width: isSpotlight ? 96 : compact ? 40 : 56, height: isSpotlight ? 96 : compact ? 40 : 56, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(to bottom right, #800020, #d4af37)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isSpotlight ? 32 : compact ? 14 : 20, fontWeight: 700, color: '#fff' }}>
+          <div style={{ width: isSpotlight ? 96 : compact ? 40 : 56, height: isSpotlight ? 96 : compact ? 40 : 56, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(to bottom right, #FF1564, #FFB800)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isSpotlight ? 32 : compact ? 14 : 20, fontWeight: 700, color: '#fff' }}>
             {participant.user_name?.charAt(0)?.toUpperCase()}
           </div>
           )}
@@ -114,7 +114,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, isHo
                   key={i}
                   animate={{ height: [h, h * 1.8, h] }}
                   transition={{ duration: 0.3, repeat: Infinity, delay: i * 0.05 }}
-                  className="w-0.5 rounded-full bg-[#4A8A7A]"
+                  className="w-0.5 rounded-full bg-[#00F5FF]"
                   style={{ height: h }}
                 />
               ))}
@@ -126,7 +126,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, isHo
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-2">
           <div className="flex items-center justify-between gap-1">
             <div className="flex items-center gap-1 min-w-0">
-              {isHostUser && <Crown className="w-3 h-3 text-[#d4af37] shrink-0" />}
+              {isHostUser && <Crown className="w-3 h-3 text-[#FFB800] shrink-0" />}
               <p className={`text-white font-semibold truncate ${compact ? 'text-[11px]' : 'text-xs'}`}>
                 {participant.user_name}
               </p>
@@ -134,10 +134,10 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, isHo
             {!compact && (
               <div className="flex items-center gap-1 shrink-0">
                 {participant.is_audio_enabled !== false
-                  ? <Mic className="w-2.5 h-2.5 text-[#6DBF7E]" />
-                  : <MicOff className="w-2.5 h-2.5 text-[#C0392B]" />}
+                  ? <Mic className="w-2.5 h-2.5 text-[#00FF88]" />
+                  : <MicOff className="w-2.5 h-2.5 text-[#FF2040]" />}
                 {Array.from({ length: connDots }).map((_, i) => (
-                  <div key={i} className="w-1 h-1 rounded-full bg-[#6DBF7E]" />
+                  <div key={i} className="w-1 h-1 rounded-full bg-[#00FF88]" />
                 ))}
               </div>
             )}
@@ -150,7 +150,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, isHo
             <button
               onClick={() => onSpotlight?.(participant.id)}
               aria-label={isSpotlight ? 'Remove from spotlight' : 'Spotlight guest'}
-              className="rounded bg-black/60 hover:bg-[#d4af37]/20 flex items-center justify-center"
+              className="rounded bg-black/60 hover:bg-[#FFB800]/20 flex items-center justify-center"
               style={{ minWidth: 44, minHeight: 44 }}
             >
               {isSpotlight ? <Minimize2 className="w-3 h-3 text-white" /> : <Maximize2 className="w-3 h-3 text-white" />}
@@ -168,7 +168,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, isHo
         {/* Live badge */}
         {participant?.is_streaming && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 flex items-center gap-1 px-1.5 py-px rounded-full"
-            style={{ background: '#C0392B', border: '1px solid rgba(212,175,55,0.5)' }}>
+            style={{ background: '#FF2040', border: '1px solid rgba(255,184,0,0.5)' }}>
             <div className="w-1 h-1 rounded-full bg-white animate-pulse" />
             <span className="text-[7px] font-black text-white uppercase" style={T}>Live</span>
           </div>
@@ -212,7 +212,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, isHo
               {participant?.role}
             </span>
             {participant?.is_audio_enabled !== false
-              ? <Mic className="w-2 h-2 text-[#6DBF7E]" />
+              ? <Mic className="w-2 h-2 text-[#00FF88]" />
               : <MicOff className="w-2 h-2 text-red-400" />}
             {participant?.is_video_enabled
               ? <Video className="w-2 h-2" style={{ color: GOLD }} />
@@ -249,16 +249,16 @@ function EmptySlot({ onInvite, isHost }) {
       <div style={{
         clipPath: OCT, width: 80, height: 80,
         background: 'rgba(255,255,255,0.02)',
-        border: '2px dashed rgba(212,175,55,0.15)',
+        border: '2px dashed rgba(255,184,0,0.15)',
       }}
-        className="flex items-center justify-center group-hover:border-[#d4af37]/40 transition-all">
+        className="flex items-center justify-center group-hover:border-[#FFB800]/40 transition-all">
         {isHost && (
-          <Link className="w-4 h-4" style={{ color: 'rgba(212,175,55,0.3)' }} />
+          <Link className="w-4 h-4" style={{ color: 'rgba(255,184,0,0.3)' }} />
         )}
       </div>
       {isHost && (
         <p className="text-[8px] font-black uppercase opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ color: 'rgba(212,175,55,0.5)', ...T }}>
+          style={{ color: 'rgba(255,184,0,0.5)', ...T }}>
           Invite
         </p>
       )}
@@ -321,7 +321,7 @@ export default React.memo(function GuestGrid({
 
   return (
     <div className="h-full flex flex-col rounded-xl overflow-hidden"
-      style={{ background: 'rgba(8,11,24,0.7)', border: '1px solid rgba(212,175,55,0.12)' }}>
+      style={{ background: 'rgba(3,3,10,0.7)', border: '1px solid rgba(255,184,0,0.12)' }}>
 
       {/* Per-guest destinations panel */}
       {isHost && showDestsFor && (
@@ -334,9 +334,9 @@ export default React.memo(function GuestGrid({
 
       {/* Top bar */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5 shrink-0"
-        style={{ background: 'rgba(8,11,24,0.9)' }}>
+        style={{ background: 'rgba(3,3,10,0.9)' }}>
         <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full flex items-center gap-1"
-          style={{ ...T, background: 'rgba(128,0,32,0.6)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)' }}>
+          style={{ ...T, background: 'rgba(255,21,100,0.6)', color: GOLD, border: '1px solid rgba(255,184,0,0.3)' }}>
           <Radio className="w-2.5 h-2.5" />
           {speakers.length}/{maxGuests} on stage
         </span>
@@ -355,7 +355,7 @@ export default React.memo(function GuestGrid({
                 minWidth: 44, minHeight: 44,
                 border: `1px solid ${layoutSlots === n ? GOLD : 'rgba(255,255,255,0.1)'}`,
                 color: layoutSlots === n ? GOLD : 'rgba(255,255,255,0.35)',
-                background: layoutSlots === n ? 'rgba(212,175,55,0.1)' : 'transparent',
+                background: layoutSlots === n ? 'rgba(255,184,0,0.1)' : 'transparent',
                 cursor: 'pointer',
               }}>
               {n}
