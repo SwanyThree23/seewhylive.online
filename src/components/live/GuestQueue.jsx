@@ -15,10 +15,10 @@ import {
   ChevronDown,
 } from 'lucide-react';
 
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK = '#C0392B';
-const TEAL = '#C9A84C';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK = '#FF2040';
+const TEAL = '#FFB800';
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -126,7 +126,7 @@ export default function GuestQueue({ roomId, isHost }) {
         ...T,
         maxWidth: 300,
         width: '100%',
-        background: 'rgba(8,11,24,0.92)',
+        background: 'rgba(3,3,10,0.92)',
         border: '1px solid rgba(255,255,255,0.07)',
         borderRadius: 14,
         padding: '12px 10px',
@@ -211,7 +211,7 @@ export default function GuestQueue({ roomId, isHost }) {
                   fontWeight: 700,
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
-                  color: `rgba(212,175,55,0.6)`,
+                  color: `rgba(255,184,0,0.6)`,
                   paddingLeft: 2,
                 }}
               >
@@ -313,10 +313,10 @@ export default function GuestQueue({ roomId, isHost }) {
                           alignItems: 'center',
                           justifyContent: 'center',
                           gap: 4,
-                          background: 'rgba(109,191,126,0.12)',
-                          border: '1px solid rgba(109,191,126,0.3)',
+                          background: 'rgba(0,255,136,0.12)',
+                          border: '1px solid rgba(0,255,136,0.3)',
                           borderRadius: 6,
-                          color: '#6DBF7E',
+                          color: '#00FF88',
                           fontSize: 11,
                           fontWeight: 700,
                           padding: '5px 0',
@@ -344,7 +344,7 @@ export default function GuestQueue({ roomId, isHost }) {
                           background: 'rgba(255,68,68,0.08)',
                           border: '1px solid rgba(255,68,68,0.2)',
                           borderRadius: 6,
-                          color: '#D4854A',
+                          color: '#FF8C00',
                           fontSize: 11,
                           fontWeight: 700,
                           padding: '5px 0',
@@ -375,7 +375,7 @@ export default function GuestQueue({ roomId, isHost }) {
                   fontWeight: 700,
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
-                  color: `rgba(201,168,76,0.8)`,
+                  color: `rgba(255,184,0,0.8)`,
                   paddingLeft: 2,
                 }}
               >
@@ -391,7 +391,7 @@ export default function GuestQueue({ roomId, isHost }) {
                     transition={{ duration: 0.2 }}
                     style={{
                       background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(201,168,76,0.08)',
+                      border: '1px solid rgba(255,184,0,0.08)',
                       borderRadius: 10,
                       padding: '8px 9px',
                       display: 'flex',
@@ -407,7 +407,7 @@ export default function GuestQueue({ roomId, isHost }) {
                         borderRadius: '50%',
                         background: 'linear-gradient(135deg, #006666, #003333)',
                         border: `1.5px solid ${TEAL}`,
-                        boxShadow: `0 0 8px rgba(201,168,76,0.35)`,
+                        boxShadow: `0 0 8px rgba(255,184,0,0.35)`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -467,7 +467,7 @@ export default function GuestQueue({ roomId, isHost }) {
                         borderRadius: 5,
                         padding: '4px',
                         cursor: 'pointer',
-                        color: '#D4854A',
+                        color: '#FF8C00',
                         flexShrink: 0,
                         opacity: removeMutation.isPending ? 0.5 : 1,
                       }}

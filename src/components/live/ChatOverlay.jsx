@@ -11,7 +11,7 @@ function highlightMentions(text) {
   const parts = text.split(/(@\w+)/g);
   return parts.map((part, i) =>
     part.startsWith('@')
-      ? <span key={i} className="font-bold" style={{ color: '#D4AF37' }}>{part}</span>
+      ? <span key={i} className="font-bold" style={{ color: '#FFB800' }}>{part}</span>
       : part
   );
 }
@@ -28,7 +28,7 @@ function MessageTypeBadge({ msg }) {
   if (msg.is_super_chat || msg.transaction_type === 'super_chat') {
     return (
       <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5"
-        style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>
+        style={{ background: 'rgba(255,184,0,0.2)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.3)' }}>
         <Star className="w-2.5 h-2.5" /> SUPER
       </span>
     );
@@ -36,7 +36,7 @@ function MessageTypeBadge({ msg }) {
   if (msg.is_moderator) {
     return (
       <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
-        style={{ background: 'rgba(212,175,55,0.3)', color: '#D4AF37' }}>
+        style={{ background: 'rgba(255,184,0,0.3)', color: '#FFB800' }}>
         MOD
       </span>
     );
@@ -58,21 +58,21 @@ function ChatMessage({ msg, i }) {
       className="text-sm rounded-lg px-2 py-1.5"
       style={{
         background: isSuperChat
-          ? 'linear-gradient(90deg, rgba(212,175,55,0.12), rgba(212,175,55,0.06))'
+          ? 'linear-gradient(90deg, rgba(255,184,0,0.12), rgba(255,184,0,0.06))'
           : isSystem
           ? 'rgba(255,255,255,0.03)'
           : 'transparent',
-        border: isSuperChat ? '1px solid rgba(212,175,55,0.3)' : '1px solid transparent',
+        border: isSuperChat ? '1px solid rgba(255,184,0,0.3)' : '1px solid transparent',
       }}
     >
       <div className="flex gap-2 items-start">
         {/* Avatar / icon */}
         <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5"
-          style={{ background: isSuperChat ? 'rgba(212,175,55,0.2)' : msg.is_moderator ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.08)' }}>
+          style={{ background: isSuperChat ? 'rgba(255,184,0,0.2)' : msg.is_moderator ? 'rgba(255,184,0,0.15)' : 'rgba(255,255,255,0.08)' }}>
           {isSuperChat
-            ? <Star className="w-3 h-3" style={{ color: '#D4AF37' }} />
+            ? <Star className="w-3 h-3" style={{ color: '#FFB800' }} />
             : msg.is_moderator
-            ? <Shield className="w-3 h-3" style={{ color: '#D4AF37' }} />
+            ? <Shield className="w-3 h-3" style={{ color: '#FFB800' }} />
             : <User className="w-3 h-3 text-white/40" />
           }
         </div>
@@ -81,12 +81,12 @@ function ChatMessage({ msg, i }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1 flex-wrap">
             <span className="text-xs font-semibold truncate"
-              style={{ color: isSuperChat ? '#D4AF37' : 'white' }}>
+              style={{ color: isSuperChat ? '#FFB800' : 'white' }}>
               {msg.user_name}
             </span>
             <MessageTypeBadge msg={msg} />
             {isSuperChat && msg.amount > 0 && (
-              <span className="text-[10px] font-black font-mono" style={{ color: '#6DBF7E' }}>
+              <span className="text-[10px] font-black font-mono" style={{ color: '#00FF88' }}>
                 ${msg.amount?.toFixed(2)}
               </span>
             )}
@@ -178,14 +178,14 @@ export default function ChatOverlay({ roomId, isVisible = true, onClose }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="fixed bottom-20 right-4 w-80 h-96 rounded-2xl flex flex-col overflow-hidden z-40"
-      style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}
+      style={{ background: 'rgba(3,3,10,0.95)', border: '1px solid rgba(255,184,0,0.2)' }}
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-bold text-white">Live Chat</h3>
           {messages.length > 0 && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37' }}>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,184,0,0.15)', color: '#FFB800' }}>
               {messages.length}
             </span>
           )}
@@ -250,12 +250,12 @@ export default function ChatOverlay({ roomId, isVisible = true, onClose }) {
               placeholder="Type a message..."
               maxLength={MAX_CHARS}
               className="w-full bg-white/5 text-xs text-white placeholder:text-white/30 rounded-lg px-3 py-2 border focus:outline-none transition-colors pr-8"
-              style={{ borderColor: charWarning ? 'rgba(192,57,43,0.6)' : 'rgba(255,255,255,0.1)' }}
+              style={{ borderColor: charWarning ? 'rgba(255,32,64,0.6)' : 'rgba(255,255,255,0.1)' }}
             />
             {/* Char counter — only show when near limit */}
             {inputValue.length > MAX_CHARS * 0.75 && (
               <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-mono"
-                style={{ color: charsLeft < 20 ? '#C0392B' : 'rgba(255,255,255,0.3)' }}>
+                style={{ color: charsLeft < 20 ? '#FF2040' : 'rgba(255,255,255,0.3)' }}>
                 {charsLeft}
               </span>
             )}
@@ -263,15 +263,15 @@ export default function ChatOverlay({ roomId, isVisible = true, onClose }) {
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
             onClick={() => setShowEmojis(!showEmojis)}
             className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-            style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)' }}>
-            <SmilePlus className="w-4 h-4 text-[#d4af37]" />
+            style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.3)' }}>
+            <SmilePlus className="w-4 h-4 text-[#FFB800]" />
           </motion.button>
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
             onClick={handleSendMessage}
             disabled={!inputValue.trim()}
             className="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-40"
-            style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)' }}>
-            <Send className="w-4 h-4 text-[#d4af37]" />
+            style={{ background: 'rgba(255,184,0,0.2)', border: '1px solid rgba(255,184,0,0.4)' }}>
+            <Send className="w-4 h-4 text-[#FFB800]" />
           </motion.button>
         </div>
       </div>

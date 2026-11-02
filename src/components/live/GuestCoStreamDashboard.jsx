@@ -18,16 +18,16 @@ import {
 } from 'lucide-react';
 import GuestRTMPPanel from '../streaming/GuestRTMPPanel';
 
-const G       = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
+const G       = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK    = '#FF2040';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const QUALITY = {
-  excellent: { label: 'Excellent', color: '#6DBF7E', bg: 'rgba(34,197,94,0.1)' },
-  good:      { label: 'Good',      color: G,         bg: `rgba(212,175,55,0.1)` },
-  warning:   { label: 'Weak',      color: '#C9A84C', bg: 'rgba(245,158,11,0.1)' },
-  critical:  { label: 'Critical',  color: '#C0392B', bg: 'rgba(239,68,68,0.1)'  },
+  excellent: { label: 'Excellent', color: '#00FF88', bg: 'rgba(34,197,94,0.1)' },
+  good:      { label: 'Good',      color: G,         bg: `rgba(255,184,0,0.1)` },
+  warning:   { label: 'Weak',      color: '#FFB800', bg: 'rgba(245,158,11,0.1)' },
+  critical:  { label: 'Critical',  color: '#FF2040', bg: 'rgba(239,68,68,0.1)'  },
   offline:   { label: 'Offline',   color: '#555',    bg: 'rgba(80,80,80,0.1)'   },
 };
 
@@ -50,7 +50,7 @@ function useStageTimer(joinedAt) {
     return () => clearInterval(id);
   }, [joinedAt]);
   const m = Math.floor(secs / 60), s = secs % 60;
-  const color = secs > 600 ? '#C0392B' : secs > 300 ? '#C9A84C' : 'rgba(255,255,255,0.3)';
+  const color = secs > 600 ? '#FF2040' : secs > 300 ? '#FFB800' : 'rgba(255,255,255,0.3)';
   return { label: `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`, color };
 }
 
@@ -127,10 +127,10 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <div style={{
             width: 28, height: 28, borderRadius: '50%',
-            background: `linear-gradient(135deg, ${isHostP ? '#4a3000' : isCoHost ? '#003040' : CRIMSON}, #080B18)`,
-            border: `1.5px solid ${isHostP ? G : isCoHost ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`,
+            background: `linear-gradient(135deg, ${isHostP ? '#4a3000' : isCoHost ? '#003040' : CRIMSON}, #03030A)`,
+            border: `1.5px solid ${isHostP ? G : isCoHost ? '#FFB800' : 'rgba(255,255,255,0.1)'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 10, fontWeight: 900, color: isHostP ? G : isCoHost ? '#D4AF37' : '#fff', ...T,
+            fontSize: 10, fontWeight: 900, color: isHostP ? G : isCoHost ? '#FFB800' : '#fff', ...T,
           }}>
             {participant.user_avatar
               ? <img src={participant.user_avatar} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
@@ -139,14 +139,14 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
           <div style={{
             position: 'absolute', bottom: -1, right: -1,
             width: 8, height: 8, borderRadius: '50%',
-            background: q.color, border: '1.5px solid #080B18',
+            background: q.color, border: '1.5px solid #03030A',
           }} />
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
             {isHostP && <Crown style={{ width: 9, height: 9, color: G }} />}
-            {isCoHost && <Shield style={{ width: 9, height: 9, color: '#D4AF37' }} />}
+            {isCoHost && <Shield style={{ width: 9, height: 9, color: '#FFB800' }} />}
             <span style={{ ...T, color: '#fff', fontSize: 11, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {participant.user_name || 'Guest'}
             </span>
@@ -204,9 +204,9 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-          <CBtn icon={muted ? MicOff : Mic} color={muted ? '#C0392B' : 'rgba(255,255,255,0.4)'}
+          <CBtn icon={muted ? MicOff : Mic} color={muted ? '#FF2040' : 'rgba(255,255,255,0.4)'}
             active={muted} onClick={() => muteToggle.mutate()} />
-          <CBtn icon={vidOff ? VideoOff : Video} color={vidOff ? '#C0392B' : 'rgba(255,255,255,0.4)'}
+          <CBtn icon={vidOff ? VideoOff : Video} color={vidOff ? '#FF2040' : 'rgba(255,255,255,0.4)'}
             active={vidOff} onClick={() => setVidOff(v => !v)} />
           <CBtn icon={Pin} color={isSpotlit ? G : 'rgba(255,255,255,0.35)'} active={isSpotlit}
             onClick={() => onSpotlight?.(isSpotlit ? null : participant.id)} />
@@ -223,11 +223,11 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
               onClick={() => setShowTip(v => !v)} title="Tip Guest" />
           )}
           {!isHostP && isHost && (
-            <CBtn icon={isCoHost ? ShieldOff : Shield} color={isCoHost ? '#D4AF37' : 'rgba(255,255,255,0.35)'}
+            <CBtn icon={isCoHost ? ShieldOff : Shield} color={isCoHost ? '#FFB800' : 'rgba(255,255,255,0.35)'}
               active={isCoHost} onClick={() => promote.mutate()} />
           )}
           {!isHostP && isHost && (
-            <CBtn icon={X} color="#C0392B" onClick={() => kick.mutate()} />
+            <CBtn icon={X} color="#FF2040" onClick={() => kick.mutate()} />
           )}
           {isHost && !isHostP && (
             <CBtn icon={Tv} color={showRTMP ? G : 'rgba(255,255,255,0.35)'} active={showRTMP}
@@ -574,7 +574,7 @@ export default function GuestCoStreamDashboard({
               ...T, display: 'flex', alignItems: 'center', gap: 4,
               background: locked ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.05)',
               border: `1px solid ${locked ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`,
-              color: locked ? '#C0392B' : 'rgba(255,255,255,0.5)',
+              color: locked ? '#FF2040' : 'rgba(255,255,255,0.5)',
               borderRadius: 6, padding: '5px 10px', fontSize: 10, fontWeight: 900, cursor: 'pointer',
             }}>
               {locked ? <Lock style={{ width: 9, height: 9 }} /> : <Unlock style={{ width: 9, height: 9 }} />}
@@ -585,7 +585,7 @@ export default function GuestCoStreamDashboard({
 
         <div style={{ display: 'flex', gap: 6 }}>
           <StatCard icon={Radio} label="Live" value={liveCount} color="#dc2626" />
-          <StatCard icon={Shield} label="Co-hosts" value={coHostCount} color="#D4AF37" />
+          <StatCard icon={Shield} label="Co-hosts" value={coHostCount} color="#FFB800" />
           <StatCard icon={Users} label="Panel" value={guests.length} />
           <StatCard icon={Eye} label="Reach" value={totalReach.toLocaleString()} color={PINK} />
           {raisedCount > 0 && <StatCard icon={Hand} label="Raised" value={raisedCount} color={PINK} />}
@@ -594,10 +594,10 @@ export default function GuestCoStreamDashboard({
 
       {isHost && guests.length > 0 && (
         <div style={{ display: 'flex', gap: 5, padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
-          <BulkBtn icon={MicOff} label="Mute All" color="#C0392B" onClick={muteAll} />
-          <BulkBtn icon={Mic} label="Unmute All" color="#6DBF7E"
+          <BulkBtn icon={MicOff} label="Mute All" color="#FF2040" onClick={muteAll} />
+          <BulkBtn icon={Mic} label="Unmute All" color="#00FF88"
             onClick={() => { guests.forEach(p => base44.entities.Participant.update(p.id, { is_muted: false }).catch(() => {})); toast.success('All unmuted'); }} />
-          <BulkBtn icon={X} label="Remove Guests" color="#C0392B"
+          <BulkBtn icon={X} label="Remove Guests" color="#FF2040"
             onClick={removeAllGuests} confirm="Remove all guests?" />
           <BulkBtn icon={BarChart2} label={showHealth ? 'Hide Stats' : 'Show Stats'} color={G}
             onClick={() => setShowHealth(v => !v)} />

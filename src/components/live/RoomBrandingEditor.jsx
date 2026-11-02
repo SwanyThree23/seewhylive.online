@@ -6,8 +6,8 @@ import { MobileSelect } from '@/components/ui/MobileSelect';
 export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost }) {
   const [open, setOpen] = useState(false);
   const [branding, setBranding] = useState({
-    overlayColor: roomData?.overlay_color ?? '#800020',
-    accentColor: roomData?.accent_color ?? '#d4af37',
+    overlayColor: roomData?.overlay_color ?? '#FF1564',
+    accentColor: roomData?.accent_color ?? '#FFB800',
     fontFamily: roomData?.font_family ?? 'Barlow Condensed',
     customTitle: roomData?.custom_title ?? '',
     customSubtitle: roomData?.custom_subtitle ?? '',
@@ -34,7 +34,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
     <>
       <button
         onClick={() => setOpen(true)}
-        style={{ fontSize:12, padding:'4px 8px', borderRadius:6, border:'1px solid rgba(212,175,55,0.3)', background:'transparent', color:'#d4af37', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4 }}
+        style={{ fontSize:12, padding:'4px 8px', borderRadius:6, border:'1px solid rgba(255,184,0,0.3)', background:'transparent', color:'#FFB800', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4 }}
       >
         <Palette className="w-3 h-3" />
         Customize Room
@@ -43,18 +43,18 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
       {open && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.7)', padding:16 }}
           onClick={e => e.target === e.currentTarget && setOpen(false)}>
-          <div style={{ background:'#080B18', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:640, maxHeight:'80vh', overflowY:'auto' }}
+          <div style={{ background:'#03030A', border:'1px solid rgba(255,184,0,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:640, maxHeight:'80vh', overflowY:'auto' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
-              <Palette className="w-5 h-5" style={{ color:'#d4af37' }} />
+              <Palette className="w-5 h-5" style={{ color:'#FFB800' }} />
               <span style={{ color:'#fff', fontWeight:700, fontSize:16 }}>Brand Your Room</span>
             </div>
 
           <div className="space-y-4">
             {/* Color Customization */}
-            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4">
+            <div className="bg-[#0F1428]/50 border border-[#FFB800]/15 rounded-lg p-4">
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                <Palette className="w-4 h-4 text-[#d4af37]" />
+                <Palette className="w-4 h-4 text-[#FFB800]" />
                 Color Scheme
               </h3>
 
@@ -63,7 +63,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                   <label className="text-[10px] text-white/60 mb-1 block">Overlay Base Color</label>
                   <div className="flex gap-2 items-center">
                     <div
-                      className="w-10 h-10 rounded border border-[#d4af37]/30 cursor-pointer"
+                      className="w-10 h-10 rounded border border-[#FFB800]/30 cursor-pointer"
                       style={{ background: branding.overlayColor }}
                       onClick={() => document.getElementById('overlay-color').click()}
                     />
@@ -114,9 +114,9 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
             </div>
 
             {/* Typography */}
-            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4">
+            <div className="bg-[#0F1428]/50 border border-[#FFB800]/15 rounded-lg p-4">
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                <Type className="w-4 h-4 text-[#d4af37]" />
+                <Type className="w-4 h-4 text-[#FFB800]" />
                 Typography & Text
               </h3>
 
@@ -142,7 +142,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                     value={branding.customTitle}
                     onChange={(e) => handleChange('customTitle', e.target.value)}
                     placeholder="Stream title override"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
 
@@ -152,16 +152,16 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                     value={branding.customSubtitle}
                     onChange={(e) => handleChange('customSubtitle', e.target.value)}
                     placeholder="Tagline or description"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
               </div>
             </div>
 
             {/* Visual Elements */}
-            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4">
+            <div className="bg-[#0F1428]/50 border border-[#FFB800]/15 rounded-lg p-4">
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-[#d4af37]" />
+                <ImageIcon className="w-4 h-4 text-[#FFB800]" />
                 Visual Elements
               </h3>
 
@@ -172,7 +172,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                     value={branding.backgroundUrl}
                     onChange={(e) => handleChange('backgroundUrl', e.target.value)}
                     placeholder="https://..."
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
 
@@ -216,7 +216,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
 
             {/* Preview */}
             <div
-              className="rounded-lg p-4 border border-[#d4af37]/30 min-h-24"
+              className="rounded-lg p-4 border border-[#FFB800]/30 min-h-24"
               style={{
                 background: `rgba(${parseInt(branding.overlayColor.slice(1, 3), 16)}, ${parseInt(branding.overlayColor.slice(3, 5), 16)}, ${parseInt(branding.overlayColor.slice(5, 7), 16)}, ${branding.overlayOpacity})`,
               }}
@@ -238,7 +238,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
             <button onClick={() => setOpen(false)} style={{ flex:1, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(255,255,255,0.2)', background:'transparent', color:'#fff', cursor:'pointer', fontSize:13 }}>
               Cancel
             </button>
-            <button onClick={handleSave} style={{ flex:1, padding:'10px 14px', borderRadius:8, border:'none', background:'#d4af37', color:'#000', fontWeight:700, cursor:'pointer', fontSize:13 }}>
+            <button onClick={handleSave} style={{ flex:1, padding:'10px 14px', borderRadius:8, border:'none', background:'#FFB800', color:'#000', fontWeight:700, cursor:'pointer', fontSize:13 }}>
               Save Branding
             </button>
           </div>

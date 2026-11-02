@@ -70,17 +70,17 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
 
   if (editing) {
     return (
-      <div style={{ borderRadius: 12, background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', padding: 12 }}>
+      <div style={{ borderRadius: 12, background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.2)', padding: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          <Target style={{ width: 14, height: 14, color: '#D4AF37' }} />
-          <span style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#D4AF37', ...F }}>Set Stream Goal</span>
+          <Target style={{ width: 14, height: 14, color: '#FFB800' }} />
+          <span style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#FFB800', ...F }}>Set Stream Goal</span>
         </div>
 
         {/* Presets */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
           {PRESETS.map(p => (
             <button key={p.label} onClick={() => setPreset(p)}
-              style={{ padding: '4px 10px', borderRadius: 99, fontSize: 10, fontWeight: 700, cursor: 'pointer', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', ...F }}>
+              style={{ padding: '4px 10px', borderRadius: 99, fontSize: 10, fontWeight: 700, cursor: 'pointer', background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.25)', color: '#FFB800', ...F }}>
               {p.label}
             </button>
           ))}
@@ -116,7 +116,7 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
           </div>
           <div style={{ display: 'flex', gap: 5 }}>
             <button onClick={setCustom}
-              style={{ flex: 1, height: 28, fontSize: 11, fontWeight: 900, background: '#D4AF37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', ...F }}>
+              style={{ flex: 1, height: 28, fontSize: 11, fontWeight: 900, background: '#FFB800', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', ...F }}>
               Set Goal
             </button>
             <button onClick={() => setEditing(false)}
@@ -132,21 +132,21 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
   if (!goal) {
     return (
       <button onClick={() => setEditing(true)}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 12, background: 'rgba(212,175,55,0.04)', border: '1px dashed rgba(212,175,55,0.2)', cursor: 'pointer', color: 'rgba(255,255,255,0.3)' }}>
-        <Target style={{ width: 14, height: 14, color: '#D4AF37' }} />
+        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 12, background: 'rgba(255,184,0,0.04)', border: '1px dashed rgba(255,184,0,0.2)', cursor: 'pointer', color: 'rgba(255,255,255,0.3)' }}>
+        <Target style={{ width: 14, height: 14, color: '#FFB800' }} />
         <span style={{ fontSize: 11, fontWeight: 700, ...F }}>Set a stream goal...</span>
       </button>
     );
   }
 
   return (
-    <div style={{ borderRadius: 12, background: done ? 'rgba(109,191,126,0.07)' : 'rgba(212,175,55,0.06)', border: `1px solid ${done ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.2)'}`, padding: '10px 12px' }}>
+    <div style={{ borderRadius: 12, background: done ? 'rgba(0,255,136,0.07)' : 'rgba(255,184,0,0.06)', border: `1px solid ${done ? 'rgba(0,255,136,0.3)' : 'rgba(255,184,0,0.2)'}`, padding: '10px 12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-        {done ? <Check style={{ width: 13, height: 13, color: '#6DBF7E' }} /> : <Target style={{ width: 13, height: 13, color: '#D4AF37' }} />}
-        <span style={{ flex: 1, fontSize: 11, fontWeight: 900, color: done ? '#6DBF7E' : '#D4AF37', ...F }}>
+        {done ? <Check style={{ width: 13, height: 13, color: '#00FF88' }} /> : <Target style={{ width: 13, height: 13, color: '#FFB800' }} />}
+        <span style={{ flex: 1, fontSize: 11, fontWeight: 900, color: done ? '#00FF88' : '#FFB800', ...F }}>
           {goal.label}
         </span>
-        <span style={{ fontSize: 11, fontWeight: 900, color: done ? '#6DBF7E' : 'rgba(255,255,255,0.5)', ...F }}>
+        <span style={{ fontSize: 11, fontWeight: 900, color: done ? '#00FF88' : 'rgba(255,255,255,0.5)', ...F }}>
           {goal.type === 'tips' ? `$${current.toFixed(2)}` : current} / {goal.type === 'tips' ? `$${goal.target}` : goal.target}
         </span>
         <button onClick={() => setEditing(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
@@ -159,7 +159,7 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
         <motion.div
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          style={{ height: '100%', borderRadius: 99, background: done ? '#6DBF7E' : 'linear-gradient(90deg, #D4AF37, #C0392B)' }}
+          style={{ height: '100%', borderRadius: 99, background: done ? '#00FF88' : 'linear-gradient(90deg, #FFB800, #FF2040)' }}
         />
       </div>
       <div style={{ textAlign: 'right', fontSize: 9, color: 'rgba(255,255,255,0.25)', ...F }}>{Math.round(pct)}%</div>
@@ -171,7 +171,7 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            style={{ marginTop: 4, fontSize: 10, color: '#D4AF37', fontWeight: 900, textAlign: 'center', ...F }}
+            style={{ marginTop: 4, fontSize: 10, color: '#FFB800', fontWeight: 900, textAlign: 'center', ...F }}
           >
             🔥 {milestone}% reached!
           </motion.div>
@@ -182,7 +182,7 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          style={{ marginTop: 6, fontSize: 10, color: '#6DBF7E', fontWeight: 900, textAlign: 'center', ...F }}
+          style={{ marginTop: 6, fontSize: 10, color: '#00FF88', fontWeight: 900, textAlign: 'center', ...F }}
         >
           🎉 Goal reached! Set a new one!
         </motion.div>

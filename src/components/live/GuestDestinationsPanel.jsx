@@ -9,17 +9,17 @@ var PLATFORM_PRESETS = [
   { id: 'youtube',   label: 'YouTube',   color: '#ff4444', server: 'rtmp://a.rtmp.youtube.com/live2' },
   { id: 'twitch',    label: 'Twitch',    color: '#9146ff', server: 'rtmp://live.twitch.tv/live' },
   { id: 'facebook',  label: 'Facebook',  color: '#1877f2', server: 'rtmps://live-api-s.facebook.com:443/rtmp' },
-  { id: 'tiktok',    label: 'TikTok',    color: '#d4af37', server: 'rtmp://push.tiktokv.com/rtmp' },
+  { id: 'tiktok',    label: 'TikTok',    color: '#FFB800', server: 'rtmp://push.tiktokv.com/rtmp' },
   { id: 'kick',      label: 'Kick',      color: '#53fc18', server: 'rtmp://fa723fc1b171.global-contribute.live-video.net/app' },
   { id: 'custom',    label: 'Custom',    color: '#8B6F47', server: '' },
 ];
 
 var STATUS_CONFIG = {
   offline:    { label: 'OFFLINE',    bg: 'rgba(80,80,80,0.12)',     color: 'rgba(255,255,255,0.28)', border: 'rgba(80,80,80,0.25)',    pulse: false },
-  ready:      { label: 'READY',      bg: 'rgba(212,175,55,0.14)',   color: '#D4AF37',                border: 'rgba(212,175,55,0.32)', pulse: false },
+  ready:      { label: 'READY',      bg: 'rgba(255,184,0,0.14)',   color: '#FFB800',                border: 'rgba(255,184,0,0.32)', pulse: false },
   connecting: { label: 'CONNECTING', bg: 'rgba(204,119,85,0.15)',   color: '#CC7755',                border: 'rgba(204,119,85,0.32)', pulse: true  },
-  live:       { label: '● LIVE',     bg: 'rgba(192,57,43,0.18)',    color: '#C0392B',                border: 'rgba(192,57,43,0.38)', pulse: true  },
-  error:      { label: '✕ ERROR',    bg: 'rgba(192,57,43,0.1)',     color: '#C0392B',                border: 'rgba(192,57,43,0.25)', pulse: false },
+  live:       { label: '● LIVE',     bg: 'rgba(255,32,64,0.18)',    color: '#FF2040',                border: 'rgba(255,32,64,0.38)', pulse: true  },
+  error:      { label: '✕ ERROR',    bg: 'rgba(255,32,64,0.1)',     color: '#FF2040',                border: 'rgba(255,32,64,0.25)', pulse: false },
 };
 
 function StatusBadge({ status, retryCount }) {
@@ -112,7 +112,7 @@ function DestRow({ dest, userId }) {
   return (
     <div className="rounded-lg p-2.5 space-y-2" style={{
       background: dest.is_enabled ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
-      border: '1px solid ' + (isLive ? 'rgba(192,57,43,0.3)' : dest.is_enabled ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)'),
+      border: '1px solid ' + (isLive ? 'rgba(255,32,64,0.3)' : dest.is_enabled ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)'),
       opacity: dest.is_enabled ? 1 : 0.55,
     }}>
       {/* Row 1: platform badge + label + status + enable toggle + delete */}
@@ -127,11 +127,11 @@ function DestRow({ dest, userId }) {
           {platform.label}
         </span>
         <StatusBadge status={streamStatus} retryCount={retryCount} />
-        {validState === 'ok' && streamStatus !== 'live' && <CheckCircle className="w-3 h-3 shrink-0" style={{ color: '#6DBF7E' }} />}
-        {validState === 'err' && <XCircle className="w-3 h-3 shrink-0" style={{ color: '#C0392B' }} />}
+        {validState === 'ok' && streamStatus !== 'live' && <CheckCircle className="w-3 h-3 shrink-0" style={{ color: '#00FF88' }} />}
+        {validState === 'err' && <XCircle className="w-3 h-3 shrink-0" style={{ color: '#FF2040' }} />}
         {/* Enable toggle */}
         <div onClick={function() { updateMut.mutate({ is_enabled: !dest.is_enabled }); }}
-          style={{ width: 40, height: 22, borderRadius: 99, background: dest.is_enabled ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+          style={{ width: 40, height: 22, borderRadius: 99, background: dest.is_enabled ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
           <div style={{ position: 'absolute', top: 3, left: dest.is_enabled ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
         </div>
         <button onClick={function() { deleteMut.mutate(); }}
@@ -158,12 +158,12 @@ function DestRow({ dest, userId }) {
           {showKey ? <EyeOff className="w-2.5 h-2.5" /> : <Eye className="w-2.5 h-2.5" />}
         </button>
         <button onClick={validate} disabled={validating}
-          style={{ height: 24, padding: '0 8px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, background: isConnecting ? 'rgba(204,119,85,0.2)' : 'rgba(139,111,71,0.2)', color: isConnecting ? '#CC7755' : '#d4af37', border: '1px solid ' + (isConnecting ? 'rgba(204,119,85,0.3)' : 'rgba(212,175,55,0.2)'), borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ height: 24, padding: '0 8px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, background: isConnecting ? 'rgba(204,119,85,0.2)' : 'rgba(139,111,71,0.2)', color: isConnecting ? '#CC7755' : '#FFB800', border: '1px solid ' + (isConnecting ? 'rgba(204,119,85,0.3)' : 'rgba(255,184,0,0.2)'), borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
           {validating ? <RefreshCw className="w-2 h-2 animate-spin" /> : <Wifi className="w-2 h-2" />}
           {validating ? '…' : isConnecting ? 'Testing' : 'Test'}
         </button>
         <button onClick={function() { updateMut.mutate({ stream_key_encrypted: localKey, server_url: localUrl }); toast.success('Saved'); }}
-          style={{ height: 24, padding: '0 8px', fontSize: 11, background: '#d4af37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+          style={{ height: 24, padding: '0 8px', fontSize: 11, background: '#FFB800', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
           Save
         </button>
       </div>
@@ -171,11 +171,11 @@ function DestRow({ dest, userId }) {
       {/* Row 3: security badge + retry button + transmux mode */}
       <div className="flex items-center gap-2 flex-wrap">
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Lock style={{ width: 8, height: 8, color: '#7B5DA6', flexShrink: 0 }} />
+          <Lock style={{ width: 8, height: 8, color: '#8B5CF6', flexShrink: 0 }} />
           <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(123,93,166,0.75)', letterSpacing: '0.06em' }}>AES-256-GCM · Vault Pro</span>
         </div>
         <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: 9 }}>·</span>
-        <span style={{ fontFamily: 'Share Tech Mono, monospace', fontSize: 8, color: 'rgba(74,138,122,0.7)', letterSpacing: '0.02em' }}>-c:v copy -c:a copy</span>
+        <span style={{ fontFamily: 'Share Tech Mono, monospace', fontSize: 8, color: 'rgba(0,245,255,0.7)', letterSpacing: '0.02em' }}>-c:v copy -c:a copy</span>
         {(streamStatus === 'error' || (streamStatus === 'connecting' && retryCount > 0)) && (
           <button onClick={simulateRetry}
             style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 3, fontSize: 9, fontFamily: 'Barlow Condensed, sans-serif', color: '#CC7755', background: 'rgba(204,119,85,0.12)', border: '1px solid rgba(204,119,85,0.25)', borderRadius: 4, padding: '1px 6px', cursor: 'pointer' }}>
@@ -197,9 +197,9 @@ function DestRow({ dest, userId }) {
 
       {/* Error state row */}
       {streamStatus === 'error' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 6px', borderRadius: 4, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.18)' }}>
-          <AlertTriangle style={{ width: 9, height: 9, color: '#C0392B', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(192,57,43,0.8)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 6px', borderRadius: 4, background: 'rgba(255,32,64,0.08)', border: '1px solid rgba(255,32,64,0.18)' }}>
+          <AlertTriangle style={{ width: 9, height: 9, color: '#FF2040', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(255,32,64,0.8)' }}>
             Stream failed · Isolated — other destinations unaffected · Check key
           </span>
         </div>
@@ -251,21 +251,21 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
   };
 
   return (
-    <div className="rounded-lg overflow-hidden" style={{ background: '#1A1008', border: '1px solid rgba(212,175,55,0.12)' }}>
+    <div className="rounded-lg overflow-hidden" style={{ background: '#1A1008', border: '1px solid rgba(255,184,0,0.12)' }}>
       {/* Header */}
       <button
         onClick={function() { setExpanded(function(v) { var n = !v; try { localStorage.setItem('guest_dests_expanded_' + (participantUserId || ''), String(n)); } catch(_) {} return n; }); }}
         className="w-full flex items-center gap-2 px-2.5 py-2 text-left hover:bg-white/5 transition-colors"
         style={{ background: 'none', cursor: 'pointer' }}
       >
-        <Wifi className="w-3 h-3 shrink-0" style={{ color: liveCount > 0 ? '#C0392B' : '#d4af37' }} />
-        <span className="text-[10px] font-semibold flex-1 truncate" style={{ color: '#d4af37' }}>
+        <Wifi className="w-3 h-3 shrink-0" style={{ color: liveCount > 0 ? '#FF2040' : '#FFB800' }} />
+        <span className="text-[10px] font-semibold flex-1 truncate" style={{ color: '#FFB800' }}>
           {guestName} — Destinations
         </span>
         {destinations.length > 0 && (
           <div className="flex items-center gap-1.5 shrink-0">
             {liveCount > 0 && (
-              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, fontWeight: 900, letterSpacing: '0.08em', padding: '1px 5px', borderRadius: 3, background: 'rgba(192,57,43,0.18)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.35)' }}>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, fontWeight: 900, letterSpacing: '0.08em', padding: '1px 5px', borderRadius: 3, background: 'rgba(255,32,64,0.18)', color: '#FF2040', border: '1px solid rgba(255,32,64,0.35)' }}>
                 {liveCount} LIVE
               </span>
             )}
@@ -287,7 +287,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
             <div className="px-2.5 pb-2.5 space-y-2">
               {/* Security + isolation notice */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 6, background: 'rgba(123,93,166,0.07)', border: '1px solid rgba(123,93,166,0.15)' }}>
-                <Shield style={{ width: 9, height: 9, color: '#7B5DA6', flexShrink: 0 }} />
+                <Shield style={{ width: 9, height: 9, color: '#8B5CF6', flexShrink: 0 }} />
                 <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(123,93,166,0.75)', lineHeight: 1.4 }}>
                   Each platform runs in an isolated FFmpeg process · Zero-knowledge host · 3× auto-retry on failure
                 </span>
@@ -296,7 +296,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
               {/* Add button */}
               <div className="flex justify-end">
                 <button onClick={function() { setShowAdd(function(v) { return !v; }); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '3px 8px', borderRadius: 6, border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37', background: 'rgba(212,175,55,0.06)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '3px 8px', borderRadius: 6, border: '1px solid rgba(255,184,0,0.3)', color: '#FFB800', background: 'rgba(255,184,0,0.06)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   <Plus className="w-2.5 h-2.5" /> Add Platform
                 </button>
               </div>
@@ -304,7 +304,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
               <AnimatePresence>
                 {showAdd && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                    <div className="rounded-lg p-2 space-y-2 mb-1" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                    <div className="rounded-lg p-2 space-y-2 mb-1" style={{ background: 'rgba(255,184,0,0.05)', border: '1px solid rgba(255,184,0,0.15)' }}>
                       <div className="grid grid-cols-3 gap-1">
                         {PLATFORM_PRESETS.map(function(p) {
                           return (
@@ -327,7 +327,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
                           style={{ flex: 1, height: 24, fontSize: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', outline: 'none', padding: '0 8px', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }}
                         />
                         <button onClick={addDest} disabled={createMut.isPending || !label.trim()}
-                          style={{ height: 24, padding: '0 8px', fontSize: 10, fontWeight: 700, background: '#d4af37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: (createMut.isPending || !label.trim()) ? 0.5 : 1 }}>
+                          style={{ height: 24, padding: '0 8px', fontSize: 10, fontWeight: 700, background: '#FFB800', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: (createMut.isPending || !label.trim()) ? 0.5 : 1 }}>
                           Add
                         </button>
                         <button onClick={function() { setShowAdd(false); }}

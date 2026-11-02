@@ -6,18 +6,18 @@ import { Coins, Zap, Star, Flame, Crown, Gift } from 'lucide-react';
 import { toast } from 'sonner';
 
 const COIN_PACKS = [
-  { coins: 10,  price: 0.99,  label: '10 🪙',  color: '#d4af37' },
+  { coins: 10,  price: 0.99,  label: '10 🪙',  color: '#FFB800' },
   { coins: 50,  price: 3.99,  label: '50 🪙',  color: '#CC7755' },
-  { coins: 100, price: 6.99,  label: '100 🪙', color: '#D4AF37' },
-  { coins: 500, price: 29.99, label: '500 🪙', color: '#C0392B' },
+  { coins: 100, price: 6.99,  label: '100 🪙', color: '#FFB800' },
+  { coins: 500, price: 29.99, label: '500 🪙', color: '#FF2040' },
 ];
 
 const TIP_AMOUNTS = [
-  { coins: 5,   emoji: '⚡', label: 'Spark',    color: '#C9A84C' },
-  { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#D4854A' },
-  { coins: 50,  emoji: '💎', label: 'Diamond',  color: '#D4AF37' },
-  { coins: 100, emoji: '👑', label: 'Royal',    color: '#d4af37' },
-  { coins: 200, emoji: '🚀', label: 'Legend',   color: '#C0392B' },
+  { coins: 5,   emoji: '⚡', label: 'Spark',    color: '#FFB800' },
+  { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#FF8C00' },
+  { coins: 50,  emoji: '💎', label: 'Diamond',  color: '#FFB800' },
+  { coins: 100, emoji: '👑', label: 'Royal',    color: '#FFB800' },
+  { coins: 200, emoji: '🚀', label: 'Legend',   color: '#FF2040' },
 ];
 
 // Floating coin animation
@@ -70,7 +70,7 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
         id: Date.now(),
         coins: Math.round(tGross * 10),
         emoji: tipDef?.emoji || '🪙',
-        color: tipDef?.color || '#d4af37',
+        color: tipDef?.color || '#FFB800',
         senderName: t.sender_name || 'Viewer',
       };
       setFloatingTips(prev => [...prev, floatTip]);
@@ -147,10 +147,10 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
   if (isHost) {
     // Host sees incoming tips summary
     return (
-      <div className="rounded-xl p-3 space-y-2 relative" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}>
+      <div className="rounded-xl p-3 space-y-2 relative" style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.2)' }}>
         <div className="flex items-center gap-2">
-          <Coins className="w-4 h-4" style={{ color: '#d4af37' }} />
-          <span className="text-[11px] font-black uppercase tracking-wider" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>Virtual Tips Active</span>
+          <Coins className="w-4 h-4" style={{ color: '#FFB800' }} />
+          <span className="text-[11px] font-black uppercase tracking-wider" style={{ color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif' }}>Virtual Tips Active</span>
         </div>
         <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Viewers are tipping you with coins (1 coin = $0.10). Tips appear as floating animations.</p>
         <AnimatePresence>
@@ -163,7 +163,7 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
   }
 
   return (
-    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
+    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(3,3,10,0.98)', border: '1px solid rgba(255,184,0,0.2)' }}>
       {/* Floating tip animations */}
       <AnimatePresence>
         {floatingTips.map(tip => (
@@ -172,12 +172,12 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
       </AnimatePresence>
 
       {/* Header: coin balance */}
-      <div className="flex items-center justify-between px-3 py-2" style={{ background: 'rgba(212,175,55,0.08)', borderBottom: '1px solid rgba(212,175,55,0.15)' }}>
+      <div className="flex items-center justify-between px-3 py-2" style={{ background: 'rgba(255,184,0,0.08)', borderBottom: '1px solid rgba(255,184,0,0.15)' }}>
         <div className="flex items-center gap-1.5">
-          <Coins className="w-4 h-4" style={{ color: '#d4af37' }} />
-          <span className="text-[11px] font-black uppercase" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>Your Coins</span>
+          <Coins className="w-4 h-4" style={{ color: '#FFB800' }} />
+          <span className="text-[11px] font-black uppercase" style={{ color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif' }}>Your Coins</span>
         </div>
-        <div className="flex items-center gap-1 text-[13px] font-black" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <div className="flex items-center gap-1 text-[13px] font-black" style={{ color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif' }}>
           🪙 {coins.toLocaleString()}
         </div>
       </div>

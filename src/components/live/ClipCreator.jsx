@@ -114,7 +114,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
         <button
           onClick={handleOpen}
           className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-semibold transition-all"
-          style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37' }}
+          style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.3)', color: '#FFB800' }}
         >
           <Scissors className="w-3.5 h-3.5" /> Clip
         </button>
@@ -122,7 +122,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
           onClick={() => setShowRecent(v => !v)}
           className="flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-semibold transition-all"
           style={showRecent
-            ? { background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.35)', color: '#D4AF37' }
+            ? { background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.35)', color: '#FFB800' }
             : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)' }}
         >
           <Film className="w-3 h-3" /> Recent
@@ -135,22 +135,22 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
           <motion.div
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden rounded-lg mt-1"
-            style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}
+            style={{ background: 'rgba(3,3,10,0.9)', border: '1px solid rgba(255,184,0,0.2)' }}
           >
             {recentClips.map(clip => (
               <div key={clip.id} className="flex items-center gap-2 px-3 py-2 border-b border-white/5 last:border-0">
-                <Scissors className="w-3 h-3 text-[#D4AF37] shrink-0" />
+                <Scissors className="w-3 h-3 text-[#FFB800] shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] text-white/80 font-semibold truncate">{clip.title}</p>
                   <div className="flex items-center gap-2 text-[9px] text-white/30 mt-0.5">
                     <span className="flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />{clip.duration_seconds}s</span>
-                    {clip.tag && <span className="px-1 rounded text-[#D4AF37]" style={{ background: 'rgba(212,175,55,0.12)' }}>{clip.tag}</span>}
+                    {clip.tag && <span className="px-1 rounded text-[#FFB800]" style={{ background: 'rgba(255,184,0,0.12)' }}>{clip.tag}</span>}
                   </div>
                 </div>
                 {clip.share_url && (
                   <button
                     onClick={() => { navigator.clipboard.writeText(clip.share_url).then(() => toast.success('Copied!')); }}
-                    className="text-white/20 hover:text-[#7B5DA6] transition-colors"
+                    className="text-white/20 hover:text-[#8B5CF6] transition-colors"
                   >
                     <Share2 className="w-3 h-3" />
                   </button>
@@ -171,14 +171,14 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="absolute bottom-20 left-1/2 -translate-x-1/2 w-80 bg-[#0d0d0d] border border-[#D4AF37]/30 rounded-2xl shadow-2xl z-30 overflow-hidden"
+            className="absolute bottom-20 left-1/2 -translate-x-1/2 w-80 bg-[#0d0d0d] border border-[#FFB800]/30 rounded-2xl shadow-2xl z-30 overflow-hidden"
             style={{ backdropFilter: 'blur(16px)' }}
           >
             <div className="p-4 space-y-3">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Scissors className="w-4 h-4 text-[#D4AF37]" />
+                  <Scissors className="w-4 h-4 text-[#FFB800]" />
                   <span className="font-semibold text-white text-sm">Create Clip</span>
                 </div>
                 <button onClick={handleClose} className="text-white/30 hover:text-white">
@@ -189,14 +189,14 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
               {/* Post-save: share state */}
               {createdClipUrl ? (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                  <div className="flex items-center gap-2 p-3 rounded-lg" style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)' }}>
-                    <Check className="w-4 h-4 text-[#6DBF7E]" />
-                    <span className="text-sm font-semibold text-[#6DBF7E]">Clip saved!</span>
+                  <div className="flex items-center gap-2 p-3 rounded-lg" style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)' }}>
+                    <Check className="w-4 h-4 text-[#00FF88]" />
+                    <span className="text-sm font-semibold text-[#00FF88]">Clip saved!</span>
                   </div>
                   <button
                     onClick={handleShare}
                     className="w-full flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-sm transition-all"
-                    style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.4)', color: '#D4AF37' }}
+                    style={{ background: 'rgba(255,184,0,0.15)', border: '1px solid rgba(255,184,0,0.4)', color: '#FFB800' }}
                   >
                     <Share2 className="w-4 h-4" /> Copy Share Link
                   </button>
@@ -211,7 +211,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     placeholder="Clip title..."
-                    style={{ width: '100%', padding: '6px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 32 }}
+                    style={{ width: '100%', padding: '6px 14px', background: 'rgba(3,3,10,0.85)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 32 }}
                   />
 
                   {/* Tag picker */}
@@ -226,7 +226,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
                           onClick={() => setSelectedTag(selectedTag === t.id ? null : t.id)}
                           className="px-2 py-0.5 rounded-full text-[10px] font-bold transition-all"
                           style={selectedTag === t.id
-                            ? { background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.4)' }
+                            ? { background: 'rgba(255,184,0,0.2)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.4)' }
                             : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
                         >
                           {t.label}
@@ -239,7 +239,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
                   <div className="space-y-2">
                     <div className="flex justify-between text-[10px] text-white/40">
                       <span>Last {maxWindow}s</span>
-                      <span className="text-[#D4AF37] font-semibold">{duration}s clip</span>
+                      <span className="text-[#FFB800] font-semibold">{duration}s clip</span>
                     </div>
                     <div
                       ref={trackRef}
@@ -250,18 +250,18 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
                           style={{ left: `${(i / maxWindow) * 100}%` }} />
                       ))}
                       <div
-                        className="absolute top-0 bottom-0 bg-[#D4AF37]/20 border-x-2 border-[#D4AF37]"
+                        className="absolute top-0 bottom-0 bg-[#FFB800]/20 border-x-2 border-[#FFB800]"
                         style={{ left: `${startPct * 100}%`, width: `${(endPct - startPct) * 100}%` }}
                       />
                       <div
-                        className="absolute top-0 bottom-0 w-4 bg-[#D4AF37] cursor-ew-resize flex items-center justify-center"
+                        className="absolute top-0 bottom-0 w-4 bg-[#FFB800] cursor-ew-resize flex items-center justify-center"
                         style={{ left: `${startPct * 100 - 8}px` }}
                         onMouseDown={handleTrackMouseDown('start')}
                       >
                         <div className="w-0.5 h-6 bg-white/60 rounded-full" />
                       </div>
                       <div
-                        className="absolute top-0 bottom-0 w-4 bg-[#D4AF37] cursor-ew-resize flex items-center justify-center"
+                        className="absolute top-0 bottom-0 w-4 bg-[#FFB800] cursor-ew-resize flex items-center justify-center"
                         style={{ right: `${(1 - endPct) * 100}%`, transform: 'translateX(100%)' }}
                         onMouseDown={handleTrackMouseDown('end')}
                       >
@@ -269,28 +269,28 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
                       </div>
                     </div>
                     <div className="flex justify-between text-[10px]">
-                      <span className="text-[#D4AF37]">{formatSec(absStartSec)}</span>
-                      <span className="text-[#D4AF37]">{formatSec(absEndSec)}</span>
+                      <span className="text-[#FFB800]">{formatSec(absStartSec)}</span>
+                      <span className="text-[#FFB800]">{formatSec(absEndSec)}</span>
                     </div>
 
                     <div className="space-y-1 pt-1">
                       <div className="flex items-center justify-between text-[10px]">
                         <span className="text-white/40 uppercase">Start</span>
-                        <span className="text-[#D4AF37] font-semibold">{formatSec(absStartSec)}</span>
+                        <span className="text-[#FFB800] font-semibold">{formatSec(absStartSec)}</span>
                       </div>
                       <input type="range" min={0} max={Math.max(0, maxWindow - 3)} step={1} value={trimStartSec}
                         onChange={e => setStartPct(Math.min(Number(e.target.value) / maxWindow, endPct - 0.05))}
                         aria-label="Clip start time"
-                        style={{ width: '100%', height: 20, accentColor: '#D4AF37', cursor: 'pointer' }}
+                        style={{ width: '100%', height: 20, accentColor: '#FFB800', cursor: 'pointer' }}
                       />
                       <div className="flex items-center justify-between text-[10px]">
                         <span className="text-white/40 uppercase">End</span>
-                        <span className="text-[#D4AF37] font-semibold">{formatSec(absEndSec)}</span>
+                        <span className="text-[#FFB800] font-semibold">{formatSec(absEndSec)}</span>
                       </div>
                       <input type="range" min={3} max={maxWindow} step={1} value={trimEndSec}
                         onChange={e => setEndPct(Math.max(Number(e.target.value) / maxWindow, startPct + 0.05))}
                         aria-label="Clip end time"
-                        style={{ width: '100%', height: 20, accentColor: '#D4AF37', cursor: 'pointer' }}
+                        style={{ width: '100%', height: 20, accentColor: '#FFB800', cursor: 'pointer' }}
                       />
                     </div>
                   </div>
@@ -298,7 +298,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
                   <button
                     onClick={handleSave}
                     disabled={createClipMutation.isPending || duration < 3}
-                    style={{ width: '100%', background: 'rgba(212,175,55,0.15)', color: '#D4AF37', fontWeight: 700, border: '1px solid rgba(212,175,55,0.4)', borderRadius: 8, padding: '8px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, opacity: (createClipMutation.isPending || duration < 3) ? 0.5 : 1 }}
+                    style={{ width: '100%', background: 'rgba(255,184,0,0.15)', color: '#FFB800', fontWeight: 700, border: '1px solid rgba(255,184,0,0.4)', borderRadius: 8, padding: '8px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, opacity: (createClipMutation.isPending || duration < 3) ? 0.5 : 1 }}
                   >
                     <Check className="w-4 h-4" /> Create {duration}s Clip
                   </button>

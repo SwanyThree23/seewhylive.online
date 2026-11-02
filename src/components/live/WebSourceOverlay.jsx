@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GripVertical, X, Volume2, VolumeX, Maximize2, Minimize2, Globe, Plus, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const MIN_W = 240;
@@ -75,7 +75,7 @@ function DraggableOverlay({ source, onRemove, onUpdate, containerRef }) {
           alignItems: 'center',
           gap: 6,
           padding: '4px 8px',
-          background: 'rgba(8,11,24,0.95)',
+          background: 'rgba(3,3,10,0.95)',
           borderBottom: minimized ? 'none' : '1px solid rgba(255,255,255,0.08)',
           cursor: 'grab',
           height: 32,
@@ -83,7 +83,7 @@ function DraggableOverlay({ source, onRemove, onUpdate, containerRef }) {
         }}
       >
         <GripVertical style={{ width: 12, height: 12, color: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: source.active ? '#C0392B' : 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: source.active ? '#FF2040' : 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
         <p style={{ flex: 1, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Barlow Condensed, sans-serif' }}>
           {source.name}
         </p>
@@ -93,7 +93,7 @@ function DraggableOverlay({ source, onRemove, onUpdate, containerRef }) {
             <RefreshCw style={{ width: 10, height: 10 }} />
           </button>
           <button onClick={() => setMuted(m => !m)}
-            style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: muted ? '#C0392B' : '#6DBF7E' }}>
+            style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: muted ? '#FF2040' : '#00FF88' }}>
             {muted ? <VolumeX style={{ width: 10, height: 10 }} /> : <Volume2 style={{ width: 10, height: 10 }} />}
           </button>
           <button onClick={() => setMinimized(m => !m)}
@@ -101,7 +101,7 @@ function DraggableOverlay({ source, onRemove, onUpdate, containerRef }) {
             {minimized ? <Maximize2 style={{ width: 10, height: 10 }} /> : <Minimize2 style={{ width: 10, height: 10 }} />}
           </button>
           <button onClick={() => onRemove(source.id)}
-            style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(192,57,43,0.15)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C0392B' }}>
+            style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(255,32,64,0.15)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FF2040' }}>
             <X style={{ width: 10, height: 10 }} />
           </button>
         </div>
@@ -125,7 +125,7 @@ function DraggableOverlay({ source, onRemove, onUpdate, containerRef }) {
               position: 'absolute', bottom: 0, right: 0,
               width: 16, height: 16,
               cursor: 'se-resize',
-              background: 'linear-gradient(135deg, transparent 50%, rgba(212,175,55,0.3) 50%)',
+              background: 'linear-gradient(135deg, transparent 50%, rgba(255,184,0,0.3) 50%)',
             }}
           />
         </div>
@@ -195,7 +195,7 @@ export default function WebSourceOverlay({ isStreamActive = false }) {
               Web Overlays
             </span>
             {activeSources.length > 0 && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: 'rgba(192,57,43,0.25)', color: '#C0392B', ...T }}>
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: 'rgba(255,32,64,0.25)', color: '#FF2040', ...T }}>
                 {activeSources.length} live
               </span>
             )}
@@ -227,14 +227,14 @@ export default function WebSourceOverlay({ isStreamActive = false }) {
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
                   placeholder="Overlay name"
-                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/25 outline-none focus:border-[#d4af37]/40"
+                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/25 outline-none focus:border-[#FFB800]/40"
                 />
                 <input
                   value={newUrl}
                   onChange={e => setNewUrl(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addSource()}
                   placeholder="https://example.com/overlay"
-                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] font-mono text-white placeholder-white/25 outline-none focus:border-[#d4af37]/40"
+                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] font-mono text-white placeholder-white/25 outline-none focus:border-[#FFB800]/40"
                 />
                 <button
                   onClick={addSource}
@@ -274,16 +274,16 @@ export default function WebSourceOverlay({ isStreamActive = false }) {
                 className="flex items-center gap-2 px-2.5 py-2 rounded-lg"
                 style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${s.active ? `${G}25` : 'rgba(255,255,255,0.06)'}` }}
               >
-                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: s.active ? '#C0392B' : 'rgba(255,255,255,0.2)' }} />
+                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: s.active ? '#FF2040' : 'rgba(255,255,255,0.2)' }} />
                 <Globe className="w-3 h-3 flex-shrink-0" style={{ color: s.active ? G : 'rgba(255,255,255,0.2)' }} />
                 <p className="flex-1 text-[10px] font-bold text-white truncate">{s.name}</p>
                 <button
                   onClick={() => setSources(prev => prev.map(x => x.id === s.id ? { ...x, active: !x.active } : x))}
                   className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase transition-all"
                   style={{
-                    background: s.active ? 'rgba(192,57,43,0.15)' : `${G}15`,
-                    color: s.active ? '#C0392B' : G,
-                    border: `1px solid ${s.active ? 'rgba(192,57,43,0.3)' : `${G}30`}`,
+                    background: s.active ? 'rgba(255,32,64,0.15)' : `${G}15`,
+                    color: s.active ? '#FF2040' : G,
+                    border: `1px solid ${s.active ? 'rgba(255,32,64,0.3)' : `${G}30`}`,
                     ...T,
                   }}
                 >
@@ -300,7 +300,7 @@ export default function WebSourceOverlay({ isStreamActive = false }) {
 
         {sources.length === 0 && !showAdd && (
           <div className="py-4 text-center">
-            <Globe className="w-6 h-6 mx-auto mb-1.5" style={{ color: 'rgba(212,175,55,0.2)' }} />
+            <Globe className="w-6 h-6 mx-auto mb-1.5" style={{ color: 'rgba(255,184,0,0.2)' }} />
             <p className="text-[11px] text-white/20" style={T}>No overlays active</p>
             <p className="text-[10px] text-white/12">Add browser sources, timers, or graphics</p>
           </div>

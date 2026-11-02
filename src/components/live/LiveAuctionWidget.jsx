@@ -6,16 +6,16 @@ import { Gavel, Clock, Crown, ChevronUp, X, Plus, ChevronDown } from 'lucide-rea
 import { toast } from 'sonner';
 import NativeSelect from '../shared/NativeSelect';
 
-const GOLD = '#D4AF37';
-const BURGUNDY = '#800020';
+const GOLD = '#FFB800';
+const BURGUNDY = '#FF1564';
 
 const TYPE_COLORS = {
   item:       { color: GOLD,     label: 'ITEM' },
-  one_on_one: { color: '#C9A84C', label: '1:1' },
-  shoutout:   { color: '#D4AF37', label: 'SHOUTOUT' },
-  custom_art: { color: '#D4854A', label: 'ART' },
-  coaching:   { color: '#6DBF7E', label: 'COACHING' },
-  experience: { color: '#C0392B', label: 'EXPERIENCE' },
+  one_on_one: { color: '#FFB800', label: '1:1' },
+  shoutout:   { color: '#FFB800', label: 'SHOUTOUT' },
+  custom_art: { color: '#FF8C00', label: 'ART' },
+  coaching:   { color: '#00FF88', label: 'COACHING' },
+  experience: { color: '#FF2040', label: 'EXPERIENCE' },
 };
 
 function Countdown({ endsAt, onExpired }) {
@@ -62,7 +62,7 @@ function BidHistoryDrawer({ auctionId, open, onClose }) {
           <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl max-h-[60vh] overflow-y-auto"
-            style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)` }}>
+            style={{ background: '#1A1A1A', border: `1px solid rgba(255,184,0,0.2)` }}>
             <div className="flex items-center justify-between p-4 sticky top-0" style={{ background: '#1A1A1A', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               <h3 className="font-black uppercase text-[11px]" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>Bid History ({bids.length})</h3>
               <button onClick={onClose}><X className="w-4 h-4 text-white/40" /></button>
@@ -70,10 +70,10 @@ function BidHistoryDrawer({ auctionId, open, onClose }) {
             <div className="p-3 space-y-1">
               {bids.map((bid, i) => (
                 <div key={bid.id} className="flex items-center justify-between px-3 py-2 rounded-lg"
-                  style={{ background: i === 0 ? `rgba(212,175,55,0.08)` : 'rgba(255,255,255,0.03)', border: i === 0 ? `1px solid rgba(212,175,55,0.2)` : '1px solid rgba(255,255,255,0.05)' }}>
+                  style={{ background: i === 0 ? `rgba(255,184,0,0.08)` : 'rgba(255,255,255,0.03)', border: i === 0 ? `1px solid rgba(255,184,0,0.2)` : '1px solid rgba(255,255,255,0.05)' }}>
                   <div>
                     <span className="text-[10px] font-bold text-white">{bid.bidder_name}</span>
-                    {bid.is_buyout && <span className="ml-1 text-[11px] px-1 rounded" style={{ background: 'rgba(212,175,55,0.15)', color: GOLD }}>BUY NOW</span>}
+                    {bid.is_buyout && <span className="ml-1 text-[11px] px-1 rounded" style={{ background: 'rgba(255,184,0,0.15)', color: GOLD }}>BUY NOW</span>}
                     {bid.message && <p className="text-[11px] text-white/40">"{bid.message}"</p>}
                   </div>
                   <span className="font-black text-[13px]" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>${bid.amount}</span>
@@ -149,7 +149,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
     <div className="rounded-xl overflow-hidden"
       style={{
         background: '#1A1A1A',
-        border: isEndingSoon ? `2px solid rgba(255,68,68,0.6)` : `1px solid rgba(212,175,55,0.2)`,
+        border: isEndingSoon ? `2px solid rgba(255,68,68,0.6)` : `1px solid rgba(255,184,0,0.2)`,
         boxShadow: isEndingSoon ? '0 0 20px rgba(255,68,68,0.15)' : undefined,
         animation: isEndingSoon ? 'pulse 1.5s ease-in-out infinite' : undefined,
       }}>
@@ -209,7 +209,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
               {[minBid, minBid + 5, minBid + 10].map((inc, i) => (
                 <button key={i} onClick={() => setBidAmount(String(inc))}
                   className="flex-1 py-1 rounded text-[10px] font-black uppercase"
-                  style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', color: 'rgba(212,175,55,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.2)', color: 'rgba(255,184,0,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   +${inc}
                 </button>
               ))}
@@ -230,7 +230,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
                 }}
                 disabled={bidMut.isPending}
                 className="px-3 h-8 rounded-lg font-black uppercase text-[11px] shrink-0"
-                style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(255,184,0,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
                 BID
               </button>
             </div>
@@ -239,7 +239,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
         {auction.buyout_price && auction.status !== 'ended' && (
           <button onClick={() => buyoutMut.mutate()} disabled={buyoutMut.isPending}
             className="w-full py-1.5 rounded-lg font-black uppercase text-[10px]"
-            style={{ background: 'rgba(212,175,55,0.08)', border: `1px solid rgba(212,175,55,0.3)`, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(255,184,0,0.08)', border: `1px solid rgba(255,184,0,0.3)`, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
             BUY NOW ${auction.buyout_price}
           </button>
         )}
@@ -255,7 +255,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
               } catch { toast.error('Failed to extend auction.'); }
             }}
               className="flex-1 py-1 rounded text-[11px] font-black uppercase"
-              style={{ background: 'rgba(109,191,126,0.08)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               +5 min
             </button>
             <button onClick={() => onEnd(auction)}
@@ -299,7 +299,7 @@ function CreateAuctionForm({ roomId, creatorId, onClose }) {
   const types = ['item','one_on_one','shoutout','custom_art','coaching','experience'];
 
   return (
-    <div className="space-y-3 p-4 rounded-xl" style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)` }}>
+    <div className="space-y-3 p-4 rounded-xl" style={{ background: '#1A1A1A', border: `1px solid rgba(255,184,0,0.2)` }}>
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-black uppercase" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>New Auction</span>
         <button onClick={onClose}><X className="w-4 h-4 text-white/40" /></button>
@@ -325,7 +325,7 @@ function CreateAuctionForm({ roomId, creatorId, onClose }) {
       </div>
       <button onClick={() => mut.mutate()} disabled={!form.title || !form.starting_bid || mut.isPending}
         className="w-full py-2 rounded-xl font-black uppercase text-[11px]"
-        style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+        style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(255,184,0,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
         {mut.isPending ? 'Launching…' : '⚡ Launch Auction'}
       </button>
     </div>
@@ -342,7 +342,7 @@ function AuctionWinnerBanner({ auction, onDismiss }) {
   return (
     <motion.div initial={{ y: -80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -80, opacity: 0 }}
       className="fixed top-16 left-4 right-4 z-50 rounded-2xl p-4 flex items-center gap-3"
-      style={{ background: '#1A1A1A', border: `2px solid ${GOLD}`, boxShadow: `0 0 40px rgba(212,175,55,0.3)` }}>
+      style={{ background: '#1A1A1A', border: `2px solid ${GOLD}`, boxShadow: `0 0 40px rgba(255,184,0,0.3)` }}>
       <span className="text-3xl">🎉</span>
       <div className="flex-1">
         <p className="font-black text-sm uppercase" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>Auction Won!</p>
@@ -390,7 +390,7 @@ export default function LiveAuctionWidget({ roomId, currentUser, isHost }) {
         {winner && <AuctionWinnerBanner auction={winner} onDismiss={() => setWinner(null)} />}
       </AnimatePresence>
 
-      <div className="rounded-xl overflow-hidden" style={{ background: '#161616', border: `1px solid rgba(212,175,55,0.15)` }}>
+      <div className="rounded-xl overflow-hidden" style={{ background: '#161616', border: `1px solid rgba(255,184,0,0.15)` }}>
         <button className="w-full flex items-center justify-between px-4 py-3"
           onClick={() => setExpanded(e => { const n = !e; try { localStorage.setItem('auction_expanded', String(n)); } catch {} return n; })}>
           <div className="flex items-center gap-2">
@@ -416,7 +416,7 @@ export default function LiveAuctionWidget({ roomId, currentUser, isHost }) {
                       ? <CreateAuctionForm roomId={roomId} creatorId={currentUser?.id} onClose={() => setShowCreate(false)} />
                       : <button onClick={() => setShowCreate(true)}
                           className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-black uppercase mt-1"
-                          style={{ background: `rgba(212,175,55,0.08)`, border: `1px solid rgba(212,175,55,0.2)`, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                          style={{ background: `rgba(255,184,0,0.08)`, border: `1px solid rgba(255,184,0,0.2)`, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                           <Plus className="w-3 h-3" /> Start Auction
                         </button>
                     }

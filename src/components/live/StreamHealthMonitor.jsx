@@ -4,10 +4,10 @@ import { Wifi, WifiOff, ChevronDown, ChevronUp, AlertTriangle, Volume2, Monitor,
 import { toast } from 'sonner';
 
 const QUALITY_LABELS = [
-  { min: 80, label: 'Excellent', color: '#6DBF7E' },
-  { min: 60, label: 'Good',      color: '#D4AF37' },
-  { min: 40, label: 'Fair',      color: '#D4854A' },
-  { min:  0, label: 'Poor',      color: '#C0392B' },
+  { min: 80, label: 'Excellent', color: '#00FF88' },
+  { min: 60, label: 'Good',      color: '#FFB800' },
+  { min: 40, label: 'Fair',      color: '#FF8C00' },
+  { min:  0, label: 'Poor',      color: '#FF2040' },
 ];
 
 const SUGGESTIONS = {
@@ -40,7 +40,7 @@ function Stat({ label, value, color }) {
 }
 
 function AlertRow({ alert }) {
-  const color = alert.level === 'error' ? '#C0392B' : '#D4854A';
+  const color = alert.level === 'error' ? '#FF2040' : '#FF8C00';
   return (
     <div className="flex items-start gap-2 py-1 border-b border-white/5 last:border-0">
       <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" style={{ color }} />
@@ -136,7 +136,7 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
   }, [isLive]);
 
   const quality      = getQuality(health);
-  const latencyColor = latency < 200 ? '#6DBF7E' : latency < 400 ? '#C9A84C' : '#C0392B';
+  const latencyColor = latency < 200 ? '#00FF88' : latency < 400 ? '#FFB800' : '#FF2040';
   const networkBars  = Math.ceil((health / 100) * 5);
   const ringCirc     = 2 * Math.PI * 20;
   const ringOffset   = ringCirc - (health / 100) * ringCirc;
@@ -145,7 +145,7 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
   return (
     <motion.div
       layout
-      className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden"
+      className="bg-[rgba(3,3,10,0.9)] border border-[rgba(255,184,0,0.2)] rounded-xl overflow-hidden"
       style={{ backdropFilter: 'blur(12px)' }}
     >
       {/* Header row */}
@@ -171,7 +171,7 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
         </div>
         <div className="flex-1 text-left">
           <div className="flex items-center gap-1.5">
-            <p className="text-xs font-semibold text-[#d4af37]">Stream Health</p>
+            <p className="text-xs font-semibold text-[#FFB800]">Stream Health</p>
             <span className="text-[9px] font-black uppercase px-1.5 rounded"
               style={{ background: `${quality.color}22`, color: quality.color }}>
               {quality.label}
@@ -187,7 +187,7 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
           ))}
         </div>
         {alerts.length > 0 && (
-          <span className="text-[9px] font-black px-1 rounded" style={{ background: '#C0392B22', color: '#C0392B' }}>
+          <span className="text-[9px] font-black px-1 rounded" style={{ background: '#FF204022', color: '#FF2040' }}>
             {alerts.length}⚠
           </span>
         )}
@@ -202,12 +202,12 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
           >
             {/* Core stats grid */}
             <div className="grid grid-cols-3 gap-1.5 text-[10px]">
-              <Stat label="FPS"       value={`${fps} fps`}                             color="#D4AF37" />
+              <Stat label="FPS"       value={`${fps} fps`}                             color="#FFB800" />
               <Stat label="Latency"   value={`${latency} ms`}                          color={latencyColor} />
-              <Stat label="Dropped"   value={`${droppedFrames} fr`}                    color={droppedFrames > 10 ? '#C0392B' : '#6DBF7E'} />
-              <Stat label="Bitrate"   value={`${(bitrate / 1000).toFixed(1)} Mbps`}   color="#d4af37" />
-              <Stat label="Pkt Loss"  value={`${packetLoss.toFixed(1)}%`}              color={packetLoss > 1 ? '#C0392B' : '#6DBF7E'} />
-              <Stat label="Res"       value={resolution}                               color="#C9A84C" />
+              <Stat label="Dropped"   value={`${droppedFrames} fr`}                    color={droppedFrames > 10 ? '#FF2040' : '#00FF88'} />
+              <Stat label="Bitrate"   value={`${(bitrate / 1000).toFixed(1)} Mbps`}   color="#FFB800" />
+              <Stat label="Pkt Loss"  value={`${packetLoss.toFixed(1)}%`}              color={packetLoss > 1 ? '#FF2040' : '#00FF88'} />
+              <Stat label="Res"       value={resolution}                               color="#FFB800" />
             </div>
 
             {/* Audio level bar */}
@@ -216,7 +216,7 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
                 <span className="flex items-center gap-1 text-[9px] text-white/40 uppercase">
                   <Volume2 className="w-3 h-3" /> Audio
                 </span>
-                <span className="text-[9px] font-bold" style={{ color: audioBarPct > 80 ? '#C0392B' : audioBarPct > 50 ? '#6DBF7E' : '#D4AF37' }}>
+                <span className="text-[9px] font-bold" style={{ color: audioBarPct > 80 ? '#FF2040' : audioBarPct > 50 ? '#00FF88' : '#FFB800' }}>
                   {audioBarPct}%
                 </span>
               </div>
@@ -225,7 +225,7 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
                   animate={{ width: `${audioBarPct}%` }}
                   transition={{ duration: 0.3 }}
                   className="h-full rounded-full"
-                  style={{ background: audioBarPct > 80 ? '#C0392B' : audioBarPct > 50 ? '#6DBF7E' : '#D4AF37' }}
+                  style={{ background: audioBarPct > 80 ? '#FF2040' : audioBarPct > 50 ? '#00FF88' : '#FFB800' }}
                 />
               </div>
             </div>
@@ -275,7 +275,7 @@ export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) 
               <button
                 onClick={() => setShowAlerts(v => !v)}
                 className="w-full flex items-center justify-between text-[10px] px-2 py-1 rounded"
-                style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#C0392B' }}
+                style={{ background: 'rgba(255,32,64,0.08)', border: '1px solid rgba(255,32,64,0.2)', color: '#FF2040' }}
               >
                 <span className="flex items-center gap-1 font-bold"><AlertTriangle className="w-3 h-3" /> {alerts.length} alert{alerts.length > 1 ? 's' : ''}</span>
                 <span>{showAlerts ? '▲' : '▼'}</span>

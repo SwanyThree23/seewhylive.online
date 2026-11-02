@@ -20,7 +20,7 @@ const DURATIONS = [
 const inputStyle = {
   width: '100%',
   padding: '10px 14px',
-  background: 'rgba(8,11,24,0.85)',
+  background: 'rgba(3,3,10,0.85)',
   border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: 8,
   color: '#fff',
@@ -35,7 +35,7 @@ export default function LowerThirdsBanner({ onBannerChange }) {
   const [enabled, setEnabled] = useState(false);
   const [text, setText] = useState(() => { try { return localStorage.getItem('lt_text') || '🔴 LIVE NOW — StreamSpace'; } catch { return '🔴 LIVE NOW — StreamSpace'; } });
   const [style, setStyle] = useState(() => { try { return localStorage.getItem('lt_style') || 'gradient'; } catch { return 'gradient'; } });
-  const [color, setColor] = useState(() => { try { return localStorage.getItem('lt_color') || '#d4af37'; } catch { return '#d4af37'; } });
+  const [color, setColor] = useState(() => { try { return localStorage.getItem('lt_color') || '#FFB800'; } catch { return '#FFB800'; } });
   const [duration, setDuration] = useState(0);
   const [progress, setProgress] = useState(100);
   const [scroll, setScroll] = useState(false);
@@ -63,21 +63,21 @@ export default function LowerThirdsBanner({ onBannerChange }) {
   }, [enabled, duration]);
 
   const bgStyle = {
-    gradient: 'linear-gradient(90deg, rgba(128,0,32,0.9) 0%, rgba(212,175,55,0.9) 100%)',
-    solid: 'rgba(8,11,24,0.95)',
+    gradient: 'linear-gradient(90deg, rgba(255,21,100,0.9) 0%, rgba(255,184,0,0.9) 100%)',
+    solid: 'rgba(3,3,10,0.95)',
     transparent: 'transparent',
   };
 
   return (
-    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
+    <div className="bg-[rgba(3,3,10,0.9)] border border-[rgba(255,184,0,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
         onClick={() => { const n = !collapsed; setCollapsed(n); try { localStorage.setItem('lt_collapsed', String(n)); } catch {} }}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
         <div className="flex items-center gap-2">
-          <AlignLeft className="w-3 h-3 text-[#d4af37]" />
-          <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Lower Thirds</span>
-          {enabled && <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />}
+          <AlignLeft className="w-3 h-3 text-[#FFB800]" />
+          <span className="text-xs font-semibold text-[#FFB800] uppercase tracking-wider">Lower Thirds</span>
+          {enabled && <div className="w-1.5 h-1.5 rounded-full bg-[#00FF88] animate-pulse" />}
         </div>
         {collapsed ? <ChevronDown className="w-3 h-3 text-white/40" /> : <ChevronUp className="w-3 h-3 text-white/40" />}
       </button>
@@ -88,7 +88,7 @@ export default function LowerThirdsBanner({ onBannerChange }) {
             <span className="text-[10px] text-white/60">Enable Banner</span>
             <div
               onClick={() => setEnabled(v => !v)}
-              style={{ width: 40, height: 22, borderRadius: 99, background: enabled ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
+              style={{ width: 40, height: 22, borderRadius: 99, background: enabled ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
             >
               <div style={{ position: 'absolute', top: 3, left: enabled ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
             </div>
@@ -125,7 +125,7 @@ export default function LowerThirdsBanner({ onBannerChange }) {
                 key={s}
                 onClick={() => { setStyle(s); try { localStorage.setItem('lt_style', s); } catch {} }}
                 className={`text-[10px] py-1 rounded capitalize border transition-all ${
-                  style === s ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 text-white/50 hover:border-white/20'
+                  style === s ? 'border-[#FFB800] text-[#FFB800] bg-[#FFB800]/10' : 'border-white/10 text-white/50 hover:border-white/20'
                 }`}
               >
                 {s}
@@ -144,7 +144,7 @@ export default function LowerThirdsBanner({ onBannerChange }) {
                   key={d.label}
                   onClick={() => setDuration(d.value)}
                   className={`text-[10px] px-1.5 py-0.5 rounded border transition-all ${
-                    duration === d.value ? 'border-[#d4af37] text-[#d4af37]' : 'border-white/10 text-white/50'
+                    duration === d.value ? 'border-[#FFB800] text-[#FFB800]' : 'border-white/10 text-white/50'
                   }`}
                 >{d.label}</button>
               ))}
@@ -156,20 +156,20 @@ export default function LowerThirdsBanner({ onBannerChange }) {
             <p className="text-[10px] text-white/40">Size</p>
             {['small', 'medium', 'large'].map(s => (
               <button key={s} onClick={() => { setFontSize(s); try { localStorage.setItem('lt_fontsize', s); } catch {} }}
-                className={`text-[10px] px-1.5 py-0.5 rounded border capitalize transition-all ${fontSize === s ? 'border-[#d4af37] text-[#d4af37]' : 'border-white/10 text-white/50'}`}>{s[0].toUpperCase()}</button>
+                className={`text-[10px] px-1.5 py-0.5 rounded border capitalize transition-all ${fontSize === s ? 'border-[#FFB800] text-[#FFB800]' : 'border-white/10 text-white/50'}`}>{s[0].toUpperCase()}</button>
             ))}
             <p className="text-[10px] text-white/40 ml-1">Pos</p>
             {['bottom', 'top'].map(p => (
               <button key={p} onClick={() => { setPosition(p); try { localStorage.setItem('lt_position', p); } catch {} }}
-                className={`text-[10px] px-1.5 py-0.5 rounded border capitalize transition-all ${position === p ? 'border-[#d4af37] text-[#d4af37]' : 'border-white/10 text-white/50'}`}>{p[0].toUpperCase() + p.slice(1)}</button>
+                className={`text-[10px] px-1.5 py-0.5 rounded border capitalize transition-all ${position === p ? 'border-[#FFB800] text-[#FFB800]' : 'border-white/10 text-white/50'}`}>{p[0].toUpperCase() + p.slice(1)}</button>
             ))}
             <button onClick={() => setScroll(v => !v)}
-              className={`text-[10px] px-1.5 py-0.5 rounded border transition-all ${scroll ? 'border-[#d4af37] text-[#d4af37]' : 'border-white/10 text-white/50'}`}>Scroll</button>
+              className={`text-[10px] px-1.5 py-0.5 rounded border transition-all ${scroll ? 'border-[#FFB800] text-[#FFB800]' : 'border-white/10 text-white/50'}`}>Scroll</button>
           </div>
 
           {enabled && duration > 0 && (
             <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-              <motion.div className="h-full rounded-full bg-[#d4af37]" style={{ width: `${progress}%` }} />
+              <motion.div className="h-full rounded-full bg-[#FFB800]" style={{ width: `${progress}%` }} />
             </div>
           )}
 

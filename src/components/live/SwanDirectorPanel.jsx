@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
-const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
+const C = { burg:'#FF1564', gold:'#FFB800', volt:'#FFB800', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
 const LAYOUTS = [
   { key:'grid', label:'Grid', emoji:'🔲', desc:'All guests equal' },
   { key:'spotlight', label:'Spotlight', emoji:'👑', desc:'One guest featured' },
@@ -12,7 +12,7 @@ const LAYOUTS = [
   { key:'pip', label:'PiP', emoji:'🖼', desc:'Picture-in-picture' },
   { key:'theater', label:'Theater', emoji:'🎭', desc:'Full-width content' },
 ];
-const ACTION_COLORS = { switch_layout:'#C9A84C', spotlight:'#D4AF37', break_silence:'#D4AF37', default:'#666' };
+const ACTION_COLORS = { switch_layout:'#FFB800', spotlight:'#FFB800', break_silence:'#FFB800', default:'#666' };
 
 export function SwanDirectorHUD({ roomId, hostId, onOpenPanel }) {
   const { data: swan } = useQuery({
@@ -24,11 +24,11 @@ export function SwanDirectorHUD({ roomId, hostId, onOpenPanel }) {
     refetchInterval: 10000,
   });
   const score = swan?.engagement_score || 0;
-  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#D4AF37' : '#6DBF7E';
+  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#FFB800' : '#00FF88';
   return (
     <div style={{ display:'flex', alignItems:'center', gap:10, padding:'6px 12px', background:'rgba(0,0,0,0.4)', borderTop:'1px solid rgba(255,255,255,0.06)', overflow:'hidden' }}>
       {/* Layout badge */}
-      <div style={{ padding:'2px 8px', borderRadius:4, background:'rgba(212,175,55,0.1)', border:'1px solid rgba(212,175,55,0.25)', fontFamily:'Barlow Condensed', fontSize:9, color:C.gold, letterSpacing:1, flexShrink:0 }}>
+      <div style={{ padding:'2px 8px', borderRadius:4, background:'rgba(255,184,0,0.1)', border:'1px solid rgba(255,184,0,0.25)', fontFamily:'Barlow Condensed', fontSize:9, color:C.gold, letterSpacing:1, flexShrink:0 }}>
         {LAYOUTS.find(l=>l.key===(swan?.current_layout||'grid'))?.emoji} {(swan?.current_layout||'GRID').toUpperCase()}
       </div>
       {/* Engagement gauge */}
@@ -45,7 +45,7 @@ export function SwanDirectorHUD({ roomId, hostId, onOpenPanel }) {
           💡 {swan.next_suggested_action}
         </div>
       )}
-      <button onClick={onOpenPanel} style={{ flexShrink:0, padding:'3px 8px', background:'rgba(212,175,55,0.08)', border:'1px solid rgba(212,175,55,0.2)', borderRadius:4, color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:9, letterSpacing:1 }}>🎬 SWAN</button>
+      <button onClick={onOpenPanel} style={{ flexShrink:0, padding:'3px 8px', background:'rgba(255,184,0,0.08)', border:'1px solid rgba(255,184,0,0.2)', borderRadius:4, color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:9, letterSpacing:1 }}>🎬 SWAN</button>
     </div>
   );
 }
@@ -78,15 +78,15 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
   };
 
   const score = swan?.engagement_score || 0;
-  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#D4AF37' : '#6DBF7E';
+  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#FFB800' : '#00FF88';
   const decisions = (swan?.decisions_log || []).slice().reverse().slice(0,10);
   const engHistory = useMemo(() => decisions.slice(0, 10).map(d => d.score || score).reverse(), [decisions, score]);
 
   return (
     <motion.div initial={{x:'-100%'}} animate={{x:0}} exit={{x:'-100%'}} transition={{type:'spring',damping:28,stiffness:300}}
-      style={{ position:'fixed', top:0, left:0, bottom:0, width:300, background:'#111', borderRight:`1px solid rgba(212,175,55,0.15)`, zIndex:200, overflow:'auto', display:'flex', flexDirection:'column' }}>
+      style={{ position:'fixed', top:0, left:0, bottom:0, width:300, background:'#111', borderRight:`1px solid rgba(255,184,0,0.15)`, zIndex:200, overflow:'auto', display:'flex', flexDirection:'column' }}>
       {/* Header */}
-      <div style={{ padding:'14px 16px', borderBottom:`1px solid rgba(212,175,55,0.1)`, background:'rgba(0,0,0,0.3)', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
+      <div style={{ padding:'14px 16px', borderBottom:`1px solid rgba(255,184,0,0.1)`, background:'rgba(0,0,0,0.3)', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
         <div style={{ fontFamily:'Barlow Condensed', fontSize:16, color:C.gold, letterSpacing:2 }}>🎬 SWAN DIRECTOR</div>
         <button onClick={onClose} style={{ background:'transparent', border:'none', color:C.gray, fontSize:18, cursor:'pointer' }}>✕</button>
       </div>
@@ -102,8 +102,8 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
           </div>
           <div style={{ display:'flex', justifyContent:'space-between', marginTop:4 }}>
             <span style={{ fontSize:9, color:'#ff4444' }}>0 COLD</span>
-            <span style={{ fontSize:9, color:'#D4AF37' }}>40</span>
-            <span style={{ fontSize:9, color:'#6DBF7E' }}>70 HOT 100</span>
+            <span style={{ fontSize:9, color:'#FFB800' }}>40</span>
+            <span style={{ fontSize:9, color:'#00FF88' }}>70 HOT 100</span>
           </div>
         </div>
         {/* Layout controls */}
@@ -114,7 +114,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
               const active = (swan?.current_layout||'grid')===l.key;
               return (
                 <button key={l.key} onClick={()=>switchLayout(l.key)}
-                  style={{ padding:'8px', borderRadius:7, border:`1px solid ${active?C.gold:'#2a2a2a'}`, background:active?'rgba(212,175,55,0.08)':'transparent', cursor:'pointer', textAlign:'left' }}>
+                  style={{ padding:'8px', borderRadius:7, border:`1px solid ${active?C.gold:'#2a2a2a'}`, background:active?'rgba(255,184,0,0.08)':'transparent', cursor:'pointer', textAlign:'left' }}>
                   <div style={{ fontSize:18, marginBottom:3 }}>{l.emoji}</div>
                   <div style={{ fontFamily:'Barlow Condensed', fontSize:11, color:active?C.gold:C.gray }}>{l.label}</div>
                   <div style={{ fontSize:9, color:'#444' }}>{l.desc}</div>
@@ -131,7 +131,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
               const active = (swan?.trigger_mode||'automatic')===m;
               return (
                 <button key={m} onClick={()=>upd({trigger_mode:m})}
-                  style={{ flex:1, padding:'6px 4px', borderRadius:6, border:`1px solid ${active?C.gold:'#333'}`, background:active?'rgba(212,175,55,0.1)':'transparent', color:active?C.gold:C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:8, letterSpacing:0.5 }}>
+                  style={{ flex:1, padding:'6px 4px', borderRadius:6, border:`1px solid ${active?C.gold:'#333'}`, background:active?'rgba(255,184,0,0.1)':'transparent', color:active?C.gold:C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:8, letterSpacing:0.5 }}>
                   {m==='automatic'?'AUTO':m==='suggestions_only'?'SUGGEST':'MANUAL'}
                 </button>
               );
@@ -151,11 +151,11 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
         </div>
         {/* Suggestion card */}
         {swan?.next_suggested_action && (
-          <div style={{ padding:12, borderRadius:8, border:`1px solid rgba(212,175,55,0.2)`, background:'rgba(212,175,55,0.04)', marginBottom:14 }}>
+          <div style={{ padding:12, borderRadius:8, border:`1px solid rgba(255,184,0,0.2)`, background:'rgba(255,184,0,0.04)', marginBottom:14 }}>
             <div style={{ fontFamily:'Barlow Condensed', fontSize:10, color:C.volt, letterSpacing:1, marginBottom:4 }}>💡 NEXT SUGGESTION</div>
             <div style={{ fontSize:12, color:C.white, marginBottom:8, lineHeight:1.5 }}>{swan.next_suggested_action}</div>
             <div style={{ display:'flex', gap:6 }}>
-              <button onClick={()=>{ const l=swan.next_suggested_action.toLowerCase(); LAYOUTS.forEach(ly=>{ if(l.includes(ly.key)) switchLayout(ly.key); }); }} style={{ flex:1, padding:'5px', background:'rgba(212,175,55,0.08)', border:'1px solid rgba(212,175,55,0.2)', borderRadius:5, color:C.volt, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10 }}>APPLY</button>
+              <button onClick={()=>{ const l=swan.next_suggested_action.toLowerCase(); LAYOUTS.forEach(ly=>{ if(l.includes(ly.key)) switchLayout(ly.key); }); }} style={{ flex:1, padding:'5px', background:'rgba(255,184,0,0.08)', border:'1px solid rgba(255,184,0,0.2)', borderRadius:5, color:C.volt, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10 }}>APPLY</button>
               <button onClick={()=>upd({next_suggested_action:''})} style={{ padding:'5px 8px', background:'transparent', border:'1px solid #333', borderRadius:5, color:C.gray, cursor:'pointer', fontSize:10 }}>DISMISS</button>
             </div>
           </div>

@@ -27,9 +27,9 @@ function Pill({ selected, onClick, children }) {
     <button
       onClick={onClick}
       style={{
-        border: selected ? "1px solid #D4AF37" : "1px solid rgba(255,255,255,0.12)",
-        background: selected ? "rgba(212,175,55,0.12)" : "rgba(255,255,255,0.05)",
-        color: selected ? "#D4AF37" : "rgba(255,255,255,0.5)",
+        border: selected ? "1px solid #FFB800" : "1px solid rgba(255,255,255,0.12)",
+        background: selected ? "rgba(255,184,0,0.12)" : "rgba(255,255,255,0.05)",
+        color: selected ? "#FFB800" : "rgba(255,255,255,0.5)",
       }}
       className="rounded-xl px-3 py-2 text-sm font-semibold transition-all duration-150 focus:outline-none"
     >
@@ -43,16 +43,16 @@ function CodecPill({ codec, selected, onClick }) {
     <button
       onClick={onClick}
       style={{
-        border: selected ? "1px solid #D4AF37" : "1px solid rgba(255,255,255,0.12)",
-        background: selected ? "rgba(212,175,55,0.12)" : "rgba(255,255,255,0.05)",
-        color: selected ? "#D4AF37" : "rgba(255,255,255,0.5)",
+        border: selected ? "1px solid #FFB800" : "1px solid rgba(255,255,255,0.12)",
+        background: selected ? "rgba(255,184,0,0.12)" : "rgba(255,255,255,0.05)",
+        color: selected ? "#FFB800" : "rgba(255,255,255,0.5)",
       }}
       className="rounded-xl px-3 py-3 text-left transition-all duration-150 focus:outline-none"
     >
       <div className="text-sm font-bold leading-tight">{codec.label}</div>
       <div
         className="text-xs mt-0.5 leading-snug"
-        style={{ color: selected ? "rgba(212,175,55,0.75)" : "rgba(255,255,255,0.3)" }}
+        style={{ color: selected ? "rgba(255,184,0,0.75)" : "rgba(255,255,255,0.3)" }}
       >
         {codec.desc}
       </div>
@@ -65,7 +65,7 @@ function Toggle({ enabled, onToggle }) {
     <button
       onClick={onToggle}
       style={{
-        background: enabled ? "#D4AF37" : "rgba(255,255,255,0.1)",
+        background: enabled ? "#FFB800" : "rgba(255,255,255,0.1)",
         transition: "background 0.2s",
       }}
       className="relative w-10 h-5 rounded-full flex-shrink-0 focus:outline-none"
@@ -76,7 +76,7 @@ function Toggle({ enabled, onToggle }) {
         style={{
           transform: enabled ? "translateX(20px)" : "translateX(2px)",
           transition: "transform 0.2s",
-          background: enabled ? "#080B18" : "rgba(255,255,255,0.7)",
+          background: enabled ? "#03030A" : "rgba(255,255,255,0.7)",
         }}
         className="absolute top-0.5 w-4 h-4 rounded-full shadow"
       />
@@ -87,7 +87,7 @@ function Toggle({ enabled, onToggle }) {
 function SectionLabel({ children }) {
   return (
     <p
-      style={{ color: "#D4AF37", letterSpacing: "0.1em" }}
+      style={{ color: "#FFB800", letterSpacing: "0.1em" }}
       className="text-[10px] uppercase font-semibold mb-2"
     >
       {children}
@@ -135,18 +135,18 @@ export default function WebRTCConfigModal({ isOpen, onClose, onApply, currentCon
           width: 18px;
           height: 18px;
           border-radius: 50%;
-          background: #D4AF37;
-          border: 2px solid #080B18;
-          box-shadow: 0 0 0 2px rgba(212,175,55,0.3);
+          background: #FFB800;
+          border: 2px solid #03030A;
+          box-shadow: 0 0 0 2px rgba(255,184,0,0.3);
           cursor: pointer;
         }
         .webrtc-slider::-moz-range-thumb {
           width: 18px;
           height: 18px;
           border-radius: 50%;
-          background: #D4AF37;
-          border: 2px solid #080B18;
-          box-shadow: 0 0 0 2px rgba(212,175,55,0.3);
+          background: #FFB800;
+          border: 2px solid #03030A;
+          box-shadow: 0 0 0 2px rgba(255,184,0,0.3);
           cursor: pointer;
         }
       `}</style>
@@ -162,7 +162,7 @@ export default function WebRTCConfigModal({ isOpen, onClose, onApply, currentCon
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="fixed inset-0 z-[89]"
-              style={{ background: "rgba(8,11,24,0.75)" }}
+              style={{ background: "rgba(3,3,10,0.75)" }}
               onClick={onClose}
             />
 
@@ -264,7 +264,7 @@ export default function WebRTCConfigModal({ isOpen, onClose, onApply, currentCon
                     <SectionLabel>Target Bitrate</SectionLabel>
                     <span
                       className="text-sm font-bold"
-                      style={{ color: "#D4AF37" }}
+                      style={{ color: "#FFB800" }}
                     >
                       {cfg.bitrate.toLocaleString()} kbps
                     </span>
@@ -278,7 +278,7 @@ export default function WebRTCConfigModal({ isOpen, onClose, onApply, currentCon
                     onChange={(e) => set("bitrate", Number(e.target.value))}
                     className="webrtc-slider"
                     style={{
-                      background: `linear-gradient(to right, #D4AF37 ${((cfg.bitrate - 500) / (12000 - 500)) * 100}%, rgba(255,255,255,0.12) ${((cfg.bitrate - 500) / (12000 - 500)) * 100}%)`,
+                      background: `linear-gradient(to right, #FFB800 ${((cfg.bitrate - 500) / (12000 - 500)) * 100}%, rgba(255,255,255,0.12) ${((cfg.bitrate - 500) / (12000 - 500)) * 100}%)`,
                     }}
                   />
                   <div
@@ -303,7 +303,7 @@ export default function WebRTCConfigModal({ isOpen, onClose, onApply, currentCon
                       style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
                     >
                       <div className="flex items-center gap-3">
-                        <Mic size={18} color="#D4AF37" />
+                        <Mic size={18} color="#FFB800" />
                         <span
                           className="text-sm font-semibold"
                           style={{ color: "rgba(255,255,255,0.85)" }}
@@ -320,7 +320,7 @@ export default function WebRTCConfigModal({ isOpen, onClose, onApply, currentCon
                     {/* Echo Cancellation */}
                     <div className="flex items-center justify-between px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <Volume2 size={18} color="#D4AF37" />
+                        <Volume2 size={18} color="#FFB800" />
                         <span
                           className="text-sm font-semibold"
                           style={{ color: "rgba(255,255,255,0.85)" }}
@@ -349,8 +349,8 @@ export default function WebRTCConfigModal({ isOpen, onClose, onApply, currentCon
                   onClick={handleApply}
                   className="w-full py-3.5 rounded-2xl text-base font-bold tracking-wide transition-opacity active:opacity-80 focus:outline-none"
                   style={{
-                    background: "linear-gradient(135deg, #D4AF37 0%, #b8942e 100%)",
-                    color: "#080B18",
+                    background: "linear-gradient(135deg, #FFB800 0%, #b8942e 100%)",
+                    color: "#03030A",
                     fontFamily: "'Barlow Condensed', sans-serif",
                   }}
                 >

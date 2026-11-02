@@ -195,16 +195,16 @@ export default function RoomWatchPartyPlayer({ roomId, isHost, currentUser }) {
   if (!videoId) {
     return (
       <div className="rounded-xl overflow-hidden"
-        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,184,0,0.12)' }}>
         <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
-          <Tv2 className="w-4 h-4" style={{ color: '#D4AF37' }} />
+          <Tv2 className="w-4 h-4" style={{ color: '#FFB800' }} />
           <span className="font-black text-sm text-white uppercase"
             style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
             Watch Party
           </span>
           <div className="ml-auto flex items-center gap-1.5">
-            <div className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-[#6DBF7E]' : 'bg-white/20'}`} />
-            <span className="text-[10px]" style={{ color: connected ? '#6DBF7E' : 'rgba(255,255,255,0.3)' }}>
+            <div className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-[#00FF88]' : 'bg-white/20'}`} />
+            <span className="text-[10px]" style={{ color: connected ? '#00FF88' : 'rgba(255,255,255,0.3)' }}>
               {connected ? 'Connected' : 'Connecting…'}
             </span>
           </div>
@@ -225,13 +225,13 @@ export default function RoomWatchPartyPlayer({ roomId, isHost, currentUser }) {
                   className="flex-1 px-3 py-2 rounded-xl text-sm text-white outline-none"
                   style={{
                     background: 'rgba(255,255,255,0.07)',
-                    border: '1px solid rgba(212,175,55,0.25)',
+                    border: '1px solid rgba(255,184,0,0.25)',
                     fontFamily: 'Barlow Condensed, sans-serif',
                   }}
                 />
                 <button onClick={handleLoadUrl} disabled={!urlInput.trim()}
                   className="px-4 py-2 rounded-xl font-black text-xs uppercase transition-opacity"
-                  style={{ background: '#D4AF37', color: '#000', opacity: urlInput.trim() ? 1 : 0.5 }}>
+                  style={{ background: '#FFB800', color: '#000', opacity: urlInput.trim() ? 1 : 0.5 }}>
                   Play
                 </button>
               </div>
@@ -241,7 +241,7 @@ export default function RoomWatchPartyPlayer({ roomId, isHost, currentUser }) {
             </>
           ) : (
             <div className="py-6 space-y-2">
-              <Tv2 className="w-10 h-10 mx-auto" style={{ color: 'rgba(212,175,55,0.25)' }} />
+              <Tv2 className="w-10 h-10 mx-auto" style={{ color: 'rgba(255,184,0,0.25)' }} />
               <p className="text-sm text-white/30">Waiting for the host to start Watch Party…</p>
             </div>
           )}
@@ -253,25 +253,25 @@ export default function RoomWatchPartyPlayer({ roomId, isHost, currentUser }) {
   // ── Player view ──────────────────────────────────────────────────────────
   return (
     <div className="rounded-xl overflow-hidden"
-      style={{ background: '#000', border: '1px solid rgba(212,175,55,0.18)' }}>
+      style={{ background: '#000', border: '1px solid rgba(255,184,0,0.18)' }}>
 
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2"
-        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+        style={{ background: 'rgba(3,3,10,0.97)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
         <div className="flex items-center gap-2">
-          <Tv2 className="w-3.5 h-3.5" style={{ color: '#D4AF37' }} />
+          <Tv2 className="w-3.5 h-3.5" style={{ color: '#FFB800' }} />
           <span className="text-[11px] font-black uppercase text-white/70"
             style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.12em' }}>
             Watch Party
           </span>
-          <div className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse" />
-          <span className="text-[10px] text-[#C0392B] font-bold">LIVE</span>
+          <div className="w-1.5 h-1.5 rounded-full bg-[#FF2040] animate-pulse" />
+          <span className="text-[10px] text-[#FF2040] font-bold">LIVE</span>
         </div>
         {isHost && (
           <div className="flex gap-1.5">
             <button onClick={() => setShowInput(s => !s)}
               className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all"
-              style={{ background: showInput ? 'rgba(212,175,55,0.2)' : 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37' }}>
+              style={{ background: showInput ? 'rgba(255,184,0,0.2)' : 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.25)', color: '#FFB800' }}>
               <Search className="w-3 h-3" /> Change
             </button>
           </div>
@@ -288,7 +288,7 @@ export default function RoomWatchPartyPlayer({ roomId, isHost, currentUser }) {
             className="overflow-hidden"
           >
             <div className="flex gap-2 p-3"
-              style={{ background: 'rgba(8,11,24,0.95)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+              style={{ background: 'rgba(3,3,10,0.95)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
               <input
                 autoFocus
                 value={urlInput}
@@ -296,11 +296,11 @@ export default function RoomWatchPartyPlayer({ roomId, isHost, currentUser }) {
                 onKeyDown={e => e.key === 'Enter' && handleLoadUrl()}
                 placeholder="Paste YouTube URL…"
                 className="flex-1 px-3 py-1.5 rounded-lg text-sm text-white outline-none"
-                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,184,0,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
               />
               <button onClick={handleLoadUrl}
                 className="px-3 py-1.5 rounded-lg text-xs font-black uppercase"
-                style={{ background: '#D4AF37', color: '#000' }}>Load</button>
+                style={{ background: '#FFB800', color: '#000' }}>Load</button>
               <button onClick={() => setShowInput(false)}
                 className="w-7 h-7 flex items-center justify-center rounded-lg"
                 style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
@@ -337,7 +337,7 @@ export default function RoomWatchPartyPlayer({ roomId, isHost, currentUser }) {
 
       {/* Reaction bar */}
       <div className="flex items-center justify-between px-4 py-2.5"
-        style={{ background: 'rgba(8,11,24,0.97)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        style={{ background: 'rgba(3,3,10,0.97)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
         <div className="flex gap-3">
           {REACTIONS.map(emoji => (
             <button key={emoji} onClick={() => addReaction(emoji)}
@@ -355,7 +355,7 @@ export default function RoomWatchPartyPlayer({ roomId, isHost, currentUser }) {
             else { p.mute(); setMuted(true); }
           }}
           className="w-7 h-7 flex items-center justify-center rounded-lg transition-all"
-          style={{ background: 'rgba(255,255,255,0.06)', color: muted ? '#C0392B' : 'rgba(255,255,255,0.5)' }}>
+          style={{ background: 'rgba(255,255,255,0.06)', color: muted ? '#FF2040' : 'rgba(255,255,255,0.5)' }}>
           {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
         </button>
       </div>

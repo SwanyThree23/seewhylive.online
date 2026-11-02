@@ -3,31 +3,31 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Sparkles, Gift, Flame, Star, Trophy, Heart, DollarSign, Zap, Clock, User2, Sword } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 const TIER_STYLES = {
   bronze:    { color: '#CD7F32', label: 'BRONZE' },
   silver:    { color: '#C0C0C0', label: 'SILVER' },
-  gold:      { color: '#D4AF37', label: 'GOLD' },
+  gold:      { color: '#FFB800', label: 'GOLD' },
   legendary: { color: '#ff6ef7', label: 'LEGENDARY' },
 };
 
 const BADGE_ICONS = {
-  super_fan:      { icon: Heart,       color: '#C0392B', emoji: '❤️',  tier: 'bronze' },
-  top_supporter:  { icon: Trophy,      color: '#D4AF37', emoji: '🏆',  tier: 'gold' },
-  raid_master:    { icon: Flame,       color: '#C0392B', emoji: '🔥',  tier: 'silver' },
-  poll_champion:  { icon: Star,        color: '#C9A84C', emoji: '⭐',  tier: 'bronze' },
-  chat_legend:    { icon: Sparkles,    color: '#D4AF37', emoji: '✨',  tier: 'gold' },
-  watch_streak:   { icon: Flame,       color: '#D4854A', emoji: '🔥',  tier: 'bronze' },
-  gifter:         { icon: Gift,        color: '#D4854A', emoji: '🎁',  tier: 'silver' },
+  super_fan:      { icon: Heart,       color: '#FF2040', emoji: '❤️',  tier: 'bronze' },
+  top_supporter:  { icon: Trophy,      color: '#FFB800', emoji: '🏆',  tier: 'gold' },
+  raid_master:    { icon: Flame,       color: '#FF2040', emoji: '🔥',  tier: 'silver' },
+  poll_champion:  { icon: Star,        color: '#FFB800', emoji: '⭐',  tier: 'bronze' },
+  chat_legend:    { icon: Sparkles,    color: '#FFB800', emoji: '✨',  tier: 'gold' },
+  watch_streak:   { icon: Flame,       color: '#FF8C00', emoji: '🔥',  tier: 'bronze' },
+  gifter:         { icon: Gift,        color: '#FF8C00', emoji: '🎁',  tier: 'silver' },
   first_subscriber:{ icon: Trophy,     color: G,         emoji: '👑',  tier: 'gold' },
-  big_tipper:     { icon: DollarSign,  color: '#D4AF37', emoji: '💸',  tier: 'gold' },
-  hype_train:     { icon: Zap,         color: '#D4854A', emoji: '⚡',  tier: 'silver' },
-  night_owl:      { icon: Clock,       color: '#7B5DA6', emoji: '🦉',  tier: 'bronze' },
-  co_streamer:    { icon: User2,       color: '#6DBF7E', emoji: '🤝',  tier: 'silver' },
-  battle_winner:  { icon: Sword,       color: '#C0392B', emoji: '⚔️',  tier: 'gold' },
-  early_bird:     { icon: Star,        color: '#6DBF7E', emoji: '🐦',  tier: 'bronze' },
-  combo_king:     { icon: Flame,       color: '#D4854A', emoji: '🔥',  tier: 'legendary' },
+  big_tipper:     { icon: DollarSign,  color: '#FFB800', emoji: '💸',  tier: 'gold' },
+  hype_train:     { icon: Zap,         color: '#FF8C00', emoji: '⚡',  tier: 'silver' },
+  night_owl:      { icon: Clock,       color: '#8B5CF6', emoji: '🦉',  tier: 'bronze' },
+  co_streamer:    { icon: User2,       color: '#00FF88', emoji: '🤝',  tier: 'silver' },
+  battle_winner:  { icon: Sword,       color: '#FF2040', emoji: '⚔️',  tier: 'gold' },
+  early_bird:     { icon: Star,        color: '#00FF88', emoji: '🐦',  tier: 'bronze' },
+  combo_king:     { icon: Flame,       color: '#FF8C00', emoji: '🔥',  tier: 'legendary' },
 };
 
 export default function EngagementBadgesDisplay({ roomId, userId, creatorId, messageCount }) {
@@ -90,7 +90,7 @@ export default function EngagementBadgesDisplay({ roomId, userId, creatorId, mes
               <div
                 className="p-4 rounded-lg backdrop-blur-md overflow-hidden relative"
                 style={{
-                  background: 'rgba(8,11,24,0.92)',
+                  background: 'rgba(3,3,10,0.92)',
                   border: `2px solid ${badge.color}`,
                   boxShadow: isLegendary
                     ? `0 0 24px ${tierStyle.color}80, 0 0 8px ${badge.color}40`
@@ -152,7 +152,7 @@ export default function EngagementBadgesDisplay({ roomId, userId, creatorId, mes
                       <p className="text-[10px] text-white/50 mt-1">{badge.description}</p>
                     )}
                     {streak && (
-                      <p className="text-[10px] font-black mt-1" style={{ color: '#D4854A' }}>
+                      <p className="text-[10px] font-black mt-1" style={{ color: '#FF8C00' }}>
                         🔥 {streak} streak
                       </p>
                     )}

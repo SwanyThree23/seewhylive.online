@@ -31,7 +31,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
     <>
       <button
         onClick={() => setOpen(true)}
-        style={{ fontSize: 12, height: 28, padding: '0 8px', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37', background: 'transparent', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}
+        style={{ fontSize: 12, height: 28, padding: '0 8px', border: '1px solid rgba(255,184,0,0.3)', color: '#FFB800', background: 'transparent', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}
       >
         <Radio className="w-3 h-3" />
         Permissions
@@ -40,7 +40,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
       {open && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)' }} onClick={() => setOpen(false)} />
-          <div style={{ position: 'relative', zIndex: 1, maxWidth: 448, width: '100%', background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 24, color: '#fff' }}>
+          <div style={{ position: 'relative', zIndex: 1, maxWidth: 448, width: '100%', background: '#03030A', border: '1px solid rgba(255,184,0,0.2)', borderRadius: 16, padding: 24, color: '#fff' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{participant?.user_name} — Stream Permissions</span>
               <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}><X className="w-4 h-4" /></button>
@@ -48,10 +48,10 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {/* Allow Multi-Stream */}
-            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#FFB800]/15 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Radio className="w-4 h-4 text-[#d4af37]" />
+                  <Radio className="w-4 h-4 text-[#FFB800]" />
                   <div>
                     <p className="text-xs font-semibold text-white">Multi-Platform Streaming</p>
                     <p className="text-[10px] text-white/40">Allow this guest to output to other platforms</p>
@@ -62,21 +62,21 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                   className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
                     permissions.canMultistream ? 'border border-green-500' : 'bg-white/5 border border-white/10'
                   }`}
-                  style={permissions.canMultistream ? { background: 'rgba(109,191,126,0.15)' } : undefined}
+                  style={permissions.canMultistream ? { background: 'rgba(0,255,136,0.15)' } : undefined}
                 >
-                  {permissions.canMultistream && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
+                  {permissions.canMultistream && <CheckCircle2 className="w-4 h-4 text-[#00FF88]" />}
                 </button>
               </div>
               {permissions.canMultistream && (
-                <p className="text-[11px] text-[#6DBF7E]/70 ml-6">✓ Guest can send to YouTube, Twitch, etc.</p>
+                <p className="text-[11px] text-[#00FF88]/70 ml-6">✓ Guest can send to YouTube, Twitch, etc.</p>
               )}
             </div>
 
             {/* Allow Direct Streaming */}
-            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#FFB800]/15 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Share2 className="w-4 h-4 text-[#d4af37]" />
+                  <Share2 className="w-4 h-4 text-[#FFB800]" />
                   <div>
                     <p className="text-xs font-semibold text-white">Direct Stream Link</p>
                     <p className="text-[10px] text-white/40">Guest can get their own RTMP ingest URL</p>
@@ -87,18 +87,18 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                   className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
                     permissions.canStream ? 'border border-green-500' : 'bg-white/5 border border-white/10'
                   }`}
-                  style={permissions.canStream ? { background: 'rgba(109,191,126,0.15)' } : undefined}
+                  style={permissions.canStream ? { background: 'rgba(0,255,136,0.15)' } : undefined}
                 >
-                  {permissions.canStream && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
+                  {permissions.canStream && <CheckCircle2 className="w-4 h-4 text-[#00FF88]" />}
                 </button>
               </div>
             </div>
 
             {/* Recording Control */}
-            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#FFB800]/15 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Eye className="w-4 h-4 text-[#d4af37]" />
+                  <Eye className="w-4 h-4 text-[#FFB800]" />
                   <div>
                     <p className="text-xs font-semibold text-white">Recording Allowed</p>
                     <p className="text-[10px] text-white/40">Can this stream be recorded to VOD?</p>
@@ -107,23 +107,23 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                 <button
                   onClick={() => handlePermissionToggle('recordingAllowed')}
                   className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
-                    permissions.recordingAllowed ? 'bg-[#D4AF37]/15 border border-[#D4AF37]/40' : 'bg-red-600/30 border border-red-500'
+                    permissions.recordingAllowed ? 'bg-[#FFB800]/15 border border-[#FFB800]/40' : 'bg-red-600/30 border border-red-500'
                   }`}
                 >
                   {permissions.recordingAllowed ? (
-                    <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
+                    <CheckCircle2 className="w-4 h-4 text-[#FFB800]" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-[#C0392B]" />
+                    <XCircle className="w-4 h-4 text-[#FF2040]" />
                   )}
                 </button>
               </div>
             </div>
 
             {/* Visibility Control */}
-            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#FFB800]/15 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  {permissions.visibleToViewers ? <Eye className="w-4 h-4 text-[#4A8A7A]" /> : <EyeOff className="w-4 h-4 text-[#C0392B]" />}
+                  {permissions.visibleToViewers ? <Eye className="w-4 h-4 text-[#00F5FF]" /> : <EyeOff className="w-4 h-4 text-[#FF2040]" />}
                   <div>
                     <p className="text-xs font-semibold text-white">Visible to Viewers</p>
                     <p className="text-[10px] text-white/40">Show this guest in the public stream?</p>
@@ -132,17 +132,17 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                 <button
                   onClick={() => handlePermissionToggle('visibleToViewers')}
                   className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
-                    permissions.visibleToViewers ? 'bg-[#6DBF7E]/20 border border-[#6DBF7E]' : 'bg-gray-600/30 border border-gray-500'
+                    permissions.visibleToViewers ? 'bg-[#00FF88]/20 border border-[#00FF88]' : 'bg-gray-600/30 border border-gray-500'
                   }`}
                 >
-                  {permissions.visibleToViewers && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
+                  {permissions.visibleToViewers && <CheckCircle2 className="w-4 h-4 text-[#00FF88]" />}
                 </button>
               </div>
             </div>
 
             {/* Warning */}
-            <div className="rounded p-2 flex gap-2" style={{ background: 'rgba(212,133,74,0.1)', border: '1px solid rgba(212,133,74,0.25)' }}>
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#D4854A' }} />
+            <div className="rounded p-2 flex gap-2" style={{ background: 'rgba(255,140,0,0.1)', border: '1px solid rgba(255,140,0,0.25)' }}>
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#FF8C00' }} />
               <p className="text-[10px]" style={{ color: '#CC7755' }}>These permissions are specific to this guest. You can update them anytime during the stream.</p>
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
           <div className="flex gap-2 pt-3">
             <button
               onClick={() => setOpen(false)}
-              style={{ flex: 1, background: '#d4af37', color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '10px 0', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}
+              style={{ flex: 1, background: '#FFB800', color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '10px 0', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}
             >
               Done
             </button>

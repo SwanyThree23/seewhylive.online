@@ -5,14 +5,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Radio, Plus, Trash2, Wifi, WifiOff, Loader2, ChevronDown, ChevronUp, Settings, Eye, EyeOff, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const PLATFORM_DEFS = [
-  { key: 'youtube',    label: 'YouTube Live',    color: '#C0392B',   rtmp: 'rtmp://a.rtmp.youtube.com/live2' },
+  { key: 'youtube',    label: 'YouTube Live',    color: '#FF2040',   rtmp: 'rtmp://a.rtmp.youtube.com/live2' },
   { key: 'twitch',     label: 'Twitch',          color: '#9146ff',   rtmp: 'rtmp://live.twitch.tv/live' },
   { key: 'facebook',   label: 'Facebook Live',   color: '#1877f2',   rtmp: 'rtmps://live-api-s.facebook.com:443/rtmp' },
-  { key: 'instagram',  label: 'Instagram Live',  color: '#C0392B',   rtmp: 'rtmps://edgetee-upload.facebook.com:443/rtmp' },
+  { key: 'instagram',  label: 'Instagram Live',  color: '#FF2040',   rtmp: 'rtmps://edgetee-upload.facebook.com:443/rtmp' },
   { key: 'tiktok',     label: 'TikTok Live',     color: '#fff',      rtmp: 'rtmp://push.tiktokv.com/rtmp' },
   { key: 'x',          label: 'X (Twitter)',      color: '#fff',      rtmp: 'rtmp://ingest.pscp.tv:80/x' },
   { key: 'linkedin',   label: 'LinkedIn Live',   color: '#0A66C2',   rtmp: 'rtmp://4.rtmp.linkedin.com/live' },
@@ -23,9 +23,9 @@ const PLATFORM_DEFS = [
 ];
 
 const STATUS_CFG = {
-  live:        { color: '#6DBF7E', dot: true,  label: 'LIVE' },
+  live:        { color: '#00FF88', dot: true,  label: 'LIVE' },
   connecting:  { color: G,         dot: true,  label: 'Connecting' },
-  error:       { color: '#C0392B', dot: false, label: 'Error' },
+  error:       { color: '#FF2040', dot: false, label: 'Error' },
   offline:     { color: 'rgba(255,255,255,0.2)', dot: false, label: 'Idle' },
 };
 
@@ -51,7 +51,7 @@ function PlatformRow({ dest, onRemove, onToggle, onStatusChange, fanoutActive })
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -16 }}
       className="rounded-lg overflow-hidden"
-      style={{ border: `1px solid ${dest.enabled ? `${def.color}30` : 'rgba(255,255,255,0.06)'}`, background: 'rgba(8,11,24,0.8)' }}
+      style={{ border: `1px solid ${dest.enabled ? `${def.color}30` : 'rgba(255,255,255,0.06)'}`, background: 'rgba(3,3,10,0.8)' }}
     >
       <div className="flex items-center gap-2 px-3 py-2.5">
         {/* Platform dot */}
@@ -117,7 +117,7 @@ function PlatformRow({ dest, onRemove, onToggle, onStatusChange, fanoutActive })
                 <input
                   defaultValue={dest.rtmp_url || def.rtmp}
                   placeholder={def.rtmp || 'rtmp://ingest.example.com/live'}
-                  className="w-full px-2 py-1 rounded bg-black/40 border border-white/10 text-[10px] font-mono text-white/70 placeholder-white/20 outline-none focus:border-[#d4af37]/30"
+                  className="w-full px-2 py-1 rounded bg-black/40 border border-white/10 text-[10px] font-mono text-white/70 placeholder-white/20 outline-none focus:border-[#FFB800]/30"
                   onBlur={e => onToggle(dest.id, dest.enabled, { rtmp_url: e.target.value })}
                 />
               </div>
@@ -256,12 +256,12 @@ export default function RTMPFanoutPanel({ roomId, isHost }) {
       {/* Header + master toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Radio className="w-3.5 h-3.5" style={{ color: fanoutActive ? '#C0392B' : G }} />
-          <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: fanoutActive ? '#C0392B' : G }}>
+          <Radio className="w-3.5 h-3.5" style={{ color: fanoutActive ? '#FF2040' : G }} />
+          <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: fanoutActive ? '#FF2040' : G }}>
             RTMP Fanout
           </span>
           {enabledCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: fanoutActive ? 'rgba(192,57,43,0.25)' : `${G}22`, color: fanoutActive ? '#C0392B' : G, ...T }}>
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: fanoutActive ? 'rgba(255,32,64,0.25)' : `${G}22`, color: fanoutActive ? '#FF2040' : G, ...T }}>
               {enabledCount} platforms
             </span>
           )}
@@ -284,9 +284,9 @@ export default function RTMPFanoutPanel({ roomId, isHost }) {
               onClick={toggleFanout}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded font-black text-[10px] uppercase transition-all"
               style={{
-                background: fanoutActive ? 'rgba(192,57,43,0.2)' : `${G}20`,
-                border: `1px solid ${fanoutActive ? 'rgba(192,57,43,0.5)' : `${G}50`}`,
-                color: fanoutActive ? '#C0392B' : G,
+                background: fanoutActive ? 'rgba(255,32,64,0.2)' : `${G}20`,
+                border: `1px solid ${fanoutActive ? 'rgba(255,32,64,0.5)' : `${G}50`}`,
+                color: fanoutActive ? '#FF2040' : G,
                 ...T,
               }}
             >
@@ -331,7 +331,7 @@ export default function RTMPFanoutPanel({ roomId, isHost }) {
                   value={customLabel}
                   onChange={e => setCustomLabel(e.target.value)}
                   placeholder="Custom label (e.g. Rumble, Kick)"
-                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/25 outline-none focus:border-[#d4af37]/40"
+                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/25 outline-none focus:border-[#FFB800]/40"
                 />
               )}
               <button
@@ -349,7 +349,7 @@ export default function RTMPFanoutPanel({ roomId, isHost }) {
       {/* Destinations list */}
       {destinations.length === 0 && !showAdd ? (
         <div className="py-5 text-center">
-          <Radio className="w-7 h-7 mx-auto mb-2" style={{ color: 'rgba(212,175,55,0.2)' }} />
+          <Radio className="w-7 h-7 mx-auto mb-2" style={{ color: 'rgba(255,184,0,0.2)' }} />
           <p className="text-[11px] text-white/20" style={T}>No platforms configured</p>
           <p className="text-[10px] text-white/15 mt-0.5">Add YouTube, Twitch, TikTok + 8 more</p>
         </div>
@@ -375,7 +375,7 @@ export default function RTMPFanoutPanel({ roomId, isHost }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="flex items-center gap-2 px-3 py-2 rounded-lg"
-          style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)' }}
+          style={{ background: 'rgba(255,32,64,0.08)', border: '1px solid rgba(255,32,64,0.25)' }}
         >
           <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
           <span className="text-[10px] font-black uppercase text-red-400" style={T}>

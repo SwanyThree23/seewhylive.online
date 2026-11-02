@@ -5,19 +5,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Palette, Save, Trash2, Copy, Check, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G     = '#D4AF37';
+const G     = '#FFB800';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 const PRESETS = [
-  { name: 'Gold Empire',    colors: { primary: '#D4AF37', secondary: '#D4854A', accent: '#C9A84C', bg: '#080B18' } },
-  { name: 'Dark Crimson',   colors: { primary: '#C0392B', secondary: '#D4AF37', accent: '#D4854A', bg: '#0F0808' } },
-  { name: 'Arctic Blue',    colors: { primary: '#5BA4D4', secondary: '#6DBF7E', accent: '#C9A84C', bg: '#06101A' } },
-  { name: 'Forest Chill',   colors: { primary: '#6DBF7E', secondary: '#C9A84C', accent: '#D4AF37', bg: '#0A1510' } },
-  { name: 'Sunset Blaze',   colors: { primary: '#D4854A', secondary: '#C0392B', accent: '#D4AF37', bg: '#110A06' } },
-  { name: 'Purple Haze',    colors: { primary: '#9B5DA6', secondary: '#D4AF37', accent: '#C9A84C', bg: '#0C0818' } },
-  { name: 'Midnight Gold',  colors: { primary: '#D4AF37', secondary: '#C9A84C', accent: '#6DBF7E', bg: '#05050F' } },
-  { name: 'Cyber Neon',     colors: { primary: '#C9A84C', secondary: '#C0392B', accent: '#6DBF7E', bg: '#080B18' } },
+  { name: 'Gold Empire',    colors: { primary: '#FFB800', secondary: '#FF8C00', accent: '#FFB800', bg: '#03030A' } },
+  { name: 'Dark Crimson',   colors: { primary: '#FF2040', secondary: '#FFB800', accent: '#FF8C00', bg: '#0F0808' } },
+  { name: 'Arctic Blue',    colors: { primary: '#5BA4D4', secondary: '#00FF88', accent: '#FFB800', bg: '#06101A' } },
+  { name: 'Forest Chill',   colors: { primary: '#00FF88', secondary: '#FFB800', accent: '#FFB800', bg: '#0A1510' } },
+  { name: 'Sunset Blaze',   colors: { primary: '#FF8C00', secondary: '#FF2040', accent: '#FFB800', bg: '#110A06' } },
+  { name: 'Purple Haze',    colors: { primary: '#9B5DA6', secondary: '#FFB800', accent: '#FFB800', bg: '#0C0818' } },
+  { name: 'Midnight Gold',  colors: { primary: '#FFB800', secondary: '#FFB800', accent: '#00FF88', bg: '#05050F' } },
+  { name: 'Cyber Neon',     colors: { primary: '#FFB800', secondary: '#FF2040', accent: '#00FF88', bg: '#03030A' } },
 ];
 
 const COLOR_SLOTS = [
@@ -36,7 +36,7 @@ function MiniPreview({ colors }) {
       <div className="flex-1 p-2 flex flex-col justify-between">
         {/* Viewer count */}
         <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#C0392B' }} />
+          <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#FF2040' }} />
           <div className="h-2 rounded w-8" style={{ background: `${colors.primary}60` }} />
           <div className="h-2 rounded w-10 ml-auto" style={{ background: `${colors.secondary}40` }} />
         </div>
@@ -166,7 +166,7 @@ export default function OverlayThemeBuilder({ creatorId }) {
             </span>
             <button onClick={() => copyHex(key, colors[key])}
               className="w-6 h-6 flex items-center justify-center rounded transition-all hover:bg-white/10"
-              style={{ color: copiedKey === key ? '#6DBF7E' : 'rgba(255,255,255,0.3)' }}
+              style={{ color: copiedKey === key ? '#00FF88' : 'rgba(255,255,255,0.3)' }}
               title="Copy hex">
               {copiedKey === key ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
             </button>
@@ -180,7 +180,7 @@ export default function OverlayThemeBuilder({ creatorId }) {
           value={themeName}
           onChange={e => setThemeName(e.target.value)}
           placeholder={`${PRESETS[selectedPreset]?.name || 'Custom'} theme…`}
-          style={{ flex: 1, padding: '6px 12px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none' }}
+          style={{ flex: 1, padding: '6px 12px', background: 'rgba(3,3,10,0.85)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none' }}
         />
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -209,7 +209,7 @@ export default function OverlayThemeBuilder({ creatorId }) {
                 <div className="flex gap-0.5 shrink-0">
                   {(layout.elements?.[0]?.data
                     ? [layout.elements[0].data.primary, layout.elements[0].data.secondary, layout.elements[0].data.accent]
-                    : [G, '#D4854A', '#C9A84C']
+                    : [G, '#FF8C00', '#FFB800']
                   ).map((c, i) => (
                     <div key={i} className="w-3 h-3 rounded-sm" style={{ background: c }} />
                   ))}
@@ -221,7 +221,7 @@ export default function OverlayThemeBuilder({ creatorId }) {
                   Apply
                 </button>
                 <button onClick={() => deleteMutation.mutate(layout.id)}
-                  className="text-white/20 hover:text-[#C0392B] transition-colors"
+                  className="text-white/20 hover:text-[#FF2040] transition-colors"
                   disabled={deleteMutation.isPending}>
                   <Trash2 className="w-3 h-3" />
                 </button>

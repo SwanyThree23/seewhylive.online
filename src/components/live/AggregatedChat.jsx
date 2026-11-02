@@ -18,7 +18,7 @@ const LANG_OPTIONS = [
 const PLATFORM_ICONS = {
   twitch:   { label: 'Twitch',  color: '#9146ff', icon: '🟣' },
   youtube:  { label: 'YouTube', color: '#ff0000', icon: '🔴' },
-  platform: { label: 'SeeWhy', color: '#d4af37',  icon: '⭐' },
+  platform: { label: 'SeeWhy', color: '#FFB800',  icon: '⭐' },
 };
 
 // Heuristic toxic detection — before hitting the AI, catches obvious cases cheap
@@ -32,7 +32,7 @@ function ModBadge({ status, onAppeal, msgId, roomId }) {
   const isFlagged = status === 'flagged';
   return (
     <span
-      className={`ml-1 cursor-pointer ${isFlagged ? 'text-yellow-400' : 'text-[#C0392B]'}`}
+      className={`ml-1 cursor-pointer ${isFlagged ? 'text-yellow-400' : 'text-[#FF2040]'}`}
       title={`${isFlagged ? 'Flagged for review' : status} — click to appeal`}
       onClick={() => onAppeal?.(msgId, roomId)}
     >
@@ -305,7 +305,7 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
           <button
             onClick={() => { const n = !translateEnabled; setTranslateEnabled(n); try { localStorage.setItem('agg_translate_enabled', String(n)); } catch {} if (n) translateAll(); }}
             disabled={isTranslating}
-            style={{ height: 24, padding: '0 8px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4, background: 'transparent', border: 'none', cursor: 'pointer', color: translateEnabled ? '#4A8A7A' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}
+            style={{ height: 24, padding: '0 8px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4, background: 'transparent', border: 'none', cursor: 'pointer', color: translateEnabled ? '#00F5FF' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             <Languages className="w-3 h-3" />
             {isTranslating ? '…' : translateEnabled ? 'On' : 'Translate'}
@@ -316,8 +316,8 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
       {pinnedMsg && Date.now() < pinnedMsg.expiresAt && (
         <div style={{
           margin: '4px 8px',
-          background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(192,57,43,0.1))',
-          border: '1px solid rgba(212,175,55,0.4)',
+          background: 'linear-gradient(135deg, rgba(255,184,0,0.2), rgba(255,32,64,0.1))',
+          border: '1px solid rgba(255,184,0,0.4)',
           borderRadius: 12,
           padding: '8px 12px',
           display: 'flex',
@@ -326,7 +326,7 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
         }}>
           <span style={{ fontSize: 16 }}>🚀</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}>{pinnedMsg.sender} </span>
+            <span style={{ color: '#FFB800', fontWeight: 700, fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}>{pinnedMsg.sender} </span>
             <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12 }}>{pinnedMsg.text}</span>
           </div>
           <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, whiteSpace: 'nowrap', flexShrink: 0 }}>{pinCountdown}s</span>
@@ -353,11 +353,11 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
               <div className="flex-1 min-w-0">
                 <span className="font-semibold text-white/80 mr-1">{msg.user_name}</span>
                 {isViolation && (
-                  <span className="text-[#D4AF37] mr-1">
+                  <span className="text-[#FFB800] mr-1">
                     {isAppealing
                       ? <span className="text-[11px] text-white/30">reviewing…</span>
                       : <ShieldAlert
-                          className="w-3 h-3 inline cursor-pointer hover:text-[#D4AF37]/80"
+                          className="w-3 h-3 inline cursor-pointer hover:text-[#FFB800]/80"
                           title={`Flagged: ${modStatus} — click to appeal`}
                           onClick={() => handleAppeal(msg.id, roomId)}
                         />
@@ -370,7 +370,7 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
                   ) : displayText}
                 </span>
                 {translateEnabled && translationMap[msg.id] && translationMap[msg.id] !== msg.content && (
-                  <p className="text-[#4A8A7A]/40 text-[10px] mt-0.5 italic">original: {msg.content}</p>
+                  <p className="text-[#00F5FF]/40 text-[10px] mt-0.5 italic">original: {msg.content}</p>
                 )}
               </div>
             </div>
@@ -390,14 +390,14 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
           className="flex-1 rounded-lg px-3 py-1.5 pr-8 text-xs text-white placeholder-white/30 focus:outline-none"
           style={{
             background: 'rgba(255,255,255,0.05)',
-            border: boostMode ? '1px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)',
-            boxShadow: boostMode ? '0 0 12px rgba(212,175,55,0.5)' : 'none',
+            border: boostMode ? '1px solid #FFB800' : '1px solid rgba(255,255,255,0.1)',
+            boxShadow: boostMode ? '0 0 12px rgba(255,184,0,0.5)' : 'none',
             transition: 'all 0.2s',
           }}
         />
         {input.length > LIMITS.CHAT_MESSAGE * 0.8 && (
           <span className="absolute right-[76px] bottom-[18px] text-[9px] font-mono pointer-events-none"
-            style={{ color: input.length >= LIMITS.CHAT_MESSAGE ? '#C0392B' : 'rgba(255,255,255,0.3)' }}>
+            style={{ color: input.length >= LIMITS.CHAT_MESSAGE ? '#FF2040' : 'rgba(255,255,255,0.3)' }}>
             {LIMITS.CHAT_MESSAGE - input.length}
           </span>
         )}
@@ -407,9 +407,9 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
             title="RocketChat — pin your message for 30s (costs 50 Love)"
             style={{
               width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer',
-              background: boostMode ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.06)',
-              border: boostMode ? '1px solid rgba(212,175,55,0.6)' : '1px solid rgba(255,255,255,0.1)',
-              color: boostMode ? '#D4AF37' : 'rgba(255,255,255,0.4)',
+              background: boostMode ? 'rgba(255,184,0,0.3)' : 'rgba(255,255,255,0.06)',
+              border: boostMode ? '1px solid rgba(255,184,0,0.6)' : '1px solid rgba(255,255,255,0.1)',
+              color: boostMode ? '#FFB800' : 'rgba(255,255,255,0.4)',
             }}
           >
             <Rocket className="w-3.5 h-3.5" />
@@ -418,7 +418,7 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
         <button
           onClick={sendMessage}
           disabled={!input.trim()}
-          style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer', background: 'rgba(212,175,55,0.8)', color: '#000', border: 'none' }}
+          style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer', background: 'rgba(255,184,0,0.8)', color: '#000', border: 'none' }}
         >
           <Send className="w-3.5 h-3.5" />
         </button>
@@ -438,14 +438,14 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
               }}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px',
-                background: targetLang === opt.value ? 'rgba(212,175,55,0.12)' : 'transparent',
-                border: 'none', cursor: 'pointer', color: targetLang === opt.value ? '#D4AF37' : '#fff',
+                background: targetLang === opt.value ? 'rgba(255,184,0,0.12)' : 'transparent',
+                border: 'none', cursor: 'pointer', color: targetLang === opt.value ? '#FFB800' : '#fff',
                 fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: targetLang === opt.value ? 700 : 400,
               }}
             >
               <span style={{ fontSize: 18 }}>{opt.flag}</span>
               <span>{opt.label}</span>
-              {targetLang === opt.value && <span style={{ marginLeft: 'auto', color: '#D4AF37' }}>✓</span>}
+              {targetLang === opt.value && <span style={{ marginLeft: 'auto', color: '#FFB800' }}>✓</span>}
             </button>
           ))}
         </div>

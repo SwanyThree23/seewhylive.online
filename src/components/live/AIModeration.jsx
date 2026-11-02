@@ -5,12 +5,12 @@ import { fireAlert } from './HostAlertCenter';
 import { useGuardianEnforcement } from '@/hooks/useGuardianEnforcement';
 import { Shield, AlertTriangle, Check, X, Ban, Clock } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 function severityColor(s) {
-  if (s >= 0.8) return '#C0392B';
-  if (s >= 0.5) return '#D4854A';
-  return '#C9A84C';
+  if (s >= 0.8) return '#FF2040';
+  if (s >= 0.5) return '#FF8C00';
+  return '#FFB800';
 }
 
 export default function AIModeration({ roomId, isHost = false, moderatorId, thresholds }) {
@@ -168,9 +168,9 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
           onClick={() => setIsActive(!isActive)}
           className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-lg font-bold text-sm transition-all"
           style={{
-            background: isActive ? `linear-gradient(135deg, #800020, #A0003A)` : 'rgba(255,255,255,0.05)',
-            color:  isActive ? '#D4AF37' : 'rgba(255,255,255,0.5)',
-            border: isActive ? `1px solid rgba(212,175,55,0.4)` : '1px solid rgba(255,255,255,0.1)',
+            background: isActive ? `linear-gradient(135deg, #FF1564, #A0003A)` : 'rgba(255,255,255,0.05)',
+            color:  isActive ? '#FFB800' : 'rgba(255,255,255,0.5)',
+            border: isActive ? `1px solid rgba(255,184,0,0.4)` : '1px solid rgba(255,255,255,0.1)',
           }}
         >
           <Shield className="w-4 h-4" />
@@ -178,12 +178,12 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
           {totalFlagged > 0 && (
             <span className="ml-auto flex items-center gap-1">
               <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(192,57,43,0.3)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.4)' }}>
+                style={{ background: 'rgba(255,32,64,0.3)', color: '#FF2040', border: '1px solid rgba(255,32,64,0.4)' }}>
                 {totalFlagged} flagged
               </span>
               {totalActioned > 0 && (
                 <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
-                  style={{ background: 'rgba(109,191,126,0.15)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)' }}>
+                  style={{ background: 'rgba(0,255,136,0.15)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)' }}>
                   {totalActioned} actioned
                 </span>
               )}
@@ -208,8 +208,8 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
             <div className="flex items-center gap-2">
               <input type="range" min={0.5} max={1} step={0.05} value={autoRemoveThreshold}
                 onChange={e => { const v = parseFloat(e.target.value); setAutoRemoveThreshold(v); try { localStorage.setItem('guardian_threshold', String(v)); } catch {} }}
-                className="flex-1 h-1" style={{ accentColor: '#C0392B' }} />
-              <span className="text-[11px] font-mono font-bold w-8 text-right" style={{ color: '#C0392B' }}>
+                className="flex-1 h-1" style={{ accentColor: '#FF2040' }} />
+              <span className="text-[11px] font-mono font-bold w-8 text-right" style={{ color: '#FF2040' }}>
                 {Math.round(autoRemoveThreshold * 100)}%
               </span>
             </div>
@@ -224,9 +224,9 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
           <motion.div
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
             className="space-y-2 p-3 rounded-lg overflow-hidden"
-            style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)' }}
+            style={{ background: 'rgba(255,32,64,0.08)', border: '1px solid rgba(255,32,64,0.25)' }}
           >
-            <p className="text-xs font-bold" style={{ color: '#C0392B' }}>
+            <p className="text-xs font-bold" style={{ color: '#FF2040' }}>
               ⚠️ {flags.length} flagged — review required
             </p>
             {flags.slice(0, 4).map(flag => (
@@ -234,7 +234,7 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
                 key={flag.id}
                 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                 className="p-2 rounded text-xs space-y-1.5"
-                style={{ background: 'rgba(192,57,43,0.10)', borderLeft: `3px solid ${severityColor(flag.severity)}` }}
+                style={{ background: 'rgba(255,32,64,0.10)', borderLeft: `3px solid ${severityColor(flag.severity)}` }}
               >
                 <div className="flex items-start gap-2">
                   <div className="flex-1 min-w-0">
@@ -252,7 +252,7 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
                 <div className="flex gap-1">
                   <button onClick={() => handleAction(flag, 'approve')} title="Approve"
                     className="flex-1 flex items-center justify-center gap-0.5 py-1 rounded text-[9px] font-bold transition-all hover:bg-white/10"
-                    style={{ color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.2)' }}>
+                    style={{ color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)' }}>
                     <Check className="w-3 h-3" /> OK
                   </button>
                   <button onClick={() => handleAction(flag, 'warn')} title="Warn"
@@ -262,17 +262,17 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
                   </button>
                   <button onClick={() => handleAction(flag, 'timeout')} title="10-min timeout"
                     className="flex-1 flex items-center justify-center gap-0.5 py-1 rounded text-[9px] font-bold transition-all hover:bg-white/10"
-                    style={{ color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)' }}>
+                    style={{ color: '#FF8C00', border: '1px solid rgba(255,140,0,0.3)' }}>
                     <Clock className="w-3 h-3" /> T/O
                   </button>
                   <button onClick={() => handleAction(flag, 'remove')} title="Delete message"
                     className="flex-1 flex items-center justify-center gap-0.5 py-1 rounded text-[9px] font-bold transition-all hover:bg-white/10"
-                    style={{ color: '#C0392B', border: '1px solid rgba(192,57,43,0.3)' }}>
+                    style={{ color: '#FF2040', border: '1px solid rgba(255,32,64,0.3)' }}>
                     <X className="w-3 h-3" /> Del
                   </button>
                   <button onClick={() => handleAction(flag, 'ban')} title="Permanent ban"
                     className="flex-1 flex items-center justify-center gap-0.5 py-1 rounded text-[9px] font-bold transition-all hover:bg-red-900/30"
-                    style={{ color: '#C0392B', border: '1px solid rgba(192,57,43,0.5)', background: 'rgba(192,57,43,0.1)' }}>
+                    style={{ color: '#FF2040', border: '1px solid rgba(255,32,64,0.5)', background: 'rgba(255,32,64,0.1)' }}>
                     <Ban className="w-3 h-3" /> Ban
                   </button>
                 </div>

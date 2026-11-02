@@ -6,10 +6,10 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, A
 import SafeResponsiveContainer from '@/components/shared/SafeChart';
 import { TrendingUp, TrendingDown, Users, MessageSquare, Zap, Heart, Eye, Download, RefreshCw, DollarSign } from 'lucide-react';
 
-const G      = '#D4AF37';
-const BG     = '#080B18';
+const G      = '#FFB800';
+const BG     = '#03030A';
 const PANEL  = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 function exportCSV(chartData, latestAnalytics) {
   const rows = [
@@ -39,7 +39,7 @@ function Trend({ current, previous, unit = '' }) {
   const delta = ((current - previous) / previous) * 100;
   const up = delta >= 0;
   const Icon = up ? TrendingUp : TrendingDown;
-  const color = up ? '#6DBF7E' : '#C0392B';
+  const color = up ? '#00FF88' : '#FF2040';
   return (
     <span className="flex items-center gap-0.5 text-[9px] font-bold" style={{ color }}>
       <Icon className="w-3 h-3" />
@@ -145,7 +145,7 @@ export default function StreamAnalyticsDashboard({ roomId }) {
           <button
             onClick={() => exportCSV(chartData, latestAnalytics)}
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all hover:bg-white/10"
-            style={{ color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)' }}
+            style={{ color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)' }}
           >
             <Download className="w-3 h-3" /> CSV
           </button>
@@ -155,10 +155,10 @@ export default function StreamAnalyticsDashboard({ roomId }) {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
         <StatCard icon={Eye}          label="Viewers"    value={latestAnalytics?.viewer_count  || 0} unit=""  color={G}          previous={prevAnalytics?.viewer_count} />
-        <StatCard icon={Users}        label="Peak"       value={latestAnalytics?.peak_viewers  || 0} unit=""  color="#C9A84C"     previous={prevAnalytics?.peak_viewers} />
-        <StatCard icon={MessageSquare}label="Chat"       value={latestAnalytics?.chat_messages || 0} unit=""  color="#D4AF37"     previous={prevAnalytics?.chat_messages} />
-        <StatCard icon={DollarSign}   label="Tips"       value={totalTips}                            unit="$" color="#D4854A"     previous={null} />
-        <StatCard icon={Heart}        label="Engagement" value={latestAnalytics?.engagement_rate || 0} unit="%" color="#6DBF7E"   previous={prevAnalytics?.engagement_rate} />
+        <StatCard icon={Users}        label="Peak"       value={latestAnalytics?.peak_viewers  || 0} unit=""  color="#FFB800"     previous={prevAnalytics?.peak_viewers} />
+        <StatCard icon={MessageSquare}label="Chat"       value={latestAnalytics?.chat_messages || 0} unit=""  color="#FFB800"     previous={prevAnalytics?.chat_messages} />
+        <StatCard icon={DollarSign}   label="Tips"       value={totalTips}                            unit="$" color="#FF8C00"     previous={null} />
+        <StatCard icon={Heart}        label="Engagement" value={latestAnalytics?.engagement_rate || 0} unit="%" color="#00FF88"   previous={prevAnalytics?.engagement_rate} />
       </div>
 
       {/* Chart tab switcher */}
@@ -193,7 +193,7 @@ export default function StreamAnalyticsDashboard({ roomId }) {
                     <stop offset="95%" stopColor={G} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,175,55,0.08)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,184,0,0.08)" />
                 <XAxis dataKey="time" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} width={30} />
                 <Tooltip {...tooltipStyle} formatter={v => [v.toLocaleString(), 'Viewers']} />
@@ -211,11 +211,11 @@ export default function StreamAnalyticsDashboard({ roomId }) {
             </h3>
             <SafeResponsiveContainer width="100%" height={200}>
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,175,55,0.08)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,184,0,0.08)" />
                 <XAxis dataKey="time" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} width={30} />
                 <Tooltip {...tooltipStyle} formatter={v => [v, 'Messages']} />
-                <Bar dataKey="messages" fill="#D4AF37" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="messages" fill="#FFB800" radius={[3, 3, 0, 0]} />
               </BarChart>
             </SafeResponsiveContainer>
           </motion.div>
@@ -224,17 +224,17 @@ export default function StreamAnalyticsDashboard({ roomId }) {
         {chartTab === 'engagement' && (
           <motion.div key="engagement" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="rounded-lg p-4" style={{ background: BG, border: `1px solid ${BORDER}` }}>
-            <h3 className="text-xs font-bold mb-3" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <h3 className="text-xs font-bold mb-3" style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
               ❤️ Engagement Rate
             </h3>
             <SafeResponsiveContainer width="100%" height={200}>
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(109,191,126,0.08)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,255,136,0.08)" />
                 <XAxis dataKey="time" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} width={30} tickFormatter={v => `${v}%`} />
                 <Tooltip {...tooltipStyle} formatter={v => [`${v}%`, 'Engagement']} />
-                <ReferenceLine y={50} stroke="rgba(212,175,55,0.3)" strokeDasharray="4 4" />
-                <Line type="monotone" dataKey="engagement" stroke="#6DBF7E" strokeWidth={2} dot={false} />
+                <ReferenceLine y={50} stroke="rgba(255,184,0,0.3)" strokeDasharray="4 4" />
+                <Line type="monotone" dataKey="engagement" stroke="#00FF88" strokeWidth={2} dot={false} />
               </LineChart>
             </SafeResponsiveContainer>
           </motion.div>
@@ -243,22 +243,22 @@ export default function StreamAnalyticsDashboard({ roomId }) {
         {chartTab === 'revenue' && (
           <motion.div key="revenue" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="rounded-lg p-4" style={{ background: BG, border: `1px solid ${BORDER}` }}>
-            <h3 className="text-xs font-bold mb-3" style={{ color: '#D4854A', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <h3 className="text-xs font-bold mb-3" style={{ color: '#FF8C00', fontFamily: 'Barlow Condensed, sans-serif' }}>
               💸 Tips &amp; Revenue
             </h3>
             <SafeResponsiveContainer width="100%" height={200}>
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="tipGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#D4854A" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#D4854A" stopOpacity={0} />
+                    <stop offset="5%"  stopColor="#FF8C00" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#FF8C00" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,133,74,0.08)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,140,0,0.08)" />
                 <XAxis dataKey="time" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} width={30} tickFormatter={v => `$${v}`} />
                 <Tooltip {...tooltipStyle} formatter={v => [`$${v}`, 'Tips']} />
-                <Area type="monotone" dataKey="tips" stroke="#D4854A" strokeWidth={2} fill="url(#tipGrad)" dot={false} />
+                <Area type="monotone" dataKey="tips" stroke="#FF8C00" strokeWidth={2} fill="url(#tipGrad)" dot={false} />
               </AreaChart>
             </SafeResponsiveContainer>
           </motion.div>
@@ -277,12 +277,12 @@ export default function StreamAnalyticsDashboard({ roomId }) {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-[10px]">
           {[
             { label: 'Total Unique',    value: (latestAnalytics?.total_viewers || 0).toLocaleString(), color: G },
-            { label: 'Avg Watch',       value: `${avgWatch}m`,                                         color: '#C9A84C' },
-            { label: 'New Followers',   value: (latestAnalytics?.new_followers || 0).toLocaleString(), color: '#6DBF7E' },
-            { label: 'Engagement',      value: `${Math.round(latestAnalytics?.engagement_rate || 0)}%`,color: '#D4854A' },
-            { label: 'Retention',       value: retentionRate != null ? `${retentionRate}%` : '—',       color: retentionRate >= 60 ? '#6DBF7E' : retentionRate >= 30 ? '#D4AF37' : '#C0392B' },
-            { label: 'Chat/min',        value: chatRatePerMin,                                          color: '#7B5DA6' },
-            { label: 'Your Payout',     value: `$${creatorPayout.toFixed(2)}`,                         color: '#6DBF7E' },
+            { label: 'Avg Watch',       value: `${avgWatch}m`,                                         color: '#FFB800' },
+            { label: 'New Followers',   value: (latestAnalytics?.new_followers || 0).toLocaleString(), color: '#00FF88' },
+            { label: 'Engagement',      value: `${Math.round(latestAnalytics?.engagement_rate || 0)}%`,color: '#FF8C00' },
+            { label: 'Retention',       value: retentionRate != null ? `${retentionRate}%` : '—',       color: retentionRate >= 60 ? '#00FF88' : retentionRate >= 30 ? '#FFB800' : '#FF2040' },
+            { label: 'Chat/min',        value: chatRatePerMin,                                          color: '#8B5CF6' },
+            { label: 'Your Payout',     value: `$${creatorPayout.toFixed(2)}`,                         color: '#00FF88' },
             { label: 'Platform (10%)',  value: `$${platformCut.toFixed(2)}`,                            color: 'rgba(255,255,255,0.3)' },
           ].map(({ label, value, color }) => (
             <div key={label} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }} className="p-2.5 rounded">

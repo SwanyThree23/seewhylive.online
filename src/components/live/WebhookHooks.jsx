@@ -5,14 +5,14 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
 const EVENTS = [
-  { id: 'stream.start', label: 'Stream Started', color: 'text-[#6DBF7E]' },
-  { id: 'stream.end', label: 'Stream Ended', color: 'text-[#C0392B]' },
+  { id: 'stream.start', label: 'Stream Started', color: 'text-[#00FF88]' },
+  { id: 'stream.end', label: 'Stream Ended', color: 'text-[#FF2040]' },
   { id: 'viewer.join', label: 'Viewer Joined', color: 'text-blue-400' },
   { id: 'chat.message', label: 'Chat Message', color: 'text-white/60' },
-  { id: 'tip.received', label: 'Tip Received', color: 'text-[#d4af37]' },
-  { id: 'subscription.new', label: 'New Subscriber', color: 'text-[#D4854A]' },
-  { id: 'goal.reached', label: 'Goal Reached', color: 'text-[#6DBF7E]' },
-  { id: 'raid.incoming', label: 'Incoming Raid', color: 'text-[#D4854A]' },
+  { id: 'tip.received', label: 'Tip Received', color: 'text-[#FFB800]' },
+  { id: 'subscription.new', label: 'New Subscriber', color: 'text-[#FF8C00]' },
+  { id: 'goal.reached', label: 'Goal Reached', color: 'text-[#00FF88]' },
+  { id: 'raid.incoming', label: 'Incoming Raid', color: 'text-[#FF8C00]' },
 ];
 
 export default function WebhookHooks({ roomId, isHost }) {
@@ -63,16 +63,16 @@ export default function WebhookHooks({ roomId, isHost }) {
   });
 
   return (
-    <div className="bg-[rgba(212,175,55,0.04)] border border-[#d4af37]/15 rounded-xl overflow-hidden">
+    <div className="bg-[rgba(255,184,0,0.04)] border border-[#FFB800]/15 rounded-xl overflow-hidden">
       <button
         onClick={() => { const n = !expanded; setExpanded(n); try { localStorage.setItem('webhook_expanded', String(n)); } catch {} }}
         className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Webhook className={`w-4 h-4 ${hooks.filter(h => h.active).length > 0 ? 'text-[#d4af37]' : 'text-white/40'}`} />
+          <Webhook className={`w-4 h-4 ${hooks.filter(h => h.active).length > 0 ? 'text-[#FFB800]' : 'text-white/40'}`} />
           <span className="text-xs font-semibold text-white/70">Stream Webhooks</span>
           {hooks.filter(h => h.active).length > 0 && (
-            <span className="text-[11px] bg-[#800020]/30 text-[#D4AF37] border border-[#D4AF37]/30/30 px-1.5 py-0.5 rounded-full font-bold">
+            <span className="text-[11px] bg-[#FF1564]/30 text-[#FFB800] border border-[#FFB800]/30/30 px-1.5 py-0.5 rounded-full font-bold">
               {hooks.filter(h => h.active).length} ACTIVE
             </span>
           )}
@@ -102,7 +102,7 @@ export default function WebhookHooks({ roomId, isHost }) {
                           : 'bg-transparent border-white/5 text-white/30 hover:border-white/15'
                       }`}
                     >
-                      <div className={`w-1.5 h-1.5 rounded-full ${selectedEvents.includes(ev.id) ? 'bg-[#d4af37]' : 'bg-white/10'}`} />
+                      <div className={`w-1.5 h-1.5 rounded-full ${selectedEvents.includes(ev.id) ? 'bg-[#FFB800]' : 'bg-white/10'}`} />
                       <span className={ev.color}>{ev.label}</span>
                     </button>
                   ))}
@@ -117,11 +117,11 @@ export default function WebhookHooks({ roomId, isHost }) {
                     placeholder="https://your-server.com/webhook"
                     value={newUrl}
                     onChange={e => setNewUrl(e.target.value)}
-                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder:text-white/20 outline-none focus:border-[#d4af37]/40"
+                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder:text-white/20 outline-none focus:border-[#FFB800]/40"
                   />
                   <button
                     onClick={addHook}
-                    className="px-2 py-1 bg-[#d4af37]/20 text-[#d4af37] rounded border border-[#d4af37]/30 hover:bg-[#d4af37]/30 text-[10px] font-bold"
+                    className="px-2 py-1 bg-[#FFB800]/20 text-[#FFB800] rounded border border-[#FFB800]/30 hover:bg-[#FFB800]/30 text-[10px] font-bold"
                   >
                     <Plus className="w-3 h-3" />
                   </button>
@@ -134,18 +134,18 @@ export default function WebhookHooks({ roomId, isHost }) {
                   <p className="text-[10px] text-white/30 uppercase tracking-wider">Registered Hooks</p>
                   {hooks.map(hook => (
                     <div key={hook.id} className="flex items-center gap-2 bg-white/5 rounded-lg px-2 py-1.5 border border-white/5">
-                      <div onClick={() => toggleHook(hook.id)} style={{ width:40, height:22, borderRadius:99, background: hook.active ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                      <div onClick={() => toggleHook(hook.id)} style={{ width:40, height:22, borderRadius:99, background: hook.active ? '#FF1564' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
                         <div style={{ position:'absolute', top:3, left: hook.active ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                       </div>
                       <span className="flex-1 text-[10px] text-white/50 truncate">{hook.url}</span>
                       <button
                         onClick={() => testHook(hook)}
                         disabled={testing === hook.id}
-                        className="text-[11px] px-1.5 py-0.5 rounded border border-[#D4AF37]/25/40 text-[#D4AF37] hover:bg-[#0F1428]/30"
+                        className="text-[11px] px-1.5 py-0.5 rounded border border-[#FFB800]/25/40 text-[#FFB800] hover:bg-[#0F1428]/30"
                       >
                         {testing === hook.id ? '...' : 'Test'}
                       </button>
-                      <button onClick={() => removeHook(hook.id)} className="text-[#C0392B]/50 hover:text-[#C0392B]">
+                      <button onClick={() => removeHook(hook.id)} className="text-[#FF2040]/50 hover:text-[#FF2040]">
                         <Trash2 className="w-3 h-3" />
                       </button>
                     </div>

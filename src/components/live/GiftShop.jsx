@@ -5,19 +5,19 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
-const BG      = '#080B18';
-const GREEN   = '#6DBF7E';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK    = '#FF2040';
+const BG      = '#03030A';
+const GREEN   = '#00FF88';
 
 export const GIFTS = [
   { id: 'rose',     emoji: '🌹', name: 'Rose',      price: 0.99,   color: '#E8003D', particles: 12, rarity: 'common' },
-  { id: 'confetti', emoji: '🎉', name: 'Confetti',  price: 1.99,   color: '#D4854A', particles: 20, rarity: 'common' },
-  { id: 'rocket',   emoji: '🚀', name: 'Rocket',    price: 4.99,   color: '#C9A84C', particles: 24, rarity: 'rare' },
+  { id: 'confetti', emoji: '🎉', name: 'Confetti',  price: 1.99,   color: '#FF8C00', particles: 20, rarity: 'common' },
+  { id: 'rocket',   emoji: '🚀', name: 'Rocket',    price: 4.99,   color: '#FFB800', particles: 24, rarity: 'rare' },
   { id: 'crown',    emoji: '👑', name: 'Crown',     price: 9.99,   color: GOLD,      particles: 30, rarity: 'rare' },
-  { id: 'lion',     emoji: '🦁', name: 'Lion King', price: 19.99,  color: '#D4854A', particles: 36, rarity: 'epic' },
-  { id: 'diamond',  emoji: '💎', name: 'Diamond',   price: 49.99,  color: '#C9A84C', particles: 48, rarity: 'legendary' },
+  { id: 'lion',     emoji: '🦁', name: 'Lion King', price: 19.99,  color: '#FF8C00', particles: 36, rarity: 'epic' },
+  { id: 'diamond',  emoji: '💎', name: 'Diamond',   price: 49.99,  color: '#FFB800', particles: 48, rarity: 'legendary' },
   { id: 'tsunami',  emoji: '🌊', name: 'Tsunami',   price: 99.99,  color: '#0066FF', particles: 60, rarity: 'legendary' },
   { id: 'legend',   emoji: '🏆', name: 'Legend',    price: 199.99, color: GOLD,      particles: 80, rarity: 'legendary' },
   { id: 'star',     emoji: '⭐', name: 'Star',      price: 2.99,   color: '#FFD700', particles: 18, rarity: 'common' },
@@ -32,7 +32,7 @@ const BUNDLES = [
   { id: 'vip',      label: '💎 VIP Pack',       gifts: ['lion','diamond','unicorn'], price: 79.99, savings: '25% off' },
 ];
 
-const RARITY_COLORS = { common: 'rgba(255,255,255,0.4)', rare: GOLD, epic: '#D4854A', legendary: '#C084FC' };
+const RARITY_COLORS = { common: 'rgba(255,255,255,0.4)', rare: GOLD, epic: '#FF8C00', legendary: '#C084FC' };
 
 function GiftCard({ gift, selected, onSelect }) {
   const isLegendary = gift.price >= 49.99;
@@ -54,7 +54,7 @@ function GiftCard({ gift, selected, onSelect }) {
         background: selected
           ? `${gift.color}18`
           : isLegendary
-            ? 'rgba(212,175,55,0.04)'
+            ? 'rgba(255,184,0,0.04)'
             : 'rgba(255,255,255,0.03)',
         cursor: 'pointer',
         transition: 'all 0.15s',
@@ -238,8 +238,8 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
           <motion.div
             className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl overflow-hidden"
             style={{
-              background: 'linear-gradient(180deg, #100820 0%, #080B18 100%)',
-              border: '1px solid rgba(212,175,55,0.18)',
+              background: 'linear-gradient(180deg, #100820 0%, #03030A 100%)',
+              border: '1px solid rgba(255,184,0,0.18)',
               borderBottom: 'none',
               maxHeight: '75vh',
             }}
@@ -344,7 +344,7 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
                       { id: 'all',       label: 'All',       color: 'rgba(255,255,255,0.4)' },
                       { id: 'common',    label: 'Common',    color: 'rgba(255,255,255,0.5)' },
                       { id: 'rare',      label: 'Rare',      color: GOLD },
-                      { id: 'epic',      label: 'Epic',      color: '#D4854A' },
+                      { id: 'epic',      label: 'Epic',      color: '#FF8C00' },
                       { id: 'legendary', label: 'Legendary', color: '#C084FC' },
                     ].map(f => (
                       <button key={f.id} onClick={() => { setRarityFilter(f.id); try { localStorage.setItem('gift_shop_rarity', f.id); } catch {} }}
@@ -371,7 +371,7 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
                 <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {BUNDLES.map(bundle => (
                     <div key={bundle.id} style={{ padding: '12px 14px', borderRadius: 12,
-                      background: 'rgba(212,175,55,0.06)', border: `1px solid ${GOLD}25`,
+                      background: 'rgba(255,184,0,0.06)', border: `1px solid ${GOLD}25`,
                       display: 'flex', alignItems: 'center', gap: 12 }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 13, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: '#fff' }}>
@@ -458,7 +458,7 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
                     <span style={{
                       position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
                       fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
-                      color: giftMessage.length > 70 ? '#ef4444' : 'rgba(212,175,55,0.6)',
+                      color: giftMessage.length > 70 ? '#ef4444' : 'rgba(255,184,0,0.6)',
                     }}>
                       {80 - giftMessage.length}
                     </span>

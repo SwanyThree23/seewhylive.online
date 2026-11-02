@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlignLeft, Plus, X, Eye, EyeOff, ChevronDown, ChevronUp, Rss } from 'lucide-react';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const LAYER_STYLES = [
@@ -14,11 +14,11 @@ const LAYER_STYLES = [
 ];
 
 const PRESETS = [
-  { label: 'Breaking Live',    style: 'breaking', text: '🔴 LIVE NOW — SeeWhyLIVE Broadcasting',                     color: '#d4af37' },
-  { label: 'Guest Intro',      style: 'nametag',  text: 'Guest Name | Creator & Influencer',                         color: '#d4af37' },
-  { label: 'News Ticker',      style: 'ticker',   text: '📢 Follow for more content • Join the community • Like & Share • Subscribe for exclusives', color: '#d4af37' },
+  { label: 'Breaking Live',    style: 'breaking', text: '🔴 LIVE NOW — SeeWhyLIVE Broadcasting',                     color: '#FFB800' },
+  { label: 'Guest Intro',      style: 'nametag',  text: 'Guest Name | Creator & Influencer',                         color: '#FFB800' },
+  { label: 'News Ticker',      style: 'ticker',   text: '📢 Follow for more content • Join the community • Like & Share • Subscribe for exclusives', color: '#FFB800' },
   { label: 'Show Title',       style: 'wave',     text: 'SeeWhy LIVE',                                               color: '#068deb' },
-  { label: 'Q&A Session',      style: 'subtitle', text: 'Drop your questions in the chat 👇',                        color: '#d4af37' },
+  { label: 'Q&A Session',      style: 'subtitle', text: 'Drop your questions in the chat 👇',                        color: '#FFB800' },
 ];
 
 let _layerId = 0;
@@ -30,11 +30,11 @@ function BreakingNewsBanner({ text, color }) {
   return (
     <div style={{ position: 'absolute', bottom: '15%', left: 0, right: 0, display: 'flex', alignItems: 'stretch' }}>
       <div style={{
-        background: '#C0392B', color: '#fff', ...T,
+        background: '#FF2040', color: '#fff', ...T,
         fontSize: 12, fontWeight: 900, padding: '6px 14px', flexShrink: 0,
         letterSpacing: 2, textTransform: 'uppercase', display: 'flex', alignItems: 'center',
       }}>BREAKING</div>
-      <div style={{ flex: 1, background: 'rgba(8,11,24,0.88)', padding: '6px 14px', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+      <div style={{ flex: 1, background: 'rgba(3,3,10,0.88)', padding: '6px 14px', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
         <p style={{ ...T, color, fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: 0 }}>
           {text}
         </p>
@@ -48,7 +48,7 @@ function NameTagBanner({ text, color }) {
   return (
     <div style={{
       position: 'absolute', bottom: '12%', left: 28,
-      background: 'rgba(8,11,24,0.88)', border: `2px solid ${color}`,
+      background: 'rgba(3,3,10,0.88)', border: `2px solid ${color}`,
       borderRadius: 4, padding: '8px 18px', backdropFilter: 'blur(8px)',
     }}>
       <p style={{ ...T, color: '#fff', fontSize: 18, fontWeight: 900, letterSpacing: 0.5, margin: 0 }}>{name}</p>
@@ -61,7 +61,7 @@ function ScrollTicker({ text, color }) {
   return (
     <div style={{
       position: 'absolute', bottom: 0, left: 0, right: 0,
-      background: 'rgba(8,11,24,0.9)', borderTop: `2px solid ${color}`,
+      background: 'rgba(3,3,10,0.9)', borderTop: `2px solid ${color}`,
       height: 32, overflow: 'hidden', display: 'flex', alignItems: 'center',
     }}>
       <div style={{
@@ -176,7 +176,7 @@ function LayerRow({ layer, onUpdate, onRemove }) {
   const styleDef = LAYER_STYLES.find(s => s.id === layer.style);
 
   return (
-    <div className="rounded-lg overflow-hidden" style={{ border: `1px solid ${layer.visible ? `${layer.color}35` : 'rgba(255,255,255,0.07)'}`, background: 'rgba(8,11,24,0.7)' }}>
+    <div className="rounded-lg overflow-hidden" style={{ border: `1px solid ${layer.visible ? `${layer.color}35` : 'rgba(255,255,255,0.07)'}`, background: 'rgba(3,3,10,0.7)' }}>
       {/* Row header */}
       <div className="flex items-center gap-2 px-2.5 py-2">
         <div className="w-2 h-2 rounded-full flex-shrink-0 transition-colors" style={{ background: layer.visible ? layer.color : 'rgba(255,255,255,0.2)' }} />
@@ -224,7 +224,7 @@ function LayerRow({ layer, onUpdate, onRemove }) {
                   value={layer.text}
                   onChange={e => onUpdate(layer.id, { text: e.target.value })}
                   placeholder="Enter overlay text…"
-                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/20 outline-none focus:border-[#d4af37]/40"
+                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/20 outline-none focus:border-[#FFB800]/40"
                 />
                 {layer.style === 'nametag' && (
                   <p className="text-[9px] text-white/20 mt-1">Tip: use "Name | Title" for two lines</p>
@@ -316,14 +316,14 @@ export default function NewsBlockOverlay({ onLayersChange, collapsed: initCollap
   const visibleCount = layers.filter(l => l.visible).length;
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.18)', backdropFilter: 'blur(12px)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(3,3,10,0.9)', border: '1px solid rgba(255,184,0,0.18)', backdropFilter: 'blur(12px)' }}>
       {/* Header */}
       <button onClick={() => setCollapsed(c => { const n = !c; try { localStorage.setItem('newsblock_collapsed', String(n)); } catch {} return n; })} className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5 transition-colors">
         <div className="flex items-center gap-2">
           <AlignLeft className="w-3 h-3" style={{ color: G }} />
           <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: G }}>News Block</span>
           {visibleCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ ...T, background: 'rgba(192,57,43,0.25)', color: '#C0392B' }}>
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ ...T, background: 'rgba(255,32,64,0.25)', color: '#FF2040' }}>
               {visibleCount} on air
             </span>
           )}
@@ -395,7 +395,7 @@ export default function NewsBlockOverlay({ onLayersChange, collapsed: initCollap
                 </div>
               ) : !showPresets ? (
                 <div className="py-4 text-center">
-                  <AlignLeft className="w-6 h-6 mx-auto mb-1.5" style={{ color: 'rgba(212,175,55,0.2)' }} />
+                  <AlignLeft className="w-6 h-6 mx-auto mb-1.5" style={{ color: 'rgba(255,184,0,0.2)' }} />
                   <p className="text-[10px] text-white/20" style={T}>No overlays active</p>
                   <p className="text-[9px] text-white/12">Add a preset or blank layer above</p>
                 </div>

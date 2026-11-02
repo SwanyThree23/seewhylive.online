@@ -11,9 +11,9 @@ const DURATION_OPTIONS = [
   { secs: 180, label: '3 min' },
   { secs: 300, label: '5 min' },
 ];
-const GOLD = '#D4AF37';
-const BURG = '#800020';
-const RED  = '#C0392B';
+const GOLD = '#FFB800';
+const BURG = '#FF1564';
+const RED  = '#FF2040';
 const BLUE = '#1A73E8';
 const FONT = 'Barlow Condensed, sans-serif';
 
@@ -139,7 +139,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
             className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
           >
             <div className="px-6 py-3 rounded-2xl font-black uppercase text-xl text-center"
-              style={{ background: 'rgba(8,11,24,0.95)', border: `2px solid ${GOLD}`, color: GOLD, fontFamily: FONT, boxShadow: `0 0 40px rgba(212,175,55,0.4)` }}>
+              style={{ background: 'rgba(3,3,10,0.95)', border: `2px solid ${GOLD}`, color: GOLD, fontFamily: FONT, boxShadow: `0 0 40px rgba(255,184,0,0.4)` }}>
               🔥 COMEBACK! {comebackFlash}
             </div>
           </motion.div>
@@ -150,9 +150,9 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
       {isHost && !active && (
         <button
           onClick={() => setOpen(true)}
-          className="w-full flex items-center gap-2 px-3 py-2.5 bg-[rgba(212,175,55,0.05)] border border-[#d4af37]/20 rounded-xl hover:bg-[#d4af37]/10 transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2.5 bg-[rgba(255,184,0,0.05)] border border-[#FFB800]/20 rounded-xl hover:bg-[#FFB800]/10 transition-colors"
         >
-          <Swords className="w-4 h-4 text-[#d4af37]" />
+          <Swords className="w-4 h-4 text-[#FFB800]" />
           <span className="text-xs font-semibold text-white/70">PK Battle</span>
         </button>
       )}
@@ -172,7 +172,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
               {/* Host side — gold */}
               <div
                 className="flex-1 flex flex-col items-center justify-center py-2 px-3"
-                style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.22) 0%, rgba(8,11,24,0.9) 100%)' }}
+                style={{ background: 'linear-gradient(135deg, rgba(255,184,0,0.22) 0%, rgba(3,3,10,0.9) 100%)' }}
               >
                 <motion.p
                   key={myScore}
@@ -220,7 +220,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
               {/* Opponent side — red */}
               <div
                 className="flex-1 flex flex-col items-center justify-center py-2 px-3"
-                style={{ background: 'linear-gradient(225deg, rgba(192,57,43,0.22) 0%, rgba(8,11,24,0.9) 100%)' }}
+                style={{ background: 'linear-gradient(225deg, rgba(255,32,64,0.22) 0%, rgba(3,3,10,0.9) 100%)' }}
               >
                 <motion.p
                   key={theirScore}
@@ -281,7 +281,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                       key={btn.pts}
                       onClick={() => addPoint(btn.pts)}
                       className="flex flex-col items-center py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95"
-                      style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.22)' }}
+                      style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.22)' }}
                     >
                       <span className="text-base leading-none">{btn.emoji}</span>
                       <span className="text-[9px] font-black mt-0.5" style={{ color: GOLD }}>{btn.label}</span>
@@ -302,7 +302,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                       key={btn.pts}
                       onClick={() => addOpponentPoint(btn.pts)}
                       className="flex flex-col items-center py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95"
-                      style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.22)' }}
+                      style={{ background: 'rgba(255,32,64,0.08)', border: '1px solid rgba(255,32,64,0.22)' }}
                     >
                       <span className="text-base leading-none">{btn.emoji}</span>
                       <span className="text-[9px] font-black mt-0.5" style={{ color: RED }}>{btn.label}</span>
@@ -325,11 +325,11 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-              className="bg-[#080B18] border border-[#d4af37]/30 rounded-2xl p-6 w-full max-w-sm"
+              className="bg-[#03030A] border border-[#FFB800]/30 rounded-2xl p-6 w-full max-w-sm"
               style={{ fontFamily: FONT }}
             >
               <div className="flex items-center gap-2 mb-4">
-                <Swords className="w-5 h-5 text-[#d4af37]" />
+                <Swords className="w-5 h-5 text-[#FFB800]" />
                 <h3 className="text-lg font-bold text-white">Start PK Battle</h3>
               </div>
               <div className="space-y-3">
@@ -339,7 +339,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                     placeholder="e.g. StreamerX"
                     value={opponentName}
                     onChange={e => setOpponentName(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#d4af37]/40"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#FFB800]/40"
                   />
                 </div>
                 <div>
@@ -348,7 +348,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                     placeholder="https://..."
                     value={opponentUrl}
                     onChange={e => setOpponentUrl(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#d4af37]/40"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#FFB800]/40"
                   />
                 </div>
                 <div className="bg-white/5 rounded-xl p-3 space-y-2">
@@ -358,8 +358,8 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                       <button key={d.secs} onClick={() => { setSelectedDuration(d.secs); try { localStorage.setItem('pk_battle_duration', String(d.secs)); } catch {} }}
                         className="px-3 py-1 rounded-lg text-[11px] font-black uppercase transition-all"
                         style={{
-                          background: selectedDuration === d.secs ? `rgba(212,175,55,0.2)` : 'rgba(255,255,255,0.05)',
-                          border: `1px solid ${selectedDuration === d.secs ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                          background: selectedDuration === d.secs ? `rgba(255,184,0,0.2)` : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${selectedDuration === d.secs ? 'rgba(255,184,0,0.5)' : 'rgba(255,255,255,0.1)'}`,
                           color: selectedDuration === d.secs ? GOLD : 'rgba(255,255,255,0.4)',
                           fontFamily: FONT,
                         }}>
@@ -381,7 +381,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                 <button
                   style={{
                     flex:1, padding:'8px 16px', borderRadius:10, border:'none',
-                    background: opponentName ? GOLD : 'rgba(212,175,55,0.35)',
+                    background: opponentName ? GOLD : 'rgba(255,184,0,0.35)',
                     color:'#000', fontWeight:800, cursor: opponentName ? 'pointer' : 'not-allowed',
                     fontSize:13, display:'flex', alignItems:'center', justifyContent:'center', gap:6,
                     fontFamily: FONT, letterSpacing:'0.04em',

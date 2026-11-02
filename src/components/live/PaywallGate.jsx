@@ -60,10 +60,10 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
   // ── Host panel ───────────────────────────────────────────────────────────
   if (isHost) {
     return (
-      <div className="bg-[rgba(8,11,24,0.9)] border border-[#d4af37]/20 rounded-xl p-4 space-y-3">
+      <div className="bg-[rgba(3,3,10,0.9)] border border-[#FFB800]/20 rounded-xl p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-[#d4af37]" />
+            <Lock className="w-4 h-4 text-[#FFB800]" />
             <span className="text-sm font-semibold text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
               Paywall Settings
             </span>
@@ -75,7 +75,7 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
               try { localStorage.setItem('paywall_enabled', String(next)); } catch {}
               toast.success(next ? '120s free preview paywall enabled' : 'Paywall disabled');
             }}
-            className={`w-10 h-5 rounded-full transition-all relative ${hostPaywallEnabled ? 'bg-[#d4af37]' : 'bg-white/10'}`}
+            className={`w-10 h-5 rounded-full transition-all relative ${hostPaywallEnabled ? 'bg-[#FFB800]' : 'bg-white/10'}`}
           >
             <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${hostPaywallEnabled ? 'left-5' : 'left-0.5'}`} />
           </button>
@@ -91,7 +91,7 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
                   <p className="text-xs font-semibold text-white">{tier.label}</p>
                   <p className="text-[10px] text-white/40">{tier.desc}</p>
                 </div>
-                <span className="text-xs text-[#d4af37] font-mono">
+                <span className="text-xs text-[#FFB800] font-mono">
                   {tier.price === 0 ? 'FREE' : `$${tier.price}`}
                 </span>
               </div>
@@ -103,14 +103,14 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
                 placeholder="Custom price $"
                 className="flex-1 px-3 py-2 rounded-lg text-sm text-white outline-none"
                 style={{
-                  background: 'rgba(8,11,24,0.85)',
+                  background: 'rgba(3,3,10,0.85)',
                   border: '1px solid rgba(255,255,255,0.1)',
                   fontFamily: 'Barlow Condensed, sans-serif',
                 }}
               />
               <button
                 className="px-3 py-2 rounded-lg text-xs font-black uppercase"
-                style={{ background: '#d4af37', color: '#000', whiteSpace: 'nowrap' }}
+                style={{ background: '#FFB800', color: '#000', whiteSpace: 'nowrap' }}
               >
                 Add Tier
               </button>
@@ -125,16 +125,16 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
   if (isUnlocked) {
     return (
       <div className="flex items-center gap-2 border border-green-700/30 rounded-lg px-3 py-2"
-        style={{ background: 'rgba(109,191,126,0.15)' }}>
-        <Unlock className="w-4 h-4 text-[#6DBF7E]" />
-        <span className="text-xs text-[#6DBF7E] font-semibold">Full access unlocked</span>
+        style={{ background: 'rgba(0,255,136,0.15)' }}>
+        <Unlock className="w-4 h-4 text-[#00FF88]" />
+        <span className="text-xs text-[#00FF88] font-semibold">Full access unlocked</span>
       </div>
     );
   }
 
   // ── Floating countdown badge (preview in progress) ───────────────────────
   // Rendered via portal-style fixed positioning so it floats over the stream
-  const urgentColor = secondsLeft <= 30 ? '#C0392B' : secondsLeft <= 60 ? '#D4AF37' : '#6DBF7E';
+  const urgentColor = secondsLeft <= 30 ? '#FF2040' : secondsLeft <= 60 ? '#FFB800' : '#00FF88';
 
   return (
     <>
@@ -147,7 +147,7 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
             exit={{ opacity: 0, scale: 0.8, y: -8 }}
             className="fixed top-[70px] right-3 z-[150] flex items-center gap-1.5 px-2.5 py-1.5 rounded-full shadow-lg"
             style={{
-              background: 'rgba(8,11,24,0.92)',
+              background: 'rgba(3,3,10,0.92)',
               border: `1px solid ${urgentColor}55`,
               backdropFilter: 'blur(8px)',
             }}
@@ -178,16 +178,16 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
               transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 28 }}
               className="w-full max-w-sm rounded-2xl p-6 space-y-5 text-center"
               style={{
-                background: 'rgba(8,11,24,0.98)',
-                border: '1px solid rgba(212,175,55,0.35)',
-                boxShadow: '0 0 60px rgba(212,175,55,0.12)',
+                background: 'rgba(3,3,10,0.98)',
+                border: '1px solid rgba(255,184,0,0.35)',
+                boxShadow: '0 0 60px rgba(255,184,0,0.12)',
               }}
             >
               {/* Icon + title */}
               <div className="space-y-2">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto"
-                  style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)' }}>
-                  <Crown className="w-8 h-8 text-[#D4AF37]" />
+                  style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.25)' }}>
+                  <Crown className="w-8 h-8 text-[#FFB800]" />
                 </div>
                 <h2 className="text-white font-black text-xl" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
                   {streamTitle || 'Premium Live'}
@@ -206,8 +206,8 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
                     className="w-full flex items-center gap-3 p-3 rounded-xl border transition-all"
                     style={{
                       background: selectedTier?.label === tier.label
-                        ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${selectedTier?.label === tier.label ? '#D4AF37' : 'rgba(255,255,255,0.08)'}`,
+                        ? 'rgba(255,184,0,0.12)' : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${selectedTier?.label === tier.label ? '#FFB800' : 'rgba(255,255,255,0.08)'}`,
                     }}
                   >
                     <span className="text-2xl">{tier.icon}</span>
@@ -215,7 +215,7 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
                       <p className="text-sm font-bold text-white">{tier.label}</p>
                       <p className="text-[11px] text-white/40">{tier.desc}</p>
                     </div>
-                    <span className="text-lg font-black text-[#D4AF37]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    <span className="text-lg font-black text-[#FFB800]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                       ${tier.price}
                     </span>
                   </button>
@@ -239,7 +239,7 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
                 className="w-full py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2"
                 style={{
                   fontFamily: 'Barlow Condensed, sans-serif',
-                  background: selectedTier ? '#D4AF37' : 'rgba(255,255,255,0.06)',
+                  background: selectedTier ? '#FFB800' : 'rgba(255,255,255,0.06)',
                   color: selectedTier ? '#000' : 'rgba(255,255,255,0.25)',
                   cursor: selectedTier ? 'pointer' : 'not-allowed',
                   letterSpacing: '0.08em',

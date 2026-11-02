@@ -14,22 +14,22 @@ import { useWebRTCPeers } from '@/hooks/useWebRTCPeers';
 import { useAudioLevel } from '@/hooks/useAudioLevel';
 
 const MAX_SEATS   = 20;
-const BG          = '#080B18';
-const GOLD        = '#D4AF37';
-const CRIM        = '#800020';
+const BG          = '#03030A';
+const GOLD        = '#FFB800';
+const CRIM        = '#FF1564';
 const T           = { fontFamily: 'Barlow Condensed, sans-serif' };
 const OCT         = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
 
 const ROLE_COLOR = {
   host:     GOLD,
   'co-host': GOLD,
-  speaker:  '#6DBF7E',
-  guest:    '#D4854A',
+  speaker:  '#00FF88',
+  guest:    '#FF8C00',
   viewer:   '#555',
 };
 
 function connQuality(state) {
-  if (state === 'connected')                       return { color: '#6DBF7E', bars: 3 };
+  if (state === 'connected')                       return { color: '#00FF88', bars: 3 };
   if (state === 'connecting' || state === 'new')   return { color: GOLD,     bars: 2 };
   if (state === 'disconnected')                    return { color: '#f59e0b', bars: 1 };
   return { color: '#ef4444', bars: 0 };
@@ -138,7 +138,7 @@ function SeatTile({
             style={{ background: 'rgba(0,0,0,0.7)' }}>
             <button onClick={e => { e.stopPropagation(); onMute?.(participant); }}
               className="flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase"
-              style={{ ...T, background: 'rgba(109,191,126,0.2)', border: '1px solid #6DBF7E55', color: '#6DBF7E', cursor: 'pointer' }}>
+              style={{ ...T, background: 'rgba(0,255,136,0.2)', border: '1px solid #00FF8855', color: '#00FF88', cursor: 'pointer' }}>
               <MicOff className="w-2.5 h-2.5" />
               Mute
             </button>
@@ -173,12 +173,12 @@ function EmptySeat({ size = 120, onInvite, isHost }) {
     <div onClick={isHost ? onInvite : undefined}
       className="flex flex-col items-center gap-1"
       style={{ width: size, cursor: isHost ? 'pointer' : 'default' }}>
-      <div style={{ clipPath: OCT, width: size, height: size, background: 'rgba(255,255,255,0.015)', border: '2px dashed rgba(212,175,55,0.12)' }}
-        className="flex items-center justify-center group-hover:border-[#d4af37]/30 transition-colors">
-        {isHost && <Link className="w-4 h-4" style={{ color: 'rgba(212,175,55,0.2)' }} />}
+      <div style={{ clipPath: OCT, width: size, height: size, background: 'rgba(255,255,255,0.015)', border: '2px dashed rgba(255,184,0,0.12)' }}
+        className="flex items-center justify-center group-hover:border-[#FFB800]/30 transition-colors">
+        {isHost && <Link className="w-4 h-4" style={{ color: 'rgba(255,184,0,0.2)' }} />}
       </div>
       {isHost && (
-        <span className="text-[8px] font-black uppercase" style={{ ...T, color: 'rgba(212,175,55,0.25)' }}>Invite</span>
+        <span className="text-[8px] font-black uppercase" style={{ ...T, color: 'rgba(255,184,0,0.25)' }}>Invite</span>
       )}
     </div>
   );
@@ -218,7 +218,7 @@ function InviteModal({ roomId, onClose }) {
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', outline: 'none', ...T }} />
           <button onClick={copy}
             className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-black uppercase shrink-0"
-            style={{ ...T, background: copied ? '#6DBF7E22' : `${GOLD}22`, border: `1px solid ${copied ? '#6DBF7E55' : `${GOLD}44`}`, color: copied ? '#6DBF7E' : GOLD, cursor: 'pointer' }}>
+            style={{ ...T, background: copied ? '#00FF8822' : `${GOLD}22`, border: `1px solid ${copied ? '#00FF8855' : `${GOLD}44`}`, color: copied ? '#00FF88' : GOLD, cursor: 'pointer' }}>
             {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
             {copied ? 'Copied' : 'Copy'}
           </button>
@@ -349,7 +349,7 @@ export default function MultiGuestCoStreamPanel({
 
   return (
     <div className="flex flex-col h-full rounded-xl overflow-hidden"
-      style={{ background: BG, border: '1px solid rgba(212,175,55,0.12)' }}>
+      style={{ background: BG, border: '1px solid rgba(255,184,0,0.12)' }}>
 
       {/* Header bar */}
       <div className="flex items-center gap-2 px-3 py-2 shrink-0"
@@ -358,11 +358,11 @@ export default function MultiGuestCoStreamPanel({
         <span className="font-black text-sm uppercase flex-1" style={{ ...T, color: GOLD }}>Co-Stream Panel</span>
 
         <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full"
-          style={{ ...T, background: 'rgba(128,0,32,0.4)', border: '1px solid rgba(192,57,43,0.3)', color: 'rgba(255,255,255,0.7)' }}>
+          style={{ ...T, background: 'rgba(255,21,100,0.4)', border: '1px solid rgba(255,32,64,0.3)', color: 'rgba(255,255,255,0.7)' }}>
           {speakers.length}/{maxSeats}
         </span>
 
-        <span className="text-[10px] flex items-center gap-1" style={{ color: '#6DBF7E', ...T }}>
+        <span className="text-[10px] flex items-center gap-1" style={{ color: '#00FF88', ...T }}>
           <Wifi className="w-3 h-3" />{totalConnected} live
         </span>
 
@@ -516,8 +516,8 @@ export default function MultiGuestCoStreamPanel({
         {/* Mic */}
         <motion.button whileTap={{ scale: 0.9 }} onClick={toggleAudio}
           className="w-10 h-10 rounded-full flex items-center justify-center"
-          style={{ background: audioEnabled ? 'rgba(109,191,126,0.1)' : 'rgba(239,68,68,0.15)', border: `1px solid ${audioEnabled ? '#6DBF7E44' : '#ef444444'}`, cursor: 'pointer' }}>
-          {audioEnabled ? <Mic className="w-4 h-4 text-[#6DBF7E]" /> : <MicOff className="w-4 h-4 text-red-400" />}
+          style={{ background: audioEnabled ? 'rgba(0,255,136,0.1)' : 'rgba(239,68,68,0.15)', border: `1px solid ${audioEnabled ? '#00FF8844' : '#ef444444'}`, cursor: 'pointer' }}>
+          {audioEnabled ? <Mic className="w-4 h-4 text-[#00FF88]" /> : <MicOff className="w-4 h-4 text-red-400" />}
         </motion.button>
 
         {/* Cam */}
@@ -538,7 +538,7 @@ export default function MultiGuestCoStreamPanel({
         {/* Leave */}
         <motion.button whileTap={{ scale: 0.9 }} onClick={handleLeave}
           className="px-4 py-2 rounded-full flex items-center gap-1.5 text-xs font-black uppercase"
-          style={{ ...T, background: 'rgba(192,57,43,0.2)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', cursor: 'pointer' }}>
+          style={{ ...T, background: 'rgba(255,32,64,0.2)', border: '1px solid rgba(255,32,64,0.4)', color: '#FF2040', cursor: 'pointer' }}>
           Leave
         </motion.button>
       </div>

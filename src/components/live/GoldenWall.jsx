@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, Gift, Star, Crown, Zap, TrendingUp } from 'lucide-react';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const GIFT_EMOJIS = { rose: '🌹', diamond: '💎', fire: '🔥', crown: '👑', lightning: '⚡', heart: '❤️', star: '⭐', unicorn: '🦄' };
 const BIG_TIP_THRESHOLD = 25;
 
@@ -24,7 +24,7 @@ function GoldenWallItem({ item }) {
   const isGift      = item.type === 'gift';
   const isSuperChat = item.is_super_chat;
   const isBig       = item.amount >= BIG_TIP_THRESHOLD;
-  const accentColor = isSuperChat ? G : isGift ? '#C0392B' : '#C9A84C';
+  const accentColor = isSuperChat ? G : isGift ? '#FF2040' : '#FFB800';
 
   return (
     <motion.div
@@ -45,7 +45,7 @@ function GoldenWallItem({ item }) {
       }}
     >
       {/* Shimmer */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-60" />
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FFB800] to-transparent opacity-60" />
 
       {/* Big tip celebration burst */}
       {isBig && <CelebrationBurst amount={item.amount} color={accentColor} />}
@@ -58,7 +58,7 @@ function GoldenWallItem({ item }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-bold text-white truncate">{item.user_name}</span>
-            {item.is_top && <Crown className="w-3 h-3 text-[#D4AF37] shrink-0" title="Top tipper" />}
+            {item.is_top && <Crown className="w-3 h-3 text-[#FFB800] shrink-0" title="Top tipper" />}
           </div>
           <div className="flex items-center gap-1">
             <span className="text-sm font-black font-mono" style={{ color: accentColor }}>
@@ -69,7 +69,7 @@ function GoldenWallItem({ item }) {
             )}
           </div>
         </div>
-        {isSuperChat && <Star className="w-4 h-4 text-[#D4AF37] shrink-0 animate-spin" style={{ animationDuration: '3s' }} />}
+        {isSuperChat && <Star className="w-4 h-4 text-[#FFB800] shrink-0 animate-spin" style={{ animationDuration: '3s' }} />}
         {isBig && !isSuperChat && <span className="text-[10px] font-black px-1.5 py-0.5 rounded shrink-0" style={{ background: `${accentColor}20`, color: accentColor }}>BIG</span>}
       </div>
     </motion.div>
@@ -162,28 +162,28 @@ export default function GoldenWall({ roomId, isExpanded = true }) {
   if (!isExpanded) return null;
 
   return (
-    <div className="rounded-xl border border-[#D4AF37]/20 bg-[#0B0B18] overflow-hidden">
+    <div className="rounded-xl border border-[#FFB800]/20 bg-[#0B0B18] overflow-hidden">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-[#D4AF37]/10 bg-[#0D1022] space-y-2">
+      <div className="px-3 py-2 border-b border-[#FFB800]/10 bg-[#0D1022] space-y-2">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-[#D4AF37] flex items-center justify-center">
+          <div className="w-4 h-4 rounded-full bg-[#FFB800] flex items-center justify-center">
             <Zap className="w-2.5 h-2.5 text-black" />
           </div>
-          <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider flex-1">Golden Wall</span>
+          <span className="text-[10px] font-bold text-[#FFB800] uppercase tracking-wider flex-1">Golden Wall</span>
           <div className="flex items-center gap-1">
-            <TrendingUp className="w-3 h-3 text-[#6DBF7E]" />
-            <span className="text-[11px] font-black font-mono text-[#6DBF7E]">${sessionTotal.toFixed(2)}</span>
+            <TrendingUp className="w-3 h-3 text-[#00FF88]" />
+            <span className="text-[11px] font-black font-mono text-[#00FF88]">${sessionTotal.toFixed(2)}</span>
           </div>
         </div>
 
         {/* Top tipper banner */}
         {topTipper && topTipper.amount >= BIG_TIP_THRESHOLD && (
           <div className="flex items-center gap-2 px-2 py-1 rounded-lg"
-            style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
-            <Crown className="w-3 h-3 text-[#D4AF37]" />
+            style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)' }}>
+            <Crown className="w-3 h-3 text-[#FFB800]" />
             <span className="text-[10px] text-white/60">Top: </span>
-            <span className="text-[10px] font-bold text-[#D4AF37] truncate flex-1">{topTipper.user_name}</span>
-            <span className="text-[10px] font-black font-mono text-[#D4AF37]">${topTipper.amount.toFixed(2)}</span>
+            <span className="text-[10px] font-bold text-[#FFB800] truncate flex-1">{topTipper.user_name}</span>
+            <span className="text-[10px] font-black font-mono text-[#FFB800]">${topTipper.amount.toFixed(2)}</span>
           </div>
         )}
 

@@ -3,8 +3,8 @@ import { base44 } from "@/api/base44Client";
 var G = {
   black:"#080808", darkBg:"#0D0D0D", cardBg:"#111111",
   surfaceBg:"#161616", crimson:"#8B0000", crimsonBright:"#C41E3A",
-  gold:"#D4AF37", goldBright:"#FFD700", cyan:"#00E5FF",
-  volt:"#D4AF37", white:"#FFFFFF", gray:"#888888",
+  gold:"#FFB800", goldBright:"#FFD700", cyan:"#00E5FF",
+  volt:"#FFB800", white:"#FFFFFF", gray:"#888888",
   grayDim:"#444444", red:"#FF3B30", green:"#30D158",
   purple:"#BF5FFF", orange:"#FF9500",
   fOrb:"'Orbitron',sans-serif", fRaj:"'Rajdhani',sans-serif",
@@ -25,11 +25,11 @@ function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val));
 // ── MERCH SHOP ────────────────────────────────────────────────────
 var MERCH_ITEMS = [
   {id:"m1",name:"Domino King Tee",price:29.99,icon:"👕",category:"Apparel",color:"#C41E3A",desc:"Premium crimson+gold tee"},
-  {id:"m2",name:"Washington Classic Cap",price:24.99,icon:"🧢",category:"Apparel",color:"#D4AF37",desc:"Structured 6-panel embroidered"},
+  {id:"m2",name:"Washington Classic Cap",price:24.99,icon:"🧢",category:"Apparel",color:"#FFB800",desc:"Structured 6-panel embroidered"},
   {id:"m3",name:"SeeWhy LIVE Hoodie",price:54.99,icon:"🧥",category:"Apparel",color:"#BF5FFF",desc:"Heavy fleece · logo back print"},
   {id:"m4",name:"Domino Set (Full)",price:39.99,icon:"🎲",category:"Games",color:"#00E5FF",desc:"Double-6 · laser engraved tiles"},
   {id:"m5",name:"VibeN'Bones Mug",price:14.99,icon:"☕",category:"Lifestyle",color:"#FF9500",desc:"15oz ceramic · microwave safe"},
-  {id:"m6",name:"Washington Classic Poster",price:19.99,icon:"🖼️",category:"Art",color:"#D4AF37",desc:"18×24 · glossy · tournament art"},
+  {id:"m6",name:"Washington Classic Poster",price:19.99,icon:"🖼️",category:"Art",color:"#FFB800",desc:"18×24 · glossy · tournament art"},
 ];
 
 export function MerchShopV2({ onClose }) {
@@ -54,10 +54,10 @@ export function MerchShopV2({ onClose }) {
           <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontFamily:G.fMon,fontSize:11,color:G.gold}}>${it.price.toFixed(2)}</span><button onClick={function(){removeFromCart(id);}} style={{background:"none",border:"none",color:G.red,fontSize:12,cursor:"pointer"}}>✕</button></div>
         </div>
       );})}
-      <div style={{marginTop:10,padding:"10px",background:G.surfaceBg,borderRadius:8,border:"1px solid rgba(212,175,55,0.2)"}}>
+      <div style={{marginTop:10,padding:"10px",background:G.surfaceBg,borderRadius:8,border:"1px solid rgba(255,184,0,0.2)"}}>
         <div style={{display:"flex",justifyContent:"space-between",borderTop:"1px solid #333",paddingTop:5,marginTop:5}}><span style={{fontFamily:G.fBeb,fontSize:14,color:G.gold}}>TOTAL</span><span style={{fontFamily:G.fBeb,fontSize:18,color:G.gold}}>${total.toFixed(2)}</span></div>
       </div>
-      <button style={{width:"100%",marginTop:10,fontSize:13,padding:"10px 18px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700,letterSpacing:1,background:"linear-gradient(135deg,#8B0000,#D4AF37)",color:"#000"}} onClick={function(){setCart([]);setCheckout(false);}}>PLACE ORDER · ${total.toFixed(2)}</button>
+      <button style={{width:"100%",marginTop:10,fontSize:13,padding:"10px 18px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700,letterSpacing:1,background:"linear-gradient(135deg,#8B0000,#FFB800)",color:"#000"}} onClick={function(){setCart([]);setCheckout(false);}}>PLACE ORDER · ${total.toFixed(2)}</button>
       <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,textAlign:"center",marginTop:4}}>Stripe Connect · Ships 5-7 days · Powered by Printful</div>
     </div>
   );
@@ -71,7 +71,7 @@ export function MerchShopV2({ onClose }) {
           {cart.length>0&&<div style={{width:16,height:16,borderRadius:8,background:G.crimsonBright,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon,fontSize:11,color:"#fff"}}>{cart.length}</div>}
         </div>
         <div style={{display:"flex",gap:6}}>
-          {cart.length>0&&<button style={{fontSize:10,padding:"4px 10px",background:"linear-gradient(135deg,#8B0000,#D4AF37)",color:"#000",borderRadius:6,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700}} onClick={function(){setCheckout(true);}}>CART ${total.toFixed(2)}</button>}
+          {cart.length>0&&<button style={{fontSize:10,padding:"4px 10px",background:"linear-gradient(135deg,#8B0000,#FFB800)",color:"#000",borderRadius:6,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700}} onClick={function(){setCheckout(true);}}>CART ${total.toFixed(2)}</button>}
           {onClose&&<button onClick={onClose} style={{background:"none",border:"none",color:G.gray,fontSize:16,cursor:"pointer"}}>✕</button>}
         </div>
       </div>
@@ -149,7 +149,7 @@ export function ViewerControlsV2({ onClose }) {
           <button onClick={function(){setHandRaised(function(h){return !h;});}} style={{padding:"8px",borderRadius:7,border:"1px solid "+(handRaised?G.orange:G.grayDim),background:handRaised?"rgba(255,149,0,.1)":"none",color:handRaised?G.orange:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>{handRaised?"✋ LOWER":"✋ RAISE"}</button>
         </div>
         <div style={{padding:"6px 8px",background:G.surfaceBg,borderRadius:6,border:"1px solid #222",display:"flex",gap:5,flexWrap:"wrap"}}>
-          <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:7,fontWeight:700,fontFamily:G.fRaj,background:"rgba(200,255,0,.12)",border:"1px solid #D4AF37",color:"#D4AF37"}}>{quality}</span>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:7,fontWeight:700,fontFamily:G.fRaj,background:"rgba(200,255,0,.12)",border:"1px solid #FFB800",color:"#FFB800"}}>{quality}</span>
           <span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(255,149,0,.1)",border:"1px solid "+G.orange,color:G.orange,fontFamily:G.fMon,fontWeight:700}}>{volume}% vol</span>
           {muted&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(196,30,58,.2)",border:"1px solid #C41E3A",color:"#FF6B6B",fontFamily:G.fMon,fontWeight:700}}>MUTED</span>}
           {pip&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(0,229,255,.15)",border:"1px solid #00E5FF",color:"#00E5FF",fontFamily:G.fMon,fontWeight:700}}>PIP</span>}
@@ -164,7 +164,7 @@ export function ViewerControlsV2({ onClose }) {
 var SUB_TIERS_V2 = [
   {id:"bronze",name:"Domino Fan",price:4.99,icon:"🥉",color:"#cd7f32",perks:["Sub badge","Sub-only chat","Support creator"]},
   {id:"silver",name:"Tile Holder",price:9.99,icon:"🥈",color:"#C0C0C0",perks:["Bronze perks","Early access","Exclusive emotes"]},
-  {id:"gold",name:"Washington Classic VIP",price:24.99,icon:"🥇",color:"#D4AF37",perks:["Silver perks","Monthly 1:1","Priority support"]},
+  {id:"gold",name:"Washington Classic VIP",price:24.99,icon:"🥇",color:"#FFB800",perks:["Silver perks","Monthly 1:1","Priority support"]},
 ];
 
 export function InRoomSubWidgetV2({ creatorName, onClose }) {
@@ -189,11 +189,11 @@ export function InRoomSubWidgetV2({ creatorName, onClose }) {
         </div>
         {!subbed ? (
           <>
-            <button style={{width:"100%",fontSize:13,marginBottom:6,padding:"10px 18px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700,letterSpacing:1,background:"linear-gradient(135deg,#8B0000,#D4AF37)",color:"#000"}} onClick={function(){setSubbed(true);}}>SUBSCRIBE · ${tier.price}/mo</button>
+            <button style={{width:"100%",fontSize:13,marginBottom:6,padding:"10px 18px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700,letterSpacing:1,background:"linear-gradient(135deg,#8B0000,#FFB800)",color:"#000"}} onClick={function(){setSubbed(true);}}>SUBSCRIBE · ${tier.price}/mo</button>
             <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,textAlign:"center"}}>{(creatorName||"Creator")+" keeps "+fmtMoney(split.creator)+"/mo · Platform "+fmtMoney(split.platform)}</div>
           </>
         ) : (
-          <div style={{textAlign:"center",padding:"10px",background:"rgba(212,175,55,.1)",borderRadius:8,border:"1px solid "+tier.color,animation:"slideUp .3s ease-out"}}>
+          <div style={{textAlign:"center",padding:"10px",background:"rgba(255,184,0,.1)",borderRadius:8,border:"1px solid "+tier.color,animation:"slideUp .3s ease-out"}}>
             <div style={{fontSize:28,marginBottom:3}}>{tier.icon}</div>
             <div style={{fontFamily:G.fBeb,fontSize:20,color:tier.color}}>SUBSCRIBED!</div>
             <div style={{fontFamily:G.fMon,fontSize:11,color:G.gray,marginTop:3}}>Welcome to {tier.name}</div>
@@ -230,7 +230,7 @@ export function TipAlertConfig() {
           <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,letterSpacing:1,marginBottom:3}}>DURATION: {config.duration}s</div>
           <input type="range" min={2} max={10} step={1} value={config.duration} onChange={function(e){setConfig(function(c){return Object.assign({},c,{duration:parseInt(e.target.value)});});}} style={{accentColor:G.gold,width:"100%"}} />
         </div>
-        <button style={{width:"100%",fontSize:12,padding:"9px 18px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700,letterSpacing:1,background:saved?"#D4AF37":"#8B0000",color:saved?"#080808":"#D4AF37"}} onClick={save}>{saved?"✓ SAVED":"SAVE ALERT CONFIG"}</button>
+        <button style={{width:"100%",fontSize:12,padding:"9px 18px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700,letterSpacing:1,background:saved?"#FFB800":"#8B0000",color:saved?"#080808":"#FFB800"}} onClick={save}>{saved?"✓ SAVED":"SAVE ALERT CONFIG"}</button>
       </div>
     </div>
   );
@@ -265,7 +265,7 @@ export function EngagementDashboardV2({ roomId }) {
         <div style={{display:"flex",alignItems:"center",gap:7}}>
           <span style={{fontSize:13}}>📈</span>
           <span style={{fontFamily:G.fOrb,fontSize:10,color:G.volt,letterSpacing:2}}>ENGAGEMENT</span>
-          {live&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:7,fontWeight:700,fontFamily:G.fRaj,background:"rgba(200,255,0,.12)",border:"1px solid #D4AF37",color:"#D4AF37",animation:"pulse 2s infinite"}}>● LIVE</span>}
+          {live&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:7,fontWeight:700,fontFamily:G.fRaj,background:"rgba(200,255,0,.12)",border:"1px solid #FFB800",color:"#FFB800",animation:"pulse 2s infinite"}}>● LIVE</span>}
         </div>
         <button onClick={function(){setLive(function(l){return !l;});}} style={{fontFamily:G.fMon,fontSize:11,color:live?G.orange:G.green,background:"none",border:"none",cursor:"pointer"}}>{live?"PAUSE":"RESUME"}</button>
       </div>
@@ -290,7 +290,7 @@ export function EngagementDashboardV2({ roomId }) {
         <div style={{marginBottom:8}}>
           <div style={{fontFamily:G.fMon,fontSize:7,color:G.grayDim,marginBottom:3}}>VIEWER TREND</div>
           <div style={{display:"flex",alignItems:"flex-end",height:44,gap:2,background:G.surfaceBg,borderRadius:5,padding:"4px 6px"}}>
-            {data.heatmap.map(function(v,i){return <div key={i} style={{flex:1,background:"linear-gradient(to top,#D4AF37,#D4AF3733)",borderRadius:2,height:(v/maxH*100)+"%",minHeight:2,transition:"height .8s"}} />;}) }
+            {data.heatmap.map(function(v,i){return <div key={i} style={{flex:1,background:"linear-gradient(to top,#FFB800,#FFB80033)",borderRadius:2,height:(v/maxH*100)+"%",minHeight:2,transition:"height .8s"}} />;}) }
           </div>
         </div>
         <div style={{marginBottom:8}}>

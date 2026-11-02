@@ -5,8 +5,8 @@ import { toast } from 'sonner';
 import { Scissors, Zap, Share2, Check, Sparkles, Eye } from 'lucide-react';
 import { Drawer } from 'vaul';
 
-const GOLD   = '#D4AF37';
-const BURG   = '#800020';
+const GOLD   = '#FFB800';
+const BURG   = '#FF1564';
 
 const CLIP_TAGS = [
   { id: 'hype',   emoji: '🔥', label: 'Hype' },
@@ -100,7 +100,7 @@ export default function ClipCreatorSheet({
           className="fixed bottom-0 left-0 right-0 z-[240] rounded-t-2xl"
           style={{
             background: '#0D0F1C',
-            border: '1px solid rgba(212,175,55,0.18)',
+            border: '1px solid rgba(255,184,0,0.18)',
             padding: '0 20px 40px',
             maxHeight: '85vh',
             overflowY: 'auto',
@@ -115,8 +115,8 @@ export default function ClipCreatorSheet({
           {savedClip ? (
             <div className="text-center py-6 space-y-4">
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto"
-                style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)' }}>
-                <Check className="w-8 h-8 text-[#6DBF7E]" />
+                style={{ background: 'rgba(0,255,136,0.15)', border: '1px solid rgba(0,255,136,0.3)' }}>
+                <Check className="w-8 h-8 text-[#00FF88]" />
               </div>
               <div>
                 <p className="text-white font-black text-lg" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -158,8 +158,8 @@ export default function ClipCreatorSheet({
                 disabled={mut.isPending}
                 className="w-full flex items-center gap-3 py-4 px-4 rounded-xl transition-all"
                 style={{
-                  background: `linear-gradient(135deg, ${BURG}88, rgba(212,175,55,0.15))`,
-                  border: `1px solid rgba(212,175,55,0.3)`,
+                  background: `linear-gradient(135deg, ${BURG}88, rgba(255,184,0,0.15))`,
+                  border: `1px solid rgba(255,184,0,0.3)`,
                 }}
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
@@ -173,7 +173,7 @@ export default function ClipCreatorSheet({
                   <p className="text-[11px] text-white/40">Capture last 30s instantly — no setup</p>
                 </div>
                 {mut.isPending && (
-                  <div className="ml-auto w-4 h-4 rounded-full border-2 border-[#D4AF37]/30 border-t-[#D4AF37] animate-spin shrink-0" />
+                  <div className="ml-auto w-4 h-4 rounded-full border-2 border-[#FFB800]/30 border-t-[#FFB800] animate-spin shrink-0" />
                 )}
               </button>
 
@@ -193,7 +193,7 @@ export default function ClipCreatorSheet({
                       className="flex-1 py-2.5 rounded-xl text-sm font-black transition-all"
                       style={{
                         fontFamily: 'Barlow Condensed, sans-serif',
-                        background: duration === s ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
+                        background: duration === s ? 'rgba(255,184,0,0.15)' : 'rgba(255,255,255,0.05)',
                         border: `1px solid ${duration === s ? GOLD : 'rgba(255,255,255,0.08)'}`,
                         color: duration === s ? GOLD : 'rgba(255,255,255,0.4)',
                       }}>
@@ -220,7 +220,7 @@ export default function ClipCreatorSheet({
                       } catch { toast.error('AI title failed'); }
                       finally { setAiGenerating(false); }
                     }}
-                    className="flex items-center gap-1 text-[9px] px-2 py-0.5 rounded border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all"
+                    className="flex items-center gap-1 text-[9px] px-2 py-0.5 rounded border border-[#FFB800]/30 text-[#FFB800] hover:bg-[#FFB800]/10 transition-all"
                   >
                     <Sparkles className="w-2.5 h-2.5" />
                     {aiGenerating ? 'Generating…' : 'AI Title'}
@@ -251,7 +251,7 @@ export default function ClipCreatorSheet({
                         className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all"
                         style={{
                           fontFamily: 'Barlow Condensed, sans-serif',
-                          background: active ? 'rgba(212,175,55,0.18)' : 'rgba(255,255,255,0.05)',
+                          background: active ? 'rgba(255,184,0,0.18)' : 'rgba(255,255,255,0.05)',
                           border: `1px solid ${active ? GOLD : 'rgba(255,255,255,0.1)'}`,
                           color: active ? GOLD : 'rgba(255,255,255,0.4)',
                         }}
@@ -292,12 +292,12 @@ export default function ClipCreatorSheet({
                         <Scissors className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }} />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs text-white/60 truncate">{c.title}</p>
-                          <p className="text-[10px] text-white/30">{c.duration_seconds}s · {c.share_count || 0} shares {c.view_count > 0 && <span className="ml-1 text-[#D4AF37]">· <Eye className="inline w-2.5 h-2.5 -mt-0.5" /> {c.view_count}</span>}</p>
+                          <p className="text-[10px] text-white/30">{c.duration_seconds}s · {c.share_count || 0} shares {c.view_count > 0 && <span className="ml-1 text-[#FFB800]">· <Eye className="inline w-2.5 h-2.5 -mt-0.5" /> {c.view_count}</span>}</p>
                         </div>
                         <button onClick={() => shareClip(c)}
                           className="w-7 h-7 flex items-center justify-center rounded-lg shrink-0"
-                          style={{ background: 'rgba(212,175,55,0.08)' }}>
-                          <Share2 className="w-3 h-3" style={{ color: 'rgba(212,175,55,0.5)' }} />
+                          style={{ background: 'rgba(255,184,0,0.08)' }}>
+                          <Share2 className="w-3 h-3" style={{ color: 'rgba(255,184,0,0.5)' }} />
                         </button>
                       </div>
                     ))}

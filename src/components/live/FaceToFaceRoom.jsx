@@ -9,10 +9,10 @@ import {
 import { useLocalMedia } from '@/hooks/useLocalMedia';
 import { useWebRTCPeers } from '@/hooks/useWebRTCPeers';
 
-const BG    = '#080B18';
-const GOLD  = '#D4AF37';
-const CRIM  = '#800020';
-const SCAR  = '#C0392B';
+const BG    = '#03030A';
+const GOLD  = '#FFB800';
+const CRIM  = '#FF1564';
+const SCAR  = '#FF2040';
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const GIFTS = [
@@ -102,7 +102,7 @@ function VideoPane({ stream, label, mirrored, isLocal, score, side, noVideo, con
         ) : connState ? (
           <span className="ml-auto shrink-0 flex items-center gap-1">
             {connState === 'connected'
-              ? <Wifi className="w-3 h-3" style={{ color: '#6DBF7E' }} />
+              ? <Wifi className="w-3 h-3" style={{ color: '#00FF88' }} />
               : connState === 'connecting' || connState === 'checking'
                 ? <Wifi className="w-3 h-3" style={{ color: GOLD }} />
                 : <WifiOff className="w-3 h-3" style={{ color: '#ef4444' }} />}
@@ -282,7 +282,7 @@ export default function FaceToFaceRoom({
   const [showWinner, setShowWinner] = useState(false);
   useEffect(() => { if (isEnded) setShowWinner(true); }, [isEnded]);
 
-  const peerSignal = opponentConnState === 'connected'   ? { icon: <Wifi className="w-3 h-3" style={{ color: '#6DBF7E' }} />, label: 'Connected' }
+  const peerSignal = opponentConnState === 'connected'   ? { icon: <Wifi className="w-3 h-3" style={{ color: '#00FF88' }} />, label: 'Connected' }
                    : opponentConnState === 'connecting'
                      || opponentConnState === 'checking' ? { icon: <Wifi className="w-3 h-3" style={{ color: GOLD }} />, label: 'Connecting…' }
                    : opponentConnState === 'failed'      ? { icon: <WifiOff className="w-3 h-3 text-red-400" />, label: 'Failed' }
@@ -290,7 +290,7 @@ export default function FaceToFaceRoom({
 
   return (
     <div className="flex flex-col h-full rounded-xl overflow-hidden relative"
-      style={{ background: BG, border: `1px solid rgba(212,175,55,0.15)` }}>
+      style={{ background: BG, border: `1px solid rgba(255,184,0,0.15)` }}>
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-2.5 shrink-0"
@@ -343,9 +343,9 @@ export default function FaceToFaceRoom({
 
         {/* VS divider */}
         <div className="flex flex-col items-center justify-center gap-2 shrink-0 px-1">
-          <div className="w-px flex-1" style={{ background: 'rgba(212,175,55,0.1)' }} />
+          <div className="w-px flex-1" style={{ background: 'rgba(255,184,0,0.1)' }} />
           <span className="font-black text-xs" style={{ ...T, color: `${GOLD}66`, letterSpacing: '0.15em' }}>VS</span>
-          <div className="w-px flex-1" style={{ background: 'rgba(212,175,55,0.1)' }} />
+          <div className="w-px flex-1" style={{ background: 'rgba(255,184,0,0.1)' }} />
         </div>
 
         {/* Remote (right) */}
@@ -380,21 +380,21 @@ export default function FaceToFaceRoom({
         {/* Mic */}
         <motion.button whileTap={{ scale: 0.9 }} onClick={toggleAudio}
           className="w-11 h-11 rounded-full flex items-center justify-center"
-          style={{ background: audioEnabled ? 'rgba(109,191,126,0.12)' : 'rgba(239,68,68,0.15)', border: `1px solid ${audioEnabled ? '#6DBF7E55' : '#ef444455'}`, cursor: 'pointer' }}>
-          {audioEnabled ? <Mic className="w-5 h-5 text-[#6DBF7E]" /> : <MicOff className="w-5 h-5 text-red-400" />}
+          style={{ background: audioEnabled ? 'rgba(0,255,136,0.12)' : 'rgba(239,68,68,0.15)', border: `1px solid ${audioEnabled ? '#00FF8855' : '#ef444455'}`, cursor: 'pointer' }}>
+          {audioEnabled ? <Mic className="w-5 h-5 text-[#00FF88]" /> : <MicOff className="w-5 h-5 text-red-400" />}
         </motion.button>
 
         {/* Cam */}
         <motion.button whileTap={{ scale: 0.9 }} onClick={toggleVideo}
           className="w-11 h-11 rounded-full flex items-center justify-center"
-          style={{ background: videoEnabled ? 'rgba(212,175,55,0.1)' : 'rgba(239,68,68,0.15)', border: `1px solid ${videoEnabled ? `${GOLD}55` : '#ef444455'}`, cursor: 'pointer' }}>
+          style={{ background: videoEnabled ? 'rgba(255,184,0,0.1)' : 'rgba(239,68,68,0.15)', border: `1px solid ${videoEnabled ? `${GOLD}55` : '#ef444455'}`, cursor: 'pointer' }}>
           {videoEnabled ? <Video className="w-5 h-5" style={{ color: GOLD }} /> : <VideoOff className="w-5 h-5 text-red-400" />}
         </motion.button>
 
         {/* End call */}
         <motion.button whileTap={{ scale: 0.9 }} onClick={handleLeave}
           className="w-14 h-11 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(192,57,43,0.25)', border: '1px solid rgba(192,57,43,0.5)', cursor: 'pointer' }}>
+          style={{ background: 'rgba(255,32,64,0.25)', border: '1px solid rgba(255,32,64,0.5)', cursor: 'pointer' }}>
           <PhoneOff className="w-5 h-5" style={{ color: SCAR }} />
         </motion.button>
       </div>
@@ -412,7 +412,7 @@ export default function FaceToFaceRoom({
         {isLobby && !hasBattle && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none rounded-xl"
-            style={{ background: 'rgba(8,11,24,0.6)', backdropFilter: 'blur(2px)' }}>
+            style={{ background: 'rgba(3,3,10,0.6)', backdropFilter: 'blur(2px)' }}>
             <div className="text-3xl mb-3 animate-pulse">⏳</div>
             <p className="font-black text-sm uppercase" style={{ ...T, color: GOLD }}>Waiting for opponent…</p>
             <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Share the room link to invite</p>

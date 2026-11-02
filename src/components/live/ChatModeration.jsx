@@ -15,8 +15,8 @@ const TIMEOUT_OPTIONS = [
 ];
 
 const ACTIONS = {
-  hide: { label: 'Hide', icon: EyeOff, color: '#C0392B', bg: 'rgba(192,57,43,0.25)', border: 'rgba(192,57,43,0.4)' },
-  flag: { label: 'Flag', icon: Eye,    color: '#D4854A', bg: 'rgba(212,133,74,0.2)', border: 'rgba(212,133,74,0.4)' },
+  hide: { label: 'Hide', icon: EyeOff, color: '#FF2040', bg: 'rgba(255,32,64,0.25)', border: 'rgba(255,32,64,0.4)' },
+  flag: { label: 'Flag', icon: Eye,    color: '#FF8C00', bg: 'rgba(255,140,0,0.2)', border: 'rgba(255,140,0,0.4)' },
 };
 
 export default function ChatModeration({ collapsed: initCollapsed = true }) {
@@ -92,15 +92,15 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
   const flagCount = words.filter(w => w.action !== 'hide').length;
 
   return (
-    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
+    <div className="bg-[rgba(3,3,10,0.9)] border border-[rgba(255,184,0,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
         <div className="flex items-center gap-2">
-          <Shield className="w-3 h-3 text-[#4A8A7A]" />
-          <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Auto-Moderation</span>
-          <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(74,138,122,0.1)', color: '#4A8A7A', border: '1px solid rgba(74,138,122,0.3)' }}>
+          <Shield className="w-3 h-3 text-[#00F5FF]" />
+          <span className="text-xs font-semibold text-[#FFB800] uppercase tracking-wider">Auto-Moderation</span>
+          <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(0,245,255,0.1)', color: '#00F5FF', border: '1px solid rgba(0,245,255,0.3)' }}>
             {words.length} watching
           </span>
         </div>
@@ -113,15 +113,15 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
           <div className="grid grid-cols-3 gap-1">
             <div className="bg-white/5 rounded p-1.5 text-center">
               <p className="text-[10px] text-white/40">Watching</p>
-              <p className="text-sm font-bold text-[#d4af37]">{words.length}</p>
+              <p className="text-sm font-bold text-[#FFB800]">{words.length}</p>
             </div>
             <div className="bg-white/5 rounded p-1.5 text-center">
               <p className="text-[10px] text-white/40">Hidden</p>
-              <p className="text-sm font-bold text-[#C0392B]">{hideCount}</p>
+              <p className="text-sm font-bold text-[#FF2040]">{hideCount}</p>
             </div>
             <div className="bg-white/5 rounded p-1.5 text-center">
               <p className="text-[10px] text-white/40">Flagged</p>
-              <p className="text-sm font-bold text-[#D4854A]">{flagCount}</p>
+              <p className="text-sm font-bold text-[#FF8C00]">{flagCount}</p>
             </div>
           </div>
 
@@ -132,7 +132,7 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
               {words.length > 0 && (
                 <button onClick={() => clearAll.mutate()} disabled={clearAll.isPending}
                   className="text-[9px] font-bold disabled:opacity-40"
-                  style={{ color: 'rgba(192,57,43,0.6)' }}>
+                  style={{ color: 'rgba(255,32,64,0.6)' }}>
                   Clear all
                 </button>
               )}
@@ -146,14 +146,14 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
                 onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                 placeholder="Add word..."
                 aria-label="Add a word to watch for"
-                style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 10, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 24, flex: 1 }}
+                style={{ width: '100%', padding: '10px 14px', background: 'rgba(3,3,10,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 10, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 24, flex: 1 }}
               />
               <button
                 onClick={handleAdd}
                 disabled={addWord.isPending}
                 aria-label="Add word"
-                className="w-6 h-6 rounded bg-[#d4af37]/10 border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/20 disabled:opacity-40">
-                <Plus className="w-3 h-3 text-[#d4af37]" />
+                className="w-6 h-6 rounded bg-[#FFB800]/10 border border-[#FFB800]/30 flex items-center justify-center hover:bg-[#FFB800]/20 disabled:opacity-40">
+                <Plus className="w-3 h-3 text-[#FFB800]" />
               </button>
             </div>
 
@@ -235,7 +235,7 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
             ].map(item => (
               <div key={item.label} className="flex items-center justify-between">
                 <span className="text-[10px] text-white/60">{item.label}</span>
-                <div onClick={() => item.set(!item.state)} style={{ width: 40, height: 22, borderRadius: 99, background: item.state ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: item.state ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+                <div onClick={() => item.set(!item.state)} style={{ width: 40, height: 22, borderRadius: 99, background: item.state ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: item.state ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
               </div>
             ))}
             <div className="flex items-center justify-between">
@@ -248,7 +248,7 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
                     style={{ width: 40, height: 20, fontSize: 11, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 4, color: '#fff', textAlign: 'center', padding: 0, outline: 'none', boxSizing: 'border-box' }}
                   />
                 )}
-                <div onClick={() => setNewAccountGate(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: newAccountGate ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: newAccountGate ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
+                <div onClick={() => setNewAccountGate(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: newAccountGate ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: newAccountGate ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
               </div>
             </div>
           </div>
@@ -263,7 +263,7 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
                   onClick={() => setTimeoutDuration(o.value)}
                   className={`flex-1 text-[10px] py-1 rounded border transition-all ${
                     timeoutDuration === o.value
-                      ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10'
+                      ? 'border-[#FFB800] text-[#FFB800] bg-[#FFB800]/10'
                       : 'border-white/10 text-white/40'
                   }`}
                 >

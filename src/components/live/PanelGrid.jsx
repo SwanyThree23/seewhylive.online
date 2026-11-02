@@ -6,16 +6,16 @@ import SpeakerHighlightSettings from './SpeakerHighlightSettings';
 
 const MAX_PANEL_GUESTS = 20;
 const OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 const SPEAKER_SCALE = { glow: 1.05, zoom: 1.06, pulse: 1, dim: 1, off: 1 };
 const SPEAKER_RING_SHOW = { glow: true, zoom: false, pulse: true, dim: false, off: false };
 const SPEAKER_LABEL_SHOW = { glow: true, zoom: false, pulse: true, dim: true, off: false };
 
 const ROLE_CONFIG = {
-  HOST:     { label: 'HOST',     color: '#d4af37', icon: '👑', textColor: '#000' },
-  COHOST:   { label: 'CO-HOST', color: '#D4AF37', icon: '⚡', textColor: '#000' },
-  FEATURED: { label: 'FEATURED', color: '#C0392B', icon: '⭐', textColor: '#fff' },
-  GUEST:    { label: 'GUEST',    color: '#D4854A', icon: '🎙', textColor: '#000' },
+  HOST:     { label: 'HOST',     color: '#FFB800', icon: '👑', textColor: '#000' },
+  COHOST:   { label: 'CO-HOST', color: '#FFB800', icon: '⚡', textColor: '#000' },
+  FEATURED: { label: 'FEATURED', color: '#FF2040', icon: '⭐', textColor: '#fff' },
+  GUEST:    { label: 'GUEST',    color: '#FF8C00', icon: '🎙', textColor: '#000' },
   VIEWER:   { label: 'VIEWER',   color: '#666',    icon: '👁', textColor: '#fff' },
 };
 
@@ -112,10 +112,10 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking,
         <motion.div
           animate={{ opacity: [0.45, 1, 0.45] }}
           transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ position: 'absolute', inset: 0, clipPath: OCT, background: GOLD, filter: 'drop-shadow(0 0 10px rgba(212,175,55,0.85))' }}
+          style={{ position: 'absolute', inset: 0, clipPath: OCT, background: GOLD, filter: 'drop-shadow(0 0 10px rgba(255,184,0,0.85))' }}
         />
       ) : (
-        <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: (SPEAKER_RING_SHOW[highlightStyle] && isSpeaking) ? GOLD : (isSpotlight ? GOLD + '70' : role.color + '50'), transition: 'background 0.2s', filter: (SPEAKER_RING_SHOW[highlightStyle] && isSpeaking) ? 'drop-shadow(0 0 10px rgba(212,175,55,0.85))' : 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: (SPEAKER_RING_SHOW[highlightStyle] && isSpeaking) ? GOLD : (isSpotlight ? GOLD + '70' : role.color + '50'), transition: 'background 0.2s', filter: (SPEAKER_RING_SHOW[highlightStyle] && isSpeaking) ? 'drop-shadow(0 0 10px rgba(255,184,0,0.85))' : 'none' }} />
       )}
       {/* Inner content */}
       <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -130,17 +130,17 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking,
         )}
       </div>
       {/* Mic indicator */}
-      <div style={{ position: 'absolute', bottom: size * 0.12, left: '50%', transform: 'translateX(-50%)', width: size * 0.22, height: size * 0.22, borderRadius: '50%', background: guest.micMuted ? 'rgba(239,68,68,0.9)' : 'rgba(109,191,126,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+      <div style={{ position: 'absolute', bottom: size * 0.12, left: '50%', transform: 'translateX(-50%)', width: size * 0.22, height: size * 0.22, borderRadius: '50%', background: guest.micMuted ? 'rgba(239,68,68,0.9)' : 'rgba(0,255,136,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
         {guest.micMuted ? <MicOff size={size * 0.1} color="#fff" /> : <Mic size={size * 0.1} color="#fff" />}
       </div>
       {/* Connection quality dot */}
-      <div style={{ position: 'absolute', top: size * 0.14, right: size * 0.14, width: size * 0.11, height: size * 0.11, borderRadius: '50%', background: quality === 'good' ? '#6DBF7E' : quality === 'ok' ? '#D4AF37' : '#C0392B', zIndex: 3, boxShadow: '0 0 3px rgba(0,0,0,0.7)' }} />
+      <div style={{ position: 'absolute', top: size * 0.14, right: size * 0.14, width: size * 0.11, height: size * 0.11, borderRadius: '50%', background: quality === 'good' ? '#00FF88' : quality === 'ok' ? '#FFB800' : '#FF2040', zIndex: 3, boxShadow: '0 0 3px rgba(0,0,0,0.7)' }} />
       {/* Hand-raise badge */}
       {guest.handRaised && (
         <motion.div
           animate={{ scale: [1, 1.25, 1], rotate: [0, 18, -12, 0] }}
           transition={{ duration: 1.1, repeat: Infinity }}
-          style={{ position: 'absolute', top: size * 0.03, right: size * 0.03, fontSize: size * 0.19, zIndex: 4, filter: 'drop-shadow(0 0 5px rgba(212,175,55,0.95))', lineHeight: 1, pointerEvents: 'none' }}
+          style={{ position: 'absolute', top: size * 0.03, right: size * 0.03, fontSize: size * 0.19, zIndex: 4, filter: 'drop-shadow(0 0 5px rgba(255,184,0,0.95))', lineHeight: 1, pointerEvents: 'none' }}
         >
           🖐
         </motion.div>
@@ -167,7 +167,7 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking,
       {quickOpen && (
         <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: 'rgba(5,3,16,0.94)', zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: Math.max(6, size * 0.06) }}>
           {[
-            { key: 'mute', Icon: guest.micMuted ? Mic : MicOff, label: guest.micMuted ? 'UNMUTE' : 'MUTE', color: guest.micMuted ? '#ef4444' : '#6DBF7E', onClick: onQuickMute },
+            { key: 'mute', Icon: guest.micMuted ? Mic : MicOff, label: guest.micMuted ? 'UNMUTE' : 'MUTE', color: guest.micMuted ? '#ef4444' : '#00FF88', onClick: onQuickMute },
             { key: 'pin', Icon: Star, label: 'PIN', color: GOLD, onClick: onQuickPin },
             { key: 'remove', Icon: X, label: 'REMOVE', color: '#ef4444', onClick: onQuickRemove },
           ].map((btn) => {
@@ -191,10 +191,10 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking,
 function GhostCell({ size }) {
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <div style={{ position: 'absolute', inset: 0, clipPath: OCT, border: '2px dashed rgba(212,175,55,0.2)', background: 'rgba(255,255,255,0.02)' }} />
+      <div style={{ position: 'absolute', inset: 0, clipPath: OCT, border: '2px dashed rgba(255,184,0,0.2)', background: 'rgba(255,255,255,0.02)' }} />
       <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 3 }}>
-        <span style={{ fontSize: size * 0.18, color: 'rgba(212,175,55,0.3)' }}>+</span>
-        <span style={{ fontSize: size * 0.09, color: 'rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>OPEN</span>
+        <span style={{ fontSize: size * 0.18, color: 'rgba(255,184,0,0.3)' }}>+</span>
+        <span style={{ fontSize: size * 0.09, color: 'rgba(255,184,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>OPEN</span>
       </div>
     </div>
   );
@@ -214,7 +214,7 @@ function SpotlightView({ spotlightGuest, allGuests, streams, isSpeaking, dispatc
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {/* Full-stage featured view */}
-      <div style={{ position: 'relative', background: '#050310', border: `2px solid ${isSpeaking ? GOLD : 'rgba(212,175,55,0.3)'}`, borderRadius: 14, aspectRatio: '16/9', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'border-color 0.3s' }}>
+      <div style={{ position: 'relative', background: '#050310', border: `2px solid ${isSpeaking ? GOLD : 'rgba(255,184,0,0.3)'}`, borderRadius: 14, aspectRatio: '16/9', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'border-color 0.3s' }}>
         {stream ? (
           <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
@@ -229,7 +229,7 @@ function SpotlightView({ spotlightGuest, allGuests, streams, isSpeaking, dispatc
           <motion.div
             animate={{ opacity: [0.7, 1, 0.7] }}
             transition={{ duration: 0.8, repeat: Infinity }}
-            style={{ position: 'absolute', top: 10, right: 44, background: 'rgba(109,191,126,0.9)', color: '#fff', fontSize: 10, fontWeight: 900, padding: '3px 10px', borderRadius: 6, fontFamily: 'Barlow Condensed, sans-serif' }}
+            style={{ position: 'absolute', top: 10, right: 44, background: 'rgba(0,255,136,0.9)', color: '#fff', fontSize: 10, fontWeight: 900, padding: '3px 10px', borderRadius: 6, fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             ● SPEAKING
           </motion.div>
@@ -246,14 +246,14 @@ function SpotlightView({ spotlightGuest, allGuests, streams, isSpeaking, dispatc
             <>
               <button
                 onClick={() => dispatch({ type: 'TOGGLE_MIC', id: spotlightGuest.id })}
-                style={{ padding: '4px 10px', borderRadius: 6, border: spotlightGuest.micMuted ? '1px solid rgba(239,68,68,0.6)' : '1px solid rgba(109,191,126,0.5)', background: spotlightGuest.micMuted ? 'rgba(239,68,68,0.2)' : 'rgba(109,191,126,0.15)', color: spotlightGuest.micMuted ? '#ef4444' : '#6DBF7E', cursor: 'pointer', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4 }}
+                style={{ padding: '4px 10px', borderRadius: 6, border: spotlightGuest.micMuted ? '1px solid rgba(239,68,68,0.6)' : '1px solid rgba(0,255,136,0.5)', background: spotlightGuest.micMuted ? 'rgba(239,68,68,0.2)' : 'rgba(0,255,136,0.15)', color: spotlightGuest.micMuted ? '#ef4444' : '#00FF88', cursor: 'pointer', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4 }}
               >
                 {spotlightGuest.micMuted ? <MicOff size={10} /> : <Mic size={10} />}
                 {spotlightGuest.micMuted ? 'UNMUTE' : 'MUTE'}
               </button>
               <button
                 onClick={() => dispatch({ type: 'TOGGLE_CAM', id: spotlightGuest.id })}
-                style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(212,133,74,0.4)', background: 'rgba(212,133,74,0.1)', color: '#D4854A', cursor: 'pointer', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4 }}
+                style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(255,140,0,0.4)', background: 'rgba(255,140,0,0.1)', color: '#FF8C00', cursor: 'pointer', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4 }}
               >
                 {spotlightGuest.camOff ? <VideoOff size={10} /> : <Video size={10} />} CAM
               </button>
@@ -312,7 +312,7 @@ function DirectorModal({ guest, onClose, onMuteMic, onToggleCam, onRemove, onSpo
             <Star size={12} /> SPOTLIGHT
           </button>
           {guest.role !== 'HOST' && guest.role !== 'COHOST' && (
-            <button onClick={onPromote} style={{ padding: '8px 16px', borderRadius: 9, border: '1px solid rgba(109,191,126,0.4)', background: 'rgba(109,191,126,0.1)', color: '#6DBF7E', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <button onClick={onPromote} style={{ padding: '8px 16px', borderRadius: 9, border: '1px solid rgba(0,255,136,0.4)', background: 'rgba(0,255,136,0.1)', color: '#00FF88', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
               ↑ PROMOTE
             </button>
           )}
@@ -321,10 +321,10 @@ function DirectorModal({ guest, onClose, onMuteMic, onToggleCam, onRemove, onSpo
               🖐 HAND RAISED
             </div>
           )}
-          <button onClick={onMuteMic} style={{ padding: '8px 16px', borderRadius: 9, border: guest.micMuted ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(109,191,126,0.5)', background: guest.micMuted ? 'rgba(239,68,68,0.12)' : 'rgba(109,191,126,0.1)', color: guest.micMuted ? '#ef4444' : '#6DBF7E', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <button onClick={onMuteMic} style={{ padding: '8px 16px', borderRadius: 9, border: guest.micMuted ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(0,255,136,0.5)', background: guest.micMuted ? 'rgba(239,68,68,0.12)' : 'rgba(0,255,136,0.1)', color: guest.micMuted ? '#ef4444' : '#00FF88', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
             {guest.micMuted ? <MicOff size={12} /> : <Mic size={12} />} {guest.micMuted ? 'UNMUTE' : 'MUTE'}
           </button>
-          <button onClick={onToggleCam} style={{ padding: '8px 16px', borderRadius: 9, border: '1px solid rgba(212,133,74,0.4)', background: 'rgba(212,133,74,0.08)', color: '#D4854A', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <button onClick={onToggleCam} style={{ padding: '8px 16px', borderRadius: 9, border: '1px solid rgba(255,140,0,0.4)', background: 'rgba(255,140,0,0.08)', color: '#FF8C00', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
             {guest.camOff ? <VideoOff size={12} /> : <Video size={12} />} CAM {guest.camOff ? 'ON' : 'OFF'}
           </button>
           <button onClick={onRemove} style={{ padding: '8px 16px', borderRadius: 9, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.08)', color: '#ef4444', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
