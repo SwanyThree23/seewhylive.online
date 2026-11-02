@@ -5,7 +5,7 @@ import { CreditCard, CheckCircle, ExternalLink, Loader2, DollarSign, AlertCircle
 import { toast } from 'sonner';
 import { isSafeUrl } from '@/lib/security';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 
 export default function StripeConnectButton({ creatorId }) {
   const qc = useQueryClient();
@@ -87,9 +87,9 @@ export default function StripeConnectButton({ creatorId }) {
   const isConnected = payout?.stripe_connected;
 
   const cardStyle = {
-    border: `2px solid ${isConnected ? '#6DBF7E' : 'rgba(212,175,55,0.25)'}`,
+    border: `2px solid ${isConnected ? '#00FF88' : 'rgba(255,184,0,0.25)'}`,
     borderRadius: 12,
-    background: 'rgba(8,11,24,0.95)',
+    background: 'rgba(3,3,10,0.95)',
     color: '#fff',
     fontFamily: 'Barlow Condensed, sans-serif',
     overflow: 'hidden',
@@ -102,14 +102,14 @@ export default function StripeConnectButton({ creatorId }) {
           <CreditCard style={{ width: 20, height: 20 }} />
           <span style={{ fontWeight: 900, fontSize: 16 }}>Stripe Connect</span>
           {isConnected
-            ? <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(109,191,126,0.15)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', marginLeft: 'auto' }}>Connected</span>
-            : <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(234,179,8,0.1)', color: '#D4854A', border: '1px solid rgba(249,115,22,0.3)', marginLeft: 'auto' }}>Not Connected</span>}
+            ? <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(0,255,136,0.15)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)', marginLeft: 'auto' }}>Connected</span>
+            : <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(234,179,8,0.1)', color: '#FF8C00', border: '1px solid rgba(249,115,22,0.3)', marginLeft: 'auto' }}>Not Connected</span>}
         </div>
       </div>
       <div style={{ padding: 20 }}>
         {isConnected ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#4A9B5E', background: 'rgba(109,191,126,0.08)', borderRadius: 8, padding: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#4A9B5E', background: 'rgba(0,255,136,0.08)', borderRadius: 8, padding: 12 }}>
               <CheckCircle style={{ width: 16, height: 16, flexShrink: 0 }} />
               <div>
                 <p style={{ fontWeight: 600 }}>Payouts enabled</p>
@@ -143,17 +143,17 @@ export default function StripeConnectButton({ creatorId }) {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 14, color: '#C9A84C', background: 'rgba(212,175,55,0.08)', borderRadius: 8, padding: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 14, color: '#FFB800', background: 'rgba(255,184,0,0.08)', borderRadius: 8, padding: 12 }}>
               <AlertCircle style={{ width: 16, height: 16, flexShrink: 0, marginTop: 2 }} />
               <div>
                 <p style={{ fontWeight: 600 }}>Connect Stripe to receive payouts</p>
-                <p style={{ fontSize: 12, color: '#D4854A', marginTop: 2 }}>You earn 90% of all subscriptions and tips. Payouts via Stripe Express.</p>
+                <p style={{ fontSize: 12, color: '#FF8C00', marginTop: 2 }}>You earn 90% of all subscriptions and tips. Payouts via Stripe Express.</p>
               </div>
             </div>
             <ul style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#6DBF7E' }} /> Bronze: $1/mo · Silver: $5/mo · Gold: $15/mo</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#6DBF7E' }} /> 90% creator revenue split on all transactions</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#6DBF7E' }} /> Weekly automatic payouts to your bank</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#00FF88' }} /> Bronze: $1/mo · Silver: $5/mo · Gold: $15/mo</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#00FF88' }} /> 90% creator revenue split on all transactions</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#00FF88' }} /> Weekly automatic payouts to your bank</li>
             </ul>
             <button
               style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '10px 14px', background: '#635bff', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: (connectMutation.isPending || connecting) ? 0.7 : 1 }}

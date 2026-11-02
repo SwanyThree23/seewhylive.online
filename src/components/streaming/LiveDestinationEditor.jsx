@@ -8,11 +8,11 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const PLATFORMS = [
-  { key: 'youtube',   label: 'YouTube Live',   color: '#C0392B', rtmp: 'rtmp://a.rtmp.youtube.com/live2' },
+  { key: 'youtube',   label: 'YouTube Live',   color: '#FF2040', rtmp: 'rtmp://a.rtmp.youtube.com/live2' },
   { key: 'twitch',    label: 'Twitch',          color: '#9146ff', rtmp: 'rtmp://live.twitch.tv/live' },
   { key: 'tiktok',    label: 'TikTok Live',     color: '#69C9D0', rtmp: 'rtmp://push.tiktokv.com/rtmp' },
   { key: 'facebook',  label: 'Facebook Live',   color: '#1877f2', rtmp: 'rtmps://live-api-s.facebook.com:443/rtmp' },
@@ -28,8 +28,8 @@ const PLATFORMS = [
 const STATUS = {
   idle:        { color: 'rgba(255,255,255,0.25)', label: 'Idle',        pulse: false },
   connecting:  { color: G,                        label: 'Connecting…', pulse: true  },
-  live:        { color: '#6DBF7E',                label: 'LIVE',        pulse: true  },
-  error:       { color: '#C0392B',                label: 'Error',       pulse: false },
+  live:        { color: '#00FF88',                label: 'LIVE',        pulse: true  },
+  error:       { color: '#FF2040',                label: 'Error',       pulse: false },
 };
 
 let _destId = 0;
@@ -60,14 +60,14 @@ function DestRow({ dest, masterLive, onUpdate, onRemove, onToggleLive }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -12 }}
       className="rounded-lg overflow-hidden"
-      style={{ border: `1px solid ${dest.status === 'live' ? '#6DBF7E30' : `${platform.color}22`}`, background: 'rgba(8,11,24,0.8)' }}
+      style={{ border: `1px solid ${dest.status === 'live' ? '#00FF8830' : `${platform.color}22`}`, background: 'rgba(3,3,10,0.8)' }}
     >
       {/* Row summary */}
       <div className="flex items-center gap-2 px-3 py-2.5">
         <div className="w-2 h-2 rounded-full flex-shrink-0 transition-colors" style={{ background: platform.color }} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-black" style={{ ...T, color: dest.status === 'live' ? '#6DBF7E' : 'rgba(255,255,255,0.75)' }}>
+            <span className="text-[11px] font-black" style={{ ...T, color: dest.status === 'live' ? '#00FF88' : 'rgba(255,255,255,0.75)' }}>
               {dest.label || platform.label}
             </span>
             {/* Status badge */}
@@ -98,9 +98,9 @@ function DestRow({ dest, masterLive, onUpdate, onRemove, onToggleLive }) {
               className="flex items-center gap-1 px-2 py-1 rounded font-black text-[9px] uppercase transition-all disabled:opacity-50"
               style={{
                 ...T,
-                background: dest.status === 'live' ? 'rgba(192,57,43,0.2)' : `${G}15`,
-                border: `1px solid ${dest.status === 'live' ? 'rgba(192,57,43,0.5)' : `${G}40`}`,
-                color: dest.status === 'live' ? '#C0392B' : G,
+                background: dest.status === 'live' ? 'rgba(255,32,64,0.2)' : `${G}15`,
+                border: `1px solid ${dest.status === 'live' ? 'rgba(255,32,64,0.5)' : `${G}40`}`,
+                color: dest.status === 'live' ? '#FF2040' : G,
               }}
             >
               {dest.status === 'connecting' ? <Loader2 className="w-3 h-3 animate-spin" /> :
@@ -130,9 +130,9 @@ function DestRow({ dest, masterLive, onUpdate, onRemove, onToggleLive }) {
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <div className="px-3 pb-3 border-t border-white/5 pt-2 space-y-2">
               {dest.status === 'live' && (
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded" style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)' }}>
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />
-                  <p className="text-[9px] text-[#6DBF7E] font-bold" style={T}>Changes apply to the next keyframe — no stream restart needed</p>
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded" style={{ background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.2)' }}>
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#00FF88] animate-pulse" />
+                  <p className="text-[9px] text-[#00FF88] font-bold" style={T}>Changes apply to the next keyframe — no stream restart needed</p>
                 </div>
               )}
               {/* Label */}
@@ -142,7 +142,7 @@ function DestRow({ dest, masterLive, onUpdate, onRemove, onToggleLive }) {
                   defaultValue={dest.label}
                   placeholder={platform.label}
                   onBlur={e => onUpdate(dest.id, { label: e.target.value.trim() || platform.label })}
-                  className="w-full px-2 py-1 rounded bg-black/40 border border-white/10 text-[10px] text-white/70 placeholder-white/20 outline-none focus:border-[#d4af37]/30"
+                  className="w-full px-2 py-1 rounded bg-black/40 border border-white/10 text-[10px] text-white/70 placeholder-white/20 outline-none focus:border-[#ffb800]/30"
                 />
               </div>
               {/* RTMP URL */}
@@ -152,7 +152,7 @@ function DestRow({ dest, masterLive, onUpdate, onRemove, onToggleLive }) {
                   defaultValue={dest.rtmpUrl || platform.rtmp}
                   placeholder={platform.rtmp || 'rtmp://ingest.example.com/live'}
                   onBlur={e => onUpdate(dest.id, { rtmpUrl: e.target.value.trim() })}
-                  className="w-full px-2 py-1 rounded bg-black/40 border border-white/10 text-[10px] font-mono text-white/70 placeholder-white/20 outline-none focus:border-[#d4af37]/30"
+                  className="w-full px-2 py-1 rounded bg-black/40 border border-white/10 text-[10px] font-mono text-white/70 placeholder-white/20 outline-none focus:border-[#ffb800]/30"
                 />
               </div>
               {/* Stream Key */}
@@ -211,9 +211,9 @@ function AddPanel({ onAdd, onClose, masterLive }) {
     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
       className="rounded-xl p-3 space-y-3" style={{ background: `${G}06`, border: `1px solid ${G}22` }}>
       {masterLive && (
-        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded" style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)' }}>
-          <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />
-          <p className="text-[9px] text-[#6DBF7E] font-bold" style={T}>Adding mid-stream — existing destinations are unaffected</p>
+        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded" style={{ background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.2)' }}>
+          <div className="w-1.5 h-1.5 rounded-full bg-[#00FF88] animate-pulse" />
+          <p className="text-[9px] text-[#00FF88] font-bold" style={T}>Adding mid-stream — existing destinations are unaffected</p>
         </div>
       )}
       {/* Platform grid */}
@@ -232,7 +232,7 @@ function AddPanel({ onAdd, onClose, masterLive }) {
           value={label}
           onChange={e => setLabel(e.target.value)}
           placeholder="e.g. Kick, DLive, Odysee"
-          className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/25 outline-none focus:border-[#d4af37]/40"
+          className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/25 outline-none focus:border-[#ffb800]/40"
         />
       )}
       <div className="flex gap-2">
@@ -399,12 +399,12 @@ export default function LiveDestinationEditor({ roomId, isHost, isLive = false }
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Radio className="w-3.5 h-3.5" style={{ color: masterLive ? '#C0392B' : G }} />
-          <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: masterLive ? '#C0392B' : G }}>
+          <Radio className="w-3.5 h-3.5" style={{ color: masterLive ? '#FF2040' : G }} />
+          <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: masterLive ? '#FF2040' : G }}>
             Live Destinations
           </span>
           {liveCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ ...T, background: 'rgba(192,57,43,0.25)', color: '#C0392B' }}>
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ ...T, background: 'rgba(255,32,64,0.25)', color: '#FF2040' }}>
               {liveCount} live
             </span>
           )}
@@ -421,7 +421,7 @@ export default function LiveDestinationEditor({ roomId, isHost, isLive = false }
           {enabledCount > 0 && (
             <button onClick={toggleMasterLive}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded font-black text-[10px] uppercase transition-all"
-              style={{ ...T, background: masterLive ? 'rgba(192,57,43,0.2)' : `${G}20`, border: `1px solid ${masterLive ? 'rgba(192,57,43,0.5)' : `${G}50`}`, color: masterLive ? '#C0392B' : G }}>
+              style={{ ...T, background: masterLive ? 'rgba(255,32,64,0.2)' : `${G}20`, border: `1px solid ${masterLive ? 'rgba(255,32,64,0.5)' : `${G}50`}`, color: masterLive ? '#FF2040' : G }}>
               {masterLive ? <><WifiOff className="w-3 h-3" /> Stop All</> : <><Wifi className="w-3 h-3" /> Go Live</>}
             </button>
           )}
@@ -438,7 +438,7 @@ export default function LiveDestinationEditor({ roomId, isHost, isLive = false }
       {/* Destination list */}
       {destinations.length === 0 && !showAdd ? (
         <div className="py-5 text-center">
-          <Radio className="w-6 h-6 mx-auto mb-2" style={{ color: 'rgba(212,175,55,0.18)' }} />
+          <Radio className="w-6 h-6 mx-auto mb-2" style={{ color: 'rgba(255,184,0,0.18)' }} />
           <p className="text-[11px] text-white/20" style={T}>No destinations yet</p>
           <p className="text-[10px] text-white/12 mt-0.5">Add YouTube, Twitch, TikTok + more</p>
         </div>
@@ -463,7 +463,7 @@ export default function LiveDestinationEditor({ roomId, isHost, isLive = false }
       {masterLive && liveCount > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="flex items-center gap-2 px-3 py-2 rounded-lg"
-          style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)' }}>
+          style={{ background: 'rgba(255,32,64,0.08)', border: '1px solid rgba(255,32,64,0.25)' }}>
           <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
           <span className="text-[10px] font-black uppercase text-red-400" style={T}>
             {liveCount}/{enabledCount} destinations live — you can add or stop individual channels without interrupting others

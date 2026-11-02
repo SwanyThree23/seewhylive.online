@@ -6,7 +6,7 @@ import { Plus, X, Eye, EyeOff, Copy, Trash2, AlertCircle, Lock } from 'lucide-re
 import { toast } from 'sonner';
 import { useVaultPro } from '@/hooks/useVaultPro';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 const PLATFORMS = [
   { id: 'youtube', name: 'YouTube', icon: '▶', color: '#FF0000', hint: 'rtmps://a.rtmp.youtube.com/live2' },
   { id: 'twitch', name: 'Twitch', icon: '◉', color: '#9146FF', hint: 'rtmps://live-[region].twitch.tv/app' },
@@ -100,7 +100,7 @@ export default function DestinationsManager({ userId }) {
         {showForm && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             className="rounded-xl p-4 space-y-3"
-            style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)` }}>
+            style={{ background: '#1A1A1A', border: `1px solid rgba(255,184,0,0.2)` }}>
             
             {/* Platform Select */}
             <div className="grid grid-cols-3 gap-2">
@@ -198,7 +198,7 @@ export default function DestinationsManager({ userId }) {
             const p = PLATFORMS.find(pl => pl.id === dest.platform) || { icon: '◎', color: GOLD, name: 'Custom' };
             return (
               <div key={dest.id} className="flex items-center justify-between p-3 rounded-lg"
-                style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.15)` }}>
+                style={{ background: '#1A1A1A', border: `1px solid rgba(255,184,0,0.15)` }}>
                 <div className="flex items-center gap-2.5 flex-1">
                   <div className="w-8 h-8 flex items-center justify-center rounded-lg text-lg font-black"
                     style={{ background: `${p.color}15`, border: `1px solid ${p.color}30`, color: p.color }}>
@@ -210,8 +210,8 @@ export default function DestinationsManager({ userId }) {
                       {dest.bitrate_kbps}kbps • {dest.server_url.replace('rtmps://', '').split('/')[0]}
                     </p>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <Lock className="w-2.5 h-2.5" style={{ color: 'rgba(212,175,55,0.4)' }} />
-                      <span className="text-[10px] font-mono" style={{ color: 'rgba(212,175,55,0.6)', letterSpacing: '0.05em' }}>
+                      <Lock className="w-2.5 h-2.5" style={{ color: 'rgba(255,184,0,0.4)' }} />
+                      <span className="text-[10px] font-mono" style={{ color: 'rgba(255,184,0,0.6)', letterSpacing: '0.05em' }}>
                         {revealedId === dest.id ? dest.stream_key_encrypted : mask(dest.stream_key_encrypted)}
                       </span>
                       <button onClick={() => setRevealedId(revealedId === dest.id ? null : dest.id)}
@@ -224,13 +224,13 @@ export default function DestinationsManager({ userId }) {
                 <div className="flex items-center gap-1">
                   <button onClick={() => { navigator.clipboard.writeText(dest.server_url + '/' + dest.stream_key_encrypted).then(() => toast.success('Copied!')).catch(() => toast.error('Copy failed.')); }}
                     className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-                    style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                    style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)' }}>
                     <Copy className="w-3.5 h-3.5" style={{ color: GOLD }} />
                   </button>
                   <button onClick={() => deleteDest.mutate(dest.id)}
                     className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
                     style={{ background: 'rgba(255,50,50,0.08)', border: '1px solid rgba(255,50,50,0.2)' }}>
-                    <Trash2 className="w-3.5 h-3.5 text-[#C0392B]" />
+                    <Trash2 className="w-3.5 h-3.5 text-[#FF2040]" />
                   </button>
                 </div>
               </div>

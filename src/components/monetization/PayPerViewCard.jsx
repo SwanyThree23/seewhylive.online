@@ -10,9 +10,9 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import moment from 'moment';
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const GREEN   = '#6DBF7E';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
+const GREEN   = '#00FF88';
 const PANEL   = 'rgba(13,6,24,0.95)';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -23,8 +23,8 @@ const ACCESS_LABELS = {
 };
 
 const STATUS_CONFIG = {
-  upcoming: { bg: 'rgba(212,175,55,0.12)',  border: 'rgba(212,175,55,0.3)',   color: GOLD,    label: 'Upcoming'  },
-  live:     { bg: 'rgba(192,57,43,0.12)',  border: 'rgba(192,57,43,0.4)',   color: '#C0392B', label: '🔴 LIVE' },
+  upcoming: { bg: 'rgba(255,184,0,0.12)',  border: 'rgba(255,184,0,0.3)',   color: GOLD,    label: 'Upcoming'  },
+  live:     { bg: 'rgba(255,32,64,0.12)',  border: 'rgba(255,32,64,0.4)',   color: '#FF2040', label: '🔴 LIVE' },
   ended:    { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.35)', label: 'Ended' },
 };
 
@@ -91,7 +91,7 @@ export default function PayPerViewCard({ event }) {
   });
 
   const statusColors = {
-    upcoming: 'bg-[#D4AF37]/12 text-[#800020]',
+    upcoming: 'bg-[#FFB800]/12 text-[#FF1564]',
     live: 'bg-red-100 text-red-800 animate-pulse',
     ended: 'bg-gray-100 text-gray-800',
   };
@@ -137,7 +137,7 @@ export default function PayPerViewCard({ event }) {
             <div className="text-right">
               <p className="text-2xl font-bold text-primary">${event.price}</p>
               {hasAccess && (
-                <Badge className="mt-1 bg-[#6DBF7E]/15 text-[#6DBF7E]">
+                <Badge className="mt-1 bg-[#00FF88]/15 text-[#00FF88]">
                   Purchased
                 </Badge>
               )}

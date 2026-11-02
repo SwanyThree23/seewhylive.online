@@ -45,12 +45,12 @@ export default function SubscriberTierView({ creatorId, userId }) {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#D4AF37]/6 border border-[#D4AF37]/25 rounded-xl p-4 flex items-center gap-3"
+          className="bg-[#FFB800]/6 border border-[#FFB800]/25 rounded-xl p-4 flex items-center gap-3"
         >
           <span className="text-2xl">⭐</span>
           <div>
-            <p className="font-semibold text-[#D4AF37]">You're a <span className="text-[#D4AF37]">{currentSub.tier_name}</span> member!</p>
-            <p className="text-sm text-[#C9A84C]">Your subscription renews on {new Date(currentSub.end_date).toLocaleDateString()}</p>
+            <p className="font-semibold text-[#FFB800]">You're a <span className="text-[#FFB800]">{currentSub.tier_name}</span> member!</p>
+            <p className="text-sm text-[#FFB800]">Your subscription renews on {new Date(currentSub.end_date).toLocaleDateString()}</p>
           </div>
         </motion.div>
       )}

@@ -5,12 +5,12 @@ import {
   Loader2, Wand2, Copy, Check, FileText, Sparkles, Download, Clapperboard, Image as ImageIcon,
 } from 'lucide-react';
 
-const G = '#D4AF37';
-const RED = '#C0392B';
-const PURPLE = '#7B5DA6';
-const EMERALD = '#6DBF7E';
+const G = '#FFB800';
+const RED = '#FF2040';
+const PURPLE = '#8B5CF6';
+const EMERALD = '#00FF88';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 const TARGET_MODELS = [
   { id: 'sora_2',      name: 'Sora 2',        icon: Clapperboard, blurb: 'OpenAI · long-form narrative, synced audio, multi-shot story', promptHint: 'cinematic story with consistent characters, camera work, and synced audio' },
@@ -162,7 +162,7 @@ export default function PromptForge() {
           ].map((ex) => (
             <button key={ex} onClick={() => setIdea(ex)}
               className="text-[10px] px-2 py-1 rounded-lg text-left leading-tight"
-              style={{ background: 'rgba(212,175,55,0.06)', border: `1px solid ${G}22`, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(255,184,0,0.06)', border: `1px solid ${G}22`, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               {ex}
             </button>
           ))}
@@ -178,7 +178,7 @@ export default function PromptForge() {
             return (
               <button key={m.id} onClick={() => setModel(m)}
                 className="rounded-xl p-2.5 text-left transition-all"
-                style={{ background: active ? 'rgba(192,57,43,0.18)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? RED + 'aa' : 'transparent'}` }}>
+                style={{ background: active ? 'rgba(255,32,64,0.18)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? RED + 'aa' : 'transparent'}` }}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: active ? RED : 'rgba(255,255,255,0.4)' }} />
                   <span className="text-[10px] font-black uppercase tracking-wide" style={{ color: active ? '#fff' : 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{m.name}</span>
@@ -243,7 +243,7 @@ export default function PromptForge() {
         <div className="flex gap-1.5">
           <button onClick={copyJson} disabled={!result}
             className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg flex items-center gap-1.5 disabled:opacity-30"
-            style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${G}55`, color: G }}>
+            style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${G}55`, color: G }}>
             {copied ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> JSON</>}
           </button>
           <button onClick={downloadPack} disabled={!result}

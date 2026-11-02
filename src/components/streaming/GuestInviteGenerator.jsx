@@ -6,8 +6,8 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Link2, Copy, X, Plus, QrCode, CheckCircle, Clock, Users, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function genToken() {
@@ -30,15 +30,15 @@ function InviteCard({ invite, onRevoke }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
-            style={{ background: isExpired ? 'rgba(239,68,68,0.15)' : 'rgba(109,191,126,0.15)' }}>
-            <Users className="w-3 h-3" style={{ color: isExpired ? '#f87171' : '#6DBF7E' }} />
+            style={{ background: isExpired ? 'rgba(239,68,68,0.15)' : 'rgba(0,255,136,0.15)' }}>
+            <Users className="w-3 h-3" style={{ color: isExpired ? '#f87171' : '#00FF88' }} />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold text-white truncate">{invite.label || `Guest ${invite.token?.slice(0, 6)}`}</p>
             <div className="flex items-center gap-1.5">
               {isExpired
                 ? <span className="text-[9px] text-red-400">Expired</span>
-                : <span className="text-[9px] text-[#6DBF7E]">Active</span>}
+                : <span className="text-[9px] text-[#00FF88]">Active</span>}
               {invite.expires_at && (
                 <span className="text-[9px] text-white/20">
                   · {isExpired ? 'expired' : 'expires'} {new Date(invite.expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -55,7 +55,7 @@ function InviteCard({ invite, onRevoke }) {
           </button>
           <button onClick={copy}
             className="w-6 h-6 flex items-center justify-center rounded hover:bg-white/10 transition-colors">
-            {copied ? <CheckCircle className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3 text-white/40" />}
+            {copied ? <CheckCircle className="w-3 h-3 text-[#00FF88]" /> : <Copy className="w-3 h-3 text-white/40" />}
           </button>
           <button onClick={() => onRevoke(invite.id)}
             className="w-6 h-6 flex items-center justify-center rounded hover:bg-red-500/10 transition-colors">
@@ -136,13 +136,13 @@ export default function GuestInviteGenerator({ userId, roomId, streamId }) {
   const expiredInvites = invites.filter(i => i.expires_at && new Date(i.expires_at) <= new Date());
 
   return (
-    <div className="rounded-xl border" style={{ background: 'rgba(8,11,24,0.95)', borderColor: 'rgba(212,175,55,0.15)' }}>
+    <div className="rounded-xl border" style={{ background: 'rgba(3,3,10,0.95)', borderColor: 'rgba(255,184,0,0.15)' }}>
       <div className="flex items-center justify-between p-3 border-b border-white/5">
         <div className="flex items-center gap-2">
           <Link2 className="w-3.5 h-3.5" style={{ color: GOLD }} />
           <span className="text-[11px] font-black uppercase tracking-wide" style={{ color: GOLD, ...T }}>Guest Invites</span>
           {activeInvites.length > 0 && (
-            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-[#6DBF7E]/20 text-[#6DBF7E] border border-[#6DBF7E]/30">
+            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-[#00FF88]/20 text-[#00FF88] border border-[#00FF88]/30">
               {activeInvites.length} active
             </span>
           )}
@@ -150,7 +150,7 @@ export default function GuestInviteGenerator({ userId, roomId, streamId }) {
         <button
           onClick={() => setCreating(c => !c)}
           style={{ ...T, height: 24, padding: '0 8px', fontSize: 10, fontWeight: 900, borderRadius: 8, border: 'none', cursor: 'pointer',
-            background: creating ? 'rgba(255,255,255,0.05)' : `rgba(212,175,55,0.15)`, color: creating ? 'rgba(255,255,255,0.4)' : GOLD }}
+            background: creating ? 'rgba(255,255,255,0.05)' : `rgba(255,184,0,0.15)`, color: creating ? 'rgba(255,255,255,0.4)' : GOLD }}
         >
           {creating ? <X className="w-3 h-3 inline" /> : <><Plus className="w-3 h-3 inline mr-1" />New</>}
         </button>
@@ -160,19 +160,19 @@ export default function GuestInviteGenerator({ userId, roomId, streamId }) {
         <AnimatePresence>
           {creating && (
             <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-              className="rounded-lg p-3 space-y-2.5" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}>
+              className="rounded-lg p-3 space-y-2.5" style={{ background: 'rgba(255,184,0,0.05)', border: '1px solid rgba(255,184,0,0.15)' }}>
               <input
                 value={label}
                 onChange={e => setLabel(e.target.value)}
                 placeholder="Guest name or role (optional)"
-                style={{ width: '100%', padding: '7px 10px', background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box', ...T }}
+                style={{ width: '100%', padding: '7px 10px', background: 'rgba(3,3,10,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box', ...T }}
               />
               <div className="flex items-center gap-2">
                 <label className="text-[10px] text-white/40 flex-shrink-0" style={T}>Expires in:</label>
                 <select
                   value={expireHours}
                   onChange={e => setExpireHours(Number(e.target.value))}
-                  style={{ flex: 1, padding: '5px 8px', background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 11, outline: 'none', ...T }}
+                  style={{ flex: 1, padding: '5px 8px', background: 'rgba(3,3,10,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 11, outline: 'none', ...T }}
                 >
                   <option value={1}>1 hour</option>
                   <option value={6}>6 hours</option>

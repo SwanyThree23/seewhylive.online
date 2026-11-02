@@ -4,8 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, Eye, EyeOff, Globe, Monitor, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
 const FONT = 'Barlow Condensed, sans-serif';
 
 const SOURCE_TYPES = [

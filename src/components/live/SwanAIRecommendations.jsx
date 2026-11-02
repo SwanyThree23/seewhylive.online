@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Lightbulb, CheckCircle } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#ffb800';
 
 export default function SwanAIRecommendations({ roomId, currentLayout, viewerCount }) {
   const [recommendation, setRecommendation] = useState(null);

@@ -4,8 +4,8 @@ import { Mic, MicOff, Video, VideoOff, Radio, Monitor, MonitorStop, Signal, Maxi
 import { useWebRTCPeers } from '@/hooks/useWebRTCPeers';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 // Eight-sided polygon — matches existing StageView / LocalVideoTile
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -13,8 +13,8 @@ const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 
 const ROLE_COLOR = {
   host: GOLD,
   'co-host': GOLD,
-  speaker: '#6DBF7E',
-  guest: '#D4854A',
+  speaker: '#00FF88',
+  guest: '#FF8C00',
   viewer: 'rgba(255,255,255,0.3)',
 };
 
@@ -60,12 +60,12 @@ function OctCell({
           clipPath: OCT,
           width: px,
           height: px,
-          background: '#080B18',
-          border: `3px solid ${isSpeaking ? GOLD : isStreaming ? '#C0392B' : roleColor}`,
+          background: '#03030A',
+          border: `3px solid ${isSpeaking ? GOLD : isStreaming ? '#FF2040' : roleColor}`,
           boxShadow: isStreaming
-            ? `0 0 24px rgba(192,57,43,0.5), inset 0 0 16px rgba(192,57,43,0.15)`
+            ? `0 0 24px rgba(255,32,64,0.5), inset 0 0 16px rgba(255,32,64,0.15)`
             : isSpeaking
-              ? `0 0 24px rgba(212,175,55,0.6), inset 0 0 16px rgba(212,175,55,0.2)`
+              ? `0 0 24px rgba(255,184,0,0.6), inset 0 0 16px rgba(255,184,0,0.2)`
               : `0 0 12px ${roleColor}44, inset 0 0 8px ${roleColor}22`,
           flexShrink: 0,
           cursor: onSpotlight ? 'pointer' : 'default',
@@ -84,7 +84,7 @@ function OctCell({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center"
-            style={{ background: `linear-gradient(145deg, ${CRIMSON}55, #080B18)` }}>
+            style={{ background: `linear-gradient(145deg, ${CRIMSON}55, #03030A)` }}>
             {avatarUrl ? (
               <img src={avatarUrl} alt={userName}
                 className="w-full h-full object-cover opacity-60" />
@@ -109,7 +109,7 @@ function OctCell({
         {/* Live badge */}
         {isStreaming && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-0.5 rounded-full"
-            style={{ background: '#C0392B', border: '1px solid rgba(212,175,55,0.4)' }}>
+            style={{ background: '#FF2040', border: '1px solid rgba(255,184,0,0.4)' }}>
             <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             <span className="text-[9px] font-black text-white uppercase" style={T}>Live</span>
           </div>
@@ -156,17 +156,17 @@ function OctCell({
               onClick={onToggleAudio}
               className="w-6 h-6 rounded-full flex items-center justify-center transition-all"
               style={{
-                background: isMuted ? 'rgba(200,50,50,0.25)' : 'rgba(109,191,126,0.2)',
-                border: `1px solid ${isMuted ? 'rgba(200,50,50,0.5)' : 'rgba(109,191,126,0.4)'}`,
+                background: isMuted ? 'rgba(200,50,50,0.25)' : 'rgba(0,255,136,0.2)',
+                border: `1px solid ${isMuted ? 'rgba(200,50,50,0.5)' : 'rgba(0,255,136,0.4)'}`,
               }}>
-              {isMuted ? <MicOff className="w-3 h-3 text-red-400" /> : <Mic className="w-3 h-3 text-[#6DBF7E]" />}
+              {isMuted ? <MicOff className="w-3 h-3 text-red-400" /> : <Mic className="w-3 h-3 text-[#00FF88]" />}
             </button>
             <button
               onClick={onToggleVideo}
               className="w-6 h-6 rounded-full flex items-center justify-center transition-all"
               style={{
-                background: isVideoOff ? 'rgba(200,50,50,0.25)' : 'rgba(212,175,55,0.15)',
-                border: `1px solid ${isVideoOff ? 'rgba(200,50,50,0.5)' : 'rgba(212,175,55,0.3)'}`,
+                background: isVideoOff ? 'rgba(200,50,50,0.25)' : 'rgba(255,184,0,0.15)',
+                border: `1px solid ${isVideoOff ? 'rgba(200,50,50,0.5)' : 'rgba(255,184,0,0.3)'}`,
               }}>
               {isVideoOff ? <VideoOff className="w-3 h-3 text-red-400" /> : <Video className="w-3 h-3" style={{ color: GOLD }} />}
             </button>
@@ -315,12 +315,12 @@ export default function OctagonalVideoGrid({
   const sidebarCells = allCells.filter(c => c.key !== spotlightId);
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#080B18' }}>
+    <div className="flex flex-col h-full" style={{ background: '#03030A' }}>
       {/* ── top bar ── */}
       <div className="flex items-center justify-between px-3 py-2 shrink-0"
-        style={{ background: 'rgba(8,11,24,0.9)', borderBottom: '1px solid rgba(212,175,55,0.08)' }}>
+        style={{ background: 'rgba(3,3,10,0.9)', borderBottom: '1px solid rgba(255,184,0,0.08)' }}>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#C0392B' }} />
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#FF2040' }} />
           <span className="text-[10px] font-black uppercase text-white" style={T}>
             {allCells.length} On Stage
           </span>
@@ -343,8 +343,8 @@ export default function OctagonalVideoGrid({
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black uppercase transition-all"
             style={{
               ...T,
-              background: isScreenSharing ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${isScreenSharing ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`,
+              background: isScreenSharing ? 'rgba(255,184,0,0.15)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${isScreenSharing ? 'rgba(255,184,0,0.4)' : 'rgba(255,255,255,0.1)'}`,
               color: isScreenSharing ? GOLD : 'rgba(255,255,255,0.4)',
               cursor: 'pointer',
             }}>
@@ -356,7 +356,7 @@ export default function OctagonalVideoGrid({
             <button
               onClick={onStreamOut}
               className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black uppercase"
-              style={{ ...T, background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)', color: '#C0392B', cursor: 'pointer' }}>
+              style={{ ...T, background: 'rgba(255,32,64,0.15)', border: '1px solid rgba(255,32,64,0.35)', color: '#FF2040', cursor: 'pointer' }}>
               <Radio className="w-3 h-3" /> Stream Out
             </button>
           )}
@@ -434,32 +434,32 @@ export default function OctagonalVideoGrid({
 
       {/* ── local controls bar ── */}
       <div className="shrink-0 flex items-center justify-center gap-3 py-3"
-        style={{ borderTop: '1px solid rgba(212,175,55,0.08)', background: 'rgba(8,11,24,0.95)' }}>
+        style={{ borderTop: '1px solid rgba(255,184,0,0.08)', background: 'rgba(3,3,10,0.95)' }}>
         {/* Mic */}
         <button
           onClick={toggleMic}
           className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
           style={{
-            background: localMuted ? 'rgba(200,50,50,0.2)' : 'rgba(109,191,126,0.15)',
-            border: `2px solid ${localMuted ? 'rgba(200,50,50,0.5)' : 'rgba(109,191,126,0.4)'}`,
+            background: localMuted ? 'rgba(200,50,50,0.2)' : 'rgba(0,255,136,0.15)',
+            border: `2px solid ${localMuted ? 'rgba(200,50,50,0.5)' : 'rgba(0,255,136,0.4)'}`,
           }}>
-          {localMuted ? <MicOff className="w-4 h-4 text-red-400" /> : <Mic className="w-4 h-4 text-[#6DBF7E]" />}
+          {localMuted ? <MicOff className="w-4 h-4 text-red-400" /> : <Mic className="w-4 h-4 text-[#00FF88]" />}
         </button>
         {/* Cam */}
         <button
           onClick={toggleVideo}
           className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
           style={{
-            background: localVideoOff ? 'rgba(200,50,50,0.2)' : 'rgba(212,175,55,0.12)',
-            border: `2px solid ${localVideoOff ? 'rgba(200,50,50,0.5)' : 'rgba(212,175,55,0.35)'}`,
+            background: localVideoOff ? 'rgba(200,50,50,0.2)' : 'rgba(255,184,0,0.12)',
+            border: `2px solid ${localVideoOff ? 'rgba(200,50,50,0.5)' : 'rgba(255,184,0,0.35)'}`,
           }}>
           {localVideoOff ? <VideoOff className="w-4 h-4 text-red-400" /> : <Video className="w-4 h-4" style={{ color: GOLD }} />}
         </button>
         {/* Signal quality */}
         <div className="flex items-center gap-1 px-2 py-1 rounded-lg"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <Signal className="w-3 h-3 text-[#6DBF7E]" />
-          <span className="text-[9px] font-black uppercase text-[#6DBF7E]" style={T}>
+          <Signal className="w-3 h-3 text-[#00FF88]" />
+          <span className="text-[9px] font-black uppercase text-[#00FF88]" style={T}>
             {localStream ? 'Live' : 'No Cam'}
           </span>
         </div>

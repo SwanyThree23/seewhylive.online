@@ -6,10 +6,10 @@ import {
   ChevronDown, ChevronUp,
 } from 'lucide-react';
 
-const G = '#D4AF37';
-const EM = '#6DBF7E';
-const OR = '#D4854A';
-const BORDER = 'rgba(212,175,55,0.18)';
+const G = '#FFB800';
+const EM = '#00FF88';
+const OR = '#FF8C00';
+const BORDER = 'rgba(255,184,0,0.18)';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function fmtOffset(sec) {
@@ -139,24 +139,24 @@ export default function AdTemplateManager({ currentSetup, onLoad, roomId }) {
                     <div className="flex gap-1.5 pt-1">
                       <button onClick={() => onLoad && onLoad(t)} disabled={!onLoad}
                         className="flex-1 rounded-lg py-2 text-[10px] font-black uppercase flex items-center justify-center gap-1 disabled:opacity-40"
-                        style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${G}55`, color: G, ...T }}>
+                        style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${G}55`, color: G, ...T }}>
                         <Play className="w-3 h-3" /> Load into Studio
                       </button>
                       {editing ? (
                         <button onClick={() => { updateMut.mutate({ id: t.id, data: { trigger_offset_seconds: parseOffset(editOffset), room_id: editRoom.trim(), status: editRoom.trim() ? 'active' : 'draft' } }); setEditingId(null); }}
-                          className="px-3 rounded-lg text-[10px] font-black uppercase" style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.4)', color: EM, ...T }}>Save</button>
+                          className="px-3 rounded-lg text-[10px] font-black uppercase" style={{ background: 'rgba(0,255,136,0.15)', border: '1px solid rgba(0,255,136,0.4)', color: EM, ...T }}>Save</button>
                       ) : (
                         <button onClick={() => { setEditingId(t.id); setEditOffset(fmtOffset(t.trigger_offset_seconds)); setEditRoom(t.room_id || ''); }}
-                          className="px-2.5 rounded-lg text-[10px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.1)', border: `1px solid ${BORDER}`, color: G, ...T }}>Edit</button>
+                          className="px-2.5 rounded-lg text-[10px] font-black uppercase" style={{ background: 'rgba(255,184,0,0.1)', border: `1px solid ${BORDER}`, color: G, ...T }}>Edit</button>
                       )}
                       {t.status !== 'fired' && !editing && (
                         <button onClick={() => updateMut.mutate({ id: t.id, data: { status: t.status === 'active' ? 'draft' : 'active' } })}
-                          className="px-2.5 rounded-lg text-[10px] font-black uppercase flex items-center gap-1" style={{ background: t.status === 'active' ? 'rgba(255,255,255,0.04)' : 'rgba(109,191,126,0.12)', border: `1px solid ${t.status === 'active' ? 'rgba(255,255,255,0.1)' : 'rgba(109,191,126,0.4)'}`, color: t.status === 'active' ? 'rgba(255,255,255,0.5)' : EM, ...T }}>
+                          className="px-2.5 rounded-lg text-[10px] font-black uppercase flex items-center gap-1" style={{ background: t.status === 'active' ? 'rgba(255,255,255,0.04)' : 'rgba(0,255,136,0.12)', border: `1px solid ${t.status === 'active' ? 'rgba(255,255,255,0.1)' : 'rgba(0,255,136,0.4)'}`, color: t.status === 'active' ? 'rgba(255,255,255,0.5)' : EM, ...T }}>
                           <Zap className="w-3 h-3" /> {t.status === 'active' ? 'Pause' : 'Arm'}
                         </button>
                       )}
                       <button onClick={() => delMut.mutate(t.id)}
-                        className="px-2 rounded-lg flex items-center" style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.4)', color: '#ef4444' }}>
+                        className="px-2 rounded-lg flex items-center" style={{ background: 'rgba(255,32,64,0.12)', border: '1px solid rgba(255,32,64,0.4)', color: '#ef4444' }}>
                         <Trash2 className="w-3 h-3" />
                       </button>
                     </div>

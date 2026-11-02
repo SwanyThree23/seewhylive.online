@@ -7,11 +7,11 @@ import {
   Video as VideoIcon, Copy, Check, Loader2, X, Film,
 } from 'lucide-react';
 
-const G = '#D4AF37';
-const PURPLE = '#7B5DA6';
-const BG = '#080B18';
+const G = '#FFB800';
+const PURPLE = '#8B5CF6';
+const BG = '#03030A';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 const MIRAGE_THEMES = [
   { id: 'pirate',     name: 'Pirate World',  emoji: '🏴‍☠️', prompt: 'pirate world, swashbuckling adventure, wooden ships, ocean mist, cinematic pirate aesthetic' },
@@ -100,7 +100,7 @@ export default function VideoTransformStudio() {
       const vh = video.videoHeight || 480;
       const scale = Math.max(512 / vw, 512 / vh);
       const dw = vw * scale, dh = vh * scale;
-      ctx.fillStyle = '#080B18';
+      ctx.fillStyle = '#03030A';
       ctx.fillRect(0, 0, 512, 512);
       ctx.drawImage(video, (512 - dw) / 2, (512 - dh) / 2, dw, dh);
       const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.9));
@@ -348,7 +348,7 @@ export default function VideoTransformStudio() {
       {/* ACTIONS + OUTPUTS */}
       <Section title="3 · Generate & Export" right={
         <button onClick={copyExport} className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg flex items-center gap-1.5"
-          style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${G}55`, color: G }}>
+          style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${G}55`, color: G }}>
           {copied ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy Decart Pack</>}
         </button>
       }>
@@ -361,7 +361,7 @@ export default function VideoTransformStudio() {
                 <button key={a.id} onClick={() => setAspectRatio(a.id)}
                   className="text-[9px] px-1.5 py-0.5 rounded transition-all"
                   title={a.hint}
-                  style={{ background: aspectRatio === a.id ? 'rgba(212,175,55,0.18)' : 'rgba(255,255,255,0.05)', border: `1px solid ${aspectRatio === a.id ? G + '88' : 'transparent'}`, color: aspectRatio === a.id ? G : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                  style={{ background: aspectRatio === a.id ? 'rgba(255,184,0,0.18)' : 'rgba(255,255,255,0.05)', border: `1px solid ${aspectRatio === a.id ? G + '88' : 'transparent'}`, color: aspectRatio === a.id ? G : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
                   {a.label}
                 </button>
               ))}

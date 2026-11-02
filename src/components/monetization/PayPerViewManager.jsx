@@ -5,10 +5,10 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Lock, Users, DollarSign, Calendar, Trash2 } from 'lucide-react';
 
-const G = '#D4AF37';
-const BG = '#080B18';
+const G = '#FFB800';
+const BG = '#03030A';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 export default function PayPerViewManager({ roomId }) {
   const [showForm, setShowForm] = useState(false);

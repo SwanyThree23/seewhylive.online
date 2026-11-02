@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Loader2, X } from 'lucide-react';
 
-const G = '#D4AF37';
-const BORDER = 'rgba(212,175,55,0.18)';
+const G = '#FFB800';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 /**
  * AssetDropZone — drag-and-drop image upload with preview + replace/clear.
@@ -42,7 +42,7 @@ export default function AssetDropZone({
           </button>
           <button onClick={onClear}
             className="w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-90"
-            style={{ background: 'rgba(192,57,43,0.85)' }}>
+            style={{ background: 'rgba(255,32,64,0.85)' }}>
             <X className="w-3.5 h-3.5" style={{ color: '#fff' }} />
           </button>
         </div>
@@ -62,13 +62,13 @@ export default function AssetDropZone({
       className="w-full rounded-2xl border-2 border-dashed py-10 px-4 flex flex-col items-center gap-2 cursor-pointer transition-all"
       style={{
         borderColor: isDragging ? G : 'rgba(255,255,255,0.15)',
-        background: isDragging ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.02)',
+        background: isDragging ? 'rgba(255,184,0,0.08)' : 'rgba(255,255,255,0.02)',
         transform: isDragging ? 'scale(1.01)' : 'scale(1)',
       }}>
       <input ref={fileRef} type="file" accept="image/*" className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f); }} />
       <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-        style={{ background: isDragging ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)' }}>
+        style={{ background: isDragging ? 'rgba(255,184,0,0.15)' : 'rgba(255,255,255,0.04)' }}>
         {uploading ? <Loader2 className="w-6 h-6 animate-spin" style={{ color: G }} /> : <Upload className="w-6 h-6" style={{ color: G }} />}
       </div>
       <span className="text-[12px] font-black uppercase tracking-wider" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>

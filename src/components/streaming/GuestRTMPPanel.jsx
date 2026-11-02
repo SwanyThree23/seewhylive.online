@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 const API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
 
-const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 
 async function saveKeyToVault(guestId, destId, plainKey) {
   try {
@@ -38,20 +38,20 @@ const PLATFORM_PRESETS = [
   { id: 'instagram', label: 'Instagram Live',  color: '#e1306c', server: 'rtmps://live-upload.instagram.com:443/rtmp' },
   { id: 'linkedin',  label: 'LinkedIn Live',   color: '#0a66c2', server: 'rtmps://stream.linkedin.com:443/media' },
   { id: 'kick',      label: 'Kick',            color: '#53fc18', server: 'rtmp://fa723fc1b171.global-contribute.live-video.net/app' },
-  { id: 'custom',    label: 'Custom RTMP',     color: '#d4af37', server: '' },
+  { id: 'custom',    label: 'Custom RTMP',     color: '#ffb800', server: '' },
 ];
 
 const STATUS_CONFIG = {
-  live:       { dot: 'bg-[#6DBF7E] animate-pulse',  text: 'LIVE',       textColor: 'text-[#6DBF7E]'  },
+  live:       { dot: 'bg-[#00FF88] animate-pulse',  text: 'LIVE',       textColor: 'text-[#00FF88]'  },
   connecting: { dot: 'bg-yellow-400 animate-pulse', text: 'Connecting', textColor: 'text-yellow-400' },
-  error:      { dot: 'bg-[#C0392B]',                  text: 'Error',      textColor: 'text-[#C0392B]'    },
+  error:      { dot: 'bg-[#FF2040]',                  text: 'Error',      textColor: 'text-[#FF2040]'    },
   offline:    { dot: 'bg-white/20',                 text: 'Idle',       textColor: 'text-white/30'   },
 };
 
 function StatusPill({ status, validationState }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.offline;
-  if (validationState === 'ok')    return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.2)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" /> Ready</span>;
-  if (validationState === 'err')   return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(192,57,43,0.2)', color:'#FF4444', border:'1px solid rgba(192,57,43,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><XCircle className="w-2.5 h-2.5" /> Error</span>;
+  if (validationState === 'ok')    return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(0,255,136,0.2)', color:'#00FF88', border:'1px solid rgba(0,255,136,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" /> Ready</span>;
+  if (validationState === 'err')   return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(255,32,64,0.2)', color:'#FF4444', border:'1px solid rgba(255,32,64,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><XCircle className="w-2.5 h-2.5" /> Error</span>;
   return (
     <div className="flex items-center gap-1.5">
       <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
@@ -119,8 +119,8 @@ function DestinationRow({ dest, userId, onRemove }) {
             {platform.label}
           </span>
           <StatusPill status={dest.status} validationState={validationState} />
-          <div onClick={toggleEnabled} style={{ width:40, height:22, borderRadius:99, background:dest.is_enabled?'#800020':'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}><div style={{ position:'absolute', top:3, left:dest.is_enabled?21:3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }}/></div>
-          <button onClick={() => onRemove(dest.id)} className="w-5 h-5 flex items-center justify-center text-white/20 hover:text-[#C0392B] transition-colors">
+          <div onClick={toggleEnabled} style={{ width:40, height:22, borderRadius:99, background:dest.is_enabled?'#FF1564':'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}><div style={{ position:'absolute', top:3, left:dest.is_enabled?21:3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }}/></div>
+          <button onClick={() => onRemove(dest.id)} className="w-5 h-5 flex items-center justify-center text-white/20 hover:text-[#FF2040] transition-colors">
             <Trash2 className="w-3 h-3" />
           </button>
         </div>
@@ -158,26 +158,26 @@ function DestinationRow({ dest, userId, onRemove }) {
         {/* Bitrate + actions */}
         <div className="flex items-center gap-2">
           <p className="text-[11px] text-white/25 shrink-0">Bitrate</p>
-          <input type="range" value={dest.bitrate_kbps || 3000} onChange={e => updateMutation.mutate({ data: { bitrate_kbps: +e.target.value } })} min={500} max={8000} step={500} style={{ flex:1, accentColor:'#D4AF37' }} />
-          <span className="text-[11px] font-mono text-[#d4af37] w-14 text-right shrink-0">{dest.bitrate_kbps || 3000} kbps</span>
+          <input type="range" value={dest.bitrate_kbps || 3000} onChange={e => updateMutation.mutate({ data: { bitrate_kbps: +e.target.value } })} min={500} max={8000} step={500} style={{ flex:1, accentColor:'#FFB800' }} />
+          <span className="text-[11px] font-mono text-[#ffb800] w-14 text-right shrink-0">{dest.bitrate_kbps || 3000} kbps</span>
         </div>
 
         <div className="flex gap-1.5 pt-0.5 flex-wrap">
           <button
             onClick={validate} disabled={validating}
-            style={{ height:24, fontSize:10, padding:'0 8px', background:'transparent', border:'1px solid rgba(74,138,122,0.2)', color:'#4A8A7A', borderRadius:6, cursor:validating?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:4 }}
+            style={{ height:24, fontSize:10, padding:'0 8px', background:'transparent', border:'1px solid rgba(0,245,255,0.2)', color:'#00F5FF', borderRadius:6, cursor:validating?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
             {validating ? <RefreshCw className="w-2.5 h-2.5 animate-spin" /> : <Wifi className="w-2.5 h-2.5" />}
             {validating ? 'Testing…' : 'Validate'}
           </button>
           <button
             onClick={save}
-            style={{ height:24, fontSize:10, padding:'0 8px', background:localKey.trim()?'rgba(212,175,55,0.12)':'transparent', border:`1px solid ${localKey.trim()?'rgba(212,175,55,0.4)':'rgba(212,175,55,0.2)'}`, color:'#D4AF37', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
+            style={{ height:24, fontSize:10, padding:'0 8px', background:localKey.trim()?'rgba(255,184,0,0.12)':'transparent', border:`1px solid ${localKey.trim()?'rgba(255,184,0,0.4)':'rgba(255,184,0,0.2)'}`, color:'#FFB800', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
             <Lock className="w-2.5 h-2.5" /> Save & Encrypt
           </button>
           {(vaultStored || dest.stream_key_encrypted === '***vault***') && (
-            <span style={{ fontSize:9, display:'flex', alignItems:'center', gap:3, color:'#6DBF7E', fontWeight:700 }}>
+            <span style={{ fontSize:9, display:'flex', alignItems:'center', gap:3, color:'#00FF88', fontWeight:700 }}>
               <ShieldCheck className="w-2.5 h-2.5" /> Vault Pro
             </span>
           )}
@@ -237,13 +237,13 @@ export default function GuestRTMPPanel({ participantId, userId }) {
   const enabledCount = destinations.filter(d => d.is_enabled).length;
 
   return (
-    <div className="bg-[#1a1020] border border-[#d4af37]/15 rounded-xl overflow-hidden">
+    <div className="bg-[#1a1020] border border-[#ffb800]/15 rounded-xl overflow-hidden">
       {/* Panel header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-white/5">
         <div className="flex items-center gap-2">
-          <Lock className="w-3 h-3 text-[#d4af37]" />
-          <span className="text-[11px] font-semibold text-[#d4af37]">RTMP Destinations</span>
-          <span style={{ fontSize:11, fontWeight:900, padding:'2px 6px', borderRadius:99, background:'rgba(212,175,55,0.1)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.2)' }}>
+          <Lock className="w-3 h-3 text-[#ffb800]" />
+          <span className="text-[11px] font-semibold text-[#ffb800]">RTMP Destinations</span>
+          <span style={{ fontSize:11, fontWeight:900, padding:'2px 6px', borderRadius:99, background:'rgba(255,184,0,0.1)', color:'#FFB800', border:'1px solid rgba(255,184,0,0.2)' }}>
             VaultPro AES-256
           </span>
         </div>
@@ -253,7 +253,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
           )}
           <button
             onClick={() => setShowAdd(v => !v)}
-            className="w-6 h-6 rounded border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] hover:bg-[#d4af37]/10 transition-colors"
+            className="w-6 h-6 rounded border border-[#ffb800]/30 flex items-center justify-center text-[#ffb800] hover:bg-[#ffb800]/10 transition-colors"
           >
             <Plus className="w-3 h-3" />
           </button>
@@ -268,8 +268,8 @@ export default function GuestRTMPPanel({ participantId, userId }) {
               initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="rounded-lg border border-[#d4af37]/20 bg-[#d4af37]/5 p-3 space-y-2 mb-2">
-                <p className="text-[10px] text-[#d4af37] font-semibold uppercase tracking-wide">Add Platform</p>
+              <div className="rounded-lg border border-[#ffb800]/20 bg-[#ffb800]/5 p-3 space-y-2 mb-2">
+                <p className="text-[10px] text-[#ffb800] font-semibold uppercase tracking-wide">Add Platform</p>
                 {/* Platform presets grid */}
                 <div className="grid grid-cols-4 gap-1">
                   {PLATFORM_PRESETS.map(p => (
@@ -278,7 +278,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
                       onClick={() => setSelectedPreset(p.id)}
                       className={`py-1.5 px-1 rounded text-[11px] font-semibold transition-all border ${
                         selectedPreset === p.id
-                          ? 'border-[#d4af37] bg-[#d4af37]/15 text-white'
+                          ? 'border-[#ffb800] bg-[#ffb800]/15 text-white'
                           : 'border-white/10 text-white/30 hover:border-white/20 hover:text-white/60'
                       }`}
                       style={selectedPreset === p.id ? { borderColor: p.color, color: p.color } : {}}
@@ -299,7 +299,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
                   <button
                     onClick={addDestination}
                     disabled={createMutation.isPending || !label.trim()}
-                    style={{ height:28, padding:'0 12px', background:'#D4AF37', color:'#000', border:'none', borderRadius:6, fontWeight:700, fontSize:11, cursor:(createMutation.isPending||!label.trim())?'not-allowed':'pointer', opacity:(createMutation.isPending||!label.trim())?0.5:1 }}
+                    style={{ height:28, padding:'0 12px', background:'#FFB800', color:'#000', border:'none', borderRadius:6, fontWeight:700, fontSize:11, cursor:(createMutation.isPending||!label.trim())?'not-allowed':'pointer', opacity:(createMutation.isPending||!label.trim())?0.5:1 }}
                   >
                     Add
                   </button>

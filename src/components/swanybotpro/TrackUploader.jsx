@@ -5,9 +5,9 @@ import {
   Upload, Music, Play, Pause, Loader2, X, Waves, Check, Clock,
 } from 'lucide-react';
 
-const G = '#D4AF37';
-const ORANGE = '#D4854A';
-const BORDER = 'rgba(212,175,55,0.18)';
+const G = '#FFB800';
+const ORANGE = '#FF8C00';
+const BORDER = 'rgba(255,184,0,0.18)';
 const PANEL = '#0D1022';
 
 // Genre → default tempo (BPM) for beat-matched cut estimation when no real BPM is computed
@@ -223,7 +223,7 @@ export default function TrackUploader({ trackUrl, trackMeta, onTrack, onClear, a
               </span>
             )}
             <span className="ml-auto text-[9px] flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              <Check className="w-2.5 h-2.5" style={{ color: '#6DBF7E' }} /> Uploaded
+              <Check className="w-2.5 h-2.5" style={{ color: '#00FF88' }} /> Uploaded
             </span>
           </div>
           <audio ref={audioRef} src={trackUrl} className="hidden" />

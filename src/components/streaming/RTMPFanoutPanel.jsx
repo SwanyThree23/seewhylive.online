@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, Zap, ZapOff, Plus, ChevronDown, ChevronUp, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const PLATFORM_META = {
@@ -27,7 +27,7 @@ function PlatformRow({ dest, isLive, onToggle, isPending }) {
     <motion.div
       layout
       className="flex items-center gap-2 rounded-lg p-2"
-      style={{ background: isLive ? 'rgba(109,191,126,0.07)' : 'rgba(255,255,255,0.03)', border: `1px solid ${isLive ? 'rgba(109,191,126,0.2)' : 'rgba(255,255,255,0.06)'}` }}
+      style={{ background: isLive ? 'rgba(0,255,136,0.07)' : 'rgba(255,255,255,0.03)', border: `1px solid ${isLive ? 'rgba(0,255,136,0.2)' : 'rgba(255,255,255,0.06)'}` }}
     >
       <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-black flex-shrink-0"
         style={{ background: `${meta.color}22`, color: meta.color }}>
@@ -38,13 +38,13 @@ function PlatformRow({ dest, isLive, onToggle, isPending }) {
         <p className="text-[9px] text-white/30 mt-0.5 truncate">{dest.server_url || '—'}</p>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        {isLive && <span className="flex items-center gap-1 text-[9px] font-black text-[#6DBF7E]"><span className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse inline-block" /> LIVE</span>}
+        {isLive && <span className="flex items-center gap-1 text-[9px] font-black text-[#00FF88]"><span className="w-1.5 h-1.5 rounded-full bg-[#00FF88] animate-pulse inline-block" /> LIVE</span>}
         <button
           disabled={isPending}
           onClick={() => onToggle(dest.id, !isLive)}
           style={{ ...T, padding: '3px 10px', fontSize: 10, fontWeight: 900, borderRadius: 8, border: 'none', cursor: 'pointer',
-            background: isLive ? 'rgba(239,68,68,0.15)' : 'rgba(109,191,126,0.15)',
-            color: isLive ? '#f87171' : '#6DBF7E', opacity: isPending ? 0.5 : 1 }}
+            background: isLive ? 'rgba(239,68,68,0.15)' : 'rgba(0,255,136,0.15)',
+            color: isLive ? '#f87171' : '#00FF88', opacity: isPending ? 0.5 : 1 }}
         >
           {isLive ? 'Stop' : 'Start'}
         </button>
@@ -106,7 +106,7 @@ export default function RTMPFanoutPanel({ userId, streamId, isStreaming }) {
   const liveCount = enabledDests.filter(d => liveSet.has(d.id) || d.is_live).length;
 
   return (
-    <div className="rounded-xl border" style={{ background: 'rgba(8,11,24,0.95)', borderColor: liveCount > 0 ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.15)' }}>
+    <div className="rounded-xl border" style={{ background: 'rgba(3,3,10,0.95)', borderColor: liveCount > 0 ? 'rgba(0,255,136,0.3)' : 'rgba(255,184,0,0.15)' }}>
       <button
         onClick={() => setExpanded(e => !e)}
         className="w-full flex items-center justify-between p-3"
@@ -116,7 +116,7 @@ export default function RTMPFanoutPanel({ userId, streamId, isStreaming }) {
           <Radio className="w-3.5 h-3.5" style={{ color: GOLD }} />
           <span className="text-[11px] font-black uppercase tracking-wide" style={{ color: GOLD }}>RTMP Fanout</span>
           {liveCount > 0 && (
-            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-[#6DBF7E]/20 text-[#6DBF7E] border border-[#6DBF7E]/30">
+            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-[#00FF88]/20 text-[#00FF88] border border-[#00FF88]/30">
               {liveCount} LIVE
             </span>
           )}

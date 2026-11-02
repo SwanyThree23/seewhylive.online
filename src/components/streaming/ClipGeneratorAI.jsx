@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Sparkles, Download, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#d4af37';
+const G = '#ffb800';
 
 export default function ClipGeneratorAI({ sessionId, roomId, creatorId }) {
   const [generating, setGenerating] = useState(false);
@@ -92,7 +92,7 @@ export default function ClipGeneratorAI({ sessionId, roomId, creatorId }) {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           className="space-y-2 p-3 rounded-lg"
-          style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${G}20` }}
+          style={{ background: 'rgba(3,3,10,0.9)', border: `1px solid ${G}20` }}
         >
           {clips.map((clip, idx) => (
             <motion.div

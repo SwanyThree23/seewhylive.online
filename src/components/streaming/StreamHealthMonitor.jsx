@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 
 export default function StreamHealthMonitor({ isStreaming = false }) {
   const [stats, setStats] = useState({ bitrate: 0, fps: 0, packetLoss: 0, latency: 0, quality: 'good' });
 
   // Stats updated by real WebRTC getStats() / ZEGO callbacks when available
 
-  const qualityColor = stats.quality === 'good' ? '#6DBF7E' : stats.quality === 'fair' ? '#D4AF37' : '#FF4444';
+  const qualityColor = stats.quality === 'good' ? '#00FF88' : stats.quality === 'fair' ? '#FFB800' : '#FF4444';
 
   if (!isStreaming) return (
     <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg"

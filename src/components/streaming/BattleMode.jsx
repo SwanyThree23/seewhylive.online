@@ -132,20 +132,20 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
     : 0;
 
   return (
-    <div className="border border-[#d4af37]/20 rounded-xl bg-[#0F1428]/80 overflow-hidden">
+    <div className="border border-[#ffb800]/20 rounded-xl bg-[#0F1428]/80 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-[#d4af37]/10">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-[#ffb800]/10">
         <div className="flex items-center gap-2">
-          <Swords className="w-4 h-4 text-[#d4af37]" />
-          <span className="text-xs font-bold text-[#d4af37] uppercase tracking-wider">Battle Mode</span>
+          <Swords className="w-4 h-4 text-[#ffb800]" />
+          <span className="text-xs font-bold text-[#ffb800] uppercase tracking-wider">Battle Mode</span>
           {activeBattle && (
-            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#C0392B', color:'#fff', animation:'pulse 2s infinite' }}>LIVE</span>
+            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#FF2040', color:'#fff', animation:'pulse 2s infinite' }}>LIVE</span>
           )}
         </div>
         {isHost && !activeBattle && (
           <button
             onClick={() => setShowSetup(v => !v)}
-            style={{ height:24, fontSize:10, background:'#800020', color:'#fff', border:'none', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
+            style={{ height:24, fontSize:10, background:'#FF1564', color:'#fff', border:'none', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
             <Plus className="w-3 h-3" /> Start Battle
           </button>
@@ -153,7 +153,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
         {isHost && activeBattle && (
           <button
             onClick={() => endBattleMutation.mutate(activeBattle)}
-            style={{ height:24, fontSize:10, background:'#C0392B', color:'#fff', border:'none', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
+            style={{ height:24, fontSize:10, background:'#FF2040', color:'#fff', border:'none', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
             <X className="w-3 h-3" /> End
           </button>
@@ -186,7 +186,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
           {/* Timer */}
           <div className="flex items-center justify-center gap-2">
             <Timer className="w-3.5 h-3.5 text-white/50" />
-            <span className={`font-mono text-sm font-bold ${timeLeft < 30 ? 'text-[#C0392B] animate-pulse' : 'text-white'}`}>
+            <span className={`font-mono text-sm font-bold ${timeLeft < 30 ? 'text-[#FF2040] animate-pulse' : 'text-white'}`}>
               {formatTime(timeLeft)}
             </span>
           </div>
@@ -212,9 +212,9 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
           </div>
 
           {/* Vote bar */}
-          <div className="relative h-4 rounded-full overflow-hidden bg-[#800020]/30 border border-[#800020]/20">
+          <div className="relative h-4 rounded-full overflow-hidden bg-[#FF1564]/30 border border-[#FF1564]/20">
             <motion.div
-              className="absolute left-0 top-0 h-full bg-gradient-to-r from-[#d4af37] to-[#f5a623]"
+              className="absolute left-0 top-0 h-full bg-gradient-to-r from-[#ffb800] to-[#f5a623]"
               animate={{ width: `${hostPct}%` }}
               transition={{ type: 'spring', damping: 20 }}
             />
@@ -244,21 +244,21 @@ function CreatorBattleCard({ name, score, pct, side, isLeading, onVote }) {
   return (
     <div className={`relative rounded-lg p-2 border transition-all ${
       isLeading
-        ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-[0_0_12px_rgba(212,175,55,0.2)]'
+        ? 'border-[#ffb800] bg-[#ffb800]/10 shadow-[0_0_12px_rgba(255,184,0,0.2)]'
         : 'border-white/10 bg-white/5'
     }`}>
       {isLeading && (
-        <Crown className="absolute top-1 right-1 w-3 h-3 text-[#d4af37]" />
+        <Crown className="absolute top-1 right-1 w-3 h-3 text-[#ffb800]" />
       )}
       <div className="text-center space-y-1.5">
-        <div className="w-8 h-8 mx-auto rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-xs font-bold text-white">
+        <div className="w-8 h-8 mx-auto rounded-full bg-gradient-to-br from-[#FF1564] to-[#ffb800] flex items-center justify-center text-xs font-bold text-white">
           {name?.charAt(0)?.toUpperCase()}
         </div>
         <p className="text-[10px] font-semibold text-white truncate">{name}</p>
-        <p className="text-lg font-bold font-mono text-[#d4af37]">{score}</p>
+        <p className="text-lg font-bold font-mono text-[#ffb800]">{score}</p>
         <button
           onClick={onVote}
-          style={{ width:'100%', height:24, fontSize:11, background:'#800020', color:'#fff', border:'none', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
+          style={{ width:'100%', height:24, fontSize:11, background:'#FF1564', color:'#fff', border:'none', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
         >
           <Zap className="w-2.5 h-2.5" /> Vote
         </button>
@@ -275,7 +275,7 @@ function BattleSetupForm({ guests, durationMin, setDurationMin, onStart, isLoadi
   const c2 = guests.find(g => g.id === creator2);
 
   return (
-    <div className="p-3 space-y-3 border-b border-[#d4af37]/10">
+    <div className="p-3 space-y-3 border-b border-[#ffb800]/10">
       <p className="text-[10px] text-white/50 uppercase tracking-wider">Select 2 creators</p>
       <div className="grid grid-cols-2 gap-2">
         {['Creator 1', 'Creator 2'].map((label, idx) => {
@@ -307,7 +307,7 @@ function BattleSetupForm({ guests, durationMin, setDurationMin, onStart, isLoadi
             key={m}
             onClick={() => setDurationMin(m)}
             className={`text-[11px] px-2 py-0.5 rounded border transition-all ${
-              durationMin === m ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 text-white/40'
+              durationMin === m ? 'border-[#ffb800] text-[#ffb800] bg-[#ffb800]/10' : 'border-white/10 text-white/40'
             }`}
           >
             {m}m
@@ -317,7 +317,7 @@ function BattleSetupForm({ guests, durationMin, setDurationMin, onStart, isLoadi
       <button
         disabled={!creator1 || !creator2 || creator1 === creator2 || isLoading}
         onClick={() => onStart(c1, c2)}
-        style={{ width:'100%', height:28, fontSize:10, background:'#D4AF37', color:'#000', border:'none', borderRadius:6, fontWeight:700, cursor:(!creator1||!creator2||creator1===creator2||isLoading)?'not-allowed':'pointer', opacity:(!creator1||!creator2||creator1===creator2||isLoading)?0.5:1, display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
+        style={{ width:'100%', height:28, fontSize:10, background:'#FFB800', color:'#000', border:'none', borderRadius:6, fontWeight:700, cursor:(!creator1||!creator2||creator1===creator2||isLoading)?'not-allowed':'pointer', opacity:(!creator1||!creator2||creator1===creator2||isLoading)?0.5:1, display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
       >
         <Swords className="w-3 h-3" />
         {isLoading ? 'Starting…' : '⚔️ Start Battle'}
@@ -334,9 +334,9 @@ function LastBattleResult({ battles }) {
 
   return (
     <div className="p-3 text-center space-y-1">
-      <Trophy className="w-5 h-5 text-[#d4af37] mx-auto" />
+      <Trophy className="w-5 h-5 text-[#ffb800] mx-auto" />
       <p className="text-[10px] text-white/50">Last Battle Winner</p>
-      <p className="text-sm font-bold text-[#d4af37]">{last.winner_name}</p>
+      <p className="text-sm font-bold text-[#ffb800]">{last.winner_name}</p>
       <p className="text-[11px] text-white/30">
         {last.host_name} {last.host_score} — {last.challenger_score} {last.challenger_name}
       </p>

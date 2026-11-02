@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 const TIERS = [
   { id: 'bronze', label: 'Bronze', price: 1.00, color: '#cd7f32', description: 'Support your creator' },
   { id: 'silver', label: 'Silver', price: 5.00, color: '#C0C0C0', description: 'Exclusive badge + early access' },
-  { id: 'gold',   label: 'Gold',   price: 15.00, color: '#d4af37', description: 'All perks + private room access' },
+  { id: 'gold',   label: 'Gold',   price: 15.00, color: '#ffb800', description: 'All perks + private room access' },
 ];
 
 export default function StripeSubscribeButton({ creatorId, creatorName, currentUserId }) {

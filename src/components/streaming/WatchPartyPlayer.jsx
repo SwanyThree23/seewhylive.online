@@ -131,10 +131,10 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
   };
 
   return (
-    <div style={{ position: 'relative', overflow: 'hidden', background: '#000', border: '2px solid #D4AF37', boxShadow: '0 0 30px rgba(212,175,55,0.2)', borderRadius: 12 }}>
+    <div style={{ position: 'relative', overflow: 'hidden', background: '#000', border: '2px solid #FFB800', boxShadow: '0 0 30px rgba(255,184,0,0.2)', borderRadius: 12 }}>
       <div className="relative group">
         {/* Live Badge */}
-        <span style={{ position: 'absolute', top: 16, left: 16, zIndex: 10, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 900, background: '#800020', color: '#fff', border: '1px solid #D4AF37', borderRadius: 99, padding: '3px 8px', animation: 'pulse 2s infinite' }}>
+        <span style={{ position: 'absolute', top: 16, left: 16, zIndex: 10, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 900, background: '#FF1564', color: '#fff', border: '1px solid #FFB800', borderRadius: 99, padding: '3px 8px', animation: 'pulse 2s infinite' }}>
           <Radio className="w-3 h-3" />
           WATCH PARTY LIVE
         </span>
@@ -162,7 +162,7 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
             step={0.1}
             onChange={handleSeek}
             disabled={!isHost}
-            style={{ width: '100%', marginBottom: 16, accentColor: '#D4AF37', cursor: isHost ? 'pointer' : 'default' }}
+            style={{ width: '100%', marginBottom: 16, accentColor: '#FFB800', cursor: isHost ? 'pointer' : 'default' }}
           />
 
           <div className="flex items-center justify-between">
@@ -170,7 +170,7 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
               <button
                 onClick={handlePlayPause}
                 disabled={!isHost && !isPlaying}
-                style={{ background: 'transparent', border: 'none', color: '#D4AF37', cursor: (!isHost && !isPlaying) ? 'default' : 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ background: 'transparent', border: 'none', color: '#FFB800', cursor: (!isHost && !isPlaying) ? 'default' : 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
               </button>
@@ -181,7 +181,7 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
                     setIsMuted(!isMuted);
                     if (videoRef.current) videoRef.current.muted = !isMuted;
                   }}
-                  style={{ background: 'transparent', border: 'none', color: '#D4AF37', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
+                  style={{ background: 'transparent', border: 'none', color: '#FFB800', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
                 >
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
@@ -191,24 +191,24 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
                   max={100}
                   step={1}
                   onChange={handleVolumeChange}
-                  style={{ width: 96, accentColor: '#D4AF37', cursor: 'pointer' }}
+                  style={{ width: 96, accentColor: '#FFB800', cursor: 'pointer' }}
                 />
               </div>
 
-              <span style={{ color: '#D4AF37', fontSize: 14, fontFamily: 'monospace' }}>
+              <span style={{ color: '#FFB800', fontSize: 14, fontFamily: 'monospace' }}>
                 {formatTime(currentTime)} / {formatTime(duration)}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               {isHost && (
-                <span style={{ fontSize: 10, fontWeight: 900, color: '#D4AF37', border: '1px solid #D4AF37', borderRadius: 99, padding: '2px 8px' }}>
+                <span style={{ fontSize: 10, fontWeight: 900, color: '#FFB800', border: '1px solid #FFB800', borderRadius: 99, padding: '2px 8px' }}>
                   HOST CONTROLS
                 </span>
               )}
               <button
                 onClick={toggleFullscreen}
-                style={{ background: 'transparent', border: 'none', color: '#D4AF37', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
+                style={{ background: 'transparent', border: 'none', color: '#FFB800', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
               >
                 <Maximize className="w-4 h-4" />
               </button>

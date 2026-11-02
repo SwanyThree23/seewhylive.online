@@ -7,8 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TierEditor from './TierEditor';
 import TierBadge from './TierBadge';
 
-const GOLD = '#D4AF37';
-const BG = '#080B18';
+const GOLD = '#FFB800';
+const BG = '#03030A';
 
 export default function CreatorTierManager({ creatorId }) {
   const qc = useQueryClient();
@@ -56,7 +56,7 @@ export default function CreatorTierManager({ creatorId }) {
           { label: 'Monthly Revenue', value: `$${monthlyRevenue.toFixed(2)}`, icon: <DollarSign className="w-4 h-4" /> },
         ].map(s => (
           <div key={s.label} style={{ textAlign: 'center', padding: '12px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4, color: '#C9A84C' }}>{s.icon}</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4, color: '#FFB800' }}>{s.icon}</div>
             <div style={{ fontSize: 24, fontWeight: 700 }}>{s.value}</div>
             <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{s.label}</div>
           </div>
@@ -74,7 +74,7 @@ export default function CreatorTierManager({ creatorId }) {
           style={{
             display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 8,
             fontWeight: 700, fontSize: 14, cursor: 'pointer',
-            background: '#C9A84C', color: '#000', border: 'none',
+            background: '#FFB800', color: '#000', border: 'none',
           }}
         >
           <Plus className="w-4 h-4" /> New Tier
@@ -94,7 +94,7 @@ export default function CreatorTierManager({ creatorId }) {
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 8,
               fontWeight: 700, fontSize: 14, cursor: 'pointer',
-              background: '#C9A84C', color: '#000', border: 'none',
+              background: '#FFB800', color: '#000', border: 'none',
             }}
           >
             <Plus className="w-4 h-4" /> Create First Tier
@@ -112,9 +112,9 @@ export default function CreatorTierManager({ creatorId }) {
               >
                 <div
                   style={{
-                    borderRadius: 12, borderLeft: `4px solid ${tier.color || '#d4af37'}`,
+                    borderRadius: 12, borderLeft: `4px solid ${tier.color || '#ffb800'}`,
                     background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(255,255,255,0.08)`,
-                    borderLeftColor: tier.color || '#d4af37',
+                    borderLeftColor: tier.color || '#ffb800',
                     opacity: !tier.is_active ? 0.6 : 1,
                     padding: '16px 20px',
                   }}
@@ -137,12 +137,12 @@ export default function CreatorTierManager({ creatorId }) {
                       </div>
                       <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>{tier.description}</div>
                       <div className="flex flex-wrap gap-1.5 mt-2">
-                        {tier.has_early_access && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#C9A84C' }}>Early Access</span>}
-                        {tier.has_exclusive_rooms && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#C9A84C' }}>Exclusive Rooms</span>}
-                        {tier.has_custom_badge && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#D4AF37' }}>Badge</span>}
-                        {tier.has_custom_emotes && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(109,191,126,0.15)', color: '#6DBF7E' }}>Emotes</span>}
-                        {tier.is_ad_free && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(192,57,43,0.15)', color: '#ffaaaa' }}>Ad-Free</span>}
-                        {tier.priority_support && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,133,74,0.15)', color: '#C9A84C' }}>Priority Support</span>}
+                        {tier.has_early_access && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,184,0,0.15)', color: '#FFB800' }}>Early Access</span>}
+                        {tier.has_exclusive_rooms && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,184,0,0.15)', color: '#FFB800' }}>Exclusive Rooms</span>}
+                        {tier.has_custom_badge && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,184,0,0.15)', color: '#FFB800' }}>Badge</span>}
+                        {tier.has_custom_emotes && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(0,255,136,0.15)', color: '#00FF88' }}>Emotes</span>}
+                        {tier.is_ad_free && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,32,64,0.15)', color: '#ffaaaa' }}>Ad-Free</span>}
+                        {tier.priority_support && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,140,0,0.15)', color: '#FFB800' }}>Priority Support</span>}
                         {tier.benefits?.slice(0, 2).map((b, i) => (
                           <span key={i} style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>{b}</span>
                         ))}

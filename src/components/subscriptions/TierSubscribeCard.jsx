@@ -100,21 +100,21 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
         style={{
           position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%',
           background: 'rgba(13,6,24,0.95)',
-          border: isHighlighted ? '2px solid #C9A84C' : '1px solid rgba(255,255,255,0.1)',
+          border: isHighlighted ? '2px solid #FFB800' : '1px solid rgba(255,255,255,0.1)',
           borderRadius: 12,
-          boxShadow: isHighlighted ? '0 4px 20px rgba(212,175,55,0.2)' : 'none',
+          boxShadow: isHighlighted ? '0 4px 20px rgba(255,184,0,0.2)' : 'none',
           opacity: (isFull && !isCurrentTier) ? 0.6 : 1,
           fontFamily: 'Barlow Condensed, sans-serif',
         }}
       >
         {isHighlighted && (
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: '#C9A84C', color: '#000', fontSize: 11, fontWeight: 700, textAlign: 'center', padding: '2px 0', letterSpacing: '0.08em' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: '#FFB800', color: '#000', fontSize: 11, fontWeight: 700, textAlign: 'center', padding: '2px 0', letterSpacing: '0.08em' }}>
             MOST POPULAR
           </div>
         )}
 
         {/* Color bar */}
-        <div style={{ height: 6, width: '100%', background: tier.color || '#d4af37' }} />
+        <div style={{ height: 6, width: '100%', background: tier.color || '#ffb800' }} />
 
         <div style={{ padding: `${isHighlighted ? 28 : 20}px 20px 12px` }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -142,7 +142,7 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {allBenefits.map((b, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <Check style={{ width: 16, height: 16, marginTop: 2, flexShrink: 0, color: tier.color || '#d4af37' }} />
+                <Check style={{ width: 16, height: 16, marginTop: 2, flexShrink: 0, color: tier.color || '#ffb800' }} />
                 <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{b.label}</span>
               </div>
             ))}
@@ -168,7 +168,7 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
             </>
           ) : (
             <button
-              style={{ width: '100%', padding: '10px 0', background: tier.color || '#d4af37', border: 'none', borderRadius: 8, color: '#000', fontSize: 14, fontWeight: 700, cursor: (subscribeMutation.isPending || isFull) ? 'not-allowed' : 'pointer', opacity: (subscribeMutation.isPending || isFull) ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+              style={{ width: '100%', padding: '10px 0', background: tier.color || '#ffb800', border: 'none', borderRadius: 8, color: '#000', fontSize: 14, fontWeight: 700, cursor: (subscribeMutation.isPending || isFull) ? 'not-allowed' : 'pointer', opacity: (subscribeMutation.isPending || isFull) ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
               onClick={() => subscribeMutation.mutate()}
               disabled={subscribeMutation.isPending || isFull}
             >

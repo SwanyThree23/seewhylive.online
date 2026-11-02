@@ -6,11 +6,11 @@ import {
   AudioLines, Volume2, FileAudio, User,
 } from 'lucide-react';
 
-const G = '#D4AF37';
-const TEAL = '#4A8A7A';
-const BG = '#080B18';
+const G = '#FFB800';
+const TEAL = '#00F5FF';
+const BG = '#03030A';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 const EMOTIONS = [
   { id: 'neutral',  label: 'Neutral',  emoji: '😐' },
@@ -217,21 +217,21 @@ export default function VoiceLipSyncStudio() {
           <div className="grid grid-cols-2 gap-2 mb-3">
             <button onClick={() => fileRef.current?.click()}
               className="flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all"
-              style={{ background: uploadMutation.isPending ? 'rgba(74,138,122,0.18)' : 'rgba(255,255,255,0.04)', border: `1px solid ${TEAL}55` }}>
+              style={{ background: uploadMutation.isPending ? 'rgba(0,245,255,0.18)' : 'rgba(255,255,255,0.04)', border: `1px solid ${TEAL}55` }}>
               {uploadMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" style={{ color: TEAL }} /> : <Upload className="w-5 h-5" style={{ color: TEAL }} />}
               <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Upload Audio</span>
             </button>
             <button onClick={recording ? stopRecording : startRecording}
               className="flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all"
-              style={{ background: recording ? 'rgba(192,57,43,0.20)' : 'rgba(255,255,255,0.04)', border: `1px solid ${recording ? '#C0392Baa' : TEAL + '55'}` }}>
-              <Mic2 className="w-5 h-5" style={{ color: recording ? '#C0392B' : TEAL }} />
+              style={{ background: recording ? 'rgba(255,32,64,0.20)' : 'rgba(255,255,255,0.04)', border: `1px solid ${recording ? '#FF2040aa' : TEAL + '55'}` }}>
+              <Mic2 className="w-5 h-5" style={{ color: recording ? '#FF2040' : TEAL }} />
               <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>{recording ? 'Stop' : 'Record'}</span>
             </button>
           </div>
           <input ref={fileRef} type="file" accept="audio/*" className="hidden" onChange={onUpload} />
 
           {refAudio && (
-            <div className="rounded-xl p-2.5 flex items-center gap-2" style={{ background: 'rgba(74,138,122,0.10)', border: `1px solid ${TEAL}44` }}>
+            <div className="rounded-xl p-2.5 flex items-center gap-2" style={{ background: 'rgba(0,245,255,0.10)', border: `1px solid ${TEAL}44` }}>
               <FileAudio className="w-4 h-4 shrink-0" style={{ color: TEAL }} />
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-black uppercase tracking-wide" style={{ color: TEAL, fontFamily: 'Barlow Condensed, sans-serif' }}>Reference Voice ✓</p>
@@ -251,7 +251,7 @@ export default function VoiceLipSyncStudio() {
             onClick={() => refAudio && transcribeMutation.mutate({ audioUrl: refAudio })}
             disabled={!refAudio || transcribeMutation.isPending}
             className="mt-2 w-full rounded-xl py-2 text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-40"
-            style={{ background: 'rgba(74,138,122,0.18)', border: `1px solid ${TEAL}66`, color: TEAL }}>
+            style={{ background: 'rgba(0,245,255,0.18)', border: `1px solid ${TEAL}66`, color: TEAL }}>
             {transcribeMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <AudioLines className="w-3 h-3" />}
             Transcribe → Driving Script
           </button>
@@ -274,7 +274,7 @@ export default function VoiceLipSyncStudio() {
               return (
                 <button key={e.id} onClick={() => setEmotion(e.id)}
                   className="flex flex-col items-center gap-1 py-1.5 rounded-lg transition-all"
-                  style={{ background: active ? 'rgba(74,138,122,0.22)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? TEAL + 'aa' : 'transparent'}` }}>
+                  style={{ background: active ? 'rgba(0,245,255,0.22)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? TEAL + 'aa' : 'transparent'}` }}>
                   <span className="text-base">{e.emoji}</span>
                   <span className="text-[8px] font-bold uppercase" style={{ color: active ? '#fff' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{e.label}</span>
                 </button>
@@ -297,7 +297,7 @@ export default function VoiceLipSyncStudio() {
             }}
             disabled={!transcript.trim() || emotionMutation.isPending}
             className="mt-3 w-full rounded-xl py-2 text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-40"
-            style={{ background: 'rgba(74,138,122,0.18)', border: `1px solid ${TEAL}88`, color: TEAL }}>
+            style={{ background: 'rgba(0,245,255,0.18)', border: `1px solid ${TEAL}88`, color: TEAL }}>
             {emotionMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
             Apply Emotion to Script
           </button>
@@ -307,7 +307,7 @@ export default function VoiceLipSyncStudio() {
       {/* AVATAR + LIP-SYNC */}
       <Section title="3 · Avatar & Lip-Sync" accent={TEAL} right={
         <button onClick={copyExport} className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg flex items-center gap-1.5"
-          style={{ background: 'rgba(74,138,122,0.12)', border: `1px solid ${TEAL}55`, color: TEAL }}>
+          style={{ background: 'rgba(0,245,255,0.12)', border: `1px solid ${TEAL}55`, color: TEAL }}>
           {copied ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy Export Pack</>}
         </button>
       }>
@@ -318,7 +318,7 @@ export default function VoiceLipSyncStudio() {
             return (
               <button key={a.id} onClick={() => setAvatarPreset(a)}
                 className="flex flex-col items-start gap-1 p-2.5 rounded-xl text-left transition-all"
-                style={{ background: active ? 'rgba(74,138,122,0.18)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? TEAL + 'aa' : 'transparent'}` }}>
+                style={{ background: active ? 'rgba(0,245,255,0.18)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? TEAL + 'aa' : 'transparent'}` }}>
                 <User className="w-4 h-4" style={{ color: active ? TEAL : 'rgba(255,255,255,0.4)' }} />
                 <span className="text-[10px] font-black uppercase tracking-wide" style={{ color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>{a.name}</span>
               </button>

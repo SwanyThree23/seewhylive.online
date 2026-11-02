@@ -92,17 +92,17 @@ export default function GreenroomQueue({ roomId, isHost }) {
       {/* Header + invite */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-[#d4af37]" />
-          <span className="text-xs font-bold text-[#d4af37] uppercase tracking-wider">Greenroom</span>
+          <Users className="w-4 h-4 text-[#ffb800]" />
+          <span className="text-xs font-bold text-[#ffb800] uppercase tracking-wider">Greenroom</span>
           {waitingGuests.length > 0 && (
-            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#C0392B', color:'#fff' }}>
+            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#FF2040', color:'#fff' }}>
               {waitingGuests.length} waiting
             </span>
           )}
         </div>
         <button
           onClick={copyJoinLink}
-          style={{ height:24, fontSize:11, background:'transparent', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.3)', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
+          style={{ height:24, fontSize:11, background:'transparent', color:'#FFB800', border:'1px solid rgba(255,184,0,0.3)', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
         >
           <Copy className="w-2.5 h-2.5" /> Invite Link
         </button>
@@ -123,7 +123,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
         placeholder="Search guests…"
         value={guestSearch}
         onChange={e => setGuestSearch(e.target.value)}
-        style={{ width:'100%', padding:'6px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:10, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+        style={{ width:'100%', padding:'6px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:10, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
       />
 
       {/* Waiting queue */}
@@ -149,7 +149,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
                 exit={{ opacity: 0, x: 10 }}
                 className="flex items-center gap-2 p-2 bg-white/5 border border-white/10 rounded-lg"
               >
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#FF1564] to-[#ffb800] flex items-center justify-center text-[10px] font-bold text-white shrink-0">
                   {p.user_name?.charAt(0)?.toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -165,10 +165,10 @@ export default function GreenroomQueue({ roomId, isHost }) {
                       onClick={() => admitMutation.mutate(p)}
                       disabled={admitMutation.isPending}
                       className="w-6 h-6 rounded flex items-center justify-center border border-green-500/30 transition-all"
-                      style={{ background: 'rgba(109,191,126,0.15)' }}
+                      style={{ background: 'rgba(0,255,136,0.15)' }}
                       title="Admit"
                     >
-                      <CheckCircle className="w-3.5 h-3.5 text-[#6DBF7E]" />
+                      <CheckCircle className="w-3.5 h-3.5 text-[#00FF88]" />
                     </button>
                     <button
                       onClick={() => rejectMutation.mutate(p)}
@@ -176,7 +176,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
                       className="w-6 h-6 rounded flex items-center justify-center bg-red-900/50 hover:bg-red-700 border border-red-500/20 transition-all"
                       title="Reject"
                     >
-                      <XCircle className="w-3.5 h-3.5 text-[#C0392B]" />
+                      <XCircle className="w-3.5 h-3.5 text-[#FF2040]" />
                     </button>
                   </div>
                 )}
@@ -191,8 +191,8 @@ export default function GreenroomQueue({ roomId, isHost }) {
 
 function GuestRow({ participant, status }) {
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 border border-green-500/20 rounded-lg" style={{ background: 'rgba(109,191,126,0.15)' }}>
-      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#6DBF7E] to-[#6DBF7E] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+    <div className="flex items-center gap-2 px-2 py-1.5 border border-green-500/20 rounded-lg" style={{ background: 'rgba(0,255,136,0.15)' }}>
+      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#00FF88] to-[#00FF88] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
         {participant.user_name?.charAt(0)?.toUpperCase()}
       </div>
       <p className="text-[10px] font-semibold text-white truncate flex-1">{participant.user_name}</p>
@@ -206,9 +206,9 @@ function GuestRow({ participant, status }) {
 function StatusDot({ status }) {
   const colors = {
     waiting: 'bg-yellow-400',
-    ready: 'bg-[#6DBF7E] animate-pulse',
+    ready: 'bg-[#00FF88] animate-pulse',
     admitted: 'bg-blue-400',
-    rejected: 'bg-[#C0392B]',
+    rejected: 'bg-[#FF2040]',
   };
   return <span className={`w-1.5 h-1.5 rounded-full ${colors[status] || 'bg-white/20'}`} />;
 }

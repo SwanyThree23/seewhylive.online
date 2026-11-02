@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { DollarSign, Heart } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#ffb800';
 
 export default function PaymentMethodSelector({ creatorId, roomId, onPaymentComplete }) {
   const [selectedMethod, setSelectedMethod] = useState(null);
@@ -49,7 +49,7 @@ export default function PaymentMethodSelector({ creatorId, roomId, onPaymentComp
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="p-4 rounded-lg space-y-3"
-      style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}30` }}
+      style={{ background: 'rgba(3,3,10,0.95)', border: `1px solid ${G}30` }}
     >
       <div className="flex items-center gap-2">
         <Heart className="w-4 h-4" style={{ color: G }} />

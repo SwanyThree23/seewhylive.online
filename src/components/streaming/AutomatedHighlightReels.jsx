@@ -10,13 +10,13 @@ const HighlightCard = ({ highlight, onDelete, onShare }) => (
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
     whileHover={{ y: -4 }}
-    className="bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:border-[#d4af37]/30 transition-all"
+    className="bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:border-[#ffb800]/30 transition-all"
   >
     <div className="relative aspect-video bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center group overflow-hidden">
       {highlight.thumbnail ? (
         <img src={highlight.thumbnail} alt={highlight.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
       ) : (
-        <Sparkles className="w-8 h-8 text-[#d4af37]/40" />
+        <Sparkles className="w-8 h-8 text-[#ffb800]/40" />
       )}
       <motion.div
         whileHover={{ scale: 1.1 }}
@@ -24,7 +24,7 @@ const HighlightCard = ({ highlight, onDelete, onShare }) => (
       >
         <Play className="w-10 h-10 text-white fill-white" />
       </motion.div>
-      <div className="absolute top-2 right-2 bg-black/80 text-[#d4af37] px-2 py-1 rounded text-[11px] font-bold capitalize">
+      <div className="absolute top-2 right-2 bg-black/80 text-[#ffb800] px-2 py-1 rounded text-[11px] font-bold capitalize">
         {highlight.status === 'generating' ? (
           <span className="flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Processing</span>
         ) : 'Highlight'}
@@ -55,7 +55,7 @@ const HighlightCard = ({ highlight, onDelete, onShare }) => (
         </button>
         <button
           onClick={() => onDelete?.(highlight.id)}
-          className="flex-1 flex items-center justify-center gap-1 text-[11px] bg-[#C0392B]/10 hover:bg-[#C0392B]/20 rounded py-1.5 text-[#C0392B] transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 text-[11px] bg-[#FF2040]/10 hover:bg-[#FF2040]/20 rounded py-1.5 text-[#FF2040] transition-colors"
         >
           <Trash2 className="w-3 h-3" />
           Delete
@@ -127,12 +127,12 @@ export default function AutomatedHighlightReels({ streamSession }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4 space-y-4"
+      className="bg-[#0F1428]/50 border border-[#ffb800]/15 rounded-lg p-4 space-y-4"
     >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-[#d4af37]" />
+          <Sparkles className="w-5 h-5 text-[#ffb800]" />
           <h3 className="text-sm font-bold text-white">Automated Highlights</h3>
         </div>
         <div className="flex gap-2">
@@ -179,7 +179,7 @@ export default function AutomatedHighlightReels({ streamSession }) {
       <button
         onClick={handleGenerateHighlights}
         disabled={generating}
-        style={{ width:'100%', background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:700, height:36, cursor:generating?'not-allowed':'pointer', opacity:generating?0.6:1, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:'Barlow Condensed, sans-serif', fontSize:13 }}
+        style={{ width:'100%', background:'#FFB800', color:'#000', border:'none', borderRadius:8, fontWeight:700, height:36, cursor:generating?'not-allowed':'pointer', opacity:generating?0.6:1, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:'Barlow Condensed, sans-serif', fontSize:13 }}
       >
         {generating ? (
           <>
@@ -202,7 +202,7 @@ export default function AutomatedHighlightReels({ streamSession }) {
         </div>
         <div className="bg-white/5 rounded px-2 py-1.5">
           <p className="text-[11px] text-white/60">TOTAL VIEWS</p>
-          <p className="text-base font-bold text-[#d4af37]">{highlights.reduce((sum, h) => sum + (h.view_count || 0), 0).toLocaleString()}</p>
+          <p className="text-base font-bold text-[#ffb800]">{highlights.reduce((sum, h) => sum + (h.view_count || 0), 0).toLocaleString()}</p>
         </div>
         <div className="bg-white/5 rounded px-2 py-1.5">
           <p className="text-[11px] text-white/60">AVG CONF.</p>
@@ -236,7 +236,7 @@ export default function AutomatedHighlightReels({ streamSession }) {
       )}
       {isLoading && (
         <div className="text-center py-6">
-          <Loader2 className="w-5 h-5 animate-spin text-[#d4af37]/40 mx-auto" />
+          <Loader2 className="w-5 h-5 animate-spin text-[#ffb800]/40 mx-auto" />
         </div>
       )}
     </motion.div>

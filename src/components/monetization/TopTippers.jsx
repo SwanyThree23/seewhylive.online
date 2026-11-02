@@ -9,8 +9,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Trophy, Zap } from 'lucide-react';
 
-const G       = '#D4AF37';
-const CRIMSON = '#800020';
+const G       = '#FFB800';
+const CRIMSON = '#FF1564';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const RANK_ICONS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
@@ -76,7 +76,7 @@ export default function TopTippers({ roomId, limit = 5, compact = false }) {
 
   return (
     <div style={{
-      background: 'rgba(8,11,24,0.96)', border: `1px solid ${G}18`,
+      background: 'rgba(3,3,10,0.96)', border: `1px solid ${G}18`,
       borderRadius: 12, overflow: 'hidden',
     }}>
       {/* Header */}

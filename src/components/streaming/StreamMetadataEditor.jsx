@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Edit2, Check, X } from 'lucide-react';
 
-const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 
 export default function StreamMetadataEditor({ initialTitle = 'Live Stream', initialCategory = 'gaming' }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -35,7 +35,7 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4"
+      className="bg-[#0F1428]/50 border border-[#ffb800]/15 rounded-lg p-4"
     >
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-bold text-white">Stream Info</h3>
@@ -113,12 +113,12 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
                       key={tag}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="inline-flex items-center gap-1 bg-[#d4af37]/20 text-[#d4af37] px-2 py-0.5 rounded text-[11px] font-semibold"
+                      className="inline-flex items-center gap-1 bg-[#ffb800]/20 text-[#ffb800] px-2 py-0.5 rounded text-[11px] font-semibold"
                     >
                       {tag}
                       <button
                         onClick={() => removeTag(tag)}
-                        className="text-[#d4af37]/60 hover:text-[#d4af37]"
+                        className="text-[#ffb800]/60 hover:text-[#ffb800]"
                       >
                         ×
                       </button>
@@ -145,7 +145,7 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
         {isEditing && (
           <button
             onClick={handleSave}
-            style={{ width:'100%', background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:600, fontSize:14, height:36, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:'Barlow Condensed, sans-serif' }}
+            style={{ width:'100%', background:'#FFB800', color:'#000', border:'none', borderRadius:8, fontWeight:600, fontSize:14, height:36, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:'Barlow Condensed, sans-serif' }}
           >
             <Check className="w-4 h-4" />
             Save Changes

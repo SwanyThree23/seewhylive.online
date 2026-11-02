@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Play, Plus, Trash2, X, Check, Volume2, Music } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 const inputStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
+  width: '100%', padding: '10px 14px', background: 'rgba(3,3,10,0.85)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
 };
@@ -105,7 +105,7 @@ export function SoundAlertOverlay({ alerts, onTrigger }) {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 12, padding: '16px 24px', borderRadius: 16,
             boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-            background: `linear-gradient(135deg, ${activeAlert.color || GOLD}22, #080B18)`,
+            background: `linear-gradient(135deg, ${activeAlert.color || GOLD}22, #03030A)`,
             border: `1px solid ${activeAlert.color || GOLD}`,
             boxShadow: `0 0 40px ${activeAlert.color || GOLD}44`,
           }}>
@@ -137,7 +137,7 @@ export default function SoundAlertsManager({ creatorId }) {
   const [form, setForm] = useState({
     name: '', trigger_type: 'donation_amount', trigger_value: 5,
     sound_preset: 'cash_register', message_template: '🎉 {name} donated ${amount}!',
-    volume: 80, duration_seconds: 5, is_active: true, color: '#d4af37',
+    volume: 80, duration_seconds: 5, is_active: true, color: '#ffb800',
   });
 
   const { data: soundAlerts = [] } = useQuery({
@@ -192,7 +192,7 @@ export default function SoundAlertsManager({ creatorId }) {
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '16px 0', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>No sound alerts yet</p>
         ) : soundAlerts.map(alert => (
           <div key={alert.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 12, border: alert.is_active ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.05)', background: alert.is_active ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)', opacity: alert.is_active ? 1 : 0.5, transition: 'all 0.2s' }}>
-            <button onClick={() => playPreset(alert.sound_preset, alert.volume)} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(212,175,55,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: GOLD, border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+            <button onClick={() => playPreset(alert.sound_preset, alert.volume)} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,184,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: GOLD, border: 'none', cursor: 'pointer', flexShrink: 0 }}>
               <Play className="w-3.5 h-3.5" />
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -204,7 +204,7 @@ export default function SoundAlertsManager({ creatorId }) {
                 {SOUND_PRESETS[alert.sound_preset]?.label?.split(' ')[0] || '🔔'}
               </span>
               {/* Switch */}
-              <div onClick={() => toggleMutation.mutate({ id: alert.id, is_active: !alert.is_active })} style={{ width: 40, height: 22, borderRadius: 99, background: alert.is_active ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+              <div onClick={() => toggleMutation.mutate({ id: alert.id, is_active: !alert.is_active })} style={{ width: 40, height: 22, borderRadius: 99, background: alert.is_active ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
                 <div style={{ position: 'absolute', top: 3, left: alert.is_active ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
               </div>
               <button onClick={() => deleteMutation.mutate(alert.id)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
@@ -219,7 +219,7 @@ export default function SoundAlertsManager({ creatorId }) {
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,184,0,0.2)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>New Sound Alert</p>
               <button onClick={() => setShowForm(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}><X className="w-4 h-4" /></button>
@@ -230,7 +230,7 @@ export default function SoundAlertsManager({ creatorId }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <select value={form.trigger_type} onChange={e => setForm(f => ({ ...f, trigger_type: e.target.value }))}
-                style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
+                style={{ width: '100%', padding: '10px 14px', background: 'rgba(3,3,10,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
                 {TRIGGER_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
               </select>
               {(form.trigger_type === 'donation_amount' || form.trigger_type === 'donation_exact') && (
@@ -245,7 +245,7 @@ export default function SoundAlertsManager({ creatorId }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
                 {Object.entries(SOUND_PRESETS).map(([id, preset]) => (
                   <button key={id} onClick={() => { setForm(f => ({ ...f, sound_preset: id })); playPreset(id, 50); }}
-                    style={{ fontSize: 11, padding: '6px 8px', borderRadius: 8, border: `1px solid ${form.sound_preset === id ? GOLD : 'rgba(255,255,255,0.1)'}`, background: form.sound_preset === id ? 'rgba(212,175,55,0.1)' : 'transparent', color: form.sound_preset === id ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    style={{ fontSize: 11, padding: '6px 8px', borderRadius: 8, border: `1px solid ${form.sound_preset === id ? GOLD : 'rgba(255,255,255,0.1)'}`, background: form.sound_preset === id ? 'rgba(255,184,0,0.1)' : 'transparent', color: form.sound_preset === id ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     {preset.label}
                   </button>
                 ))}

@@ -22,8 +22,8 @@ import {
 import { toast } from 'sonner';
 
 const API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
-const G    = '#D4AF37';
-const BURG = '#800020';
+const G    = '#FFB800';
+const BURG = '#FF1564';
 const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const PLATFORM_PRESETS = [
@@ -54,7 +54,7 @@ function ReachMultiplierBanner({ participants, destsByUser }) {
 
   return (
     <div style={{
-      background: `linear-gradient(135deg, ${BURG}18, rgba(212,175,55,0.08))`,
+      background: `linear-gradient(135deg, ${BURG}18, rgba(255,184,0,0.08))`,
       border: `1px solid ${G}20`,
       borderRadius: 10, padding: '12px 14px', marginBottom: 12,
     }}>
@@ -65,7 +65,7 @@ function ReachMultiplierBanner({ participants, destsByUser }) {
         </span>
       </div>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        <StatChip icon={Radio}    label="Active Streams" value={totalStreams} color={totalStreams > 0 ? '#6DBF7E' : 'rgba(255,255,255,0.3)'} />
+        <StatChip icon={Radio}    label="Active Streams" value={totalStreams} color={totalStreams > 0 ? '#00FF88' : 'rgba(255,255,255,0.3)'} />
         <StatChip icon={Users}    label="Guests Live"    value={guestCount}  color={G} />
         <StatChip icon={Globe}    label="Platforms Hit"  value={new Set(Object.values(destsByUser).flat().filter(d=>d.is_enabled).map(d=>d.platform)).size} color='#9146ff' />
         <StatChip icon={TrendingUp} label="Potential Reach" value={estimatedReach >= 1000 ? `${Math.round(estimatedReach/1000)}K` : estimatedReach} color={BURG} />
@@ -155,17 +155,17 @@ function DestRow({ dest, userId, streamStatus, onUpdate, onDelete }) {
 
           {/* Live status badge */}
           {isLive && (
-            <span style={{ ...T, fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, background: 'rgba(109,191,126,0.15)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', display: 'flex', alignItems: 'center', gap: 3 }}>
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#6DBF7E', display: 'inline-block', animation: 'pulse 1s infinite' }} /> LIVE
+            <span style={{ ...T, fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, background: 'rgba(0,255,136,0.15)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)', display: 'flex', alignItems: 'center', gap: 3 }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#00FF88', display: 'inline-block', animation: 'pulse 1s infinite' }} /> LIVE
             </span>
           )}
           {isConnecting && (
-            <span style={{ ...T, fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, background: 'rgba(212,175,55,0.1)', color: G, border: `1px solid ${G}30` }}>
+            <span style={{ ...T, fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, background: 'rgba(255,184,0,0.1)', color: G, border: `1px solid ${G}30` }}>
               Connecting…
             </span>
           )}
           {vaultOk && !isLive && !isConnecting && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 9, color: '#6DBF7E' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 9, color: '#00FF88' }}>
               <ShieldCheck style={{ width: 10, height: 10 }} /> Ready
             </span>
           )}
@@ -198,7 +198,7 @@ function DestRow({ dest, userId, streamStatus, onUpdate, onDelete }) {
                 value={localKey}
                 onChange={e => setLocalKey(e.target.value)}
                 placeholder={vaultOk ? '••••••• (key in vault — enter new key to update)' : 'Paste stream key to encrypt'}
-                style={{ width: '100%', paddingLeft: 24, paddingRight: 8, height: 26, background: 'rgba(8,11,24,0.8)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, color: '#fff', fontSize: 10, outline: 'none', boxSizing: 'border-box', fontFamily: 'monospace' }}
+                style={{ width: '100%', paddingLeft: 24, paddingRight: 8, height: 26, background: 'rgba(3,3,10,0.8)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, color: '#fff', fontSize: 10, outline: 'none', boxSizing: 'border-box', fontFamily: 'monospace' }}
                 onKeyDown={e => e.key === 'Enter' && saveKey()}
               />
             </div>
@@ -219,7 +219,7 @@ function DestRow({ dest, userId, streamStatus, onUpdate, onDelete }) {
             onChange={e => setLocalUrl(e.target.value)}
             onBlur={() => base44.entities.RTMPDestination.update(dest.id, { server_url: localUrl })}
             placeholder="rtmp://your-server/live"
-            style={{ marginTop: 4, width: '100%', height: 26, padding: '0 8px', background: 'rgba(8,11,24,0.8)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, color: '#fff', fontSize: 10, outline: 'none', boxSizing: 'border-box', fontFamily: 'monospace' }}
+            style={{ marginTop: 4, width: '100%', height: 26, padding: '0 8px', background: 'rgba(3,3,10,0.8)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 6, color: '#fff', fontSize: 10, outline: 'none', boxSizing: 'border-box', fontFamily: 'monospace' }}
           />
         )}
       </div>
@@ -256,7 +256,7 @@ function AddDestinationForm({ userId, onAdded }) {
   return (
     <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 8 }}>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        <select value={preset} onChange={e => setPreset(e.target.value)} style={{ flex: 1, minWidth: 120, height: 28, background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', fontSize: 11, padding: '0 8px', ...T }}>
+        <select value={preset} onChange={e => setPreset(e.target.value)} style={{ flex: 1, minWidth: 120, height: 28, background: 'rgba(3,3,10,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', fontSize: 11, padding: '0 8px', ...T }}>
           {PLATFORM_PRESETS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
         </select>
         <input
@@ -264,7 +264,7 @@ function AddDestinationForm({ userId, onAdded }) {
           onChange={e => setLabel(e.target.value)}
           placeholder="Label (e.g. My YouTube)"
           onKeyDown={e => e.key === 'Enter' && add()}
-          style={{ flex: 2, height: 28, padding: '0 10px', background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', fontSize: 11, outline: 'none', ...T }}
+          style={{ flex: 2, height: 28, padding: '0 10px', background: 'rgba(3,3,10,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', fontSize: 11, outline: 'none', ...T }}
         />
         <button onClick={add} disabled={adding || !label.trim()} style={{
           height: 28, padding: '0 12px', borderRadius: 6,
@@ -340,21 +340,21 @@ function FanoutControls({ userId, roomId, destinations, fanoutStatus, onStatusCh
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
       padding: '10px 12px',
-      background: isLive ? 'rgba(109,191,126,0.06)' : 'rgba(255,255,255,0.02)',
-      border: `1px solid ${isLive ? 'rgba(109,191,126,0.2)' : 'rgba(255,255,255,0.06)'}`,
+      background: isLive ? 'rgba(0,255,136,0.06)' : 'rgba(255,255,255,0.02)',
+      border: `1px solid ${isLive ? 'rgba(0,255,136,0.2)' : 'rgba(255,255,255,0.06)'}`,
       borderRadius: 10, marginBottom: 12,
     }}>
       {isLive ? (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#6DBF7E', animation: 'pulse 1s infinite' }} />
-            <span style={{ ...T, color: '#6DBF7E', fontSize: 12, fontWeight: 900 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00FF88', animation: 'pulse 1s infinite' }} />
+            <span style={{ ...T, color: '#00FF88', fontSize: 12, fontWeight: 900 }}>
               BROADCASTING LIVE — {fanoutStatus?.destinations || enabledDests.length} platforms
             </span>
           </div>
           <button onClick={stopAll} disabled={stopping} style={{
-            height: 30, padding: '0 14px', borderRadius: 7, border: '1px solid rgba(192,57,43,0.4)',
-            background: 'rgba(192,57,43,0.12)', color: '#C0392B', cursor: 'pointer',
+            height: 30, padding: '0 14px', borderRadius: 7, border: '1px solid rgba(255,32,64,0.4)',
+            background: 'rgba(255,32,64,0.12)', color: '#FF2040', cursor: 'pointer',
             fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 5, ...T,
           }}>
             <Square style={{ width: 9, height: 9 }} /> Stop All
@@ -441,8 +441,8 @@ export default function GuestDestinationsDashboard({ userId, roomId, isHost, par
 
       {/* Vault Pro badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-        <ShieldCheck style={{ width: 11, height: 11, color: '#6DBF7E' }} />
-        <span style={{ fontSize: 9, color: '#6DBF7E', fontWeight: 700, letterSpacing: 0.5 }}>
+        <ShieldCheck style={{ width: 11, height: 11, color: '#00FF88' }} />
+        <span style={{ fontSize: 9, color: '#00FF88', fontWeight: 700, letterSpacing: 0.5 }}>
           VAULT PRO — AES-256-GCM · Zero-Knowledge · Host Never Sees Your Keys
         </span>
       </div>

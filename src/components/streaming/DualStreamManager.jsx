@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Monitor, Smartphone, Play, Pause, RefreshCw } from 'lucide-react';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // Canvas dimensions
@@ -128,7 +128,7 @@ export default function DualStreamManager({ localStream, isActive = false, onStr
           </div>
           <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: G }}>Dual Stream</span>
           {running && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-black animate-pulse" style={{ ...T, background: 'rgba(192,57,43,0.25)', color: '#C0392B' }}>
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-black animate-pulse" style={{ ...T, background: 'rgba(255,32,64,0.25)', color: '#FF2040' }}>
               LIVE
             </span>
           )}
@@ -138,9 +138,9 @@ export default function DualStreamManager({ localStream, isActive = false, onStr
           disabled={!hasStream}
           className="flex items-center gap-1.5 px-2.5 py-1 rounded font-black text-[10px] uppercase transition-all disabled:opacity-30"
           style={{
-            background: running ? 'rgba(192,57,43,0.2)' : `${G}20`,
-            border: `1px solid ${running ? 'rgba(192,57,43,0.5)' : `${G}50`}`,
-            color: running ? '#C0392B' : G, ...T,
+            background: running ? 'rgba(255,32,64,0.2)' : `${G}20`,
+            border: `1px solid ${running ? 'rgba(255,32,64,0.5)' : `${G}50`}`,
+            color: running ? '#FF2040' : G, ...T,
           }}
         >
           {running ? <><Pause className="w-3 h-3" /> Stop</> : <><Play className="w-3 h-3" /> Start</>}
@@ -170,7 +170,7 @@ export default function DualStreamManager({ localStream, isActive = false, onStr
                 </div>
               )}
               {running && (
-                <div className="absolute top-1 right-1 px-1 py-0.5 rounded text-[8px] font-black" style={{ background: 'rgba(192,57,43,0.8)', color: '#fff', ...T }}>
+                <div className="absolute top-1 right-1 px-1 py-0.5 rounded text-[8px] font-black" style={{ background: 'rgba(255,32,64,0.8)', color: '#fff', ...T }}>
                   1280×720
                 </div>
               )}
@@ -193,7 +193,7 @@ export default function DualStreamManager({ localStream, isActive = false, onStr
                   </div>
                 )}
                 {running && (
-                  <div className="absolute top-1 right-1 px-1 py-0.5 rounded text-[8px] font-black" style={{ background: 'rgba(192,57,43,0.8)', color: '#fff', ...T }}>
+                  <div className="absolute top-1 right-1 px-1 py-0.5 rounded text-[8px] font-black" style={{ background: 'rgba(255,32,64,0.8)', color: '#fff', ...T }}>
                     405×720
                   </div>
                 )}

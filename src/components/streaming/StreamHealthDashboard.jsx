@@ -4,10 +4,10 @@ import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 
 const HealthMetric = ({ label, value, unit, status, trend }) => {
   const statusColor = {
-    excellent: '#6DBF7E',
-    good: '#d4af37',
+    excellent: '#00FF88',
+    good: '#ffb800',
     warning: '#FFB800',
-    critical: '#C0392B'
+    critical: '#FF2040'
   };
 
   return (
@@ -20,9 +20,9 @@ const HealthMetric = ({ label, value, unit, status, trend }) => {
         <span className="text-[11px] text-white/60 font-semibold uppercase">{label}</span>
         <div className="flex items-center gap-1">
           {trend === 'up' ? (
-            <TrendingUp className="w-3 h-3 text-[#6DBF7E]" />
+            <TrendingUp className="w-3 h-3 text-[#00FF88]" />
           ) : trend === 'down' ? (
-            <TrendingDown className="w-3 h-3 text-[#C0392B]" />
+            <TrendingDown className="w-3 h-3 text-[#FF2040]" />
           ) : null}
         </div>
       </div>
@@ -176,7 +176,7 @@ export default function StreamHealthDashboard({ isLive, peerConnection, viewerCo
   return (
     <div className="space-y-2.5">
       <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
+        <div className="w-2 h-2 rounded-full bg-[#FF2040] animate-pulse" />
         <h3 className="text-sm font-bold text-white">Stream Health</h3>
         {!peerConnection && (
           <span className="text-[10px] text-white/30 ml-auto">(no WebRTC connection)</span>

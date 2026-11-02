@@ -3,10 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Upload, Loader2, Trash2, Search, Film, Check, FolderOpen } from 'lucide-react';
 
-const G = '#D4AF37';
-const ORANGE = '#D4854A';
+const G = '#FFB800';
+const ORANGE = '#FF8C00';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 const CATEGORY_SUGGESTIONS = ['general', 'product', 'b-roll', 'logo', 'thumbnail', 'music video', 'promo', 'other'];
 
@@ -108,7 +108,7 @@ export default function AssetLibrary({ selectMode = false, filterMediaType = nul
         className="rounded-2xl border-2 border-dashed px-4 py-5 flex items-center gap-3 cursor-pointer transition-all"
         style={{
           borderColor: dragOver ? G : 'rgba(255,255,255,0.15)',
-          background: dragOver ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.02)',
+          background: dragOver ? 'rgba(255,184,0,0.08)' : 'rgba(255,255,255,0.02)',
         }}>
         <input
           ref={fileRef}
@@ -122,7 +122,7 @@ export default function AssetLibrary({ selectMode = false, filterMediaType = nul
             e.target.value = '';
           }}
         />
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.12)' }}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,184,0,0.12)' }}>
           {uploadMut.isPending ? <Loader2 className="w-5 h-5 animate-spin" style={{ color: G }} /> : <Upload className="w-5 h-5" style={{ color: G }} />}
         </div>
         <div className="flex-1 min-w-0">
@@ -144,7 +144,7 @@ export default function AssetLibrary({ selectMode = false, filterMediaType = nul
               <button key={c} onClick={() => setCategory(c)}
                 className="shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all"
                 style={{
-                  background: active ? 'rgba(212,175,55,0.18)' : 'rgba(255,255,255,0.04)',
+                  background: active ? 'rgba(255,184,0,0.18)' : 'rgba(255,255,255,0.04)',
                   border: `1px solid ${active ? G + '88' : 'transparent'}`,
                   color: active ? '#fff' : 'rgba(255,255,255,0.5)',
                   fontFamily: 'Barlow Condensed, sans-serif',
@@ -204,14 +204,14 @@ export default function AssetLibrary({ selectMode = false, filterMediaType = nul
                   {selectMode && (
                     <button onClick={() => onSelect && onSelect(a)}
                       className="flex-1 rounded-lg py-1.5 text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1"
-                      style={{ background: 'rgba(212,175,55,0.15)', border: `1px solid ${G}55`, color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      style={{ background: 'rgba(255,184,0,0.15)', border: `1px solid ${G}55`, color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
                       <Check className="w-3 h-3" /> Use
                     </button>
                   )}
                   <button onClick={() => deleteMut.mutate(a.id)}
                     disabled={deleteMut.isPending}
                     className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-40"
-                    style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)' }}
+                    style={{ background: 'rgba(255,32,64,0.15)', border: '1px solid rgba(255,32,64,0.4)' }}
                     title="Delete asset">
                     <Trash2 className="w-3.5 h-3.5" style={{ color: '#ef4444' }} />
                   </button>

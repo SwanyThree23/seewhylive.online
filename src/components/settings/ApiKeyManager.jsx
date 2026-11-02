@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Key, Eye, EyeOff, Copy, RefreshCw, Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD   = '#C9A84C';
+const GOLD   = '#FFB800';
 const BURG   = '#6B1F2A';
 const OBS    = '#07050A';
 const DIM    = 'rgba(255,255,255,0.45)';
@@ -93,14 +93,14 @@ export default function ApiKeyManager() {
           return (
             <div key={svc.key} style={{
               borderRadius: 10, overflow: 'hidden',
-              border: `1px solid ${isSet ? 'rgba(201,168,76,0.25)' : 'rgba(255,255,255,0.07)'}`,
+              border: `1px solid ${isSet ? 'rgba(255,184,0,0.25)' : 'rgba(255,255,255,0.07)'}`,
               background: 'rgba(13,6,24,0.8)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
                 {/* Status dot */}
                 <span style={{
                   width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-                  background: isSet ? '#6DBF7E' : 'rgba(255,255,255,0.2)',
+                  background: isSet ? '#00FF88' : 'rgba(255,255,255,0.2)',
                 }} />
                 <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>
                   {svc.label}
@@ -125,12 +125,12 @@ export default function ApiKeyManager() {
                     style={{
                       flex: 1, padding: '7px 10px', borderRadius: 7,
                       background: 'rgba(0,0,0,0.5)',
-                      border: `1px solid rgba(201,168,76,0.35)`,
+                      border: `1px solid rgba(255,184,0,0.35)`,
                       color: 'rgba(255,255,255,0.9)', fontSize: 12, fontFamily: 'monospace',
                       outline: 'none',
                     }}
                   />
-                  <button onClick={() => commitEdit(svc.key)} style={{ padding: '7px 12px', borderRadius: 7, background: 'rgba(201,168,76,0.15)', border: `1px solid rgba(201,168,76,0.35)`, color: GOLD, cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>Save</button>
+                  <button onClick={() => commitEdit(svc.key)} style={{ padding: '7px 12px', borderRadius: 7, background: 'rgba(255,184,0,0.15)', border: `1px solid rgba(255,184,0,0.35)`, color: GOLD, cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>Save</button>
                   <button onClick={() => setEditing(prev => { const n={...prev}; delete n[svc.key]; return n; })} style={{ padding: '7px 10px', borderRadius: 7, background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: DIM, cursor: 'pointer', fontSize: 11 }}>✕</button>
                 </div>
               ) : (
@@ -159,7 +159,7 @@ export default function ApiKeyManager() {
                     </>
                   )}
                   <button onClick={() => startEdit(svc.key)}
-                    style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(201,168,76,0.08)', border: `1px solid rgba(201,168,76,0.2)`, color: GOLD, cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(255,184,0,0.08)', border: `1px solid rgba(255,184,0,0.2)`, color: GOLD, cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
                     {isSet ? <><RefreshCw style={{ width: 11, height: 11 }} /> Update</> : <><Plus style={{ width: 11, height: 11 }} /> Add</>}
                   </button>
                 </div>

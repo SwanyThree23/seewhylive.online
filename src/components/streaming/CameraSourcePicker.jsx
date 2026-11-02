@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const GOLD = '#D4AF37';
-const BG2 = 'rgba(8,11,24,0.9)';
+const GOLD = '#FFB800';
+const BG2 = 'rgba(3,3,10,0.9)';
 
 /**
  * CameraSourcePicker
@@ -105,7 +105,7 @@ export default function CameraSourcePicker({ onSourceSelected, onSelect, onClose
       {!onClose && (
         <button onClick={() => { setOpen(true); if (selectedId) previewDevice(selectedId); }}
           className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
-          style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
+          style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.25)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
           📹 {selectedDevice?.isOBS ? '🟢 OBS Camera' : selectedDevice?.label?.split('(')[0]?.trim() || 'Select Camera'}
         </button>
       )}
@@ -117,7 +117,7 @@ export default function CameraSourcePicker({ onSourceSelected, onSelect, onClose
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => { setOpen(false); if (preview) preview.getTracks().forEach(t => t.stop()); if (onClose) onClose(); }} />
             <motion.div className="fixed inset-x-4 top-[10%] z-[201] rounded-2xl overflow-hidden"
-              style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', maxWidth: 480, margin: '0 auto' }}
+              style={{ background: '#03030A', border: '1px solid rgba(255,184,0,0.2)', maxWidth: 480, margin: '0 auto' }}
               initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
 
               {/* Header */}
@@ -137,9 +137,9 @@ export default function CameraSourcePicker({ onSourceSelected, onSelect, onClose
                   )}
                   <div className="absolute top-2 left-2 flex gap-1">
                     {selectedDevice?.isOBS && (
-                      <span className="text-[11px] px-1.5 py-0.5 rounded font-black" style={{ background: 'rgba(109,191,126,0.2)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>OBS VIRTUAL</span>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded font-black" style={{ background: 'rgba(0,255,136,0.2)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>OBS VIRTUAL</span>
                     )}
-                    <span className="text-[11px] px-1.5 py-0.5 rounded font-black" style={{ background: 'rgba(212,175,55,0.2)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{quality}</span>
+                    <span className="text-[11px] px-1.5 py-0.5 rounded font-black" style={{ background: 'rgba(255,184,0,0.2)', color: GOLD, border: '1px solid rgba(255,184,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{quality}</span>
                   </div>
                 </div>
 
@@ -151,12 +151,12 @@ export default function CameraSourcePicker({ onSourceSelected, onSelect, onClose
                     <button key={d.deviceId} onClick={() => selectSource(d.deviceId)}
                       className="w-full flex items-center gap-3 p-2.5 rounded-xl transition-all text-left"
                       style={selectedId === d.deviceId
-                        ? { background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)' }
+                        ? { background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.3)' }
                         : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                       <span className="text-lg">{d.isOBS ? '🟢' : d.isElgato ? '🎮' : '📹'}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-white truncate">{d.label}</p>
-                        <p className="text-[11px]" style={{ color: d.isOBS ? '#6DBF7E' : 'rgba(255,255,255,0.3)' }}>
+                        <p className="text-[11px]" style={{ color: d.isOBS ? '#00FF88' : 'rgba(255,255,255,0.3)' }}>
                           {d.isOBS ? 'OBS Virtual Camera detected' : d.isVirtual ? 'Virtual camera' : 'Physical camera'}
                         </p>
                       </div>
@@ -173,7 +173,7 @@ export default function CameraSourcePicker({ onSourceSelected, onSelect, onClose
                       <button key={key} onClick={() => setQuality(key)}
                         className="py-1.5 rounded-lg text-[11px] font-black transition-all"
                         style={quality === key
-                          ? { background: 'rgba(212,175,55,0.2)', color: GOLD, border: '1px solid rgba(212,175,55,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }
+                          ? { background: 'rgba(255,184,0,0.2)', color: GOLD, border: '1px solid rgba(255,184,0,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }
                           : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.07)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                         {key}
                       </button>
@@ -183,8 +183,8 @@ export default function CameraSourcePicker({ onSourceSelected, onSelect, onClose
 
                 {/* OBS tip */}
                 {!devices.some(d => d.isOBS) && (
-                  <div className="rounded-xl p-3" style={{ background: 'rgba(109,191,126,0.05)', border: '1px solid rgba(109,191,126,0.12)' }}>
-                    <p className="text-[11px]" style={{ color: 'rgba(109,191,126,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.12)' }}>
+                    <p className="text-[11px]" style={{ color: 'rgba(0,255,136,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                       💡 Don't see OBS? Open OBS → Tools → Virtual Camera → Start Virtual Camera, then refresh this list.
                     </p>
                   </div>
@@ -193,7 +193,7 @@ export default function CameraSourcePicker({ onSourceSelected, onSelect, onClose
                 {/* Confirm */}
                 <button onClick={confirmSelection}
                   className="w-full py-2.5 rounded-xl text-sm font-black uppercase"
-                  style={{ background: 'linear-gradient(135deg, #6B4423, #D4AF37)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  style={{ background: 'linear-gradient(135deg, #2A2A48, #FFB800)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   Use This Camera
                 </button>
               </div>

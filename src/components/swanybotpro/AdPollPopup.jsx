@@ -4,10 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { X, Zap } from 'lucide-react';
 
-const G = '#D4AF37';
-const ORANGE = '#D4854A';
+const G = '#FFB800';
+const ORANGE = '#FF8C00';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.3)';
+const BORDER = 'rgba(255,184,0,0.3)';
 
 /**
  * AdPollPopup — when a video with an attached quick poll starts playing,
@@ -106,7 +106,7 @@ export default function AdPollPopup({ videoUrl, playing }) {
           exit={{ opacity: 0, y: 40, scale: 0.95 }}
           transition={{ type: 'spring', damping: 26, stiffness: 300 }}
           className="pointer-events-auto w-full max-w-md rounded-2xl overflow-hidden"
-          style={{ background: PANEL, border: `1px solid ${BORDER}`, boxShadow: '0 10px 50px rgba(0,0,0,0.8), 0 0 30px rgba(212,175,55,0.18)' }}
+          style={{ background: PANEL, border: `1px solid ${BORDER}`, boxShadow: '0 10px 50px rgba(0,0,0,0.8), 0 0 30px rgba(255,184,0,0.18)' }}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: `1px solid ${BORDER}` }}>
@@ -135,7 +135,7 @@ export default function AdPollPopup({ videoUrl, playing }) {
                 {(poll.options || []).map((opt, i) => (
                   <button key={i} onClick={() => vote(i)}
                     className="w-full text-left rounded-xl px-3 py-2.5 text-[12px] font-bold transition-all active:scale-[0.98]"
-                    style={{ background: 'rgba(212,175,55,0.08)', border: `1px solid ${G}44`, color: 'rgba(255,255,255,0.85)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    style={{ background: 'rgba(255,184,0,0.08)', border: `1px solid ${G}44`, color: 'rgba(255,255,255,0.85)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     {opt}
                   </button>
                 ))}
@@ -148,7 +148,7 @@ export default function AdPollPopup({ videoUrl, playing }) {
                   return (
                     <div key={i} className="relative rounded-xl overflow-hidden" style={{ border: `1px solid ${mine ? G + '88' : 'rgba(255,255,255,0.08)'}` }}>
                       <div className="absolute inset-y-0 left-0 transition-all duration-500"
-                        style={{ width: `${pct}%`, background: mine ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.08)' }} />
+                        style={{ width: `${pct}%`, background: mine ? 'rgba(255,184,0,0.25)' : 'rgba(255,255,255,0.08)' }} />
                       <div className="relative flex items-center justify-between px-3 py-2">
                         <span className="text-[11px] font-bold" style={{ color: mine ? G : 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                           {opt}{mine ? ' · your vote' : ''}

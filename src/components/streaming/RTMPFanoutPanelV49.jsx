@@ -4,9 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Radio, Copy, Check, Play, Square } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const BG = '#080B18';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
+const BG = '#03030A';
 const FONT = 'Barlow Condensed, sans-serif';
 
 const PLATFORMS = [

@@ -76,7 +76,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4 space-y-4"
+      className="bg-[#0F1428]/50 border border-[#ffb800]/15 rounded-lg p-4 space-y-4"
     >
       <div>
         <h3 className="text-sm font-bold text-white mb-3">Transcription & Translation</h3>
@@ -88,7 +88,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
             <button
               onClick={handleTranscribe}
               disabled={loading || !recordingUrl}
-              style={{ width:'100%', background:'#D4854A', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading||!recordingUrl?'default':'pointer', opacity:loading||!recordingUrl?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
+              style={{ width:'100%', background:'#FF8C00', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading||!recordingUrl?'default':'pointer', opacity:loading||!recordingUrl?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
             >
               {loading ? (
                 <>
@@ -111,7 +111,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
                   onClick={() => handleCopy(transcription)}
                   className="absolute top-2 right-2 w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center"
                 >
-                  {copied ? <Check className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3" />}
+                  {copied ? <Check className="w-3 h-3 text-[#00FF88]" /> : <Copy className="w-3 h-3" />}
                 </button>
               </div>
             )}
@@ -136,7 +136,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
               <button
                 onClick={handleTranslate}
                 disabled={loading}
-                style={{ width:'100%', background:'#D4AF37', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading?'default':'pointer', opacity:loading?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
+                style={{ width:'100%', background:'#FFB800', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading?'default':'pointer', opacity:loading?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
               >
                 {loading ? (
                   <>
@@ -159,7 +159,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
                     onClick={() => handleCopy(translatedText)}
                     className="absolute top-2 right-2 w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center"
                   >
-                    {copied ? <Check className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3" />}
+                    {copied ? <Check className="w-3 h-3 text-[#00FF88]" /> : <Copy className="w-3 h-3" />}
                   </button>
                 </div>
               )}

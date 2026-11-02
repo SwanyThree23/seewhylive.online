@@ -40,7 +40,7 @@ export default function HostAlertCenter() {
     gift:      { bg: 'from-yellow-900/90 to-amber-900/70',  border: 'border-[#FFB800]', icon: '🎁', iconColor: '#FFB800' },
     handraise: { bg: 'from-[#0D1022]/90 to-[#1A1422]/70',  border: 'border-[#FFB800]', icon: '🖐', iconColor: '#FFB800' },
     poll:      { bg: 'from-[#4A3A8A]/90 to-[#3A2A7A]/70',  border: 'border-[#8B5CF6]', icon: '📊', iconColor: '#8B5CF6' },
-    battle:    { bg: 'from-red-900/90 to-[#800020]/70',    border: 'border-[#FF2040]', icon: '⚔️', iconColor: '#FF2040' },
+    battle:    { bg: 'from-red-900/90 to-[#FF1564]/70',    border: 'border-[#FF2040]', icon: '⚔️', iconColor: '#FF2040' },
   };
 
   return (

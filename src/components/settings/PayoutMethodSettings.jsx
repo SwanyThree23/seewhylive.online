@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Wallet } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#ffb800';
 
 const METHODS = [
   { id: 'cashapp', label: 'CashApp', hint: '$cashtag' },
@@ -58,7 +58,7 @@ export default function PayoutMethodSettings({ user }) {
 
   return (
     <section className="rounded-2xl p-4 space-y-3"
-      style={{ background: 'rgba(13,16,34,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
+      style={{ background: 'rgba(13,16,34,0.95)', border: '1px solid rgba(255,184,0,0.15)' }}>
       <div className="flex items-center gap-2">
         <Wallet className="w-4 h-4" style={{ color: G }} />
         <h2 className="text-sm font-black uppercase tracking-widest"
@@ -75,7 +75,7 @@ export default function PayoutMethodSettings({ user }) {
           <button key={m.id} onClick={() => setMethod(m.id)} aria-pressed={method === m.id}
             className="px-2 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
             style={{
-              background: method === m.id ? 'rgba(212,175,55,0.18)' : 'rgba(255,255,255,0.04)',
+              background: method === m.id ? 'rgba(255,184,0,0.18)' : 'rgba(255,255,255,0.04)',
               border: `1px solid ${method === m.id ? G : 'rgba(255,255,255,0.08)'}`,
               color: method === m.id ? G : 'rgba(255,255,255,0.6)',
               fontFamily: 'Barlow Condensed, sans-serif',

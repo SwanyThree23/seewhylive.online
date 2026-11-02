@@ -45,10 +45,10 @@ export default function StreamingPresets({ onApply }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4"
+      className="bg-[#0F1428]/50 border border-[#ffb800]/15 rounded-lg p-4"
     >
       <div className="flex items-center gap-2 mb-3">
-        <Zap className="w-4 h-4 text-[#d4af37]" />
+        <Zap className="w-4 h-4 text-[#ffb800]" />
         <h3 className="text-sm font-bold text-white">Quick Presets</h3>
       </div>
 
@@ -61,8 +61,8 @@ export default function StreamingPresets({ onApply }) {
             whileTap={{ scale: 0.98 }}
             className={`p-2.5 rounded-lg border transition-all text-left ${
               selected === preset.name
-                ? 'bg-[#d4af37]/20 border-[#d4af37]/50'
-                : 'bg-white/5 border-white/10 hover:border-[#d4af37]/30'
+                ? 'bg-[#ffb800]/20 border-[#ffb800]/50'
+                : 'bg-white/5 border-white/10 hover:border-[#ffb800]/30'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -71,7 +71,7 @@ export default function StreamingPresets({ onApply }) {
                 <p className="text-[11px] text-white/50">{preset.description}</p>
               </div>
               {selected === preset.name && (
-                <Save className="w-3.5 h-3.5 text-[#d4af37]" />
+                <Save className="w-3.5 h-3.5 text-[#ffb800]" />
               )}
             </div>
             <div className="flex gap-2 mt-1.5 flex-wrap">

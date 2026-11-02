@@ -72,9 +72,9 @@ export default function AccountDeletionFlow({ user }) {
         onClick={() => setOpen(true)}
         className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
         style={{
-          background: 'rgba(192,57,43,0.04)',
-          border: '1px solid rgba(192,57,43,0.12)',
-          color: 'rgba(192,57,43,0.6)',
+          background: 'rgba(255,32,64,0.04)',
+          border: '1px solid rgba(255,32,64,0.12)',
+          color: 'rgba(255,32,64,0.6)',
           userSelect: 'none',
           ...T,
         }}>
@@ -87,10 +87,10 @@ export default function AccountDeletionFlow({ user }) {
           <Drawer.Overlay className="fixed inset-0 z-[200]" style={{ background: 'rgba(0,0,0,0.75)' }} />
           <Drawer.Content
             className="fixed bottom-0 left-0 right-0 z-[210] rounded-t-2xl"
-            style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(192,57,43,0.3)', paddingBottom: 40 }}>
+            style={{ background: 'rgba(3,3,10,0.99)', border: '1px solid rgba(255,32,64,0.3)', paddingBottom: 40 }}>
             <Drawer.Handle className="mx-auto mt-3 mb-5 w-10 h-1 rounded-full bg-white/15" />
 
-            <div className="relative px-5 text-center pb-3" style={{ borderBottom: '1px solid rgba(192,57,43,0.1)' }}>
+            <div className="relative px-5 text-center pb-3" style={{ borderBottom: '1px solid rgba(255,32,64,0.1)' }}>
               <button
                 onClick={close}
                 aria-label="Close"
@@ -99,7 +99,7 @@ export default function AccountDeletionFlow({ user }) {
                 <X className="w-4 h-4" />
               </button>
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)' }}>
+                style={{ background: 'rgba(255,32,64,0.12)', border: '1px solid rgba(255,32,64,0.25)' }}>
                 <Trash2 className="w-5 h-5" style={{ color: DANGER }} />
               </div>
               <p className="font-black text-lg text-white" style={T}>Delete Account?</p>
@@ -109,7 +109,7 @@ export default function AccountDeletionFlow({ user }) {
               <div className="flex items-center justify-center gap-2 mt-3">
                 {[1, 2].map(s => (
                   <div key={s} className="rounded-full transition-all"
-                    style={{ width: step >= s ? 20 : 8, height: 8, background: step >= s ? DANGER : 'rgba(192,57,43,0.2)' }} />
+                    style={{ width: step >= s ? 20 : 8, height: 8, background: step >= s ? DANGER : 'rgba(255,32,64,0.2)' }} />
                 ))}
               </div>
             </div>

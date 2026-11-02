@@ -8,13 +8,13 @@ import confetti from 'canvas-confetti';
 import NativeSelect from '../shared/NativeSelect';
 
 const inputStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
+  width: '100%', padding: '10px 14px', background: 'rgba(3,3,10,0.85)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
 };
 
 const GOAL_ICONS = { tips: '💰', subscribers: '⭐', viewers: '👁', messages: '💬', custom: '🎯' };
-const GOAL_COLORS = ['#d4af37', '#4A8A7A', '#7B5DA6', '#6DBF7E', '#D4854A', '#D4854A'];
+const GOAL_COLORS = ['#ffb800', '#00F5FF', '#8B5CF6', '#00FF88', '#FF8C00', '#FF8C00'];
 
 function GoalBar({ goal, onUpdate, isCreator }) {
   const pct = Math.min(100, ((goal.current_amount || 0) / goal.target_amount) * 100);
@@ -23,14 +23,14 @@ function GoalBar({ goal, onUpdate, isCreator }) {
 
   useEffect(() => {
     if (pct >= 100 && prevPct.current < 100) {
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: [goal.color || '#d4af37', '#fff', '#4A8A7A'] });
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: [goal.color || '#ffb800', '#fff', '#00F5FF'] });
       toast.success(`🎉 Goal "${goal.title}" reached!`);
     }
     prevPct.current = pct;
   }, [pct]);
 
   return (
-    <motion.div layout style={{ borderRadius: 12, border: isComplete ? '1px solid rgba(109,191,126,0.5)' : '1px solid rgba(255,255,255,0.1)', background: isComplete ? 'rgba(109,191,126,0.05)' : 'rgba(255,255,255,0.03)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s' }}>
+    <motion.div layout style={{ borderRadius: 12, border: isComplete ? '1px solid rgba(0,255,136,0.5)' : '1px solid rgba(255,255,255,0.1)', background: isComplete ? 'rgba(0,255,136,0.05)' : 'rgba(255,255,255,0.03)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 20 }}>{GOAL_ICONS[goal.goal_type] || '🎯'}</span>
@@ -41,14 +41,14 @@ function GoalBar({ goal, onUpdate, isCreator }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {isComplete && (
-            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(109,191,126,0.2)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(0,255,136,0.2)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               ✓ Complete!
             </span>
           )}
           {isCreator && !isComplete && (
             <button
               onClick={() => onUpdate(goal.id, Math.min(goal.target_amount, (goal.current_amount || 0) + 1))}
-              style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(212,175,55,0.1)', border: 'none', color: '#d4af37', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}
+              style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,184,0,0.1)', border: 'none', color: '#ffb800', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}
               title="Manually increment"
             >+</button>
           )}
@@ -63,14 +63,14 @@ function GoalBar({ goal, onUpdate, isCreator }) {
             {' / '}
             {goal.goal_type === 'tips' ? `$${goal.target_amount.toLocaleString()}` : goal.target_amount.toLocaleString()}
           </span>
-          <span style={{ color: goal.color || '#d4af37', fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif' }}>{pct.toFixed(0)}%</span>
+          <span style={{ color: goal.color || '#ffb800', fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif' }}>{pct.toFixed(0)}%</span>
         </div>
         <div style={{ height: 20, background: 'rgba(255,255,255,0.05)', borderRadius: 99, overflow: 'hidden', position: 'relative' }}>
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${pct}%` }}
             transition={{ duration: 1, ease: 'easeOut' }}
-            style={{ height: '100%', borderRadius: 99, position: 'relative', overflow: 'hidden', background: isComplete ? '#6DBF7E' : `linear-gradient(90deg, ${goal.color || '#d4af37'}88, ${goal.color || '#d4af37'})` }}
+            style={{ height: '100%', borderRadius: 99, position: 'relative', overflow: 'hidden', background: isComplete ? '#00FF88' : `linear-gradient(90deg, ${goal.color || '#ffb800'}88, ${goal.color || '#ffb800'})` }}
           >
             {/* Shimmer */}
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent)', animation: 'pulse 2s infinite' }} />
@@ -88,7 +88,7 @@ function GoalBar({ goal, onUpdate, isCreator }) {
 export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embedded = false }) {
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', goal_type: 'tips', target_amount: 100, reward_text: '', color: '#d4af37' });
+  const [form, setForm] = useState({ title: '', description: '', goal_type: 'tips', target_amount: 100, reward_text: '', color: '#ffb800' });
 
   const { data: goals = [] } = useQuery({
     queryKey: ['streamer-goals', creatorId, roomId],
@@ -147,18 +147,18 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
 
   const containerStyle = embedded
     ? { display: 'flex', flexDirection: 'column', gap: 12 }
-    : { minHeight: '100vh', background: '#080B18', color: '#fff', padding: 16, maxWidth: 672, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20, fontFamily: 'Barlow Condensed, sans-serif' };
+    : { minHeight: '100vh', background: '#03030A', color: '#fff', padding: 16, maxWidth: 672, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20, fontFamily: 'Barlow Condensed, sans-serif' };
 
   return (
     <div style={containerStyle}>
       {!embedded && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#d4af37', display: 'flex', alignItems: 'center', gap: 8, margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#ffb800', display: 'flex', alignItems: 'center', gap: 8, margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>
             <Target className="w-5 h-5" /> Streamer Goals
           </h2>
           {isCreator && (
             <button onClick={() => setShowForm(!showForm)}
-              style={{ background: '#d4af37', color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: '#ffb800', color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontFamily: 'Barlow Condensed, sans-serif' }}>
               <Plus className="w-3.5 h-3.5" /> Add Goal
             </button>
           )}
@@ -167,10 +167,10 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
 
       {embedded && isCreator && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: '#d4af37', display: 'flex', alignItems: 'center', gap: 6, margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: '#ffb800', display: 'flex', alignItems: 'center', gap: 6, margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>
             <Target className="w-3.5 h-3.5" /> Goals
           </p>
-          <button onClick={() => setShowForm(!showForm)} style={{ fontSize: 10, color: '#d4af37', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Barlow Condensed, sans-serif' }}>+ Add</button>
+          <button onClick={() => setShowForm(!showForm)} style={{ fontSize: 10, color: '#ffb800', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Barlow Condensed, sans-serif' }}>+ Add</button>
         </div>
       )}
 
@@ -181,7 +181,7 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
             initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,184,0,0.2)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>New Goal</p>
                 <button onClick={() => setShowForm(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}><X className="w-3.5 h-3.5" /></button>
@@ -217,7 +217,7 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
               </div>
 
               <button onClick={handleCreate} disabled={createMutation.isPending}
-                style={{ width: '100%', background: '#d4af37', color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '8px 0', cursor: createMutation.isPending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, opacity: createMutation.isPending ? 0.7 : 1 }}>
+                style={{ width: '100%', background: '#ffb800', color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '8px 0', cursor: createMutation.isPending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, opacity: createMutation.isPending ? 0.7 : 1 }}>
                 <Check className="w-3.5 h-3.5" /> Create Goal
               </button>
             </div>

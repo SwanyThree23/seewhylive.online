@@ -7,7 +7,7 @@ import { ShoppingBag, Sparkles } from 'lucide-react';
 const rarityStyles = {
   common:    { background: 'rgba(107,114,128,0.15)', color: '#9ca3af', border: '1px solid rgba(107,114,128,0.3)' },
   rare:      { background: 'rgba(59,130,246,0.15)',  color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)' },
-  epic:      { background: 'rgba(212,175,55,0.15)',  color: '#7B5DA6', border: '1px solid rgba(212,175,55,0.3)' },
+  epic:      { background: 'rgba(255,184,0,0.15)',  color: '#8B5CF6', border: '1px solid rgba(255,184,0,0.3)' },
   legendary: { background: 'rgba(245,158,11,0.15)',  color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' },
 };
 
@@ -88,8 +88,8 @@ export default function VirtualGoodsStore({ userId }) {
             onClick={() => setSelectedType(tab)}
             style={{
               padding: '6px 16px', borderRadius: 6, border: 'none', cursor: 'pointer',
-              background: selectedType === tab ? 'rgba(212,175,55,0.2)' : 'transparent',
-              color: selectedType === tab ? '#D4AF37' : 'rgba(255,255,255,0.5)',
+              background: selectedType === tab ? 'rgba(255,184,0,0.2)' : 'transparent',
+              color: selectedType === tab ? '#FFB800' : 'rgba(255,255,255,0.5)',
               fontSize: 13, fontWeight: selectedType === tab ? 700 : 400,
               fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'capitalize',
             }}
@@ -107,13 +107,13 @@ export default function VirtualGoodsStore({ userId }) {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
             {goods.map((good) => (
-              <div key={good.id} style={{ borderRadius: 12, background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+              <div key={good.id} style={{ borderRadius: 12, background: 'rgba(3,3,10,0.95)', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
                 <div style={{ padding: '16px 16px 8px' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontSize: 16, fontWeight: 900, color: '#fff' }}>{good.name}</span>
-                        {good.is_limited && <Sparkles style={{ width: 16, height: 16, color: '#C9A84C' }} />}
+                        {good.is_limited && <Sparkles style={{ width: 16, height: 16, color: '#FFB800' }} />}
                       </div>
                       <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>{good.description}</p>
                     </div>
@@ -141,14 +141,14 @@ export default function VirtualGoodsStore({ userId }) {
                 <div style={{ padding: '8px 16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>${good.price}</span>
                   {isOwned(good.id) ? (
-                    <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>
+                    <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,184,0,0.15)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.3)' }}>
                       Owned
                     </span>
                   ) : (
                     <button
                       onClick={() => purchaseMutation.mutate({ good })}
                       disabled={purchaseMutation.isPending || (good.is_limited && good.stock === 0)}
-                      style={{ padding: '6px 14px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, color: '#D4AF37', fontSize: 13, fontWeight: 700, cursor: (purchaseMutation.isPending || (good.is_limited && good.stock === 0)) ? 'not-allowed' : 'pointer', opacity: (purchaseMutation.isPending || (good.is_limited && good.stock === 0)) ? 0.5 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+                      style={{ padding: '6px 14px', background: 'rgba(255,184,0,0.15)', border: '1px solid rgba(255,184,0,0.3)', borderRadius: 8, color: '#FFB800', fontSize: 13, fontWeight: 700, cursor: (purchaseMutation.isPending || (good.is_limited && good.stock === 0)) ? 'not-allowed' : 'pointer', opacity: (purchaseMutation.isPending || (good.is_limited && good.stock === 0)) ? 0.5 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
                     >
                       {purchaseMutation.isPending ? 'Buying...' : 'Buy Now'}
                     </button>

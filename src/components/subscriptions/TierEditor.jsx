@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Plus, Trash2, X } from 'lucide-react';
 
 const ICON_OPTIONS = ['star', 'crown', 'flame', 'heart', 'zap', 'bronze', 'silver', 'gold', 'diamond'];
-const PRESET_COLORS = ['#cd7f32', '#aaa9ad', '#d4af37', '#D4854A', '#C9A84C', '#C0392B', '#6DBF7E', '#D4AF37'];
+const PRESET_COLORS = ['#cd7f32', '#aaa9ad', '#ffb800', '#FF8C00', '#FFB800', '#FF2040', '#00FF88', '#FFB800'];
 
 const TOGGLE_BENEFITS = [
   { key: 'has_early_access', label: 'Early Access to Streams' },
@@ -20,7 +20,7 @@ const defaultForm = {
   name: '',
   description: '',
   price: '',
-  color: '#d4af37',
+  color: '#ffb800',
   icon: 'star',
   sort_order: 0,
   benefits: [],
@@ -37,7 +37,7 @@ const defaultForm = {
 const inputStyle = {
   width: '100%',
   padding: '10px 14px',
-  background: 'rgba(8,11,24,0.85)',
+  background: 'rgba(3,3,10,0.85)',
   border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: 8,
   color: '#fff',
@@ -111,7 +111,7 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, overflow: 'hidden' }}>
+      <div style={{ width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', background: 'rgba(3,3,10,0.98)', border: '1px solid rgba(255,184,0,0.2)', borderRadius: 16, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <p style={{ fontWeight: 900, fontSize: 14, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>{existing ? 'Edit Tier' : 'Create Membership Tier'}</p>
         </div>
@@ -139,7 +139,7 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
               <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>Icon</label>
-              <select value={form.icon} onChange={e => set('icon', e.target.value)} style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
+              <select value={form.icon} onChange={e => set('icon', e.target.value)} style={{ width: '100%', padding: '10px 14px', background: 'rgba(3,3,10,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
                 {ICON_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
               </select>
             </div>
@@ -179,7 +179,7 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
                 <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{label}</span>
                 <div
                   onClick={() => set(key, !form[key])}
-                  style={{ width: 40, height: 22, borderRadius: 99, background: form[key] ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
+                  style={{ width: 40, height: 22, borderRadius: 99, background: form[key] ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
                 >
                   <div style={{ position: 'absolute', top: 3, left: form[key] ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
                 </div>
@@ -222,7 +222,7 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div
                 onClick={() => set('is_active', !form.is_active)}
-                style={{ width: 40, height: 22, borderRadius: 99, background: form.is_active ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
+                style={{ width: 40, height: 22, borderRadius: 99, background: form.is_active ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
               >
                 <div style={{ position: 'absolute', top: 3, left: form.is_active ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
               </div>
@@ -240,7 +240,7 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
             <button
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending || !form.name || !form.price}
-              style={{ flex: 1, padding: '10px 0', background: '#C9A84C', border: 'none', borderRadius: 8, color: '#000', fontSize: 14, fontWeight: 700, cursor: (saveMutation.isPending || !form.name || !form.price) ? 'not-allowed' : 'pointer', opacity: (saveMutation.isPending || !form.name || !form.price) ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+              style={{ flex: 1, padding: '10px 0', background: '#FFB800', border: 'none', borderRadius: 8, color: '#000', fontSize: 14, fontWeight: 700, cursor: (saveMutation.isPending || !form.name || !form.price) ? 'not-allowed' : 'pointer', opacity: (saveMutation.isPending || !form.name || !form.price) ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               {saveMutation.isPending ? 'Saving...' : existing ? 'Save Changes' : 'Create Tier'}
             </button>

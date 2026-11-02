@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
-var GOLD='#D4AF37', LIVE_RED='#dc2626';
+var GOLD='#FFB800', LIVE_RED='#dc2626';
 export default function GlobalMicButtonV49(props) {
   var audioEnabled = props.audioEnabled!==undefined ? props.audioEnabled : true;
   var toggleAudio  = props.toggleAudio  || function(){};
@@ -25,8 +25,8 @@ export default function GlobalMicButtonV49(props) {
   useEffect(function(){ return function(){ clearTimeout(longPressRef.current); }; },[]);
   if(!visible) return null;
   var isMuted=!audioEnabled;
-  var bg=isMuted?'rgba(255,255,255,0.12)':pttActive?'rgba(16,185,129,0.18)':isSpeaking?'rgba(212,175,55,0.18)':'rgba(255,255,255,0.07)';
-  var bd=isMuted?'rgba(255,255,255,0.15)':pttActive?'rgba(16,185,129,0.6)':isSpeaking?'rgba(212,175,55,0.6)':'rgba(255,255,255,0.12)';
+  var bg=isMuted?'rgba(255,255,255,0.12)':pttActive?'rgba(16,185,129,0.18)':isSpeaking?'rgba(255,184,0,0.18)':'rgba(255,255,255,0.07)';
+  var bd=isMuted?'rgba(255,255,255,0.15)':pttActive?'rgba(16,185,129,0.6)':isSpeaking?'rgba(255,184,0,0.6)':'rgba(255,255,255,0.12)';
   var scale=1+(micLevel/100)*0.45;
   return (
     <div style={{position:'fixed',bottom:'calc(env(safe-area-inset-bottom,0px) + 88px)',right:20,zIndex:9999,display:'flex',flexDirection:'column',alignItems:'center',gap:8,userSelect:'none',WebkitUserSelect:'none'}}>

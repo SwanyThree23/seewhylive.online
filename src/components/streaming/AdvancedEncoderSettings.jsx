@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Settings, X } from 'lucide-react';
 
-const G = '#D4AF37';
-const BG = '#080B18';
+const G = '#FFB800';
+const BG = '#03030A';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function AdvancedEncoderSettings({ onApply }) {

@@ -8,7 +8,7 @@ import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 // ── Real-time metric tile ───────────────────────────────────────────────────
 function MetricTile({ icon: Icon, label, value, unit, color, trend, sparkData }) {
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
-  const trendColor = trend === 'up' ? '#6DBF7E' : trend === 'down' ? '#C0392B' : 'rgba(255,255,255,0.3)';
+  const trendColor = trend === 'up' ? '#00FF88' : trend === 'down' ? '#FF2040' : 'rgba(255,255,255,0.3)';
   return (
     <div className="rounded-xl p-3 space-y-2 relative overflow-hidden"
       style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${color}20` }}>
@@ -41,9 +41,9 @@ function MetricTile({ icon: Icon, label, value, unit, color, trend, sparkData })
 // ── Status badge for RTMP destinations ─────────────────────────────────────
 function DestinationStatus({ platform, status }) {
   const cfg = {
-    live:       { color: '#6DBF7E', dot: true,  label: 'LIVE' },
-    connecting: { color: '#D4AF37', dot: true,  label: 'Connecting' },
-    error:      { color: '#C0392B', dot: false, label: 'Error' },
+    live:       { color: '#00FF88', dot: true,  label: 'LIVE' },
+    connecting: { color: '#FFB800', dot: true,  label: 'Connecting' },
+    error:      { color: '#FF2040', dot: false, label: 'Error' },
     offline:    { color: 'rgba(255,255,255,0.2)', dot: false, label: 'Idle' },
   }[status] || { color: 'rgba(255,255,255,0.2)', dot: false, label: status };
 
@@ -63,7 +63,7 @@ function DestinationStatus({ platform, status }) {
 function NetworkGauge({ qualityScore }) {
   const segments = 10;
   const filled = Math.round((qualityScore / 100) * segments);
-  const color = qualityScore >= 80 ? '#6DBF7E' : qualityScore >= 50 ? '#D4AF37' : '#C0392B';
+  const color = qualityScore >= 80 ? '#00FF88' : qualityScore >= 50 ? '#FFB800' : '#FF2040';
   const label = qualityScore >= 80 ? 'Excellent' : qualityScore >= 50 ? 'Fair' : 'Poor';
   return (
     <div className="flex items-center gap-2">
@@ -187,16 +187,16 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-[#C9A84C]" />
-          <span className="text-xs font-black uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#C9A84C', letterSpacing: '0.08em' }}>
+          <Activity className="w-4 h-4 text-[#FFB800]" />
+          <span className="text-xs font-black uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#FFB800', letterSpacing: '0.08em' }}>
             Stream Analytics
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           {isLive ? (
             <>
-              <div className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse" />
-              <span className="text-[11px] font-black text-[#C0392B]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-[#FF2040] animate-pulse" />
+              <span className="text-[11px] font-black text-[#FF2040]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
             </>
           ) : (
             <span className="text-[11px] text-white/30">Offline</span>
@@ -206,17 +206,17 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
 
       {/* Metric grid */}
       <div className="grid grid-cols-2 gap-2">
-        <MetricTile icon={Users} label="Viewers" value={metrics.viewers} color="#C9A84C" trend={getTrend('viewers')} sparkData={viewerSparkData} />
-        <MetricTile icon={MessageSquare} label="Chat/min" value={metrics.messages} color="#D4AF37" trend={getTrend('messages')} />
-        <MetricTile icon={Radio} label="Bitrate" value={metrics.bitrate > 0 ? `${(metrics.bitrate/1000).toFixed(1)}` : '—'} unit="Mbps" color="#d4af37" trend={getTrend('bitrate')} sparkData={bitrateSparkData} />
-        <MetricTile icon={Zap} label="FPS" value={metrics.fps || '—'} color="#6DBF7E" trend="stable" />
-        <MetricTile icon={Activity} label="Latency" value={metrics.latency || '—'} unit="ms" color={metrics.latency > 100 ? '#C0392B' : '#D4AF37'} trend={getTrend('latency')} />
-        <MetricTile icon={Eye} label="Peak Viewers" value={Math.max(metrics.viewers, ...history.map(h => h.viewers || 0))} color="#C0392B" trend="stable" />
+        <MetricTile icon={Users} label="Viewers" value={metrics.viewers} color="#FFB800" trend={getTrend('viewers')} sparkData={viewerSparkData} />
+        <MetricTile icon={MessageSquare} label="Chat/min" value={metrics.messages} color="#FFB800" trend={getTrend('messages')} />
+        <MetricTile icon={Radio} label="Bitrate" value={metrics.bitrate > 0 ? `${(metrics.bitrate/1000).toFixed(1)}` : '—'} unit="Mbps" color="#ffb800" trend={getTrend('bitrate')} sparkData={bitrateSparkData} />
+        <MetricTile icon={Zap} label="FPS" value={metrics.fps || '—'} color="#00FF88" trend="stable" />
+        <MetricTile icon={Activity} label="Latency" value={metrics.latency || '—'} unit="ms" color={metrics.latency > 100 ? '#FF2040' : '#FFB800'} trend={getTrend('latency')} />
+        <MetricTile icon={Eye} label="Peak Viewers" value={Math.max(metrics.viewers, ...history.map(h => h.viewers || 0))} color="#FF2040" trend="stable" />
       </div>
 
       {/* Network quality bar */}
       <div className="rounded-xl px-3 py-2.5 space-y-1.5"
-        style={{ background: 'rgba(201,168,76,0.04)', border: '1px solid rgba(201,168,76,0.1)' }}>
+        style={{ background: 'rgba(255,184,0,0.04)', border: '1px solid rgba(255,184,0,0.1)' }}>
         <span className="text-[11px] font-bold uppercase text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>Network Quality</span>
         <NetworkGauge qualityScore={metrics.networkQuality} />
       </div>
@@ -242,17 +242,17 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
               <AreaChart data={history} margin={{ top: 2, bottom: 2, left: 0, right: 0 }}>
                 <defs>
                   <linearGradient id="viewerGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#C9A84C" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#C9A84C" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#FFB800" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#FFB800" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="t" hide />
                 <Tooltip
-                  contentStyle={{ background: '#080B18', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, fontSize: 10 }}
+                  contentStyle={{ background: '#03030A', border: '1px solid rgba(255,184,0,0.2)', borderRadius: 8, fontSize: 10 }}
                   labelStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}
                   formatter={(v) => [v, 'Viewers']}
                 />
-                <Area type="monotone" dataKey="viewers" stroke="#C9A84C" fill="url(#viewerGrad)" strokeWidth={1.5} dot={false} />
+                <Area type="monotone" dataKey="viewers" stroke="#FFB800" fill="url(#viewerGrad)" strokeWidth={1.5} dot={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -266,10 +266,10 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
             initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
             className="flex items-start gap-2 px-3 py-2 rounded-xl"
             style={{
-              background: alert.type === 'error' ? 'rgba(192,57,43,0.08)' : 'rgba(212,175,55,0.08)',
-              border: `1px solid ${alert.type === 'error' ? 'rgba(192,57,43,0.25)' : 'rgba(212,175,55,0.25)'}`,
+              background: alert.type === 'error' ? 'rgba(255,32,64,0.08)' : 'rgba(255,184,0,0.08)',
+              border: `1px solid ${alert.type === 'error' ? 'rgba(255,32,64,0.25)' : 'rgba(255,184,0,0.25)'}`,
             }}>
-            <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" style={{ color: alert.type === 'error' ? '#C0392B' : '#D4AF37' }} />
+            <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" style={{ color: alert.type === 'error' ? '#FF2040' : '#FFB800' }} />
             <p className="text-[10px] text-white/70">{alert.msg}</p>
           </motion.div>
         ))}

@@ -4,8 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { DollarSign, TrendingUp, CreditCard, Users, ArrowUpRight, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function exportCSV(transactions, subscriptions) {
@@ -46,7 +46,7 @@ export default function RevenueDashboard({ userId }) {
   }, {});
 
   const tierData = [
-    { name: 'Bronze', price: 1, count: tierCounts.bronze || 0, color: '#C0392B' },
+    { name: 'Bronze', price: 1, count: tierCounts.bronze || 0, color: '#FF2040' },
     { name: 'Silver', price: 5, count: tierCounts.premium || 0, color: '#9ca3af' },
     { name: 'Gold', price: 15, count: tierCounts.elite || 0, color: GOLD },
   ];
@@ -80,11 +80,11 @@ export default function RevenueDashboard({ userId }) {
       {/* Main Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
         {/* Net Earnings */}
-        <div style={{ ...statCardStyle(`2px solid ${GOLD}`), boxShadow: '0 0 30px rgba(212,175,55,0.2)' }}>
+        <div style={{ ...statCardStyle(`2px solid ${GOLD}`), boxShadow: '0 0 30px rgba(255,184,0,0.2)' }}>
           <p style={{ color: '#F5E6D3', fontSize: 12, margin: '0 0 4px', ...T }}>Your Cut (90%)</p>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 32, fontWeight: 700, color: GOLD, ...T }}>${netEarnings.toFixed(2)}</span>
-            <TrendingUp className="w-6 h-6" style={{ color: '#6DBF7E' }} />
+            <TrendingUp className="w-6 h-6" style={{ color: '#00FF88' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11 }}>
             <span style={{ color: '#9ca3af' }}>Available for payout</span>
@@ -171,7 +171,7 @@ export default function RevenueDashboard({ userId }) {
             <div style={{ padding: 16, background: '#3C2F2F', borderRadius: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{ color: '#F5E6D3', ...T }}>Your Earnings</span>
-                <ArrowUpRight className="w-4 h-4" style={{ color: '#6DBF7E' }} />
+                <ArrowUpRight className="w-4 h-4" style={{ color: '#00FF88' }} />
               </div>
               <p style={{ fontSize: 22, fontWeight: 700, color: GOLD, margin: '0 0 4px', ...T }}>${netEarnings.toFixed(2)}</p>
               <p style={{ fontSize: 11, color: '#9ca3af', margin: 0 }}>90% of gross</p>

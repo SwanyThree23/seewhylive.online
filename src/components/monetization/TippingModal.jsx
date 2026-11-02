@@ -7,7 +7,7 @@ import { DollarSign, Heart, Star, Award } from 'lucide-react';
 const inputStyle = {
   width: '100%',
   padding: '10px 14px',
-  background: 'rgba(8,11,24,0.85)',
+  background: 'rgba(3,3,10,0.85)',
   border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: 8,
   color: '#fff',
@@ -97,7 +97,7 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ width: '100%', maxWidth: 480, background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, overflow: 'hidden' }}>
+      <div style={{ width: '100%', maxWidth: 480, background: 'rgba(3,3,10,0.98)', border: '1px solid rgba(255,184,0,0.2)', borderRadius: 16, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <p style={{ fontWeight: 900, fontSize: 14, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Send a Tip</p>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>
@@ -114,9 +114,9 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
                   onClick={() => { setSelectedAmount(quick.value); setAmount(''); }}
                   style={{
                     height: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    background: selectedAmount === quick.value ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
-                    border: selectedAmount === quick.value ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: 8, cursor: 'pointer', color: selectedAmount === quick.value ? '#D4AF37' : '#fff',
+                    background: selectedAmount === quick.value ? 'rgba(255,184,0,0.15)' : 'rgba(255,255,255,0.05)',
+                    border: selectedAmount === quick.value ? '1px solid rgba(255,184,0,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 8, cursor: 'pointer', color: selectedAmount === quick.value ? '#FFB800' : '#fff',
                     fontFamily: 'Barlow Condensed, sans-serif',
                   }}
                 >
@@ -163,7 +163,7 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
             <button
               onClick={handleSendTip}
               disabled={sendTipMutation.isPending}
-              style={{ flex: 1, padding: '10px 0', background: 'linear-gradient(135deg, #800020, #D4854A)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: sendTipMutation.isPending ? 'not-allowed' : 'pointer', opacity: sendTipMutation.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+              style={{ flex: 1, padding: '10px 0', background: 'linear-gradient(135deg, #FF1564, #FF8C00)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: sendTipMutation.isPending ? 'not-allowed' : 'pointer', opacity: sendTipMutation.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               {sendTipMutation.isPending ? 'Sending...' : 'Send Tip'}
             </button>

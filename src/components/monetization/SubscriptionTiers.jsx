@@ -7,18 +7,18 @@ import { toast } from 'sonner';
 const tierConfig = {
   basic: {
     icon: Star,
-    gradient: 'linear-gradient(135deg, #800020, #D4854A)',
-    badgeColor: '#D4AF37',
+    gradient: 'linear-gradient(135deg, #FF1564, #FF8C00)',
+    badgeColor: '#FFB800',
   },
   premium: {
     icon: Zap,
-    gradient: 'linear-gradient(135deg, #800020, #D4854A)',
-    badgeColor: '#D4854A',
+    gradient: 'linear-gradient(135deg, #FF1564, #FF8C00)',
+    badgeColor: '#FF8C00',
   },
   elite: {
     icon: Crown,
     gradient: 'linear-gradient(135deg, #d97706, #ea580c)',
-    badgeColor: '#C9A84C',
+    badgeColor: '#FFB800',
   },
 };
 
@@ -83,14 +83,14 @@ export default function SubscriptionTiers({ communityId, userId }) {
           const isCurrentTier = currentSubscription?.tier === tier.name.toLowerCase();
 
           return (
-            <div key={tier.id} style={{ border: isCurrentTier ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)', borderRadius: 12, background: 'rgba(8,11,24,0.95)', overflow: 'hidden' }}>
+            <div key={tier.id} style={{ border: isCurrentTier ? '2px solid #FFB800' : '1px solid rgba(255,255,255,0.1)', borderRadius: 12, background: 'rgba(3,3,10,0.95)', overflow: 'hidden' }}>
               <div style={{ padding: 20 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 12, background: config.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                   <Icon style={{ width: 24, height: 24, color: '#fff' }} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                   <span style={{ fontSize: 18, fontWeight: 900, color: '#fff' }}>{tier.name}</span>
-                  {isCurrentTier && <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>Current</span>}
+                  {isCurrentTier && <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,184,0,0.15)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.3)' }}>Current</span>}
                 </div>
                 <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 12 }}>{tier.description}</p>
                 <div>
@@ -103,42 +103,42 @@ export default function SubscriptionTiers({ communityId, userId }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {tier.benefits?.map((benefit, idx) => (
                     <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                      <Check style={{ width: 16, height: 16, color: '#6DBF7E', marginTop: 2, flexShrink: 0 }} />
+                      <Check style={{ width: 16, height: 16, color: '#00FF88', marginTop: 2, flexShrink: 0 }} />
                       <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{benefit}</span>
                     </div>
                   ))}
 
                   {tier.has_early_access && (
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                      <Check style={{ width: 16, height: 16, color: '#6DBF7E', marginTop: 2 }} />
+                      <Check style={{ width: 16, height: 16, color: '#00FF88', marginTop: 2 }} />
                       <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>Early access to content</span>
                     </div>
                   )}
 
                   {tier.is_ad_free && (
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                      <Check style={{ width: 16, height: 16, color: '#6DBF7E', marginTop: 2 }} />
+                      <Check style={{ width: 16, height: 16, color: '#00FF88', marginTop: 2 }} />
                       <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>Ad-free viewing</span>
                     </div>
                   )}
 
                   {tier.badge_id && (
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                      <Check style={{ width: 16, height: 16, color: '#6DBF7E', marginTop: 2 }} />
+                      <Check style={{ width: 16, height: 16, color: '#00FF88', marginTop: 2 }} />
                       <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>Exclusive badge</span>
                     </div>
                   )}
 
                   {tier.custom_emotes?.length > 0 && (
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                      <Check style={{ width: 16, height: 16, color: '#6DBF7E', marginTop: 2 }} />
+                      <Check style={{ width: 16, height: 16, color: '#00FF88', marginTop: 2 }} />
                       <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{tier.custom_emotes.length} custom emotes</span>
                     </div>
                   )}
 
                   {tier.priority_support && (
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                      <Check style={{ width: 16, height: 16, color: '#6DBF7E', marginTop: 2 }} />
+                      <Check style={{ width: 16, height: 16, color: '#00FF88', marginTop: 2 }} />
                       <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>Priority support</span>
                     </div>
                   )}

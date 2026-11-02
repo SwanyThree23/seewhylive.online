@@ -16,7 +16,7 @@ const ICON_MAP = {
 const DEFAULT_COLORS = {
   bronze: '#cd7f32',
   silver: '#aaa9ad',
-  gold: '#d4af37',
+  gold: '#ffb800',
   diamond: '#b9f2ff',
 };
 
@@ -24,7 +24,7 @@ export default function TierBadge({ tier, size = 'sm', showName = false }) {
   if (!tier) return null;
   const iconKey = tier.icon || 'star';
   const Icon = ICON_MAP[iconKey] || Star;
-  const color = tier.color || DEFAULT_COLORS[tier.name?.toLowerCase()] || '#d4af37';
+  const color = tier.color || DEFAULT_COLORS[tier.name?.toLowerCase()] || '#ffb800';
 
   const sizeClasses = {
     xs: 'w-4 h-4 text-xs',

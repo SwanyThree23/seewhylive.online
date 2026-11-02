@@ -1,7 +1,7 @@
 import React from 'react';
 import { Camera, Sun, Film, Aperture, Gauge, Palette } from 'lucide-react';
 
-const PURPLE = '#7B5DA6';
+const PURPLE = '#8B5CF6';
 
 // ── Effect option tables (each entry's suffix layers into the video prompt) ──
 const COLOR_GRADES = [

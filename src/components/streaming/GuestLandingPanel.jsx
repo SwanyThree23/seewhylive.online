@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Video, VideoOff, Mic, MicOff, CheckCircle, AlertCircle, Wifi, Users, Radio, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -36,7 +36,7 @@ function AudioMeter({ stream }) {
     <div className="flex items-center gap-0.5 h-4">
       {Array.from({ length: 12 }).map((_, i) => (
         <div key={i} className="w-1.5 rounded-full transition-all duration-75"
-          style={{ height: level > (i / 12) * 100 ? `${8 + (i / 12) * 8}px` : '4px', background: level > 80 ? '#f87171' : level > 50 ? GOLD : '#6DBF7E', opacity: level > (i / 12) * 100 ? 1 : 0.15 }} />
+          style={{ height: level > (i / 12) * 100 ? `${8 + (i / 12) * 8}px` : '4px', background: level > 80 ? '#f87171' : level > 50 ? GOLD : '#00FF88', opacity: level > (i / 12) * 100 ? 1 : 0.15 }} />
       ))}
     </div>
   );
@@ -136,7 +136,7 @@ export default function GuestLandingPanel({ token, roomId, onJoin }) {
         <div className="text-center">
           <p className="text-xs text-white/40 uppercase tracking-widest mb-1" style={T}>You're joining</p>
           <p className="text-xl font-black text-white" style={T}>{room.name || room.title || 'Live Stream'}</p>
-          {room.host_name && <p className="text-xs text-[#D4AF37]" style={T}>Hosted by {room.host_name}</p>}
+          {room.host_name && <p className="text-xs text-[#FFB800]" style={T}>Hosted by {room.host_name}</p>}
         </div>
       )}
       {!room && (
@@ -159,7 +159,7 @@ export default function GuestLandingPanel({ token, roomId, onJoin }) {
         </div>
         {tokenValid === null && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
-            <div className="w-5 h-5 border-2 border-t-transparent border-[#D4AF37] rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-t-transparent border-[#FFB800] rounded-full animate-spin" />
           </div>
         )}
       </div>
@@ -177,18 +177,18 @@ export default function GuestLandingPanel({ token, roomId, onJoin }) {
         <button
           onClick={() => setAudioEnabled(a => !a)}
           className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all"
-          style={{ background: audioEnabled ? 'rgba(109,191,126,0.15)' : 'rgba(239,68,68,0.12)', border: `1px solid ${audioEnabled ? 'rgba(109,191,126,0.3)' : 'rgba(239,68,68,0.25)'}` }}
+          style={{ background: audioEnabled ? 'rgba(0,255,136,0.15)' : 'rgba(239,68,68,0.12)', border: `1px solid ${audioEnabled ? 'rgba(0,255,136,0.3)' : 'rgba(239,68,68,0.25)'}` }}
         >
-          {audioEnabled ? <Mic className="w-4 h-4 text-[#6DBF7E]" /> : <MicOff className="w-4 h-4 text-red-400" />}
-          <span className="text-[9px] font-bold" style={{ ...T, color: audioEnabled ? '#6DBF7E' : '#f87171' }}>{audioEnabled ? 'Mic On' : 'Muted'}</span>
+          {audioEnabled ? <Mic className="w-4 h-4 text-[#00FF88]" /> : <MicOff className="w-4 h-4 text-red-400" />}
+          <span className="text-[9px] font-bold" style={{ ...T, color: audioEnabled ? '#00FF88' : '#f87171' }}>{audioEnabled ? 'Mic On' : 'Muted'}</span>
         </button>
         <button
           onClick={() => setVideoEnabled(v => !v)}
           className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all"
-          style={{ background: videoEnabled ? 'rgba(109,191,126,0.15)' : 'rgba(239,68,68,0.12)', border: `1px solid ${videoEnabled ? 'rgba(109,191,126,0.3)' : 'rgba(239,68,68,0.25)'}` }}
+          style={{ background: videoEnabled ? 'rgba(0,255,136,0.15)' : 'rgba(239,68,68,0.12)', border: `1px solid ${videoEnabled ? 'rgba(0,255,136,0.3)' : 'rgba(239,68,68,0.25)'}` }}
         >
-          {videoEnabled ? <Video className="w-4 h-4 text-[#6DBF7E]" /> : <VideoOff className="w-4 h-4 text-red-400" />}
-          <span className="text-[9px] font-bold" style={{ ...T, color: videoEnabled ? '#6DBF7E' : '#f87171' }}>{videoEnabled ? 'Cam On' : 'Cam Off'}</span>
+          {videoEnabled ? <Video className="w-4 h-4 text-[#00FF88]" /> : <VideoOff className="w-4 h-4 text-red-400" />}
+          <span className="text-[9px] font-bold" style={{ ...T, color: videoEnabled ? '#00FF88' : '#f87171' }}>{videoEnabled ? 'Cam On' : 'Cam Off'}</span>
         </button>
       </div>
 
@@ -200,7 +200,7 @@ export default function GuestLandingPanel({ token, roomId, onJoin }) {
           onChange={e => setName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleJoin()}
           placeholder="How should we introduce you?"
-          style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box', ...T }}
+          style={{ width: '100%', padding: '10px 14px', background: 'rgba(3,3,10,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box', ...T }}
         />
       </div>
 
@@ -215,7 +215,7 @@ export default function GuestLandingPanel({ token, roomId, onJoin }) {
           <div key={label} className="flex items-center justify-between">
             <span className="text-[10px] text-white/40" style={T}>{label}</span>
             {ok
-              ? <span className="flex items-center gap-1 text-[10px] text-[#6DBF7E]"><CheckCircle className="w-3 h-3" /> Ready</span>
+              ? <span className="flex items-center gap-1 text-[10px] text-[#00FF88]"><CheckCircle className="w-3 h-3" /> Ready</span>
               : <span className="flex items-center gap-1 text-[10px] text-white/30"><AlertCircle className="w-3 h-3" /> —</span>}
           </div>
         ))}

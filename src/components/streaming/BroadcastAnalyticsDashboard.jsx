@@ -20,7 +20,7 @@ const StatCard = ({ icon: Icon, label, value, trend, color }) => (
         <p className="text-[11px] text-white/60 uppercase font-semibold">{label}</p>
         <p className="text-xl font-bold text-white mt-1">{value}</p>
         {trend && (
-          <p className={`text-[11px] mt-1 ${trend > 0 ? 'text-[#6DBF7E]' : 'text-[#C0392B]'}`}>
+          <p className={`text-[11px] mt-1 ${trend > 0 ? 'text-[#00FF88]' : 'text-[#FF2040]'}`}>
             {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
           </p>
         )}
@@ -98,10 +98,10 @@ export default function BroadcastAnalyticsDashboard({ roomId, streamSession, isL
   const viewerTrend    = pctChange(currentViewers, prevPoint?.viewers ?? null);
 
   const engagementData = [
-    { label: 'Likes',    value: streamSession?.likes      || 0, color: '#C0392B' },
-    { label: 'Comments', value: streamSession?.comments   || 0, color: '#C9A84C' },
-    { label: 'Shares',   value: streamSession?.shares     || 0, color: '#d4af37' },
-    { label: 'Tips',     value: streamSession?.tips_count || 0, color: '#6DBF7E' },
+    { label: 'Likes',    value: streamSession?.likes      || 0, color: '#FF2040' },
+    { label: 'Comments', value: streamSession?.comments   || 0, color: '#FFB800' },
+    { label: 'Shares',   value: streamSession?.shares     || 0, color: '#ffb800' },
+    { label: 'Tips',     value: streamSession?.tips_count || 0, color: '#00FF88' },
   ];
 
   const totalEngagement = engagementData.reduce((s, e) => s + e.value, 0);
@@ -113,16 +113,16 @@ export default function BroadcastAnalyticsDashboard({ roomId, streamSession, isL
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4 space-y-4"
+      className="bg-[#0F1428]/50 border border-[#ffb800]/15 rounded-lg p-4 space-y-4"
     >
       <h3 className="text-sm font-bold text-white">Stream Analytics</h3>
 
       {/* Key metrics */}
       <div className="grid grid-cols-2 gap-2">
-        <StatCard icon={Users}         label="Current Viewers"   value={currentViewers}  trend={viewerTrend}    color="#C9A84C" />
-        <StatCard icon={Eye}           label="Peak Viewers"      value={peakViewers}      trend={null}           color="#d4af37" />
-        <StatCard icon={MessageSquare} label="Messages"          value={messages}         trend={null}           color="#D4AF37" />
-        <StatCard icon={Heart}         label="Total Engagement"  value={totalEngagement}  trend={engagementTrend} color="#C0392B" />
+        <StatCard icon={Users}         label="Current Viewers"   value={currentViewers}  trend={viewerTrend}    color="#FFB800" />
+        <StatCard icon={Eye}           label="Peak Viewers"      value={peakViewers}      trend={null}           color="#ffb800" />
+        <StatCard icon={MessageSquare} label="Messages"          value={messages}         trend={null}           color="#FFB800" />
+        <StatCard icon={Heart}         label="Total Engagement"  value={totalEngagement}  trend={engagementTrend} color="#FF2040" />
       </div>
 
       {/* Viewer trend chart */}
@@ -135,10 +135,10 @@ export default function BroadcastAnalyticsDashboard({ roomId, streamSession, isL
               <XAxis dataKey="time" tick={{ fill: '#fff', fontSize: 10 }} />
               <YAxis tick={{ fill: '#fff', fontSize: 10 }} allowDecimals={false} />
               <Tooltip
-                contentStyle={{ background: '#0B0B18', border: '1px solid rgba(212,175,55,0.2)' }}
+                contentStyle={{ background: '#0B0B18', border: '1px solid rgba(255,184,0,0.2)' }}
                 labelStyle={{ color: '#fff' }}
               />
-              <Line type="monotone" dataKey="viewers" stroke="#C9A84C" dot={false} strokeWidth={2} />
+              <Line type="monotone" dataKey="viewers" stroke="#FFB800" dot={false} strokeWidth={2} />
             </LineChart>
           </SafeResponsiveContainer>
         ) : (
@@ -157,10 +157,10 @@ export default function BroadcastAnalyticsDashboard({ roomId, streamSession, isL
             <XAxis dataKey="label" tick={{ fill: '#fff', fontSize: 11 }} />
             <YAxis tick={{ fill: '#fff', fontSize: 10 }} allowDecimals={false} />
             <Tooltip
-              contentStyle={{ background: '#0B0B18', border: '1px solid rgba(212,175,55,0.2)' }}
+              contentStyle={{ background: '#0B0B18', border: '1px solid rgba(255,184,0,0.2)' }}
               labelStyle={{ color: '#fff' }}
             />
-            <Bar dataKey="value" fill="#d4af37" radius={[3,3,0,0]} />
+            <Bar dataKey="value" fill="#ffb800" radius={[3,3,0,0]} />
           </BarChart>
         </SafeResponsiveContainer>
       </div>

@@ -9,9 +9,9 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Target, Zap } from 'lucide-react';
 
-const G       = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
+const G       = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK    = '#FF2040';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function TipGoalBar({ roomId, goal = 500, label = 'Stream Goal', currentTotal }) {
@@ -36,7 +36,7 @@ export default function TipGoalBar({ roomId, goal = 500, label = 'Stream Goal', 
     if (reached && !celebrated) setCelebrated(true);
   }, [reached]);
 
-  const segColor = pct >= 100 ? '#6DBF7E' : pct >= 75 ? G : pct >= 50 ? G : pct >= 25 ? '#C9A84C' : CRIMSON;
+  const segColor = pct >= 100 ? '#00FF88' : pct >= 75 ? G : pct >= 50 ? G : pct >= 25 ? '#FFB800' : CRIMSON;
 
   return (
     <div style={{ position: 'relative' }}>
@@ -65,7 +65,7 @@ export default function TipGoalBar({ roomId, goal = 500, label = 'Stream Goal', 
       </AnimatePresence>
 
       <div style={{
-        background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}18`,
+        background: 'rgba(3,3,10,0.95)', border: `1px solid ${G}18`,
         borderRadius: 10, padding: '8px 12px',
         display: 'flex', alignItems: 'center', gap: 10,
       }}>
@@ -85,7 +85,7 @@ export default function TipGoalBar({ roomId, goal = 500, label = 'Stream Goal', 
             style={{
               height: '100%', borderRadius: 99,
               background: reached
-                ? `linear-gradient(90deg, #6DBF7E, ${G})`
+                ? `linear-gradient(90deg, #00FF88, ${G})`
                 : `linear-gradient(90deg, ${CRIMSON}, ${segColor})`,
               boxShadow: `0 0 8px ${segColor}60`,
             }}

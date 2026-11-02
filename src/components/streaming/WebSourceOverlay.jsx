@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Maximize2, Minimize2, Volume2, VolumeX, GripHorizontal, Globe, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const PRESETS = [
@@ -44,20 +44,20 @@ function OverlayWindow({ source, onClose, zIndex, onFocus }) {
       style={{ position: 'absolute', left: pos.x, top: pos.y, width: size.w, zIndex, userSelect: 'none' }}
       onMouseDown={onFocus}
     >
-      <div className="rounded-xl overflow-hidden shadow-2xl" style={{ border: `1px solid rgba(212,175,55,0.25)`, background: '#000' }}>
+      <div className="rounded-xl overflow-hidden shadow-2xl" style={{ border: `1px solid rgba(255,184,0,0.25)`, background: '#000' }}>
         {/* Title bar */}
         <div
           ref={dragRef}
           onMouseDown={onMouseDown}
           className="flex items-center gap-2 px-2.5 py-1.5 cursor-grab active:cursor-grabbing"
-          style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+          style={{ background: 'rgba(3,3,10,0.97)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
         >
           <GripHorizontal className="w-3 h-3 text-white/20 flex-shrink-0" />
           <Globe className="w-3 h-3 flex-shrink-0" style={{ color: GOLD }} />
           <p className="text-[10px] font-bold text-white truncate flex-1" style={T}>{source.label || 'Web Source'}</p>
           <div className="flex items-center gap-1 flex-shrink-0">
             <button onClick={() => setMuted(m => !m)} className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 transition-colors">
-              {muted ? <VolumeX className="w-2.5 h-2.5 text-white/40" /> : <Volume2 className="w-2.5 h-2.5 text-[#6DBF7E]" />}
+              {muted ? <VolumeX className="w-2.5 h-2.5 text-white/40" /> : <Volume2 className="w-2.5 h-2.5 text-[#00FF88]" />}
             </button>
             <button onClick={() => setMinimized(m => !m)} className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 transition-colors">
               {minimized ? <Maximize2 className="w-2.5 h-2.5 text-white/40" /> : <Minimize2 className="w-2.5 h-2.5 text-white/40" />}
@@ -126,7 +126,7 @@ export default function WebSourceOverlay({ containerRef }) {
       </AnimatePresence>
 
       {/* Control panel (non-overlay) */}
-      <div className="rounded-xl border" style={{ background: 'rgba(8,11,24,0.95)', borderColor: 'rgba(212,175,55,0.15)' }}>
+      <div className="rounded-xl border" style={{ background: 'rgba(3,3,10,0.95)', borderColor: 'rgba(255,184,0,0.15)' }}>
         <div className="flex items-center justify-between p-3 border-b border-white/5">
           <div className="flex items-center gap-2">
             <Globe className="w-3.5 h-3.5" style={{ color: GOLD }} />
@@ -138,7 +138,7 @@ export default function WebSourceOverlay({ containerRef }) {
           <button
             onClick={() => setAdding(a => !a)}
             style={{ ...T, height: 24, padding: '0 8px', fontSize: 10, fontWeight: 900, borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: adding ? 'rgba(255,255,255,0.05)' : 'rgba(212,175,55,0.15)', color: adding ? 'rgba(255,255,255,0.4)' : GOLD }}
+              background: adding ? 'rgba(255,255,255,0.05)' : 'rgba(255,184,0,0.15)', color: adding ? 'rgba(255,255,255,0.4)' : GOLD }}
           >
             {adding ? <X className="w-3 h-3 inline" /> : <><Plus className="w-3 h-3 inline mr-1" />Add</>}
           </button>
@@ -148,19 +148,19 @@ export default function WebSourceOverlay({ containerRef }) {
           <AnimatePresence>
             {adding && (
               <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                className="rounded-lg p-2.5 space-y-2" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                className="rounded-lg p-2.5 space-y-2" style={{ background: 'rgba(255,184,0,0.05)', border: '1px solid rgba(255,184,0,0.15)' }}>
                 <input
                   value={url}
                   onChange={e => setUrl(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addSource()}
                   placeholder="https://vdo.ninja/?view=..."
-                  style={{ width: '100%', padding: '7px 10px', background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box', ...T }}
+                  style={{ width: '100%', padding: '7px 10px', background: 'rgba(3,3,10,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box', ...T }}
                 />
                 <input
                   value={label}
                   onChange={e => setLabel(e.target.value)}
                   placeholder="Label (optional)"
-                  style={{ width: '100%', padding: '7px 10px', background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box', ...T }}
+                  style={{ width: '100%', padding: '7px 10px', background: 'rgba(3,3,10,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box', ...T }}
                 />
                 <div className="flex gap-1">
                   {PRESETS.map(p => (
@@ -188,13 +188,13 @@ export default function WebSourceOverlay({ containerRef }) {
 
           {sources.map(src => (
             <div key={src.id} className="flex items-center gap-2 p-2 rounded-lg"
-              style={{ background: focusId === src.id ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              style={{ background: focusId === src.id ? 'rgba(255,184,0,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
               <Globe className="w-3 h-3 text-white/30 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-bold text-white truncate">{src.label}</p>
                 <p className="text-[9px] text-white/30 truncate">{src.url}</p>
               </div>
-              <button onClick={() => setFocusId(src.id)} style={{ ...T, height: 20, padding: '0 6px', fontSize: 9, fontWeight: 700, borderRadius: 6, border: 'none', cursor: 'pointer', background: 'rgba(212,175,55,0.1)', color: GOLD }}>Focus</button>
+              <button onClick={() => setFocusId(src.id)} style={{ ...T, height: 20, padding: '0 6px', fontSize: 9, fontWeight: 700, borderRadius: 6, border: 'none', cursor: 'pointer', background: 'rgba(255,184,0,0.1)', color: GOLD }}>Focus</button>
               <button onClick={() => removeSource(src.id)} className="w-5 h-5 flex items-center justify-center rounded hover:bg-red-500/10 transition-colors flex-shrink-0">
                 <X className="w-2.5 h-2.5 text-red-400/60" />
               </button>

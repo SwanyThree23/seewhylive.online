@@ -5,7 +5,7 @@ import { Activity, Users, TrendingUp, Zap, Eye } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import SafeResponsiveContainer from '@/components/shared/SafeChart';
 
-const G = '#d4af37';
+const G = '#ffb800';
 
 export default function PerformanceDashboard({ roomId, sessionId }) {
   const [metrics, setMetrics] = useState(null);
@@ -41,14 +41,14 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
   }, [roomId, sessionId]);
 
   const stats = [
-    { label: 'Bitrate', value: metrics?.bitrate ? `${metrics.bitrate} Mbps` : '--', icon: Zap, color: '#D4854A' },
-    { label: 'FPS', value: metrics?.fps || '--', icon: Activity, color: '#C9A84C' },
-    { label: 'Viewers', value: metrics?.viewer_count || 0, icon: Users, color: '#6DBF7E' },
+    { label: 'Bitrate', value: metrics?.bitrate ? `${metrics.bitrate} Mbps` : '--', icon: Zap, color: '#FF8C00' },
+    { label: 'FPS', value: metrics?.fps || '--', icon: Activity, color: '#FFB800' },
+    { label: 'Viewers', value: metrics?.viewer_count || 0, icon: Users, color: '#00FF88' },
     { label: 'Latency', value: metrics?.latency_ms ? `${metrics.latency_ms}ms` : '--', icon: TrendingUp, color: G },
   ];
 
   return (
-    <div className="space-y-4 p-4 rounded-lg" style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}20` }}>
+    <div className="space-y-4 p-4 rounded-lg" style={{ background: 'rgba(3,3,10,0.95)', border: `1px solid ${G}20` }}>
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Eye className="w-5 h-5" style={{ color: G }} />
@@ -86,7 +86,7 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
               <XAxis dataKey="timestamp" stroke="rgba(255,255,255,0.2)" style={{ fontSize: '10px' }} />
               <YAxis stroke="rgba(255,255,255,0.2)" style={{ fontSize: '10px' }} />
               <Tooltip
-                contentStyle={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${G}30` }}
+                contentStyle={{ background: 'rgba(3,3,10,0.9)', border: `1px solid ${G}30` }}
                 labelStyle={{ color: '#fff' }}
               />
               <Line
@@ -100,7 +100,7 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
               <Line
                 type="monotone"
                 dataKey="fps"
-                stroke="#C9A84C"
+                stroke="#FFB800"
                 dot={false}
                 strokeWidth={2}
                 yAxisId="right"

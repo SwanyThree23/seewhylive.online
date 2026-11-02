@@ -14,10 +14,10 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
   // Stats updated via real WebRTC getStats() callbacks from parent when available
 
   const healthColor = {
-    excellent: '#6DBF7E',
-    good: '#d4af37',
-    warning: '#D4AF37',
-    critical: '#C0392B'
+    excellent: '#00FF88',
+    good: '#ffb800',
+    warning: '#FFB800',
+    critical: '#FF2040'
   };
 
   const healthLabel = {
@@ -40,17 +40,17 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#0F1428]/70 border border-[#6DBF7E]/20 rounded-lg p-3 space-y-2"
+      className="bg-[#0F1428]/70 border border-[#00FF88]/20 rounded-lg p-3 space-y-2"
     >
       <div className="flex items-center gap-2 mb-2">
-        <div className="w-2 h-2 rounded-full bg-[#6DBF7E] animate-pulse" />
+        <div className="w-2 h-2 rounded-full bg-[#00FF88] animate-pulse" />
         <span className="text-[10px] font-semibold text-white">{guestName}</span>
         <span className="text-[11px] text-white/40 ml-auto">{healthLabel[stats.health]}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-1.5 text-[11px]">
         <div className="flex items-center gap-1.5 bg-white/5 rounded p-1.5">
-          <Activity className="w-3 h-3 text-[#d4af37]" />
+          <Activity className="w-3 h-3 text-[#ffb800]" />
           <div>
             <p className="text-white/40">Bitrate</p>
             <p className="text-white font-semibold">{Math.round(stats.bitrate)} kbps</p>
@@ -58,7 +58,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
         </div>
 
         <div className="flex items-center gap-1.5 bg-white/5 rounded p-1.5">
-          <Zap className="w-3 h-3 text-[#6DBF7E]" />
+          <Zap className="w-3 h-3 text-[#00FF88]" />
           <div>
             <p className="text-white/40">Latency</p>
             <p className="text-white font-semibold">{Math.round(stats.latency)}ms</p>
@@ -66,7 +66,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
         </div>
 
         <div className="flex items-center gap-1.5 bg-white/5 rounded p-1.5">
-          <Wifi className="w-3 h-3 text-[#6DBF7E]" />
+          <Wifi className="w-3 h-3 text-[#00FF88]" />
           <div>
             <p className="text-white/40">FPS</p>
             <p className="text-white font-semibold">{Math.round(stats.frames)}</p>
@@ -82,10 +82,10 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="rounded p-1.5 flex gap-1.5" style={{ background: 'rgba(212,133,74,0.1)', border: '1px solid rgba(212,133,74,0.25)' }}
+          className="rounded p-1.5 flex gap-1.5" style={{ background: 'rgba(255,140,0,0.1)', border: '1px solid rgba(255,140,0,0.25)' }}
         >
-          <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" style={{ color: '#D4854A' }} />
-          <p className="text-[11px]" style={{ color: '#CC7755' }}>
+          <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" style={{ color: '#FF8C00' }} />
+          <p className="text-[11px]" style={{ color: '#FF8C00' }}>
             {stats.health === 'warning' ? 'Connection unstable — consider lower bitrate' : 'Critical — connection degrading'}
           </p>
         </motion.div>

@@ -5,10 +5,10 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Crown, Edit2, Trash2, Eye } from 'lucide-react';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const TIERS = ['Bronze', 'Silver', 'Gold', 'Diamond'];
 const TIER_ICONS = ['bronze', 'silver', 'gold', 'diamond'];
-const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#D4AF37', '#D4854A'];
+const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#FFB800', '#FF8C00'];
 
 export default function SubscriptionManager({ creatorId }) {
   const [showForm, setShowForm] = useState(false);
@@ -73,7 +73,7 @@ export default function SubscriptionManager({ creatorId }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="p-4 rounded-lg space-y-3"
-          style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(212,175,55,0.12)` }}
+          style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,184,0,0.12)` }}
         >
           <input
             type="text"
@@ -81,7 +81,7 @@ export default function SubscriptionManager({ creatorId }) {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-3 py-2 rounded text-sm outline-none"
-            style={{ background: '#0D1022', border: `1px solid rgba(212,175,55,0.18)`, color: 'white' }}
+            style={{ background: '#0D1022', border: `1px solid rgba(255,184,0,0.18)`, color: 'white' }}
           />
           <input
             type="number"
@@ -91,7 +91,7 @@ export default function SubscriptionManager({ creatorId }) {
             value={formData.price}
             onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
             className="w-full px-3 py-2 rounded text-sm outline-none"
-            style={{ background: '#0D1022', border: `1px solid rgba(212,175,55,0.18)`, color: 'white' }}
+            style={{ background: '#0D1022', border: `1px solid rgba(255,184,0,0.18)`, color: 'white' }}
           />
           <div className="flex gap-2">
             <motion.button

@@ -7,8 +7,8 @@ import {
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 
-const GOLD = '#d4af37';
-const CRIM = '#C0392B';
+const GOLD = '#ffb800';
+const CRIM = '#FF2040';
 
 function useHLSVideo(videoRef, streamUrl) {
   const hlsRef = useRef(null);
@@ -198,7 +198,7 @@ export default function EmbedPlayer({
 
         {/* Placeholder when no stream URL provided yet */}
         {(!hasRealVideo || videoError) && (
-          <div className="w-full h-full bg-gradient-to-br from-[#0F1428] via-[#080B18] to-[#080B18] flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-[#0F1428] via-[#03030A] to-[#03030A] flex items-center justify-center">
             {videoError ? (
               <div className="text-center">
                 <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
@@ -210,9 +210,9 @@ export default function EmbedPlayer({
               </div>
             ) : (
               <div className="w-24 h-24 relative">
-                <div className="absolute inset-0 rounded-full bg-[#d4af37]/20 animate-ping" />
-                <div className="absolute inset-4 rounded-full bg-[#d4af37]/30 animate-pulse" />
-                <div className="absolute inset-8 rounded-full bg-[#d4af37]/50" />
+                <div className="absolute inset-0 rounded-full bg-[#ffb800]/20 animate-ping" />
+                <div className="absolute inset-4 rounded-full bg-[#ffb800]/30 animate-pulse" />
+                <div className="absolute inset-8 rounded-full bg-[#ffb800]/50" />
               </div>
             )}
           </div>
@@ -236,7 +236,7 @@ export default function EmbedPlayer({
             <img src={creatorAvatar} alt="" className="w-6 h-6 rounded-full object-cover" />
           ) : (
             <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
-              style={{ background: `linear-gradient(135deg, #800020, ${GOLD})` }}>
+              style={{ background: `linear-gradient(135deg, #FF1564, ${GOLD})` }}>
               {creatorName.charAt(0)}
             </div>
           )}
@@ -265,7 +265,7 @@ export default function EmbedPlayer({
             className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent px-3 pb-3 pt-6"
           >
             <div className="flex items-center gap-2">
-              <button onClick={e => { e.stopPropagation(); setPlaying(p => !p); }} className="text-white hover:text-[#d4af37]">
+              <button onClick={e => { e.stopPropagation(); setPlaying(p => !p); }} className="text-white hover:text-[#ffb800]">
                 {playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
               </button>
               <button onClick={e => { e.stopPropagation(); setMuted(m => !m); }} className="text-white/70 hover:text-white">
@@ -304,7 +304,7 @@ export default function EmbedPlayer({
       {/* ── Preview timer badge ── */}
       {!locked && !isUnlocked && timeLeft <= 30 && (
         <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="absolute top-12 left-3">
-          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#800020', color: GOLD, border:`2px solid ${GOLD}`, display:'inline-flex', alignItems:'center', gap:4 }}>
+          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#FF1564', color: GOLD, border:`2px solid ${GOLD}`, display:'inline-flex', alignItems:'center', gap:4 }}>
             <Clock className="w-3 h-3" />
             PREVIEW: {formatTime(timeLeft)}
           </span>
@@ -317,15 +317,15 @@ export default function EmbedPlayer({
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 20 }}
             className="absolute inset-0 flex flex-col justify-end"
-            style={{ backdropFilter: 'blur(14px)', background: 'rgba(8,11,24,0.88)' }}
+            style={{ backdropFilter: 'blur(14px)', background: 'rgba(3,3,10,0.88)' }}
           >
-            <div className="p-6 border border-[#d4af37]/20 rounded-t-2xl bg-gradient-to-t from-[#080B18] to-transparent">
+            <div className="p-6 border border-[#ffb800]/20 rounded-t-2xl bg-gradient-to-t from-[#03030A] to-transparent">
               <div className="flex items-center gap-3 mb-4">
                 {creatorAvatar ? (
                   <img src={creatorAvatar} alt="" className="w-12 h-12 rounded-full object-cover" />
                 ) : (
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
-                    style={{ background: `linear-gradient(135deg, #800020, ${GOLD})` }}>
+                    style={{ background: `linear-gradient(135deg, #FF1564, ${GOLD})` }}>
                     {creatorName.charAt(0)}
                   </div>
                 )}
@@ -340,13 +340,13 @@ export default function EmbedPlayer({
                 <button
                   onClick={() => handlePurchase('ppv', 'default')}
                   className="py-3 rounded-xl text-white font-bold text-sm hover:opacity-90 transition-opacity"
-                  style={{ background: `linear-gradient(90deg, #800020, ${GOLD})` }}>
+                  style={{ background: `linear-gradient(90deg, #FF1564, ${GOLD})` }}>
                   Unlock ${price.toFixed(2)} — One-time
                 </button>
                 <button
                   onClick={() => handlePurchase('sub', 'default')}
                   className="py-3 rounded-xl text-white font-bold text-sm hover:opacity-90 transition-opacity"
-                  style={{ background: `linear-gradient(90deg, #800020, ${CRIM})` }}>
+                  style={{ background: `linear-gradient(90deg, #FF1564, ${CRIM})` }}>
                   Subscribe ${subscriptionPrice.toFixed(2)}/mo
                 </button>
               </div>
@@ -388,7 +388,7 @@ export default function EmbedPlayer({
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
             className="absolute inset-4 rounded-xl p-4 z-50"
-            style={{ background: '#080B18', border: `1px solid ${GOLD}33` }}
+            style={{ background: '#03030A', border: `1px solid ${GOLD}33` }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-3">

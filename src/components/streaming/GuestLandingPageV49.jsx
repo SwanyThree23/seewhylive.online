@@ -2,9 +2,9 @@ import React, { useRef, useEffect } from 'react';
 import { useLocalMedia } from '../../hooks/useLocalMedia';
 import { Mic, MicOff, Video, VideoOff, CheckCircle, XCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const BG = '#080B18';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
+const BG = '#03030A';
 const FONT = 'Barlow Condensed, sans-serif';
 
 export default function GuestLandingPageV49({ guestName, roomId, onProceed, onBack }) {

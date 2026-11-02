@@ -7,12 +7,12 @@ import {
 } from 'lucide-react';
 import TrackUploader from '@/components/swanybotpro/TrackUploader';
 
-const G = '#D4AF37';
-const ORANGE = '#D4854A';
-const EMERALD = '#6DBF7E';
-const PURPLE = '#7B5DA6';
+const G = '#FFB800';
+const ORANGE = '#FF8C00';
+const EMERALD = '#00FF88';
+const PURPLE = '#8B5CF6';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 const GENRES = ['Hip-Hop', 'Afrobeats', 'Pop', 'R&B', 'Country', 'EDM', 'Lo-Fi'];
 const STRUCTURES = [
@@ -323,7 +323,7 @@ export default function StoryMusicVideoStudio() {
                 return (
                   <button key={v.id} onClick={() => setVoice(v)}
                     className="flex flex-col items-center gap-0.5 py-1.5 rounded-lg transition-all"
-                    style={{ background: active ? 'rgba(212,133,74,0.20)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? ORANGE + 'aa' : 'transparent'}` }}>
+                    style={{ background: active ? 'rgba(255,140,0,0.20)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? ORANGE + 'aa' : 'transparent'}` }}>
                     <Mic2 className="w-3.5 h-3.5" style={{ color: active ? ORANGE : 'rgba(255,255,255,0.4)' }} />
                     <span className="text-[8px] font-bold uppercase" style={{ color: active ? '#fff' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{v.label}</span>
                   </button>
@@ -333,7 +333,7 @@ export default function StoryMusicVideoStudio() {
             <button onClick={() => topic.trim() && lyricsMut.mutateAsync({ topic, genre, structure }).then(r => r.lyrics && setLyrics(r.lyrics))}
               disabled={!topic.trim() || lyricsMut.isPending}
               className="w-full rounded-xl py-2 text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-40"
-              style={{ background: 'rgba(212,133,74,0.18)', border: `1px solid ${ORANGE}88`, color: ORANGE }}>
+              style={{ background: 'rgba(255,140,0,0.18)', border: `1px solid ${ORANGE}88`, color: ORANGE }}>
               {lyricsMut.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
               Write Lyrics (LLM Songwriter)
             </button>
@@ -362,7 +362,7 @@ export default function StoryMusicVideoStudio() {
               return (
                 <button key={s.id} onClick={() => setVideoStyle(s)}
                   className="flex flex-col gap-1 px-2.5 py-2 rounded-lg text-left transition-all"
-                  style={{ background: active ? 'rgba(212,175,55,0.16)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? G + 'aa' : 'transparent'}` }}>
+                  style={{ background: active ? 'rgba(255,184,0,0.16)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? G + 'aa' : 'transparent'}` }}>
                   <div className="flex items-center gap-1.5">
                     <Film className="w-3.5 h-3.5 shrink-0" style={{ color: active ? G : 'rgba(255,255,255,0.4)' }} />
                     <span className="text-[10px] font-bold uppercase" style={{ color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>{s.name}</span>
@@ -389,7 +389,7 @@ export default function StoryMusicVideoStudio() {
       {/* ── PRODUCE & PREVIEW ──────────────────────────────────────────────── */}
       <Section title="5 · Produce & Synced Preview" accent={ORANGE} right={
         <button onClick={copyExport} className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg flex items-center gap-1.5"
-          style={{ background: 'rgba(212,133,74,0.12)', border: `1px solid ${ORANGE}55`, color: ORANGE }}>
+          style={{ background: 'rgba(255,140,0,0.12)', border: `1px solid ${ORANGE}55`, color: ORANGE }}>
           {copied ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Export Pack</>}
         </button>
       }>

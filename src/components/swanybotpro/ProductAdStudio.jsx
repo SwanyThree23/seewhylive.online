@@ -11,12 +11,12 @@ import AssetLibrary from './AssetLibrary';
 import AdTemplateManager from './AdTemplateManager';
 import CinematicEffectsPanel, { effectsToPromptSuffix, DEFAULT_EFFECTS } from './CinematicEffectsPanel';
 
-const G = '#D4AF37';
-const ORANGE = '#D4854A';
-const EMERALD = '#6DBF7E';
+const G = '#FFB800';
+const ORANGE = '#FF8C00';
+const EMERALD = '#00FF88';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
-const PURPLE = '#7B5DA6';
+const BORDER = 'rgba(255,184,0,0.18)';
+const PURPLE = '#8B5CF6';
 
 const STYLE_PRESETS = [
   { id: 'fashion',  name: 'Fashion',  prompt: 'high-fashion editorial commercial, glossy studio strobes, model showcase, slow elegant camera moves, premium luxury feel' },
@@ -258,7 +258,7 @@ export default function ProductAdStudio() {
               style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${BORDER}`, color: '#fff' }} />
             <button onClick={() => enhanceMut.mutate()} disabled={(!productName.trim() && !productDesc.trim()) || enhanceMut.isPending}
               className="w-full rounded-xl py-2 text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-40"
-              style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${G}88`, color: G }}>
+              style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${G}88`, color: G }}>
               {enhanceMut.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
               Enhance Prompt (LLM)
             </button>
@@ -275,7 +275,7 @@ export default function ProductAdStudio() {
               return (
                 <button key={s.id} onClick={() => setStyle(s)}
                   className="flex flex-col gap-1 px-2.5 py-2 rounded-lg text-left transition-all"
-                  style={{ background: active ? 'rgba(212,133,74,0.18)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? ORANGE + 'aa' : 'transparent'}` }}>
+                  style={{ background: active ? 'rgba(255,140,0,0.18)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? ORANGE + 'aa' : 'transparent'}` }}>
                   <div className="flex items-center gap-1.5">
                     {s.id === 'ugc' ? <User className="w-3.5 h-3.5 shrink-0" style={{ color: active ? ORANGE : 'rgba(255,255,255,0.4)' }} /> : <Film className="w-3.5 h-3.5 shrink-0" style={{ color: active ? ORANGE : 'rgba(255,255,255,0.4)' }} />}
                     <span className="text-[10px] font-bold uppercase" style={{ color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>{s.name}</span>
@@ -294,7 +294,7 @@ export default function ProductAdStudio() {
               return (
                 <button key={a.id} onClick={() => setAspect(a)}
                   className="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide"
-                  style={{ background: active ? 'rgba(212,133,74,0.20)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? ORANGE + 'aa' : 'transparent'}`, color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  style={{ background: active ? 'rgba(255,140,0,0.20)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? ORANGE + 'aa' : 'transparent'}`, color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   {a.label}
                 </button>
               );
@@ -307,7 +307,7 @@ export default function ProductAdStudio() {
               return (
                 <button key={n} onClick={() => setShotCount(n)}
                   className="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide"
-                  style={{ background: active ? 'rgba(212,133,74,0.20)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? ORANGE + 'aa' : 'transparent'}`, color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  style={{ background: active ? 'rgba(255,140,0,0.20)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? ORANGE + 'aa' : 'transparent'}`, color: active ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   {n === 1 ? 'Single Shot' : 'Continue-Shot (2)'}
                 </button>
               );
@@ -328,7 +328,7 @@ export default function ProductAdStudio() {
       <Section title="Quick Poll (optional)" accent={EMERALD} right={
         <button onClick={() => setPollOn((v) => !v)} aria-label="Toggle quick poll"
           className="rounded-full flex items-center px-0.5 transition-all"
-          style={{ width: 40, height: 22, background: pollOn ? 'rgba(109,191,126,0.35)' : 'rgba(255,255,255,0.08)', justifyContent: pollOn ? 'flex-end' : 'flex-start' }}>
+          style={{ width: 40, height: 22, background: pollOn ? 'rgba(0,255,136,0.35)' : 'rgba(255,255,255,0.08)', justifyContent: pollOn ? 'flex-end' : 'flex-start' }}>
           <div className="rounded-full" style={{ width: 18, height: 18, background: pollOn ? EMERALD : 'rgba(255,255,255,0.3)' }} />
         </button>
       }>
@@ -349,7 +349,7 @@ export default function ProductAdStudio() {
                 {pollOptions.length > 2 && (
                   <button onClick={() => setPollOptions((prev) => prev.filter((_, idx) => idx !== i))}
                     className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)' }}>
+                    style={{ background: 'rgba(255,32,64,0.15)', border: '1px solid rgba(255,32,64,0.4)' }}>
                     <X className="w-3.5 h-3.5" style={{ color: '#ef4444' }} />
                   </button>
                 )}
@@ -358,7 +358,7 @@ export default function ProductAdStudio() {
             {pollOptions.length < 4 && (
               <button onClick={() => setPollOptions((prev) => [...prev, ''])}
                 className="w-full rounded-xl py-1.5 text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1"
-                style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.3)', color: EMERALD }}>
+                style={{ background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.3)', color: EMERALD }}>
                 <Plus className="w-3 h-3" /> Add option
               </button>
             )}
@@ -400,7 +400,7 @@ export default function ProductAdStudio() {
       {/* ── GENERATE ────────────────────────────────────────────────────── */}
       <Section title="4 · Generate Ad" accent={G} right={
         <button onClick={copyExport} className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg flex items-center gap-1.5"
-          style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${G}55`, color: G }}>
+          style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${G}55`, color: G }}>
           {copied ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Export Pack</>}
         </button>
       }>
@@ -467,7 +467,7 @@ export default function ProductAdStudio() {
           style={{ background: 'rgba(0,0,0,0.85)' }}
           onClick={() => setLibOpen(false)}>
           <div className="w-full max-w-3xl rounded-2xl overflow-hidden max-h-[82vh] overflow-y-auto"
-            style={{ background: '#080B18', border: `1px solid ${BORDER}` }}
+            style={{ background: '#03030A', border: `1px solid ${BORDER}` }}
             onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 sticky top-0 z-10" style={{ background: PANEL, borderBottom: `1px solid ${BORDER}` }}>
               <p className="text-xs font-black uppercase tracking-widest" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>

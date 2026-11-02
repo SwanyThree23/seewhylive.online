@@ -18,7 +18,7 @@ export default function BitratePresets({ selected, onChange }) {
             onClick={() => onChange(preset.bitrate)}
             className={`py-2 px-2 rounded-lg text-center transition-all border text-[10px] font-semibold ${
               selected === preset.bitrate
-                ? 'bg-[#d4af37] text-black border-[#d4af37]'
+                ? 'bg-[#ffb800] text-black border-[#ffb800]'
                 : 'bg-white/5 text-white/60 border-white/10 hover:border-white/20'
             }`}
           >

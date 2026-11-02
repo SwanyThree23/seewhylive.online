@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useVoiceSettings } from '../../hooks/useVoiceSettings';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const VOICE_PRESETS = [
@@ -52,7 +52,7 @@ export default function VoiceAISettings() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
       {/* Toggles */}
-      <div className="rounded-xl p-4 space-y-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.12)' }}>
+      <div className="rounded-xl p-4 space-y-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,184,0,0.12)' }}>
         {[
           { key: 'enabled',    label: 'Voice AI Enabled',    desc: 'Allow AI personas to speak aloud' },
           { key: 'autoSpeak',  label: 'Auto-Speak Replies',  desc: 'Automatically read each AI reply' },
@@ -68,13 +68,13 @@ export default function VoiceAISettings() {
       </div>
 
       {/* Voice selector */}
-      <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.12)' }}>
+      <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,184,0,0.12)' }}>
         <p className="text-[10px] font-black uppercase mb-3" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Select Voice</p>
         <div className="space-y-2">
           {(availableVoices.length > 0 ? availableVoices.slice(0, 6).map(v => ({ id: v.name, label: v.name, desc: v.lang })) : VOICE_PRESETS).map(v => (
             <button key={v.id} onClick={() => update('voice', v.id)}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all text-left"
-              style={{ background: settings.voice === v.id ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${settings.voice === v.id ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.07)'}` }}>
+              style={{ background: settings.voice === v.id ? 'rgba(255,184,0,0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${settings.voice === v.id ? 'rgba(255,184,0,0.4)' : 'rgba(255,255,255,0.07)'}` }}>
               <div style={{ width: 12, height: 12, borderRadius: 6, border: `2px solid ${settings.voice === v.id ? G : 'rgba(255,255,255,0.3)'}`, background: settings.voice === v.id ? G : 'transparent', flexShrink: 0 }} />
               <div>
                 <p className="text-sm font-bold text-white" style={T}>{v.label || 'Default'}</p>
@@ -86,7 +86,7 @@ export default function VoiceAISettings() {
       </div>
 
       {/* Volume & Speed */}
-      <div className="rounded-xl p-4 space-y-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.12)' }}>
+      <div className="rounded-xl p-4 space-y-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,184,0,0.12)' }}>
         {[
           { key: 'volume', label: 'Volume', min: 0, max: 1, step: 0.05, fmt: v => Math.round(v * 100) + '%' },
           { key: 'speed',  label: 'Speed',  min: 0.5, max: 2.0, step: 0.1, fmt: v => v + 'x' },
@@ -106,7 +106,7 @@ export default function VoiceAISettings() {
       {/* Test button */}
       <button onClick={testSpeak} disabled={!settings.enabled}
         className="w-full py-3 rounded-xl font-black uppercase text-[12px] transition-all disabled:opacity-40"
-        style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: G, ...T }}>
+        style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.3)', color: G, ...T }}>
         🔊 Test Voice
       </button>
 

@@ -4,8 +4,8 @@ import { useMutation } from '@tanstack/react-query';
 import { UserPlus, Copy, Check, Link2, Mic, Video } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
 const FONT = 'Barlow Condensed, sans-serif';
 
 const ROLES = [
@@ -98,7 +98,7 @@ export default function GuestInviteGeneratorV49({ roomId, isHost }) {
         </button>
 
         {generatedLink && (
-          <div style={{ padding: 12, borderRadius: 8, background: 'rgba(212,175,55,0.08)', border: `1px solid ${GOLD}33` }}>
+          <div style={{ padding: 12, borderRadius: 8, background: 'rgba(255,184,0,0.08)', border: `1px solid ${GOLD}33` }}>
             <p style={{ fontFamily: 'monospace', fontSize: 11, color: 'rgba(255,255,255,0.6)', wordBreak: 'break-all', marginBottom: 8 }}>
               {generatedLink}
             </p>

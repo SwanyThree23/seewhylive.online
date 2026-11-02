@@ -7,8 +7,8 @@ import BattleMode from '@/components/streaming/BattleMode';
 import GreenroomQueue from '@/components/streaming/GreenroomQueue';
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
 
 export default function MultiGuestPanel({
   participants = [],
@@ -32,11 +32,11 @@ export default function MultiGuestPanel({
 
   return (
     <div className="h-full flex flex-col rounded-xl overflow-hidden"
-      style={{ background: '#080B18', border: '2px solid rgba(128,0,32,0.3)' }}>
+      style={{ background: '#03030A', border: '2px solid rgba(255,21,100,0.3)' }}>
 
       {/* ── header bar ── */}
       <div className="flex items-center justify-between px-3 py-2 shrink-0"
-        style={{ background: 'rgba(8,11,24,0.98)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
+        style={{ background: 'rgba(3,3,10,0.98)', borderBottom: '1px solid rgba(255,184,0,0.1)' }}>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full flex items-center gap-1"
             style={{ background: CRIMSON, color: GOLD, border: `1px solid ${GOLD}`, ...T }}>
@@ -75,7 +75,7 @@ export default function MultiGuestPanel({
 
       {/* ── tab strip ── */}
       <div className="flex gap-0 shrink-0"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,11,24,0.8)' }}>
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(3,3,10,0.8)' }}>
         {[
           { id: 'stage', icon: Radio, label: 'Live Stage' },
           { id: 'greenroom', icon: Users, label: 'Queue' },
@@ -142,8 +142,8 @@ function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
     >
       <div style={{
         background:'#3C2F2F',
-        border: `2px solid ${participant.is_streaming ? '#D4AF37' : 'rgba(128,0,32,0.3)'}`,
-        boxShadow: participant.is_streaming ? '0 0 20px rgba(212,175,55,0.3)' : 'none',
+        border: `2px solid ${participant.is_streaming ? '#FFB800' : 'rgba(255,21,100,0.3)'}`,
+        boxShadow: participant.is_streaming ? '0 0 20px rgba(255,184,0,0.3)' : 'none',
         borderRadius:8,
         overflow:'hidden',
         position:'relative',
@@ -156,7 +156,7 @@ function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
               width: isSpotlight?128 : compact?48 : 80,
               height: isSpotlight?128 : compact?48 : 80,
               borderRadius:'50%', overflow:'hidden',
-              background:'rgba(212,175,55,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:isSpotlight?32:12, color:'#D4AF37'
+              background:'rgba(255,184,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:isSpotlight?32:12, color:'#FFB800'
             }}>
               {participant.user_avatar
                 ? <img src={participant.user_avatar} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
@@ -180,7 +180,7 @@ function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
                   </p>
                   {!compact && (
                     <div className="flex items-center gap-1 mt-1">
-                      <span style={{ fontSize:10, fontWeight:900, padding:'2px 6px', borderRadius:99, border:'1px solid #D4AF37', color:'#D4AF37', background:'transparent' }}>
+                      <span style={{ fontSize:10, fontWeight:900, padding:'2px 6px', borderRadius:99, border:'1px solid #FFB800', color:'#FFB800', background:'transparent' }}>
                         {participant.role}
                       </span>
                     </div>
@@ -190,9 +190,9 @@ function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
                 {!compact && (
                   <div className="flex items-center gap-1">
                     {participant.is_audio_enabled ? (
-                      <Mic className="w-3 h-3 text-[#6DBF7E]" />
+                      <Mic className="w-3 h-3 text-[#00FF88]" />
                     ) : (
-                      <MicOff className="w-3 h-3 text-[#C0392B]" />
+                      <MicOff className="w-3 h-3 text-[#FF2040]" />
                     )}
                     {participant.is_video_enabled && (
                       <Video className="w-3 h-3 text-blue-400" />
@@ -207,7 +207,7 @@ function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
               <button
                 onClick={() => onSpotlight?.(participant.id)}
                 className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ width:32, height:32, background:'rgba(0,0,0,0.5)', border:'none', borderRadius:6, cursor:'pointer', color:'#D4AF37', display:'flex', alignItems:'center', justifyContent:'center' }}
+                style={{ width:32, height:32, background:'rgba(0,0,0,0.5)', border:'none', borderRadius:6, cursor:'pointer', color:'#FFB800', display:'flex', alignItems:'center', justifyContent:'center' }}
               >
                 {isSpotlight ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </button>
@@ -219,7 +219,7 @@ function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
                 onClick={() => setShowRTMP(v => !v)}
                 title="Configure RTMP destinations"
                 className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all"
-                style={{ width:32, height:32, background: showRTMP ? 'rgba(212,175,55,0.2)' : 'rgba(0,0,0,0.5)', border:'none', borderRadius:6, cursor:'pointer', color: showRTMP ? '#D4AF37' : 'rgba(255,255,255,0.6)', display:'flex', alignItems:'center', justifyContent:'center', opacity: showRTMP ? 1 : undefined }}
+                style={{ width:32, height:32, background: showRTMP ? 'rgba(255,184,0,0.2)' : 'rgba(0,0,0,0.5)', border:'none', borderRadius:6, cursor:'pointer', color: showRTMP ? '#FFB800' : 'rgba(255,255,255,0.6)', display:'flex', alignItems:'center', justifyContent:'center', opacity: showRTMP ? 1 : undefined }}
               >
                 <Radio className="w-4 h-4" />
               </button>
