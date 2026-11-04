@@ -96,7 +96,9 @@ export default function ClipsLibraryPage() {
     queryKey: ['clips', user?.id, filter],
     queryFn: async () => {
       if (filter==='mine') return base44.entities.StreamClip.filter({ clipped_by_id: user.id }, '-created_date', 50);
-      return base44.entities.StreamClip.list('-created_date', 50);
+      // Clips a creator removed from their dashboard never show in the public library
+      const all = await base44.entities.StreamClip.list('-created_date', 50);
+      return all.filter(c => (c.approval_status || 'pending') !== 'removed');
     },
     enabled: !!user?.id,
   });

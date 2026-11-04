@@ -43,6 +43,7 @@ import NewsletterComposer from '@/components/newsletter/NewsletterComposer';
 import CreatorRevenueChart from '@/components/dashboard/CreatorRevenueChart';
 import TopSupportersList from '@/components/dashboard/TopSupportersList';
 import StreamPerformancePanel from '@/components/dashboard/StreamPerformancePanel';
+import ClipApprovalPanel from '@/components/clips/ClipApprovalPanel';
 
 const G       = '#FFB800';
 const BG      = '#03030A';
@@ -392,6 +393,12 @@ export default function CreatorDashboardPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <CollaborationMatcher />
         </motion.div>
+
+        {user?.id && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <ClipApprovalPanel creatorId={user.id} />
+          </motion.div>
+        )}
 
         {user?.id && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

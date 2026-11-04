@@ -62,6 +62,30 @@
         "type": "string"
       },
       "description": "Platforms this clip is tagged for (instagram, tiktok, x, youtube)"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "removed"
+      ],
+      "enumColors": [
+        "yellow",
+        "green",
+        "red"
+      ],
+      "default": "pending",
+      "description": "Creator moderation state. Clips with no value are treated as pending."
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the creator approved or removed this clip"
+    },
+    "derived_from_clip_id": {
+      "type": "string",
+      "description": "Set when a creator adds a clip from one of their existing clips"
     }
   },
   "required": [
@@ -90,6 +114,9 @@
         },
         {
           "data.clipped_by_id": "{{user.id}}"
+        },
+        {
+          "data.approval_status": "approved"
         },
         {
           "user_condition": {
