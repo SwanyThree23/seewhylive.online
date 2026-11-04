@@ -40,6 +40,9 @@ import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import NewsletterComposer from '@/components/newsletter/NewsletterComposer';
+import CreatorRevenueChart from '@/components/dashboard/CreatorRevenueChart';
+import TopSupportersList from '@/components/dashboard/TopSupportersList';
+import StreamPerformancePanel from '@/components/dashboard/StreamPerformancePanel';
 
 const G       = '#FFB800';
 const BG      = '#03030A';
@@ -274,6 +277,16 @@ export default function CreatorDashboardPage() {
           <>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <AnalyticsOverview creatorId={user.id} timeRange={timeRange} />
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+              <p className="text-[10px] uppercase tracking-widest font-black"
+                style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Revenue & Supporters</p>
+              <CreatorRevenueChart creatorId={user.id} timeRange={timeRange} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TopSupportersList creatorId={user.id} />
+                <StreamPerformancePanel creatorId={user.id} />
+              </div>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
