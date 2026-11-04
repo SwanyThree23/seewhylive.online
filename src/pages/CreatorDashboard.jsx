@@ -39,6 +39,7 @@ import TierEditor from '../components/subscriptions/TierEditor';
 import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import NewsletterComposer from '@/components/newsletter/NewsletterComposer';
 
 const G       = '#FFB800';
 const BG      = '#03030A';
@@ -281,6 +282,10 @@ export default function CreatorDashboardPage() {
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <LiveViewersPanel roomId={activeCreatorRoomId} user={user} isHost />
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <NewsletterComposer user={user} />
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

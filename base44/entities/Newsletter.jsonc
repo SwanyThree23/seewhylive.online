@@ -2,9 +2,13 @@
   "name": "Newsletter",
   "type": "object",
   "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Creator who owns this newsletter draft"
+    },
     "community_id": {
       "type": "string",
-      "description": "Associated community"
+      "description": "Associated community (optional for creator-owned drafts)"
     },
     "title": {
       "type": "string",
@@ -62,13 +66,15 @@
     }
   },
   "required": [
-    "community_id",
     "title",
     "content"
   ],
   "rls": {
     "create": {
       "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
         {
           "data.community_id": {
             "$in": [
@@ -86,6 +92,9 @@
     "read": {
       "$or": [
         {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
           "data.community_id": {
             "$in": [
               "{{user.communities_as_member}}"
@@ -102,6 +111,9 @@
     "update": {
       "$or": [
         {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
           "data.community_id": {
             "$in": [
               "{{user.communities_as_admin}}"
@@ -117,6 +129,9 @@
     },
     "delete": {
       "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
         {
           "data.community_id": {
             "$in": [
