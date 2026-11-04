@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart2, Trophy, Clock, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function PollCountdown({ endsAt, onExpire }) {
@@ -45,7 +45,7 @@ function PollBar({ pct, isWinner, hasVoted, color }) {
         background: hasVoted
           ? `linear-gradient(90deg, ${G}40, ${G}20)`
           : isWinner
-          ? 'linear-gradient(90deg, rgba(212,175,55,0.25), rgba(212,175,55,0.08))'
+          ? 'linear-gradient(90deg, rgba(255,184,0,0.25), rgba(255,184,0,0.08))'
           : 'rgba(255,255,255,0.06)',
       }}
     />
@@ -192,7 +192,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
             </span>
             {!ended && (
               <motion.div
-                className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E]"
+                className="w-1.5 h-1.5 rounded-full bg-[#00FF88]"
                 animate={{ opacity: [1, 0.3, 1] }}
                 transition={{ duration: 1.2, repeat: Infinity }}
               />
@@ -282,7 +282,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
             <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>Tap to vote</span>
           )}
           {myVote !== null && !ended && (
-            <span className="text-[11px]" style={{ color: '#6DBF7E', ...T }}>✓ Voted</span>
+            <span className="text-[11px]" style={{ color: '#00FF88', ...T }}>✓ Voted</span>
           )}
           {ended && (
             <span className="text-[11px] font-bold uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Final</span>

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 const HEART_EMOJIS = ['❤️', '💛', '💜', '💙', '💚', '🧡'];
 const MILESTONES = [50, 100, 500, 1000];
 
@@ -138,7 +138,7 @@ export default function LoveHearts({ roomId, currentUser, creatorId }) {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            style={{ fontSize: 10, fontWeight: 900, color: '#C0392B', background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', borderRadius: 99, padding: '1px 8px', fontFamily: 'Barlow Condensed, sans-serif', pointerEvents: 'none' }}
+            style={{ fontSize: 10, fontWeight: 900, color: '#FF2040', background: 'rgba(255,32,64,0.15)', border: '1px solid rgba(255,32,64,0.4)', borderRadius: 99, padding: '1px 8px', fontFamily: 'Barlow Condensed, sans-serif', pointerEvents: 'none' }}
           >
             ×{tapStreak} COMBO
           </motion.div>
@@ -167,7 +167,7 @@ export default function LoveHearts({ roomId, currentUser, creatorId }) {
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: 22,
-          boxShadow: '0 4px 16px rgba(212,175,55,0.4)',
+          boxShadow: '0 4px 16px rgba(255,184,0,0.4)',
           userSelect: 'none',
         }}
       >

@@ -4,8 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 var C = {
-  bg: "#0D0D0D", card: "#1A1A1A", burgundy: "#800020", gold: "#D4AF37",
-  volt: "#D4AF37", white: "#FFFFFF", gray: "#888", dim: "#444",
+  bg: "#0D0D0D", card: "#1A1A1A", burgundy: "#FF1564", gold: "#FFB800",
+  volt: "#FFB800", white: "#FFFFFF", gray: "#888", dim: "#444",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace",
 };
@@ -21,9 +21,9 @@ export function WhisperToast({ whisper, onDismiss }) {
   return (
     <div style={{
       position: "fixed", bottom: 80, left: 12, zIndex: 9995,
-      background: "rgba(128,0,32,0.95)", border: "1px solid " + C.gold,
+      background: "rgba(255,21,100,0.95)", border: "1px solid " + C.gold,
       borderRadius: 10, padding: "10px 14px", maxWidth: 260,
-      boxShadow: "0 4px 20px rgba(128,0,32,0.5)",
+      boxShadow: "0 4px 20px rgba(255,21,100,0.5)",
       animation: "slideUp .3s ease-out",
     }}>
       <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.gold, marginBottom: 3 }}>
@@ -71,7 +71,7 @@ export function WhisperPanel({ roomId, currentUser, recipientId, recipientName, 
     <div style={{
       position: "fixed", bottom: 70, left: 8, right: 8, zIndex: 9990,
       background: C.card, border: "1px solid " + C.burgundy,
-      borderRadius: 12, overflow: "hidden", boxShadow: "0 8px 32px rgba(128,0,32,0.5)",
+      borderRadius: 12, overflow: "hidden", boxShadow: "0 8px 32px rgba(255,21,100,0.5)",
     }}>
       <div style={{ padding: "10px 14px", borderBottom: "1px solid #2a2a2a", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontFamily: C.fOrb, fontSize: 10, color: C.gold, letterSpacing: 2 }}>
@@ -89,7 +89,7 @@ export function WhisperPanel({ roomId, currentUser, recipientId, recipientName, 
             <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start" }}>
               <div style={{
                 maxWidth: "80%", padding: "6px 10px", borderRadius: 8,
-                background: isMe ? "rgba(128,0,32,0.3)" : "rgba(212,175,55,0.08)",
+                background: isMe ? "rgba(255,21,100,0.3)" : "rgba(255,184,0,0.08)",
                 border: "1px solid " + (isMe ? C.burgundy : C.gold + "33"),
                 fontFamily: C.fRaj, fontSize: 12, color: isMe ? "#ffaaaa" : C.gold,
                 fontStyle: "italic",
@@ -117,7 +117,7 @@ export function WhisperPanel({ roomId, currentUser, recipientId, recipientName, 
           </button>
         </div>
         {input.length > 80 && (
-          <div style={{ fontFamily: C.fMon, fontSize: 10, color: input.length >= 115 ? "#C0392B" : C.dim, textAlign: "right", marginTop: 3 }}>
+          <div style={{ fontFamily: C.fMon, fontSize: 10, color: input.length >= 115 ? "#FF2040" : C.dim, textAlign: "right", marginTop: 3 }}>
             {120 - input.length} left
           </div>
         )}

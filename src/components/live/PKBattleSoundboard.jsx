@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Volume2 } from 'lucide-react';
 import SoundboardWidget from './SoundboardWidget';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 export default function PKBattleSoundboard({ battleId, isBattleActive = false }) {
   const [isExpanded, setIsExpanded] = useState(() => { try { return localStorage.getItem('pk_soundboard_expanded') !== 'false'; } catch { return true; } });
@@ -27,12 +27,12 @@ export default function PKBattleSoundboard({ battleId, isBattleActive = false })
             style={{ background: 'rgba(0,0,0,0.2)', borderBottom: isExpanded ? `1px solid ${BORDER}` : 'none' }}
           >
             <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4" style={{ color: '#C0392B' }} />
+              <Zap className="w-4 h-4" style={{ color: '#FF2040' }} />
               <span className="text-xs font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
                 HYPE SOUNDS
               </span>
             </div>
-            <span className="text-xs" style={{ color: '#C0392B' }}>
+            <span className="text-xs" style={{ color: '#FF2040' }}>
               {isExpanded ? '▼' : '▶'}
             </span>
           </motion.button>

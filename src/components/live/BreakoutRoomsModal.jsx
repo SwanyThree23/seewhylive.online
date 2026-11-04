@@ -3,13 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Users, Plus, ChevronDown, Trash2, Shuffle } from 'lucide-react';
 
 // ─── Brand tokens ──────────────────────────────────────────────────────────
-const BG      = '#080B18';
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
+const BG      = '#03030A';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK    = '#FF2040';
 const SHEET   = '#0E1120';
 const SURFACE = '#141729';
-const BORDER  = 'rgba(212,175,55,0.18)';
+const BORDER  = 'rgba(255,184,0,0.18)';
 const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const FONT    = { fontFamily: "'Barlow Condensed', sans-serif" };
 
@@ -171,7 +171,7 @@ function AssignDropdown({ unassigned, onAssign, onClose }) {
               cursor: 'pointer',
               transition: 'background 0.15s',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(212,175,55,0.1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,184,0,0.1)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
           >
             <OctTile size={30} participant={p} fontSize={11} />
@@ -223,7 +223,7 @@ function RoomCard({ room, unassigned, onAssign, onRemoveParticipant, onDelete, i
                   fontSize: 10,
                   fontWeight: 700,
                   background: 'rgba(34,197,94,0.18)',
-                  color: '#6DBF7E',
+                  color: '#00FF88',
                   border: '1px solid rgba(34,197,94,0.4)',
                   borderRadius: 999,
                   padding: '1px 8px',

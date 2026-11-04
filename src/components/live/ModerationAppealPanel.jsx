@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { AlertCircle, Send } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 export default function ModerationAppealPanel({ flagId, messageId, roomId, onClose }) {
   const [appealReason, setAppealReason] = useState('');
@@ -42,9 +42,9 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="p-4 rounded-lg"
-        style={{ background: result.appeal_approved ? 'rgba(109,191,126,0.1)' : 'rgba(255,100,100,0.1)' }}
+        style={{ background: result.appeal_approved ? 'rgba(0,255,136,0.1)' : 'rgba(255,100,100,0.1)' }}
       >
-        <p className="text-xs font-bold mb-2" style={{ color: result.appeal_approved ? '#6DBF7E' : '#C0392B' }}>
+        <p className="text-xs font-bold mb-2" style={{ color: result.appeal_approved ? '#00FF88' : '#FF2040' }}>
           {result.appeal_approved ? '✓ Appeal Approved' : '✗ Appeal Denied'}
         </p>
         <p className="text-[10px] text-white/70">{result.reason}</p>
@@ -65,7 +65,7 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="p-4 rounded-lg space-y-3"
-      style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${G}20` }}
+      style={{ background: 'rgba(3,3,10,0.9)', border: `1px solid ${G}20` }}
     >
       <div className="flex items-center gap-2">
         <AlertCircle className="w-4 h-4" style={{ color: G }} />
@@ -81,7 +81,7 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
       />
 
       {error && (
-        <p className="text-[11px] px-2 py-1.5 rounded" style={{ background: 'rgba(192,57,43,0.12)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.3)' }}>{error}</p>
+        <p className="text-[11px] px-2 py-1.5 rounded" style={{ background: 'rgba(255,32,64,0.12)', color: '#FF2040', border: '1px solid rgba(255,32,64,0.3)' }}>{error}</p>
       )}
 
       <button

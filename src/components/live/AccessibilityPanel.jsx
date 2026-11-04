@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, Volume2, Type, Monitor, Activity, ChevronDown, ChevronUp } from 'lucide-react';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const LS_KEYS = {
@@ -154,7 +154,7 @@ function Toggle({ on, onChange, disabled }) {
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); !disabled && onChange(!on); } }}
       style={{
         width: 40, height: 22, borderRadius: 99,
-        background: on ? '#800020' : 'rgba(255,255,255,0.1)',
+        background: on ? '#FF1564' : 'rgba(255,255,255,0.1)',
         position: 'relative', cursor: disabled ? 'default' : 'pointer',
         transition: 'background 0.2s', flexShrink: 0, opacity: disabled ? 0.4 : 1,
       }}
@@ -208,7 +208,7 @@ function Chips({ options, value, onChange }) {
 
 function Section({ icon, title, children, open, onToggle }) {
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.6)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,184,0,0.12)', background: 'rgba(3,3,10,0.6)' }}>
       <button
         className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-all"
         onClick={onToggle}
@@ -491,7 +491,7 @@ export default function AccessibilityPanel() {
               announce('All accessibility settings reset');
             }}
             className="text-[10px] font-bold transition-all hover:opacity-80"
-            style={{ color: 'rgba(192,57,43,0.7)' }}
+            style={{ color: 'rgba(255,32,64,0.7)' }}
           >
             Reset all
           </button>

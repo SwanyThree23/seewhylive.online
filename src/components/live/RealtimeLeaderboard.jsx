@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Trophy, TrendingUp } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 export default function RealtimeLeaderboard({ roomId, creatorId }) {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -39,7 +39,7 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
   }, [roomId, timeRange]);
 
   return (
-    <div className="p-3 rounded-lg space-y-2" style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}20` }}>
+    <div className="p-3 rounded-lg space-y-2" style={{ background: 'rgba(3,3,10,0.95)', border: `1px solid ${G}20` }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -83,15 +83,15 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
                 <span className="font-black shrink-0" style={{ color: idx === 0 ? G : 'rgba(255,255,255,0.5)', minWidth: 20, fontSize: idx < 3 ? 14 : 11 }}>
                   {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
                 </span>
-                {rankDeltas[entry.user_id] === 'up' && <span style={{ fontSize: 9, color: '#6DBF7E', fontWeight: 900 }}>↑</span>}
-                {rankDeltas[entry.user_id] === 'down' && <span style={{ fontSize: 9, color: '#C0392B', fontWeight: 900 }}>↓</span>}
+                {rankDeltas[entry.user_id] === 'up' && <span style={{ fontSize: 9, color: '#00FF88', fontWeight: 900 }}>↑</span>}
+                {rankDeltas[entry.user_id] === 'down' && <span style={{ fontSize: 9, color: '#FF2040', fontWeight: 900 }}>↓</span>}
                 <span className="text-white/70 truncate">{entry.user_name || `User ${entry.user_id.slice(0, 4)}`}</span>
               </div>
               <motion.span
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
                 className="font-bold"
-                style={{ color: idx === 0 ? G : '#C9A84C' }}
+                style={{ color: idx === 0 ? G : '#FFB800' }}
               >
                 {entry.points}
               </motion.span>

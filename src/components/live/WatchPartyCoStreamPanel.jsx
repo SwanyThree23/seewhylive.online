@@ -17,7 +17,7 @@ const BG      = '#03030A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const C = {
-  card:    'rgba(8,11,24,0.98)',
+  card:    'rgba(3,3,10,0.98)',
   border:  'rgba(255,184,0,0.15)',
   text:    '#e8e8e8',
   muted:   '#888',

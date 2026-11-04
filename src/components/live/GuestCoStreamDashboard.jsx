@@ -544,7 +544,7 @@ export default function GuestCoStreamDashboard({
 
   return (
     <div style={{
-      background: 'rgba(8,11,24,0.98)', border: `1px solid ${G}18`,
+      background: 'rgba(3,3,10,0.98)', border: `1px solid ${G}18`,
       borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column',
     }}>
       <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>

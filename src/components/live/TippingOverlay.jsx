@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Gift, DollarSign } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 const TIP_TIERS = [
   { amount: 5, label: '$5', emoji: '🍕' },
@@ -56,7 +56,7 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2.5 rounded-lg font-bold text-sm transition-all"
         style={{
-          background: isOpen ? `linear-gradient(135deg, ${G}, #D4AF37)` : G,
+          background: isOpen ? `linear-gradient(135deg, ${G}, #FFB800)` : G,
           color: '#000',
         }}
       >
@@ -72,7 +72,7 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className="absolute bottom-12 right-0 w-64 p-4 rounded-lg"
-            style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}30` }}
+            style={{ background: 'rgba(3,3,10,0.95)', border: `1px solid ${G}30` }}
           >
             {/* Header */}
             <p className="text-xs font-bold uppercase mb-3" style={{ color: G }}>Support this creator</p>
@@ -113,7 +113,7 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
                 disabled={!customAmount || processing}
                 className="w-full px-3 py-1.5 rounded text-xs font-bold transition-all"
                 style={{
-                  background: customAmount ? G : 'rgba(212,175,55,0.2)',
+                  background: customAmount ? G : 'rgba(255,184,0,0.2)',
                   color: customAmount ? '#000' : 'rgba(255,255,255,0.3)',
                 }}
               >

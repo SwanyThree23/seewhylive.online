@@ -5,16 +5,16 @@ import { base44 } from '@/api/base44Client';
 import { Gift, X, Trophy, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const BURGUNDY = '#800020';
+const GOLD = '#FFB800';
+const BURGUNDY = '#FF1564';
 const CREAM = '#F5E6D3';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const RARITY = {
   common:    { color: 'rgba(255,255,255,0.5)', label: 'COMMON',    glow: '' },
   rare:      { color: '#60A5FA',               label: 'RARE',      glow: '0 0 12px rgba(96,165,250,0.3)' },
-  epic:      { color: '#7B5DA6',               label: 'EPIC',      glow: '0 0 12px rgba(123,93,166,0.3)' },
-  legendary: { color: GOLD,                    label: 'LEGENDARY', glow: `0 0 20px rgba(212,175,55,0.4)` },
+  epic:      { color: '#8B5CF6',               label: 'EPIC',      glow: '0 0 12px rgba(123,93,166,0.3)' },
+  legendary: { color: GOLD,                    label: 'LEGENDARY', glow: `0 0 20px rgba(255,184,0,0.4)` },
 };
 
 const GIFT_CATEGORIES = ['All','Hearts','Celebration','Appreciation','Humor','Special'];
@@ -45,7 +45,7 @@ function FullScreenAnimation({ gift, senderName, onDone }) {
           animate={{ x: (Math.random() - 0.5) * 300, y: -200 - Math.random() * 200, opacity: 0, rotate: Math.random() * 360 }}
           transition={{ duration: 1.5 + Math.random(), delay: 0.2 + Math.random() * 0.5 }}
           className="absolute w-3 h-3 rounded-sm"
-          style={{ background: [GOLD, BURGUNDY, '#6DBF7E', '#C0392B'][i % 4] }} />
+          style={{ background: [GOLD, BURGUNDY, '#00FF88', '#FF2040'][i % 4] }} />
       ))}
     </motion.div>
   );
@@ -183,7 +183,7 @@ export default function GiftShopTray({ roomId, currentUser }) {
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
               className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl"
-              style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)`, maxHeight: '70vh', overflowY: 'auto' }}>
+              style={{ background: '#1A1A1A', border: `1px solid rgba(255,184,0,0.2)`, maxHeight: '70vh', overflowY: 'auto' }}>
               <div className="sticky top-0 z-10" style={{ background: '#1A1A1A' }}>
                 <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                   <div className="flex items-center gap-2">

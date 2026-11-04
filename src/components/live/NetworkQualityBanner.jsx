@@ -37,8 +37,8 @@ export default function NetworkQualityBanner({ quality, rtt }) {
   const isVisible = !dismissed && (quality === 'poor' || quality === 'offline');
 
   const isOffline = quality === 'offline';
-  const bg     = isOffline ? 'rgba(128,0,32,0.95)' : 'rgba(192,80,0,0.92)';
-  const border = isOffline ? 'rgba(192,57,43,0.6)' : 'rgba(212,130,0,0.5)';
+  const bg     = isOffline ? 'rgba(255,21,100,0.95)' : 'rgba(192,80,0,0.92)';
+  const border = isOffline ? 'rgba(255,32,64,0.6)' : 'rgba(212,130,0,0.5)';
   const color  = '#fff';
 
   const contextMsg = prevQuality && prevQuality !== quality && prevQuality !== 'offline' && prevQuality !== 'poor'

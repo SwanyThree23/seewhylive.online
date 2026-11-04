@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Gift, Crown, Trophy } from 'lucide-react';
 
-const G      = '#D4AF37';
-const BORDER = 'rgba(212,175,55,0.18)';
+const G      = '#FFB800';
+const BORDER = 'rgba(255,184,0,0.18)';
 const PANEL  = '#0D1022';
 
 const RANK_MEDALS = ['👑', '🥈', '🥉'];
@@ -48,7 +48,7 @@ function GiftRow({ entry, rank }) {
       {/* Name + gift breakdown */}
       <div className="flex-1 min-w-0">
         <p className="text-xs font-bold text-white truncate">{entry.sender_name || `User ${entry.sender_id?.slice(0, 6)}`}</p>
-        <p className="text-[10px] truncate" style={{ color: isTop ? G : 'rgba(212,175,55,0.5)' }}>
+        <p className="text-[10px] truncate" style={{ color: isTop ? G : 'rgba(255,184,0,0.5)' }}>
           {entry.gift_count} gift{entry.gift_count !== 1 ? 's' : ''} · avg ${(entry.total_value / entry.gift_count).toFixed(2)}
         </p>
       </div>
@@ -102,7 +102,7 @@ export default function GiftLeaderboard({ roomId }) {
   const totalGiftCount = transactions.reduce((s, e) => s + e.gift_count, 0);
 
   return (
-    <div className="rounded-lg overflow-hidden" style={{ background: '#080B18', border: `1px solid ${BORDER}` }}>
+    <div className="rounded-lg overflow-hidden" style={{ background: '#03030A', border: `1px solid ${BORDER}` }}>
       {/* Header */}
       <div className="px-3 pt-3 pb-0" style={{ background: PANEL, borderBottom: `1px solid ${BORDER}` }}>
         <div className="flex items-center gap-2 mb-2">
@@ -112,7 +112,7 @@ export default function GiftLeaderboard({ roomId }) {
           </h3>
           {totalGifted > 0 && (
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-black font-mono" style={{ color: '#6DBF7E' }}>
+              <span className="text-[10px] font-black font-mono" style={{ color: '#00FF88' }}>
                 ${totalGifted.toFixed(2)}
               </span>
               <span className="text-[9px] font-mono" style={{ color: 'rgba(255,255,255,0.3)' }}>

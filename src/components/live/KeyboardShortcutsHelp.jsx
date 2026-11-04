@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
-const GOLD = '#D4AF37';
-const BG   = '#080B18';
+const GOLD = '#FFB800';
+const BG   = '#03030A';
 
 /**
  * KeyboardShortcutsHelp
@@ -64,7 +64,7 @@ export default function KeyboardShortcutsHelp({ shortcuts = [], extraShortcuts =
               style={{
                 top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
                 width: 320, background: BG,
-                border: `1px solid rgba(212,175,55,0.25)`,
+                border: `1px solid rgba(255,184,0,0.25)`,
                 boxShadow: '0 24px 60px rgba(0,0,0,0.7)',
               }}
               initial={{ opacity: 0, scale: 0.92, y: -12 }}
@@ -101,7 +101,7 @@ export default function KeyboardShortcutsHelp({ shortcuts = [], extraShortcuts =
                     <kbd style={{
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                       minWidth: 24, height: 22, padding: '0 6px', borderRadius: 5,
-                      background: 'rgba(212,175,55,0.1)', border: `1px solid rgba(212,175,55,0.3)`,
+                      background: 'rgba(255,184,0,0.1)', border: `1px solid rgba(255,184,0,0.3)`,
                       color: GOLD, fontSize: 11, fontFamily: 'monospace', fontWeight: 700,
                       whiteSpace: 'nowrap',
                     }}>{key}</kbd>

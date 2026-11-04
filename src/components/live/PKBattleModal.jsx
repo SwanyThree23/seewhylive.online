@@ -5,9 +5,9 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
 const BG = '#0E1120';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK = '#C0392B';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK = '#FF2040';
 
 const DURATION_OPTIONS = [
   { label: '60s', value: 60 },
@@ -231,7 +231,7 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
                             style={{
                               fontFamily: 'Barlow Condensed, sans-serif',
                               background: duration === opt.value ? GOLD : '#161929',
-                              color: duration === opt.value ? '#080B18' : 'rgba(255,255,255,0.6)',
+                              color: duration === opt.value ? '#03030A' : 'rgba(255,255,255,0.6)',
                               border: `1px solid ${duration === opt.value ? GOLD : 'rgba(255,255,255,0.12)'}`,
                             }}
                           >
@@ -244,7 +244,7 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
                     {/* Rules */}
                     <div
                       className="rounded-xl p-4 text-sm space-y-1"
-                      style={{ background: '#161929', border: '1px solid rgba(212,175,55,0.15)' }}
+                      style={{ background: '#161929', border: '1px solid rgba(255,184,0,0.15)' }}
                     >
                       <p className="text-white/80" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>• Most supporter tips win</p>
                       <p className="text-white/80" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>• 1 USD = 10 battle points</p>

@@ -35,14 +35,14 @@ export default function VdoNinjaGuestLink({ roomId }) {
   };
 
   return (
-    <div className="space-y-3 bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl p-4">
+    <div className="space-y-3 bg-[rgba(3,3,10,0.9)] border border-[rgba(255,184,0,0.15)] rounded-xl p-4">
       <div className="flex items-center justify-between mb-2">
         <p className="text-xs font-semibold text-white uppercase tracking-wider">vdo.ninja Guest Links</p>
         <a
           href="https://vdo.ninja"
           target="_blank"
           rel="noopener noreferrer"
-          className="w-4 h-4 text-[#d4af37]/60 hover:text-[#d4af37] transition-colors"
+          className="w-4 h-4 text-[#FFB800]/60 hover:text-[#FFB800] transition-colors"
         >
           <ExternalLink className="w-4 h-4" />
         </a>
@@ -68,7 +68,7 @@ export default function VdoNinjaGuestLink({ roomId }) {
                 rel="noopener noreferrer"
                 style={{ flex:1 }}
               >
-                <button style={{ width:'100%', height:24, borderRadius:6, border:'1px solid rgba(212,175,55,0.3)', background:'transparent', color:'#d4af37', cursor:'pointer', fontSize:11, fontWeight:600 }}>
+                <button style={{ width:'100%', height:24, borderRadius:6, border:'1px solid rgba(255,184,0,0.3)', background:'transparent', color:'#FFB800', cursor:'pointer', fontSize:11, fontWeight:600 }}>
                   Open
                 </button>
               </a>

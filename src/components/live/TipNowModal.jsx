@@ -5,8 +5,8 @@ import { toast } from "sonner";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
-  burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
-  white: "#FFF", gray: "#888", dim: "#444", green: "#6DBF7E",
+  burgundy: "#FF1564", gold: "#FFB800", volt: "#FFB800",
+  white: "#FFF", gray: "#888", dim: "#444", green: "#00FF88",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
 };
@@ -94,7 +94,7 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
                 <button key={v} onClick={() => { setAmount(v); setCustom(""); }} style={{
                   padding: "7px 14px", borderRadius: 6,
                   border: "1px solid " + (amount === v ? C.gold : "#333"),
-                  background: amount === v ? "rgba(212,175,55,0.15)" : C.surface,
+                  background: amount === v ? "rgba(255,184,0,0.15)" : C.surface,
                   cursor: "pointer", fontFamily: C.fMon, fontSize: 11,
                   color: amount === v ? C.gold : C.gray,
                 }}>${v}</button>
@@ -121,7 +121,7 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
                 <button key={m} onClick={() => { setMethod(m); try { localStorage.setItem('tipnow_method', m); } catch {} }} style={{
                   padding: "5px 10px", borderRadius: 6,
                   border: "1px solid " + (method === m ? C.gold : "#333"),
-                  background: method === m ? "rgba(212,175,55,0.1)" : C.surface,
+                  background: method === m ? "rgba(255,184,0,0.1)" : C.surface,
                   cursor: "pointer", fontFamily: C.fMon, fontSize: 11,
                   color: method === m ? C.gold : C.gray,
                 }}>{m}</button>
@@ -131,7 +131,7 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
 
           {/* Split preview */}
           {finalAmount > 0 && (
-            <div style={{ padding: "10px 12px", background: "rgba(212,175,55,0.06)", border: "1px solid " + C.gold + "33", borderRadius: 8, fontFamily: C.fMon, fontSize: 10, color: C.gray }}>
+            <div style={{ padding: "10px 12px", background: "rgba(255,184,0,0.06)", border: "1px solid " + C.gold + "33", borderRadius: 8, fontFamily: C.fMon, fontSize: 10, color: C.gray }}>
               Creator receives <span style={{ color: C.gold, fontWeight: 700 }}>${creatorGets}</span> (90%) · Platform fee ${(finalAmount * 0.1).toFixed(2)}
             </div>
           )}
@@ -185,7 +185,7 @@ export function SubscribeButton({ creatorId, roomId, currentUser }) {
                 <div key={tier.id} onClick={() => subMutation.mutate(tier)} style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   padding: "12px 14px", borderRadius: 10,
-                  border: "1px solid " + C.gold + "33", background: "rgba(212,175,55,0.05)",
+                  border: "1px solid " + C.gold + "33", background: "rgba(255,184,0,0.05)",
                   cursor: "pointer",
                 }}>
                   <div>

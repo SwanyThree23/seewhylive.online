@@ -5,9 +5,9 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 /* ─── Brand tokens ─────────────────────────────────────── */
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK    = '#FF2040';
 const SHEET   = '#0E1120';
 const FONT    = { fontFamily: "'Barlow Condensed', sans-serif" };
 
@@ -75,7 +75,7 @@ function InviteButton({ sent, onClick, small = false }) {
         border: 'none',
         cursor: sent ? 'default' : 'pointer',
         background: sent ? '#166534' : CRIMSON,
-        color: sent ? '#6DBF7E' : GOLD,
+        color: sent ? '#00FF88' : GOLD,
         transition: 'all 0.2s',
         whiteSpace: 'nowrap',
         flexShrink: 0,
@@ -424,7 +424,7 @@ export default function InviteGuestsModal({ isOpen, onClose, roomId, roomTitle, 
                   fontWeight: 700,
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
-                  color: linkCopied ? '#6DBF7E' : GOLD,
+                  color: linkCopied ? '#00FF88' : GOLD,
                   background: 'transparent',
                   border: `1px solid ${linkCopied ? '#166534' : `${GOLD}4D`}`,
                   borderRadius: 12,

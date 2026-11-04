@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings2, Check } from 'lucide-react';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 
 // ── Active-speaker highlight styles (creator-selectable) ───────────────
 // Each id maps to rendering rules consumed by PanelGrid's OctCell.
@@ -32,7 +32,7 @@ export default function SpeakerHighlightSettings({ value, onChange }) {
       <button
         onClick={() => setOpen(v => !v)}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all active:scale-95"
-        style={{ background: open ? 'rgba(212,175,55,0.18)' : 'rgba(255,255,255,0.05)', border: `1px solid ${open ? GOLD + 'aa' : 'rgba(255,255,255,0.1)'}` }}
+        style={{ background: open ? 'rgba(255,184,0,0.18)' : 'rgba(255,255,255,0.05)', border: `1px solid ${open ? GOLD + 'aa' : 'rgba(255,255,255,0.1)'}` }}
       >
         <Settings2 className="w-3.5 h-3.5" style={{ color: open ? GOLD : 'rgba(255,255,255,0.5)' }} />
         <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: open ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -66,7 +66,7 @@ export default function SpeakerHighlightSettings({ value, onChange }) {
                       key={s.id}
                       onClick={() => { onChange(s.id); setOpen(false); try { localStorage.setItem('speaker_highlight', s.id); } catch {} }}
                       className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-left"
-                      style={{ background: isActive ? 'rgba(212,175,55,0.15)' : 'transparent', border: `1px solid ${isActive ? GOLD + '66' : 'transparent'}` }}
+                      style={{ background: isActive ? 'rgba(255,184,0,0.15)' : 'transparent', border: `1px solid ${isActive ? GOLD + '66' : 'transparent'}` }}
                     >
                       <div className="flex-1">
                         <p className="text-[11px] font-bold" style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{s.name}</p>

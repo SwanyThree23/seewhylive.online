@@ -4,11 +4,11 @@ import { Eye, ChevronDown, MessageSquare, Timer, Gift } from 'lucide-react';
 import { useRoomPresence } from '@/hooks/useRoomPresence';
 import { useHostControls } from '@/hooks/useHostControls';
 
-const G = '#D4AF37';
-const EM = '#6DBF7E';
-const BORDER = 'rgba(212,175,55,0.15)';
+const G = '#FFB800';
+const EM = '#00FF88';
+const BORDER = 'rgba(255,184,0,0.15)';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const PALETTE = ['#D4AF37', '#C0392B', '#4A8A7A', '#7B5DA6', '#D4854A', '#6DBF7E'];
+const PALETTE = ['#FFB800', '#FF2040', '#00F5FF', '#8B5CF6', '#FF8C00', '#00FF88'];
 
 function initials(name) {
   return (name || '?').trim().charAt(0).toUpperCase() || '?';

@@ -6,12 +6,12 @@ import { useMutation } from '@tanstack/react-query';
 function FloatingEmoji({ emoji, id, comboLevel, onDone }) {
   const x = Math.random() * 60 - 30;
   const baseSize = Math.min(48, 24 + comboLevel * 5);
-  const color = comboLevel >= 10 ? '#C0392B' : comboLevel >= 6 ? '#D4854A' : comboLevel >= 3 ? '#D4AF37' : undefined;
+  const color = comboLevel >= 10 ? '#FF2040' : comboLevel >= 6 ? '#FF8C00' : comboLevel >= 3 ? '#FFB800' : undefined;
   return (
     <motion.div
       key={id}
       className="absolute bottom-0 right-0 pointer-events-none z-50 select-none"
-      style={{ fontSize: baseSize, filter: comboLevel >= 10 ? 'drop-shadow(0 0 8px #C0392B)' : undefined, color }}
+      style={{ fontSize: baseSize, filter: comboLevel >= 10 ? 'drop-shadow(0 0 8px #FF2040)' : undefined, color }}
       initial={{ opacity: 1, y: 0, x, scale: 0.8 }}
       animate={{ opacity: 0, y: -180, x: x + (Math.random() * 40 - 20), scale: 1.4 }}
       transition={{ duration: 2.2, ease: 'easeOut' }}
@@ -104,13 +104,13 @@ export default function RoomReactionOverlay({ roomId, currentUser, triggerReact 
             transition={{ type: 'spring', bounce: 0.5 }}
             className="absolute top-0 right-0 px-2 py-1 rounded-lg text-center"
             style={{
-              background: combo >= 10 ? 'rgba(192,57,43,0.9)' : combo >= 6 ? 'rgba(212,132,74,0.9)' : 'rgba(212,175,55,0.9)',
+              background: combo >= 10 ? 'rgba(255,32,64,0.9)' : combo >= 6 ? 'rgba(212,132,74,0.9)' : 'rgba(255,184,0,0.9)',
               fontFamily: 'Barlow Condensed, sans-serif',
               fontSize: 11,
               fontWeight: 900,
               color: '#fff',
               whiteSpace: 'nowrap',
-              boxShadow: combo >= 10 ? '0 0 12px rgba(192,57,43,0.6)' : undefined,
+              boxShadow: combo >= 10 ? '0 0 12px rgba(255,32,64,0.6)' : undefined,
             }}
           >
             🔥 x{combo} COMBO
@@ -130,7 +130,7 @@ export default function RoomReactionOverlay({ roomId, currentUser, triggerReact 
               fontFamily: 'Barlow Condensed, sans-serif',
               fontSize: 9,
               fontWeight: 700,
-              color: 'rgba(212,175,55,0.8)',
+              color: 'rgba(255,184,0,0.8)',
               whiteSpace: 'nowrap',
             }}
           >

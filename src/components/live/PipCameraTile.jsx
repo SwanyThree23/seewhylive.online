@@ -3,7 +3,7 @@ import { VideoOff } from 'lucide-react';
 import TipGoalBar from '@/components/monetization/TipGoalBar';
 import TopTippers from '@/components/monetization/TopTippers';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function PipCameraTile({ localStream, videoEnabled, roomId = null, tipTotal = 0, tipGoal = 100 }) {
@@ -12,7 +12,7 @@ export default function PipCameraTile({ localStream, videoEnabled, roomId = null
   const showVideo = !!(localStream && videoEnabled);
   return (
     <div className="absolute bottom-3 right-3 rounded-xl overflow-hidden shadow-xl"
-      style={{ width: 120, height: 90, border: '2px solid rgba(212,175,55,0.4)', background: '#000', zIndex: 10 }}>
+      style={{ width: 120, height: 90, border: '2px solid rgba(255,184,0,0.4)', background: '#000', zIndex: 10 }}>
       <video ref={ref} autoPlay muted playsInline className="w-full h-full object-cover"
         style={{ display: showVideo ? 'block' : 'none' }} />
       <div className="w-full h-full flex items-center justify-center"

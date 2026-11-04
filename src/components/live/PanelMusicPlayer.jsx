@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Shuffle } from 'lucide-react';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const PURPLE = '#7B5DA6';
+const BG = '#03030A';
+const GOLD = '#FFB800';
+const PURPLE = '#8B5CF6';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function WaveformVisualizer({ playing, color = GOLD, bars = 16, height = 28 }) {
@@ -77,8 +77,8 @@ export default function PanelMusicPlayer({ className, style }) {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        background: 'rgba(8,11,24,0.96)',
-        borderTop: '1px solid rgba(212,175,55,0.15)',
+        background: 'rgba(3,3,10,0.96)',
+        borderTop: '1px solid rgba(255,184,0,0.15)',
         ...style,
       }}
     >
@@ -160,7 +160,7 @@ export default function PanelMusicPlayer({ className, style }) {
           <AnimatePresence>
             {showVolume && (
               <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
-                style={{ position: 'absolute', bottom: '110%', right: 0, background: 'rgba(8,11,24,0.97)', border: `1px solid ${GOLD}30`, borderRadius: 8, padding: '8px 10px', width: 110, zIndex: 60 }}>
+                style={{ position: 'absolute', bottom: '110%', right: 0, background: 'rgba(3,3,10,0.97)', border: `1px solid ${GOLD}30`, borderRadius: 8, padding: '8px 10px', width: 110, zIndex: 60 }}>
                 <p style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Volume {volume}%</p>
                 <input type="range" min={0} max={100} value={volume} onChange={e => { const v = +e.target.value; setVolume(v); try { localStorage.setItem('panel_volume', String(v)); } catch {} }} style={{ width: '100%', accentColor: GOLD }} />
               </motion.div>

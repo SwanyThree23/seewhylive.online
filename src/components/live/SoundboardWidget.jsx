@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, Zap, Music, Square, RotateCcw, Plus, X, Clock } from 'lucide-react';
 
-const G     = '#D4AF37';
+const G     = '#FFB800';
 const PANEL = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 const SOUND_EFFECTS = [
   { id: 'air_horn',    label: 'Air Horn',    icon: '📯', hotkey: '1', url: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' },
@@ -112,9 +112,9 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
           <button
             onClick={stopSound}
             className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold transition-all"
-            style={{ background: 'rgba(192,57,43,0.15)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.3)' }}
+            style={{ background: 'rgba(255,32,64,0.15)', color: '#FF2040', border: '1px solid rgba(255,32,64,0.3)' }}
           >
-            <Square className="w-3 h-3" fill="#C0392B" /> Stop
+            <Square className="w-3 h-3" fill="#FF2040" /> Stop
           </button>
         )}
         <button
@@ -138,14 +138,14 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
               value={customLabel}
               onChange={e => setCustomLabel(e.target.value)}
               placeholder="Label (optional)"
-              style={{ width: '100%', padding: '4px 8px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: '#fff', fontSize: 11, outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '4px 8px', background: 'rgba(3,3,10,0.85)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: '#fff', fontSize: 11, outline: 'none', boxSizing: 'border-box' }}
             />
             <div className="flex gap-1">
               <input
                 value={customUrl}
                 onChange={e => setCustomUrl(e.target.value)}
                 placeholder="Audio URL (https://...mp3)"
-                style={{ flex: 1, padding: '4px 8px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: '#fff', fontSize: 11, outline: 'none' }}
+                style={{ flex: 1, padding: '4px 8px', background: 'rgba(3,3,10,0.85)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: '#fff', fontSize: 11, outline: 'none' }}
               />
               <button
                 onClick={addCustomSound}

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const CLIP_SECONDS = 30;
 
@@ -93,7 +93,7 @@ export default function ClipThisButton({ roomId, sessionId, creatorId, elapsedSe
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all disabled:opacity-50"
         style={{
           ...T,
-          background: `linear-gradient(90deg, rgba(192,57,43,0.25), rgba(212,175,55,0.22))`,
+          background: `linear-gradient(90deg, rgba(255,32,64,0.25), rgba(255,184,0,0.22))`,
           border: `1px solid ${G}55`,
           color: G,
         }}>
@@ -108,10 +108,10 @@ export default function ClipThisButton({ roomId, sessionId, creatorId, elapsedSe
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.96 }}
             className="absolute bottom-full mb-2 right-0 z-50 rounded-2xl p-3"
-            style={{ background: '#080B18', border: `1px solid ${G}30`, width: 230, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
+            style={{ background: '#03030A', border: `1px solid ${G}30`, width: 230, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
 
             <div className="flex items-center justify-between mb-2">
-              <span className="flex items-center gap-1.5 text-[11px] font-black uppercase" style={{ ...T, color: '#6DBF7E' }}>
+              <span className="flex items-center gap-1.5 text-[11px] font-black uppercase" style={{ ...T, color: '#00FF88' }}>
                 <Check className="w-3 h-3" /> Saved to Vault
               </span>
               <button onClick={close} aria-label="Close" className="p-1 rounded-lg hover:bg-white/10">

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Heart, Zap, TrendingUp } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 export default function AuraEmotionDisplay({ roomId, sessionId, auraPersona = 'hype' }) {
   const [emotion, setEmotion] = useState(null);
@@ -45,9 +45,9 @@ export default function AuraEmotionDisplay({ roomId, sessionId, auraPersona = 'h
   }, [roomId, sessionId, auraPersona]);
 
   const emotionConfig = {
-    high: { color: '#C0392B', icon: Heart, label: 'Peak Energy' },
-    medium: { color: '#D4AF37', icon: Zap, label: 'Moderate' },
-    low: { color: '#C9A84C', icon: TrendingUp, label: 'Growing' },
+    high: { color: '#FF2040', icon: Heart, label: 'Peak Energy' },
+    medium: { color: '#FFB800', icon: Zap, label: 'Moderate' },
+    low: { color: '#FFB800', icon: TrendingUp, label: 'Growing' },
   };
 
   const config = emotionConfig[emotion] || emotionConfig.medium;

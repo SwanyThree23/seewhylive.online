@@ -23,13 +23,13 @@ export default function EnhancedRoomControls({
   return (
     <div className="space-y-2">
       {/* Audio Mixer Section */}
-      <div className="bg-[rgba(8,11,24,0.95)] rounded-lg border border-[rgba(212,175,55,0.15)] overflow-hidden">
+      <div className="bg-[rgba(3,3,10,0.95)] rounded-lg border border-[rgba(255,184,0,0.15)] overflow-hidden">
         <button
           onClick={() => toggleSection('audio')}
           className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-all"
         >
           <div className="flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-[#d4af37]" />
+            <Sliders className="w-4 h-4 text-[#FFB800]" />
             <span className="text-sm font-semibold text-white">Audio & Sound</span>
           </div>
           {expandedSection === 'audio' ? <ChevronUp className="w-4 h-4 text-white/30" /> : <ChevronDown className="w-4 h-4 text-white/30" />}
@@ -55,15 +55,15 @@ export default function EnhancedRoomControls({
 
       {/* Room Branding Section */}
       {isHost && (
-        <div className="bg-[rgba(8,11,24,0.95)] rounded-lg border border-[rgba(212,175,55,0.15)] overflow-hidden">
+        <div className="bg-[rgba(3,3,10,0.95)] rounded-lg border border-[rgba(255,184,0,0.15)] overflow-hidden">
           <button
             onClick={() => toggleSection('branding')}
             className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-all"
           >
             <div className="flex items-center gap-2">
-              <Settings className="w-4 h-4 text-[#d4af37]" />
+              <Settings className="w-4 h-4 text-[#FFB800]" />
               <span className="text-sm font-semibold text-white">Room Customization</span>
-              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(128,0,32,0.5)', color: '#C9A84C' }}>PRO</span>
+              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,21,100,0.5)', color: '#FFB800' }}>PRO</span>
             </div>
             {expandedSection === 'branding' ? <ChevronUp className="w-4 h-4 text-white/30" /> : <ChevronDown className="w-4 h-4 text-white/30" />}
           </button>

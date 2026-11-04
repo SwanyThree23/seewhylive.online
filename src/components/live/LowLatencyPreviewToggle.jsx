@@ -24,21 +24,21 @@ export default function LowLatencyPreviewToggle({ enabled, onToggle, network }) 
     >
       <div className="w-11 h-11 rounded-full flex items-center justify-center"
         style={{
-          background: enabled ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
-          border: enabled ? '1px solid rgba(109,191,126,0.45)' : '1px solid rgba(255,255,255,0.08)',
+          background: enabled ? 'rgba(0,255,136,0.15)' : 'rgba(255,255,255,0.05)',
+          border: enabled ? '1px solid rgba(0,255,136,0.45)' : '1px solid rgba(255,255,255,0.08)',
         }}>
-        <Gauge className="w-5 h-5" style={{ color: enabled ? '#6DBF7E' : 'rgba(255,255,255,0.5)' }} />
+        <Gauge className="w-5 h-5" style={{ color: enabled ? '#00FF88' : 'rgba(255,255,255,0.5)' }} />
       </div>
       <span className="text-[10px]"
         style={{
-          color: enabled ? '#6DBF7E' : 'rgba(255,255,255,0.4)',
+          color: enabled ? '#00FF88' : 'rgba(255,255,255,0.4)',
           fontFamily: 'Barlow Condensed, sans-serif',
         }}>
         Low Latency
       </span>
       {(network?.saveData || network?.mobile) && (
         <span className="text-[8px] font-black px-1 py-0.5 rounded"
-          style={{ background: 'rgba(212,175,55,0.12)', color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ background: 'rgba(255,184,0,0.12)', color: 'rgba(255,184,0,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           {network?.saveData ? 'SAVE' : '📶'}
         </span>
       )}

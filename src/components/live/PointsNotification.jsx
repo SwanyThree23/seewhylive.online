@@ -23,9 +23,9 @@ export function awardPoints(pts, reason) {
 const MILESTONE_THRESHOLDS = [100, 500];
 
 function ptsTier(pts) {
-  if (pts >= 50) return { border: 'rgba(192,57,43,0.6)', text: '#C0392B', bg: 'rgba(192,57,43,0.15)' };
-  if (pts >= 10) return { border: 'rgba(212,133,74,0.6)', text: '#D4854A', bg: 'rgba(212,133,74,0.15)' };
-  return { border: 'rgba(212,175,55,0.4)', text: '#D4AF37', bg: 'rgba(212,175,55,0.08)' };
+  if (pts >= 50) return { border: 'rgba(255,32,64,0.6)', text: '#FF2040', bg: 'rgba(255,32,64,0.15)' };
+  if (pts >= 10) return { border: 'rgba(255,140,0,0.6)', text: '#FF8C00', bg: 'rgba(255,140,0,0.15)' };
+  return { border: 'rgba(255,184,0,0.4)', text: '#FFB800', bg: 'rgba(255,184,0,0.08)' };
 }
 
 export default function PointsNotification({ userId }) {
@@ -66,10 +66,10 @@ export default function PointsNotification({ userId }) {
             exit={{ opacity: 0, scale: 1.1, y: -20 }}
             transition={{ type: 'spring', stiffness: 350, damping: 18 }}
             className="flex items-center gap-1.5 rounded-full px-3 py-1.5"
-            style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.6)' }}
+            style={{ background: 'rgba(255,184,0,0.2)', border: '1px solid rgba(255,184,0,0.6)' }}
           >
             <span className="text-base">🏆</span>
-            <span className="text-sm font-black" style={{ color: '#D4AF37' }}>{milestone} pts milestone!</span>
+            <span className="text-sm font-black" style={{ color: '#FFB800' }}>{milestone} pts milestone!</span>
           </motion.div>
         )}
         {notifications.map(n => {

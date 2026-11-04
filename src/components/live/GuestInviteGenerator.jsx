@@ -6,8 +6,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Copy, Check, QrCode, Link, Trash2, Plus, Clock, Users, RefreshCw, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
-const CRIMSON = '#800020';
+const G = '#FFB800';
+const CRIMSON = '#FF1564';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function makeid(len = 12) {
@@ -62,7 +62,7 @@ function InviteCard({ invite, onRevoke, origin }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
       className="rounded-lg overflow-hidden"
-      style={{ border: `1px solid ${isExpired ? 'rgba(255,255,255,0.06)' : `${G}25`}`, background: 'rgba(8,11,24,0.8)' }}
+      style={{ border: `1px solid ${isExpired ? 'rgba(255,255,255,0.06)' : `${G}25`}`, background: 'rgba(3,3,10,0.8)' }}
     >
       <div className="flex items-center gap-2 px-3 py-2">
         <div className="flex-1 min-w-0">
@@ -76,7 +76,7 @@ function InviteCard({ invite, onRevoke, origin }) {
               </span>
             )}
             {isExpired && (
-              <span className="px-1 py-0.5 rounded text-[8px] font-black uppercase text-red-400" style={{ background: 'rgba(192,57,43,0.15)' }}>
+              <span className="px-1 py-0.5 rounded text-[8px] font-black uppercase text-red-400" style={{ background: 'rgba(255,32,64,0.15)' }}>
                 Expired
               </span>
             )}
@@ -248,7 +248,7 @@ export default function GuestInviteGenerator({ roomId, isHost }) {
                   value={label}
                   onChange={e => setLabel(e.target.value)}
                   placeholder="e.g. Guest Speaker, Co-Host"
-                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/25 outline-none focus:border-[#d4af37]/40"
+                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/25 outline-none focus:border-[#FFB800]/40"
                 />
               </div>
               {/* Role */}
@@ -302,7 +302,7 @@ export default function GuestInviteGenerator({ roomId, isHost }) {
       {/* Invite list */}
       {localInvites.length === 0 && !showForm ? (
         <div className="py-5 text-center">
-          <QrCode className="w-7 h-7 mx-auto mb-2" style={{ color: 'rgba(212,175,55,0.2)' }} />
+          <QrCode className="w-7 h-7 mx-auto mb-2" style={{ color: 'rgba(255,184,0,0.2)' }} />
           <p className="text-[11px] text-white/20" style={T}>No invite links yet</p>
           <p className="text-[10px] text-white/12 mt-0.5">Generate QR codes for guests to join</p>
         </div>

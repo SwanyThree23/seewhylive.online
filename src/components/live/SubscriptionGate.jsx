@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Crown, Check } from 'lucide-react';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 export default function SubscriptionGate({ creatorId, roomId }) {
   const [tiers, setTiers] = useState([]);
@@ -58,7 +58,7 @@ export default function SubscriptionGate({ creatorId, roomId }) {
   if (loading || tiers.length === 0) return null;
 
   return (
-    <div className="p-3 rounded-lg" style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}20` }}>
+    <div className="p-3 rounded-lg" style={{ background: 'rgba(3,3,10,0.95)', border: `1px solid ${G}20` }}>
       <div className="flex items-center gap-2 mb-3">
         <Crown className="w-4 h-4" style={{ color: G }} />
         <span className="text-xs font-bold uppercase tracking-wider" style={{ color: G }}>Subscribe</span>

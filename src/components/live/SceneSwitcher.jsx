@@ -22,12 +22,12 @@ export default function SceneSwitcher({ activeScene, onSceneChange }) {
   }, [activeScene]);
 
   return (
-    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
+    <div className="bg-[rgba(3,3,10,0.9)] border border-[rgba(255,184,0,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
         onClick={() => { const n = !collapsed; setCollapsed(n); try { localStorage.setItem('scene_switcher_collapsed', String(n)); } catch {} }}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
-        <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Scene Switcher</span>
+        <span className="text-xs font-semibold text-[#FFB800] uppercase tracking-wider">Scene Switcher</span>
         {collapsed ? <ChevronDown className="w-3 h-3 text-white/40" /> : <ChevronUp className="w-3 h-3 text-white/40" />}
       </button>
 
@@ -45,17 +45,17 @@ export default function SceneSwitcher({ activeScene, onSceneChange }) {
                   onClick={() => onSceneChange(scene.id, scene.id === 'brb' ? brbMessage : undefined)}
                   className={`relative p-2 rounded-lg border text-left transition-all ${
                     isActive
-                      ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-[0_0_12px_rgba(212,175,55,0.3)]'
+                      ? 'border-[#FFB800] bg-[#FFB800]/10 shadow-[0_0_12px_rgba(255,184,0,0.3)]'
                       : 'border-white/10 bg-white/5 hover:border-white/20'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 mb-1">
-                    <Icon className="w-3 h-3" style={{ color: isActive ? '#d4af37' : 'rgba(255,255,255,0.5)' }} />
+                    <Icon className="w-3 h-3" style={{ color: isActive ? '#FFB800' : 'rgba(255,255,255,0.5)' }} />
                     <span className="text-[10px] font-semibold text-white truncate">{scene.label}</span>
                   </div>
                   <p className="text-[11px] text-white/40 truncate">{scene.desc}</p>
                   {isActive && (
-                    <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                    <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#FFB800]" />
                   )}
                 </motion.button>
               );
@@ -76,7 +76,7 @@ export default function SceneSwitcher({ activeScene, onSceneChange }) {
                     try { localStorage.setItem('swl_brb_msg', e.target.value); } catch {}
                   }}
                   placeholder="Be Right Back!"
-                  style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                  style={{ width:'100%', padding:'10px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                 />
               </motion.div>
             )}

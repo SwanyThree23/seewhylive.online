@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#d4af37';
+const G = '#FFB800';
 
 export default function AIPersonaCustomizer({ roomId, sessionId, onCustomized }) {
   const [expanded, setExpanded] = useState(false);
@@ -54,7 +54,7 @@ Return JSON: { "persona_name": string, "style": string, "tone": string, "greetin
   return (
     <motion.div
       className="p-3 rounded-lg"
-      style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}30` }}
+      style={{ background: 'rgba(3,3,10,0.95)', border: `1px solid ${G}30` }}
     >
       <button
         onClick={() => setExpanded(!expanded)}
@@ -69,7 +69,7 @@ Return JSON: { "persona_name": string, "style": string, "tone": string, "greetin
       </button>
 
       {savedPersona && !expanded && (
-        <div className="mt-2 px-2 py-1.5 rounded text-[10px] space-y-0.5" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.15)' }}>
+        <div className="mt-2 px-2 py-1.5 rounded text-[10px] space-y-0.5" style={{ background: 'rgba(255,184,0,0.07)', border: '1px solid rgba(255,184,0,0.15)' }}>
           <p className="font-bold" style={{ color: G }}>{savedPersona.persona_name} · {savedPersona.style}</p>
           {savedPersona.greeting && <p className="text-white/50 italic">"{savedPersona.greeting}"</p>}
         </div>

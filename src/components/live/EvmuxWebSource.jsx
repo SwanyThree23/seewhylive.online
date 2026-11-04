@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Volume2, VolumeX, Link, ChevronDown, Globe, Plus, Trash2 } from 'lucide-react';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
+const BG = '#03030A';
+const GOLD = '#FFB800';
 
 // Built-in animated presets (inline — no external fetch needed)
 const BUILTIN_SOURCES = [
@@ -32,8 +32,8 @@ p{font-size:min(5vw,56px);padding:16px 24px;text-align:center;color:#fff;font-fa
     html: `<!DOCTYPE html><html><head><style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:transparent;display:flex;align-items:flex-end;height:100vh;overflow:hidden}
-.bar{width:100%;background:linear-gradient(90deg,#D4AF37,#8A6F2E);padding:10px 24px;display:flex;align-items:center;gap:16px}
-.live{background:#C0392B;color:#fff;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:900;padding:3px 10px;border-radius:4px;letter-spacing:0.08em;flex-shrink:0}
+.bar{width:100%;background:linear-gradient(90deg,#FFB800,#8A6F2E);padding:10px 24px;display:flex;align-items:center;gap:16px}
+.live{background:#FF2040;color:#fff;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:900;padding:3px 10px;border-radius:4px;letter-spacing:0.08em;flex-shrink:0}
 .name{font-family:Barlow Condensed,sans-serif;font-size:26px;font-weight:900;color:#000;letter-spacing:0.04em}
 .title{font-family:Barlow Condensed,sans-serif;font-size:13px;color:rgba(0,0,0,0.6);letter-spacing:0.06em;font-weight:700}
 .ticker{flex:1;overflow:hidden;position:relative;height:40px;display:flex;align-items:center}

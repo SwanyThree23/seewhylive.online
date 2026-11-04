@@ -10,7 +10,7 @@ const LANG_OPTIONS = [
   { code: 'pt-BR', label: 'PT' },
 ];
 
-const G = '#d4af37';
+const G = '#FFB800';
 const MAX_CAPTIONS = 5;
 const CAPTION_MS = 8000;
 const CHUNK_INTERVAL_S = 5;
@@ -277,7 +277,7 @@ export default function LiveTranscription({
               setTimeout(() => setCopied(false), 2000);
             }}
             className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] transition-colors"
-            style={{ border: '1px solid rgba(255,255,255,0.07)', color: copied ? '#6DBF7E' : 'rgba(255,255,255,0.4)' }}
+            style={{ border: '1px solid rgba(255,255,255,0.07)', color: copied ? '#00FF88' : 'rgba(255,255,255,0.4)' }}
           >
             {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           </motion.button>

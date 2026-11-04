@@ -32,7 +32,7 @@ export default function LiveCaptionOverlay({ stream, position = 'bottom' }) {
           maxWidth: 700,
           width: '90vw',
           background: 'rgba(7,5,10,0.88)',
-          border: '1px solid rgba(212,175,55,0.25)',
+          border: '1px solid rgba(255,184,0,0.25)',
           borderRadius: 12,
           padding: '8px 14px',
           backdropFilter: 'blur(12px)',
@@ -41,7 +41,7 @@ export default function LiveCaptionOverlay({ stream, position = 'bottom' }) {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
             <div style={{
               width: 8, height: 8, borderRadius: '50%',
-              background: isConnected ? '#6DBF7E' : '#ef4444',
+              background: isConnected ? '#00FF88' : '#ef4444',
               flexShrink: 0, marginTop: 6,
             }} />
             <div style={{ flex: 1 }}>
@@ -98,9 +98,9 @@ export default function LiveCaptionOverlay({ stream, position = 'bottom' }) {
           onClick={() => setCaptionsOn(v => { const n = !v; try { localStorage.setItem('captions_on', String(n)); } catch {} return n; })}
           style={{
             width: 36, height: 36, borderRadius: 10,
-            background: captionsOn ? 'rgba(109,191,126,0.2)' : 'rgba(7,5,10,0.85)',
-            border: `1px solid ${captionsOn ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.15)'}`,
-            color: captionsOn ? '#6DBF7E' : 'rgba(255,255,255,0.5)',
+            background: captionsOn ? 'rgba(0,255,136,0.2)' : 'rgba(7,5,10,0.85)',
+            border: `1px solid ${captionsOn ? 'rgba(0,255,136,0.4)' : 'rgba(255,255,255,0.15)'}`,
+            color: captionsOn ? '#00FF88' : 'rgba(255,255,255,0.5)',
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}

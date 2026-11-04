@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, Plus, Trash2, Eye, EyeOff, ExternalLink, X, Monitor } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const PRESETS = [
@@ -23,7 +23,7 @@ function WebSourceTile({ source, onRemove, onToggle }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
       className="rounded-lg overflow-hidden"
-      style={{ border: `1px solid ${source.active ? `${G}40` : 'rgba(255,255,255,0.08)'}`, background: 'rgba(8,11,24,0.8)' }}
+      style={{ border: `1px solid ${source.active ? `${G}40` : 'rgba(255,255,255,0.08)'}`, background: 'rgba(3,3,10,0.8)' }}
     >
       <div className="flex items-center gap-2 px-3 py-2">
         <Globe className="w-3 h-3 shrink-0" style={{ color: source.active ? G : 'rgba(255,255,255,0.3)' }} />
@@ -132,18 +132,18 @@ export default function StreamWebSourceManager({ isStreamActive = false }) {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="space-y-2 p-3 rounded-lg" style={{ background: 'rgba(212,175,55,0.04)', border: `1px solid ${G}20` }}>
+            <div className="space-y-2 p-3 rounded-lg" style={{ background: 'rgba(255,184,0,0.04)', border: `1px solid ${G}20` }}>
               <input
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
                 placeholder="Source name (e.g. Scoreboard)"
-                className="w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-[11px] text-white placeholder-white/30 outline-none focus:border-[#d4af37]/40"
+                className="w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-[11px] text-white placeholder-white/30 outline-none focus:border-[#FFB800]/40"
               />
               <input
                 value={newUrl}
                 onChange={e => setNewUrl(e.target.value)}
                 placeholder="https://example.com/overlay"
-                className="w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-[11px] font-mono text-white placeholder-white/30 outline-none focus:border-[#d4af37]/40"
+                className="w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-[11px] font-mono text-white placeholder-white/30 outline-none focus:border-[#FFB800]/40"
               />
               <button
                 onClick={addSource}
@@ -186,7 +186,7 @@ export default function StreamWebSourceManager({ isStreamActive = false }) {
         </AnimatePresence>
       ) : !adding && (
         <div className="py-4 text-center">
-          <Globe className="w-6 h-6 mx-auto mb-2" style={{ color: 'rgba(212,175,55,0.2)' }} />
+          <Globe className="w-6 h-6 mx-auto mb-2" style={{ color: 'rgba(255,184,0,0.2)' }} />
           <p className="text-[11px] text-white/20" style={T}>No web sources added</p>
           <p className="text-[10px] text-white/15 mt-0.5">Add countdown timers, overlays, or scoreboards</p>
         </div>

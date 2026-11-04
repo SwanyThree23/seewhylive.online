@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 
 function randomBetween(a, b) {
   return a + Math.random() * (b - a);
@@ -197,7 +197,7 @@ export default function GiftAnimation({ event, onDone }) {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.5, type: 'spring', stiffness: 500 }}
-                style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 14px', borderRadius: 999, background: '#C0392B', fontSize: 14, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}
+                style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 14px', borderRadius: 999, background: '#FF2040', fontSize: 14, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}
               >
                 ×{comboCount} COMBO!
               </motion.div>
