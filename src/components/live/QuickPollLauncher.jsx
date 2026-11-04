@@ -61,9 +61,9 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all active:scale-95"
         style={{
           fontFamily: 'Barlow Condensed, sans-serif',
-          background: open ? 'rgba(212,175,55,0.25)' : 'rgba(212,175,55,0.1)',
-          border: '1px solid rgba(212,175,55,0.3)',
-          color: '#D4AF37',
+          background: open ? 'rgba(255,184,0,0.25)' : 'rgba(255,184,0,0.1)',
+          border: '1px solid rgba(255,184,0,0.3)',
+          color: '#FFB800',
         }}>
         <BarChart2 className="w-3 h-3" /> Poll
       </button>
@@ -75,9 +75,9 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
             className="absolute bottom-full mb-2 right-0 z-50 rounded-2xl overflow-hidden"
-            style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.25)', width: 240, boxShadow: '0 8px 32px rgba(0,0,0,0.7)' }}>
+            style={{ background: '#03030A', border: '1px solid rgba(255,184,0,0.25)', width: 240, boxShadow: '0 8px 32px rgba(0,0,0,0.7)' }}>
             <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <span className="text-[10px] font-black uppercase text-[#D4AF37]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <span className="text-[10px] font-black uppercase text-[#FFB800]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 Quick Poll
               </span>
               <button onClick={() => setOpen(false)} className="text-white/30 hover:text-white transition-colors">
@@ -98,7 +98,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
                 ))}
                 <button onClick={() => setCustom(true)}
                   className="w-full flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-[10px] font-bold transition-all"
-                  style={{ color: '#D4AF37' }}>
+                  style={{ color: '#FFB800' }}>
                   <Plus className="w-3 h-3" /> Custom poll
                 </button>
               </div>
@@ -111,9 +111,9 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
                       <button key={o.v} onClick={() => { setTimeout_(o.v); try { localStorage.setItem('quickpoll_timeout', String(o.v)); } catch {} }}
                         className="text-[10px] px-2 py-0.5 rounded font-black transition-all"
                         style={{
-                          background: timeout === o.v ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)',
-                          border: `1px solid ${timeout === o.v ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)'}`,
-                          color: timeout === o.v ? '#D4AF37' : 'rgba(255,255,255,0.4)',
+                          background: timeout === o.v ? 'rgba(255,184,0,0.2)' : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${timeout === o.v ? 'rgba(255,184,0,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                          color: timeout === o.v ? '#FFB800' : 'rgba(255,255,255,0.4)',
                           fontFamily: 'Barlow Condensed, sans-serif',
                         }}>
                         {o.l}
@@ -152,7 +152,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
                 ))}
                 {options.length < 5 && (
                   <button onClick={() => setOptions([...options, ''])}
-                    className="text-[10px] text-[#D4AF37] flex items-center gap-1">
+                    className="text-[10px] text-[#FFB800] flex items-center gap-1">
                     <Plus className="w-3 h-3" /> Add option
                   </button>
                 )}
@@ -160,7 +160,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen 
                   onClick={() => launchMutation.mutate({ q: question, opts: options, t: timeout })}
                   disabled={!question || options.filter(Boolean).length < 2 || launchMutation.isPending}
                   className="w-full py-2 rounded-xl text-[11px] font-black uppercase transition-all disabled:opacity-40"
-                  style={{ background: '#D4AF37', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  style={{ background: '#FFB800', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   <Zap className="w-3 h-3 inline mr-1" /> Launch Poll
                 </button>
               </div>

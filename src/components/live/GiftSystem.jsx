@@ -4,18 +4,18 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 var C = {
-  bg: "#0D0D0D", card: "#1A1A1A", burgundy: "#800020", gold: "#D4AF37",
-  volt: "#D4AF37", white: "#FFF", gray: "#888", dim: "#444",
-  purple: "#800020", cyan: "#6DBF7E", green: "#6DBF7E",
+  bg: "#0D0D0D", card: "#1A1A1A", burgundy: "#FF1564", gold: "#FFB800",
+  volt: "#FFB800", white: "#FFF", gray: "#888", dim: "#444",
+  purple: "#FF1564", cyan: "#00FF88", green: "#00FF88",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
 };
 
 var RARITY_STYLES = {
   common: { color: C.gray, border: "#555", label: "COMMON" },
-  rare: { color: C.gold, border: "#D4AF3744", label: "RARE" },
-  epic: { color: C.burgundy, border: "#80002044", label: "EPIC" },
-  legendary: { color: C.gold, border: "#D4AF3766", label: "LEGENDARY", shimmer: true },
+  rare: { color: C.gold, border: "#FFB80044", label: "RARE" },
+  epic: { color: C.burgundy, border: "#FF156444", label: "EPIC" },
+  legendary: { color: C.gold, border: "#FFB80066", label: "LEGENDARY", shimmer: true },
 };
 
 var DEFAULT_GIFTS = [
@@ -65,9 +65,9 @@ export function GiftAnimationOverlay({ queue, onDone }) {
       {/* Gift train badge */}
       {trainCount >= 2 && (
         <div style={{ position: "absolute", top: 60, left: "50%", transform: "translateX(-50%)",
-          background: "linear-gradient(135deg,#800020,#D4AF37)", borderRadius: 20,
+          background: "linear-gradient(135deg,#FF1564,#FFB800)", borderRadius: 20,
           padding: "6px 18px", fontFamily: C.fBeb, fontSize: 16, color: "#fff",
-          letterSpacing: 2, boxShadow: "0 0 24px rgba(212,175,55,0.6)", animation: "coinSpin .4s ease-out" }}>
+          letterSpacing: 2, boxShadow: "0 0 24px rgba(255,184,0,0.6)", animation: "coinSpin .4s ease-out" }}>
           🔥 GIFT TRAIN ×{trainCount}!
         </div>
       )}
@@ -100,7 +100,7 @@ export function GiftAnimationOverlay({ queue, onDone }) {
         sent {current.name} · 💎{current.price}
       </div>
       {isLegendary && (
-        <div style={{ marginTop: 16, padding: "6px 20px", background: "rgba(212,175,55,0.15)", border: "1px solid " + C.gold, borderRadius: 20, fontFamily: C.fOrb, fontSize: 10, color: C.gold, letterSpacing: 3 }}>
+        <div style={{ marginTop: 16, padding: "6px 20px", background: "rgba(255,184,0,0.15)", border: "1px solid " + C.gold, borderRadius: 20, fontFamily: C.fOrb, fontSize: 10, color: C.gold, letterSpacing: 3 }}>
           ⚡ LEGENDARY ⚡
         </div>
       )}
@@ -205,7 +205,7 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
         position: "fixed", bottom: 90, right: 14, width: 50, height: 50, borderRadius: "50%",
         background: "linear-gradient(135deg," + C.burgundy + "," + C.gold + ")",
         border: "none", fontSize: 22, cursor: "pointer", zIndex: 900,
-        boxShadow: "0 4px 16px rgba(128,0,32,0.5)",
+        boxShadow: "0 4px 16px rgba(255,21,100,0.5)",
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>🎁</button>
 
@@ -289,7 +289,7 @@ export function TipAlertOverlay({ alert, onDismiss }) {
       background: isLegendary ? "linear-gradient(135deg,rgba(20,0,40,0.98),rgba(0,0,0,0.98))" : "rgba(13,13,13,0.97)",
       border: "1px solid " + (isLegendary ? C.gold : isGold ? C.gold + "60" : "#444"),
       borderRadius: 14, padding: "12px 16px",
-      boxShadow: isLegendary ? "0 0 40px rgba(212,175,55,0.5), 0 8px 32px rgba(0,0,0,0.8)" : "0 4px 24px rgba(0,0,0,0.6)",
+      boxShadow: isLegendary ? "0 0 40px rgba(255,184,0,0.5), 0 8px 32px rgba(0,0,0,0.8)" : "0 4px 24px rgba(0,0,0,0.6)",
       animation: "slideUp .4s ease-out",
     }}>
       {/* Tier label */}

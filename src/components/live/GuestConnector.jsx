@@ -4,8 +4,8 @@ import { Copy, Check, Users, Share2, X, ExternalLink, Video, Mic, Monitor, Crown
 import { toast } from 'sonner';
 import { safeSrc } from '@/lib/security';
 
-const G = '#d4af37';
-const BG = 'rgba(8,11,24,0.95)';
+const G = '#FFB800';
+const BG = 'rgba(3,3,10,0.95)';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function CopyBtn({ value, label }) {
@@ -55,7 +55,7 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
       pushUrl: `https://vdo.ninja/?push=sw-${rSlug}-cohost&room=SW-${rSlug}&label=CoHost`,
       viewUrl: `https://vdo.ninja/?view=sw-${rSlug}-cohost&room=SW-${rSlug}&solo`,
       icon: <Crown className="w-3 h-3" />,
-      color: '#D4854A',
+      color: '#FF8C00',
       desc: 'Co-host slot with broadcast',
     },
     {
@@ -63,7 +63,7 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
       pushUrl: `https://vdo.ninja/?push=sw-${rSlug}-audio&room=SW-${rSlug}&audioonly&label=AudioGuest`,
       viewUrl: `https://vdo.ninja/?view=sw-${rSlug}-audio&room=SW-${rSlug}&audioonly&solo`,
       icon: <Mic className="w-3 h-3" />,
-      color: '#6DBF7E',
+      color: '#00FF88',
       desc: 'Voice-only connection',
     },
     {
@@ -71,7 +71,7 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
       pushUrl: `https://vdo.ninja/?push=sw-${rSlug}-screen&room=SW-${rSlug}&screen&label=ScreenShare`,
       viewUrl: `https://vdo.ninja/?view=sw-${rSlug}-screen&room=SW-${rSlug}&solo`,
       icon: <Monitor className="w-3 h-3" />,
-      color: '#C9A84C',
+      color: '#FFB800',
       desc: 'Desktop screen capture',
     },
   ];
@@ -152,9 +152,9 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
                   }}
                   className="flex-1 px-2 py-1.5 rounded text-[10px] font-bold uppercase transition-all"
                   style={{
-                    background: 'rgba(212,175,55,0.12)',
-                    color: '#D4AF37',
-                    border: '1px solid rgba(212,175,55,0.25)',
+                    background: 'rgba(255,184,0,0.12)',
+                    color: '#FFB800',
+                    border: '1px solid rgba(255,184,0,0.25)',
                   }}
                 >
                   <Copy className="inline w-3 h-3 mr-1" />

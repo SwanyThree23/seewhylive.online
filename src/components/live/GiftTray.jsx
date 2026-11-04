@@ -5,15 +5,15 @@ import { base44 } from '@/api/base44Client';
 import { Gift, X, Trophy, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
-const B = '#800020';
+const G = '#FFB800';
+const B = '#FF1564';
 const OB2 = '#1A1A1A';
 const CREAM = '#F5E6D3';
 
 const RARITY_STYLE = {
   common:    { color: 'rgba(255,255,255,0.4)', label: 'COMMON',    shimmer: false },
-  rare:      { color: '#D4AF37',              label: 'RARE',      shimmer: false },
-  epic:      { color: '#D4854A',              label: 'EPIC',      shimmer: false },
+  rare:      { color: '#FFB800',              label: 'RARE',      shimmer: false },
+  epic:      { color: '#FF8C00',              label: 'EPIC',      shimmer: false },
   legendary: { color: G,                      label: 'LEGENDARY', shimmer: true  },
   ultra:     { color: '#ff6ef7',              label: 'ULTRA',     shimmer: true  },
 };
@@ -181,7 +181,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             className="text-[9px] font-black px-1.5 py-0.5 rounded-full"
-            style={{ background: 'rgba(192,57,43,0.2)', color: '#D4854A', border: '1px solid rgba(212,132,74,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}
+            style={{ background: 'rgba(255,32,64,0.2)', color: '#FF8C00', border: '1px solid rgba(212,132,74,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             🔥 {giftStreak} STREAK
           </motion.span>
@@ -212,7 +212,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
                   <span className="font-black uppercase text-sm" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>Gift Shop</span>
                   {giftStreak >= 3 && (
                     <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full"
-                      style={{ background: 'rgba(212,132,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,132,74,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      style={{ background: 'rgba(212,132,74,0.15)', color: '#FF8C00', border: '1px solid rgba(212,132,74,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                       🔥 {giftStreak} STREAK
                     </span>
                   )}
@@ -220,7 +220,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
                 <div className="flex items-center gap-2">
                   {sessionTotal > 0 && (
                     <span className="text-[9px] font-black font-mono px-2 py-0.5 rounded-full"
-                      style={{ background: 'rgba(212,175,55,0.1)', color: G, border: '1px solid rgba(212,175,55,0.2)' }}>
+                      style={{ background: 'rgba(255,184,0,0.1)', color: G, border: '1px solid rgba(255,184,0,0.2)' }}>
                       ${sessionTotal.toFixed(0)} sent
                     </span>
                   )}
@@ -253,7 +253,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
                     <button key={g.id} onClick={() => sendGift.mutate(g)}
                       disabled={sendGift.isPending}
                       className="flex items-center gap-1 px-2.5 py-1 rounded-xl active:scale-95 transition-all"
-                      style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                      style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.15)' }}>
                       <span className="text-base leading-none">{g.emoji || '🎁'}</span>
                       <span className="text-[9px] font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>${g.price}</span>
                     </button>
@@ -288,7 +288,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
                             style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${rarity.color}25`, boxShadow: rarity.shimmer ? `0 0 12px ${rarity.color}30` : undefined }}>
                             {isHot && (
                               <span className="absolute -top-1.5 -right-1 text-[7px] font-black px-1 py-0.5 rounded-full z-10"
-                                style={{ background: '#C0392B', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                                style={{ background: '#FF2040', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>
                                 🔥 HOT
                               </span>
                             )}
@@ -296,7 +296,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
                             <p className="text-[11px] font-bold text-center leading-tight" style={{ color: CREAM }}>{gift.name}</p>
                             <div className="flex flex-col items-center gap-0.5">
                               <span className="text-[7px] font-black uppercase" style={{ color: rarity.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{rarity.label}</span>
-                              {gift.is_limited && <span className="text-[6px] px-1 py-0.5 rounded font-black uppercase" style={{ background: 'rgba(192,57,43,0.2)', color: '#C0392B' }}>LIMITED</span>}
+                              {gift.is_limited && <span className="text-[6px] px-1 py-0.5 rounded font-black uppercase" style={{ background: 'rgba(255,32,64,0.2)', color: '#FF2040' }}>LIMITED</span>}
                             </div>
                             <span className="font-black text-[11px]" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
                               ${multiplier > 1 ? (gift.price * multiplier).toFixed(0) : gift.price}

@@ -6,8 +6,8 @@ import { base44 } from '@/api/base44Client';
 import { Repeat, X, Search, Users, ArrowRight, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const BURGUNDY = '#800020';
+const GOLD = '#FFB800';
+const BURGUNDY = '#FF1564';
 const CATEGORIES = ['All', 'Gaming', 'Music', 'Talk', 'Sports', 'Education'];
 
 function RaidCountdownBanner({ raid, onJoin }) {
@@ -27,7 +27,7 @@ function RaidCountdownBanner({ raid, onJoin }) {
   return (
     <motion.div initial={{ y: -80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -80, opacity: 0 }}
       className="fixed top-16 left-0 right-0 z-50 mx-4 rounded-2xl p-4"
-      style={{ background: '#1A1A1A', border: `2px solid ${GOLD}`, boxShadow: `0 0 40px rgba(212,175,55,0.25)` }}>
+      style={{ background: '#1A1A1A', border: `2px solid ${GOLD}`, boxShadow: `0 0 40px rgba(255,184,0,0.25)` }}>
       <div className="text-center space-y-2">
         <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           🔁 RAID STARTING IN
@@ -42,7 +42,7 @@ function RaidCountdownBanner({ raid, onJoin }) {
         {count <= 0 && (
           <button onClick={() => onJoin(raid)}
             className="flex items-center justify-center gap-2 mx-auto px-6 py-2.5 rounded-xl font-black uppercase text-[12px]"
-            style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.4)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(255,184,0,0.4)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
             JOIN THE RAID <ArrowRight className="w-4 h-4" />
           </button>
         )}
@@ -63,7 +63,7 @@ function IncomingRaidBanner({ raid, onWelcome }) {
       {visible && (
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }}
           className="fixed bottom-24 right-4 z-50 w-72 rounded-2xl p-4 space-y-2"
-          style={{ background: '#1A1A1A', border: `2px solid ${GOLD}`, boxShadow: `0 0 30px rgba(212,175,55,0.2)` }}>
+          style={{ background: '#1A1A1A', border: `2px solid ${GOLD}`, boxShadow: `0 0 30px rgba(255,184,0,0.2)` }}>
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-[10px] font-black uppercase" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -78,7 +78,7 @@ function IncomingRaidBanner({ raid, onWelcome }) {
           </div>
           <button onClick={() => { onWelcome(); setVisible(false); }}
             className="w-full py-2 rounded-xl font-black uppercase text-[10px]"
-            style={{ background: `rgba(212,175,55,0.1)`, border: `1px solid rgba(212,175,55,0.3)`, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: `rgba(255,184,0,0.1)`, border: `1px solid rgba(255,184,0,0.3)`, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
             👋 Welcome Raiders!
           </button>
         </motion.div>
@@ -187,7 +187,7 @@ function RaidLauncher({ room, currentUser, onClose }) {
             </div>
             <button onClick={() => raidMut.mutate(target)} disabled={raidMut.isPending}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-black uppercase"
-              style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(255,184,0,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
               <Repeat className="w-2.5 h-2.5" /> Raid
             </button>
           </div>
@@ -273,7 +273,7 @@ export default function RaidPanelButton({ room, currentUser, isHost, triggerOpen
                 <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
                   transition={{ type: 'spring', damping: 28, stiffness: 300 }}
                   className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-xs p-4"
-                  style={{ background: '#1A1A1A', borderLeft: `1px solid rgba(212,175,55,0.15)` }}>
+                  style={{ background: '#1A1A1A', borderLeft: `1px solid rgba(255,184,0,0.15)` }}>
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <Repeat className="w-4 h-4" style={{ color: GOLD }} />

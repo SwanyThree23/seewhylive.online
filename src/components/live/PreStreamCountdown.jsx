@@ -10,8 +10,8 @@ function FlipUnit({ value, label }) {
     <div className="flex flex-col items-center gap-1">
       <div className="relative w-16 h-20 md:w-24 md:h-28">
         {/* Back */}
-        <div className="absolute inset-0 bg-[rgba(255,255,255,0.06)] rounded-xl border border-[rgba(212,175,55,0.2)] flex items-center justify-center">
-          <span className="text-3xl md:text-5xl font-bold font-mono text-[#d4af37]">{String(value).padStart(2, '0')}</span>
+        <div className="absolute inset-0 bg-[rgba(255,255,255,0.06)] rounded-xl border border-[rgba(255,184,0,0.2)] flex items-center justify-center">
+          <span className="text-3xl md:text-5xl font-bold font-mono text-[#FFB800]">{String(value).padStart(2, '0')}</span>
         </div>
         {/* Center divider */}
         <div className="absolute left-0 right-0 top-1/2 h-px bg-black/60 z-10" />
@@ -35,7 +35,7 @@ function Particles() {
         <motion.div
           key={i}
           style={{ left: `${d.x}%`, top: `${d.y}%`, width: d.size, height: d.size }}
-          className="absolute rounded-full bg-[#d4af37]"
+          className="absolute rounded-full bg-[#FFB800]"
           animate={{ opacity: [0, 0.6, 0], y: [0, -40] }}
           transition={{ duration: d.duration, delay: d.delay, repeat: Infinity, ease: 'easeOut' }}
         />
@@ -80,7 +80,7 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
   const seconds = Math.floor((timeLeft % 60000) / 1000);
 
   return (
-    <div className="absolute inset-0 z-20 bg-[#080B18] flex flex-col items-center justify-center overflow-hidden">
+    <div className="absolute inset-0 z-20 bg-[#03030A] flex flex-col items-center justify-center overflow-hidden">
       <Particles />
 
       <motion.div
@@ -89,13 +89,13 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
         className="relative z-10 flex flex-col items-center gap-6 px-6 text-center"
       >
         {/* Pulsing badge */}
-        <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(212,175,55,0.2)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.4)', display:'inline-flex', alignItems:'center', gap:6, animation:'pulse 2s infinite' }}>
+        <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(255,184,0,0.2)', color:'#FFB800', border:'1px solid rgba(255,184,0,0.4)', display:'inline-flex', alignItems:'center', gap:6, animation:'pulse 2s infinite' }}>
           <Radio className="w-3 h-3" /> Going Live Soon
         </span>
 
         {/* Creator info */}
         <div>
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-3xl font-bold text-white mx-auto mb-3 shadow-[0_0_40px_rgba(212,175,55,0.4)]">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FF1564] to-[#FFB800] flex items-center justify-center text-3xl font-bold text-white mx-auto mb-3 shadow-[0_0_40px_rgba(255,184,0,0.4)]">
             {room?.title?.charAt(0)?.toUpperCase()}
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">{room?.title}</h2>
@@ -106,9 +106,9 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
         <div className="flex items-start gap-3 md:gap-5">
           {days > 0 && <FlipUnit value={days} label="days" />}
           <FlipUnit value={hours} label="hours" />
-          <span className="text-[#d4af37] text-3xl md:text-5xl font-bold mt-2">:</span>
+          <span className="text-[#FFB800] text-3xl md:text-5xl font-bold mt-2">:</span>
           <FlipUnit value={minutes} label="min" />
-          <span className="text-[#d4af37] text-3xl md:text-5xl font-bold mt-2">:</span>
+          <span className="text-[#FFB800] text-3xl md:text-5xl font-bold mt-2">:</span>
           <FlipUnit value={seconds} label="sec" />
         </div>
 
@@ -116,7 +116,7 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
         {(room?.viewer_count > 0) && (
           <div className="flex items-center gap-1.5 text-xs text-white/50">
             <Users className="w-3.5 h-3.5" />
-            <span><span style={{ color: '#d4af37', fontWeight: 700 }}>{room.viewer_count}</span> viewers waiting</span>
+            <span><span style={{ color: '#FFB800', fontWeight: 700 }}>{room.viewer_count}</span> viewers waiting</span>
           </div>
         )}
 
@@ -126,7 +126,7 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
             <button
               onClick={() => !reminderSet && reminderMutation.mutate()}
               disabled={reminderSet}
-              style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, border:'none', background: reminderSet ? '#4A9B5E' : '#d4af37', color: reminderSet ? '#fff' : '#000', fontWeight:700, cursor: reminderSet ? 'default' : 'pointer', fontSize:14, fontFamily:'Barlow Condensed, sans-serif' }}
+              style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, border:'none', background: reminderSet ? '#4A9B5E' : '#FFB800', color: reminderSet ? '#fff' : '#000', fontWeight:700, cursor: reminderSet ? 'default' : 'pointer', fontSize:14, fontFamily:'Barlow Condensed, sans-serif' }}
             >
               <Bell className="w-4 h-4" />
               {reminderSet ? 'Reminder Set ✓' : 'Set Reminder'}
@@ -138,7 +138,7 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
                 .then(() => toast.success('Link copied!'))
                 .catch(() => toast.error('Copy failed.'));
             }}
-            style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, border:'1px solid rgba(212,175,55,0.4)', background:'rgba(212,175,55,0.1)', color:'#d4af37', fontWeight:700, cursor:'pointer', fontSize:14, fontFamily:'Barlow Condensed, sans-serif' }}
+            style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, border:'1px solid rgba(255,184,0,0.4)', background:'rgba(255,184,0,0.1)', color:'#FFB800', fontWeight:700, cursor:'pointer', fontSize:14, fontFamily:'Barlow Condensed, sans-serif' }}
           >
             <Share2 className="w-4 h-4" />
             Share

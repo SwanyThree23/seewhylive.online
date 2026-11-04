@@ -69,17 +69,17 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
   };
 
   return (
-    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+    <div className="bg-[rgba(3,3,10,0.9)] border border-[rgba(255,184,0,0.15)] rounded-xl overflow-hidden">
       {/* Header */}
       <button
         onClick={() => setShowOptions(!showOptions)}
         className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-all"
       >
         <div className="flex items-center gap-2">
-          <Share2 className="w-4 h-4 text-[#d4af37]" />
+          <Share2 className="w-4 h-4 text-[#FFB800]" />
           <span className="text-xs font-semibold text-white">Screen Share</span>
           {isSharing && (
-            <span className="text-[11px] px-1.5 py-0.5 rounded-full animate-pulse" style={{ background: 'rgba(192,57,43,0.4)', color: '#D4AF37' }}>
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full animate-pulse" style={{ background: 'rgba(255,32,64,0.4)', color: '#FFB800' }}>
               {shareType ? shareType.toUpperCase() : 'ACTIVE'} {fmtElapsed(elapsed)}
             </span>
           )}
@@ -99,7 +99,7 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
               {isSharing ? (
                 <button
                   onClick={handleStopShare}
-                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(192,57,43,0.5)', background:'rgba(127,29,29,0.5)', color:'#FF4444', cursor:'pointer', fontSize:13 }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(255,32,64,0.5)', background:'rgba(127,29,29,0.5)', color:'#FF4444', cursor:'pointer', fontSize:13 }}
                 >
                   <StopCircle className="w-4 h-4" />
                   Stop Sharing
@@ -108,21 +108,21 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
                 <>
                   <button
                     onClick={handleStartScreenShare}
-                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(212,175,55,0.4)', background:'rgba(128,0,32,0.4)', color:'#D4AF37', cursor:'pointer', fontSize:13 }}
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(255,184,0,0.4)', background:'rgba(255,21,100,0.4)', color:'#FFB800', cursor:'pointer', fontSize:13 }}
                   >
                     <Monitor className="w-4 h-4" />
                     Share Screen
                   </button>
                   <button
                     onClick={handleStartWindowShare}
-                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(212,175,55,0.25)', background:'rgba(128,0,32,0.25)', color:'#C9A84C', cursor:'pointer', fontSize:13 }}
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(255,184,0,0.25)', background:'rgba(255,21,100,0.25)', color:'#FFB800', cursor:'pointer', fontSize:13 }}
                   >
                     <Monitor className="w-4 h-4" />
                     Share Window
                   </button>
                   <button
                     onClick={handleStartTabShare}
-                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(109,191,126,0.25)', background:'rgba(109,191,126,0.08)', color:'#6DBF7E', cursor:'pointer', fontSize:13 }}
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(0,255,136,0.25)', background:'rgba(0,255,136,0.08)', color:'#00FF88', cursor:'pointer', fontSize:13 }}
                   >
                     <Monitor className="w-4 h-4" />
                     Share Tab + Audio

@@ -5,9 +5,9 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const GREEN   = '#6DBF7E';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
+const GREEN   = '#00FF88';
 const FONT    = 'Barlow Condensed, sans-serif';
 
 function fmt(secs) {
@@ -110,8 +110,8 @@ export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl
           gap: 5,
           padding: '6px 12px',
           borderRadius: 8,
-          border: `1px solid ${open ? GOLD + '50' : 'rgba(212,175,55,0.2)'}`,
-          background: open ? `${GOLD}18` : 'rgba(212,175,55,0.06)',
+          border: `1px solid ${open ? GOLD + '50' : 'rgba(255,184,0,0.2)'}`,
+          background: open ? `${GOLD}18` : 'rgba(255,184,0,0.06)',
           cursor: 'pointer',
           fontFamily: FONT,
           fontSize: 11,
@@ -149,8 +149,8 @@ export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl
               zIndex: 60,
               width: 260,
               borderRadius: 14,
-              background: 'rgba(8,11,24,0.98)',
-              border: `1px solid rgba(212,175,55,0.2)`,
+              background: 'rgba(3,3,10,0.98)',
+              border: `1px solid rgba(255,184,0,0.2)`,
               boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
               overflow: 'hidden',
             }}
@@ -185,7 +185,7 @@ export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl
                 style={{
                   width: '100%', padding: '8px 10px',
                   background: 'rgba(255,255,255,0.06)',
-                  border: `1px solid ${title ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                  border: `1px solid ${title ? 'rgba(255,184,0,0.35)' : 'rgba(255,255,255,0.1)'}`,
                   borderRadius: 8, color: '#fff', fontSize: 13, fontFamily: FONT,
                   outline: 'none', boxSizing: 'border-box',
                 }}
@@ -257,7 +257,7 @@ export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl
                       </span>
                       <div style={{
                         width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
-                        background: c.status === 'published' ? GREEN : c.clip_url ? GREEN : '#D4AF37',
+                        background: c.status === 'published' ? GREEN : c.clip_url ? GREEN : '#FFB800',
                       }} />
                     </div>
                   ))}

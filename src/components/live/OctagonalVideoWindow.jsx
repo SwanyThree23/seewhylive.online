@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { Mic, MicOff, Video, VideoOff, Share2, Crown, Pin } from 'lucide-react';
 
 const OCT = 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD = '#FFB800';
+const CRIMSON = '#FF1564';
 
-const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#C0392B','#D4854A','#C9A84C'];
+const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#FF2040','#FF8C00','#FFB800'];
 function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
 }
@@ -63,7 +63,7 @@ export default function OctagonalVideoWindow({
         className="absolute inset-0"
         style={{
           clipPath: OCT,
-          background: 'linear-gradient(135deg, #d4af37, #C0392B)',
+          background: 'linear-gradient(135deg, #FFB800, #FF2040)',
           padding: '3px',
           opacity: 0.5,
           filter: 'blur(8px)',
@@ -75,7 +75,7 @@ export default function OctagonalVideoWindow({
         className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden"
         style={{
           clipPath: OCT,
-          background: 'linear-gradient(145deg, rgba(30,15,30,0.97), rgba(8,11,24,0.97))',
+          background: 'linear-gradient(145deg, rgba(30,15,30,0.97), rgba(3,3,10,0.97))',
         }}
       >
         {/* Floating reactions */}
@@ -168,10 +168,10 @@ export default function OctagonalVideoWindow({
             onClick={onMicToggle}
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               isMuted
-                ? 'bg-red-900/50 border border-red-600 text-[#C0392B]'
-                : 'border border-green-600 text-[#6DBF7E]'
+                ? 'bg-red-900/50 border border-red-600 text-[#FF2040]'
+                : 'border border-green-600 text-[#00FF88]'
             }`}
-            style={isMuted ? undefined : { background: 'rgba(109,191,126,0.15)' }}
+            style={isMuted ? undefined : { background: 'rgba(0,255,136,0.15)' }}
           >
             {isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
           </motion.button>
@@ -181,7 +181,7 @@ export default function OctagonalVideoWindow({
             onClick={onVideoToggle}
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               isVideoOff
-                ? 'bg-red-900/50 border border-red-600 text-[#C0392B]'
+                ? 'bg-red-900/50 border border-red-600 text-[#FF2040]'
                 : 'bg-blue-900/50 border border-blue-600 text-blue-400'
             }`}
           >
@@ -191,7 +191,7 @@ export default function OctagonalVideoWindow({
           <motion.button
             whileHover={{ scale: 1.1 }}
             onClick={onShareScreen}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#800020]/30 border border-[#800020] text-[#D4854A] transition-all"
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#FF1564]/30 border border-[#FF1564] text-[#FF8C00] transition-all"
           >
             <Share2 className="w-3.5 h-3.5" />
           </motion.button>

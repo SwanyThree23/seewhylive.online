@@ -3,8 +3,8 @@ import { Camera, Mic, Monitor, RefreshCw, Volume2, AlertTriangle } from 'lucide-
 import { useCameraDevices, RESOLUTION_PRESETS } from '../../hooks/useCameraDevices';
 import { MobileSelect } from '@/components/ui/MobileSelect';
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const ROW = {
@@ -94,14 +94,14 @@ export default function CameraDeviceSelector({
         {onScreenShare && (
           <button onClick={onScreenShare}
             className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-[11px] font-black uppercase"
-            style={{ ...T, background: isSharingScreen ? `${CRIMSON}33` : 'rgba(255,255,255,0.05)', border: `1px solid ${isSharingScreen ? CRIMSON : 'rgba(255,255,255,0.1)'}`, color: isSharingScreen ? '#C0392B' : 'rgba(255,255,255,0.5)', userSelect: 'none' }}>
+            style={{ ...T, background: isSharingScreen ? `${CRIMSON}33` : 'rgba(255,255,255,0.05)', border: `1px solid ${isSharingScreen ? CRIMSON : 'rgba(255,255,255,0.1)'}`, color: isSharingScreen ? '#FF2040' : 'rgba(255,255,255,0.5)', userSelect: 'none' }}>
             <Monitor className="w-3 h-3" />
             {isSharingScreen ? 'Stop' : 'Share'}
           </button>
         )}
         <button onClick={handleRefresh}
           className="w-8 h-8 flex items-center justify-center rounded-xl"
-          style={{ background: justRefreshed ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${justRefreshed ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.08)'}`, color: justRefreshed ? GOLD : 'rgba(255,255,255,0.3)', userSelect: 'none' }}>
+          style={{ background: justRefreshed ? 'rgba(255,184,0,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${justRefreshed ? 'rgba(255,184,0,0.3)' : 'rgba(255,255,255,0.08)'}`, color: justRefreshed ? GOLD : 'rgba(255,255,255,0.3)', userSelect: 'none' }}>
           <RefreshCw className={`w-3.5 h-3.5 ${justRefreshed ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -113,7 +113,7 @@ export default function CameraDeviceSelector({
       {/* No-device warning */}
       {(noCamera || noMic) && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]"
-          style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD }}>
+          style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.2)', color: GOLD }}>
           <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
           <span style={T}>{noCamera && noMic ? 'No camera or mic found.' : noCamera ? 'No camera found.' : 'No mic found.'} Check permissions and refresh.</span>
         </div>
@@ -197,9 +197,9 @@ export default function CameraDeviceSelector({
           className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black uppercase"
           style={{
             ...T,
-            background: isSharingScreen ? 'rgba(192,57,43,0.12)' : 'rgba(255,255,255,0.04)',
-            border: isSharingScreen ? '1px solid rgba(192,57,43,0.3)' : '1px solid rgba(255,255,255,0.08)',
-            color: isSharingScreen ? '#C0392B' : 'rgba(255,255,255,0.5)',
+            background: isSharingScreen ? 'rgba(255,32,64,0.12)' : 'rgba(255,255,255,0.04)',
+            border: isSharingScreen ? '1px solid rgba(255,32,64,0.3)' : '1px solid rgba(255,255,255,0.08)',
+            color: isSharingScreen ? '#FF2040' : 'rgba(255,255,255,0.5)',
             cursor: 'pointer', userSelect: 'none',
           }}>
           <Monitor className="w-4 h-4" />

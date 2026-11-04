@@ -6,10 +6,10 @@ import { isSafeUrl } from '@/lib/security';
 
 const PAYMENT_PLATFORMS = [
   { id: 'paypal', name: 'PayPal', emoji: '🅿️', color: 'from-[#5B7FA6] to-blue-700', baseUrl: 'https://paypal.me/', placeholder: 'your-username' },
-  { id: 'cashapp', name: 'Cash App', emoji: '💚', color: 'from-[#6DBF7E] to-[#6DBF7E]', baseUrl: 'https://cash.app/$', placeholder: 'YourCashtag' },
+  { id: 'cashapp', name: 'Cash App', emoji: '💚', color: 'from-[#00FF88] to-[#00FF88]', baseUrl: 'https://cash.app/$', placeholder: 'YourCashtag' },
   { id: 'venmo', name: 'Venmo', emoji: '💙', color: 'from-[#5B7FA6] to-blue-600', baseUrl: 'https://venmo.com/', placeholder: 'your-username' },
-  { id: 'zelle', name: 'Zelle', emoji: '💜', color: 'from-[#7B5DA6] to-[#7B5DA6]', baseUrl: null, placeholder: 'phone or email' },
-  { id: 'chime', name: 'Chime', emoji: '🟢', color: 'from-[#6DBF7E] to-[#4A8A7A]', baseUrl: 'https://chime.com/', placeholder: 'your-tag' },
+  { id: 'zelle', name: 'Zelle', emoji: '💜', color: 'from-[#8B5CF6] to-[#8B5CF6]', baseUrl: null, placeholder: 'phone or email' },
+  { id: 'chime', name: 'Chime', emoji: '🟢', color: 'from-[#00FF88] to-[#00F5FF]', baseUrl: 'https://chime.com/', placeholder: 'your-tag' },
   { id: 'applepay', name: 'Apple Pay', emoji: '🍎', color: 'from-gray-700 to-gray-900', baseUrl: null, placeholder: 'phone or email' },
   { id: 'googlepay', name: 'Google Pay', emoji: '🔵', color: 'from-[#5B7FA6] to-[#5B7FA6]', baseUrl: null, placeholder: 'phone or email' },
   { id: 'custom', name: 'Custom Link', emoji: '🔗', color: 'from-amber-500 to-orange-600', baseUrl: '', placeholder: 'https://...' },
@@ -72,9 +72,9 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)' }} onClick={onClose} />
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 448, width: '100%', maxHeight: '85vh', overflowY: 'auto', background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 24, color: '#fff' }}>
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 448, width: '100%', maxHeight: '85vh', overflowY: 'auto', background: '#03030A', border: '1px solid rgba(255,184,0,0.2)', borderRadius: 16, padding: 24, color: '#fff' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#d4af37' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#FFB800' }}>
             <DollarSign className="w-5 h-5" />
             <span style={{ fontWeight: 700, fontSize: 16, fontFamily: 'Barlow Condensed, sans-serif' }}>Support {creatorName || 'Creator'} Directly</span>
           </div>
@@ -94,7 +94,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
                   <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>No payment links configured yet</p>
                   <button
                     onClick={() => setEditMode(true)}
-                    style={{ marginTop: 12, padding: '6px 14px', fontSize: 12, background: '#d4af37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}
+                    style={{ marginTop: 12, padding: '6px 14px', fontSize: 12, background: '#FFB800', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}
                   >
                     <Plus className="w-3.5 h-3.5" /> Add My Links
                   </button>
@@ -119,7 +119,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
                       <button
                         onClick={(e) => { e.stopPropagation(); handleCopy(platform); }}
                         title="Copy link"
-                        style={{ position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,0.35)', border: 'none', borderRadius: 5, padding: '3px 5px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: copiedId === platform.id ? '#6DBF7E' : '#fff' }}
+                        style={{ position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,0.35)', border: 'none', borderRadius: 5, padding: '3px 5px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: copiedId === platform.id ? '#00FF88' : '#fff' }}
                       >
                         {copiedId === platform.id ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                       </button>
@@ -159,7 +159,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
               <div style={{ display: 'flex', gap: 8, paddingTop: 8 }}>
                 <button
                   onClick={handleSave}
-                  style={{ flex: 1, padding: '8px 0', background: '#d4af37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13 }}
+                  style={{ flex: 1, padding: '8px 0', background: '#FFB800', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13 }}
                 >
                   Save Links
                 </button>

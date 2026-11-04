@@ -6,15 +6,15 @@ import { Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
-const G       = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
-const BG      = '#080B18';
+const G       = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK    = '#FF2040';
+const BG      = '#03030A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const C = {
-  card:   'rgba(8,11,24,0.98)',
-  border: 'rgba(212,175,55,0.15)',
+  card:   'rgba(3,3,10,0.98)',
+  border: 'rgba(255,184,0,0.15)',
   divider:'rgba(255,255,255,0.07)',
   text:   '#e8e8e8',
   muted:  '#888',
@@ -28,7 +28,7 @@ const DURATION_OPTIONS = [
 ];
 
 const ROUND_OPTIONS = [1, 3, 5];
-const TEAM_COLORS   = [CRIMSON, '#3b82f6', '#7B5DA6'];
+const TEAM_COLORS   = [CRIMSON, '#3b82f6', '#8B5CF6'];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmt(s) {
@@ -612,9 +612,9 @@ export default function BattleArenaManager({ roomId, isHost, participants = [], 
           <div style={{ textAlign: 'center', marginBottom: 12 }}>
             <span style={{
               fontSize: 36, fontWeight: 900, ...T,
-              color: timeLeft < 30 ? '#C0392B' : G,
+              color: timeLeft < 30 ? '#FF2040' : G,
               letterSpacing: 2,
-              textShadow: timeLeft < 30 ? '0 0 20px #C0392B' : 'none',
+              textShadow: timeLeft < 30 ? '0 0 20px #FF2040' : 'none',
             }}>
               {fmt(timeLeft)}
             </span>

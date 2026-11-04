@@ -2,8 +2,8 @@ import { useState } from "react";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
-  burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
-  white: "#FFF", gray: "#888", dim: "#444", green: "#6DBF7E",
+  burgundy: "#FF1564", gold: "#FFB800", volt: "#FFB800",
+  white: "#FFF", gray: "#888", dim: "#444", green: "#00FF88",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace",
 };
@@ -99,7 +99,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
                 <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>BITRATE</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {[1000, 2000, 3000, 4500, 8000].map(b => (
-                    <button key={b} onClick={() => { setBitrate(b); try { localStorage.setItem('zego_bitrate', String(b)); } catch {} }} style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid " + (bitrate === b ? C.gold : "#333"), background: bitrate === b ? "rgba(212,175,55,0.1)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: bitrate === b ? C.gold : C.gray }}>{b}k</button>
+                    <button key={b} onClick={() => { setBitrate(b); try { localStorage.setItem('zego_bitrate', String(b)); } catch {} }} style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid " + (bitrate === b ? C.gold : "#333"), background: bitrate === b ? "rgba(255,184,0,0.1)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: bitrate === b ? C.gold : C.gray }}>{b}k</button>
                   ))}
                 </div>
               </div>
@@ -107,7 +107,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
                 <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>RESOLUTION</div>
                 <div style={{ display: "flex", gap: 6 }}>
                   {["720p", "1080p"].map(r => (
-                    <button key={r} onClick={() => { setResolution(r); try { localStorage.setItem('zego_resolution', r); } catch {} }} style={{ flex: 1, padding: "6px", borderRadius: 6, border: "1px solid " + (resolution === r ? C.gold : "#333"), background: resolution === r ? "rgba(212,175,55,0.1)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 10, color: resolution === r ? C.gold : C.gray }}>{r}</button>
+                    <button key={r} onClick={() => { setResolution(r); try { localStorage.setItem('zego_resolution', r); } catch {} }} style={{ flex: 1, padding: "6px", borderRadius: 6, border: "1px solid " + (resolution === r ? C.gold : "#333"), background: resolution === r ? "rgba(255,184,0,0.1)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 10, color: resolution === r ? C.gold : C.gray }}>{r}</button>
                   ))}
                 </div>
               </div>
@@ -115,7 +115,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
                 <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>FPS</div>
                 <div style={{ display: "flex", gap: 6 }}>
                   {[24, 30, 60].map(f => (
-                    <button key={f} onClick={() => { setFps(f); try { localStorage.setItem('zego_fps', String(f)); } catch {} }} style={{ flex: 1, padding: "6px", borderRadius: 6, border: "1px solid " + (fps === f ? C.volt : "#333"), background: fps === f ? "rgba(212,175,55,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 10, color: fps === f ? C.volt : C.gray }}>{f}</button>
+                    <button key={f} onClick={() => { setFps(f); try { localStorage.setItem('zego_fps', String(f)); } catch {} }} style={{ flex: 1, padding: "6px", borderRadius: 6, border: "1px solid " + (fps === f ? C.volt : "#333"), background: fps === f ? "rgba(255,184,0,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 10, color: fps === f ? C.volt : C.gray }}>{f}</button>
                   ))}
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
               <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>LATENCY MODE</div>
               <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
                 {["Ultra-Low", "Low", "Standard"].map(m => (
-                  <button key={m} onClick={() => { setLatencyMode(m); try { localStorage.setItem('zego_latency_mode', m); } catch {} }} style={{ flex: 1, padding: "8px 4px", borderRadius: 6, border: "1px solid " + (latencyMode === m ? C.volt : "#333"), background: latencyMode === m ? "rgba(212,175,55,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: latencyMode === m ? C.volt : C.gray }}>{m}</button>
+                  <button key={m} onClick={() => { setLatencyMode(m); try { localStorage.setItem('zego_latency_mode', m); } catch {} }} style={{ flex: 1, padding: "8px 4px", borderRadius: 6, border: "1px solid " + (latencyMode === m ? C.volt : "#333"), background: latencyMode === m ? "rgba(255,184,0,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: latencyMode === m ? C.volt : C.gray }}>{m}</button>
                 ))}
               </div>
             </div>
@@ -151,7 +151,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
                   <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 6 }}>{label}</div>
                   <div style={{ display: "flex", gap: 6 }}>
                     <div style={{ flex: 1, background: "#111", border: "1px solid #333", borderRadius: 6, padding: "8px 10px", fontFamily: C.fMon, fontSize: 11, color: C.gray, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</div>
-                    <button onClick={() => copy(value, label)} style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid " + (copied === label ? C.green : C.gold), background: copied === label ? "rgba(48,209,88,0.15)" : "rgba(212,175,55,0.1)", cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: copied === label ? C.green : C.gold }}>
+                    <button onClick={() => copy(value, label)} style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid " + (copied === label ? C.green : C.gold), background: copied === label ? "rgba(48,209,88,0.15)" : "rgba(255,184,0,0.1)", cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: copied === label ? C.green : C.gold }}>
                       {copied === label ? "✓" : "COPY"}
                     </button>
                   </div>
@@ -172,7 +172,7 @@ export function StreamHealthHUD({ sessionId, onClick }) {
     { name: "YouTube", status: "healthy" },
     { name: "TikTok", status: "degraded" },
   ];
-  var statusColor = { healthy: "#6DBF7E", degraded: "#D4854A", error: "#FF3B30" };
+  var statusColor = { healthy: "#00FF88", degraded: "#FF8C00", error: "#FF3B30" };
 
   return (
     <div onClick={onClick} style={{

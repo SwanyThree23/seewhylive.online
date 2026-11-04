@@ -69,7 +69,7 @@ export default function EmojiReactionBar({ roomId, userId, userName }) {
           user_id: userId,
           user_name: userName || 'Viewer',
           content: emoji,
-          user_color: 'rgba(212,175,55,0.9)',
+          user_color: 'rgba(255,184,0,0.9)',
         });
       } catch {}
     }
@@ -79,7 +79,7 @@ export default function EmojiReactionBar({ roomId, userId, userName }) {
   const totalSent = Object.values(sessionTotals.current).reduce((s, v) => s + v, 0);
 
   return (
-    <div className="relative px-2 py-1.5 border-t border-white/5" style={{ background: 'rgba(8,11,24,0.6)' }}>
+    <div className="relative px-2 py-1.5 border-t border-white/5" style={{ background: 'rgba(3,3,10,0.6)' }}>
       {/* Two-row grid on narrow screens, single row on wider */}
       <div className="hidden" style={{ display: 'none' }} />
       <div className="flex flex-col gap-1 sm:hidden">
@@ -131,7 +131,7 @@ export default function EmojiReactionBar({ roomId, userId, userName }) {
       {/* Session total */}
       {totalSent > 0 && (
         <div className="absolute top-1 right-2 pointer-events-none">
-          <span className="text-[9px] font-mono" style={{ color: 'rgba(212,175,55,0.4)' }}>
+          <span className="text-[9px] font-mono" style={{ color: 'rgba(255,184,0,0.4)' }}>
             {totalSent} sent{hotEmoji ? ` · ${hotEmoji} hot` : ''}
           </span>
         </div>
@@ -148,9 +148,9 @@ export default function EmojiReactionBar({ roomId, userId, userName }) {
             className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
           >
             <div className="flex items-center gap-1 px-3 py-1 rounded-full"
-              style={{ background: 'rgba(212,175,55,0.25)', border: '1px solid rgba(212,175,55,0.6)', backdropFilter: 'blur(4px)' }}>
+              style={{ background: 'rgba(255,184,0,0.25)', border: '1px solid rgba(255,184,0,0.6)', backdropFilter: 'blur(4px)' }}>
               <span className="text-lg">{streakEmoji}</span>
-              <span style={{ fontSize: 11, fontWeight: 900, color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>STREAK!</span>
+              <span style={{ fontSize: 11, fontWeight: 900, color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif' }}>STREAK!</span>
             </div>
           </motion.div>
         )}
@@ -169,7 +169,7 @@ function EmojiButton({ emoji, count, disabled, onSend, isHot }) {
           exit={{ scale: 0, opacity: 0 }}
           className="absolute -top-2 -right-1 z-10 pointer-events-none"
           style={{
-            background: '#D4AF37',
+            background: '#FFB800',
             color: '#000',
             fontSize: 8,
             fontWeight: 900,
@@ -188,14 +188,14 @@ function EmojiButton({ emoji, count, disabled, onSend, isHot }) {
         disabled={disabled}
         className="w-8 h-8 rounded-lg flex items-center justify-center text-lg transition-all"
         style={{
-          background: isHot ? 'rgba(212,175,55,0.08)' : disabled ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${isHot ? 'rgba(212,175,55,0.5)' : disabled ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)'}`,
+          background: isHot ? 'rgba(255,184,0,0.08)' : disabled ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${isHot ? 'rgba(255,184,0,0.5)' : disabled ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)'}`,
           opacity: disabled ? 0.4 : 1,
           cursor: disabled ? 'not-allowed' : 'pointer',
-          boxShadow: isHot ? '0 0 8px rgba(212,175,55,0.3)' : undefined,
+          boxShadow: isHot ? '0 0 8px rgba(255,184,0,0.3)' : undefined,
         }}
-        onMouseEnter={e => { if (!disabled) e.currentTarget.style.borderColor = 'rgba(212,175,55,0.5)'; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = disabled ? 'rgba(255,255,255,0.04)' : isHot ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.08)'; }}
+        onMouseEnter={e => { if (!disabled) e.currentTarget.style.borderColor = 'rgba(255,184,0,0.5)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = disabled ? 'rgba(255,255,255,0.04)' : isHot ? 'rgba(255,184,0,0.5)' : 'rgba(255,255,255,0.08)'; }}
       >
         {emoji}
       </motion.button>

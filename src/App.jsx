@@ -19,6 +19,8 @@ const UnifiedRoom   = lazy(() => import('@/pages/UnifiedRoom'));
 const MomentDetail  = lazy(() => import('@/pages/MomentDetail'));
 const SwanyBotPro   = lazy(() => import('@/pages/SwanyBotPro'));
 const MyDashboard   = lazy(() => import('@/pages/MyDashboard'));
+const RecordingsLibrary = lazy(() => import('@/pages/RecordingsLibrary'));
+const LinkInBio     = lazy(() => import('@/pages/LinkInBio'));
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -98,6 +100,9 @@ const AuthenticatedApp = () => {
         <Route path="/unified-room" element={<UnifiedRoom />} />
         <Route path="/MyDashboard" element={<LayoutWrapper currentPageName="MyDashboard"><MyDashboard /></LayoutWrapper>} />
         <Route path="/SwanyBotPro" element={<LayoutWrapper currentPageName="SwanyBotPro"><SwanyBotPro /></LayoutWrapper>} />
+        <Route path="/RecordingsLibrary" element={<LayoutWrapper currentPageName="RecordingsLibrary"><RecordingsLibrary /></LayoutWrapper>} />
+        <Route path="/link-in-bio" element={<LinkInBio />} />
+        <Route path="/link-in-bio/:userId" element={<LinkInBio />} />
         <Route path="*"            element={<PageNotFound />} />
       </Route>
     </Routes>

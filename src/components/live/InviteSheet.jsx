@@ -4,9 +4,9 @@ import { X, Copy, Share2, UserCheck, Users, Eye, Check, Link, KeyRound, RefreshC
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const BG3     = '#080B18';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
+const BG3     = '#03030A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function genToken() {
@@ -49,7 +49,7 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
       label:      'Viewer Link',
       desc:       'Anyone can watch — no account needed',
       Icon:       Eye,
-      color:      '#6DBF7E',
+      color:      '#00FF88',
       url:        roomUrl,
       badge:      'PUBLIC',
     },
@@ -67,7 +67,7 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
       label:      'Co-Host Invite',
       desc:       'Full co-host access and moderation controls',
       Icon:       UserCheck,
-      color:      '#D4AF37',
+      color:      '#FFB800',
       url:        `${roomUrl}&join_as=co-host&ik=${coHostToken}`,
       badge:      'CO-HOST',
     }] : []),
@@ -136,7 +136,7 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
           />
           <motion.div
             className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl overflow-hidden"
-            style={{ background: BG3, borderTop: `1px solid rgba(212,175,55,0.2)`, maxHeight: '90vh' }}
+            style={{ background: BG3, borderTop: `1px solid rgba(255,184,0,0.2)`, maxHeight: '90vh' }}
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
           >
@@ -200,9 +200,9 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
                       title="Copy link"
                       style={{
                         width: 36, height: 36, borderRadius: 8, cursor: 'pointer',
-                        border: `1px solid ${copiedKey === type.key ? '#6DBF7E' : 'rgba(255,255,255,0.12)'}`,
+                        border: `1px solid ${copiedKey === type.key ? '#00FF88' : 'rgba(255,255,255,0.12)'}`,
                         background: copiedKey === type.key ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)',
-                        color: copiedKey === type.key ? '#6DBF7E' : 'rgba(255,255,255,0.6)',
+                        color: copiedKey === type.key ? '#00FF88' : 'rgba(255,255,255,0.6)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
                       {copiedKey === type.key
@@ -224,7 +224,7 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
 
               {/* Registration invite code (host only) */}
               {isHost && (
-                <div style={{ background: 'rgba(212,175,55,0.04)', border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 14, padding: '13px 14px' }}>
+                <div style={{ background: 'rgba(255,184,0,0.04)', border: `1px solid rgba(255,184,0,0.15)`, borderRadius: 14, padding: '13px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <KeyRound style={{ width: 14, height: 14, color: GOLD }} />
                     <span style={{ ...T, color: GOLD, fontSize: 13, fontWeight: 900 }}>New User Invite Code</span>
@@ -235,7 +235,7 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
                   </p>
                   {!regCode ? (
                     <button onClick={generateRegCode} disabled={generatingCode}
-                      style={{ width: '100%', height: 36, borderRadius: 8, border: `1px solid rgba(212,175,55,0.3)`, background: `rgba(212,175,55,0.08)`, color: GOLD, cursor: generatingCode ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, ...T, fontSize: 12, fontWeight: 900 }}>
+                      style={{ width: '100%', height: 36, borderRadius: 8, border: `1px solid rgba(255,184,0,0.3)`, background: `rgba(255,184,0,0.08)`, color: GOLD, cursor: generatingCode ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, ...T, fontSize: 12, fontWeight: 900 }}>
                       <KeyRound style={{ width: 12, height: 12 }} />
                       {generatingCode ? 'Generating…' : 'Generate Invite Code'}
                     </button>
@@ -259,7 +259,7 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
 
               {/* Public note */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 4, padding: '10px 0', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 10 }}>
-                <Eye style={{ width: 12, height: 12, color: '#6DBF7E' }} />
+                <Eye style={{ width: 12, height: 12, color: '#00FF88' }} />
                 <span style={{ ...T, color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>
                   Anyone can watch with the Viewer link — no sign-in required
                 </span>

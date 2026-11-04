@@ -45,8 +45,8 @@ export default function LiveAudiencePulse({ roomId, isHost, viewerCount }) {
 
   const giftRate = recentGifts.filter(t => Date.now() - new Date(t.created_date).getTime() < 60000).length;
 
-  const scoreColor = engagementScore >= 70 ? '#6DBF7E' : engagementScore >= 40 ? '#D4AF37' : '#C0392B';
-  const chatColor = chatVelocity >= 20 ? '#6DBF7E' : chatVelocity >= 5 ? '#D4AF37' : 'rgba(200,185,165,0.35)';
+  const scoreColor = engagementScore >= 70 ? '#00FF88' : engagementScore >= 40 ? '#FFB800' : '#FF2040';
+  const chatColor = chatVelocity >= 20 ? '#00FF88' : chatVelocity >= 5 ? '#FFB800' : 'rgba(200,185,165,0.35)';
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
 
   // Viewer-only: just the engagement pill
@@ -56,7 +56,7 @@ export default function LiveAudiencePulse({ roomId, isHost, viewerCount }) {
         style={{ background: `${scoreColor}0D`, border: `1px solid ${scoreColor}25` }}>
         <span style={{ fontSize: 10 }}>⚡</span>
         <span className="text-[10px] font-black font-mono" style={{ color: scoreColor }}>{engagementScore}</span>
-        {engagementScore >= 70 && <span className="text-[9px] font-black" style={{ color: '#6DBF7E' }}>🔥</span>}
+        {engagementScore >= 70 && <span className="text-[9px] font-black" style={{ color: '#00FF88' }}>🔥</span>}
       </div>
     );
   }
@@ -73,9 +73,9 @@ export default function LiveAudiencePulse({ roomId, isHost, viewerCount }) {
 
       {/* Gift rate */}
       <div className="flex items-center gap-1 px-2 py-1 rounded-lg"
-        style={{ background: giftRate > 0 ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${giftRate > 0 ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>
+        style={{ background: giftRate > 0 ? 'rgba(255,184,0,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${giftRate > 0 ? 'rgba(255,184,0,0.25)' : 'rgba(255,255,255,0.06)'}` }}>
         <span style={{ fontSize: 9 }}>🎁</span>
-        <span className="text-[9px] font-black font-mono" style={{ color: giftRate > 0 ? '#D4AF37' : 'rgba(200,185,165,0.3)' }}>{giftRate}</span>
+        <span className="text-[9px] font-black font-mono" style={{ color: giftRate > 0 ? '#FFB800' : 'rgba(200,185,165,0.3)' }}>{giftRate}</span>
       </div>
 
       {/* Engagement score with mini bars */}
@@ -93,13 +93,13 @@ export default function LiveAudiencePulse({ roomId, isHost, viewerCount }) {
         </div>
         <TrendIcon className="w-2.5 h-2.5" style={{ color: scoreColor }} />
         <span className="text-[9px] font-black font-mono" style={{ color: scoreColor }}>{engagementScore}</span>
-        {engagementScore >= 70 && <span className="text-[8px] font-black" style={{ color: '#6DBF7E' }}>HOT</span>}
+        {engagementScore >= 70 && <span className="text-[8px] font-black" style={{ color: '#00FF88' }}>HOT</span>}
       </div>
       {peakScore > engagementScore + 5 && (
         <div className="flex items-center gap-1 px-2 py-1 rounded-lg"
-          style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}>
+          style={{ background: 'rgba(255,184,0,0.05)', border: '1px solid rgba(255,184,0,0.15)' }}>
           <span style={{ fontSize: 9 }}>↑</span>
-          <span className="text-[9px] font-black font-mono" style={{ color: 'rgba(212,175,55,0.6)' }}>{peakScore}</span>
+          <span className="text-[9px] font-black font-mono" style={{ color: 'rgba(255,184,0,0.6)' }}>{peakScore}</span>
         </div>
       )}
     </div>

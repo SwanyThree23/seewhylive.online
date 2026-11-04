@@ -7,11 +7,11 @@ import { toast } from 'sonner';
 import ClipThisButton from './ClipThisButton';
 
 const MOMENTS = [
-  { id: 'fire',    icon: '🔥', label: 'Fire Moment',  color: '#D4854A' },
+  { id: 'fire',    icon: '🔥', label: 'Fire Moment',  color: '#FF8C00' },
   { id: 'epic',    icon: '⚡', label: 'Epic',          color: '#FFB800' },
-  { id: 'funny',   icon: '😂', label: 'LOL Moment',   color: '#6DBF7E' },
-  { id: 'tip',     icon: '💰', label: 'Big Tip',       color: '#d4af37' },
-  { id: 'peak',    icon: '🏆', label: 'Peak Moment',  color: '#D4AF37' },
+  { id: 'funny',   icon: '😂', label: 'LOL Moment',   color: '#00FF88' },
+  { id: 'tip',     icon: '💰', label: 'Big Tip',       color: '#FFB800' },
+  { id: 'peak',    icon: '🏆', label: 'Peak Moment',  color: '#FFB800' },
 ];
 
 function fmtTs(secs) {
@@ -67,9 +67,9 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all active:scale-95"
         style={{
           fontFamily: 'Barlow Condensed, sans-serif',
-          background: open ? 'rgba(212,175,55,0.2)' : 'rgba(212,175,55,0.08)',
-          border: '1px solid rgba(212,175,55,0.25)',
-          color: '#D4AF37',
+          background: open ? 'rgba(255,184,0,0.2)' : 'rgba(255,184,0,0.08)',
+          border: '1px solid rgba(255,184,0,0.25)',
+          color: '#FFB800',
         }}>
         <Scissors className="w-3 h-3" />
         Clip
@@ -85,12 +85,12 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
             className="absolute bottom-full mb-2 right-0 z-50 rounded-2xl p-2 space-y-1"
-            style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', width: 160, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
+            style={{ background: '#03030A', border: '1px solid rgba(255,184,0,0.2)', width: 160, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
             <div className="flex items-center justify-between px-1 pb-1">
               <p className="text-[11px] font-bold uppercase text-white/30"
                 style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Tag This Moment</p>
               {elapsedSeconds > 0 && (
-                <span className="text-[10px] font-mono" style={{ color: 'rgba(212,175,55,0.5)' }}>@ {fmtTs(elapsedSeconds)}</span>
+                <span className="text-[10px] font-mono" style={{ color: 'rgba(255,184,0,0.5)' }}>@ {fmtTs(elapsedSeconds)}</span>
               )}
             </div>
             {MOMENTS.map(m => (
@@ -100,7 +100,7 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
                 className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all hover:bg-white/5 active:scale-95">
                 <span className="text-base">{m.icon}</span>
                 <span className="text-[11px] font-bold" style={{ color: m.color }}>{m.label}</span>
-                {captured === m.id && <Check className="w-3 h-3 ml-auto text-[#6DBF7E]" />}
+                {captured === m.id && <Check className="w-3 h-3 ml-auto text-[#00FF88]" />}
               </button>
             ))}
           </motion.div>

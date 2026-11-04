@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign } from 'lucide-react';
 
 const TIER_COLORS = {
-  1:   { bg: 'rgba(201,168,76,0.12)',  border: 'rgba(201,168,76,0.3)',  text: '#C9A84C', badge: null },
-  5:   { bg: 'rgba(212,175,55,0.15)', border: 'rgba(212,175,55,0.4)', text: '#D4AF37', badge: null },
-  10:  { bg: 'rgba(128,0,32,0.25)',   border: 'rgba(192,57,43,0.5)', text: '#C0392B', badge: null },
-  20:  { bg: 'rgba(212,175,55,0.25)', border: 'rgba(212,175,55,0.5)', text: '#D4AF37', badge: null },
-  50:  { bg: 'rgba(212,133,74,0.28)', border: 'rgba(212,133,74,0.6)', text: '#D4854A', badge: '🔥' },
-  100: { bg: 'rgba(192,57,43,0.32)',  border: 'rgba(192,57,43,0.75)', text: '#C0392B', badge: '👑' },
+  1:   { bg: 'rgba(255,184,0,0.12)',  border: 'rgba(255,184,0,0.3)',  text: '#FFB800', badge: null },
+  5:   { bg: 'rgba(255,184,0,0.15)', border: 'rgba(255,184,0,0.4)', text: '#FFB800', badge: null },
+  10:  { bg: 'rgba(255,21,100,0.25)',   border: 'rgba(255,32,64,0.5)', text: '#FF2040', badge: null },
+  20:  { bg: 'rgba(255,184,0,0.25)', border: 'rgba(255,184,0,0.5)', text: '#FFB800', badge: null },
+  50:  { bg: 'rgba(255,140,0,0.28)', border: 'rgba(255,140,0,0.6)', text: '#FF8C00', badge: '🔥' },
+  100: { bg: 'rgba(255,32,64,0.32)',  border: 'rgba(255,32,64,0.75)', text: '#FF2040', badge: '👑' },
 };
 
 function getTierStyle(amount) {
@@ -36,14 +36,14 @@ export default function SuperChatRail({ superchats = [] }) {
   return (
     <div style={{
       background: 'rgba(0,0,0,0.5)',
-      borderTop: '1px solid rgba(212,175,55,0.12)',
+      borderTop: '1px solid rgba(255,184,0,0.12)',
       padding: '6px 0',
       flexShrink: 0,
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, paddingLeft: 12, marginBottom: 5 }}>
-        <DollarSign style={{ width: 10, height: 10, color: '#D4AF37' }} />
-        <span style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#D4AF37', ...F }}>
+        <DollarSign style={{ width: 10, height: 10, color: '#FFB800' }} />
+        <span style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#FFB800', ...F }}>
           Super Chats
         </span>
       </div>

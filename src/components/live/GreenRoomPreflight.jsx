@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mic, Camera, Globe, Copy, Check, Rocket } from 'lucide-react';
 
-const G  = '#D4AF37';
+const G  = '#FFB800';
 const BG = 'rgba(10,7,16,0.98)';
 const T  = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -77,9 +77,9 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
 
   const checkLabel = (state, key) => {
     if (state === 'idle' || state === 'testing') return { label: 'TESTING…', color: 'rgba(255,255,255,0.3)' };
-    if (state === 'ready') return { label: key === 'network' && networkMs ? `✓ ${networkMs}ms` : '✓ READY', color: '#6DBF7E' };
-    if (state === 'warn')  return { label: key === 'network' && networkMs ? `⚠ ${networkMs}ms` : '⚠ SLOW', color: '#C9A84C' };
-    return { label: '✗ FAIL', color: '#C0392B' };
+    if (state === 'ready') return { label: key === 'network' && networkMs ? `✓ ${networkMs}ms` : '✓ READY', color: '#00FF88' };
+    if (state === 'warn')  return { label: key === 'network' && networkMs ? `⚠ ${networkMs}ms` : '⚠ SLOW', color: '#FFB800' };
+    return { label: '✗ FAIL', color: '#FF2040' };
   };
 
   const ROWS = [
@@ -105,7 +105,7 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
             exit={{ y: 60, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 320, damping: 30 }}
             className="w-full max-w-md rounded-t-3xl md:rounded-2xl overflow-hidden"
-            style={{ background: BG, border: `1px solid rgba(212,175,55,0.18)`, maxHeight: '90vh', overflowY: 'auto' }}>
+            style={{ background: BG, border: `1px solid rgba(255,184,0,0.18)`, maxHeight: '90vh', overflowY: 'auto' }}>
 
             {/* Header */}
             <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -124,7 +124,7 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                 const { label, color } = checkLabel(checks[row.key], row.key);
                 return (
                   <div key={row.key} className="flex items-center justify-between px-4 py-3 rounded-xl"
-                    style={{ background: checks[row.key] === 'ready' ? 'rgba(109,191,126,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${checks[row.key] === 'ready' ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.07)'}` }}>
+                    style={{ background: checks[row.key] === 'ready' ? 'rgba(0,255,136,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${checks[row.key] === 'ready' ? 'rgba(0,255,136,0.25)' : 'rgba(255,255,255,0.07)'}` }}>
                     <span className="text-sm font-bold text-white" style={T}>{row.icon} {row.label}</span>
                     <span className="text-sm font-black" style={{ color, ...T }}>{label}</span>
                   </div>
@@ -134,13 +134,13 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                 <button
                   onClick={runChecks}
                   className="text-[11px] font-black uppercase self-start"
-                  style={{ color: 'rgba(212,175,55,0.55)', ...T }}
+                  style={{ color: 'rgba(255,184,0,0.55)', ...T }}
                 >
                   ↺ Re-run checks
                 </button>
                 {Object.values(checks).some(v => v !== 'idle') && (
                   <span className="text-[10px] font-black" style={{
-                    color: allReady ? '#6DBF7E' : 'rgba(255,255,255,0.3)', ...T
+                    color: allReady ? '#00FF88' : 'rgba(255,255,255,0.3)', ...T
                   }}>
                     {Object.values(checks).filter(v => v === 'ready' || v === 'warn').length}/3 ready
                   </span>
@@ -155,11 +155,11 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     {rtmpKey}
                   </div>
-                  <button onClick={() => copyText(rtmpKey, 'rtmp')} className="px-3 py-2 rounded-xl" style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: G }}>
+                  <button onClick={() => copyText(rtmpKey, 'rtmp')} className="px-3 py-2 rounded-xl" style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.3)', color: G }}>
                     {copied === 'rtmp' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-[10px] mt-1 font-mono" style={{ color: '#6DBF7E' }}>Ingest: {ingestUrl}</p>
+                <p className="text-[10px] mt-1 font-mono" style={{ color: '#00FF88' }}>Ingest: {ingestUrl}</p>
               </div>
 
               {/* VDO.ninja */}
@@ -187,7 +187,7 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                 onClick={() => { onClose(); onGoLive?.(); }}
                 disabled={!allReady}
                 className="w-full py-4 rounded-2xl font-black uppercase text-base transition-all disabled:opacity-40"
-                style={{ background: allReady ? 'linear-gradient(135deg, #800020, #A0003A)' : 'rgba(255,255,255,0.08)', color: allReady ? G : 'rgba(255,255,255,0.3)', letterSpacing: 2, border: allReady ? '1px solid rgba(212,175,55,0.35)' : '1px solid transparent', ...T }}>
+                style={{ background: allReady ? 'linear-gradient(135deg, #FF1564, #A0003A)' : 'rgba(255,255,255,0.08)', color: allReady ? G : 'rgba(255,255,255,0.3)', letterSpacing: 2, border: allReady ? '1px solid rgba(255,184,0,0.35)' : '1px solid transparent', ...T }}>
                 🚀 ENTER STAGE — GO LIVE
               </button>
 

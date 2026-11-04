@@ -4,10 +4,10 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
-const G      = '#D4AF37';
-const BG     = '#080B18';
+const G      = '#FFB800';
+const BG     = '#03030A';
 const PANEL  = '#0D1022';
-const BORDER = 'rgba(212,175,55,0.18)';
+const BORDER = 'rgba(255,184,0,0.18)';
 
 const BADGE_ICONS = {
   super_fan: '⭐', top_supporter: '💎', raid_master: '⚔️',
@@ -27,8 +27,8 @@ const TIME_RANGES = [
 ];
 
 function RankChange({ change }) {
-  if (change > 0) return <span className="flex items-center gap-0.5 text-[9px] font-bold text-[#6DBF7E]"><TrendingUp className="w-2.5 h-2.5" />+{change}</span>;
-  if (change < 0) return <span className="flex items-center gap-0.5 text-[9px] font-bold text-[#C0392B]"><TrendingDown className="w-2.5 h-2.5" />{change}</span>;
+  if (change > 0) return <span className="flex items-center gap-0.5 text-[9px] font-bold text-[#00FF88]"><TrendingUp className="w-2.5 h-2.5" />+{change}</span>;
+  if (change < 0) return <span className="flex items-center gap-0.5 text-[9px] font-bold text-[#FF2040]"><TrendingDown className="w-2.5 h-2.5" />{change}</span>;
   return <span className="text-[9px] font-bold text-white/20"><Minus className="w-2.5 h-2.5" /></span>;
 }
 
@@ -42,8 +42,8 @@ function LeaderRow({ item, idx, medals, subLine, showRankChange, isCurrentUser }
       transition={{ delay: idx * 0.04 }}
       className="flex items-center gap-2 px-3 py-2 rounded-lg"
       style={{
-        background: isFirst ? `${G}10` : isCurrentUser ? 'rgba(109,191,126,0.08)' : 'rgba(255,255,255,0.03)',
-        border: isFirst ? `1px solid ${G}25` : isCurrentUser ? '1px solid rgba(109,191,126,0.3)' : '1px solid transparent',
+        background: isFirst ? `${G}10` : isCurrentUser ? 'rgba(0,255,136,0.08)' : 'rgba(255,255,255,0.03)',
+        border: isFirst ? `1px solid ${G}25` : isCurrentUser ? '1px solid rgba(0,255,136,0.3)' : '1px solid transparent',
       }}
     >
       <div className="flex items-center justify-center w-6 h-6 shrink-0 rounded-lg text-xs font-bold"
@@ -52,9 +52,9 @@ function LeaderRow({ item, idx, medals, subLine, showRankChange, isCurrentUser }
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-bold text-white truncate">{item.display_name || item.creator_name || `User ${(item.user_id || '').slice(0, 8)}`}</p>
-        <p className="text-[10px] truncate" style={{ color: isFirst ? G : 'rgba(109,191,126,0.8)' }}>{subLine}</p>
+        <p className="text-[10px] truncate" style={{ color: isFirst ? G : 'rgba(0,255,136,0.8)' }}>{subLine}</p>
       </div>
-      {isCurrentUser && <span className="text-[9px] font-bold text-[#6DBF7E] shrink-0">you</span>}
+      {isCurrentUser && <span className="text-[9px] font-bold text-[#00FF88] shrink-0">you</span>}
       {showRankChange && <RankChange change={item.rank_change ?? 0} />}
     </motion.div>
   );

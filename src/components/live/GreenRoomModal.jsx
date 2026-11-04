@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Video, Wifi, X, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 
 // ─── Brand tokens ──────────────────────────────────────────────────────────────
-const BG      = '#080B18';
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
+const BG      = '#03030A';
+const GOLD    = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK    = '#FF2040';
 
 // ─── Animated mic waveform ─────────────────────────────────────────────────────
 function WaveformBars() {
@@ -17,7 +17,7 @@ function WaveformBars() {
         <motion.div
           key={i}
           className="w-1.5 rounded-full"
-          style={{ backgroundColor: '#6DBF7E', height: `${h}%` }}
+          style={{ backgroundColor: '#00FF88', height: `${h}%` }}
           animate={{ scaleY: [1, 1.6, 0.6, 1.4, 1] }}
           transition={{
             repeat: Infinity,
@@ -237,7 +237,7 @@ export default function GreenRoomModal({
             style={{
               background: BG,
               maxHeight: '90vh',
-              borderTop: `1px solid rgba(212,175,55,0.18)`,
+              borderTop: `1px solid rgba(255,184,0,0.18)`,
             }}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
@@ -277,7 +277,7 @@ export default function GreenRoomModal({
                 <ProgressDots step={allDone ? 3 : step} total={3} />
                 {(results.mic !== null || results.cam !== null || results.net !== null) && (
                   <span className="text-[10px] font-black shrink-0"
-                    style={{ fontFamily: "'Barlow Condensed', sans-serif", color: allDone ? '#6DBF7E' : GOLD }}>
+                    style={{ fontFamily: "'Barlow Condensed', sans-serif", color: allDone ? '#00FF88' : GOLD }}>
                     {[results.mic, results.cam, results.net].filter(r => r === true).length}/3 passed
                   </span>
                 )}
@@ -289,7 +289,7 @@ export default function GreenRoomModal({
                   <motion.div
                     key={`step-${step}`}
                     className="rounded-2xl p-4 mb-5"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.12)' }}
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,184,0,0.12)' }}
                     initial={{ opacity: 0, y: 18 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -18 }}
@@ -346,8 +346,8 @@ export default function GreenRoomModal({
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0 }}
                         >
-                          <CheckCircle size={16} color="#6DBF7E" />
-                          <span className="text-sm font-semibold" style={{ color: '#6DBF7E' }}>
+                          <CheckCircle size={16} color="#00FF88" />
+                          <span className="text-sm font-semibold" style={{ color: '#00FF88' }}>
                             {currentStepData.pass}
                           </span>
                         </motion.div>
@@ -397,7 +397,7 @@ export default function GreenRoomModal({
                     {result === null ? (
                       <span className="text-white/25 text-sm">—</span>
                     ) : result === true ? (
-                      <span className="text-sm font-semibold" style={{ color: '#6DBF7E' }}>✓</span>
+                      <span className="text-sm font-semibold" style={{ color: '#00FF88' }}>✓</span>
                     ) : (
                       <span className="text-sm font-semibold" style={{ color: PINK }}>✗</span>
                     )}

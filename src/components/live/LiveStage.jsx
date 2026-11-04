@@ -34,6 +34,7 @@ import {
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import PinnedChatOverlay from '@/components/live/PinnedChatOverlay';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 const GOLD  = '#FFB800';
@@ -480,7 +481,7 @@ function FloatingReaction({ reaction, onDone }) {
 
 // ─── ChatPanel ─────────────────────────────────────────────────────────────
 // Data-channel backed live chat. Slides in from the right of the stage.
-function ChatPanel({ messages, onSend, onClose }) {
+function ChatPanel({ messages, onSend, onClose, onPin, pinnedIds = [] }) {
   const [input,   setInput]  = useState('');
   const bottomRef            = useRef(null);
 
@@ -523,25 +524,39 @@ function ChatPanel({ messages, onSend, onClose }) {
             No messages yet — say hi! 👋
           </p>
         )}
-        {messages.map(msg => (
-          <div key={msg.id} className={`flex flex-col ${msg.local ? 'items-end' : 'items-start'}`}>
-            <span className="text-[9px] mb-0.5" style={{ fontFamily: FONT, color: 'rgba(255,255,255,0.3)' }}>
-              {msg.userName}
-            </span>
-            <div
-              className="max-w-[90%] px-2.5 py-1.5 rounded-xl text-[11px]"
-              style={{
-                background:  msg.local ? 'rgba(255,184,0,0.1)' : 'rgba(255,255,255,0.05)',
-                border:      `1px solid ${msg.local ? 'rgba(255,184,0,0.2)' : 'rgba(255,255,255,0.08)'}`,
-                color:       'rgba(255,255,255,0.82)',
-                fontFamily:  FONT,
-                wordBreak:   'break-word',
-              }}
-            >
-              {msg.text}
+        {messages.map(msg => {
+          const pinned = pinnedIds.includes(msg.id);
+          return (
+            <div key={msg.id} className={`flex flex-col ${msg.local ? 'items-end' : 'items-start'}`}>
+              <div className="flex items-center gap-1 mb-0.5">
+                <span className="text-[9px]" style={{ fontFamily: FONT, color: 'rgba(255,255,255,0.3)' }}>
+                  {msg.userName}
+                </span>
+                <button
+                  onClick={() => onPin?.(msg)}
+                  aria-label={pinned ? 'Unpin this message from the video' : 'Pin this message to the video'}
+                  aria-pressed={pinned}
+                  className="tap-44 flex items-center justify-center rounded"
+                  style={{ width: 18, height: 18, color: pinned ? GOLD : 'rgba(255,255,255,0.22)' }}
+                >
+                  <Pin className="w-2.5 h-2.5" />
+                </button>
+              </div>
+              <div
+                className="max-w-[90%] px-2.5 py-1.5 rounded-xl text-[11px]"
+                style={{
+                  background:  pinned ? 'rgba(255,184,0,0.14)' : msg.local ? 'rgba(255,184,0,0.1)' : 'rgba(255,255,255,0.05)',
+                  border:      `1px solid ${pinned || msg.local ? 'rgba(255,184,0,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                  color:       'rgba(255,255,255,0.82)',
+                  fontFamily:  FONT,
+                  wordBreak:   'break-word',
+                }}
+              >
+                {msg.text}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <div ref={bottomRef} />
       </div>
 
@@ -583,6 +598,23 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
 
   const [pinnedId,          setPinnedId]          = useState(null);
   const [showChat,          setShowChat]          = useState(() => { try { return localStorage.getItem('stage_chat_open') === 'true'; } catch { return false; } });
+
+  // ── Pinned chat on the video feed ─────────────────────────────────────────
+  // Hosts pin any chat message (audience questions, top supporters) and it is
+  // rendered over the top of the video feed. Pins persist for the session.
+  const [pinnedMsgs,        setPinnedMsgs]        = useState([]);
+  const [showPinned,        setShowPinned]        = useState(true);
+
+  const togglePinnedMessage = useCallback((msg) => {
+    if (!msg?.id) return;
+    setPinnedMsgs(prev => prev.some(m => m.id === msg.id)
+      ? prev.filter(m => m.id !== msg.id)
+      : [...prev, msg].slice(-3));
+  }, []);
+
+  const unpinMessage = useCallback((id) => {
+    setPinnedMsgs(prev => prev.filter(m => m.id !== id));
+  }, []);
   const [floatingReactions, setFloatingReactions] = useState([]);
 
   // Per-seat gift totals keyed by userId — polled every 15s
@@ -881,6 +913,14 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
         {/* Video grid / layouts */}
         {stageContent}
 
+        {/* Host-pinned chat, anchored to the top of the video feed */}
+        <PinnedChatOverlay
+          pins={pinnedMsgs}
+          visible={showPinned}
+          onToggleVisible={() => setShowPinned(v => !v)}
+          onUnpin={unpinMessage}
+        />
+
         {/* Floating emoji reactions — data channel driven */}
         <AnimatePresence>
           {floatingReactions.map(r => (
@@ -985,6 +1025,8 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
             messages={chatMessages}
             onSend={sendChat}
             onClose={() => setShowChat(false)}
+            onPin={togglePinnedMessage}
+            pinnedIds={pinnedMsgs.map(m => m.id)}
           />
         )}
       </AnimatePresence>

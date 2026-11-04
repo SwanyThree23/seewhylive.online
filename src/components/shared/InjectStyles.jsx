@@ -5,12 +5,14 @@ import React from 'react';
 export default function InjectStyles() {
   return (
     <style>{`
-      /* Nav bars, tab strips, button rows — block selection on all chrome */
-      nav, header, [role="tablist"], [role="tab"],
-      .bottom-nav, .tab-bar, .toolbar, .action-bar {
+      /* Main app wrappers, nav bars, tab strips, button rows — block selection on chrome */
+      #root, main, nav, header, aside, footer, [role="tablist"], [role="tab"],
+      .app-shell, .app-wrapper, .bottom-nav, .tab-bar, .toolbar, .action-bar {
         -webkit-user-select: none;
         user-select: none;
         -webkit-touch-callout: none;
+        -webkit-text-stroke-color: currentColor;
+        -webkit-text-stroke-width: 0;
       }
 
       /* Headings are decorative chrome — no drag-select on mobile */

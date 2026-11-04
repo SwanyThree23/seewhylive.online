@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Mic, MicOff, Video, VideoOff, PictureInPicture2 } from 'lucide-react';
 
-const GOLD = '#D4AF37';
+const GOLD = '#FFB800';
 
 /**
  * Renders the local user's camera feed.
@@ -66,7 +66,7 @@ export default function LocalVideoTile({
       style={{
         clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
         border: `3px solid ${GOLD}`,
-        boxShadow: speakingRing ?? `0 0 30px rgba(212,175,55,0.6), inset 0 0 20px rgba(212,175,55,0.3)`,
+        boxShadow: speakingRing ?? `0 0 30px rgba(255,184,0,0.6), inset 0 0 20px rgba(255,184,0,0.3)`,
         transition: 'box-shadow 0.2s ease',
       }}
       onMouseEnter={() => setHovered(true)}
@@ -82,7 +82,7 @@ export default function LocalVideoTile({
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-3xl font-bold text-white">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FF1564] to-[#FFB800] flex items-center justify-center text-3xl font-bold text-white">
             {userName?.charAt(0)?.toUpperCase()}
           </div>
         </div>
@@ -95,22 +95,22 @@ export default function LocalVideoTile({
             <span style={{
               fontSize: 11, fontWeight: 900, background: GOLD, color: '#000',
               padding: '1px 6px', borderRadius: 99,
-              textShadow: '0 0 8px rgba(212,175,55,0.5)',
+              textShadow: '0 0 8px rgba(255,184,0,0.5)',
               fontFamily: 'Barlow Condensed, sans-serif',
             }}>HOST</span>
           )}
           <span className="text-xs text-white font-semibold truncate max-w-[120px]"
-            style={{ textShadow: '0 0 10px rgba(212,175,55,0.5)' }}>
+            style={{ textShadow: '0 0 10px rgba(255,184,0,0.5)' }}>
             {userName}
           </span>
         </div>
         <div className="flex items-center gap-1">
           {audioEnabled
-            ? <Mic className="w-3 h-3 text-[#6DBF7E]" />
-            : <MicOff className="w-3 h-3 text-[#C0392B]" />}
+            ? <Mic className="w-3 h-3 text-[#00FF88]" />
+            : <MicOff className="w-3 h-3 text-[#FF2040]" />}
           {videoEnabled
             ? <Video className="w-3 h-3 text-blue-400" />
-            : <VideoOff className="w-3 h-3 text-[#C0392B]" />}
+            : <VideoOff className="w-3 h-3 text-[#FF2040]" />}
         </div>
       </div>
 

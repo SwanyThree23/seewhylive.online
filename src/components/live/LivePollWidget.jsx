@@ -5,8 +5,8 @@ import { base44 } from '@/api/base44Client';
 import { BarChart2, Clock, X, Trophy, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const BURGUNDY = '#800020';
+const GOLD = '#FFB800';
+const BURGUNDY = '#FF1564';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function PollCountdown({ endsAt }) {
@@ -61,7 +61,7 @@ function CreatePollModal({ roomId, communityId, userId, onClose, onCreated }) {
         className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={onClose} />
       <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
         className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm rounded-2xl p-5 space-y-3"
-        style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.25)` }}>
+        style={{ background: '#1A1A1A', border: `1px solid rgba(255,184,0,0.25)` }}>
         <div className="flex items-center justify-between">
           <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>Create Poll</span>
           <button onClick={onClose}><X className="w-4 h-4 text-white/40" /></button>
@@ -79,7 +79,7 @@ function CreatePollModal({ roomId, communityId, userId, onClose, onCreated }) {
         )}
         <button onClick={() => mut.mutate()} disabled={!form.question || mut.isPending}
           className="w-full py-2.5 rounded-xl font-black uppercase text-[11px]"
-          style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
+          style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(255,184,0,0.3)`, ...T }}>
           Launch Poll
         </button>
       </motion.div>
@@ -190,7 +190,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
         )}
       </AnimatePresence>
 
-      <div className="rounded-xl overflow-hidden" style={{ background: '#161616', border: `1px solid rgba(212,175,55,0.15)` }}>
+      <div className="rounded-xl overflow-hidden" style={{ background: '#161616', border: `1px solid rgba(255,184,0,0.15)` }}>
         <button className="w-full flex items-center justify-between px-4 py-3"
           onClick={() => setExpanded(e => { const n = !e; try { localStorage.setItem('poll_widget_expanded', String(n)); } catch {} return n; })}>
           <div className="flex items-center gap-2">
@@ -199,7 +199,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
               {activePoll ? 'Live Poll' : 'Polls'}
             </span>
             {activePoll && (
-              <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00FF88] animate-pulse" />
             )}
           </div>
           {expanded ? <ChevronUp className="w-4 h-4 text-white/30" /> : <ChevronDown className="w-4 h-4 text-white/30" />}
@@ -213,7 +213,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
                   <div className="pt-2">
                     <button onClick={() => setShowCreate(true)}
                       className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-black uppercase"
-                      style={{ background: `rgba(212,175,55,0.08)`, border: `1px solid rgba(212,175,55,0.2)`, color: GOLD, ...T }}>
+                      style={{ background: `rgba(255,184,0,0.08)`, border: `1px solid rgba(255,184,0,0.2)`, color: GOLD, ...T }}>
                       <Plus className="w-3 h-3" /> Create Poll
                     </button>
                   </div>
@@ -246,8 +246,8 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
                             onClick={() => !myVoteForPoll && voteMut.mutate({ poll: activePoll, optionIndex: i })}
                             className="w-full relative overflow-hidden rounded-lg text-left transition-all"
                             style={{
-                              border: hasVoted ? `1px solid ${GOLD}` : isWinner ? `1px solid rgba(212,175,55,0.4)` : '1px solid rgba(255,255,255,0.08)',
-                              background: hasVoted ? `rgba(212,175,55,0.1)` : 'rgba(255,255,255,0.03)',
+                              border: hasVoted ? `1px solid ${GOLD}` : isWinner ? `1px solid rgba(255,184,0,0.4)` : '1px solid rgba(255,255,255,0.08)',
+                              background: hasVoted ? `rgba(255,184,0,0.1)` : 'rgba(255,255,255,0.03)',
                               cursor: myVoteForPoll ? 'default' : 'pointer',
                             }}>
                             <div className="absolute inset-y-0 left-0 rounded-lg transition-all"
@@ -300,7 +300,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
                         )}
                         <button onClick={() => pinResultsMut.mutate(activePoll)}
                           className="flex-1 py-1.5 rounded-lg text-[11px] font-black uppercase"
-                          style={{ background: `rgba(212,175,55,0.08)`, color: GOLD, border: `1px solid rgba(212,175,55,0.2)`, ...T }}>
+                          style={{ background: `rgba(255,184,0,0.08)`, color: GOLD, border: `1px solid rgba(255,184,0,0.2)`, ...T }}>
                           📊 Share
                         </button>
                       </div>

@@ -124,16 +124,16 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
   if (!isHost) return null;
 
   return (
-    <div className="bg-[rgba(212,175,55,0.05)] border border-[#d4af37]/20 rounded-xl overflow-hidden">
+    <div className="bg-[rgba(255,184,0,0.05)] border border-[#FFB800]/20 rounded-xl overflow-hidden">
       <button
         onClick={() => { const n = !expanded; setExpanded(n); try { localStorage.setItem('chatbot_expanded', String(n)); } catch {} }}
         className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Bot className={`w-4 h-4 ${enabled ? 'text-[#d4af37]' : 'text-white/40'}`} />
+          <Bot className={`w-4 h-4 ${enabled ? 'text-[#FFB800]' : 'text-white/40'}`} />
           <span className="text-xs font-semibold text-white/70">Stream Chatbot</span>
           {enabled && (
-            <span className="text-[11px] text-[#6DBF7E] border border-green-600/30 px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(109,191,126,0.15)' }}>ACTIVE</span>
+            <span className="text-[11px] text-[#00FF88] border border-green-600/30 px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(0,255,136,0.15)' }}>ACTIVE</span>
           )}
         </div>
         <ChevronDown className={`w-3 h-3 text-white/30 transition-transform ${expanded ? 'rotate-180' : ''}`} />
@@ -149,7 +149,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
               {/* Enable toggle */}
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-white/60">Enable Chatbot</span>
-                <div onClick={() => { const n = !enabled; setEnabled(n); try { localStorage.setItem('chatbot_enabled', String(n)); } catch {} }} style={{ width:40, height:22, borderRadius:99, background: enabled ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                <div onClick={() => { const n = !enabled; setEnabled(n); try { localStorage.setItem('chatbot_enabled', String(n)); } catch {} }} style={{ width:40, height:22, borderRadius:99, background: enabled ? '#FF1564' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
                   <div style={{ position:'absolute', top:3, left: enabled ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                 </div>
               </div>
@@ -160,7 +160,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1">
                   {COMMANDS.map(cmd => (
                     <div key={cmd.trigger} className="flex items-center gap-1.5 text-[10px]">
-                      <code className="bg-white/10 rounded px-1 py-0.5 text-[#d4af37] font-mono shrink-0">{cmd.trigger}</code>
+                      <code className="bg-white/10 rounded px-1 py-0.5 text-[#FFB800] font-mono shrink-0">{cmd.trigger}</code>
                       <span className="text-white/35 truncate">{cmd.description}</span>
                     </div>
                   ))}
@@ -172,24 +172,24 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
                 <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1.5">Custom Command</p>
                 <div className="flex gap-1.5">
                   <input placeholder="!mycommand" value={customCmd} onChange={e => setCustomCmd(e.target.value)}
-                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder:text-white/20 outline-none focus:border-[#d4af37]/40" />
+                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder:text-white/20 outline-none focus:border-[#FFB800]/40" />
                   <input placeholder="Bot reply..." value={customReply} onChange={e => setCustomReply(e.target.value)}
-                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder:text-white/20 outline-none focus:border-[#d4af37]/40" />
+                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder:text-white/20 outline-none focus:border-[#FFB800]/40" />
                   <button
                     onClick={() => {
                       if (!customCmd || !customReply) return;
                       setCustomCmds(p => { const next = [...p, { trigger: customCmd, reply: customReply }]; try { localStorage.setItem('chatbot_custom_cmds', JSON.stringify(next)); } catch {} return next; });
                       setCustomCmd(''); setCustomReply('');
                     }}
-                    className="text-[10px] px-2 py-1 bg-[#d4af37]/20 text-[#d4af37] rounded border border-[#d4af37]/30 hover:bg-[#d4af37]/30 shrink-0">
+                    className="text-[10px] px-2 py-1 bg-[#FFB800]/20 text-[#FFB800] rounded border border-[#FFB800]/30 hover:bg-[#FFB800]/30 shrink-0">
                     <Plus className="w-3 h-3" />
                   </button>
                 </div>
                 {customCmds.map((c, i) => (
                   <div key={i} className="flex items-center gap-2 mt-1 text-[10px]">
-                    <code className="bg-white/10 rounded px-1.5 py-0.5 text-[#d4af37] font-mono">{c.trigger}</code>
+                    <code className="bg-white/10 rounded px-1.5 py-0.5 text-[#FFB800] font-mono">{c.trigger}</code>
                     <span className="text-white/40 flex-1 truncate">{c.reply}</span>
-                    <button onClick={() => setCustomCmds(p => { const next = p.filter((_, j) => j !== i); try { localStorage.setItem('chatbot_custom_cmds', JSON.stringify(next)); } catch {} return next; })} className="text-[#C0392B]/60 hover:text-[#C0392B]">
+                    <button onClick={() => setCustomCmds(p => { const next = p.filter((_, j) => j !== i); try { localStorage.setItem('chatbot_custom_cmds', JSON.stringify(next)); } catch {} return next; })} className="text-[#FF2040]/60 hover:text-[#FF2040]">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
@@ -200,7 +200,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <p className="text-[10px] text-white/30 uppercase tracking-wider">Scheduled Announcement</p>
-                  <div onClick={() => setSchedActive(v => !v)} style={{ width:32, height:18, borderRadius:99, background: schedActive ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                  <div onClick={() => setSchedActive(v => !v)} style={{ width:32, height:18, borderRadius:99, background: schedActive ? '#FF1564' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
                     <div style={{ position:'absolute', top:2, left: schedActive ? 16 : 2, width:14, height:14, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                   </div>
                 </div>

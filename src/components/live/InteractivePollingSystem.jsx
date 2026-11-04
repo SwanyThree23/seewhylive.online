@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Plus, Pin, PinOff, MessageCircle, TrendingUp, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-const POLL_COLORS = ['#C0392B', '#D4AF37', '#D4854A', '#CC7755', '#C9A84C'];
+const POLL_COLORS = ['#FF2040', '#FFB800', '#FF8C00', '#CC7755', '#FFB800'];
 
 const PollResultsChart = ({ poll, votes }) => {
   if (!poll?.options) return null;
@@ -27,10 +27,10 @@ const PollResultsChart = ({ poll, votes }) => {
           <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="rgba(255,255,255,0.3)" />
           <YAxis tick={{ fontSize: 10 }} stroke="rgba(255,255,255,0.3)" />
           <Tooltip
-            contentStyle={{ background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(212,175,55,0.3)' }}
-            cursor={{ fill: 'rgba(212,175,55,0.1)' }}
+            contentStyle={{ background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(255,184,0,0.3)' }}
+            cursor={{ fill: 'rgba(255,184,0,0.1)' }}
           />
-          <Bar dataKey="votes" fill="#d4af37" isAnimationActive={true} animationDuration={500}>
+          <Bar dataKey="votes" fill="#FFB800" isAnimationActive={true} animationDuration={500}>
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
@@ -85,7 +85,7 @@ const PollCard = ({ poll, votes, isHost, isPinned, onPin, onClose, hasVoted, onV
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       className="rounded-lg p-3 space-y-2"
-      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)' }}
+      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,184,0,0.2)' }}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
@@ -125,7 +125,7 @@ const PollCard = ({ poll, votes, isHost, isPinned, onPin, onClose, hasVoted, onV
               onClick={() => setSelectedOption(i)}
               className={`w-full text-left px-2.5 py-1.5 rounded text-[10px] font-semibold transition-all ${
                 selectedOption === i
-                  ? 'bg-[#d4af37] text-black'
+                  ? 'bg-[#FFB800] text-black'
                   : 'bg-white/5 text-white/70 hover:bg-white/10'
               }`}
             >
@@ -135,7 +135,7 @@ const PollCard = ({ poll, votes, isHost, isPinned, onPin, onClose, hasVoted, onV
           {selectedOption !== null && (
             <button
               onClick={handleVote}
-              className="w-full px-2.5 py-1.5 rounded text-[10px] font-bold text-black bg-[#d4af37] hover:bg-[#e5c158] transition-all"
+              className="w-full px-2.5 py-1.5 rounded text-[10px] font-bold text-black bg-[#FFB800] hover:bg-[#e5c158] transition-all"
             >
               Vote
             </button>
@@ -273,8 +273,8 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
     <div className="space-y-3">
       {/* Pinned poll (top) */}
       {pinnedPoll && (
-        <div className="border-2 border-[#d4af37] bg-[#d4af37]/5 rounded-lg p-2">
-          <div className="text-[11px] text-[#d4af37] font-semibold mb-1 flex items-center gap-1">
+        <div className="border-2 border-[#FFB800] bg-[#FFB800]/5 rounded-lg p-2">
+          <div className="text-[11px] text-[#FFB800] font-semibold mb-1 flex items-center gap-1">
             <Pin className="w-3 h-3" /> PINNED
           </div>
           <PollCard
@@ -294,7 +294,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
       {/* Active poll indicator */}
       {activePoll && activePoll.id !== pinnedPollId && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10">
-          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#D4854A' }} />
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#FF8C00' }} />
           <MessageCircle className="w-3.5 h-3.5 text-white/50" />
           <p className="text-[10px] font-semibold text-white/70 flex-1">{activePoll.question}</p>
           <TrendingUp className="w-3.5 h-3.5 text-white/30" />
@@ -308,7 +308,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
             <button
               onClick={() => setShowCreateForm(true)}
               className="w-full px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-[11px] font-bold transition-all"
-              style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37' }}
+              style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.3)', color: '#FFB800' }}
             >
               <Plus className="w-3.5 h-3.5" />
               Launch Poll
@@ -321,7 +321,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               className="p-3 rounded-lg space-y-2"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)' }}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,184,0,0.2)' }}
             >
               <input
                 value={newQuestion}
@@ -370,7 +370,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
                 <button
                   onClick={() => createPollMutation.mutate()}
                   disabled={createPollMutation.isPending}
-                  className="flex-1 px-2 py-1.5 rounded text-[10px] font-bold bg-[#d4af37] text-black hover:bg-[#e5c158] transition disabled:opacity-50"
+                  className="flex-1 px-2 py-1.5 rounded text-[10px] font-bold bg-[#FFB800] text-black hover:bg-[#e5c158] transition disabled:opacity-50"
                 >
                   Launch
                 </button>

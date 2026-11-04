@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, Copy, Check, ChevronDown, ChevronUp, Smartphone, Monitor, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
+const G = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const INGEST_APPS = [
@@ -56,16 +56,16 @@ export default function RTMPIngestPanel({ roomId, streamKey }) {
         onClick={() => { const n = !expanded; setExpanded(n); try { localStorage.setItem('rtmp_ingest_expanded', String(n)); } catch {} }}
         className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all"
         style={{
-          background: expanded ? 'rgba(128,0,32,0.12)' : 'rgba(255,255,255,0.03)',
-          border: `1px solid ${expanded ? 'rgba(192,57,43,0.4)' : 'rgba(255,255,255,0.08)'}`,
+          background: expanded ? 'rgba(255,21,100,0.12)' : 'rgba(255,255,255,0.03)',
+          border: `1px solid ${expanded ? 'rgba(255,32,64,0.4)' : 'rgba(255,255,255,0.08)'}`,
         }}
       >
         <div className="flex items-center gap-2">
-          <Radio className="w-3.5 h-3.5" style={{ color: expanded ? '#C0392B' : 'rgba(255,255,255,0.3)' }} />
-          <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: expanded ? '#D4AF37' : 'rgba(255,255,255,0.5)' }}>
+          <Radio className="w-3.5 h-3.5" style={{ color: expanded ? '#FF2040' : 'rgba(255,255,255,0.3)' }} />
+          <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: expanded ? '#FFB800' : 'rgba(255,255,255,0.5)' }}>
             RTMP Ingest
           </span>
-          <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(128,0,32,0.25)', color: 'rgba(255,255,255,0.4)', ...T }}>
+          <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,21,100,0.25)', color: 'rgba(255,255,255,0.4)', ...T }}>
             Pull external stream in
           </span>
         </div>
@@ -80,7 +80,7 @@ export default function RTMPIngestPanel({ roomId, streamKey }) {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="p-3 space-y-3 rounded-lg" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(128,0,32,0.2)' }}>
+            <div className="p-3 space-y-3 rounded-lg" style={{ background: 'rgba(3,3,10,0.9)', border: '1px solid rgba(255,21,100,0.2)' }}>
               <p className="text-[10px] text-white/35 leading-relaxed">
                 Push any external source (phone camera, secondary OBS, hardware encoder) directly into this SeeWhy room using the ingest endpoint below.
               </p>
@@ -111,7 +111,7 @@ export default function RTMPIngestPanel({ roomId, streamKey }) {
                     </button>
                   ))}
                 </div>
-                <div className="px-3 py-2 rounded-lg text-[11px] text-white/60 leading-relaxed" style={{ background: 'rgba(212,175,55,0.05)', border: `1px solid ${G}15` }}>
+                <div className="px-3 py-2 rounded-lg text-[11px] text-white/60 leading-relaxed" style={{ background: 'rgba(255,184,0,0.05)', border: `1px solid ${G}15` }}>
                   {INGEST_APPS[appIdx].hint}
                 </div>
               </div>
@@ -124,7 +124,7 @@ export default function RTMPIngestPanel({ roomId, streamKey }) {
                   { icon: <Camera className="w-3 h-3" />, label: 'Hardware', desc: 'Encoder or capture card' },
                 ].map(u => (
                   <div key={u.label} className="p-2 rounded text-center space-y-1" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div className="flex justify-center" style={{ color: 'rgba(212,175,55,0.5)' }}>{u.icon}</div>
+                    <div className="flex justify-center" style={{ color: 'rgba(255,184,0,0.5)' }}>{u.icon}</div>
                     <p className="text-[10px] font-black text-white/70" style={T}>{u.label}</p>
                     <p className="text-[9px] text-white/25">{u.desc}</p>
                   </div>

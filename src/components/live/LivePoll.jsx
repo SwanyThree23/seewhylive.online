@@ -42,11 +42,11 @@ function PollResults({ poll, votes, currentUser, onVote, onEnd }) {
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
                 transition={{ duration: 0.6, ease: 'easeOut' }}
-                className={`absolute inset-y-0 left-0 ${isWinner ? 'bg-[#d4af37]/30' : 'bg-white/10'}`}
+                className={`absolute inset-y-0 left-0 ${isWinner ? 'bg-[#FFB800]/30' : 'bg-white/10'}`}
               />
               <div className="absolute inset-0 flex items-center justify-between px-2.5">
                 <span className="text-[11px] font-medium text-white">{option}</span>
-                <span className={`text-[11px] font-bold ${isWinner ? 'text-[#d4af37]' : 'text-white/60'}`}>{pct}%</span>
+                <span className={`text-[11px] font-bold ${isWinner ? 'text-[#FFB800]' : 'text-white/60'}`}>{pct}%</span>
               </div>
             </div>
           </button>
@@ -199,15 +199,15 @@ export default function LivePoll({ roomId, isHost }) {
 
   if (!activePoll && !isHost) return null;
 
-  const inputStyle = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+  const inputStyle = { width: '100%', padding: '10px 14px', background: 'rgba(3,3,10,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
   const inputSmStyle = { ...inputStyle, height: 28, padding: '0 10px', fontSize: 12 };
 
   return (
-    <div className="bg-white/5 border border-[rgba(212,175,55,0.15)] rounded-xl p-3">
+    <div className="bg-white/5 border border-[rgba(255,184,0,0.15)] rounded-xl p-3">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
-          <BarChart2 className="w-3.5 h-3.5 text-[#d4af37]" />
-          <span className="text-[11px] font-bold text-[#d4af37] uppercase tracking-wide">Live Poll</span>
+          <BarChart2 className="w-3.5 h-3.5 text-[#FFB800]" />
+          <span className="text-[11px] font-bold text-[#FFB800] uppercase tracking-wide">Live Poll</span>
         </div>
         {isHost && !activePoll && (
           <button
@@ -224,14 +224,14 @@ export default function LivePoll({ roomId, isHost }) {
         {activePoll ? (
           <motion.div key="poll" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex items-center gap-1.5 mb-2">
-              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(192,57,43,0.8)', color: '#fff', border: 'none', display: 'inline-block' }}>LIVE</span>
+              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,32,64,0.8)', color: '#fff', border: 'none', display: 'inline-block' }}>LIVE</span>
               {pollSecondsLeft !== null && pollSecondsLeft > 0 && (
-                <span className="flex items-center gap-1" style={{ fontSize: 11, fontWeight: 700, color: pollSecondsLeft < 10 ? '#C0392B' : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <span className="flex items-center gap-1" style={{ fontSize: 11, fontWeight: 700, color: pollSecondsLeft < 10 ? '#FF2040' : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   <Clock className="w-3 h-3" />{pollSecondsLeft}s
                 </span>
               )}
               {pollSecondsLeft === 0 && (
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>Ended</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>Ended</span>
               )}
             </div>
             <PollResults
@@ -242,7 +242,7 @@ export default function LivePoll({ roomId, isHost }) {
               onEnd={isHost ? () => endPollMutation.mutate() : null}
             />
             {userVotedOption !== null && (
-              <p className="text-[10px] text-[#6DBF7E] flex items-center gap-1 mt-1">
+              <p className="text-[10px] text-[#00FF88] flex items-center gap-1 mt-1">
                 <Check className="w-3 h-3" /> Your vote was recorded
               </p>
             )}
@@ -283,7 +283,7 @@ export default function LivePoll({ roomId, isHost }) {
             ))}
             {options.length < 5 && (
               <button onClick={() => setOptions(prev => [...prev, ''])}
-                className="text-[10px] text-white/30 hover:text-[#d4af37] transition-colors flex items-center gap-1">
+                className="text-[10px] text-white/30 hover:text-[#FFB800] transition-colors flex items-center gap-1">
                 <Plus className="w-3 h-3" /> Add option
               </button>
             )}
@@ -299,7 +299,7 @@ export default function LivePoll({ roomId, isHost }) {
               </select>
             </div>
             <button
-              style={{ width: '100%', height: 28, fontSize: 12, background: '#d4af37', color: '#000', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 4, opacity: (!question.trim() || options.filter(o => o.trim()).length < 2 || createPollMutation.isPending) ? 0.5 : 1 }}
+              style={{ width: '100%', height: 28, fontSize: 12, background: '#FFB800', color: '#000', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 4, opacity: (!question.trim() || options.filter(o => o.trim()).length < 2 || createPollMutation.isPending) ? 0.5 : 1 }}
               disabled={!question.trim() || options.filter(o => o.trim()).length < 2 || createPollMutation.isPending}
               onClick={() => createPollMutation.mutate()}
             >

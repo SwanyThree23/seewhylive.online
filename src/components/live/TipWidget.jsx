@@ -5,19 +5,19 @@ import { base44 } from '@/api/base44Client';
 import { X, Zap, Heart, Star, Crown, Diamond } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK = '#C0392B';
-const BG = '#080B18';
-const BG2 = 'rgba(8,11,24,0.97)';
+const G = '#FFB800';
+const CRIMSON = '#FF1564';
+const PINK = '#FF2040';
+const BG = '#03030A';
+const BG2 = 'rgba(3,3,10,0.97)';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TIERS = [
   { amount: 1,   label: 'Bronze', color: '#CD7F32', icon: '🪙', glow: 'rgba(205,127,50,0.4)' },
   { amount: 5,   label: 'Silver', color: '#C0C0C0', icon: '⭐', glow: 'rgba(192,192,192,0.4)' },
-  { amount: 15,  label: 'Gold',   color: G,         icon: '💛', glow: 'rgba(212,175,55,0.5)' },
-  { amount: 50,  label: 'Plat',   color: '#4A8A7A', icon: '💎', glow: 'rgba(74,138,122,0.5)' },
-  { amount: 100, label: 'Diam',   color: PINK,      icon: '👑', glow: 'rgba(192,57,43,0.6)' },
+  { amount: 15,  label: 'Gold',   color: G,         icon: '💛', glow: 'rgba(255,184,0,0.5)' },
+  { amount: 50,  label: 'Plat',   color: '#00F5FF', icon: '💎', glow: 'rgba(0,245,255,0.5)' },
+  { amount: 100, label: 'Diam',   color: PINK,      icon: '👑', glow: 'rgba(255,32,64,0.6)' },
 ];
 
 const QUICK_EMOJIS = ['🔥', '💯', '❤️', '🚀', '👑', '💎', '🎉', '🤑'];
@@ -27,7 +27,7 @@ const METHOD_LABEL = {
   zelle: 'Zelle', chime: 'Chime', bank_transfer: 'Bank transfer',
 };
 
-const CONFETTI_COLORS = [G, CRIMSON, PINK, '#4A8A7A', '#7B5DA6', '#6DBF7E'];
+const CONFETTI_COLORS = [G, CRIMSON, PINK, '#00F5FF', '#8B5CF6', '#00FF88'];
 
 function Particle({ x, color, delay }) {
   const angle = Math.random() * 360;
@@ -132,7 +132,7 @@ function TipAnimation({ senderName, amount, emoji, tier, onDone }) {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.8, type: 'spring', bounce: 0.5 }}
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black uppercase mt-2 ml-2"
-            style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.6)', color: G, ...T }}
+            style={{ background: 'rgba(255,184,0,0.2)', border: '1px solid rgba(255,184,0,0.6)', color: G, ...T }}
           >
             🏆 Top Tipper
           </motion.div>
@@ -397,7 +397,7 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
                           value={custom} onChange={e => setCustom(e.target.value)}
                           placeholder="Enter amount"
                           className="w-full rounded-xl pl-7 pr-4 py-2.5 text-sm font-bold outline-none"
-                          style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${G}30`, color: '#fff', ...T }}
+                          style={{ background: 'rgba(3,3,10,0.9)', border: `1px solid ${G}30`, color: '#fff', ...T }}
                         />
                       </motion.div>
                     )}
@@ -464,7 +464,7 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
                     placeholder="Say something nice..."
                     rows={2}
                     className="w-full rounded-xl px-4 py-2.5 text-sm outline-none resize-none"
-                    style={{ background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', ...T }}
+                    style={{ background: 'rgba(3,3,10,0.85)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', ...T }}
                   />
                   <p className="text-right text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
                     {message.length}/140
@@ -481,7 +481,7 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
                     ...T,
                     background: validAmount
                       ? `linear-gradient(90deg, ${CRIMSON}, ${activeTier.color})`
-                      : 'rgba(128,0,32,0.25)',
+                      : 'rgba(255,21,100,0.25)',
                     color: '#fff',
                     letterSpacing: '0.1em',
                     boxShadow: validAmount ? `0 4px 24px ${activeTier.glow}` : 'none',

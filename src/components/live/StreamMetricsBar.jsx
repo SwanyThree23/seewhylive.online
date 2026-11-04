@@ -5,11 +5,11 @@ const F = { fontFamily: 'Barlow Condensed, sans-serif' };
 // Derive bar color from quality string
 function qualityToColor(quality) {
   if (quality === 'excellent') return '#22c55e';
-  if (quality === 'good')      return '#6DBF7E';
+  if (quality === 'good')      return '#00FF88';
   if (quality === 'fair')      return '#F59E0B';
   if (quality === 'poor')      return '#EF4444';
   if (quality === 'offline')   return '#6B7280';
-  return '#6DBF7E'; // default good
+  return '#00FF88'; // default good
 }
 
 function qualityToLabel(quality) {
@@ -98,8 +98,8 @@ export default function StreamMetricsBar({
         display: 'flex', alignItems: 'center', gap: 5,
         paddingRight: 10, borderRight: '1px solid rgba(255,255,255,0.08)', marginRight: 10,
       }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C0392B', animation: 'pulse 1.5s infinite', flexShrink: 0 }} />
-        <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.04em', color: '#C0392B', ...F, fontVariantNumeric: 'tabular-nums' }}>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF2040', animation: 'pulse 1.5s infinite', flexShrink: 0 }} />
+        <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.04em', color: '#FF2040', ...F, fontVariantNumeric: 'tabular-nums' }}>
           {fmt(elapsed)}
         </span>
       </div>
@@ -124,7 +124,7 @@ export default function StreamMetricsBar({
           paddingRight: 10, borderRight: '1px solid rgba(255,255,255,0.08)', marginRight: 10,
         }}>
           <span style={{ fontSize: 10 }}>💰</span>
-          <span style={{ fontSize: 12, fontWeight: 900, color: '#D4AF37', ...F }}>${tipTotal.toFixed(2)}</span>
+          <span style={{ fontSize: 12, fontWeight: 900, color: '#FFB800', ...F }}>${tipTotal.toFixed(2)}</span>
           <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', ...F }}>earned</span>
         </div>
       )}
@@ -136,7 +136,7 @@ export default function StreamMetricsBar({
           paddingRight: 10, borderRight: '1px solid rgba(255,255,255,0.08)', marginRight: 10,
         }}>
           <span style={{ fontSize: 10 }}>⭐</span>
-          <span style={{ fontSize: 12, fontWeight: 900, color: '#D4AF37', ...F }}>{subCount}</span>
+          <span style={{ fontSize: 12, fontWeight: 900, color: '#FFB800', ...F }}>{subCount}</span>
           <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', ...F }}>subs</span>
         </div>
       )}
@@ -149,7 +149,7 @@ export default function StreamMetricsBar({
           animation: 'pulse 1s ease-in-out 2',
         }}>
           <span style={{ fontSize: 10 }}>📈</span>
-          <span style={{ fontSize: 11, fontWeight: 900, color: '#6DBF7E', ...F }}>NEW PEAK</span>
+          <span style={{ fontSize: 11, fontWeight: 900, color: '#00FF88', ...F }}>NEW PEAK</span>
         </div>
       )}
 

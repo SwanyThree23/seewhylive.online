@@ -58,7 +58,7 @@ export default function StreamMetadata({ room, isHost }) {
     <div className="p-4 space-y-4 h-full overflow-y-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Globe className="w-5 h-5 text-[#d4af37]" />
+          <Globe className="w-5 h-5 text-[#FFB800]" />
           <h3 className="font-semibold text-white">Stream Info</h3>
         </div>
         <motion.button
@@ -66,9 +66,9 @@ export default function StreamMetadata({ room, isHost }) {
           disabled={updateMutation.isPending}
           animate={{ scale: saved ? [1, 1.2, 1] : 1 }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-            saved ? 'text-white' : 'bg-[#d4af37] text-black hover:bg-[#f5e6a3]'
+            saved ? 'text-white' : 'bg-[#FFB800] text-black hover:bg-[#f5e6a3]'
           }`}
-          style={saved ? { background: '#6DBF7E' } : undefined}
+          style={saved ? { background: '#00FF88' } : undefined}
         >
           <Check className="w-3.5 h-3.5" />
           {saved ? 'Saved!' : 'Save'}
@@ -85,7 +85,7 @@ export default function StreamMetadata({ room, isHost }) {
           value={title}
           onChange={e => setTitle(e.target.value.slice(0, 100))}
           placeholder="Stream title..."
-          style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+          style={{ width:'100%', padding:'10px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
         />
       </div>
 
@@ -96,7 +96,7 @@ export default function StreamMetadata({ room, isHost }) {
           {CATEGORIES.map(c => (
             <button key={c} onClick={() => setCategory(c)}
               className={`text-xs py-1.5 px-2 rounded-lg border capitalize transition-all ${
-                category === c ? 'border-[#d4af37] bg-[#d4af37]/10 text-white' : 'border-white/10 text-white/40 hover:border-white/20'
+                category === c ? 'border-[#FFB800] bg-[#FFB800]/10 text-white' : 'border-white/10 text-white/40 hover:border-white/20'
               }`}>
               {c}
             </button>
@@ -113,9 +113,9 @@ export default function StreamMetadata({ room, isHost }) {
             onChange={e => setTagInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && addTag()}
             placeholder="Add a tag..."
-            style={{ flex:1, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+            style={{ flex:1, padding:'10px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
           />
-          <button onClick={addTag} className="w-8 h-8 rounded-lg bg-[#d4af37]/10 border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] hover:bg-[#d4af37]/20">
+          <button onClick={addTag} className="w-8 h-8 rounded-lg bg-[#FFB800]/10 border border-[#FFB800]/30 flex items-center justify-center text-[#FFB800] hover:bg-[#FFB800]/20">
             <Plus className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -140,7 +140,7 @@ export default function StreamMetadata({ room, isHost }) {
           {RATINGS.map(r => (
             <button key={r.id} onClick={() => { setRating(r.id); try { localStorage.setItem('stream_rating', r.id); } catch {} }}
               className={`flex-1 text-[10px] py-1.5 rounded-lg border transition-all ${
-                rating === r.id ? 'border-[#d4af37] bg-[#d4af37]/10 text-white' : 'border-white/10 text-white/40'
+                rating === r.id ? 'border-[#FFB800] bg-[#FFB800]/10 text-white' : 'border-white/10 text-white/40'
               }`}>
               {r.label}
             </button>

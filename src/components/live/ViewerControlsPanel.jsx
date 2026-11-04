@@ -6,8 +6,8 @@ import { MobileSelect } from "@/components/ui/MobileSelect";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
-  burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
-  white: "#FFF", gray: "#888", dim: "#444", green: "#6DBF7E",
+  burgundy: "#FF1564", gold: "#FFB800", volt: "#FFB800",
+  white: "#FFF", gray: "#888", dim: "#444", green: "#00FF88",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace",
 };
@@ -82,7 +82,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
                 <button key={q} onClick={() => { setQuality(q); try { localStorage.setItem('viewer_quality', q); } catch {} }} style={{
                   flex: 1, padding: "6px 0", borderRadius: 6,
                   border: "1px solid " + (quality === q ? C.gold : "#333"),
-                  background: quality === q ? "rgba(212,175,55,0.15)" : C.surface,
+                  background: quality === q ? "rgba(255,184,0,0.15)" : C.surface,
                   cursor: "pointer", fontFamily: C.fMon, fontSize: 10,
                   color: quality === q ? C.gold : C.gray,
                 }}>{q}</button>
@@ -109,7 +109,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
                 <button key={l.id} onClick={() => { setLayout(l.id); try { localStorage.setItem('viewer_layout', l.id); } catch {} }} style={{
                   flex: 1, padding: "6px 4px", borderRadius: 6,
                   border: "1px solid " + (layout === l.id ? C.volt : "#333"),
-                  background: layout === l.id ? "rgba(212,175,55,0.08)" : C.surface,
+                  background: layout === l.id ? "rgba(255,184,0,0.08)" : C.surface,
                   cursor: "pointer", fontFamily: C.fMon, fontSize: 11,
                   color: layout === l.id ? C.volt : C.gray,
                 }}>{l.label}</button>
@@ -123,7 +123,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
             <button onClick={() => !handRaised && raiseMutation.mutate()} style={{
               padding: "10px", borderRadius: 8,
               border: "1px solid " + (handRaised ? C.volt : "#333"),
-              background: handRaised ? "rgba(212,175,55,0.1)" : C.surface,
+              background: handRaised ? "rgba(255,184,0,0.1)" : C.surface,
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 20 }}>{handRaised ? "✋" : "🙋"}</span>
@@ -145,11 +145,11 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
             <button onClick={() => { const n = !ccOn; setCcOn(n); try { localStorage.setItem('viewer_cc_on', String(n)); } catch {} }} style={{
               padding: "10px", borderRadius: 8,
               border: "1px solid " + (ccOn ? C.cyan : "#333"),
-              background: ccOn ? "rgba(109,191,126,0.08)" : C.surface,
+              background: ccOn ? "rgba(0,255,136,0.08)" : C.surface,
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 20 }}>CC</span>
-              <span style={{ fontFamily: C.fMon, fontSize: 11, color: ccOn ? "#6DBF7E" : C.gray }}>CAPTIONS</span>
+              <span style={{ fontFamily: C.fMon, fontSize: 11, color: ccOn ? "#00FF88" : C.gray }}>CAPTIONS</span>
             </button>
 
             {/* Report */}
@@ -158,7 +158,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 20 }}>🚩</span>
-              <span style={{ fontFamily: C.fMon, fontSize: 11, color: "#C0392B" }}>REPORT</span>
+              <span style={{ fontFamily: C.fMon, fontSize: 11, color: "#FF2040" }}>REPORT</span>
             </button>
           </div>
         </div>

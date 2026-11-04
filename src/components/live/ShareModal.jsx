@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 const PLATFORMS = [
   {
     name: 'Instagram',
-    color: 'from-[#800020] to-[#D4854A]',
+    color: 'from-[#FF1564] to-[#FF8C00]',
     emoji: '📸',
     action: (url, title) => `https://www.instagram.com/`,
     note: 'Copy link → paste in your Story or Bio',
@@ -26,21 +26,21 @@ const PLATFORMS = [
   },
   {
     name: 'Snapchat',
-    color: 'from-[#C9A84C] to-[#D4AF37]',
+    color: 'from-[#FFB800] to-[#FFB800]',
     emoji: '👻',
     action: (url, title) => `https://www.snapchat.com/scan?attachmentUrl=${encodeURIComponent(url)}`,
     note: 'Share via Snapchat link',
   },
   {
     name: 'Twitter/X',
-    color: 'from-[#080B18] to-[#0D1022]',
+    color: 'from-[#03030A] to-[#0D1022]',
     emoji: '🐦',
     action: (url, title) => `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent('🔴 I\'m LIVE on SeeWhy! Join me: ' + title)}`,
     note: 'Tweet your live link',
   },
   {
     name: 'WhatsApp',
-    color: 'from-[#4A9B5E] to-[#6DBF7E]',
+    color: 'from-[#4A9B5E] to-[#00FF88]',
     emoji: '💬',
     action: (url, title) => `https://wa.me/?text=${encodeURIComponent('🔴 Join me LIVE on SeeWhy! ' + title + ' → ' + url)}`,
     note: 'Share via WhatsApp',
@@ -102,10 +102,10 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.7)', padding:16 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background:'#080B18', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:448, color:'#fff' }}
+      <div style={{ background:'#03030A', border:'1px solid rgba(255,184,0,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:448, color:'#fff' }}
         onClick={e => e.stopPropagation()}>
         <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
-          <span style={{ color:'#d4af37', fontWeight:700, fontSize:18 }}>🔴 Share Your Live</span>
+          <span style={{ color:'#FFB800', fontWeight:700, fontSize:18 }}>🔴 Share Your Live</span>
         </div>
 
         <div className="space-y-4">
@@ -117,7 +117,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
           {canNativeShare && (
             <button
               onClick={handleNativeShare}
-              style={{ width: '100%', padding: '10px', borderRadius: 8, border: 'none', background: '#800020', color: '#D4AF37', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif' }}
+              style={{ width: '100%', padding: '10px', borderRadius: 8, border: 'none', background: '#FF1564', color: '#FFB800', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               <Share2 size={15} /> Share via Phone
             </button>
@@ -128,11 +128,11 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
             <input
               value={shareUrl}
               readOnly
-              style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'rgba(255,255,255,0.7)', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+              style={{ width:'100%', padding:'10px 14px', background:'rgba(3,3,10,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'rgba(255,255,255,0.7)', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
             />
             <button
               onClick={handleCopy}
-              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, border:'none', background: copied ? '#4A9B5E' : '#d4af37', color: copied ? '#fff' : '#000', cursor:'pointer', display:'flex', alignItems:'center' }}
+              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, border:'none', background: copied ? '#4A9B5E' : '#FFB800', color: copied ? '#fff' : '#000', cursor:'pointer', display:'flex', alignItems:'center' }}
             >
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </button>
