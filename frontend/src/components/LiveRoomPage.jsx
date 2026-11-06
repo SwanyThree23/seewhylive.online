@@ -451,8 +451,7 @@ export default function LiveRoomPage({
   var [privateMode,    setPrivateMode]    = useState(false);
   var [subscriberOnly, setSubscriberOnly] = useState(false);
   var [privatePwd,     setPrivatePwd]     = useState('');
-  var [approvalMode,  setApprovalMode]  = useState(false);
-  var [pendingRequests, setPendingRequests] = useState([]);
+
   var [showPrivateSet, setShowPrivateSet] = useState(false);
   var [paywallOn,      setPaywallOn]      = useState(false);
   var [paywallPrice,   setPaywallPrice]   = useState('');
