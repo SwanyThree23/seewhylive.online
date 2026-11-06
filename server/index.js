@@ -6444,6 +6444,24 @@ rtmp.on('fanout-restarted', function(data) {
   }
 });
 
+rtmp.on('fanout-started', function(data) {
+  var roomId = data.roomId;
+  if (rooms.has(roomId)) {
+    // Send platform names only — never forward keys or URLs to room members
+    var safeDests = (data.destinations || []).map(function(d) {
+      return { platform: d.platform || 'custom' };
+    });
+    io.to(roomId).emit('fanout-started', { roomId: roomId, destinations: safeDests });
+  }
+});
+
+rtmp.on('fanout-stopped', function(data) {
+  var roomId = data.roomId;
+  if (rooms.has(roomId)) {
+    io.to(roomId).emit('fanout-stopped', { roomId: roomId });
+  }
+});
+
 // ─── Deploy webhook ────────────────────────────────────────────────────────
 app.post('/api/webhooks/deploy', function(req, res) {
   var token    = req.headers['x-deploy-token'] || '';
