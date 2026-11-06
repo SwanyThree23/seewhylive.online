@@ -1326,6 +1326,22 @@ export default function LiveRoomPage({
       }
     });
 
+    socket.on('fanout-started', function(data) {
+      if (data && data.destinations) {
+        setFanoutStatus(data.destinations);
+      }
+    });
+    socket.on('fanout-failed', function() {
+      if (addToastRef.current) addToastRef.current('⚠️ Stream relay failed — retrying…', 'error');
+      setFanoutStatus([]);
+    });
+    socket.on('fanout-restarted', function() {
+      if (addToastRef.current) addToastRef.current('🔄 Stream relay reconnected', 'success');
+    });
+    socket.on('fanout-stopped', function() {
+      setFanoutStatus([]);
+    });
+
     return function() {
       mounted = false;
       clearInterval(slowWaitRef.current);
@@ -1399,6 +1415,10 @@ export default function LiveRoomPage({
       socket.off('soundboard');
       socket.off('sentiment-poll');
       socket.off('sentiment-update');
+      socket.off('fanout-started');
+      socket.off('fanout-failed');
+      socket.off('fanout-restarted');
+      socket.off('fanout-stopped');
       clearInterval(roomTimerRef.current);
       if (mediaRecRef.current && mediaRecRef.current.state !== 'inactive') {
         try { mediaRecRef.current.stop(); } catch(e) {}
