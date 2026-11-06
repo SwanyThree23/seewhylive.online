@@ -623,6 +623,7 @@ var brbState            = new Map();  // roomId → { msg, ts } when room is in 
 var tickerState         = new Map();  // roomId → { text } when scrolling ticker is active
 var sentimentState      = new Map();  // roomId → { question, yesCount, noCount, endTs, voters } while poll is active
 var spotlightState      = new Map();  // roomId → { guestId, username } when spotlight is active
+var roomTimerState      = new Map();  // roomId → { seconds, startTs } when countdown timer is running
 var roomRaisedHands     = new Map();  // roomId → Map<guestId, { username, ts }> for raised hands
 var pendingJoinRequests = new Map();  // roomId → Map<guestId, { username, ts }> for locked-stage join requests
 var qaAnsweringState    = new Map();  // roomId → { id, username, text } when host is answering a Q&A question
@@ -908,6 +909,17 @@ function seedEphemeralState(socketId, roomId) {
   var _pjrMap = pendingJoinRequests.get(roomId);
   if (_pjrMap && _pjrMap.size > 0) {
     _pjrMap.forEach(function(info, guestId) { io.to(socketId).emit('stage-join-requested', { guestId: guestId, username: info.username }); });
+  }
+  // Seed running countdown timer with time remaining so late joiners see it
+  var _timer = roomTimerState.get(roomId);
+  if (_timer) {
+    var _elapsed = Math.floor((Date.now() - _timer.startTs) / 1000);
+    var _remaining = _timer.seconds - _elapsed;
+    if (_remaining > 0) {
+      io.to(socketId).emit('room-timer', { active: true, seconds: _remaining });
+    } else {
+      roomTimerState.delete(roomId);
+    }
   }
 }
 
@@ -3910,6 +3922,7 @@ io.on('connection', function(socket) {
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
     var seconds = data && data.seconds ? Math.min(Math.max(parseInt(data.seconds, 10) || 30, 5), 3600) : 30;
+    roomTimerState.set(roomId, { seconds: seconds, startTs: Date.now() });
     io.to(roomId).emit('room-timer', { active: true, seconds: seconds });
   });
 
@@ -3917,6 +3930,7 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    roomTimerState.delete(roomId);
     io.to(roomId).emit('room-timer', { active: false });
   });
 
@@ -4032,6 +4046,14 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
     spotlightState.delete(roomId);
     io.to(roomId).emit('spotlight-end');
+  });
+
+  // ── stage-reaction ─────────────────────────────────────────────────────
+  // Any participant on stage floats an emoji reaction; re-broadcast to room.
+  socket.on('stage-reaction', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.emoji) return;
+    io.to(roomId).emit('stage-reaction', { emoji: String(data.emoji).slice(0, 8), from: socket.data.userId || socket.id });
   });
 
   // ── lower-all-hands ────────────────────────────────────────────────────
@@ -5855,6 +5877,7 @@ io.on('connection', function(socket) {
     brbState.delete(roomId);
     tickerState.delete(roomId);
     spotlightState.delete(roomId);
+    roomTimerState.delete(roomId);
     roomRaisedHands.delete(roomId);
     sentimentState.delete(roomId);
     pendingJoinRequests.delete(roomId);
