@@ -2435,6 +2435,7 @@ io.on('connection', function(socket) {
     var _isParticipant = role === 'host' || role === 'guest' || role === 'cohost' || role === 'owner' || role === 'admin';
     if (_isParticipant) {
       room.guests.set(socket.id, { guestId: guestId, username: username, role: role });
+      room.viewers.delete(socket.id); // remove if upgrading from viewer → participant
       addUserSocket(room, guestId, socket.id);
       if (role === 'host' || role === 'owner' || role === 'admin') {
         if (!room.hostSocketIds) room.hostSocketIds = new Set();
