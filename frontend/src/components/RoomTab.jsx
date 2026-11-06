@@ -1235,7 +1235,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       </div>
 
       {/* Hand raise queue (host only) */}
-      {role === 'host' && handQueue.length > 0 && (
+      {(role === 'host' || role === 'cohost') && handQueue.length > 0 && (
         <div style={{ background: 'rgba(26,21,16,.9)', borderTop: '1px solid rgba(201,168,76,.2)', padding: '6px 10px', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 1 }}>
             <span>✋ RAISE QUEUE ({handQueue.length})</span>
@@ -1366,7 +1366,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
           <span style={{ fontSize: 14 }}>⚙️</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>CONFIG</span>
         </button>
-        {role === 'host' && (
+        {(role === 'host' || role === 'cohost') && (
           <button onClick={function() { setShowPollModal(true); }} style={mcBtnStyle(activePoll && activePoll.active ? 'active' : '')}>
             <span style={{ fontSize: 14 }}>📊</span>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>POLL</span>
@@ -1551,7 +1551,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
           <div style={{ background: '#1A1510', borderRadius: 999, height: 6, overflow: 'hidden' }}>
             <div style={{ height: '100%', background: 'linear-gradient(90deg,#C9A84C,#C9A84C)', borderRadius: 999, width: Math.floor(Math.min(streamGoal.currentCents / streamGoal.targetCents * 100, 100)) + '%', transition: 'width .6s ease' }} />
           </div>
-          {isLive && role === 'host' && (
+          {isLive && (role === 'host' || role === 'cohost') && (
             <button onClick={function() { setStreamGoal(function(p) { return Object.assign({}, p, { enabled: false }); }); }}
               style={{ background: 'none', border: 'none', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', padding: 0, marginTop: 3 }}>
               ✕ hide goal
@@ -1589,7 +1589,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             style={{ background: showLangPicker ? 'rgba(201,168,76,.12)' : 'none', border: showLangPicker ? '1px solid rgba(201,168,76,.28)' : '1px solid transparent', borderRadius: 5, padding: '4px 8px', color: '#F0E8D4', cursor: 'pointer', fontSize: 14, flexShrink: 0 }}>
             {LANG_FLAGS[chatLang] || '🌐'}
           </button>
-          {isLive && role === 'host' && !streamGoal.enabled && (
+          {isLive && (role === 'host' || role === 'cohost') && !streamGoal.enabled && (
             <button onClick={function() { setStreamGoal(function(p) { return Object.assign({}, p, { enabled: true, currentCents: 0 }); }); }}
               title="Set stream goal"
               style={{ background: 'none', border: 'none', padding: '0 8px', color: '#8A7A62', cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>🎯</button>
@@ -1654,7 +1654,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 {pinnedMsg.message}
               </div>
             </div>
-            {role === 'host' && (
+            {(role === 'host' || role === 'cohost') && (
               <button onClick={unpinMessage} style={{ background: 'none', border: 'none', color: '#8A7A62', cursor: 'pointer', fontSize: 10, flexShrink: 0, padding: 0 }}>✕</button>
             )}
           </div>
@@ -1712,7 +1712,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                         {isNonEn && <span style={{ marginRight: 4, fontSize: 11 }} title={LANG_NAMES[msgLang] || msgLang}>{LANG_FLAGS[msgLang] || '🌐'}</span>}
                         <span style={{ color: msg.isBot ? '#D4854A' : '#F0E8D4' }}>{msg.message}</span>
                       </div>
-                      {role === 'host' && !msg.isBot && (
+                      {(role === 'host' || role === 'cohost') && !msg.isBot && (
                         <button onClick={function() { pinMessage(msg); }} title="Pin"
                           style={{ background: 'none', border: 'none', color: '#8A7A62', cursor: 'pointer', fontSize: 9, padding: '0 2px', flexShrink: 0, opacity: 0.5 }}>📌</button>
                       )}
