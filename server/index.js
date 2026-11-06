@@ -928,6 +928,14 @@ function seedEphemeralState(socketId, roomId) {
   if (_brUpdates && _brUpdates.length > 0) {
     _brUpdates.forEach(function(u) { io.to(socketId).emit('bracket-update', Object.assign({}, u, { roomId: roomId })); });
   }
+  // Seed current mod-rules so a rejoining host/cohost GuardianTab is in sync
+  var _mr = modRulesState.get(roomId);
+  if (_mr && Object.keys(_mr).length > 0) {
+    io.to(socketId).emit('mod-rules-updated', { rules: _mr, ts: Math.floor(Date.now() / 1000) });
+  }
+  // Seed current slow-mode seconds so late joiners see the correct chat delay
+  var _smSeed = slowModeSeconds.get(roomId) || 0;
+  if (_smSeed > 0) io.to(socketId).emit('slow-mode-update', { seconds: _smSeed });
 }
 
 
