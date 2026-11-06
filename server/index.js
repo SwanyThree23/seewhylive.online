@@ -621,6 +621,7 @@ var pkBattleState       = new Map();  // roomId → { challenger, defender, dura
 var screenShareState    = new Map();  // roomId → { userId, username } when screen sharing is active
 var brbState            = new Map();  // roomId → { msg, ts } when room is in BRB mode
 var tickerState         = new Map();  // roomId → { text } when scrolling ticker is active
+var sentimentState      = new Map();  // roomId → { question, yesCount, noCount, endTs, voters } while poll is active
 var spotlightState      = new Map();  // roomId → { guestId, username } when spotlight is active
 var roomRaisedHands     = new Map();  // roomId → Map<guestId, { username, ts }> for raised hands
 var qaAnsweringState    = new Map();  // roomId → { id, username, text } when host is answering a Q&A question
@@ -885,6 +886,11 @@ function seedEphemeralState(socketId, roomId) {
   var _lb = giftLeaderboards.get(roomId);
   if (_lb && _lb.length > 0) {
     io.to(socketId).emit('gift-leaderboard', { roomId: roomId, leaders: _lb.slice(0, 10) });
+  }
+  // Seed active sentiment poll so late joiners can vote
+  var _sent = sentimentState.get(roomId);
+  if (_sent && Date.now() < _sent.endTs) {
+    io.to(socketId).emit('sentiment-poll', { active: true, question: _sent.question, yesCount: _sent.yesCount, noCount: _sent.noCount, endTs: _sent.endTs });
   }
   // Seed ticker so late joiners see the scrolling banner
   var _ticker = tickerState.get(roomId);
@@ -3963,15 +3969,13 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
     var question = data && data.question ? String(data.question).slice(0, 120) : 'Quick check-in!';
     var endTs = Date.now() + 30000;
-    // Track votes in memory for this room during the poll
-    if (!socket.nsp._sentimentState) socket.nsp._sentimentState = {};
-    socket.nsp._sentimentState[roomId] = { yesCount: 0, noCount: 0, voters: new Set() };
+    sentimentState.set(roomId, { question: question, yesCount: 0, noCount: 0, endTs: endTs, voters: new Set() });
     io.to(roomId).emit('sentiment-poll', { active: true, question: question, yesCount: 0, noCount: 0, endTs: endTs });
     setTimeout(function() {
-      var state = socket.nsp._sentimentState && socket.nsp._sentimentState[roomId];
-      if (!state) return;
+      var state = sentimentState.get(roomId);
+      if (!state || state.endTs !== endTs) return; // a newer poll replaced this one
       io.to(roomId).emit('sentiment-poll', { active: false, yesCount: state.yesCount, noCount: state.noCount });
-      delete socket.nsp._sentimentState[roomId];
+      sentimentState.delete(roomId);
     }, 30000);
   });
 
@@ -3979,8 +3983,8 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data || !data.vote) return;
     var vote = data.vote === 'yes' ? 'yes' : 'no';
-    var state = socket.nsp._sentimentState && socket.nsp._sentimentState[roomId];
-    if (!state) return;
+    var state = sentimentState.get(roomId);
+    if (!state || Date.now() > state.endTs) return;
     var uid = socket.data.userId || socket.id;
     if (state.voters.has(uid)) return;
     state.voters.add(uid);
@@ -3993,9 +3997,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
-    var state = socket.nsp._sentimentState && socket.nsp._sentimentState[roomId];
+    var state = sentimentState.get(roomId);
     io.to(roomId).emit('sentiment-poll', { active: false, yesCount: state ? state.yesCount : 0, noCount: state ? state.noCount : 0 });
-    if (socket.nsp._sentimentState) delete socket.nsp._sentimentState[roomId];
+    sentimentState.delete(roomId);
   });
 
   // ── spotlight-guest / spotlight-end ────────────────────────────────────
@@ -5837,6 +5841,7 @@ io.on('connection', function(socket) {
     tickerState.delete(roomId);
     spotlightState.delete(roomId);
     roomRaisedHands.delete(roomId);
+    sentimentState.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
     viewerAlertSnapshot.delete(roomId);
 
