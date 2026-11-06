@@ -3078,7 +3078,7 @@ io.on('connection', function(socket) {
     var newRole = data.role;
     if (!roomId || !guestId || !newRole) return;
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
-    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
     var validRoles = ['cohost', 'guest', 'viewer'];
     if (validRoles.indexOf(newRole) === -1) return;
 
@@ -3189,6 +3189,17 @@ io.on('connection', function(socket) {
         if (_emojiCount > 10) {
           io.to(socket.id).emit('muted', { reason: 'EMOJI SPAM' });
           return;
+        }
+      }
+      // newacct — block messages from accounts created <7 days ago
+      if (_modRules['newacct']) {
+        var _naRow = db.prepare('SELECT created_at FROM user_profiles WHERE user_id = ?').get(userId);
+        if (_naRow) {
+          var _acctAgeSec = Math.floor(Date.now() / 1000) - _naRow.created_at;
+          if (_acctAgeSec < 7 * 24 * 3600) {
+            io.to(socket.id).emit('muted', { reason: 'NEW ACCOUNT (7 day hold)' });
+            return;
+          }
         }
       }
     }
