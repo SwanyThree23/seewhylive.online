@@ -3154,11 +3154,35 @@ io.on('connection', function(socket) {
       if (!_ownHosts.test(_urlMatch[1])) { _hasExternalLinks = true; break; }
     }
 
-    // Apply guardian mod-rules: strip external links if the host has that rule enabled
+    // Apply guardian mod-rules (skip for host/cohost who set the rules)
     var _modRules = modRulesState.get(roomId);
-    if (_hasExternalLinks && _modRules && _modRules['links']) {
-      message = message.replace(/https?:\/\/\S+/gi, '[link removed]').trim();
-      _hasExternalLinks = false;
+    if (_modRules && socket.data.role !== 'host' && socket.data.role !== 'cohost') {
+      // links — strip external URLs
+      if (_hasExternalLinks && _modRules['links']) {
+        message = message.replace(/https?:\/\/\S+/gi, '[link removed]').trim();
+        _hasExternalLinks = false;
+      }
+      // caps — block message if >80% uppercase and ≥8 chars
+      if (_modRules['caps'] && message.length >= 8) {
+        var _letters = message.replace(/[^a-zA-Z]/g, '');
+        if (_letters.length >= 4 && (_letters.replace(/[^A-Z]/g, '').length / _letters.length) > 0.8) {
+          io.to(socket.id).emit('muted', { reason: 'ALL CAPS FLOOD' });
+          return;
+        }
+      }
+      // repeat — block message with 5+ consecutive identical chars
+      if (_modRules['repeat'] && /(.)\1{4,}/.test(message)) {
+        io.to(socket.id).emit('muted', { reason: 'REPEAT CHARS' });
+        return;
+      }
+      // emoji — block message with >10 emoji characters
+      if (_modRules['emoji']) {
+        var _emojiCount = (message.match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu) || []).length;
+        if (_emojiCount > 10) {
+          io.to(socket.id).emit('muted', { reason: 'EMOJI SPAM' });
+          return;
+        }
+      }
     }
 
     // Spam check — keyed by userId so reconnect doesn't bypass a 60s mute
