@@ -85,7 +85,14 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
 
   useEffect(function() {
     try { localStorage.setItem('sw_guardian_rules', JSON.stringify(rules)); } catch(e) {}
-  }, [rules]);
+    if (socket && roomId) {
+      socket.emit('mod-rules', { roomId: roomId, rules: rules });
+      var slowRule = rules.find(function(r) { return r.id === 'slow'; });
+      if (slowRule) {
+        socket.emit('set-slow-mode', { roomId: roomId, seconds: slowRule.enabled ? 10 : 0 });
+      }
+    }
+  }, [rules]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(function() {
     try { localStorage.setItem('sw_guardian_banned', JSON.stringify(banned)); } catch(e) {}

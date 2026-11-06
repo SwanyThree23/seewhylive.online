@@ -6219,10 +6219,14 @@ io.on('connection', function(socket) {
       if (_mrStr && _mrStr.length > 8192) return;
       safeRules = JSON.parse(_mrStr);
     } catch(e) { return; }
-    // Build a quick lookup map of enabled rules by id for fast chat-message application
+    // Build a quick lookup map of enabled rules by id — handle both formats:
+    // Array: [{ id, enabled, ... }]  (GuardianTab)
+    // Object: { caps: true, links: false, ... }  (GreenRoomTab)
     var _rulesById = {};
     if (Array.isArray(safeRules)) {
       safeRules.forEach(function(r) { if (r && r.id) _rulesById[r.id] = !!r.enabled; });
+    } else if (safeRules && typeof safeRules === 'object') {
+      Object.keys(safeRules).forEach(function(k) { _rulesById[k] = !!safeRules[k]; });
     }
     modRulesState.set(sId, _rulesById);
     io.to(sId).emit('mod-rules-updated', { rules: safeRules, ts: Math.floor(Date.now() / 1000) });
