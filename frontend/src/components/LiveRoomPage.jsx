@@ -4604,7 +4604,7 @@ export default function LiveRoomPage({
                       {/* 🚀 Rocket reaction — send flying emoji to this tile */}
                       {!isOwn && (
                         <button
-                          onClick={function(e) { e.stopPropagation(); if (socket) socket.emit('panel:reaction', { roomId: roomId, guestId: gid, emoji: '🚀' }); }}
+                          onClick={function(e) { e.stopPropagation(); if (socket) socket.emit('panel:react', { roomId: roomId, guestId: gid, emoji: '🚀' }); }}
                           title="Send rocket reaction"
                           style={{ background: 'none', border: 'none', fontSize: 13, cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0, opacity: .75 }}>
                           🚀
