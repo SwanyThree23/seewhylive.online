@@ -3263,11 +3263,11 @@ export default function LiveRoomPage({
             </div>
             <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: bar, letterSpacing: 1, flexShrink: 0 }}>{pct}%</span>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, flexShrink: 0 }}>${(earned / 100).toFixed(0)}/${(target / 100).toFixed(0)}</span>
-            {role === 'host' && <button onClick={function() { if (setStreamGoal) setStreamGoal(null); if (socket) socket.emit('stream-goal-clear', { roomId: roomId }); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 9, padding: 0, lineHeight: 1 }}>✕</button>}
+            {(role === 'host' || role === 'cohost') && <button onClick={function() { if (setStreamGoal) setStreamGoal(null); if (socket) socket.emit('stream-goal-clear', { roomId: roomId }); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 9, padding: 0, lineHeight: 1 }}>✕</button>}
           </div>
         );
       })()}
-      {!streamGoal && role === 'host' && isLive && (
+      {!streamGoal && (role === 'host' || role === 'cohost') && isLive && (
         <div style={{ background: 'rgba(14,12,9,.7)', borderBottom: '1px solid ' + BORDER, padding: '4px 14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0 }}>
           <button onClick={function() { setShowGoalSet(true); }} style={{ background: 'none', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '3px 10px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer', letterSpacing: 1 }}>
             + SET STREAM GOAL
@@ -3332,7 +3332,7 @@ export default function LiveRoomPage({
             </div>
           )}
           {/* Host countdown floating chip */}
-          {role === 'host' && stageCountdownMs > 0 && (function() {
+          {(role === 'host' || role === 'cohost') && stageCountdownMs > 0 && (function() {
             var remMs = stageCountdownMs - Date.now();
             var remSec = Math.max(0, Math.ceil(remMs / 1000));
             var m = Math.floor(remSec / 60);
@@ -5081,7 +5081,7 @@ export default function LiveRoomPage({
                 )}
               </div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                {role === 'host' && audienceList.length > 0 && onStage.length < MAX_STAGE && (
+                {(role === 'host' || role === 'cohost') && audienceList.length > 0 && onStage.length < MAX_STAGE && (
                   <button
                     onClick={function() {
                       if (socket) socket.emit('stage-invite-all', { roomId: roomId });
@@ -5127,7 +5127,7 @@ export default function LiveRoomPage({
                     <AudienceCircle key={gid} g={g} speaking={!!speakingIds[gid]}
                       handRaised={isHand}
                       isTopGifter={topGifterId === gid && topGiftMax > 0}
-                      onInvite={role === 'host' && onStage.length < MAX_STAGE ? function() { if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); } : undefined}
+                      onInvite={(role === 'host' || role === 'cohost') && onStage.length < MAX_STAGE ? function() { if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); } : undefined}
                     />
                   );
                 })}
@@ -5141,7 +5141,7 @@ export default function LiveRoomPage({
                     <AudienceCircle key={gid} g={g} speaking={!!speakingIds[gid]}
                       handRaised={isHand}
                       isTopGifter={topGifterId === gid && topGiftMax > 0}
-                      onInvite={role === 'host' && onStage.length < MAX_STAGE ? function() { if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); } : undefined}
+                      onInvite={(role === 'host' || role === 'cohost') && onStage.length < MAX_STAGE ? function() { if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); } : undefined}
                     />
                   );
                 })}
@@ -6353,7 +6353,7 @@ export default function LiveRoomPage({
             icon="✋"
             label="Hand"
             active={handRaised}
-            badge={role === 'host' ? handQueue.length : 0}
+            badge={(role === 'host' || role === 'cohost') ? handQueue.length : 0}
             onPress={raiseHand}
           />
           <IconBtn
