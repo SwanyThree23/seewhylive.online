@@ -1375,6 +1375,22 @@ export default function LiveRoomPage({
       setFanoutStatus([]);
       setActiveStreamTitle('');
     });
+    socket.on('viewer-milestone', function(data) {
+      if (!data || !data.count) return;
+      var msgs = {
+        10: '🔥 10 viewers — you\'re picking up steam!',
+        25: '⚡ 25 viewers in the room!',
+        50: '🎉 50 viewers! Halfway to 100!',
+        100: '💯 100 viewers watching — you\'re on fire!',
+        250: '🚀 250 viewers! Incredible!',
+        500: '🌟 500 viewers! You\'re going viral!',
+        1000: '👑 1,000 viewers! YOU\'RE VIRAL!',
+        2500: '🏆 2,500 viewers — LEGENDARY!',
+        5000: '💎 5,000 viewers — ICON STATUS!',
+      };
+      var msg = msgs[data.count] || ('🎉 ' + data.count.toLocaleString() + ' viewers!');
+      if (addToastRef.current) addToastRef.current(msg, 'success');
+    });
 
     return function() {
       mounted = false;
@@ -1455,6 +1471,7 @@ export default function LiveRoomPage({
       socket.off('fanout-failed');
       socket.off('fanout-restarted');
       socket.off('fanout-stopped');
+      socket.off('viewer-milestone');
       clearInterval(roomTimerRef.current);
       if (mediaRecRef.current && mediaRecRef.current.state !== 'inactive') {
         try { mediaRecRef.current.stop(); } catch(e) {}
