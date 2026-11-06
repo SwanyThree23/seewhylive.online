@@ -6995,7 +6995,7 @@ export default function LiveRoomPage({
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT }}>{activePoll.q}</div>
-            {role === 'host' && (
+            {(role === 'host' || role === 'cohost') && (
               <button onClick={function() { if (socket) socket.emit('poll-end', { roomId: roomId }); setActivePoll(null); }}
                 style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 12, padding: '0 2px', flexShrink: 0 }}>END</button>
             )}
@@ -7042,7 +7042,7 @@ export default function LiveRoomPage({
                 <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: gold, letterSpacing: 2 }}>NOW ANSWERING</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>from {answeringQ.username}</span>
               </div>
-              {role === 'host' && (
+              {(role === 'host' || role === 'cohost') && (
                 <button onClick={function() {
                   if (socket) socket.emit('qa-answering-clear', {});
                   setAnsweringQ(null);
@@ -7065,13 +7065,13 @@ export default function LiveRoomPage({
           <div style={{ padding: '10px 14px', borderBottom: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
             <span style={{ fontWeight: 700, fontSize: 18, color: TEXT }}>Q&A</span>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              {role === 'host' && (
+              {(role === 'host' || role === 'cohost') && (
                 <button onClick={function() { setShowPollCreate(function(v) { var next = !v; if (next) { setShowVsCreate(false); setShowJudges(false); } return next; }); }}
                   style={{ background: showPollCreate ? 'rgba(201,168,76,.25)' : 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '5px 8px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
                   📊 POLL
                 </button>
               )}
-              {role === 'host' && (
+              {(role === 'host' || role === 'cohost') && (
                 <button onClick={function() { setShowVsCreate(function(v) { var next = !v; if (next) { setShowPollCreate(false); setShowJudges(false); } return next; }); }}
                   style={{ background: showVsCreate ? 'rgba(255,26,60,.25)' : 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 8, padding: '5px 8px', color: RED, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
                   ⚔ VS
@@ -7087,8 +7087,8 @@ export default function LiveRoomPage({
             </div>
           </div>
 
-          {/* Poll creator (host only) */}
-          {showPollCreate && role === 'host' && (
+          {/* Poll creator (host/cohost) */}
+          {showPollCreate && (role === 'host' || role === 'cohost') && (
             <div style={{ padding: '12px 14px', borderBottom: '1px solid ' + BORDER, background: CARD, flexShrink: 0 }}>
               <input value={pollDraft.q} onChange={function(e) { setPollDraft(function(d) { return { q: e.target.value, opts: d.opts }; }); }}
                 placeholder="Poll question..."
@@ -7107,8 +7107,8 @@ export default function LiveRoomPage({
             </div>
           )}
 
-          {/* VS Poll creator (host only) */}
-          {showVsCreate && role === 'host' && (
+          {/* VS Poll creator (host/cohost) */}
+          {showVsCreate && (role === 'host' || role === 'cohost') && (
             <div style={{ padding: '12px 14px', borderBottom: '1px solid ' + BORDER, background: CARD, flexShrink: 0 }}>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: RED, letterSpacing: 2, marginBottom: 8 }}>HEAD-TO-HEAD VS POLL</div>
               <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
@@ -7137,7 +7137,7 @@ export default function LiveRoomPage({
           {showJudges && (
             <div style={{ padding: '12px 14px', borderBottom: '1px solid ' + BORDER, background: CARD, flexShrink: 0, maxHeight: 240, overflowY: 'auto' }}>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: TEAL, letterSpacing: 2, marginBottom: 8 }}>JUDGE PANEL</div>
-              {role === 'host' && (
+              {(role === 'host' || role === 'cohost') && (
                 <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
                   <input value={judgeAssignName}
                     onChange={function(e) { setJudgeAssignName(e.target.value); }}
@@ -7171,7 +7171,7 @@ export default function LiveRoomPage({
                         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>AVG</div>
                       </div>
                     )}
-                    {role === 'host' && (
+                    {(role === 'host' || role === 'cohost') && (
                       <button onClick={function() { if (socket) socket.emit('judge-remove', { roomId: roomId, userId: j.userId }); }}
                         style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 12, padding: '2px 4px', flexShrink: 0 }}>✕</button>
                     )}
@@ -7225,7 +7225,7 @@ export default function LiveRoomPage({
                     }} style={{ background: qaMyVotes[item.id] ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (qaMyVotes[item.id] ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '4px 8px', color: qaMyVotes[item.id] ? GOLD : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
                       ▲ {item.upvotes}
                     </button>
-                    {role === 'host' && (
+                    {(role === 'host' || role === 'cohost') && (
                       <button onClick={function() {
                         var isActive = answeringQ && answeringQ.id === item.id;
                         if (isActive) {
@@ -7239,7 +7239,7 @@ export default function LiveRoomPage({
                         {(answeringQ && answeringQ.id === item.id) ? '🎤' : 'ANS'}
                       </button>
                     )}
-                    {role === 'host' && (
+                    {(role === 'host' || role === 'cohost') && (
                       <button onClick={function() { if (socket) socket.emit('qa-dismiss', { roomId: roomId, id: item.id }); setQaQueue(function(q) { return q.filter(function(x) { return x.id !== item.id; }); }); }}
                         style={{ background: 'none', border: 'none', color: MUTED, fontSize: 10, cursor: 'pointer', padding: '2px 4px' }}>✕</button>
                     )}
