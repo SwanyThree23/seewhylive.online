@@ -770,6 +770,9 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
             MOD
           </div>
         )}
+        {guest && guest.role === 'cohost' && (
+          <div style={{ position: 'absolute', top: 4, left: 4, background: 'rgba(201,168,76,.9)', borderRadius: 4, padding: '1px 5px', fontSize: 8, fontFamily: "'DM Mono',monospace", color: '#0E0C09', fontWeight: 700, letterSpacing: 1, zIndex: 5 }}>CO-HOST</div>
+        )}
         <div style={{ position: 'absolute', bottom: 0, left: '50%', pointerEvents: 'none', width: 0, height: 0 }}>
           {flyReactions.map(function(r) {
             return (
