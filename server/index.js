@@ -2609,9 +2609,14 @@ io.on('connection', function(socket) {
       return;
     }
     var _participantRoles = ['host', 'guest', 'cohost', 'owner', 'admin'];
+    var _direction = data && data.direction;
+    // Viewers (and other non-participant roles) may create recv-only transports so they
+    // can subscribe to producers and see the video grid. Send transports are participant-only.
     if (!_participantRoles.includes(socket.data.role)) {
-      if (ack) ack({ error: 'forbidden' });
-      return;
+      if (_direction !== 'recv') {
+        if (ack) ack({ error: 'forbidden' });
+        return;
+      }
     }
     mediasoup.createWebRtcTransport(roomId)
       .then(function(transport) {
