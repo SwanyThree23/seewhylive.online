@@ -4096,7 +4096,7 @@ export default function LiveRoomPage({
                             handRaised={isHand}
                             giftTotal={guestGiftTotals[gid] || 0}
                             activeEffect={panelEffects[gid] || null}
-                            onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                            onPowerPlay={!isOwn && role !== 'host' && role !== 'cohost' ? function(guest) { setShowPowerPlay(guest); } : null}
                             isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
                             remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
                             mirrorOverride={isOwn ? mirrorSelf : undefined}
@@ -4683,7 +4683,7 @@ export default function LiveRoomPage({
                                 handRaised={isHand}
                                 giftTotal={guestGiftTotals[gid] || 0}
                                 activeEffect={panelEffects[gid] || null}
-                                onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                                onPowerPlay={!isOwn && role !== 'host' && role !== 'cohost' ? function(guest) { setShowPowerPlay(guest); } : null}
                                 isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
                                 remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
                                 mirrorOverride={isOwn ? mirrorSelf : undefined}
@@ -4951,7 +4951,7 @@ export default function LiveRoomPage({
                           giftTotal={guestGiftTotals[gid] || 0}
                           handRaised={!!(raisedHands && raisedHands[gid])}
                           activeEffect={panelEffects[gid] || null}
-                          onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                          onPowerPlay={!isOwn && role !== 'host' && role !== 'cohost' ? function(guest) { setShowPowerPlay(guest); } : null}
                           isScreenSharing={isOwn ? isScreenSharing : !!(screenShareHost && screenShareHost.userId === gid)}
                           remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
                           remoteVolume={isOwn ? undefined : (guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1)}
@@ -7529,7 +7529,7 @@ export default function LiveRoomPage({
                     onCamToggle={isOwn ? toggleCam : null}
                     giftTotal={guestGiftTotals[gid] || 0}
                     activeEffect={panelEffects[gid] || null}
-                    onPowerPlay={!isOwn && role !== 'host' ? function(guest) { setShowPowerPlay(guest); } : null}
+                    onPowerPlay={!isOwn && role !== 'host' && role !== 'cohost' ? function(guest) { setShowPowerPlay(guest); } : null}
                     remoteQuality={isOwn ? null : (producerQuality[g.producerId] || null)}
                     mirrorOverride={isOwn ? mirrorSelf : undefined}
                     remoteVolume={isOwn ? undefined : (guestVolumes[gid] !== undefined ? guestVolumes[gid] : 1)}
