@@ -2318,7 +2318,23 @@ io.on('connection', function(socket) {
     if (/^[🛡✂🎤📡]/u.test(username)) {
       username = username.replace(/^[🛡✂🎤📡\s]+/u, '').trim() || 'Guest';
     }
-    var role     = socket.data.role || 'viewer';
+    // JWT role is the account-level role ('standard' for most logged-in users, 'owner'/'admin'
+    // for privileged accounts). Session role is what the client claims for THIS room visit
+    // (e.g. 'host' after clicking Go Live, 'guest' via invite link UI).
+    // Elevated JWT roles are always honoured as-is.
+    // For standard authenticated users we trust their claimed session role;
+    // 'host' claims are verified by the ownership transaction below.
+    var _jwtRole     = socket.data.role || 'viewer';
+    var _claimedRole = String(data.role || '').toLowerCase();
+    var _elevatedJwt = ['owner', 'admin', 'host', 'guest', 'cohost'];
+    var role;
+    if (_elevatedJwt.indexOf(_jwtRole) >= 0) {
+      role = _jwtRole;
+    } else if (_jwtRole !== 'viewer' && (_claimedRole === 'host' || _claimedRole === 'guest' || _claimedRole === 'viewer')) {
+      role = _claimedRole;
+    } else {
+      role = _jwtRole;
+    }
 
     if (!roomId || typeof roomId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roomId)) {
       if (ack) ack({ error: 'roomId required' });
