@@ -3793,6 +3793,18 @@ io.on('connection', function(socket) {
     mediasoup.setSocketConsumerPreferredLayerForGuest(socket.id, guestId, layer).catch(function() {});
   });
 
+  // ── consumer-layers (low-bandwidth mode layer cap) ─────────────────────
+  // Frontend emits this with { producerId, spatialLayer, temporalLayer }
+  // when the viewer toggles low-bandwidth mode. We look up the producer's
+  // owner via producerOwners and call setPreferredLayers on that consumer.
+  socket.on('consumer-layers', function(data) {
+    if (!data || !data.producerId) return;
+    var _guestId = producerOwners.get(String(data.producerId));
+    if (!_guestId) return;
+    var layer = Math.min(2, Math.max(0, Number(data.spatialLayer) || 0));
+    mediasoup.setSocketConsumerPreferredLayerForGuest(socket.id, _guestId, layer).catch(function() {});
+  });
+
   // ── hand-raise ─────────────────────────────────────────────────────────
   socket.on('hand-raise', function(data) {
     var userId   = socket.data.userId;
