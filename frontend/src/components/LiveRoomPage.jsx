@@ -557,6 +557,8 @@ export default function LiveRoomPage({
   var [presetNameInput,    setPresetNameInput]    = useState('');    // name input for saving preset
   var [brbActive,          setBrbActive]          = useState(false); // BRB overlay visible (from socket brb event)
   var [brbMsg,             setBrbMsg]             = useState('');    // message shown in BRB overlay
+  var [brbTick,            setBrbTick]            = useState(0);     // incremented each second while BRB is active
+  var brbStartTsRef        = useRef(0);            // Unix seconds when BRB started (from server ts)
   var [brbInput,           setBrbInput]           = useState('');    // input text for custom BRB message
   var [showBrbInput,       setShowBrbInput]       = useState(false); // show BRB config popover
   var [noiseSuppOn,        setNoiseSuppOn]        = useState(false); // Web Audio noise suppression active
@@ -977,7 +979,8 @@ export default function LiveRoomPage({
     socket.on('brb', function(data) {
       if (!data) return;
       setBrbActive(!!data.active);
-      if (!data.active) { setBrbMsg(''); return; }
+      if (!data.active) { setBrbMsg(''); setBrbTick(0); brbStartTsRef.current = 0; return; }
+      brbStartTsRef.current = data.ts ? data.ts : Math.floor(Date.now() / 1000);
       setBrbMsg(data.msg ? String(data.msg).slice(0, 100) : '');
     });
 
@@ -1742,6 +1745,13 @@ export default function LiveRoomPage({
     var id = setInterval(function() { setStageTimerTick(function(v) { return v + 1; }); }, 1000);
     return function() { clearInterval(id); };
   }, [stageLimitSec]);
+
+  // ── BRB elapsed timer: 1-second tick while overlay is active ────────────
+  useEffect(function() {
+    if (!brbActive) { setBrbTick(0); return; }
+    var id = setInterval(function() { setBrbTick(function(v) { return v + 1; }); }, 1000);
+    return function() { clearInterval(id); };
+  }, [brbActive]);
 
   // ── Custom reactions: persist whenever set changes ──────────────────────
   useEffect(function() {
@@ -3305,6 +3315,13 @@ export default function LiveRoomPage({
               {brbMsg ? (
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 16, color: TEXT, marginTop: 10, opacity: .85 }}>{brbMsg}</div>
               ) : null}
+              {brbStartTsRef.current > 0 ? (function() {
+                void brbTick; // consumed so React re-renders each tick
+                var elapsed = Math.max(0, Math.floor(Date.now() / 1000) - brbStartTsRef.current);
+                var m = Math.floor(elapsed / 60);
+                var s = elapsed % 60;
+                return <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, color: '#a09070', marginTop: 8 }}>🕐 {m > 0 ? m + 'm ' : ''}{s}s</div>;
+              })() : null}
               <div style={{ display: 'flex', gap: 6, marginTop: 14 }}>
                 {['', '', ''].map(function(_, i) {
                   return (

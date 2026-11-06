@@ -619,6 +619,7 @@ var liveSyncState       = new Map();  // roomId → { enabled, delayMs } when ho
 var roomPaywallMap      = new Map();  // roomId → { amountCents } when paywall is active
 var pkBattleState       = new Map();  // roomId → { challenger, defender, duration, startTs, challengerVotes, defenderVotes }
 var screenShareState    = new Map();  // roomId → { userId, username } when screen sharing is active
+var brbState            = new Map();  // roomId → { msg, ts } when room is in BRB mode
 var qaAnsweringState    = new Map();  // roomId → { id, username, text } when host is answering a Q&A question
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
@@ -792,6 +793,8 @@ function seedEphemeralState(socketId, roomId) {
   var _chyron = chyrons.get(roomId);
   if (_chyron && _chyron.text) io.to(socketId).emit('chyron-update', _chyron);
   if (subOnlyRooms.has(roomId)) io.to(socketId).emit('subscriber-only-changed', { enabled: true, ts: Math.floor(Date.now() / 1000) });
+  var _brb = brbState.get(roomId);
+  if (_brb) io.to(socketId).emit('brb', { active: true, msg: _brb.msg, from: '', ts: _brb.ts });
   if (roomAudioOnly.has(roomId))  io.to(socketId).emit('room-audio-only', { enabled: true });
   if (roomPrivateMap.has(roomId)) io.to(socketId).emit('room-private',    { enabled: true });
   var _pw = roomPaywallMap.get(roomId);
@@ -3887,13 +3890,16 @@ io.on('connection', function(socket) {
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
     var msg = data && data.msg ? String(data.msg).slice(0, 100) : '';
-    io.to(roomId).emit('brb', { active: true, msg: msg, from: socket.data.username || 'Host' });
+    var ts  = Math.floor(Date.now() / 1000);
+    brbState.set(roomId, { msg: msg, ts: ts });
+    io.to(roomId).emit('brb', { active: true, msg: msg, from: socket.data.username || 'Host', ts: ts });
   });
 
   socket.on('brb-end', function() {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    brbState.delete(roomId);
     io.to(roomId).emit('brb', { active: false });
   });
 
@@ -5782,6 +5788,7 @@ io.on('connection', function(socket) {
     screenShareState.delete(roomId);
     qaAnsweringState.delete(roomId);
     liveSyncState.delete(roomId);
+    brbState.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
     viewerAlertSnapshot.delete(roomId);
 
