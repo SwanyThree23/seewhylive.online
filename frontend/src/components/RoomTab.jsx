@@ -788,9 +788,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                       – STAGE
                     </button>
                   )}
-                  {role === 'host' && gid !== userId && g.role !== 'host' && (
+                  {(role === 'host' || role === 'cohost') && gid !== userId && g.role !== 'host' && g.role !== 'cohost' && (
                     <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
-                      {g.role !== 'cohost' ? (
+                      {role === 'host' && (g.role !== 'cohost' ? (
                         <button onClick={function() { promoteGuest(gid, 'cohost'); }}
                           style={{ background: 'rgba(212,133,74,.1)', border: '1px solid rgba(212,133,74,.35)', borderRadius: 6, padding: '4px 7px', color: '#D4854A', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 0.5 }}>
                           MOD
@@ -800,7 +800,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                           style={{ background: 'rgba(138,122,98,.1)', border: '1px solid rgba(138,122,98,.3)', borderRadius: 6, padding: '4px 7px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 0.5 }}>
                           UNMOD
                         </button>
-                      )}
+                      ))}
                       <button onClick={function() { kickGuest(gid); }}
                         style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 6, padding: '4px 7px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 0.5 }}>
                         KICK
