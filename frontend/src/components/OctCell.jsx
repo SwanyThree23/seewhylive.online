@@ -765,6 +765,11 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
             👑
           </div>
         )}
+        {guest && guest.role === 'cohost' && (
+          <div style={{ position: 'absolute', top: 6, left: 6, background: 'rgba(201,168,76,.9)', borderRadius: 4, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09', fontWeight: 700, letterSpacing: 1, zIndex: 5 }}>
+            CO-HOST
+          </div>
+        )}
         {guest && guest.role === 'mod' && !isHost && (
           <div style={{ position: 'absolute', top: 6, left: 6, background: 'rgba(59,130,246,.85)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', zIndex: 5 }}>
             MOD
