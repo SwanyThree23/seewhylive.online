@@ -392,6 +392,11 @@ export default function LiveRoomPage({
   var [cinemaMode,     setCinemaMode]     = useState(false);  // hide thumbnail strip in featured layout
   var [stageLocked,    setStageLocked]    = useState(false);  // stage entry locked by host
   var [showLiveModal,  setShowLiveModal]  = useState(false);
+  var [liveTitle,       setLiveTitle]       = useState('');       // stream title for go-live
+  var [liveDestinations, setLiveDestinations] = useState({});     // { youtube: false, tiktok: false, twitch: false, facebook: false }
+  var [liveKeys,        setLiveKeys]        = useState({});       // { youtube: '', tiktok: '', twitch: '', facebook: '' }
+  var [liveKeysVisible, setLiveKeysVisible] = useState({});       // { youtube: false, ... }
+  var [fanoutStatus,    setFanoutStatus]    = useState([]);        // [{ platform }] active fanout platforms
   var [stageGuests,    setStageGuests]    = useState([userId]);
   var [showMediaConf,  setShowMediaConf]  = useState(false);
   var [tipFeed,        setTipFeed]        = useState([]);      // {id,from,amount,emoji,ts}
@@ -2367,7 +2372,26 @@ export default function LiveRoomPage({
 
   var goLive = function() {
     if (!socket) return;
-    socket.emit('go-live', { roomId: roomId, destinations: { seewhy: true } });
+    var dests = [];
+    var platformUrls = {
+      youtube:  'rtmp://a.rtmp.youtube.com/live2',
+      tiktok:   'rtmp://push.rtmp.tiktok.com/live',
+      twitch:   'rtmp://live.twitch.tv/live',
+      facebook: 'rtmps://live-api-s.facebook.com:443/rtmp'
+    };
+    Object.keys(liveDestinations).forEach(function(platform) {
+      if (!liveDestinations[platform]) return;
+      var key = liveKeys[platform] ? String(liveKeys[platform]).trim() : '';
+      if (!key) return;
+      var url = platformUrls[platform];
+      if (!url) return;
+      dests.push({ platform: platform, url: url + '/' + key, streamKey: key });
+    });
+    socket.emit('go-live', {
+      roomId: roomId,
+      streamTitle: liveTitle.trim() || '',
+      destinations: dests
+    });
     setShowLiveModal(false);
     if (addToast) addToast('🔴 Going LIVE...', 'success');
   }
