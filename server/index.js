@@ -2922,6 +2922,16 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('stage-remove', { guestId: guestId });
   });
 
+  // ── toggle-cam (self) ─────────────────────────────────────────────────
+  socket.on('toggle-cam', function(data) {
+    if (!data) return;
+    var roomId  = socket.data.roomId;
+    var guestId = socket.data.userId;
+    if (!roomId || !guestId) return;
+    var camOff = !!data.camOff;
+    io.to(roomId).emit('guest-cam-state', { guestId: guestId, camOff: camOff });
+  });
+
   // ── mute-guest ─────────────────────────────────────────────────────────
   socket.on('mute-guest', function(data) {
     if (!data) return;

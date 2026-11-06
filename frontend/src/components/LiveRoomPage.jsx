@@ -1999,7 +1999,13 @@ export default function LiveRoomPage({
   }, [isScreenSharing]);
 
   var toggleMute = function() { setIsMuted(function(v) { return !v; }); }
-  var toggleCam = function()  { setIsCamOff(function(v) { return !v; }); }
+  var toggleCam = function() {
+    setIsCamOff(function(v) {
+      var next = !v;
+      if (socket) socket.emit('toggle-cam', { roomId: roomId, camOff: next });
+      return next;
+    });
+  }
 
   var addChatReaction = function(msgId, emoji) {
     if (!socket || !msgId) return;
