@@ -397,6 +397,7 @@ export default function LiveRoomPage({
   var [liveKeys,        setLiveKeys]        = useState({});       // { youtube: '', tiktok: '', twitch: '', facebook: '' }
   var [liveKeysVisible, setLiveKeysVisible] = useState({});       // { youtube: false, ... }
   var [fanoutStatus,    setFanoutStatus]    = useState([]);        // [{ platform }] active fanout platforms
+  var [activeStreamTitle, setActiveStreamTitle] = useState(''); // confirmed title from go-live-confirmed
   var [stageGuests,    setStageGuests]    = useState([userId]);
   var [showMediaConf,  setShowMediaConf]  = useState(false);
   var [tipFeed,        setTipFeed]        = useState([]);      // {id,from,amount,emoji,ts}
@@ -1326,6 +1327,9 @@ export default function LiveRoomPage({
       }
     });
 
+    socket.on('go-live-confirmed', function(data) {
+      if (data && data.streamTitle) setActiveStreamTitle(data.streamTitle);
+    });
     socket.on('fanout-started', function(data) {
       if (data && data.destinations) {
         setFanoutStatus(data.destinations);
@@ -1340,6 +1344,7 @@ export default function LiveRoomPage({
     });
     socket.on('fanout-stopped', function() {
       setFanoutStatus([]);
+      setActiveStreamTitle('');
     });
 
     return function() {
@@ -1415,6 +1420,7 @@ export default function LiveRoomPage({
       socket.off('soundboard');
       socket.off('sentiment-poll');
       socket.off('sentiment-update');
+      socket.off('go-live-confirmed');
       socket.off('fanout-started');
       socket.off('fanout-failed');
       socket.off('fanout-restarted');
@@ -3038,9 +3044,16 @@ export default function LiveRoomPage({
           </div>
         </div>
 
+        {/* Stage Room View — stream title (when set) */}
+        {isLive && activeStreamTitle && (
+          <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,.06)' }}>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{activeStreamTitle}</div>
+          </div>
+        )}
+
         {/* Stage Room View — Rec strip + viewer count */}
         {isLive && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: activeStreamTitle ? 4 : 8, paddingTop: activeStreamTitle ? 4 : 8, borderTop: activeStreamTitle ? 'none' : '1px solid rgba(255,255,255,.06)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <div style={{ width: 7, height: 7, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite', flexShrink: 0 }} />
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: RED, letterSpacing: 1 }}>REC</span>
@@ -5715,10 +5728,41 @@ export default function LiveRoomPage({
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.8)', display: 'flex', alignItems: 'flex-end', zIndex: 70, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowLiveModal(false); }}>
           <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '20px 20px 32px', border: '1px solid ' + BORDER, maxHeight: '85vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <div style={{ fontWeight: 700, fontSize: 22, color: TEXT }}>Go Live</div>
+              <div style={{ fontWeight: 700, fontSize: 22, color: TEXT }}>{isLive ? '🔴 On Air' : 'Go Live'}</div>
               <button onClick={function() { setShowLiveModal(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 20, cursor: 'pointer', lineHeight: 1, padding: 4 }}>✕</button>
             </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 16 }}>Configure and start your broadcast</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 16 }}>{isLive ? 'You are currently broadcasting' : 'Configure and start your broadcast'}</div>
+
+            {/* Currently live status panel */}
+            {isLive && (
+              <div style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 10, padding: '12px 14px', marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: activeStreamTitle || fanoutStatus.length > 0 ? 8 : 0 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite', flexShrink: 0 }} />
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: RED, letterSpacing: 2 }}>LIVE NOW</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginLeft: 'auto' }}>{viewerCount || 0} viewers</span>
+                </div>
+                {activeStreamTitle && (
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: TEXT, marginBottom: fanoutStatus.length > 0 ? 6 : 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{activeStreamTitle}</div>
+                )}
+                {fanoutStatus.length > 0 && (
+                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                    {fanoutStatus.map(function(fs, i) {
+                      var icons = { youtube: '▶️', twitch: '💜', tiktok: '🎵', facebook: '👍' };
+                      var labels = { youtube: 'YouTube', twitch: 'Twitch', tiktok: 'TikTok', facebook: 'Facebook' };
+                      return (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '2px 8px' }}>
+                          <span style={{ fontSize: 10 }}>{icons[fs.platform] || '📡'}</span>
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD }}>{labels[fs.platform] || fs.platform}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <button onClick={function() { endStream(); setShowLiveModal(false); }} style={{ width: '100%', marginTop: 12, background: 'transparent', border: '1px solid rgba(255,26,60,.4)', borderRadius: 8, padding: '10px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: RED, cursor: 'pointer', letterSpacing: 2 }}>
+                  ■ STOP BROADCAST
+                </button>
+              </div>
+            )}
 
             {/* Stream title */}
             <div style={{ marginBottom: 14 }}>
@@ -5881,6 +5925,9 @@ export default function LiveRoomPage({
                   <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', animation: 'livePulse 1.2s infinite' }} />
                   <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#fff', letterSpacing: 2 }}>LIVE</span>
                 </div>}
+                {isLive && activeStreamTitle && (
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: 'rgba(240,232,212,.85)', maxWidth: 160, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{activeStreamTitle}</span>
+                )}
                 {isLive && fanoutStatus.length > 0 && (
                   <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                     {fanoutStatus.map(function(fs, i) {

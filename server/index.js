@@ -5214,8 +5214,9 @@ io.on('connection', function(socket) {
     room.streamTitle   = (data && data.streamTitle) ? String(data.streamTitle).slice(0, 80) : '';
 
     io.to(roomId).emit('go-live-confirmed', {
-      roomId: roomId,
-      ts:     now
+      roomId:      roomId,
+      ts:          now,
+      streamTitle: room.streamTitle || ''
     });
 
     if (!wasAlreadyLive) {
