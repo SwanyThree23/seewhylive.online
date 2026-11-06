@@ -394,13 +394,19 @@ export default function LiveRoomPage({
   var [showLiveModal,  setShowLiveModal]  = useState(false);
   var [liveTitle,       setLiveTitle]       = useState('');       // stream title for go-live
   var [liveDestinations, setLiveDestinations] = useState({});     // { youtube: false, tiktok: false, twitch: false, facebook: false }
-  var [liveKeys,        setLiveKeys]        = useState({});       // { youtube: '', tiktok: '', twitch: '', facebook: '' }
+  var [liveKeys,        setLiveKeys]        = useState(function() {
+    try { return JSON.parse(localStorage.getItem('sw_stream_keys') || '{}'); } catch(e) { return {}; }
+  });
   var [liveKeysVisible, setLiveKeysVisible] = useState({});       // { youtube: false, ... }
   var [fanoutStatus,    setFanoutStatus]    = useState([]);        // [{ platform }] active fanout platforms
   var [activeStreamTitle, setActiveStreamTitle] = useState(''); // confirmed title from go-live-confirmed
   var [customRtmpEnabled, setCustomRtmpEnabled] = useState(false);
-  var [customRtmpUrl,     setCustomRtmpUrl]     = useState('');
-  var [customRtmpKey,     setCustomRtmpKey]     = useState('');
+  var [customRtmpUrl,     setCustomRtmpUrl]     = useState(function() {
+    try { return localStorage.getItem('sw_custom_rtmp_url') || ''; } catch(e) { return ''; }
+  });
+  var [customRtmpKey,     setCustomRtmpKey]     = useState(function() {
+    try { return localStorage.getItem('sw_custom_rtmp_key') || ''; } catch(e) { return ''; }
+  });
   var [customRtmpVisible, setCustomRtmpVisible] = useState(false);
   var [stageGuests,    setStageGuests]    = useState([userId]);
   var [showMediaConf,  setShowMediaConf]  = useState(false);
@@ -2399,6 +2405,18 @@ export default function LiveRoomPage({
     var sec = s % 60;
     return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
   }
+
+  useEffect(function() {
+    try { localStorage.setItem('sw_stream_keys', JSON.stringify(liveKeys)); } catch(e) {}
+  }, [liveKeys]);
+
+  useEffect(function() {
+    try { localStorage.setItem('sw_custom_rtmp_url', customRtmpUrl); } catch(e) {}
+  }, [customRtmpUrl]);
+
+  useEffect(function() {
+    try { localStorage.setItem('sw_custom_rtmp_key', customRtmpKey); } catch(e) {}
+  }, [customRtmpKey]);
 
   var goLive = function() {
     if (!socket) return;
@@ -5792,7 +5810,10 @@ export default function LiveRoomPage({
 
             {/* Multi-platform fanout */}
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>MULTISTREAM DESTINATIONS</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 2 }}>MULTISTREAM DESTINATIONS</div>
+                <button onClick={function() { setLiveKeys({}); setCustomRtmpUrl(''); setCustomRtmpKey(''); try { localStorage.removeItem('sw_stream_keys'); localStorage.removeItem('sw_custom_rtmp_url'); localStorage.removeItem('sw_custom_rtmp_key'); } catch(e) {} }} style={{ background: 'none', border: 'none', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', padding: 0 }}>clear keys</button>
+              </div>
               {[
                 { id: 'youtube',  label: 'YouTube',  emoji: '▶️', placeholder: 'YouTube stream key',  keyHint: 'youtube.com/live_dashboard' },
                 { id: 'twitch',   label: 'Twitch',   emoji: '💜', placeholder: 'Twitch stream key',   keyHint: 'dashboard.twitch.tv/settings/stream' },

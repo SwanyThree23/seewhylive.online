@@ -44,7 +44,7 @@ export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCa
     } else if (id === 'chat') {
       if (onToggleChat) onToggleChat();
     } else if (id === 'live') {
-      if (!isLive && onGoLive) onGoLive();
+      if (onGoLive) onGoLive();
     }
   }
 
@@ -71,7 +71,7 @@ export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCa
     if (id === 'cam')    return isCamOff ? 'Start Cam' : 'Camera';
     if (id === 'screen') return isScreenSharing ? 'Stop' : 'Screen';
     if (id === 'invite') return inviteCopied ? 'Copied!' : 'Invite';
-    if (id === 'live')   return isLive ? 'LIVE' : 'Go Live';
+    if (id === 'live')   return isLive ? 'On Air' : 'Go Live';
     return 'Chat';
   }
 
