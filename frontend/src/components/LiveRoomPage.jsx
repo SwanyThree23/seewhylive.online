@@ -392,8 +392,12 @@ export default function LiveRoomPage({
   var [cinemaMode,     setCinemaMode]     = useState(false);  // hide thumbnail strip in featured layout
   var [stageLocked,    setStageLocked]    = useState(false);  // stage entry locked by host
   var [showLiveModal,  setShowLiveModal]  = useState(false);
-  var [liveTitle,       setLiveTitle]       = useState('');       // stream title for go-live
-  var [liveDestinations, setLiveDestinations] = useState({});     // { youtube: false, tiktok: false, twitch: false, facebook: false }
+  var [liveTitle,       setLiveTitle]       = useState(function() {
+    try { return localStorage.getItem('sw_stream_title') || ''; } catch(e) { return ''; }
+  });
+  var [liveDestinations, setLiveDestinations] = useState(function() {
+    try { return JSON.parse(localStorage.getItem('sw_stream_dests') || '{}'); } catch(e) { return {}; }
+  });
   var [liveKeys,        setLiveKeys]        = useState(function() {
     try { return JSON.parse(localStorage.getItem('sw_stream_keys') || '{}'); } catch(e) { return {}; }
   });
@@ -2417,6 +2421,14 @@ export default function LiveRoomPage({
   useEffect(function() {
     try { localStorage.setItem('sw_stream_keys', JSON.stringify(liveKeys)); } catch(e) {}
   }, [liveKeys]);
+
+  useEffect(function() {
+    try { localStorage.setItem('sw_stream_title', liveTitle); } catch(e) {}
+  }, [liveTitle]);
+
+  useEffect(function() {
+    try { localStorage.setItem('sw_stream_dests', JSON.stringify(liveDestinations)); } catch(e) {}
+  }, [liveDestinations]);
 
   useEffect(function() {
     try { localStorage.setItem('sw_custom_rtmp_url', customRtmpUrl); } catch(e) {}
@@ -5887,7 +5899,7 @@ export default function LiveRoomPage({
             <div style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 2 }}>MULTISTREAM DESTINATIONS</div>
-                <button onClick={function() { setLiveKeys({}); setCustomRtmpUrl(''); setCustomRtmpKey(''); try { localStorage.removeItem('sw_stream_keys'); localStorage.removeItem('sw_custom_rtmp_url'); localStorage.removeItem('sw_custom_rtmp_key'); } catch(e) {} }} style={{ background: 'none', border: 'none', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', padding: 0 }}>clear keys</button>
+                <button onClick={function() { setLiveKeys({}); setCustomRtmpUrl(''); setCustomRtmpKey(''); setLiveDestinations({}); try { localStorage.removeItem('sw_stream_keys'); localStorage.removeItem('sw_custom_rtmp_url'); localStorage.removeItem('sw_custom_rtmp_key'); localStorage.removeItem('sw_stream_dests'); } catch(e) {} }} style={{ background: 'none', border: 'none', fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, cursor: 'pointer', padding: 0 }}>clear all</button>
               </div>
               {[
                 { id: 'youtube',  label: 'YouTube',  emoji: '▶️', placeholder: 'YouTube stream key',  keyHint: 'youtube.com/live_dashboard' },
