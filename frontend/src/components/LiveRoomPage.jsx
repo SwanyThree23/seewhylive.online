@@ -409,6 +409,7 @@ export default function LiveRoomPage({
     try { return localStorage.getItem('sw_custom_rtmp_key') || ''; } catch(e) { return ''; }
   });
   var [customRtmpVisible, setCustomRtmpVisible] = useState(false);
+  var [coHostLinkCopied,  setCoHostLinkCopied]  = useState(false);
   var [stageGuests,    setStageGuests]    = useState([userId]);
   var [showMediaConf,  setShowMediaConf]  = useState(false);
   var [tipFeed,        setTipFeed]        = useState([]);      // {id,from,amount,emoji,ts}
@@ -3100,6 +3101,17 @@ export default function LiveRoomPage({
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: TEXT }}>{allParticipants.length} here now</span>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>·</span>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{viewerCount || 0} total{peakViewers > (viewerCount || 0) ? ' (peak: ' + peakViewers + ')' : ''}</span>
+            {fanoutStatus.length > 0 && (
+              <div style={{ display: 'flex', gap: 3 }}>
+                {fanoutStatus.slice(0, 4).map(function(fs, i) {
+                  var icons = { youtube: '▶️', twitch: '💜', tiktok: '🎵', facebook: '👍', kick: '🟢', rumble: '🔴', custom: '📡' };
+                  return (
+                    <span key={i} title={fs.platform} style={{ fontSize: 9, lineHeight: 1 }}>{icons[fs.platform] || '📡'}</span>
+                  );
+                })}
+                {fanoutStatus.length > 4 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD }}>+{fanoutStatus.length - 4}</span>}
+              </div>
+            )}
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
               {(role === 'host' || role === 'cohost') && (
                 <button onClick={function() {
@@ -5961,12 +5973,35 @@ export default function LiveRoomPage({
               </div>
             </div>
 
-            {/* Co-streaming note */}
+            {/* Co-streaming invite panel */}
             <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '10px 12px', marginBottom: 16 }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 2, marginBottom: 4 }}>CO-STREAMING</div>
-              <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.5 }}>
-                Invite co-hosts via the <span style={{ color: GOLD }}>GREEN ROOM</span> tab. Co-hosts join your room directly — their camera feeds appear in the grid alongside yours on all multistream platforms.
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 2 }}>CO-STREAMING</div>
+                {guests && guests.filter(function(g) { return g.role === 'cohost'; }).length > 0 && (
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>
+                    {guests.filter(function(g) { return g.role === 'cohost'; }).length} co-host{guests.filter(function(g) { return g.role === 'cohost'; }).length !== 1 ? 's' : ''} on stage
+                  </div>
+                )}
               </div>
+              <div style={{ fontSize: 11, color: MUTED, lineHeight: 1.5, marginBottom: 10 }}>
+                Share your room link so guests can join as co-hosts. Their camera feeds appear in the panel grid alongside yours on all destinations.
+              </div>
+              <button
+                onClick={function() {
+                  var shareUrl = window.location.origin + (roomId ? '?room=' + roomId : '');
+                  try {
+                    navigator.clipboard.writeText(shareUrl).then(function() {
+                      setCoHostLinkCopied(true);
+                      setTimeout(function() { setCoHostLinkCopied(false); }, 2500);
+                    });
+                  } catch(e) {
+                    if (addToast) addToast('Copy the URL from your address bar', 'info');
+                  }
+                }}
+                style={{ width: '100%', background: coHostLinkCopied ? 'rgba(34,197,94,.12)' : 'rgba(201,168,76,.1)', border: '1px solid ' + (coHostLinkCopied ? 'rgba(34,197,94,.4)' : 'rgba(201,168,76,.35)'), borderRadius: 7, padding: '8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: coHostLinkCopied ? '#22c55e' : GOLD, cursor: 'pointer', letterSpacing: 1, transition: 'all .2s' }}
+              >
+                {coHostLinkCopied ? '✅ LINK COPIED' : '🔗 COPY CO-HOST INVITE LINK'}
+              </button>
             </div>
 
             <button onClick={goLive} style={{ width: '100%', background: RED, border: 'none', borderRadius: 12, padding: '14px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#fff', cursor: 'pointer', letterSpacing: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
