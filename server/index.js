@@ -4436,7 +4436,7 @@ io.on('connection', function(socket) {
   // ── live polls (server-side vote tracking) ────────────────────────────
   socket.on('poll-start', function(data) {
     var roomId = socket.data.roomId;
-    if (!roomId || socket.data.role !== 'host') return;
+    if (!roomId || (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin')) return;
     var question = String(data.question || '').slice(0, 200);
     var options  = (data.options || []).slice(0, 4).map(function(o) { return String(o).slice(0, 80); });
     if (!question || options.length < 2) return;
@@ -4532,7 +4532,7 @@ io.on('connection', function(socket) {
 
   socket.on('qa-dismiss', function(data) {
     var roomId = socket.data.roomId;
-    if (!roomId || !data.id || socket.data.role !== 'host') return;
+    if (!roomId || !data.id || (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin')) return;
     var _qdId = String(data.id);
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_qdId)) return;
     var queue = qaQueues.get(roomId);
@@ -4585,7 +4585,7 @@ io.on('connection', function(socket) {
   // ── VS Poll ───────────────────────────────────────────────────────────
   socket.on('vs-start', function(data) {
     var roomId = socket.data.roomId;
-    if (!roomId || socket.data.role !== 'host') return;
+    if (!roomId || (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin')) return;
     var sideA = String(data.sideA || 'Side A').slice(0, 60);
     var sideB = String(data.sideB || 'Side B').slice(0, 60);
     var _rawVsDur = Number(data.durationSec);
@@ -4636,7 +4636,7 @@ io.on('connection', function(socket) {
   // ── Judges ────────────────────────────────────────────────────────────
   socket.on('judge-assign', function(data) {
     var roomId = socket.data.roomId;
-    if (!roomId || socket.data.role !== 'host') return;
+    if (!roomId || (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin')) return;
     var uid  = String(data.userId || '');
     if (!uid || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid)) return;
     var uname = String(data.username || 'Judge').slice(0, 40);
@@ -4649,7 +4649,7 @@ io.on('connection', function(socket) {
 
   socket.on('judge-remove', function(data) {
     var roomId = socket.data.roomId;
-    if (!roomId || socket.data.role !== 'host') return;
+    if (!roomId || (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin')) return;
     var uid = String(data.userId || '').slice(0, 80);
     var roster = judgeRosters.get(roomId);
     if (roster) roster.delete(uid);
