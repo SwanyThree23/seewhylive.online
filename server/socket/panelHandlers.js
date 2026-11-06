@@ -101,7 +101,7 @@ function registerPanelHandlers(io, socket, rooms) {
       const request = await panelService.requestJoin({ roomId, userId, tenantId: socket.data.tenantId });
       // Emit only to host sockets in this room — not all viewers
       const roomSockets = await io.in(roomId).fetchSockets();
-      const hostSockets = roomSockets.filter(function(s) { return s.data && (s.data.role === 'host' || s.data.role === 'cohost'); });
+      const hostSockets = roomSockets.filter(function(s) { return s.data && (s.data.role === 'host' || s.data.role === 'cohost' || s.data.role === 'owner' || s.data.role === 'admin'); });
       hostSockets.forEach(function(hs) {
         hs.emit('panel:join_request_received', {
           roomId,
@@ -119,7 +119,7 @@ function registerPanelHandlers(io, socket, rooms) {
 
   socket.on('panel:resolve_join_request', async ({ roomId, userId, approve }, ack) => {
     try {
-      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) {
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') || socket.data.roomId !== roomId) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
@@ -168,7 +168,7 @@ function registerPanelHandlers(io, socket, rooms) {
 
   socket.on('panel:expand', async ({ roomId, slotIndex, expanded }, ack) => {
     try {
-      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) {
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') || socket.data.roomId !== roomId) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
@@ -187,7 +187,7 @@ function registerPanelHandlers(io, socket, rooms) {
 
   socket.on('panel:toggle_audio_only', async ({ roomId, isAudioOnly }, ack) => {
     try {
-      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) {
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') || socket.data.roomId !== roomId) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
@@ -201,7 +201,7 @@ function registerPanelHandlers(io, socket, rooms) {
 
   socket.on('panel:kick', async ({ roomId, targetUserId }, ack) => {
     try {
-      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) {
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') || socket.data.roomId !== roomId) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
@@ -245,7 +245,7 @@ function registerPanelHandlers(io, socket, rooms) {
 
   socket.on('panel:mute', async ({ roomId, targetUserId, isMuted }) => {
     try {
-      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) return;
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') || socket.data.roomId !== roomId) return;
       if (!targetUserId || !PANEL_UUID_RE.test(String(targetUserId))) return;
       await panelService.setMuted({ roomId, userId: targetUserId, isMuted });
       io.to(roomId).emit('panel:slot_muted', { roomId, userId: targetUserId, isMuted });
@@ -259,7 +259,7 @@ function registerPanelHandlers(io, socket, rooms) {
       var roomId = payload && payload.roomId;
       var targetUserId = payload && payload.targetUserId;
       var deviceId = payload && payload.deviceId;
-      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) return;
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') || socket.data.roomId !== roomId) return;
       if (!targetUserId || !PANEL_UUID_RE.test(String(targetUserId))) return;
       io.to(roomId).emit('panel:camera_command', { roomId: roomId, userId: targetUserId, deviceId: deviceId || null });
       if (ack) ack({ ok: true });

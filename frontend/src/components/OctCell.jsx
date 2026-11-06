@@ -600,7 +600,15 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
                 </button>
               </div>
             ) : (
-              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: nameFs, color: '#8A7A62', textAlign: 'center', maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: nameFs, color: '#8A7A62', textAlign: 'center', maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName}</span>
+                {!isOwnCell && guest && guest.producerId && (
+                  <button onClick={function(e) { e.stopPropagation(); setSubscribeKey(function(k) { return k + 1; }); }}
+                    style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 4, padding: '2px 6px', color: '#C9A84C', cursor: 'pointer', letterSpacing: .3 }}>
+                    ⟳ RETRY
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}
