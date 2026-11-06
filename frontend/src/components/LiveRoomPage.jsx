@@ -400,6 +400,7 @@ export default function LiveRoomPage({
   var [liveKeysVisible, setLiveKeysVisible] = useState({});       // { youtube: false, ... }
   var [fanoutStatus,    setFanoutStatus]    = useState([]);        // [{ platform }] active fanout platforms
   var [activeStreamTitle, setActiveStreamTitle] = useState(''); // confirmed title from go-live-confirmed
+  var [streamRecap,       setStreamRecap]       = useState(null); // post-broadcast stats from broadcast-ended
   var [customRtmpEnabled, setCustomRtmpEnabled] = useState(false);
   var [customRtmpUrl,     setCustomRtmpUrl]     = useState(function() {
     try { return localStorage.getItem('sw_custom_rtmp_url') || ''; } catch(e) { return ''; }
@@ -1340,6 +1341,11 @@ export default function LiveRoomPage({
     socket.on('go-live-confirmed', function(data) {
       if (data && data.streamTitle) setActiveStreamTitle(data.streamTitle);
     });
+
+    socket.on('broadcast-ended', function(data) {
+      setActiveStreamTitle('');
+      if (data) setStreamRecap(data);
+    });
     socket.on('fanout-started', function(data) {
       if (data && data.destinations) {
         setFanoutStatus(data.destinations);
@@ -1431,6 +1437,7 @@ export default function LiveRoomPage({
       socket.off('sentiment-poll');
       socket.off('sentiment-update');
       socket.off('go-live-confirmed');
+      socket.off('broadcast-ended');
       socket.off('fanout-started');
       socket.off('fanout-failed');
       socket.off('fanout-restarted');
@@ -5750,6 +5757,62 @@ export default function LiveRoomPage({
               );
             })}
             <button onClick={function() { setShowSubModal(false); }} style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, color: MUTED, cursor: 'pointer' }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ STREAM RECAP MODAL ════════════════ */}
+      {streamRecap && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 80, padding: 20 }}>
+          <div style={{ width: '100%', maxWidth: 380, background: '#1A140D', borderRadius: 18, border: '1px solid rgba(201,168,76,.25)', padding: '24px 20px 28px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <div style={{ fontSize: 36, marginBottom: 6 }}>🎉</div>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 800, fontSize: 22, color: '#F0E8D4', letterSpacing: 1 }}>BROADCAST ENDED</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', letterSpacing: 1, marginTop: 4 }}>HERE'S HOW YOUR STREAM WENT</div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 22, color: '#C9A84C', fontWeight: 700, lineHeight: 1 }}>{streamRecap.peakViewers || 0}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginTop: 4 }}>PEAK VIEWERS</div>
+              </div>
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 22, color: '#C9A84C', fontWeight: 700, lineHeight: 1 }}>${streamRecap.sessionRevenueCents ? (Math.floor(streamRecap.sessionRevenueCents) / 100).toFixed(2) : '0.00'}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginTop: 4 }}>EARNINGS (90%)</div>
+              </div>
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 22, color: '#C9A84C', fontWeight: 700, lineHeight: 1 }}>{streamRecap.superChatCount || 0}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginTop: 4 }}>SUPER CHATS</div>
+              </div>
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 22, color: '#C9A84C', fontWeight: 700, lineHeight: 1 }}>{streamRecap.clipCount || 0}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginTop: 4 }}>CLIPS MADE</div>
+              </div>
+            </div>
+
+            {streamRecap.topGifters && streamRecap.topGifters.length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginBottom: 8 }}>TOP SUPPORTERS</div>
+                {streamRecap.topGifters.slice(0, 3).map(function(g, i) {
+                  return (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: 'rgba(201,168,76,.06)', borderRadius: 6, marginBottom: 4 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C' }}>{'#' + (i + 1)}</span>
+                        <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: '#F0E8D4', fontWeight: 600 }}>{g.username || 'Anonymous'}</span>
+                      </div>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C' }}>${(Math.floor(g.totalCents || 0) / 100).toFixed(2)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <button
+              onClick={function() { setStreamRecap(null); }}
+              style={{ width: '100%', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 10, padding: '12px', fontFamily: "'DM Mono',monospace", fontWeight: 700, fontSize: 11, color: '#C9A84C', cursor: 'pointer', letterSpacing: 1 }}
+            >
+              DISMISS
+            </button>
           </div>
         </div>
       )}
