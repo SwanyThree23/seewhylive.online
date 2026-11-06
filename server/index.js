@@ -2426,7 +2426,7 @@ io.on('connection', function(socket) {
     // Subscriber-only gate — viewers must be subscribed when the room is in subscriber-only mode.
     // subOnlyRooms is populated by the 'subscriber-only-changed' socket event (host/cohost only).
     // Without this check any socket client could bypass the gate by emitting join-room directly.
-    if (role !== 'host' && subOnlyRooms.has(roomId)) {
+    if (role !== 'host' && role !== 'cohost' && role !== 'owner' && role !== 'admin' && subOnlyRooms.has(roomId)) {
       var _soRoom   = rooms.get(roomId);
       var _soHostId = _soRoom && _soRoom.hostUserId;
       var _soAllowed = false;
@@ -3256,9 +3256,9 @@ io.on('connection', function(socket) {
       return;
     }
 
-    // !ban @username command — host only
+    // !ban @username command — host/cohost only
     var _banMatch = /^\s*!ban\s+@?(\S+)/i.exec(message);
-    if (_banMatch && socket.data.role === 'host') {
+    if (_banMatch && (socket.data.role === 'host' || socket.data.role === 'cohost')) {
       var _banTarget = String(_banMatch[1]).slice(0, 60).toLowerCase();
       var _banTs     = Math.floor(Date.now() / 1000);
       var _banned    = false;
@@ -3310,7 +3310,7 @@ io.on('connection', function(socket) {
       var _helpTs  = Math.floor(Date.now() / 1000);
       var _isHost  = socket.data.role === 'host' || socket.data.role === 'cohost';
       var _helpMsg = _isHost
-        ? '📋 Commands: !clip · !so @user · !kick @user · !ban @user (host) · !help'
+        ? '📋 Commands: !clip · !so @user · !kick @user · !ban @user · !help'
         : '📋 Commands: !clip (request a highlight clip) · !help';
       io.to(socket.id).emit('chat-message', {
         id: uuidv4(), username: '🛡 SeeWhy',
