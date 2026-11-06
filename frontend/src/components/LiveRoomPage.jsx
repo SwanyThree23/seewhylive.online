@@ -3010,7 +3010,7 @@ export default function LiveRoomPage({
         <JoinRequestQueue socket={socket} roomId={roomId} />
       )}
 
-      {role === 'host' && (
+      {(role === 'host' || role === 'cohost') && (
         <HostQuickActions
           socket={socket}
           roomId={roomId}
@@ -3018,6 +3018,7 @@ export default function LiveRoomPage({
           isMuted={isMuted}
           isCamOff={isCamOff}
           addToast={addToast}
+          hideLive={role !== 'host'}
           onToggleMic={function() {
             var next = !isMuted;
             setIsMuted(next);
@@ -3029,7 +3030,7 @@ export default function LiveRoomPage({
             if (socket) socket.emit('toggle-cam', { roomId: roomId, camOff: next });
           }}
           onToggleChat={function() { setChatOpen(function(o) { return !o; }); }}
-          onGoLive={function() { setShowLiveModal(true); }}
+          onGoLive={role === 'host' ? function() { setShowLiveModal(true); } : null}
           isScreenSharing={isScreenSharing}
           onStartScreenShare={startScreenShare}
           onStopScreenShare={stopScreenShare}

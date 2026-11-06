@@ -16,8 +16,9 @@ var ACTIONS = [
   { id: 'live',   emoji: '🚀', label: 'Go Live'},
 ];
 
-export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCamOff, onToggleMic, onToggleCam, onToggleChat, onGoLive, addToast, isScreenSharing, onStartScreenShare, onStopScreenShare }) {
+export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCamOff, onToggleMic, onToggleCam, onToggleChat, onGoLive, addToast, isScreenSharing, onStartScreenShare, onStopScreenShare, hideLive }) {
   var [inviteCopied, setInviteCopied] = useState(false);
+  var actions = hideLive ? ACTIONS.filter(function(a) { return a.id !== 'live'; }) : ACTIONS;
 
   function handleAction(id) {
     if (id === 'mic') {
@@ -110,7 +111,7 @@ export default function HostQuickActions({ socket, roomId, isLive, isMuted, isCa
       WebkitOverflowScrolling: 'touch', flexShrink: 0,
       scrollbarWidth: 'none',
     }}>
-      {ACTIONS.map(function(action) {
+      {actions.map(function(action) {
         return (
           <button
             key={action.id}
