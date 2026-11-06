@@ -25,7 +25,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
   var [cdRunning,  setCdRunning]  = useState(false);
   var countdownRef = useRef(null);
 
-  var isHost = role === 'host';
+  var isHost = role === 'host' || role === 'cohost';
   var cfg    = overlayConfig || INIT_OVERLAY;
 
   var roster = [];
