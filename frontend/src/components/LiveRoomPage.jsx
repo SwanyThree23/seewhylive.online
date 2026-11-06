@@ -60,6 +60,7 @@ var ANIM = [
   '@keyframes reactionFloat{0%{transform:translateY(0) scale(1);opacity:1}70%{transform:translateY(-110px) scale(1.25);opacity:.85}100%{transform:translateY(-150px) scale(.9);opacity:0}}',
   '@keyframes tickerScroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}',
   '@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}80%{opacity:1}100%{transform:translateY(110%) rotate(540deg);opacity:0}}',
+  '@keyframes stageInviteCountdown{from{width:100%}to{width:0%}}',
 ].join('\n');
 
 // ─── Subtle reaction tone for emoji bursts ─────────────────────────────────
@@ -1093,7 +1094,11 @@ export default function LiveRoomPage({
 
     socket.on('stage-invite-pending', function(data) {
       if (!data) return;
-      setStageInvitePending({ invitedBy: data.invitedBy || 'Host', hostSocketId: data.hostSocketId || '', guestId: data.guestId || '' });
+      setStageInvitePending({ invitedBy: data.invitedBy || 'Host', hostSocketId: data.hostSocketId || '', guestId: data.guestId || '', expiresAt: Date.now() + 30000 });
+      // Auto-expire after 30s if not answered
+      setTimeout(function() {
+        setStageInvitePending(function(cur) { return cur && cur.hostSocketId === (data.hostSocketId || '') ? null : cur; });
+      }, 30000);
     });
 
     socket.on('stage-invite-accepted', function(data) {
@@ -2149,7 +2154,7 @@ export default function LiveRoomPage({
     setHandRaised(next);
     if (socket && next)  socket.emit('hand-raise', { roomId: roomId, guestId: userId, username: username });
     if (socket && !next) socket.emit('hand-lower', { roomId: roomId, guestId: userId });
-    if (addToast) addToast(next ? '✋ Hand raised — waiting for host' : 'Hand lowered', 'info');
+    if (addToast) addToast(next ? '✋ You\'re #' + (handQueue.length + 1) + ' in line!' : 'Hand lowered', 'info');
   }
 
   var sendReact = function(emoji) {
@@ -2634,6 +2639,8 @@ export default function LiveRoomPage({
   // Sorted queue of raised hands (oldest first = first in line)
   var handQueue = Object.keys(raisedHands).filter(function(gid) { return !!raisedHands[gid]; })
     .sort(function(a, b) { return raisedHands[a] - raisedHands[b]; });
+  // Own position in the queue (1-based); 0 means not in queue yet or not visible
+  var myQueuePos = handRaised ? handQueue.indexOf(userId) + 1 : 0;
 
   // Featured-mode guest navigator helpers
   var prevGuest = function() {
@@ -4174,7 +4181,7 @@ export default function LiveRoomPage({
                           { label: isPinned ? '📌 Unpin' : '📌 Pin (local)', action: 'pin' },
                           { label: spotlight && spotlight.guestId === gid ? '🔦 End spotlight' : '🔦 Spotlight all', action: 'spotlight' },
                           { label: g.remoteMuted ? '🎙 Unmute' : '🔇 Mute', action: 'mute' },
-                          { label: g.role === 'cohost' ? '⬇ Demote to Guest' : '⬆ Promote to Co-host', action: 'promote' },
+                          { label: g.role === 'cohost' ? '⬇ Demote to Guest' : '⬆ Promote to Co-host', action: 'promote', hide: role !== 'host' },
                           { label: (localLowerThirds[gid] && localLowerThirds[gid].visible) ? '📛 Hide name card' : '📛 Show name card', action: 'namecard' },
                           { label: '✏️ Edit name card', action: 'ltEdit' },
                           { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
@@ -5162,6 +5169,10 @@ export default function LiveRoomPage({
       {stageInvitePending && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9500, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,.55)', animation: 'fadeSlideIn .25s ease' }}>
           <div style={{ width: '100%', maxWidth: 480, background: '#1A1510', borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', border: '1px solid rgba(201,168,76,.2)', boxShadow: '0 -8px 40px rgba(0,0,0,.6)' }}>
+            {/* 30-second countdown bar */}
+            <div style={{ height: 3, background: 'rgba(255,255,255,.08)', borderRadius: 2, marginBottom: 18, overflow: 'hidden' }}>
+              <div style={{ height: '100%', background: GOLD, borderRadius: 2, width: '100%', animation: 'stageInviteCountdown 30s linear forwards', transformOrigin: 'left' }} />
+            </div>
             <div style={{ textAlign: 'center', marginBottom: 18 }}>
               <div style={{ fontSize: 36, marginBottom: 8 }}>🎤</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 2 }}>
@@ -6489,7 +6500,7 @@ export default function LiveRoomPage({
           {role !== 'host' && (
             <IconBtn
               icon="✋"
-              label={handRaised ? 'Hand ✓' : 'Hand'}
+              label={handRaised ? (myQueuePos > 0 ? '#' + myQueuePos : 'Hand ✓') : 'Hand'}
               active={handRaised}
               activeColor='rgba(255,140,0,.9)'
               onPress={raiseHand}
