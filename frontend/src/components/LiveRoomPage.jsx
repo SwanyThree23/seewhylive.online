@@ -786,7 +786,7 @@ export default function LiveRoomPage({
       if (data.privateMode)    setPrivateMode(true);
       if (data.subscriberOnly) setSubscriberOnly(true);
       try {
-        console.log('[LiveRoomPage] calling rtcManager.connect', { roomId: roomId, userId: userId, role: role }); await rtcManager.connect(socket, roomId, userId, role); console.log('[LiveRoomPage] connect() RESOLVED');
+        await rtcManager.connect(socket, roomId, userId, role);
         if (!mounted) return;
         setRtcReady(true);
         // Wire up stream health stats; guard against duplicate registration on reconnect
@@ -794,7 +794,7 @@ export default function LiveRoomPage({
         rtcManager.on('stats', onStatsUpdate);
       } catch(e) {
         if (!mounted) return;
-        console.error('[LiveRoomPage] connect() REJECTED', e); if (addToastRef.current) addToastRef.current('WebRTC: ' + e.message, 'error');
+        if (addToastRef.current) addToastRef.current('WebRTC: ' + e.message, 'error');
       }
     };
     socket.on('join-room-ack', onJoinRoomAck);
@@ -1999,7 +1999,13 @@ export default function LiveRoomPage({
   }, [isScreenSharing]);
 
   var toggleMute = function() { setIsMuted(function(v) { return !v; }); }
-  var toggleCam = function()  { setIsCamOff(function(v) { return !v; }); }
+  var toggleCam = function() {
+    setIsCamOff(function(v) {
+      var next = !v;
+      if (socket) socket.emit('toggle-cam', { roomId: roomId, camOff: next });
+      return next;
+    });
+  }
 
   var addChatReaction = function(msgId, emoji) {
     if (!socket || !msgId) return;

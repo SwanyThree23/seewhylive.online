@@ -2435,6 +2435,7 @@ io.on('connection', function(socket) {
     var _isParticipant = role === 'host' || role === 'guest' || role === 'cohost' || role === 'owner' || role === 'admin';
     if (_isParticipant) {
       room.guests.set(socket.id, { guestId: guestId, username: username, role: role });
+      room.viewers.delete(socket.id); // remove if upgrading from viewer → participant
       addUserSocket(room, guestId, socket.id);
       if (role === 'host' || role === 'owner' || role === 'admin') {
         if (!room.hostSocketIds) room.hostSocketIds = new Set();
@@ -2919,6 +2920,16 @@ io.on('connection', function(socket) {
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     io.to(roomId).emit('stage-remove', { guestId: guestId });
+  });
+
+  // ── toggle-cam (self) ─────────────────────────────────────────────────
+  socket.on('toggle-cam', function(data) {
+    if (!data) return;
+    var roomId  = socket.data.roomId;
+    var guestId = socket.data.userId;
+    if (!roomId || !guestId) return;
+    var camOff = !!data.camOff;
+    io.to(roomId).emit('guest-cam-state', { guestId: guestId, camOff: camOff });
   });
 
   // ── mute-guest ─────────────────────────────────────────────────────────
