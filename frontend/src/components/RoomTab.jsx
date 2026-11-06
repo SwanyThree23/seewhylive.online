@@ -239,7 +239,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         .catch(function(e) { console.error('[RoomTab] connect() REJECTED', e); addToast('WebRTC: ' + e.message, 'error'); });
     }
     var onHandRaise = function(data) {
-      if (!data || role !== 'host') return;
+      if (!data || (role !== 'host' && role !== 'cohost')) return;
       var gid   = data.guestId;
       var gname = data.username || gid;
       setHandQueue(function(q) {
@@ -248,6 +248,10 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         return q.concat([{ guestId: gid, username: gname, raisedAt: Date.now() }]);
       });
       addToast('✋ ' + gname + ' wants to join the stage', 'info');
+    }
+    var onHandLower = function(data) {
+      if (!data || !data.guestId) return;
+      setHandQueue(function(q) { return q.filter(function(x) { return x.guestId !== data.guestId; }); });
     }
     var onStageInvite = function(data) {
       if (!data || !data.guestId) return;
@@ -341,6 +345,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     }
     socket.on('join-room-ack',     onJoinRoomAck);
     socket.on('hand-raise',        onHandRaise);
+    socket.on('hand-lower',        onHandLower);
     socket.on('stage-invite',      onStageInvite);
     socket.on('stage-remove',      onStageRemove);
     socket.on('pk-start',          onPkStart);
@@ -360,6 +365,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     return function() {
       socket.off('join-room-ack',     onJoinRoomAck);
       socket.off('hand-raise',        onHandRaise);
+      socket.off('hand-lower',        onHandLower);
       socket.off('stage-invite',      onStageInvite);
       socket.off('stage-remove',      onStageRemove);
       socket.off('pk-start',          onPkStart);
