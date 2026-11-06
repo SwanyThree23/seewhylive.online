@@ -2840,6 +2840,21 @@ io.on('connection', function(socket) {
     }
   });
 
+  socket.on('stage-invite-all', function() {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    io.sockets.sockets.forEach(function(s) {
+      if (s.data.roomId === roomId && (s.data.role === 'viewer' || s.data.role === 'guest') && s.id !== socket.id) {
+        s.emit('stage-invite-pending', {
+          invitedBy: socket.data.username || 'Host',
+          hostSocketId: socket.id,
+          guestId: s.data.userId || s.data.guestId || '',
+        });
+      }
+    });
+  });
+
   socket.on('stage-invite-accept', function(data) {
     var roomId  = socket.data.roomId;
     var guestId = socket.data.userId;
