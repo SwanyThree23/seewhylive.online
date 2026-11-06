@@ -936,7 +936,7 @@ export default function LiveRoomPage({
 
     socket.on('hand-raise', function(data) {
       if (!data) return;
-      if (role === 'host' && addToastRef.current) addToastRef.current('✋ ' + (data.username || data.guestId) + ' wants on stage', 'info');
+      if ((role === 'host' || role === 'cohost') && addToastRef.current) addToastRef.current('✋ ' + (data.username || data.guestId) + ' wants on stage', 'info');
       setRaisedHands(function(h) { var n = Object.assign({}, h); n[data.guestId] = data.ts || Date.now(); return n; });
       setActivityLog(function(prev) { return [{ id: Date.now() + '_hand_' + data.guestId, type: 'hand', msg: '✋ ' + (data.username || data.guestId) + ' raised hand', ts: Date.now() }].concat(prev).slice(0, 100); });
     });
@@ -3549,8 +3549,8 @@ export default function LiveRoomPage({
                   );
                 })}
               </div>
-              {/* Auto-mute + stage time limit (host only) */}
-              {role === 'host' && (
+              {/* Auto-mute + stage time limit (host/cohost) */}
+              {(role === 'host' || role === 'cohost') && (
                 <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                   <button
                     onClick={function() { setAutoMuteJoin(function(v) { return !v; }); }}
@@ -3655,8 +3655,8 @@ export default function LiveRoomPage({
                   })}
                 </div>
               )}
-              {/* Stage countdown (host only) */}
-              {role === 'host' && (
+              {/* Stage countdown (host/cohost) */}
+              {(role === 'host' || role === 'cohost') && (
                 <div style={{ position: 'relative' }}>
                   <button
                     onClick={function() {
@@ -3691,8 +3691,8 @@ export default function LiveRoomPage({
                   )}
                 </div>
               )}
-              {/* Mute all (host only) */}
-              {role === 'host' && onStage.some(function(g) { var gid = g.guestId || g.userId; return gid !== userId && !g.remoteMuted; }) && (
+              {/* Mute all (host/cohost) */}
+              {(role === 'host' || role === 'cohost') && onStage.some(function(g) { var gid = g.guestId || g.userId; return gid !== userId && !g.remoteMuted; }) && (
                 <button
                   onClick={function() {
                     onStage.forEach(function(g) {
@@ -3727,8 +3727,8 @@ export default function LiveRoomPage({
                   })}
                 </div>
               )}
-              {/* Broadcast overlay (host only) */}
-              {role === 'host' && (
+              {/* Broadcast overlay (host/cohost) */}
+              {(role === 'host' || role === 'cohost') && (
                 <div style={{ position: 'relative' }}>
                   <button
                     onClick={function() { setShowBroadcastInput(function(v) { return !v; }); }}
@@ -3829,8 +3829,8 @@ export default function LiveRoomPage({
             </div>
           </div>
 
-          {/* ── Stage health bar (host only) ── */}
-          {role === 'host' && onStage.length > 1 && (function() {
+          {/* ── Stage health bar (host/cohost) ── */}
+          {(role === 'host' || role === 'cohost') && onStage.length > 1 && (function() {
             var cGood = 0; var cFair = 0; var cPoor = 0; var cFroz = 0;
             onStage.forEach(function(g) {
               if ((g.guestId || g.userId) === userId) return;
@@ -4963,7 +4963,7 @@ export default function LiveRoomPage({
         </div>
 
         {/* ── Hand-Raise Queue (host only) ── */}
-        {role === 'host' && handQueue.length > 0 && (
+        {(role === 'host' || role === 'cohost') && handQueue.length > 0 && (
           <div style={{ margin: '0 14px 10px', background: 'rgba(255,140,0,.06)', border: '1px solid rgba(255,140,0,.28)', borderRadius: 12, padding: '10px 12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 1.5, color: '#D4854A' }}>✋ STAGE QUEUE</span>
