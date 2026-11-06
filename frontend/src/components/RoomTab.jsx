@@ -253,6 +253,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       if (!data || !data.guestId) return;
       setHandQueue(function(q) { return q.filter(function(x) { return x.guestId !== data.guestId; }); });
     }
+    var onLowerAllHands = function() {
+      setHandQueue([]);
+    }
     var onStageInvite = function(data) {
       if (!data || !data.guestId) return;
       setStageGuests(function(s) {
@@ -346,6 +349,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     socket.on('join-room-ack',     onJoinRoomAck);
     socket.on('hand-raise',        onHandRaise);
     socket.on('hand-lower',        onHandLower);
+    socket.on('lower-all-hands',   onLowerAllHands);
     socket.on('stage-invite',      onStageInvite);
     socket.on('stage-remove',      onStageRemove);
     socket.on('pk-start',          onPkStart);
@@ -366,6 +370,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       socket.off('join-room-ack',     onJoinRoomAck);
       socket.off('hand-raise',        onHandRaise);
       socket.off('hand-lower',        onHandLower);
+      socket.off('lower-all-hands',   onLowerAllHands);
       socket.off('stage-invite',      onStageInvite);
       socket.off('stage-remove',      onStageRemove);
       socket.off('pk-start',          onPkStart);

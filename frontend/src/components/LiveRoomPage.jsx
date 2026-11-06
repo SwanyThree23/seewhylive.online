@@ -1089,6 +1089,7 @@ export default function LiveRoomPage({
 
     socket.on('lower-all-hands', function() {
       setRaisedHands({});
+      setJoinRequests([]);
     });
 
     var onStageInvite = function(data) {
