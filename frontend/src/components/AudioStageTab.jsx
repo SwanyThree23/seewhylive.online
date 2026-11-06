@@ -616,7 +616,7 @@ export default function AudioStageTab(props) {
           var lockAction = function() {
             var newLocked = !stageLocked;
             setStageLocked(newLocked);
-            if (socket) socket.emit('stage-lock', { roomId: roomId, locked: newLocked });
+            if (socket) socket.emit('lock-stage', { roomId: roomId, locked: newLocked });
             if (addToast) addToast(newLocked ? '🔒 Stage locked — no new speakers' : '🔓 Stage unlocked', 'success');
           };
           var items = [
