@@ -3442,9 +3442,14 @@ io.on('connection', function(socket) {
                 }
               }, 30000)
             });
-            io.to(_ppRoom.hostSocketId).emit('power-play:pending', {
-              playId: _ppPlayId, playType: _giftPlayType, emoji: _ppEmoji, name: name,
-              fromUser: fromUser, targetGuestId: toGuestId, valueCents: valueCents
+            // Notify host and all co-hosts so any of them can approve/reject
+            io.sockets.sockets.forEach(function(s) {
+              if (s.data.roomId === roomId && (s.data.role === 'host' || s.data.role === 'cohost' || s.data.role === 'owner')) {
+                s.emit('power-play:pending', {
+                  playId: _ppPlayId, playType: _giftPlayType, emoji: _ppEmoji, name: name,
+                  fromUser: fromUser, targetGuestId: toGuestId, valueCents: valueCents
+                });
+              }
             });
             socket.emit('power-play:awaiting', { playId: _ppPlayId });
           }

@@ -5289,7 +5289,7 @@ export default function LiveRoomPage({
       )}
 
       {/* ════════════════ HOST POWER PLAY APPROVAL ════════════════ */}
-      {role === 'host' && hostPendingPlays.length > 0 && (
+      {(role === 'host' || role === 'cohost') && hostPendingPlays.length > 0 && (
         <div style={{ position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 1100, display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 340, width: '92vw' }}>
           {hostPendingPlays.map(function(pp) {
             return (
