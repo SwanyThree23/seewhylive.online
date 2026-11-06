@@ -1766,7 +1766,7 @@ export default function LiveRoomPage({
     var n2 = onStage.length;
     if (n2 <= 1 && stageLayout !== 'featured') { setStageLayout('featured'); }
     else if (n2 >= 2 && stageLayout === 'featured') { setStageLayout('grid'); }
-  }, [onStage.length, autoLayout]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [guests.length, autoLayout]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Spotlight auto-rotation ──────────────────────────────────────────────
   useEffect(function() {
