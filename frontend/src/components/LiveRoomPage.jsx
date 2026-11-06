@@ -405,6 +405,7 @@ export default function LiveRoomPage({
   var [fanoutStatus,    setFanoutStatus]    = useState([]);        // [{ platform }] active fanout platforms
   var [activeStreamTitle, setActiveStreamTitle] = useState(initialStreamTitle || ''); // confirmed title from go-live-confirmed
   var [streamRecap,       setStreamRecap]       = useState(null); // post-broadcast stats from broadcast-ended
+  var [recapShareCopied,  setRecapShareCopied]  = useState(false);
   var [customRtmpEnabled, setCustomRtmpEnabled] = useState(false);
   var [customRtmpUrl,     setCustomRtmpUrl]     = useState(function() {
     try { return localStorage.getItem('sw_custom_rtmp_url') || ''; } catch(e) { return ''; }
@@ -651,6 +652,7 @@ export default function LiveRoomPage({
   var joinSoundEnabledRef    = useRef(true); // always-fresh mirror of joinSoundEnabled
   joinSoundEnabledRef.current = joinSoundEnabled;
   var liveStartRef           = useRef(null); // Date.now() when isLive first became true
+  var streamDurationRef      = useRef(0);   // always-current mirror of streamDuration for callbacks
   var prompterScrollRef      = useRef(null); // teleprompter scrollable div
   var prompterRafRef         = useRef(null); // requestAnimationFrame id for scroll
   var prompterLastTs         = useRef(null); // last rAF timestamp for delta-time scroll
@@ -1356,7 +1358,7 @@ export default function LiveRoomPage({
 
     socket.on('broadcast-ended', function(data) {
       setActiveStreamTitle('');
-      if (data) setStreamRecap(data);
+      if (data) setStreamRecap(Object.assign({}, data, { duration: streamDurationRef.current }));
       if (addToastRef.current) addToastRef.current('Stream ended', 'info');
     });
     socket.on('fanout-started', function(data) {
@@ -1825,6 +1827,9 @@ export default function LiveRoomPage({
       setStreamDuration(0);
     }
   }, [isLive]);
+
+  // Keep ref in sync so broadcast-ended callback captures duration before it resets
+  streamDurationRef.current = streamDuration;
 
   // ── Auto-record: start recording when stream goes live ─────────────────
   useEffect(function() {
@@ -5838,6 +5843,19 @@ export default function LiveRoomPage({
               </div>
             </div>
 
+            {streamRecap.duration > 0 && (function() {
+              var dh = Math.floor(streamRecap.duration / 3600);
+              var dm = Math.floor((streamRecap.duration % 3600) / 60);
+              var ds = streamRecap.duration % 60;
+              var dStr = (dh > 0 ? dh + 'h ' : '') + dm + 'm ' + ds + 's';
+              return (
+                <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 10, padding: '10px', textAlign: 'center', marginBottom: 10 }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 18, color: '#C9A84C', fontWeight: 700, lineHeight: 1 }}>{dStr}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginTop: 4 }}>STREAM DURATION</div>
+                </div>
+              );
+            })()}
+
             {streamRecap.topGifters && streamRecap.topGifters.length > 0 && (
               <div style={{ marginBottom: 14 }}>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginBottom: 8 }}>TOP SUPPORTERS</div>
@@ -5855,12 +5873,43 @@ export default function LiveRoomPage({
               </div>
             )}
 
-            <button
-              onClick={function() { setStreamRecap(null); }}
-              style={{ width: '100%', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 10, padding: '12px', fontFamily: "'DM Mono',monospace", fontWeight: 700, fontSize: 11, color: '#C9A84C', cursor: 'pointer', letterSpacing: 1 }}
-            >
-              DISMISS
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={function() {
+                  var r = streamRecap;
+                  var dh2 = Math.floor((r.duration || 0) / 3600);
+                  var dm2 = Math.floor(((r.duration || 0) % 3600) / 60);
+                  var ds2 = (r.duration || 0) % 60;
+                  var durLine = r.duration > 0 ? '\n⏱ Duration: ' + (dh2 > 0 ? dh2 + 'h ' : '') + dm2 + 'm ' + ds2 + 's' : '';
+                  var shareText = 'Just wrapped a live stream on SeeWhy LIVE! 🔴\n'
+                    + '👥 Peak viewers: ' + (r.peakViewers || 0) + '\n'
+                    + '💰 Earned: $' + (r.sessionRevenueCents ? (Math.floor(r.sessionRevenueCents) / 100).toFixed(2) : '0.00') + '\n'
+                    + '💬 Super chats: ' + (r.superChatCount || 0) + '\n'
+                    + '🎥 Clips: ' + (r.clipCount || 0)
+                    + durLine
+                    + '\n\nseewhylive.online';
+                  if (navigator.share) {
+                    navigator.share({ text: shareText }).catch(function() {});
+                  } else {
+                    try {
+                      navigator.clipboard.writeText(shareText).then(function() {
+                        setRecapShareCopied(true);
+                        setTimeout(function() { setRecapShareCopied(false); }, 2500);
+                      });
+                    } catch(e) {}
+                  }
+                }}
+                style={{ flex: 1, background: recapShareCopied ? 'rgba(34,197,94,.18)' : 'rgba(201,168,76,.1)', border: '1px solid ' + (recapShareCopied ? 'rgba(34,197,94,.5)' : 'rgba(201,168,76,.3)'), borderRadius: 10, padding: '12px', fontFamily: "'DM Mono',monospace", fontWeight: 700, fontSize: 10, color: recapShareCopied ? '#22c55e' : '#C9A84C', cursor: 'pointer', letterSpacing: 1 }}
+              >
+                {recapShareCopied ? '✅ COPIED!' : '📊 SHARE STATS'}
+              </button>
+              <button
+                onClick={function() { setStreamRecap(null); setRecapShareCopied(false); }}
+                style={{ flex: 1, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 10, padding: '12px', fontFamily: "'DM Mono',monospace", fontWeight: 700, fontSize: 11, color: '#C9A84C', cursor: 'pointer', letterSpacing: 1 }}
+              >
+                DISMISS
+              </button>
+            </div>
           </div>
         </div>
       )}
