@@ -17,8 +17,10 @@ var emitter = new EventEmitter();
 var RTMP_BASE_URLS = {
   youtube:  'rtmp://a.rtmp.youtube.com/live2',
   tiktok:   'rtmp://push.rtmp.tiktok.com/live',
-  twitch:   'rtmp://live.twitch.tv/live',
+  twitch:   'rtmp://live.twitch.tv/app',
   facebook: 'rtmps://live-api-s.facebook.com:443/rtmp',
+  kick:     'rtmp://fa723fc1b171.global-contribute.live-video.net/app',
+  rumble:   'rtmp://p.contribute.live-video.net/live',
   custom:   null  // caller supplies full rtmpUrl
 };
 
