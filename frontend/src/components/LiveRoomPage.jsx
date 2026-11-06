@@ -372,7 +372,7 @@ export default function LiveRoomPage({
   userId, username, role, roomId, branding,
   addToast, overlayConfig, viewerCount, mediaConfig,
   streamInfo, streamGoal, setStreamGoal, sessionEarningsCents, onLeave,
-  setChat,
+  setChat, initialStreamTitle,
 }) {
   var chat = initialChat || [];
   var [rtcReady,      setRtcReady]      = useState(false);
@@ -403,7 +403,7 @@ export default function LiveRoomPage({
   });
   var [liveKeysVisible, setLiveKeysVisible] = useState({});       // { youtube: false, ... }
   var [fanoutStatus,    setFanoutStatus]    = useState([]);        // [{ platform }] active fanout platforms
-  var [activeStreamTitle, setActiveStreamTitle] = useState(''); // confirmed title from go-live-confirmed
+  var [activeStreamTitle, setActiveStreamTitle] = useState(initialStreamTitle || ''); // confirmed title from go-live-confirmed
   var [streamRecap,       setStreamRecap]       = useState(null); // post-broadcast stats from broadcast-ended
   var [customRtmpEnabled, setCustomRtmpEnabled] = useState(false);
   var [customRtmpUrl,     setCustomRtmpUrl]     = useState(function() {

@@ -773,6 +773,7 @@ function getJoinStateForRoom(roomId) {
   var _isLiveRoom = rooms.get(roomId);
   state.isLive          = !!(_isLiveRoom && _isLiveRoom.isLive);
   state.liveStartedAt   = (state.isLive && _isLiveRoom.liveStartedAt) ? _isLiveRoom.liveStartedAt : 0;
+  state.streamTitle     = (state.isLive && _isLiveRoom.streamTitle) ? _isLiveRoom.streamTitle : '';
   state.audioOnly       = roomAudioOnly.has(roomId);
   state.privateMode     = roomPrivateMap.has(roomId);
   state.subscriberOnly  = subOnlyRooms.has(roomId);
