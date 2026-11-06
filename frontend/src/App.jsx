@@ -1035,7 +1035,12 @@ export default function App() {
         }
       } else if (data.event === 'role_changed' && data.role) {
         setRole(data.role);
-        addToast('Your role was updated to ' + data.role, 'info');
+        // Toast only if role-changed didn't already show one (avoid duplicates for the current socket)
+        if (data.role === 'cohost') {
+          addToast('🌟 You are now a Co-Host! You have moderator controls.', 'success');
+        } else if (data.role !== 'cohost') {
+          addToast('Your role was updated to ' + data.role, 'info');
+        }
       } else if (data.event === 'state_requested' && data.requestingSocketId) {
         // Another device of ours just connected — share our current state
         socket.emit('user:respond-state', {
@@ -1061,6 +1066,17 @@ export default function App() {
           return Object.assign({}, g, { role: data.role });
         });
       });
+      // If this is the current user, update our own role immediately
+      if (data.guestId === userId) {
+        setRole(data.role);
+        if (data.role === 'cohost') {
+          addToast('🌟 You are now a Co-Host! You have moderator controls.', 'success');
+        } else if (data.role === 'guest') {
+          addToast('You are now a Guest on stage.', 'info');
+        } else if (data.role === 'viewer') {
+          addToast('You have been moved to viewer.', 'info');
+        }
+      }
     });
 
     socket.on('host-alert', function(data) {
