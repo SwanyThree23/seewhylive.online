@@ -4553,7 +4553,7 @@ io.on('connection', function(socket) {
 
   socket.on('vs-end', function(data) {
     var roomId = socket.data.roomId;
-    if (!roomId || socket.data.role !== 'host') return;
+    if (!roomId || (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin')) return;
     var vp = vsPolls.get(roomId);
     if (!vp) return;
     vp.active = false;

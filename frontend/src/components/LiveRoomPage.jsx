@@ -5568,7 +5568,7 @@ export default function LiveRoomPage({
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold, display: 'block', marginBottom: 2 }}>{pinnedMsg.username}</span>
                 <p style={{ margin: 0, fontSize: 12, color: TEXT, lineHeight: 1.4, wordBreak: 'break-word' }}>{pinnedMsg.message}</p>
               </div>
-              {role === 'host' && (
+              {(role === 'host' || role === 'cohost') && (
                 <button onClick={function() { if (socket) socket.emit('unpin-chat-message', {}); }}
                   style={{ background: 'none', border: 'none', color: MUTED, fontSize: 13, cursor: 'pointer', padding: '1px 3px', lineHeight: 1, flexShrink: 0 }}>✕</button>
               )}
@@ -6930,7 +6930,7 @@ export default function LiveRoomPage({
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{vsPoll.totalVotes} vote{vsPoll.totalVotes !== 1 ? 's' : ''}</span>
-              {role === 'host' && vsPoll.active && (
+              {(role === 'host' || role === 'cohost') && vsPoll.active && (
                 <button onClick={function() { if (socket) socket.emit('vs-end', { roomId: roomId }); }}
                   style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 9, padding: '0 2px', letterSpacing: .5, fontFamily: "'DM Mono',monospace" }}>END</button>
               )}
