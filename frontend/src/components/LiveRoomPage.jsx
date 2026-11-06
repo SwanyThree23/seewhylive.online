@@ -1345,11 +1345,19 @@ export default function LiveRoomPage({
 
     socket.on('go-live-confirmed', function(data) {
       if (data && data.streamTitle) setActiveStreamTitle(data.streamTitle);
+      // Notify everyone in the room (host gets their own 'Going LIVE...' toast already)
+      if (addToastRef.current) {
+        var msg = data && data.streamTitle
+          ? '🔴 Stream started: ' + data.streamTitle
+          : '🔴 The stream has started!';
+        addToastRef.current(msg, 'success');
+      }
     });
 
     socket.on('broadcast-ended', function(data) {
       setActiveStreamTitle('');
       if (data) setStreamRecap(data);
+      if (addToastRef.current) addToastRef.current('Stream ended', 'info');
     });
     socket.on('fanout-started', function(data) {
       if (data && data.destinations) {
@@ -2470,7 +2478,6 @@ export default function LiveRoomPage({
       destinations: dests
     });
     setShowLiveModal(false);
-    if (addToast) addToast('🔴 Going LIVE...', 'success');
   }
 
   var endStream = function() {
