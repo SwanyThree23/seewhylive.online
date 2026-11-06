@@ -6,8 +6,8 @@ var PLATFORMS = [
   { id: 'seewhy',   name: 'SeeWhy LIVE', color: '#C9A84C', icon: '📡', rtmp: 'rtmp://seewhylive.online:1935/live',                          locked: true  },
   { id: 'youtube',  name: 'YouTube',     color: '#FF0000', icon: '▶',  rtmp: 'rtmp://a.rtmp.youtube.com/live2',                        locked: false },
   { id: 'twitch',   name: 'Twitch',      color: '#9146FF', icon: '⬡',  rtmp: 'rtmp://live.twitch.tv/app',                              locked: false },
-  { id: 'facebook', name: 'Facebook',    color: '#1877F2', icon: 'f',  rtmp: 'rtmp://live-api-s.facebook.com/rtmp',                    locked: false },
-  { id: 'tiktok',   name: 'TikTok',      color: '#69C9D0', icon: '♪',  rtmp: 'rtmp://rtmp-push.tiktok.com/stream',                    locked: false },
+  { id: 'facebook', name: 'Facebook',    color: '#1877F2', icon: 'f',  rtmp: 'rtmps://live-api-s.facebook.com:443/rtmp',              locked: false },
+  { id: 'tiktok',   name: 'TikTok',      color: '#69C9D0', icon: '♪',  rtmp: 'rtmp://push.rtmp.tiktok.com/live',                       locked: false },
   { id: 'kick',     name: 'Kick',        color: '#53FC18', icon: 'K',  rtmp: 'rtmp://fa723fc1b171.global-contribute.live-video.net/app', locked: false },
   { id: 'rumble',   name: 'Rumble',      color: '#85C742', icon: 'R',  rtmp: 'rtmp://p.contribute.live-video.net/live',                locked: false },
 ];
