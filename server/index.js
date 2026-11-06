@@ -641,6 +641,7 @@ var giftLeaderboards    = new Map();  // roomId → [{username, totalCents}] top
 var triviaRooms         = new Map();  // roomId → { question, options:[{text}], answers:Map<socketId,idx>, correctIdx, timer, active }
 var viewerAlertSnapshot = new Map();  // roomId → { count, ts } — baseline for host-alert engagement checks
 var shieldedGuests      = new Map();  // roomId+':'+guestId → expiresTs (unix sec)
+var bracketUpdates         = new Map();  // roomId → Array<{round,matchId,score,status,winner}> (last 20)
 var pendingPowerPlays      = new Map();  // playId → { data, socketId, approvalTimer }
 var powerPlayThrottle      = new Map();  // userId → lastTs ms (2s throttle)
 var streamCaptionThrottle  = new Map();  // socketId → lastStreamCaptionTs ms (500ms throttle)
@@ -920,6 +921,11 @@ function seedEphemeralState(socketId, roomId) {
     } else {
       roomTimerState.delete(roomId);
     }
+  }
+  // Seed bracket updates so late joiners see the current tournament state
+  var _brUpdates = bracketUpdates.get(roomId);
+  if (_brUpdates && _brUpdates.length > 0) {
+    _brUpdates.forEach(function(u) { io.to(socketId).emit('bracket-update', Object.assign({}, u, { roomId: roomId })); });
   }
 }
 
@@ -4982,6 +4988,12 @@ io.on('connection', function(socket) {
     var _bStr; try { _bStr = JSON.stringify(data); } catch(e) { return; }
     if (!_bStr || _bStr.length > 8192) return;
     var safe; try { safe = JSON.parse(_bStr); } catch(e) { return; }
+    // Store for late-joiner seeding (bounded list, one entry per matchId)
+    var _bList = bracketUpdates.get(roomId) || [];
+    _bList = _bList.filter(function(u) { return !(u.round === safe.round && u.matchId === safe.matchId); });
+    _bList.push({ round: safe.round, matchId: safe.matchId, score: safe.score, status: safe.status, winner: safe.winner || null });
+    if (_bList.length > 50) _bList = _bList.slice(-50);
+    bracketUpdates.set(roomId, _bList);
     io.to(roomId).emit('bracket-update', Object.assign(safe, { roomId: roomId }));
   });
 
@@ -5895,6 +5907,7 @@ io.on('connection', function(socket) {
     tickerState.delete(roomId);
     spotlightState.delete(roomId);
     roomTimerState.delete(roomId);
+    bracketUpdates.delete(roomId);
     roomRaisedHands.delete(roomId);
     sentimentState.delete(roomId);
     pendingJoinRequests.delete(roomId);
