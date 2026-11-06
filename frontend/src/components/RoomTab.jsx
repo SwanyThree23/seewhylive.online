@@ -765,13 +765,13 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                     <RolePill role={g.role || 'viewer'} />
                   </div>
                   {onStage && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>ON STAGE</span>}
-                  {role === 'host' && !onStage && (
+                  {(role === 'host' || role === 'cohost') && !onStage && (
                     <button onClick={function() { inviteToStage({ guestId: gid, username: g.username || gid }); }}
                       style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.28)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
                       + STAGE
                     </button>
                   )}
-                  {role === 'host' && onStage && gid !== userId && (
+                  {(role === 'host' || role === 'cohost') && onStage && gid !== userId && (
                     <button onClick={function() { removeFromStage(gid); }}
                       style={{ background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 6, padding: '4px 8px', color: '#FF6B81', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
                       – STAGE
@@ -1037,7 +1037,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                   </div>
                 );
               })}
-              {stagePeers.length < MAX_STAGE && role === 'host' && (
+              {stagePeers.length < MAX_STAGE && (role === 'host' || role === 'cohost') && (
                 <div style={{ border: '1px dashed rgba(201,168,76,.2)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '16/9', cursor: 'pointer', color: 'rgba(201,168,76,.3)', fontFamily: "'DM Mono',monospace", fontSize: 8 }}
                   onClick={function() { setShowGuests(true); }}>
                   + INVITE
@@ -1146,7 +1146,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C', lineHeight: 1 }}>{battleScores.b.toLocaleString()}</div>
                 </div>
               </div>
-              {role === 'host' && (
+              {(role === 'host' || role === 'cohost') && (
                 <button onClick={function() { setStageLayout('panel'); }} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 5, padding: '3px 8px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 1 }}>PANEL ▶</button>
               )}
             </div>
@@ -1409,7 +1409,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{activePoll.totalVotes} votes</span>
               {!activePoll.active && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', letterSpacing: 1 }}>ENDED</span>}
-              {role === 'host' && activePoll.active && (
+              {(role === 'host' || role === 'cohost') && activePoll.active && (
                 <button onClick={function() { if (socket) socket.emit('poll-end', { roomId: roomId }); }}
                   style={{ background: 'none', border: '1px solid rgba(255,26,60,.35)', borderRadius: 3, padding: '2px 6px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 1 }}>
                   END
