@@ -3902,10 +3902,18 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
     var _sjdMap = pendingJoinRequests.get(roomId);
     if (_sjdMap) { _sjdMap.delete(data.guestId); if (_sjdMap.size === 0) pendingJoinRequests.delete(roomId); }
+    // Notify the denied guest
+    var _deniedGuestId = data.guestId;
     var targetSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
-      return s.data.roomId === roomId && s.data.userId === data.guestId;
+      return s.data.roomId === roomId && s.data.userId === _deniedGuestId;
     });
-    targetSockets.forEach(function(s) { s.emit('stage-join-denied', { reason: 'host_denied' }); });
+    targetSockets.forEach(function(s) { s.emit('stage-join-denied', { guestId: _deniedGuestId, reason: 'host_denied' }); });
+    // Notify all host/cohost sockets so they can clear the request from their queue
+    io.sockets.sockets.forEach(function(s) {
+      if (s.data.roomId === roomId && (s.data.role === 'host' || s.data.role === 'cohost' || s.data.role === 'owner') && s.id !== socket.id) {
+        s.emit('stage-join-denied', { guestId: _deniedGuestId });
+      }
+    });
   });
 
   // ── confetti-burst ─────────────────────────────────────────────────────

@@ -1070,13 +1070,21 @@ export default function LiveRoomPage({
       if (addToastRef.current) addToastRef.current('📩 ' + (data.username || data.guestId) + ' wants to join stage', 'info');
     });
 
-    socket.on('stage-join-denied', function() {
-      if (addToastRef.current) addToastRef.current('Host declined your stage request', 'info');
+    socket.on('stage-join-denied', function(data) {
+      if (data && data.guestId) {
+        setJoinRequests(function(prev) { return prev.filter(function(r) { return r.guestId !== data.guestId; }); });
+      }
+      if (!data || data.guestId === userId) {
+        if (addToastRef.current) addToastRef.current('Host declined your stage request', 'info');
+      }
     });
 
     socket.on('stage-join-approved', function(data) {
-      if (!data || data.guestId !== userId) return;
-      if (addToastRef.current) addToastRef.current('🎤 Host approved — you are now on stage!', 'success');
+      if (!data || !data.guestId) return;
+      setJoinRequests(function(prev) { return prev.filter(function(r) { return r.guestId !== data.guestId; }); });
+      if (data.guestId === userId) {
+        if (addToastRef.current) addToastRef.current('🎤 Host approved — you are now on stage!', 'success');
+      }
     });
 
     socket.on('lower-all-hands', function() {
