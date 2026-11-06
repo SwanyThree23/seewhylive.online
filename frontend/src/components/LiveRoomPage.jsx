@@ -4423,6 +4423,24 @@ export default function LiveRoomPage({
                           style={{ width: 8, height: 8, borderRadius: '50%', background: guestTags[gid] === 'red' ? RED : guestTags[gid] === 'yellow' ? '#F0A500' : guestTags[gid] === 'green' ? '#6DBF7E' : DIM, border: guestTags[gid] ? 'none' : '1px solid ' + BORDER, cursor: 'pointer', padding: 0, outline: 'none', flexShrink: 0 }}
                         />
                       )}
+                      {/* 🚀 Rocket reaction — send flying emoji to this tile */}
+                      {!isOwn && (
+                        <button
+                          onClick={function(e) { e.stopPropagation(); if (socket) socket.emit('panel:reaction', { roomId: roomId, guestId: gid, emoji: '🚀' }); }}
+                          title="Send rocket reaction"
+                          style={{ background: 'none', border: 'none', fontSize: 13, cursor: 'pointer', padding: '0 1px', lineHeight: 1, flexShrink: 0, opacity: .75 }}>
+                          🚀
+                        </button>
+                      )}
+                      {/* Ask to Speak — own cell only, non-host */}
+                      {isOwn && role !== 'host' && role !== 'cohost' && (
+                        <button
+                          onClick={function(e) { e.stopPropagation(); raiseHand(); }}
+                          title={handRaised ? 'Lower hand' : 'Ask to speak'}
+                          style={{ background: handRaised ? 'rgba(255,140,0,.2)' : 'rgba(201,168,76,.08)', border: '1px solid ' + (handRaised ? 'rgba(255,140,0,.55)' : 'rgba(201,168,76,.3)'), borderRadius: 6, padding: '2px 4px', fontSize: 8, cursor: 'pointer', color: handRaised ? '#D4854A' : GOLD, fontFamily: "'DM Mono',monospace", letterSpacing: .3, flexShrink: 0, lineHeight: 1, animation: handRaised ? 'handBadgePulse 1.2s ease-in-out infinite' : 'none' }}>
+                          {handRaised ? '✋' : '🎙'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -4854,6 +4872,21 @@ export default function LiveRoomPage({
           </div>
         )}
 
+        {/* ── Ask to Speak bar — shown to non-host users not yet on stage ── */}
+        {role !== 'host' && role !== 'cohost' && onStage.every(function(g) { return (g.guestId || g.userId) !== userId; }) && (
+          <div style={{ padding: '0 14px 10px' }}>
+            <button
+              onClick={raiseHand}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 16px', borderRadius: 14, cursor: 'pointer', border: 'none', background: handRaised ? 'rgba(255,140,0,.18)' : 'rgba(201,168,76,.12)', outline: '1.5px solid ' + (handRaised ? 'rgba(255,140,0,.55)' : 'rgba(201,168,76,.4)'), animation: handRaised ? 'handBadgePulse 1.4s ease-in-out infinite' : 'none' }}>
+              <span style={{ fontSize: 20, lineHeight: 1 }}>{handRaised ? '✋' : '🎙'}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
+                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: handRaised ? '#D4854A' : GOLD, letterSpacing: 1.5, lineHeight: 1 }}>{handRaised ? 'Hand Raised — Waiting for Host' : 'Ask to Speak'}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5 }}>{handRaised ? 'tap to lower' : 'Request mic access from the host'}</span>
+              </div>
+            </button>
+          </div>
+        )}
+
         {/* ── Audience Section ── */}
         {(audienceList.length > 0 || (role !== 'host' && onStage.every(function(g) { return (g.guestId || g.userId) !== userId; }))) && (
           <div style={{ padding: '10px 14px 10px' }}>
@@ -4890,7 +4923,7 @@ export default function LiveRoomPage({
             </div>
             {/* Emoji reaction bar */}
             <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-              {['🔥','❤️','👏','💯','🎉','😂'].map(function(em) {
+              {['🚀','🔥','❤️','👏','💯','🎉','😂'].map(function(em) {
                 return (
                   <button key={em} onClick={function() {
                     var rid = Date.now() + em;
@@ -5863,6 +5896,15 @@ export default function LiveRoomPage({
             danger={true}
             onPress={toggleMute}
           />
+          {role !== 'viewer' && (
+            <IconBtn
+              icon={isCamOff ? '📵' : '📷'}
+              label={isCamOff ? 'Cam Off' : 'Cam On'}
+              active={isCamOff}
+              danger={isCamOff}
+              onPress={toggleCam}
+            />
+          )}
           <IconBtn
             icon="❓"
             label="Q&A"
