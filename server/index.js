@@ -642,6 +642,7 @@ var triviaRooms         = new Map();  // roomId → { question, options:[{text}]
 var viewerAlertSnapshot = new Map();  // roomId → { count, ts } — baseline for host-alert engagement checks
 var shieldedGuests      = new Map();  // roomId+':'+guestId → expiresTs (unix sec)
 var bracketUpdates         = new Map();  // roomId → Array<{round,matchId,score,status,winner}> (last 20)
+var modRulesState          = new Map();  // roomId → { links, slow, ... } active guardian rules
 var pendingPowerPlays      = new Map();  // playId → { data, socketId, approvalTimer }
 var powerPlayThrottle      = new Map();  // userId → lastTs ms (2s throttle)
 var streamCaptionThrottle  = new Map();  // socketId → lastStreamCaptionTs ms (500ms throttle)
@@ -3151,6 +3152,13 @@ io.on('connection', function(socket) {
     _EXT_URL.lastIndex = 0;
     while ((_urlMatch = _EXT_URL.exec(message)) !== null) {
       if (!_ownHosts.test(_urlMatch[1])) { _hasExternalLinks = true; break; }
+    }
+
+    // Apply guardian mod-rules: strip external links if the host has that rule enabled
+    var _modRules = modRulesState.get(roomId);
+    if (_hasExternalLinks && _modRules && _modRules['links']) {
+      message = message.replace(/https?:\/\/\S+/gi, '[link removed]').trim();
+      _hasExternalLinks = false;
     }
 
     // Spam check — keyed by userId so reconnect doesn't bypass a 60s mute
@@ -5920,6 +5928,7 @@ io.on('connection', function(socket) {
     spotlightState.delete(roomId);
     roomTimerState.delete(roomId);
     bracketUpdates.delete(roomId);
+    modRulesState.delete(roomId);
     roomRaisedHands.delete(roomId);
     sentimentState.delete(roomId);
     pendingJoinRequests.delete(roomId);
@@ -6186,6 +6195,12 @@ io.on('connection', function(socket) {
       if (_mrStr && _mrStr.length > 8192) return;
       safeRules = JSON.parse(_mrStr);
     } catch(e) { return; }
+    // Build a quick lookup map of enabled rules by id for fast chat-message application
+    var _rulesById = {};
+    if (Array.isArray(safeRules)) {
+      safeRules.forEach(function(r) { if (r && r.id) _rulesById[r.id] = !!r.enabled; });
+    }
+    modRulesState.set(sId, _rulesById);
     io.to(sId).emit('mod-rules-updated', { rules: safeRules, ts: Math.floor(Date.now() / 1000) });
   });
 
