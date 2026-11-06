@@ -2414,10 +2414,13 @@ io.on('connection', function(socket) {
     var room = getRoom(roomId);
     room.presence.set(socket.id, Date.now());
 
-    if (role === 'host' || role === 'guest') {
+    // Participant = any role that can appear in the video grid and produce/consume media.
+    // 'owner' and 'admin' are elevated host equivalents; 'cohost' is an invited co-presenter.
+    var _isParticipant = role === 'host' || role === 'guest' || role === 'cohost' || role === 'owner' || role === 'admin';
+    if (_isParticipant) {
       room.guests.set(socket.id, { guestId: guestId, username: username, role: role });
       addUserSocket(room, guestId, socket.id);
-      if (role === 'host') {
+      if (role === 'host' || role === 'owner' || role === 'admin') {
         if (!room.hostSocketIds) room.hostSocketIds = new Set();
         room.hostSocketIds.add(socket.id);
         // Primary socket = first to join (or re-elected after primary disconnects)
@@ -2440,8 +2443,8 @@ io.on('connection', function(socket) {
 
     var viewerCount = room.viewers.size + room.guests.size;
 
-    // Get or create router + transports for host/guest
-    if (role === 'host' || role === 'guest') {
+    // Get or create router + transports for all video participants
+    if (_isParticipant) {
       mediasoup.getOrCreateRouter(roomId)
         .then(function() {
           return Promise.all([
@@ -2589,7 +2592,8 @@ io.on('connection', function(socket) {
       if (ack) ack({ error: 'Must join room before creating transport' });
       return;
     }
-    if (socket.data.role !== 'host' && socket.data.role !== 'guest' && socket.data.role !== 'cohost') {
+    var _participantRoles = ['host', 'guest', 'cohost', 'owner', 'admin'];
+    if (!_participantRoles.includes(socket.data.role)) {
       if (ack) ack({ error: 'forbidden' });
       return;
     }
@@ -2786,7 +2790,7 @@ io.on('connection', function(socket) {
 
   // ── stage-invite ───────────────────────────────────────────────────────
   socket.on('stage-invite', function(data) {
-    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
     if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
@@ -2834,7 +2838,7 @@ io.on('connection', function(socket) {
 
   // ── pin-chat-message / unpin-chat-message ──────────────────────────────
   socket.on('pin-chat-message', function(data) {
-    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
     var roomId = socket.data.roomId;
     if (!roomId || !data || !data.message) return;
     var _pcNow = Date.now();
@@ -2851,7 +2855,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('unpin-chat-message', function() {
-    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
     var roomId = socket.data.roomId;
     if (!roomId) return;
     pinnedMessages.delete(roomId);
@@ -2860,7 +2864,7 @@ io.on('connection', function(socket) {
 
   socket.on('chat-delete', function(data) {
     var r = socket.data.role;
-    if (r !== 'host' && r !== 'cohost') return;
+    if (r !== 'host' && r !== 'cohost' && r !== 'owner' && r !== 'admin') return;
     var roomId = socket.data.roomId;
     if (!roomId || !data || !data.id) return;
     var _cdId = String(data.id);
@@ -2876,7 +2880,7 @@ io.on('connection', function(socket) {
 
   // ── set-slow-mode ──────────────────────────────────────────────────────
   socket.on('set-slow-mode', function(data) {
-    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
     var roomId = socket.data.roomId;
     if (!roomId) return;
     var VALID = [0, 3, 5, 10, 30, 60];
@@ -2888,7 +2892,7 @@ io.on('connection', function(socket) {
 
   // ── stage-remove ───────────────────────────────────────────────────────
   socket.on('stage-remove', function(data) {
-    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
     if (!data) return;
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
@@ -2902,7 +2906,7 @@ io.on('connection', function(socket) {
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
     var producerIds = mediasoup.getProducerIdsByGuest(guestId, roomId);
     producerIds.forEach(function(pid) { mediasoup.pauseProducer(pid); });
     io.to(roomId).emit('guest-muted', { guestId: guestId });
@@ -2914,7 +2918,7 @@ io.on('connection', function(socket) {
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
     var producerIds = mediasoup.getProducerIdsByGuest(guestId, roomId);
     producerIds.forEach(function(pid) { mediasoup.resumeProducer(pid); });
     io.to(roomId).emit('guest-unmuted', { guestId: guestId });
@@ -2926,7 +2930,7 @@ io.on('connection', function(socket) {
     var roomId  = socket.data.roomId;
     var guestId = String(data.guestId || '');
     if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
     if (guestId === socket.data.userId) return;
 
     var producerIds = mediasoup.getProducerIdsByGuest(guestId, roomId);
@@ -2970,7 +2974,7 @@ io.on('connection', function(socket) {
     var newRole = data.role;
     if (!roomId || !guestId || !newRole) return;
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
     var validRoles = ['cohost', 'guest', 'viewer'];
     if (validRoles.indexOf(newRole) === -1) return;
 
