@@ -3916,6 +3916,15 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('confetti-burst');
   });
 
+  // ── shoutout ───────────────────────────────────────────────────────────
+  // /shout @username chat command → broadcast shoutout overlay to room.
+  socket.on('shoutout', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId || !data || !data.username) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') return;
+    io.to(roomId).emit('shoutout', { username: String(data.username).slice(0, 40), by: socket.data.username || 'Host' });
+  });
+
   // ── room-timer-start / room-timer-stop ─────────────────────────────────
   socket.on('room-timer-start', function(data) {
     var roomId = socket.data.roomId;
