@@ -624,6 +624,7 @@ var tickerState         = new Map();  // roomId → { text } when scrolling tick
 var sentimentState      = new Map();  // roomId → { question, yesCount, noCount, endTs, voters } while poll is active
 var spotlightState      = new Map();  // roomId → { guestId, username } when spotlight is active
 var roomRaisedHands     = new Map();  // roomId → Map<guestId, { username, ts }> for raised hands
+var pendingJoinRequests = new Map();  // roomId → Map<guestId, { username, ts }> for locked-stage join requests
 var qaAnsweringState    = new Map();  // roomId → { id, username, text } when host is answering a Q&A question
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
@@ -902,6 +903,11 @@ function seedEphemeralState(socketId, roomId) {
   var _rhMap = roomRaisedHands.get(roomId);
   if (_rhMap && _rhMap.size > 0) {
     _rhMap.forEach(function(info, guestId) { io.to(socketId).emit('hand-raise', { guestId: guestId, username: info.username, ts: info.ts }); });
+  }
+  // Seed pending stage-join-requests so rejoining hosts/co-hosts see the locked-stage queue
+  var _pjrMap = pendingJoinRequests.get(roomId);
+  if (_pjrMap && _pjrMap.size > 0) {
+    _pjrMap.forEach(function(info, guestId) { io.to(socketId).emit('stage-join-requested', { guestId: guestId, username: info.username }); });
   }
 }
 
@@ -3856,8 +3862,12 @@ io.on('connection', function(socket) {
     var hostSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
       return s.data.roomId === roomId && (s.data.role === 'host' || s.data.role === 'owner' || s.data.role === 'cohost');
     });
+    var _sjrGuestId = socket.data.userId;
+    var _sjrMap = pendingJoinRequests.get(roomId);
+    if (!_sjrMap) { _sjrMap = new Map(); pendingJoinRequests.set(roomId, _sjrMap); }
+    _sjrMap.set(_sjrGuestId, { username: socket.data.username || _sjrGuestId, ts: Math.floor(Date.now() / 1000) });
     hostSockets.forEach(function(s) {
-      s.emit('stage-join-requested', { guestId: socket.data.userId, username: socket.data.username || socket.data.userId });
+      s.emit('stage-join-requested', { guestId: _sjrGuestId, username: socket.data.username || _sjrGuestId });
     });
   });
 
@@ -3865,6 +3875,8 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data || !data.guestId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var _sjaMap = pendingJoinRequests.get(roomId);
+    if (_sjaMap) { _sjaMap.delete(data.guestId); if (_sjaMap.size === 0) pendingJoinRequests.delete(roomId); }
     io.to(roomId).emit('stage-join-approved', { guestId: data.guestId });
     var targetSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
       return s.data.roomId === roomId && s.data.userId === data.guestId;
@@ -3876,6 +3888,8 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data || !data.guestId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    var _sjdMap = pendingJoinRequests.get(roomId);
+    if (_sjdMap) { _sjdMap.delete(data.guestId); if (_sjdMap.size === 0) pendingJoinRequests.delete(roomId); }
     var targetSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
       return s.data.roomId === roomId && s.data.userId === data.guestId;
     });
@@ -4027,6 +4041,7 @@ io.on('connection', function(socket) {
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     roomRaisedHands.delete(roomId);
+    pendingJoinRequests.delete(roomId);
     io.to(roomId).emit('lower-all-hands');
   });
 
@@ -5842,6 +5857,7 @@ io.on('connection', function(socket) {
     spotlightState.delete(roomId);
     roomRaisedHands.delete(roomId);
     sentimentState.delete(roomId);
+    pendingJoinRequests.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
     viewerAlertSnapshot.delete(roomId);
 
