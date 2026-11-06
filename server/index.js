@@ -3854,7 +3854,7 @@ io.on('connection', function(socket) {
       return;
     }
     var hostSockets = Array.from(io.sockets.sockets.values()).filter(function(s) {
-      return s.data.roomId === roomId && (s.data.role === 'host' || s.data.role === 'owner');
+      return s.data.roomId === roomId && (s.data.role === 'host' || s.data.role === 'owner' || s.data.role === 'cohost');
     });
     hostSockets.forEach(function(s) {
       s.emit('stage-join-requested', { guestId: socket.data.userId, username: socket.data.username || socket.data.userId });
