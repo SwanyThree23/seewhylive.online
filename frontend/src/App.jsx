@@ -340,6 +340,7 @@ export default function App() {
   var [splash, setSplash] = useState(true);
   var [activeTab, setActiveTab] = useState('room');
   var [isLive, setIsLive] = useState(false);
+  var [initialStreamTitle, setInitialStreamTitle] = useState('');
   var [viewerCount, setViewerCount] = useState(0);
 
   var refreshLiveRoomData = function() {
@@ -910,6 +911,7 @@ export default function App() {
       if (ackData.isLive) {
         setIsLive(true);
         if (!liveStartRef.current) liveStartRef.current = ackData.liveStartedAt || Date.now();
+        if (ackData.streamTitle) setInitialStreamTitle(ackData.streamTitle);
       }
       if (ackData.streamGoal) {
         setStreamGoal({ label: ackData.streamGoal.label || 'Stream Goal', goalCents: ackData.streamGoal.target || 0 });
@@ -1724,6 +1726,7 @@ export default function App() {
             setChat={setChat}
             isLive={isLive}
             setIsLive={setIsLive}
+            initialStreamTitle={initialStreamTitle}
             userId={userId}
             username={username}
             role={role}
