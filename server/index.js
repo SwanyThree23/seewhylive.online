@@ -620,6 +620,9 @@ var roomPaywallMap      = new Map();  // roomId → { amountCents } when paywall
 var pkBattleState       = new Map();  // roomId → { challenger, defender, duration, startTs, challengerVotes, defenderVotes }
 var screenShareState    = new Map();  // roomId → { userId, username } when screen sharing is active
 var brbState            = new Map();  // roomId → { msg, ts } when room is in BRB mode
+var tickerState         = new Map();  // roomId → { text } when scrolling ticker is active
+var spotlightState      = new Map();  // roomId → { guestId, username } when spotlight is active
+var roomRaisedHands     = new Map();  // roomId → Map<guestId, { username, ts }> for raised hands
 var qaAnsweringState    = new Map();  // roomId → { id, username, text } when host is answering a Q&A question
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
@@ -882,6 +885,17 @@ function seedEphemeralState(socketId, roomId) {
   var _lb = giftLeaderboards.get(roomId);
   if (_lb && _lb.length > 0) {
     io.to(socketId).emit('gift-leaderboard', { roomId: roomId, leaders: _lb.slice(0, 10) });
+  }
+  // Seed ticker so late joiners see the scrolling banner
+  var _ticker = tickerState.get(roomId);
+  if (_ticker) io.to(socketId).emit('ticker', { active: true, text: _ticker.text, from: '' });
+  // Seed spotlight so late joiners know which guest is spotlighted
+  var _spot = spotlightState.get(roomId);
+  if (_spot) io.to(socketId).emit('spotlight-guest', { guestId: _spot.guestId, username: _spot.username });
+  // Seed raised hands so rejoining hosts/co-hosts regain the full queue
+  var _rhMap = roomRaisedHands.get(roomId);
+  if (_rhMap && _rhMap.size > 0) {
+    _rhMap.forEach(function(info, guestId) { io.to(socketId).emit('hand-raise', { guestId: guestId, username: info.username, ts: info.ts }); });
   }
 }
 
@@ -3760,7 +3774,11 @@ io.on('connection', function(socket) {
     var _hrNow = Date.now();
     if (_hrNow - (handRaiseThrottle.get(socket.data.userId) || 0) < 500) return;
     handRaiseThrottle.set(socket.data.userId, _hrNow);
-    io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: Math.floor(Date.now() / 1000) });
+    var _hrTs = Math.floor(Date.now() / 1000);
+    var _hrMap = roomRaisedHands.get(roomId);
+    if (!_hrMap) { _hrMap = new Map(); roomRaisedHands.set(roomId, _hrMap); }
+    _hrMap.set(guestId, { username: username, ts: _hrTs });
+    io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: _hrTs });
   });
 
   // ── hand-lower ─────────────────────────────────────────────────────────
@@ -3778,6 +3796,8 @@ io.on('connection', function(socket) {
     } else {
       _hlGuest = socket.data.guestId;
     }
+    var _hlMap = roomRaisedHands.get(roomId);
+    if (_hlMap) { _hlMap.delete(_hlGuest); if (_hlMap.size === 0) roomRaisedHands.delete(roomId); }
     io.to(roomId).emit('hand-lower', { guestId: _hlGuest });
   });
 
@@ -3886,6 +3906,7 @@ io.on('connection', function(socket) {
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
     var text = data && data.text ? String(data.text).slice(0, 200) : '';
+    tickerState.set(roomId, { text: text });
     io.to(roomId).emit('ticker', { active: true, text: text, from: socket.data.username || 'Host' });
   });
 
@@ -3893,6 +3914,7 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    tickerState.delete(roomId);
     io.to(roomId).emit('ticker', { active: false });
   });
 
@@ -3982,6 +4004,7 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data || !data.guestId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    spotlightState.set(roomId, { guestId: data.guestId, username: data.username || '' });
     io.to(roomId).emit('spotlight-guest', { guestId: data.guestId, username: data.username || '' });
   });
 
@@ -3989,6 +4012,7 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'owner' && socket.data.role !== 'cohost') return;
+    spotlightState.delete(roomId);
     io.to(roomId).emit('spotlight-end');
   });
 
@@ -3998,6 +4022,7 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    roomRaisedHands.delete(roomId);
     io.to(roomId).emit('lower-all-hands');
   });
 
@@ -5809,6 +5834,9 @@ io.on('connection', function(socket) {
     qaAnsweringState.delete(roomId);
     liveSyncState.delete(roomId);
     brbState.delete(roomId);
+    tickerState.delete(roomId);
+    spotlightState.delete(roomId);
+    roomRaisedHands.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
     viewerAlertSnapshot.delete(roomId);
 
