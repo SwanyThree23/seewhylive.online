@@ -27,6 +27,10 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
   const [blockCaps, setBlockCaps] = useState(() => { try { const v = localStorage.getItem('swmod_blockCaps'); return v === null ? true : v === 'true'; } catch { return true; } });
   const [blockSpam, setBlockSpam] = useState(() => { try { const v = localStorage.getItem('swmod_blockSpam'); return v === null ? true : v === 'true'; } catch { return true; } });
 
+  const [newAccountGate, setNewAccountGate] = useState(() => { try { return localStorage.getItem('swmod_account_gate') === 'true'; } catch { return false; } });
+  const [accountAge, setAccountAge] = useState(() => { try { const s = localStorage.getItem('swmod_account_age'); return s ? Number(s) : 7; } catch { return 7; } });
+  const [timeoutDuration, setTimeoutDuration] = useState(() => { try { const s = localStorage.getItem('swmod_timeout_dur'); return s ? Number(s) : 5; } catch { return 5; } });
+
   useEffect(() => { try { localStorage.setItem('swmod_blockLinks', String(blockLinks)); } catch {} }, [blockLinks]);
   useEffect(() => { try { localStorage.setItem('swmod_blockCaps', String(blockCaps)); } catch {} }, [blockCaps]);
   useEffect(() => { try { localStorage.setItem('swmod_blockSpam', String(blockSpam)); } catch {} }, [blockSpam]);
@@ -34,9 +38,6 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
   useEffect(() => { try { localStorage.setItem('swmod_account_gate', String(newAccountGate)); } catch {} }, [newAccountGate]);
   useEffect(() => { try { localStorage.setItem('swmod_account_age', String(accountAge)); } catch {} }, [accountAge]);
   useEffect(() => { try { localStorage.setItem('swmod_timeout_dur', String(timeoutDuration)); } catch {} }, [timeoutDuration]);
-  const [newAccountGate, setNewAccountGate] = useState(() => { try { return localStorage.getItem('swmod_account_gate') === 'true'; } catch { return false; } });
-  const [accountAge, setAccountAge] = useState(() => { try { const s = localStorage.getItem('swmod_account_age'); return s ? Number(s) : 7; } catch { return 7; } });
-  const [timeoutDuration, setTimeoutDuration] = useState(() => { try { const s = localStorage.getItem('swmod_timeout_dur'); return s ? Number(s) : 5; } catch { return 5; } });
 
   const queryClient = useQueryClient();
 
