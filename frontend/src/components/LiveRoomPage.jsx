@@ -1654,9 +1654,9 @@ export default function LiveRoomPage({
     });
   }, [consumerRawStats]);
 
-  // ── Quality-drop toasts (host only, 30 s cooldown per producer) ──────────
+  // ── Quality-drop toasts (host/cohost, 30 s cooldown per producer) ──────────
   useEffect(function() {
-    if (role !== 'host') return;
+    if (role !== 'host' && role !== 'cohost') return;
     Object.keys(producerQuality).forEach(function(pid) {
       var cur  = producerQuality[pid];
       var prev = prevQualityRef.current[pid];
@@ -1673,9 +1673,9 @@ export default function LiveRoomPage({
     prevQualityRef.current = Object.assign({}, producerQuality);
   }, [producerQuality, role]);
 
-  // ── Auto-mute new stage joiners (host toggle) ────────────────────────────
+  // ── Auto-mute new stage joiners (host/cohost toggle) ────────────────────────────
   useEffect(function() {
-    if (role !== 'host' || !autoMuteJoin || !socket) return;
+    if ((role !== 'host' && role !== 'cohost') || !autoMuteJoin || !socket) return;
     var currentGids = new Set(onStage.map(function(g) { return g.guestId || g.userId; }));
     currentGids.forEach(function(gid) {
       if (gid === userId) return;
@@ -1686,9 +1686,9 @@ export default function LiveRoomPage({
     prevStageGidsRef.current = currentGids;
   }, [onStage, autoMuteJoin, role]);
 
-  // ── Stage time limit: warn + remove guests who exceed the host-set limit ──
+  // ── Stage time limit: warn + remove guests who exceed the set limit ──
   useEffect(function() {
-    if (role !== 'host' || stageLimitSec === 0) return;
+    if ((role !== 'host' && role !== 'cohost') || stageLimitSec === 0) return;
     var now = Date.now();
     onStage.forEach(function(g) {
       var gid = g.guestId || g.userId;
