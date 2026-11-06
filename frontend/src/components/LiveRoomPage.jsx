@@ -398,6 +398,10 @@ export default function LiveRoomPage({
   var [liveKeysVisible, setLiveKeysVisible] = useState({});       // { youtube: false, ... }
   var [fanoutStatus,    setFanoutStatus]    = useState([]);        // [{ platform }] active fanout platforms
   var [activeStreamTitle, setActiveStreamTitle] = useState(''); // confirmed title from go-live-confirmed
+  var [customRtmpEnabled, setCustomRtmpEnabled] = useState(false);
+  var [customRtmpUrl,     setCustomRtmpUrl]     = useState('');
+  var [customRtmpKey,     setCustomRtmpKey]     = useState('');
+  var [customRtmpVisible, setCustomRtmpVisible] = useState(false);
   var [stageGuests,    setStageGuests]    = useState([userId]);
   var [showMediaConf,  setShowMediaConf]  = useState(false);
   var [tipFeed,        setTipFeed]        = useState([]);      // {id,from,amount,emoji,ts}
@@ -2402,8 +2406,10 @@ export default function LiveRoomPage({
     var platformUrls = {
       youtube:  'rtmp://a.rtmp.youtube.com/live2',
       tiktok:   'rtmp://push.rtmp.tiktok.com/live',
-      twitch:   'rtmp://live.twitch.tv/live',
-      facebook: 'rtmps://live-api-s.facebook.com:443/rtmp'
+      twitch:   'rtmp://live.twitch.tv/app',
+      facebook: 'rtmps://live-api-s.facebook.com:443/rtmp',
+      kick:     'rtmp://fa723fc1b171.global-contribute.live-video.net/app',
+      rumble:   'rtmp://p.contribute.live-video.net/live'
     };
     Object.keys(liveDestinations).forEach(function(platform) {
       if (!liveDestinations[platform]) return;
@@ -2413,6 +2419,13 @@ export default function LiveRoomPage({
       if (!url) return;
       dests.push({ platform: platform, url: url + '/' + key, streamKey: key });
     });
+    if (customRtmpEnabled) {
+      var cUrl = customRtmpUrl.trim();
+      var cKey = customRtmpKey.trim();
+      if (cUrl && cKey) {
+        dests.push({ platform: 'custom', url: cUrl + '/' + cKey, rtmpUrl: cUrl, streamKey: cKey });
+      }
+    }
     socket.emit('go-live', {
       roomId: roomId,
       streamTitle: liveTitle.trim() || '',
@@ -5747,8 +5760,8 @@ export default function LiveRoomPage({
                 {fanoutStatus.length > 0 && (
                   <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                     {fanoutStatus.map(function(fs, i) {
-                      var icons = { youtube: '▶️', twitch: '💜', tiktok: '🎵', facebook: '👍' };
-                      var labels = { youtube: 'YouTube', twitch: 'Twitch', tiktok: 'TikTok', facebook: 'Facebook' };
+                      var icons = { youtube: '▶️', twitch: '💜', tiktok: '🎵', facebook: '👍', kick: '🟢', rumble: '🔴', custom: '📡' };
+                      var labels = { youtube: 'YouTube', twitch: 'Twitch', tiktok: 'TikTok', facebook: 'Facebook', kick: 'Kick', rumble: 'Rumble', custom: 'Custom' };
                       return (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '2px 8px' }}>
                           <span style={{ fontSize: 10 }}>{icons[fs.platform] || '📡'}</span>
@@ -5781,10 +5794,12 @@ export default function LiveRoomPage({
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>MULTISTREAM DESTINATIONS</div>
               {[
-                { id: 'youtube',  label: 'YouTube',  emoji: '▶️', placeholder: 'YouTube stream key' },
-                { id: 'twitch',   label: 'Twitch',   emoji: '💜', placeholder: 'Twitch stream key' },
-                { id: 'tiktok',   label: 'TikTok',   emoji: '🎵', placeholder: 'TikTok stream key' },
-                { id: 'facebook', label: 'Facebook', emoji: '👍', placeholder: 'Facebook stream key' }
+                { id: 'youtube',  label: 'YouTube',  emoji: '▶️', placeholder: 'YouTube stream key',  keyHint: 'youtube.com/live_dashboard' },
+                { id: 'twitch',   label: 'Twitch',   emoji: '💜', placeholder: 'Twitch stream key',   keyHint: 'dashboard.twitch.tv/settings/stream' },
+                { id: 'tiktok',   label: 'TikTok',   emoji: '🎵', placeholder: 'TikTok stream key',   keyHint: 'TikTok Live Studio → Settings' },
+                { id: 'facebook', label: 'Facebook', emoji: '👍', placeholder: 'Facebook stream key', keyHint: 'facebook.com/live/producer' },
+                { id: 'kick',     label: 'Kick',     emoji: '🟢', placeholder: 'Kick stream key',     keyHint: 'kick.com/dashboard/settings' },
+                { id: 'rumble',   label: 'Rumble',   emoji: '🔴', placeholder: 'Rumble stream key',   keyHint: 'rumble.com/account/livestream' }
               ].map(function(p) {
                 var enabled = !!liveDestinations[p.id];
                 var keyVal = liveKeys[p.id] || '';
@@ -5802,23 +5817,64 @@ export default function LiveRoomPage({
                       </button>
                     </div>
                     {enabled && (
-                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                        <input
-                          type={keyVisible ? 'text' : 'password'}
-                          placeholder={p.placeholder}
-                          value={keyVal}
-                          onChange={function(e) { var v = e.target.value; setLiveKeys(function(prev) { var n = Object.assign({}, prev); n[p.id] = v; return n; }); }}
-                          style={{ flex: 1, background: 'rgba(255,255,255,.04)', border: '1px solid ' + BORDER, borderRadius: 7, padding: '8px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 11, outline: 'none' }}
-                        />
-                        <button
-                          onClick={function() { setLiveKeysVisible(function(prev) { var n = Object.assign({}, prev); n[p.id] = !n[p.id]; return n; }); }}
-                          style={{ background: 'rgba(255,255,255,.06)', border: '1px solid ' + BORDER, borderRadius: 6, padding: '7px 9px', color: MUTED, fontSize: 12, cursor: 'pointer', flexShrink: 0 }}
-                        >{keyVisible ? '🙈' : '👁'}</button>
+                      <div>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          <input
+                            type={keyVisible ? 'text' : 'password'}
+                            placeholder={p.placeholder}
+                            value={keyVal}
+                            onChange={function(e) { var v = e.target.value; setLiveKeys(function(prev) { var n = Object.assign({}, prev); n[p.id] = v; return n; }); }}
+                            style={{ flex: 1, background: 'rgba(255,255,255,.04)', border: '1px solid ' + BORDER, borderRadius: 7, padding: '8px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 11, outline: 'none' }}
+                          />
+                          <button
+                            onClick={function() { setLiveKeysVisible(function(prev) { var n = Object.assign({}, prev); n[p.id] = !n[p.id]; return n; }); }}
+                            style={{ background: 'rgba(255,255,255,.06)', border: '1px solid ' + BORDER, borderRadius: 6, padding: '7px 9px', color: MUTED, fontSize: 12, cursor: 'pointer', flexShrink: 0 }}
+                          >{keyVisible ? '🙈' : '👁'}</button>
+                        </div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 4 }}>Get key: {p.keyHint}</div>
                       </div>
                     )}
                   </div>
                 );
               })}
+
+              {/* Custom RTMP */}
+              <div style={{ background: BG, border: '1px solid ' + (customRtmpEnabled ? GOLD + '44' : BORDER), borderRadius: 9, padding: '10px 12px', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: customRtmpEnabled ? 8 : 0 }}>
+                  <span style={{ fontSize: 16 }}>📡</span>
+                  <span style={{ flex: 1, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14 }}>Custom RTMP</span>
+                  <button
+                    onClick={function() { setCustomRtmpEnabled(function(v) { return !v; }); }}
+                    style={{ width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer', background: customRtmpEnabled ? GOLD : 'rgba(255,255,255,.1)', position: 'relative', transition: 'background .2s', flexShrink: 0 }}
+                  >
+                    <div style={{ position: 'absolute', top: 2, left: customRtmpEnabled ? 20 : 2, width: 18, height: 18, borderRadius: '50%', background: customRtmpEnabled ? BG : '#F0E8D4', transition: 'left .2s' }} />
+                  </button>
+                </div>
+                {customRtmpEnabled && (
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="rtmp://your-server/app"
+                      value={customRtmpUrl}
+                      onChange={function(e) { setCustomRtmpUrl(e.target.value); }}
+                      style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,.04)', border: '1px solid ' + BORDER, borderRadius: 7, padding: '8px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 11, outline: 'none', marginBottom: 6 }}
+                    />
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <input
+                        type={customRtmpVisible ? 'text' : 'password'}
+                        placeholder="Stream key"
+                        value={customRtmpKey}
+                        onChange={function(e) { setCustomRtmpKey(e.target.value); }}
+                        style={{ flex: 1, background: 'rgba(255,255,255,.04)', border: '1px solid ' + BORDER, borderRadius: 7, padding: '8px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 11, outline: 'none' }}
+                      />
+                      <button
+                        onClick={function() { setCustomRtmpVisible(function(v) { return !v; }); }}
+                        style={{ background: 'rgba(255,255,255,.06)', border: '1px solid ' + BORDER, borderRadius: 6, padding: '7px 9px', color: MUTED, fontSize: 12, cursor: 'pointer', flexShrink: 0 }}
+                      >{customRtmpVisible ? '🙈' : '👁'}</button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Co-streaming note */}
@@ -5931,7 +5987,7 @@ export default function LiveRoomPage({
                 {isLive && fanoutStatus.length > 0 && (
                   <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                     {fanoutStatus.map(function(fs, i) {
-                      var icons = { youtube: '▶️', twitch: '💜', tiktok: '🎵', facebook: '👍' };
+                      var icons = { youtube: '▶️', twitch: '💜', tiktok: '🎵', facebook: '👍', kick: '🟢', rumble: '🔴', custom: '📡' };
                       return (
                         <div key={i} title={fs.platform} style={{ background: 'rgba(201,168,76,.18)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 999, padding: '2px 7px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 3 }}>
                           <span style={{ fontSize: 10 }}>{icons[fs.platform] || '📡'}</span>
