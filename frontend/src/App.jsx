@@ -1869,6 +1869,7 @@ export default function App() {
             username={username}
             role={role}
             addToast={addToast}
+            onSwitchTab={setActiveTab}
           />
         )}
         {activeTab === 'sfx' && (

@@ -89,11 +89,11 @@ export default function BackPage() {
       {/* Hero Section */}
       <section className="relative px-4 md:px-6 py-12 md:py-20 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          {/* Beta Badge */}
+          {/* Launch Badge */}
           <div className="inline-block px-4 py-2 rounded-full mb-8 border border-[#d4af37]/50" style={{ background: 'rgba(212,175,55,0.05)' }}>
             <span className="text-xs font-bold text-[#d4af37] flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-[#d4af37]" />
-              BETA – Invite Only
+              NOW LIVE — Open to All
             </span>
           </div>
 
