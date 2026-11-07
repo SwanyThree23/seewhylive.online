@@ -1561,6 +1561,28 @@ app.get('/api/blocks/check/:targetId', requireAuth, function(req, res) {
 
 // ── User profile self-service ─────────────────────────────────────────────
 
+// GET /api/users/me  — fetch current user's profile + notification prefs
+app.get('/api/users/me', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var row = db.prepare('SELECT display_name, bio, avatar_emoji, tier, notify_new_stream, notify_tip, notify_subscriber, notify_email_digest FROM user_profiles WHERE user_id = ?').get(userId);
+    return res.json({
+      displayName:        (row && row.display_name)  || '',
+      bio:                (row && row.bio)            || '',
+      avatarEmoji:        (row && row.avatar_emoji)   || '🎭',
+      tier:               (row && row.tier)           || 'free',
+      notifyNewStream:    row ? row.notify_new_stream  !== 0 : true,
+      notifyTip:          row ? row.notify_tip         !== 0 : true,
+      notifySubscriber:   row ? row.notify_subscriber  !== 0 : true,
+      notifyEmailDigest:  row ? row.notify_email_digest === 1 : false,
+    });
+  } catch (e) {
+    logger.error('[users/me GET] ' + e.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // PUT /api/users/me  — update display_name, bio, avatar_emoji
 app.put('/api/users/me', requireAuth, function(req, res) {
   try {
