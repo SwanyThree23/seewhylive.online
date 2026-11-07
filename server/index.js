@@ -376,6 +376,10 @@ db.exec(`CREATE TABLE IF NOT EXISTS dm_requests (
   UNIQUE(from_user, to_user)
 )`);
 try { db.exec('ALTER TABLE user_profiles ADD COLUMN dm_privacy TEXT DEFAULT \'everyone\''); } catch(_) {}
+try { db.exec('ALTER TABLE user_profiles ADD COLUMN notify_new_stream INTEGER NOT NULL DEFAULT 1'); } catch(_) {}
+try { db.exec('ALTER TABLE user_profiles ADD COLUMN notify_tip INTEGER NOT NULL DEFAULT 1'); } catch(_) {}
+try { db.exec('ALTER TABLE user_profiles ADD COLUMN notify_subscriber INTEGER NOT NULL DEFAULT 1'); } catch(_) {}
+try { db.exec('ALTER TABLE user_profiles ADD COLUMN notify_email_digest INTEGER NOT NULL DEFAULT 0'); } catch(_) {}
 
 // Community posts (creator announcements)
 db.exec(`CREATE TABLE IF NOT EXISTS community_posts (
@@ -1534,6 +1538,67 @@ app.get('/api/blocks/check/:targetId', requireAuth, function(req, res) {
     var theyBlocked = !!db.prepare('SELECT 1 FROM user_blocks WHERE blocker_id = ? AND blocked_id = ?').get(targetId, userId);
     return res.json({ iBlocked: iBlocked, theyBlocked: theyBlocked });
   } catch (e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── User profile self-service ─────────────────────────────────────────────
+
+// PUT /api/users/me  — update display_name, bio, avatar_emoji
+app.put('/api/users/me', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var body        = req.body;
+    var displayName = typeof body.displayName === 'string' ? body.displayName.trim().slice(0, 64) : null;
+    var bio         = typeof body.bio === 'string' ? body.bio.trim().slice(0, 300) : null;
+    var avatarEmoji = typeof body.avatarEmoji === 'string' ? body.avatarEmoji.trim().slice(0, 8) : null;
+    var now = Math.floor(Date.now() / 1000);
+    var existing = db.prepare('SELECT user_id FROM user_profiles WHERE user_id = ?').get(userId);
+    if (!existing) {
+      db.prepare('INSERT INTO user_profiles (user_id, display_name, bio, avatar_emoji, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)').run(
+        userId, displayName || '', bio || '', avatarEmoji || '🎭', now, now
+      );
+    } else {
+      var fields = [];
+      var params = [];
+      if (displayName !== null) { fields.push('display_name = ?'); params.push(displayName); }
+      if (bio !== null)         { fields.push('bio = ?');          params.push(bio); }
+      if (avatarEmoji !== null) { fields.push('avatar_emoji = ?'); params.push(avatarEmoji); }
+      if (fields.length === 0)  return res.json({ success: true });
+      fields.push('updated_at = ?'); params.push(now);
+      params.push(userId);
+      db.prepare('UPDATE user_profiles SET ' + fields.join(', ') + ' WHERE user_id = ?').run(...params);
+    }
+    return res.json({ success: true });
+  } catch (e) {
+    logger.error('[users/me PUT] ' + e.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/users/me/notifications  — save notification preferences
+app.post('/api/users/me/notifications', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var body = req.body;
+    var ns  = body.notifyNewStream  === false ? 0 : 1;
+    var nt  = body.notifyTip        === false ? 0 : 1;
+    var nsb = body.notifySubscriber === false ? 0 : 1;
+    var ne  = body.notifyEmailDigest === true  ? 1 : 0;
+    var now = Math.floor(Date.now() / 1000);
+    var existing = db.prepare('SELECT user_id FROM user_profiles WHERE user_id = ?').get(userId);
+    if (!existing) {
+      db.prepare('INSERT INTO user_profiles (user_id, notify_new_stream, notify_tip, notify_subscriber, notify_email_digest, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+        .run(userId, ns, nt, nsb, ne, now, now);
+    } else {
+      db.prepare('UPDATE user_profiles SET notify_new_stream = ?, notify_tip = ?, notify_subscriber = ?, notify_email_digest = ?, updated_at = ? WHERE user_id = ?')
+        .run(ns, nt, nsb, ne, now, userId);
+    }
+    return res.json({ success: true });
+  } catch (e) {
+    logger.error('[users/me/notifications] ' + e.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // ── DM / Message Requests ────────────────────────────────────────────────
