@@ -2112,12 +2112,14 @@ export default function App() {
             socket={socketRef.current}
             roomId={APP_ID}
             userId={userId}
+            username={username}
             isHost={role === 'host' || role === 'cohost'}
             rtcManager={rtcManager}
             guests={guests}
             addToast={addToast}
             panelInvite={panelInvite}
             setPanelInvite={setPanelInvite}
+            viewerCount={viewerCount}
           />
         )}
         {activeTab === 'watchparty' && (
