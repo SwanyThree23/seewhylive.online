@@ -108,7 +108,7 @@ export default function BetaStatusPage() {
         <Link to={createPageUrl('InviteUsers')}>
           <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
             style={{ background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: '#000', cursor: 'pointer', ...T }}>
-            <UserPlus className="w-3.5 h-3.5" /> Invite Beta Testers
+            <UserPlus className="w-3.5 h-3.5" /> Invite Users
           </button>
         </Link>
       </div>

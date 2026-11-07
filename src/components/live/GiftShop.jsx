@@ -169,9 +169,10 @@ function TopGifters({ roomId }) {
 }
 
 export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, creatorName, onGiftSent }) {
-  const [selected,   setSelected]   = useState(null);
-  const [sending,    setSending]    = useState(false);
-  const [qty,        setQty]        = useState(1);
+  const [selected,       setSelected]       = useState(null);
+  const [sending,        setSending]        = useState(false);
+  const [sendingBundle,  setSendingBundle]  = useState(null);
+  const [qty,            setQty]            = useState(1);
   const [activeTab,  setActiveTab]  = useState(() => { try { return localStorage.getItem('gift_shop_tab') || 'gifts'; } catch { return 'gifts'; } }); // 'gifts' | 'bundles'
   const [recentSent, setRecentSent] = useState([]);
   const [rarityFilter, setRarityFilter] = useState(() => { try { return localStorage.getItem('gift_shop_rarity') || 'all'; } catch { return 'all'; } });
@@ -179,6 +180,33 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
 
   const featuredGift = GIFTS.find(g => g.featured);
   const totalPrice   = selected ? (selected.price * qty).toFixed(2) : null;
+
+  async function handleBundleBuy(bundle) {
+    if (sendingBundle) return;
+    if (!user?.id) { toast.error('Sign in to send gifts'); return; }
+    setSendingBundle(bundle.id);
+    try {
+      const bundleGifts = bundle.gifts.map(gid => GIFTS.find(x => x.id === gid)).filter(Boolean);
+      const emojis = bundleGifts.map(g => g.emoji).join(' ');
+      await base44.entities.TipAlert.create({
+        room_id:     roomId,
+        sender_id:   user.id,
+        sender_name: user.full_name || user.email || 'Guest',
+        creator_id:  creatorId,
+        amount_usd:  bundle.price,
+        message:     `${bundle.label} ${emojis}`,
+      });
+      toast.success(`${bundle.label} sent to ${creatorName}!`);
+      onGiftSent?.(bundleGifts[0], user);
+      const entry = { ...bundleGifts[0], label: bundle.label, qty: bundleGifts.length, sentAt: Date.now() };
+      setRecentSent(prev => [entry, ...prev].slice(0, 4));
+      setTimeout(() => setRecentSent(prev => prev.filter(r => r.sentAt !== entry.sentAt)), 30000);
+    } catch {
+      toast.error('Failed to send bundle');
+    } finally {
+      setSendingBundle(null);
+    }
+  }
 
   async function handleSend() {
     if (!selected || sending) return;
@@ -394,11 +422,14 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
                         </div>
                       </div>
                       <button
-                        onClick={() => { toast.info(`${bundle.label} — coming soon!`); }}
+                        onClick={() => handleBundleBuy(bundle)}
+                        disabled={!!sendingBundle}
                         style={{ padding: '7px 12px', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif',
                           fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em',
-                          background: `${GOLD}22`, color: GOLD, border: `1px solid ${GOLD}40`, cursor: 'pointer' }}>
-                        Buy
+                          background: sendingBundle === bundle.id ? `${GOLD}44` : `${GOLD}22`,
+                          color: GOLD, border: `1px solid ${GOLD}40`,
+                          cursor: sendingBundle ? 'not-allowed' : 'pointer' }}>
+                        {sendingBundle === bundle.id ? '...' : 'Buy'}
                       </button>
                     </div>
                   ))}

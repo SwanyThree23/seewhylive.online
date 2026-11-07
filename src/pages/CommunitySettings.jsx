@@ -309,7 +309,13 @@ export default function CommunitySettingsPage() {
                 These actions are permanent and cannot be undone. Proceed with caution.
               </p>
               <button
-                onClick={() => toast.error('Community deletion is disabled in beta — contact an admin')}
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to permanently delete this community? This cannot be undone.')) {
+                    base44.entities.Community.delete(communityId)
+                      .then(function() { window.history.back(); toast.success('Community deleted'); })
+                      .catch(function(e) { toast.error((e && e.message) || 'Failed to delete community'); });
+                  }
+                }}
                 className="w-full py-2.5 rounded-xl font-black uppercase text-xs"
                 style={{ background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.3)', color: '#C0392B', cursor: 'pointer', ...T }}>
                 Delete Community

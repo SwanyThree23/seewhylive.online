@@ -97,13 +97,13 @@ export default function InviteUsersPage() {
         <div className="flex items-center gap-3">
           <UserPlus className="w-5 h-5" style={{ color: GOLD }} />
           <div>
-            <h1 className="text-xl font-black text-white leading-none" style={T}>Invite to Beta</h1>
-            <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Invite users to join SeeWhy LIVE beta testing</p>
+            <h1 className="text-xl font-black text-white leading-none" style={T}>Invite Users</h1>
+            <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Invite users to join SeeWhy LIVE</p>
           </div>
         </div>
         <span className="text-[11px] font-black px-3 py-1 rounded-full uppercase"
-          style={{ ...T, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD }}>
-          BETA
+          style={{ ...T, background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E' }}>
+          LIVE
         </span>
       </div>
 
@@ -113,7 +113,7 @@ export default function InviteUsersPage() {
           {[
             { label: 'Invited This Session', value: invitedList.length, color: GOLD },
             { label: 'Slots Available', value: '∞', color: '#6DBF7E' },
-            { label: 'Beta Access', value: 'Free', color: '#4A8A7A' },
+            { label: 'Access', value: 'Free', color: '#4A8A7A' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-4 text-center"
               style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
@@ -170,9 +170,9 @@ export default function InviteUsersPage() {
         <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
           <div className="flex items-center gap-2 mb-1">
             <Copy className="w-4 h-4" style={{ color: GOLD }} />
-            <p className="font-black text-sm text-white" style={T}>Share Beta Invite Link</p>
+            <p className="font-black text-sm text-white" style={T}>Share Invite Link</p>
           </div>
-          <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Anyone with this link can join the beta</p>
+          <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Anyone with this link can join SeeWhy LIVE</p>
           <div className="flex gap-2">
             <input
               readOnly
@@ -232,11 +232,10 @@ export default function InviteUsersPage() {
           <div className="flex gap-3">
             <span className="text-2xl">🚀</span>
             <div>
-              <p className="font-black text-sm text-white mb-1" style={T}>SeeWhy LIVE — Beta Testing</p>
+              <p className="font-black text-sm text-white mb-1" style={T}>SeeWhy LIVE — Now Open</p>
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                We're in active beta. All features are functional and multi-user ready.
-                Please report any bugs via the platform or to your admin.
-                The 90/10 revenue split is locked in for all beta testers.
+                All features are live and multi-user ready. Please report any issues via the platform or to your admin.
+                The 90/10 revenue split applies to all creators.
               </p>
             </div>
           </div>
