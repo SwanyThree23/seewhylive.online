@@ -21,8 +21,10 @@ export default function PanelTile({
   var { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
   var videoRef = useRef(null);
   var audioRef = useRef(null);
+  var tileRef = useRef(null);
   var prevCamTrackRef = useRef(null);
   var [camActive, setCamActive] = useState(false);
+  var [isFullscreen, setIsFullscreen] = useState(false);
   var [localCamOn, setLocalCamOn] = useState(true);
   var [localMicOn, setLocalMicOn] = useState(true);
   var [localHandRaised, setLocalHandRaised] = useState(false);
@@ -37,6 +39,25 @@ export default function PanelTile({
   useEffect(function() { camActiveRef.current = camActive; }, [camActive]);
   var remoteCamOffRef = useRef(false);
   useEffect(function() { remoteCamOffRef.current = !!remoteCamOff; }, [remoteCamOff]);
+
+  // Track browser fullscreen state to keep button in sync with Esc key exit
+  useEffect(function() {
+    var onFsChange = function() {
+      setIsFullscreen(!!(document.fullscreenElement && tileRef.current && document.fullscreenElement === tileRef.current));
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    return function() { document.removeEventListener('fullscreenchange', onFsChange); };
+  }, []);
+
+  var toggleFullscreen = function(e) {
+    e.stopPropagation();
+    if (!tileRef.current) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(function() {});
+    } else {
+      tileRef.current.requestFullscreen().catch(function() {});
+    }
+  }
 
   // Reconnect: re-publish the local panel stream after RTC transport cycling.
   // PanelJoinModal publishes once at join; after reconnect those producers are gone.
@@ -601,6 +622,7 @@ export default function PanelTile({
 
   return (
     <div
+      ref={tileRef}
       onClick={handleTileClick}
       onMouseEnter={function() { setShowControls(true); }}
       onMouseLeave={function() { setShowControls(false); }}
@@ -774,6 +796,24 @@ export default function PanelTile({
 
       {/* Host kick/mute controls (shown on hover) */}
       {renderHostControls()}
+
+      {/* Fullscreen toggle — available on every tile */}
+      <button
+        onClick={toggleFullscreen}
+        style={{
+          position: 'absolute', top: 4, right: 4,
+          background: 'rgba(0,0,0,0.65)', border: 'none', borderRadius: 4,
+          width: 24, height: 24, color: CREAM, fontSize: 11, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          opacity: showControls ? 1 : 0,
+          transition: 'opacity 0.2s',
+          pointerEvents: showControls ? 'auto' : 'none',
+          zIndex: 10,
+        }}
+        title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+      >
+        {isFullscreen ? '⤡' : '⤢'}
+      </button>
     </div>
   );
 }
