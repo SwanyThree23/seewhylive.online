@@ -5,7 +5,7 @@
 // emoji animations over the panel grid.
 import { useEffect, useRef, useState } from 'react';
 
-var EMOJIS = ['❤️', '🔥', '👏', '😂', '😮', '💯', '🎉', '💜'];
+var EMOJIS = ['❤️', '🔥', '🚀', '👏', '😂', '😮', '💯', '🎉', '💜'];
 var GOLD = '#C9A84C';
 
 // Individual floating emoji that rises and fades out

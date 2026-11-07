@@ -295,7 +295,7 @@ function registerPanelHandlers(io, socket, rooms) {
       var _prNow = Date.now();
       if (_prNow - (panelHandThrottle.get(userId) || 0) < 1000) return;
       panelHandThrottle.set(userId, _prNow);
-      io.volatile.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: userId, raised: raised });
+      io.volatile.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: userId, raised: raised, displayName: socket.data.username || null });
     } catch (err) {
       console.error('[panelHandlers] panel:raise_hand error:', err);
     }

@@ -117,10 +117,13 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         var rid = payload.roomId, slot = payload.slot;
         if (rid !== roomId) return;
         setSlots(function(prev) {
-          var exists = prev.some(function(s) { return s.slot_index === slot.slot_index; });
-          return exists
-            ? prev.map(function(s) { return s.slot_index === slot.slot_index ? Object.assign({}, s, slot) : s; })
-            : prev.concat([slot]);
+          var isNew = !prev.some(function(s) { return s.slot_index === slot.slot_index; });
+          if (isNew && isHost && addToast && slot.user_id !== userId) {
+            addToast('🎙 ' + (slot.display_name || 'Someone') + ' joined the panel', 'info');
+          }
+          return isNew
+            ? prev.concat([slot])
+            : prev.map(function(s) { return s.slot_index === slot.slot_index ? Object.assign({}, s, slot) : s; });
         });
       }));
 
@@ -191,8 +194,15 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         if (payload.roomId !== roomId) return;
         setRaisedHands(function(prev) {
           var next = Object.assign({}, prev);
-          if (payload.raised) next[payload.userId] = true;
-          else delete next[payload.userId];
+          if (payload.raised) {
+            next[payload.userId] = true;
+            if (isHost && addToast) {
+              var _handName = payload.displayName || payload.userId || 'Someone';
+              addToast('✋ ' + _handName + ' raised their hand', 'info');
+            }
+          } else {
+            delete next[payload.userId];
+          }
           return next;
         });
       }
