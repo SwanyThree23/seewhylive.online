@@ -136,6 +136,18 @@ export default function PanelTile({
     return function() { rtcManager.off('consumerClosed', onClosed); };
   }, [isLocal, rtcManager, producerId, audioProducerId]);
 
+  // Re-subscribe remote feeds when tab becomes visible (mobile background → foreground)
+  useEffect(function() {
+    if (isLocal || !producerId) return;
+    var onVisible = function() {
+      if (document.visibilityState === 'visible' && !camActive) {
+        setVideoSubscribeKey(function(k) { return k + 1; });
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return function() { document.removeEventListener('visibilitychange', onVisible); };
+  }, [isLocal, producerId, camActive]);
+
   // Subscribe to remote stream or wire up local producer track
   useEffect(function() {
     if (isAudioOnlyRoom || !rtcManager) {
