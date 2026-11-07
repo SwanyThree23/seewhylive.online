@@ -664,46 +664,72 @@ export default function PanelTile({
         background: BG,
         borderRadius: 8,
         overflow: 'hidden',
-        border: isSwapSource
-          ? ('2px solid ' + GOLD)
-          : effectiveSpeaking
+        border: isAudioOnlyRoom
+          ? '1px solid #222'
+          : isSwapSource
             ? ('2px solid ' + GOLD)
-            : slot_index === 0
+            : effectiveSpeaking
               ? ('2px solid ' + GOLD)
-              : '1px solid #333',
-        animation: effectiveSpeaking ? 'panelSpeakPulse 1.4s ease-in-out infinite' : 'none',
+              : slot_index === 0
+                ? ('2px solid ' + GOLD)
+                : '1px solid #333',
+        animation: (!isAudioOnlyRoom && effectiveSpeaking) ? 'panelSpeakPulse 1.4s ease-in-out infinite' : 'none',
         transition: 'border-color 0.2s, box-shadow 0.2s',
         cursor: 'pointer',
-        aspectRatio: '9/16',
+        aspectRatio: isAudioOnlyRoom ? '1/1' : '9/16',
       }}
     >
       {isAudioOnlyRoom ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-          <img
-            src={avatar_url}
-            alt={display_name}
-            style={{
-              width: 56, height: 56, borderRadius: '50%',
-              boxShadow: effectiveSpeaking ? ('0 0 0 3px ' + GOLD + ', 0 0 12px ' + GOLD + '66') : 'none',
-              transition: 'box-shadow 0.15s',
-            }}
-          />
-          <div style={{ display: 'flex', gap: 2, marginTop: 8, alignItems: 'flex-end' }}>
-            {[0.25, 0.5, 1, 0.6, 0.35].map(function(scale, i) {
-              var level = micLevel || 0;
-              var barH = 4 + Math.min(24, Math.round(level * scale * 0.32));
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '10px 6px 8px', gap: 0 }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            {avatar_url ? (
+              <img
+                src={avatar_url}
+                alt={display_name}
+                style={{
+                  width: 72, height: 72, borderRadius: '50%', objectFit: 'cover',
+                  border: effectiveSpeaking ? ('3px solid ' + GOLD) : '3px solid #2a2a2a',
+                  animation: effectiveSpeaking ? 'speakRing 1.2s ease-in-out infinite' : 'none',
+                  transition: 'border-color 0.2s',
+                }}
+              />
+            ) : (
+              <div style={{
+                width: 72, height: 72, borderRadius: '50%',
+                background: 'linear-gradient(135deg,#2a2a2a,#1a1a1a)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: CREAM, fontSize: 28, fontFamily: '"DM Sans", sans-serif',
+                border: effectiveSpeaking ? ('3px solid ' + GOLD) : '3px solid #2a2a2a',
+                animation: effectiveSpeaking ? 'speakRing 1.2s ease-in-out infinite' : 'none',
+                transition: 'border-color 0.2s',
+              }}>
+                {(display_name || '?')[0].toUpperCase()}
+              </div>
+            )}
+            {is_muted && (
+              <span style={{ position: 'absolute', bottom: 1, right: 1, background: LIVE_RED, borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, border: '2px solid #111' }}>🔇</span>
+            )}
+            {isRaisedHand && (
+              <span style={{ position: 'absolute', top: -4, right: -6, fontSize: 15, filter: 'drop-shadow(0 0 3px rgba(212,175,55,.8))' }}>✋</span>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 2, marginTop: 6, alignItems: 'flex-end', height: 12 }}>
+            {[0.5, 1, 0.65, 0.4, 0.8].map(function(scale, i) {
+              var level = effectiveSpeaking ? (micLevel || 0.5) : 0;
+              var barH = 2 + Math.min(10, Math.round(level * scale * 11));
               return (
-                <span
-                  key={i}
-                  style={{
-                    width: 3, height: barH + 'px',
-                    background: effectiveSpeaking ? GOLD : 'rgba(212,175,55,0.35)',
-                    borderRadius: 2, transition: 'height 0.08s, background 0.15s',
-                  }}
-                />
+                <span key={i} style={{ width: 3, height: barH + 'px', background: effectiveSpeaking ? GOLD : '#333', borderRadius: 2, transition: 'height 0.08s, background 0.15s' }} />
               );
             })}
           </div>
+          <div style={{ marginTop: 6, fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 700, color: CREAM, textAlign: 'center', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingLeft: 4, paddingRight: 4 }}>
+            {display_name}
+          </div>
+          {role && role !== 'viewer' && (
+            <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 10, color: role === 'host' ? GOLD : '#818cf8', marginTop: 1 }}>
+              {role}
+            </div>
+          )}
         </div>
       ) : (
         <div style={{ width: '100%', height: '100%', background: '#000', position: 'relative' }}>
@@ -773,8 +799,8 @@ export default function PanelTile({
         </div>
       )}
 
-      {/* Name label */}
-      <div style={{
+      {/* Name label — video tiles only; audio-only tiles render name inside the circle */}
+      {!isAudioOnlyRoom && <div style={{
         position: 'absolute', bottom: 4, left: 4,
         background: 'rgba(0,0,0,0.45)', borderRadius: 4, padding: '2px 5px',
         color: CREAM, fontSize: 11, fontFamily: '"DM Sans", sans-serif',
@@ -804,7 +830,7 @@ export default function PanelTile({
             background: 'rgba(0,0,0,0.5)', borderRadius: 3, padding: '1px 3px', flexShrink: 0,
           }}>{role}</span>
         )}
-      </div>
+      </div>}
 
       {/* Speaking / connection quality indicator — shown for all tiles with RTC */}
       {!isAudioOnlyRoom && rtcManager && (
@@ -826,15 +852,15 @@ export default function PanelTile({
         />
       )}
 
-      {/* Muted badge */}
-      {is_muted && (
+      {/* Muted badge — video tiles only */}
+      {!isAudioOnlyRoom && is_muted && (
         <span style={{ position: 'absolute', top: 4, right: 4, background: LIVE_RED, borderRadius: 4, padding: '2px 4px', fontSize: 10, color: CREAM }}>
           MUTED
         </span>
       )}
 
-      {/* Raised-hand badge */}
-      {isRaisedHand && (
+      {/* Raised-hand badge — video tiles only */}
+      {!isAudioOnlyRoom && isRaisedHand && (
         <span style={{ position: 'absolute', top: 4, right: is_muted ? 48 : 4, fontSize: 18, filter: 'drop-shadow(0 0 4px rgba(212,175,55,0.8))' }}>
           ✋
         </span>
