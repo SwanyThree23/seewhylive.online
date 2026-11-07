@@ -1651,5 +1651,152 @@ router.post('/media/upload', requireAuth, mediaUploadRateLimit, mediaUpload.sing
   });
 });
 
+// ─── DISCOVER routes ──────────────────────────────────────────────────────────
+
+var discoverRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  keyGenerator: function(req) { return req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'too many requests' },
+});
+
+router.get('/discover/live', discoverRateLimit, async function(req, res) {
+  try {
+    var limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 50);
+    var result = await db.query(
+      'SELECT id, creator_id, creator_username, title, viewer_count, peak_viewers, thumbnail_url, started_at ' +
+      'FROM streams WHERE is_live = true ORDER BY viewer_count DESC NULLS LAST LIMIT $1',
+      [limit]
+    );
+    var streams = (result.rows || []).map(function(r) {
+      return {
+        id:              r.id,
+        creatorUsername: r.creator_username,
+        title:           r.title,
+        viewerCount:     r.viewer_count || 0,
+        peakViewers:     r.peak_viewers || 0,
+        thumbnailUrl:    r.thumbnail_url || null,
+        startedAt:       r.started_at || null,
+      };
+    });
+    return res.json({ streams: streams });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ─── MERCH routes ─────────────────────────────────────────────────────────────
+
+var _getMerchDb = (function() {
+  var _mdb = null;
+  return function() {
+    if (!_mdb) {
+      _mdb = require('better-sqlite3')(process.env.DB_PATH || '/opt/seewhy/data/seewhy.db');
+      _mdb.pragma('journal_mode = WAL');
+      _mdb.exec(
+        'CREATE TABLE IF NOT EXISTS merch_items (' +
+        '  id TEXT PRIMARY KEY,' +
+        '  creator_id TEXT NOT NULL,' +
+        '  name TEXT NOT NULL,' +
+        '  price_cents INTEGER NOT NULL,' +
+        '  stock INTEGER NOT NULL DEFAULT 0,' +
+        '  emoji TEXT NOT NULL DEFAULT \'🛍\',' +
+        '  color TEXT NOT NULL DEFAULT \'#C9A84C\',' +
+        '  limited INTEGER NOT NULL DEFAULT 0,' +
+        '  sold INTEGER NOT NULL DEFAULT 0,' +
+        '  cat TEXT NOT NULL DEFAULT \'accessories\',' +
+        '  active INTEGER NOT NULL DEFAULT 1,' +
+        '  created_at INTEGER NOT NULL,' +
+        '  updated_at INTEGER NOT NULL' +
+        ')'
+      );
+    }
+    return _mdb;
+  };
+})();
+
+var merchRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  keyGenerator: function(req) { return req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'too many requests' },
+});
+
+router.get('/merch/items', merchRateLimit, function(req, res) {
+  try {
+    var creator = String(req.query.creator || '').slice(0, 80);
+    if (!creator) return res.json({ items: [] });
+    var mdb = _getMerchDb();
+    var rows = mdb.prepare('SELECT * FROM merch_items WHERE creator_id = ? AND active = 1 ORDER BY created_at ASC').all(creator);
+    var items = rows.map(function(r) {
+      return {
+        id:      r.id,
+        name:    r.name,
+        price:   r.price_cents / 100,
+        stock:   r.stock,
+        emoji:   r.emoji,
+        color:   r.color,
+        limited: Boolean(r.limited),
+        sold:    r.sold,
+        cat:     r.cat,
+      };
+    });
+    return res.json({ items: items });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/merch/items', requireAuth, merchRateLimit, function(req, res) {
+  try {
+    var VALID_CATS = ['apparel', 'accessories', 'collectibles', 'digital'];
+    var name  = String(req.body.name  || '').slice(0, 120);
+    var price = Number(req.body.price || 0);
+    var stock = Number(req.body.stock || 0);
+    var emoji = String(req.body.emoji || '🛍').slice(0, 8);
+    var color = /^#[0-9a-fA-F]{3,8}$/.test(req.body.color || '') ? String(req.body.color) : '#C9A84C';
+    var cat   = VALID_CATS.indexOf(String(req.body.cat || '')) !== -1 ? String(req.body.cat) : 'accessories';
+    var limited = req.body.limited ? 1 : 0;
+
+    if (!name) return res.status(400).json({ error: 'name is required' });
+    if (!Number.isFinite(price) || price < 0.01 || price > 9999) return res.status(400).json({ error: 'price must be between 0.01 and 9999' });
+    if (!Number.isFinite(stock) || stock < 0 || stock > 99999) return res.status(400).json({ error: 'invalid stock' });
+
+    var mdb = _getMerchDb();
+    var id  = uuidv4();
+    var now = Math.floor(Date.now() / 1000);
+    mdb.prepare(
+      'INSERT INTO merch_items (id, creator_id, name, price_cents, stock, emoji, color, limited, sold, cat, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 1, ?, ?)'
+    ).run(id, req.user.id, name, Math.floor(price * 100), Math.floor(stock), emoji, color, limited, cat, now, now);
+    return res.status(201).json({ id: id, name: name, price: price, stock: Math.floor(stock), emoji: emoji, color: color, limited: Boolean(limited), sold: 0, cat: cat });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.patch('/merch/items/:itemId/stock', requireAuth, merchRateLimit, function(req, res) {
+  try {
+    var itemId = String(req.params.itemId || '').slice(0, 64);
+    var delta  = Number(req.body.delta || 0);
+    if (!Number.isFinite(delta) || delta === 0) return res.status(400).json({ error: 'delta must be a non-zero number' });
+    var mdb  = _getMerchDb();
+    var row  = mdb.prepare('SELECT * FROM merch_items WHERE id = ? AND creator_id = ?').get(itemId, req.user.id);
+    if (!row) return res.status(404).json({ error: 'item not found' });
+    var newStock = Math.max(0, row.stock + Math.floor(delta));
+    var newSold  = delta < 0 ? row.sold + Math.floor(-delta) : row.sold;
+    var now = Math.floor(Date.now() / 1000);
+    mdb.prepare('UPDATE merch_items SET stock = ?, sold = ?, updated_at = ? WHERE id = ?').run(newStock, newSold, now, itemId);
+    return res.json({ id: itemId, stock: newStock, sold: newSold });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
 
