@@ -682,7 +682,7 @@ export default function EnhancementSuite() {
 
       <div className="sw-header">
         <div>
-          <div className="sw-logo">See<span>Why</span> LIVE <span className="sw-badge">BETA</span></div>
+          <div className="sw-logo">See<span>Why</span> LIVE</div>
         </div>
         <div className="sw-header-meta">SwanyThree EntTech · Enhancement Suite v1.0</div>
       </div>

@@ -47,12 +47,13 @@ var STYLE_TAG = '' +
   '}';
 
 export default function AudioStageTab(props) {
-  var socket   = props.socket;
-  var roomId   = props.roomId;
-  var userId   = props.userId;
-  var username = props.username;
-  var role     = props.role;
-  var addToast = props.addToast;
+  var socket      = props.socket;
+  var roomId      = props.roomId;
+  var userId      = props.userId;
+  var username    = props.username;
+  var role        = props.role;
+  var addToast    = props.addToast;
+  var onSwitchTab = props.onSwitchTab;
 
   var [speakers,     setSpeakers]     = useState([]);
   var [listeners,    setListeners]    = useState([]);
@@ -634,7 +635,7 @@ export default function AudioStageTab(props) {
           var items = [
             { icon: '🔗', label: 'Share', active: false, action: shareAction },
             { icon: '📋', label: 'Queue', active: showQueue, action: function() { setShowQueue(function(v) { return !v; }); } },
-            { icon: '🎵', label: 'Music', active: false, action: function() { if (addToast) addToast('Music — coming soon', 'info'); } },
+            { icon: '🎵', label: 'Music', active: false, action: function() { if (onSwitchTab) { onSwitchTab('music'); } else if (addToast) { addToast('Open the Music tab from the menu', 'info'); } } },
             isHost
               ? { icon: stageLocked ? '🔒' : '🔓', label: stageLocked ? 'Unlock' : 'Lock', active: stageLocked, action: lockAction }
               : { icon: '⚙', label: 'Settings', active: showSettings, action: function() {
