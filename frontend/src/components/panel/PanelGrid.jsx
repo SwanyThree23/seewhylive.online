@@ -49,6 +49,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   var [swapSourceId, setSwapSourceId] = useState(null); // userId selected for swap (host only)
   var [pkBattle, setPkBattle] = useState(null);
   var [currentSpeaker, setCurrentSpeaker] = useState(null);
+  var [speakerDuration, setSpeakerDuration] = useState(0);
   var [shareCopied, setShareCopied] = useState(false);
   var [localAudioStream, setLocalAudioStream] = useState(null);
   var prevSpotlightRef = useRef(null);
@@ -103,6 +104,14 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   }, [rtcManager, isAudioOnlyRoom]);
 
   var gate = useAutoSpeakGate({ stream: isAudioOnlyRoom ? localStream : localAudioStream });
+
+  var currentSpeakerId = currentSpeaker ? currentSpeaker.userId : null;
+  useEffect(function() {
+    if (!currentSpeakerId) { setSpeakerDuration(0); return; }
+    setSpeakerDuration(0);
+    var t = setInterval(function() { setSpeakerDuration(function(d) { return d + 1; }); }, 1000);
+    return function() { clearInterval(t); };
+  }, [currentSpeakerId]);
 
   useEffect(function() {
     if (!socket || !roomId) return;
@@ -398,8 +407,15 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
           <span style={{ color: GOLD, fontSize: 11, fontFamily: '"DM Sans", sans-serif', fontWeight: 600, letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 6 }}>
             Stage {slots.length > 0 && <span style={{ color: '#888' }}>· {slots.length}</span>}
             {currentSpeaker && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: CREAM, fontWeight: 500, fontSize: 10, background: 'rgba(201,168,76,.12)', borderRadius: 10, padding: '1px 7px', border: '1px solid rgba(201,168,76,.22)', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                <span style={{ fontSize: 9, flexShrink: 0 }}>🎤</span>{currentSpeaker.name}
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: CREAM, fontWeight: 500, fontSize: 10, background: 'rgba(201,168,76,.12)', borderRadius: 10, padding: '2px 8px', border: '1px solid rgba(201,168,76,.22)' }}>
+                <span style={{ fontSize: 9, flexShrink: 0 }}>🎤</span>
+                <span style={{ maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentSpeaker.name}</span>
+                <span style={{ color: '#888', fontSize: 9, flexShrink: 0 }}>{Math.floor(speakerDuration / 60) + ':' + (speakerDuration % 60 < 10 ? '0' : '') + (speakerDuration % 60)}</span>
+              </span>
+            )}
+            {Object.keys(raisedHands).length > 0 && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(201,168,76,.18)', borderRadius: 10, padding: '2px 8px', fontSize: 10, color: GOLD, border: '1px solid rgba(201,168,76,.35)', animation: 'panelSpeakPulse 2s ease-in-out infinite', flexShrink: 0 }}>
+                ✋ {Object.keys(raisedHands).length}
               </span>
             )}
           </span>
