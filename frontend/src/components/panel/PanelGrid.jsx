@@ -168,6 +168,15 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       socket.on('panel:slot_muted', onSlotMuted);
       unsubs.push(function() { socket.off('panel:slot_muted', onSlotMuted); });
 
+      var onAllMuted = function(payload) {
+        if (payload.roomId !== roomId) return;
+        setSlots(function(prev) {
+          return prev.map(function(s) { return Object.assign({}, s, { is_muted: true }); });
+        });
+      }
+      socket.on('panel:all_muted', onAllMuted);
+      unsubs.push(function() { socket.off('panel:all_muted', onAllMuted); });
+
       var onKicked = function(payload) {
         if (payload.roomId !== roomId) return;
         setSlots(function(prev) { return prev.filter(function(s) { return s.user_id !== userId; }); });
@@ -385,6 +394,19 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
                 isAudioOnly={isAudioOnlyRoom}
                 videoProducer={videoProducer || null}
               />
+            )}
+            {isHost && slots.length > 0 && (
+              <button
+                onClick={function() { panelService.muteAll(socket, roomId); }}
+                title="Mute all panelists"
+                style={{
+                  background: 'transparent', color: '#888', border: '1px solid #333',
+                  borderRadius: 6, padding: '4px 8px', fontSize: 11,
+                  fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
+                }}
+              >
+                🔇 All
+              </button>
             )}
             {isHost && <PanelPrivacySettings roomId={roomId} addToast={addToast} />}
             {!hasSlot && userId && (

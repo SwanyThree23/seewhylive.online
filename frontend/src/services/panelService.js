@@ -52,6 +52,10 @@ function mutePanelist(socket, roomId, targetUserId, isMuted) {
   socket.emit('panel:mute', { roomId: roomId, targetUserId: targetUserId, isMuted: isMuted });
 }
 
+function muteAll(socket, roomId) {
+  socket.emit('panel:mute_all', { roomId: roomId });
+}
+
 function expandTile(socket, roomId, slotIndex, expanded) {
   socket.emit('panel:expand', { roomId: roomId, slotIndex: slotIndex, expanded: expanded });
 }
@@ -102,7 +106,8 @@ var panelService = {
   onJoinRequestResolved: onJoinRequestResolved,
   fetchPanelState: fetchPanelState,
   fetchJoinRequests: fetchJoinRequests,
-  setRoomPrivacy: setRoomPrivacy
+  setRoomPrivacy: setRoomPrivacy,
+  muteAll: muteAll
 };
 
 export default panelService;

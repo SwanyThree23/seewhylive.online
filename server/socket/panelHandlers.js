@@ -254,6 +254,16 @@ function registerPanelHandlers(io, socket, rooms) {
     }
   });
 
+  socket.on('panel:mute_all', async ({ roomId }) => {
+    try {
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') || socket.data.roomId !== roomId) return;
+      await panelService.muteAllSlots({ roomId });
+      io.to(roomId).emit('panel:all_muted', { roomId });
+    } catch (err) {
+      console.error('[panelHandlers] panel:mute_all error:', err);
+    }
+  });
+
   socket.on('panel:remote_camera', async function(payload, ack) {
     try {
       var roomId = payload && payload.roomId;
