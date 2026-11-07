@@ -37,9 +37,17 @@ function formatFollowers(n) {
   return '' + n;
 }
 
+var QUICK_ACTION_TABS = {
+  watch:   'watchparty',
+  battles: 'pkbattle-arena',
+  vod:     'vod',
+  create:  'room',
+};
+
 export default function DiscoverTab(props) {
-  var addToast = props.addToast;
-  var socket   = props.socket;
+  var addToast     = props.addToast;
+  var socket       = props.socket;
+  var onSwitchTab  = props.onSwitchTab;
 
   var queryState = useState('');
   var query = queryState[0];
@@ -623,6 +631,7 @@ export default function DiscoverTab(props) {
             key: item.id,
             onClick: function() {
               if (item.id === 'golive' && props.onGoLive) { props.onGoLive(); return; }
+              if (QUICK_ACTION_TABS[item.id] && onSwitchTab) { onSwitchTab(QUICK_ACTION_TABS[item.id]); return; }
               if (addToast) addToast(item.label + ' - coming soon!', 'info');
             },
             style: {
