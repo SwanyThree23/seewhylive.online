@@ -2260,7 +2260,10 @@ app.post('/api/ai/chat', requireAuth, function(req, res) {
   var body    = req.body;
   var message = typeof body.message === 'string' ? body.message.slice(0, 1000) : '';
   if (!message) { res.status(400).json({ error: 'message required' }); return; }
-  var system  = 'You are a helpful assistant for SeeWhy LIVE.';
+  var DEFAULT_SYSTEM = 'You are a helpful assistant for SeeWhy LIVE.';
+  var system = (typeof body.system === 'string' && body.system.trim().length > 0)
+    ? body.system.trim().slice(0, 2000)
+    : DEFAULT_SYSTEM;
   var client = require('./llm').getClient();
   client.messages.create({
     model: 'anthropic/claude-sonnet-5',
