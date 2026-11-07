@@ -40,6 +40,7 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
   var [search,          setSearch]          = useState('');
   var [profile,         setProfile]         = useState(null);
   var [filterLive,      setFilterLive]      = useState(false);
+  var [apiCreators,     setApiCreators]     = useState(null);
   var [liveViewerCounts, setLiveViewerCounts] = useState(function() {
     var init = {};
     for (var i = 0; i < CREATORS.length; i++) {
@@ -50,6 +51,47 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
   var [livePulse, setLivePulse] = useState(false);
   var pulseRef = useRef(null);
 
+  // Fetch real creators and live viewer counts
+  useEffect(function() {
+    Promise.all([
+      fetch('/api/users/creators').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+      fetch('/api/discover/live').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+    ]).then(function(results) {
+      var creatorsData = results[0];
+      var liveData     = results[1];
+      var liveMap = {};
+      if (liveData && liveData.streams) {
+        for (var i = 0; i < liveData.streams.length; i++) {
+          var s = liveData.streams[i];
+          var key = (s.creatorUsername || '').toLowerCase();
+          if (key) liveMap[key] = s.viewerCount || 0;
+        }
+      }
+      if (!creatorsData || !creatorsData.creators || !creatorsData.creators.length) return;
+      var merged = creatorsData.creators.map(function(c) {
+        var nameKey  = (c.displayName || '').toLowerCase();
+        var vCount   = liveMap.hasOwnProperty(nameKey) ? liveMap[nameKey] : 0;
+        var isOnline = liveMap.hasOwnProperty(nameKey);
+        return {
+          id:        c.id,
+          name:      c.displayName || c.id,
+          handle:    (c.displayName || c.id).toLowerCase().replace(/\s+/g, ''),
+          flag:      '🌐',
+          category:  'Creator',
+          followers: c.streamCount * 12,
+          live:      isOnline,
+          viewers:   vCount,
+          color:     '#C9A84C',
+        };
+      });
+      setApiCreators(merged);
+      var liveViewers = {};
+      for (var j = 0; j < merged.length; j++) {
+        liveViewers[merged[j].id] = merged[j].viewers;
+      }
+      setLiveViewerCounts(function(prev) { return Object.assign({}, prev, liveViewers); });
+    });
+  }, []);
 
   useEffect(function() {
     pulseRef.current = setInterval(function() {
@@ -64,7 +106,9 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
     if (addToast) addToast(next[id] ? 'Following ' + name : 'Unfollowed ' + name, 'info');
   }
 
-  var visible = CREATORS.filter(function(c) {
+  var allCreators = apiCreators || CREATORS;
+
+  var visible = allCreators.filter(function(c) {
     var matchesCat = filter === 'All' || c.category === filter;
     var matchesSearch = !search.trim() || c.name.toLowerCase().indexOf(search.toLowerCase()) !== -1 || c.handle.toLowerCase().indexOf(search.toLowerCase()) !== -1;
     var matchesLive = !filterLive || c.live;
@@ -79,7 +123,7 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
     return 0;
   });
 
-  var liveCount = CREATORS.filter(function(c) { return c.live; }).length;
+  var liveCount = allCreators.filter(function(c) { return c.live; }).length;
 
   var liveDotStyle = {
     display: 'inline-block',
