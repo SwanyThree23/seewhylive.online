@@ -52,6 +52,8 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   var [currentSpeaker, setCurrentSpeaker] = useState(null);
   var [speakerDuration, setSpeakerDuration] = useState(0);
   var [shareCopied, setShareCopied] = useState(false);
+  var [confirmLeave, setConfirmLeave] = useState(false);
+  var confirmLeaveTimerRef = useRef(null);
   var [localAudioStream, setLocalAudioStream] = useState(null);
   var prevSpotlightRef = useRef(null);
   var exitTimersRef = useRef({});
@@ -131,8 +133,8 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         if (rid !== roomId) return;
         setSlots(function(prev) {
           var isNew = !prev.some(function(s) { return s.slot_index === slot.slot_index; });
-          if (isNew && isHost && addToast && slot.user_id !== userId) {
-            addToast('🎙 ' + (slot.display_name || 'Someone') + ' joined the panel', 'info');
+          if (isNew && addToast && slot.user_id !== userId) {
+            addToast('🎙 ' + (slot.display_name || 'Someone') + ' joined the stage', 'info');
           }
           return isNew
             ? prev.concat([slot])
@@ -174,6 +176,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       var onSlotMuted = function(payload) {
         var rid = payload.roomId, uid = payload.userId, isMuted = payload.isMuted;
         if (rid !== roomId) return;
+        if (uid === userId && isMuted && addToast) addToast('🔇 You were muted by the host', 'info');
         setSlots(function(prev) {
           return prev.map(function(s) { return s.user_id === uid ? Object.assign({}, s, { is_muted: isMuted }) : s; });
         });
@@ -184,6 +187,9 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       var onAllMuted = function(payload) {
         if (payload.roomId !== roomId) return;
         setSlots(function(prev) {
+          if (addToast && prev.some(function(s) { return s.user_id === userId; })) {
+            addToast('🔇 All panelists muted by the host', 'info');
+          }
           return prev.map(function(s) { return Object.assign({}, s, { is_muted: true }); });
         });
       }
@@ -486,9 +492,13 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
                 <span>✋</span><span>Ask to speak</span>
               </button>
             )}
-            {hasSlot && (
+            {hasSlot && !confirmLeave && (
               <button
-                onClick={handleLeave}
+                onClick={function() {
+                  setConfirmLeave(true);
+                  clearTimeout(confirmLeaveTimerRef.current);
+                  confirmLeaveTimerRef.current = setTimeout(function() { setConfirmLeave(false); }, 3000);
+                }}
                 style={{
                   background: 'transparent', color: RED, border: '1px solid ' + RED,
                   borderRadius: 6, padding: '5px 10px', fontSize: 12,
@@ -497,6 +507,22 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
               >
                 Leave Panel
               </button>
+            )}
+            {hasSlot && confirmLeave && (
+              <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                <button
+                  onClick={function() { clearTimeout(confirmLeaveTimerRef.current); setConfirmLeave(false); handleLeave(); }}
+                  style={{ background: RED, color: CREAM, border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontFamily: '"DM Sans", sans-serif', cursor: 'pointer', fontWeight: 700 }}
+                >
+                  Confirm
+                </button>
+                <button
+                  onClick={function() { clearTimeout(confirmLeaveTimerRef.current); setConfirmLeave(false); }}
+                  style={{ background: 'transparent', color: '#888', border: '1px solid #333', borderRadius: 6, padding: '5px 8px', fontSize: 12, fontFamily: '"DM Sans", sans-serif', cursor: 'pointer' }}
+                >
+                  ✕
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -630,9 +656,31 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         </div>
       )}
 
+      {/* On-stage avatar strip — video mode only; audio-only tiles already show names */}
+      {slots.length > 0 && !isAudioOnlyRoom && (
+        <div style={{ padding: '0 8px 4px', display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto' }}>
+          <span style={{ color: '#444', fontSize: 8, fontFamily: '"DM Sans", sans-serif', flexShrink: 0, letterSpacing: 0.8, textTransform: 'uppercase' }}>On stage</span>
+          {slots.map(function(slot) {
+            var isSpeaking = currentSpeaker && currentSpeaker.userId === slot.user_id;
+            return (
+              <div key={slot.user_id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                {slot.avatar_url ? (
+                  <img src={slot.avatar_url} alt={slot.display_name} style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover', border: isSpeaking ? ('2px solid ' + GOLD) : '2px solid #2a2a2a', transition: 'border-color 0.2s' }} />
+                ) : (
+                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#1e1e1e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: CREAM, fontFamily: '"DM Sans", sans-serif', border: isSpeaking ? ('2px solid ' + GOLD) : '2px solid #2a2a2a', transition: 'border-color 0.2s' }}>
+                    {(slot.display_name || '?')[0].toUpperCase()}
+                  </div>
+                )}
+                <span style={{ fontSize: 7, color: '#666', fontFamily: '"DM Sans", sans-serif', maxWidth: 34, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{slot.display_name}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Reaction bar + floating emojis (relative container for floats) */}
       {slots.length > 0 && (
-        <div style={{ position: 'relative', padding: '6px 8px 4px', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ position: 'relative', padding: '2px 8px 4px', display: 'flex', justifyContent: 'center' }}>
           <PanelReactionBar socket={socket} roomId={roomId} userId={userId} />
         </div>
       )}
