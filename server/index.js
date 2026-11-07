@@ -38,6 +38,7 @@ var crypto        = require('crypto');
 var Database      = require('better-sqlite3');
 var winston       = require('winston');
 require('winston-daily-rotate-file');
+var os = require('os');
 
 var webpush = null;
 try {
@@ -306,6 +307,42 @@ db.exec(`CREATE TABLE IF NOT EXISTS user_blocks (
   PRIMARY KEY (blocker_id, blocked_id)
 )`);
 db.prepare('CREATE INDEX IF NOT EXISTS idx_user_blocks_blocker ON user_blocks(blocker_id)').run();
+
+// State rankings table (National Domino Federation leaderboard)
+db.exec(`CREATE TABLE IF NOT EXISTS state_rankings (
+  state_abbr  TEXT PRIMARY KEY,
+  state_name  TEXT NOT NULL,
+  state_emoji TEXT NOT NULL DEFAULT '',
+  region      TEXT NOT NULL DEFAULT 'West',
+  rank_num    INTEGER NOT NULL DEFAULT 99,
+  rank_prev   INTEGER NOT NULL DEFAULT 99,
+  change_val  INTEGER NOT NULL DEFAULT 0,
+  points      INTEGER NOT NULL DEFAULT 0,
+  losses      INTEGER NOT NULL DEFAULT 0,
+  streak      INTEGER NOT NULL DEFAULT 0,
+  tiles_diff  INTEGER NOT NULL DEFAULT 0,
+  updated_at  INTEGER NOT NULL DEFAULT 0
+)`);
+(function() {
+  var cnt = db.prepare('SELECT COUNT(*) as c FROM state_rankings').get().c;
+  if (cnt === 0) {
+    var defaults = [
+      { a:'WA', n:'Washington',     e:'🌲', r:'West',      rk:1, rp:1, ch:0,  p:240, l:0, s:8, t:42  },
+      { a:'CA', n:'California',     e:'🐻', r:'West',      rk:2, rp:2, ch:0,  p:210, l:1, s:5, t:31  },
+      { a:'TX', n:'Texas',          e:'⭐', r:'Southwest', rk:3, rp:4, ch:1,  p:180, l:2, s:3, t:18  },
+      { a:'GA', n:'Georgia',        e:'🍑', r:'Southeast', rk:4, rp:3, ch:-1, p:178, l:2, s:2, t:16  },
+      { a:'NY', n:'New York',       e:'🗽', r:'Northeast', rk:5, rp:6, ch:1,  p:150, l:3, s:1, t:8   },
+      { a:'FL', n:'Florida',        e:'🌴', r:'Southeast', rk:6, rp:5, ch:-1, p:148, l:3, s:0, t:5   },
+      { a:'IL', n:'Illinois',       e:'🏙', r:'Midwest',   rk:7, rp:7, ch:0,  p:120, l:4, s:0, t:-8  },
+      { a:'NC', n:'North Carolina', e:'🌸', r:'Southeast', rk:8, rp:8, ch:0,  p:118, l:4, s:0, t:-14 },
+    ];
+    var ins = db.prepare('INSERT INTO state_rankings (state_abbr,state_name,state_emoji,region,rank_num,rank_prev,change_val,points,losses,streak,tiles_diff,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
+    var now = Math.floor(Date.now() / 1000);
+    defaults.forEach(function(d) {
+      ins.run(d.a, d.n, d.e, d.r, d.rk, d.rp, d.ch, d.p, d.l, d.s, d.t, now);
+    });
+  }
+})();
 
 try { db.exec('ALTER TABLE user_profiles ADD COLUMN referral_code TEXT'); } catch(_) {}
 try { db.exec('ALTER TABLE user_profiles ADD COLUMN referred_by TEXT'); } catch(_) {}
@@ -1109,15 +1146,31 @@ app.get('/api/health', function(req, res) {
   var workerCount = mediasoup.getWorkerCount();
 
   var pgUp = pgDb.isPgUp();
+
+  var loadAvg   = os.loadavg();
+  var cpuCount  = os.cpus().length;
+  var cpuPct    = Math.min(100, Math.round(loadAvg[0] / Math.max(cpuCount, 1) * 100));
+  var memTotal  = os.totalmem();
+  var memFree   = os.freemem();
+  var memUsed   = memTotal - memFree;
+  var memPct    = Math.round(memUsed / memTotal * 100);
+  var uptimeSec = Math.floor(process.uptime());
+
   res.json({
     status: (dbOk && pgUp ? 'ok' : 'degraded'),
     shuttingDown: _isShuttingDown,
     uptime: process.uptime(),
+    uptimeSec: uptimeSec,
     rooms: rooms.size,
     guests: guestCount,
     viewers: viewerCount,
     mediasoupWorkers: workerCount,
     db: { sqlite: dbOk, postgres: pgUp },
+    cpuPct: cpuPct,
+    cpuCount: cpuCount,
+    memPct: memPct,
+    memUsedMb: Math.floor(memUsed / 1024 / 1024),
+    memTotalMb: Math.floor(memTotal / 1024 / 1024),
     timestamp: Date.now()
   });
 });
@@ -1695,6 +1748,39 @@ app.get('/api/schedule/public', function(req, res) {
   } catch(e) { return res.status(500).json({ error: 'Server error' }); }
 });
 
+// GET /api/state-rankings  — public, returns current state rankings
+app.get('/api/state-rankings', function(req, res) {
+  try {
+    var rows = db.prepare('SELECT state_abbr, state_name, state_emoji, region, rank_num, rank_prev, change_val, points, losses, streak, tiles_diff, updated_at FROM state_rankings ORDER BY rank_num ASC').all();
+    return res.json({ rankings: rows });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/state-rankings/results  — admin only, record match result and update rankings
+app.post('/api/state-rankings/results', requireAuth, function(req, res) {
+  if (req.user.role !== 'admin' && req.user.role !== 'owner') return res.status(403).json({ error: 'forbidden' });
+  var winner = String(req.body.winner || '').trim().toUpperCase();
+  var loser  = String(req.body.loser  || '').trim().toUpperCase();
+  var pts    = Math.max(0, Math.min(50, parseInt(req.body.points) || 10));
+  if (!winner || !loser || winner === loser) return res.status(400).json({ error: 'invalid teams' });
+  try {
+    var now = Math.floor(Date.now() / 1000);
+    var winRow = db.prepare('SELECT * FROM state_rankings WHERE state_abbr = ?').get(winner);
+    var loseRow = db.prepare('SELECT * FROM state_rankings WHERE state_abbr = ?').get(loser);
+    if (!winRow || !loseRow) return res.status(404).json({ error: 'team not found' });
+    db.prepare('UPDATE state_rankings SET points = points + ?, streak = streak + 1, tiles_diff = tiles_diff + ?, updated_at = ? WHERE state_abbr = ?')
+      .run(pts, pts, now, winner);
+    db.prepare('UPDATE state_rankings SET losses = losses + 1, streak = 0, tiles_diff = tiles_diff - ?, updated_at = ? WHERE state_abbr = ?')
+      .run(pts, now, loser);
+    var allRows = db.prepare('SELECT state_abbr, points FROM state_rankings ORDER BY points DESC').all();
+    var update = db.prepare('UPDATE state_rankings SET rank_prev = rank_num, rank_num = ?, change_val = rank_num - ? WHERE state_abbr = ?');
+    allRows.forEach(function(r, idx) {
+      update.run(idx + 1, idx + 1, r.state_abbr);
+    });
+    return res.json({ ok: true });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
 // GET /api/schedule/:id/rsvps  — list RSVP'd users (owner or admin only)
 app.get('/api/schedule/:id/rsvps', requireAuth, function(req, res) {
   var id = String(req.params.id || '').trim();
@@ -1888,14 +1974,24 @@ app.get('/api/payout-history', requireAuth, function(req, res) {
       stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats WHERE room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) GROUP BY day ORDER BY day DESC LIMIT 30');
       rows = stmt.all(userId);
     }
+    var giftRows;
+    if (roomId) {
+      giftRows = db.prepare('SELECT date(ts,"unixepoch") as day, COUNT(*) as cnt, COALESCE(SUM(value_cents),0) as giftCents FROM gifts WHERE room_id = ? AND room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) GROUP BY day').all(roomId, userId);
+    } else {
+      giftRows = db.prepare('SELECT date(ts,"unixepoch") as day, COUNT(*) as cnt, COALESCE(SUM(value_cents),0) as giftCents FROM gifts WHERE room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) GROUP BY day').all(userId);
+    }
+    var giftMap = {};
+    (giftRows || []).forEach(function(r) { giftMap[r.day] = { cnt: r.cnt, cents: Math.floor(r.giftCents || 0) }; });
     var sessions = (rows || []).map(function(row, i) {
+      var gd = giftMap[row.day] || { cnt: 0, cents: 0 };
+      var sc = Math.floor(row.totalCents || 0);
       return {
         id: i + 1,
         date: Math.floor(Date.now() / 1000) - i * 86400,
         label: 'Stream Session ' + (new Date(row.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
-        totalCents: Math.floor(row.totalCents || 0),
+        totalCents: sc + gd.cents,
         superChats: row.events || 0,
-        gifts: 0,
+        gifts: gd.cnt,
         tips: 0,
         viewers: 0,
       };

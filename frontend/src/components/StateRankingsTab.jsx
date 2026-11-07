@@ -92,6 +92,31 @@ export default function StateRankingsTab({ isLive, addToast }) {
     };
   }));
 
+  useEffect(function() {
+    fetch('/api/state-rankings')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d || !Array.isArray(d.rankings) || d.rankings.length === 0) return;
+        var mapped = d.rankings.map(function(r) {
+          return {
+            rank:        r.rank_num,
+            rank_prev:   r.rank_prev,
+            change:      r.change_val,
+            state_name:  r.state_name,
+            state_abbr:  r.state_abbr,
+            state_emoji: r.state_emoji,
+            region:      r.region,
+            points:      r.points,
+            losses:      r.losses,
+            streak:      r.streak,
+            tiles_diff:  r.tiles_diff,
+          };
+        });
+        setRankings(mapped);
+      })
+      .catch(function() {});
+  }, []);
+
 
   // --- RANKINGS view helpers ---
   var visible = rankings.filter(function(r) {
