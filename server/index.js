@@ -1097,31 +1097,17 @@ app.get('/api/health', function(req, res) {
 
   var workerCount = mediasoup.getWorkerCount();
 
-  // Non-blocking Postgres ping
-  pgDb.query('SELECT 1').then(function() {
-    res.json({
-      status: (dbOk ? 'ok' : 'degraded'),
-      shuttingDown: _isShuttingDown,
-      uptime: process.uptime(),
-      rooms: rooms.size,
-      guests: guestCount,
-      viewers: viewerCount,
-      mediasoupWorkers: workerCount,
-      db: { sqlite: dbOk, postgres: true },
-      timestamp: Date.now()
-    });
-  }).catch(function() {
-    res.json({
-      status: 'degraded',
-      shuttingDown: _isShuttingDown,
-      uptime: process.uptime(),
-      rooms: rooms.size,
-      guests: guestCount,
-      viewers: viewerCount,
-      mediasoupWorkers: workerCount,
-      db: { sqlite: dbOk, postgres: false },
-      timestamp: Date.now()
-    });
+  var pgUp = pgDb.isPgUp();
+  res.json({
+    status: (dbOk && pgUp ? 'ok' : 'degraded'),
+    shuttingDown: _isShuttingDown,
+    uptime: process.uptime(),
+    rooms: rooms.size,
+    guests: guestCount,
+    viewers: viewerCount,
+    mediasoupWorkers: workerCount,
+    db: { sqlite: dbOk, postgres: pgUp },
+    timestamp: Date.now()
   });
 });
 
