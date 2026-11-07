@@ -45,7 +45,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
         <div className="flex items-center gap-2">
           <Radio className="w-4 h-4 text-[#ffb800]" />
           <h3 className="text-sm font-semibold text-white">Stream Ingest Setup</h3>
-          <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(13,16,34,0.5)', color:'#FFB800' }}>BETA</span>
+          <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.15)', color:'#6DBF7E' }}>LIVE</span>
         </div>
       </div>
 
@@ -205,7 +205,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                 <div className="flex items-center gap-2 mb-3">
                   <Lock className="w-4 h-4 text-[#ffb800]" />
                   <h4 className="text-sm font-bold text-white">Guest Destinations</h4>
-                  <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(255,21,100,0.5)', color:'#FFB800' }}>BETA</span>
+                  <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.15)', color:'#6DBF7E' }}>LIVE</span>
                 </div>
 
                 <div className="space-y-3">
