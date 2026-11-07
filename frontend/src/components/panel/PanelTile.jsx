@@ -25,6 +25,7 @@ export default function PanelTile({
   var prevCamTrackRef = useRef(null);
   var [camActive, setCamActive] = useState(false);
   var [isFullscreen, setIsFullscreen] = useState(false);
+  var [connectTimeout, setConnectTimeout] = useState(false);
   var [localCamOn, setLocalCamOn] = useState(true);
   var [localMicOn, setLocalMicOn] = useState(true);
   var [localHandRaised, setLocalHandRaised] = useState(false);
@@ -58,6 +59,16 @@ export default function PanelTile({
       tileRef.current.requestFullscreen().catch(function() {});
     }
   }
+
+  // Show "tap to retry" after 10s if remote producerId exists but no video yet
+  useEffect(function() {
+    if (isLocal || camActive || !producerId || isAudioOnlyRoom || remoteCamOff) {
+      setConnectTimeout(false);
+      return;
+    }
+    var t = setTimeout(function() { setConnectTimeout(true); }, 10000);
+    return function() { clearTimeout(t); };
+  }, [isLocal, camActive, producerId, isAudioOnlyRoom, remoteCamOff, videoSubscribeKey]);
 
   // Reconnect: re-publish the local panel stream after RTC transport cycling.
   // PanelJoinModal publishes once at join; after reconnect those producers are gone.
@@ -708,9 +719,18 @@ export default function PanelTile({
                   {(display_name || '?')[0].toUpperCase()}
                 </div>
               )}
-              <span style={{ color: '#666', fontSize: 10, fontFamily: '"DM Sans", sans-serif' }}>
-                {(isLocal && !localCamOn) || (!isLocal && remoteCamOff) ? 'Camera off' : 'Connecting...'}
-              </span>
+              {connectTimeout ? (
+                <button
+                  onClick={function(e) { e.stopPropagation(); setConnectTimeout(false); setVideoSubscribeKey(function(k) { return k + 1; }); }}
+                  style={{ background: 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, padding: '4px 10px', color: GOLD, fontSize: 10, fontFamily: '"DM Sans", sans-serif', cursor: 'pointer' }}
+                >
+                  Tap to retry
+                </button>
+              ) : (
+                <span style={{ color: '#666', fontSize: 10, fontFamily: '"DM Sans", sans-serif' }}>
+                  {(isLocal && !localCamOn) || (!isLocal && remoteCamOff) ? 'Camera off' : !producerId ? 'Setting up...' : 'Connecting...'}
+                </span>
+              )}
             </div>
           )}
           {/* Remote cam-off overlay: show when producer is paused by the remote panelist */}
