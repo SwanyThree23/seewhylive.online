@@ -15,6 +15,7 @@ const panelHandThrottle    = new Map(); // userId -> last hand-raise timestamp
 const panelLoyaltyThrottle = new Map(); // `userId:roomId` -> last award timestamp
 const panelSpotlight       = new Map(); // roomId -> spotlitUserId (null = cleared)
 const panelInviteThrottle  = new Map(); // `hostId:targetId` -> last invite timestamp
+const panelStageBackground = new Map(); // roomId -> presetId (cleared when reset to default)
 
 const LOYALTY_AWARD_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour per user per room
 const THROTTLE_STALE_MS = 30000; // 30 s >> any window (max 3 s) — safe to prune
@@ -407,6 +408,28 @@ function registerPanelHandlers(io, socket, rooms) {
       });
       if (ack) ack({ ok: true });
     } catch (err) {
+      if (ack) ack({ ok: false, error: 'Panel error' });
+    }
+  });
+
+  // panel:set_stage_background — host sets animated backdrop for all viewers
+  socket.on('panel:set_stage_background', function(payload, ack) {
+    try {
+      var roomId = payload && payload.roomId;
+      var presetId = payload && String(payload.presetId || '');
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') || socket.data.roomId !== roomId) {
+        if (ack) ack({ ok: false, error: 'forbidden' }); return;
+      }
+      var VALID_BG_IDS = ['default', 'aurora', 'gold', 'neon', 'space', 'fire', 'ocean'];
+      if (!VALID_BG_IDS.includes(presetId)) {
+        if (ack) ack({ ok: false, error: 'invalid preset' }); return;
+      }
+      if (presetId === 'default') panelStageBackground.delete(roomId);
+      else panelStageBackground.set(roomId, presetId);
+      io.to(roomId).emit('panel:stage_background_changed', { roomId: roomId, presetId: presetId });
+      if (ack) ack({ ok: true });
+    } catch (err) {
+      console.error('[panelHandlers] panel:set_stage_background error:', err);
       if (ack) ack({ ok: false, error: 'Panel error' });
     }
   });
