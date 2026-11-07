@@ -6,6 +6,7 @@ var rewardsService = require('../services/rewardsService');
 var requireAuth    = require('../middleware/auth');
 var requireRole    = requireAuth.requireRole;
 var requireOwnerOrSelf = requireAuth.requireOwnerOrSelf;
+var pgDb = require('../db');
 
 var challengeCompleteRateLimit = rateLimit({
   windowMs: 60 * 1000,
@@ -21,7 +22,27 @@ router.get('/leaderboard', requireAuth, async function(req, res) {
   try {
     var period = req.query.period === 'weekly' ? 'weekly' : 'alltime';
     var rows = await rewardsService.getLeaderboard(period, req.tenantId);
-    var data = rows.map(function(r) { return { user_id: r.user_id, display_name: r.display_name || null, total_points: r.total_points || r.points || 0, level: r.level || 1 }; });
+
+    var userIds = rows.map(function(r) { return r.user_id; }).filter(Boolean);
+    var nameMap = {};
+    if (userIds.length > 0 && pgDb.isPgUp()) {
+      try {
+        var result = await pgDb.pool.query(
+          'SELECT id, display_name FROM users WHERE id = ANY($1::uuid[])',
+          [userIds]
+        );
+        result.rows.forEach(function(u) { if (u.display_name) nameMap[u.id] = u.display_name; });
+      } catch (_e) {}
+    }
+
+    var data = rows.map(function(r) {
+      return {
+        user_id: r.user_id,
+        display_name: nameMap[r.user_id] || null,
+        total_points: r.total_points || r.points || 0,
+        level: r.level || 1,
+      };
+    });
     res.json(data);
   } catch (err) {
     console.error('[ROUTE ERROR]', err);
