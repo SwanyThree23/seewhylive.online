@@ -1027,7 +1027,7 @@ export default function RoomPage() {
       {!isHost && showGiftShop && roomId && <AnimatedGiftShop recipientId={room?.host_id || user?.id} roomId={roomId} onClose={() => setShowGiftShop(false)} />}
       {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
       {isHost && <SoundAlertsManager creatorId={room?.host_id || user?.id} />}
-      <ShareToSocial content={{text: ''}} />
+      <ShareToSocial content={{ title: room?.title || 'Live Stream on SeeWhy LIVE', url: `${window.location.origin}${createPageUrl('Room')}?id=${roomId}` }} />
       {isHost && roomId && user?.id && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
       {isHost && <BroadcastAnalyticsDashboard streamSession={room || null} isLive={roomId != null} />}
       {isHost && roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}

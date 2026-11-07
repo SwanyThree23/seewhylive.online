@@ -742,7 +742,7 @@ export default function ControlRoomPage() {
       {<StreamerMonetizationCenter />}
       {user?.id && <VirtualGoodsStore userId={user.id} />}
       {<SoundAlertsManager creatorId={user?.id} />}
-      <ShareToSocial content={{text: ''}} />
+      <ShareToSocial content={{ title: room?.title || 'Control Room on SeeWhy LIVE', url: window.location.href }} />
       {roomId && user?.id && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
       {<BroadcastAnalyticsDashboard streamSession={room || null} isLive={roomId != null} />}
       {roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
