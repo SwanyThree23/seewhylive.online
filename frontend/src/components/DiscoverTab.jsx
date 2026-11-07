@@ -89,6 +89,14 @@ export default function DiscoverTab(props) {
   var following    = followingState[0];
   var setFollowing = followingState[1];
 
+  var upcomingState = useState([]);
+  var upcoming      = upcomingState[0];
+  var setUpcoming   = upcomingState[1];
+
+  var upcomingLoadingState = useState(false);
+  var upcomingLoading    = upcomingLoadingState[0];
+  var setUpcomingLoading = upcomingLoadingState[1];
+
   var unreadCount = notifs.filter(function(n) { return !n.read; }).length;
 
   var debounceRef = useRef(null);
@@ -192,6 +200,20 @@ export default function DiscoverTab(props) {
     socket.on('livehome:trending', onTrending);
     return function() { socket.off('livehome:trending', onTrending); };
   }, [socket]);
+
+  // ── Fetch upcoming scheduled streams when tab is selected ──
+  useEffect(function() {
+    if (contentTab !== 'upcoming') return;
+    if (upcoming.length > 0) return;
+    setUpcomingLoading(true);
+    fetch('/api/schedule/public')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        setUpcoming(Array.isArray(d) ? d : []);
+        setUpcomingLoading(false);
+      })
+      .catch(function() { setUpcomingLoading(false); });
+  }, [contentTab]);
 
   // ── Socket: listen for notification events ──
   useEffect(function() {
@@ -1008,6 +1030,75 @@ export default function DiscoverTab(props) {
     );
   }
 
+  var fmtScheduledAt = function(ts) {
+    if (!ts) return '';
+    var d = new Date(ts * 1000);
+    var now = new Date();
+    var diff = d - now;
+    if (diff < 0) return 'started';
+    var mins = Math.floor(diff / 60000);
+    if (mins < 60) return 'in ' + mins + 'm';
+    var hrs = Math.floor(mins / 60);
+    if (hrs < 24) return 'in ' + hrs + 'h';
+    var days = Math.floor(hrs / 24);
+    return 'in ' + days + 'd';
+  }
+
+  var renderUpcomingCard = function(ev) {
+    return React.createElement(
+      'div',
+      {
+        key: ev.id,
+        style: {
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '10px 12px',
+          borderBottom: '1px solid rgba(255,255,255,.04)',
+          cursor: 'default',
+        }
+      },
+      React.createElement('div', {
+        style: {
+          width: 36, height: 36, borderRadius: 8, flexShrink: 0,
+          background: 'rgba(201,168,76,.12)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16,
+        }
+      }, '📅'),
+      React.createElement('div', { style: { flex: 1, minWidth: 0 } },
+        React.createElement('div', {
+          style: {
+            fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700,
+            fontSize: 13, color: '#F0E8D4',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }
+        }, ev.title || 'Untitled Stream'),
+        React.createElement('div', {
+          style: {
+            fontFamily: '"DM Sans",sans-serif', fontSize: 10, color: '#8A7A62',
+            marginTop: 2,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }
+        }, (ev.category ? ev.category + ' · ' : '') + (ev.desc ? ev.desc.slice(0, 60) : ''))
+      ),
+      React.createElement('div', {
+        style: {
+          display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, gap: 3
+        }
+      },
+        React.createElement('span', {
+          style: {
+            fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700,
+            color: '#C9A84C', background: 'rgba(201,168,76,.12)',
+            borderRadius: 4, padding: '2px 6px',
+          }
+        }, fmtScheduledAt(ev.scheduled_at)),
+        ev.rsvp_count > 0 && React.createElement('span', {
+          style: { fontFamily: '"DM Sans",sans-serif', fontSize: 9, color: '#8A7A62' }
+        }, ev.rsvp_count + ' RSVP' + (ev.rsvp_count !== 1 ? 's' : ''))
+      )
+    );
+  }
+
   var filteredStreams = activeCategory === 'ALL'
     ? streams
     : streams.filter(function(s) { return s.category === activeCategory; });
@@ -1203,7 +1294,12 @@ export default function DiscoverTab(props) {
           'Searching...'
         )
       : contentTab === 'upcoming'
-        ? renderComingSoon('UPCOMING STREAMS \xB7 COMING SOON')
+        ? (upcomingLoading
+            ? renderComingSoon('LOADING...')
+            : upcoming.length === 0
+              ? renderComingSoon('NO UPCOMING STREAMS SCHEDULED')
+              : React.createElement('div', null, upcoming.map(renderUpcomingCard))
+          )
         : contentTab === 'community'
           ? renderComingSoon('COMMUNITY \xB7 COMING SOON')
           : view === 'streams'

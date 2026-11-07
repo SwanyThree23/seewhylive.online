@@ -61,4 +61,35 @@ router.delete('/me', requireAuth, async function(req, res) {
   }
 });
 
+// GET /api/users/search?q=<term> — search users by display_name (public, no auth)
+router.get('/search', async function(req, res) {
+  var q = String(req.query.q || '').trim().slice(0, 64);
+  if (!q || q.length < 2) return res.json({ users: [] });
+  try {
+    var result = await db.pool.query(
+      "SELECT id, display_name, avatar_url, account_type FROM users WHERE display_name ILIKE $1 LIMIT 20",
+      ['%' + q + '%']
+    );
+    return res.json({ users: result.rows.map(function(u) {
+      return { id: u.id, displayName: u.display_name, avatarUrl: u.avatar_url, accountType: u.account_type };
+    }) });
+  } catch (e) {
+    return res.status(500).json({ users: [] });
+  }
+});
+
+// GET /api/users/creators — recent/active creators (public, no auth)
+router.get('/creators', async function(req, res) {
+  try {
+    var result = await db.pool.query(
+      "SELECT u.id, u.display_name, u.avatar_url, u.account_type, COUNT(s.id) AS stream_count FROM users u LEFT JOIN streams s ON s.creator_id = u.id GROUP BY u.id ORDER BY stream_count DESC LIMIT 30"
+    );
+    return res.json({ creators: result.rows.map(function(u) {
+      return { id: u.id, displayName: u.display_name, avatarUrl: u.avatar_url, accountType: u.account_type, streamCount: parseInt(u.stream_count, 10) || 0 };
+    }) });
+  } catch (e) {
+    return res.status(500).json({ creators: [] });
+  }
+});
+
 module.exports = router;
