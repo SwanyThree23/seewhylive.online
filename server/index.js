@@ -1653,6 +1653,7 @@ app.post('/api/dm/requests', requireAuth, function(req, res) {
       db.prepare('INSERT OR IGNORE INTO dm_threads (id, user_a, user_b, created_at) VALUES (?, ?, ?, ?)').run(threadId, ua, ub, now);
       var msgId = uuidv4();
       db.prepare('INSERT INTO dm_messages (id, thread_id, sender_id, body, type, created_at) VALUES (?, ?, ?, ?, \'text\', ?)').run(msgId, threadId, userId, body, now);
+      io.to('user:' + toUser).emit('dm:new', { threadId: threadId, from: userId });
       return res.json({ success: true, threadId: threadId });
     }
     // privacy === 'requests'
@@ -1677,6 +1678,7 @@ app.post('/api/dm/requests/:id/accept', requireAuth, function(req, res) {
     var thread = db.prepare('SELECT * FROM dm_threads WHERE (user_a = ? AND user_b = ?) OR (user_a = ? AND user_b = ?)').get(ua, ub, ub, ua);
     var msgId = uuidv4();
     db.prepare('INSERT INTO dm_messages (id, thread_id, sender_id, body, type, created_at) VALUES (?, ?, ?, ?, \'text\', ?)').run(msgId, thread.id, row.from_user, row.body, now);
+    io.to('user:' + row.from_user).emit('dm:new', { threadId: thread.id, from: userId });
     return res.json({ success: true, threadId: thread.id });
   } catch(e) { return res.status(500).json({ error: 'Server error' }); }
 });
@@ -1729,6 +1731,7 @@ app.post('/api/dm/threads/:threadId/messages', requireAuth, function(req, res) {
     var msgId = uuidv4();
     var now   = Math.floor(Date.now() / 1000);
     db.prepare('INSERT INTO dm_messages (id, thread_id, sender_id, body, type, created_at) VALUES (?, ?, ?, ?, \'text\', ?)').run(msgId, threadId, userId, body, now);
+    io.to('user:' + otherId).emit('dm:new', { threadId: threadId, from: userId });
     return res.json({ success: true, id: msgId });
   } catch(e) { return res.status(500).json({ error: 'Server error' }); }
 });

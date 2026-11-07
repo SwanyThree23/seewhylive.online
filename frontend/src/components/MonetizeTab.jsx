@@ -76,6 +76,27 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
   var [myTier, setMyTier] = useState(null);
   var [passStatus,  setPassStatus]  = useState(null);
   var [passBuying,  setPassBuying]  = useState(false);
+  var [liveLeaders, setLiveLeaders] = useState(null);
+
+  useEffect(function() {
+    if (tab !== 'leaderboard') return;
+    var token = '';
+    try { token = localStorage.getItem('sw_token') || ''; } catch(e) {}
+    if (!token || !roomId) return;
+    var mounted = true;
+    fetch('/api/leaderboard?roomId=' + encodeURIComponent(roomId), { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (!mounted || !d || !d.leaderboard) return;
+        var badges = ['💎', '👑', '🔥', '⭐', '🎯'];
+        var mapped = d.leaderboard.map(function(row, i) {
+          return { rank: i + 1, name: row.username || 'Anonymous', cents: row.total_cents || 0, badge: badges[i] || '🎖', streak: 0 };
+        });
+        if (mapped.length > 0) setLiveLeaders(mapped);
+      })
+      .catch(function() {});
+    return function() { mounted = false; };
+  }, [tab, roomId]);
 
   useEffect(function() {
     if (tab !== 'pass') return;
@@ -551,7 +572,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
           <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ fontFamily: fD, fontSize: 20, color: TEXT, letterSpacing: 2 }}>TOP SUPPORTERS</div>
             <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, marginBottom: 4 }}>Live session leaderboard · resets each stream</div>
-            {LEADERBOARD_MOCK.map(function(e, i) {
+            {(liveLeaders || LEADERBOARD_MOCK).map(function(e, i) {
               var isTop = i < 3;
               var rankColors = ['#C9A84C', '#C0C0C0', '#cd7f32'];
               var rc = rankColors[i] || MUTED;
