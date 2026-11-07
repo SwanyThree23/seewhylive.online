@@ -64,6 +64,7 @@ export default function InsForgeTab({ addToast, isLive }) {
   var [liveLogs,    setLiveLogs]    = useState([]);
   var [actionLog,   setActionLog]   = useState([]);
   var [uptimeSec,   setUptimeSec]   = useState(0);
+  var [systemStats, setSystemStats] = useState(SYSTEM_STATS.map(function(s) { return Object.assign({}, s); }));
 
   var refreshRef   = useRef(null);
   var prevStatusRef = useRef({});
@@ -127,6 +128,20 @@ export default function InsForgeTab({ addToast, isLive }) {
             return s;
           });
         });
+        var memUsedMb  = data.memUsedMb  || 0;
+        var memTotalMb = data.memTotalMb || 0;
+        var memUsedGb  = (memUsedMb  / 1024).toFixed(1);
+        var memTotalGb = (memTotalMb / 1024).toFixed(1);
+        var us = data.uptimeSec || 0;
+        var uh = Math.floor(us / 3600);
+        var um = Math.floor((us % 3600) / 60);
+        setSystemStats([
+          { label: 'CPU USAGE',  val: (data.cpuPct || 0) + '%',                             bar: data.cpuPct  || 0, color: '#C9A84C' },
+          { label: 'MEMORY',     val: memUsedGb + ' / ' + memTotalGb + ' GB',               bar: data.memPct  || 0, color: '#C9A84C' },
+          { label: 'DISK USED',  val: '—',                                                   bar: 0,                 color: '#C9A84C' },
+          { label: 'NETWORK RX', val: (data.guests || 0) + ' guests · ' + (data.rooms || 0) + ' rooms', bar: 0, color: '#C9A84C' },
+          { label: 'UPTIME',     val: uh + 'h ' + String(um).padStart(2, '0') + 'm',        bar: 0,                 color: '#C9A84C' },
+        ]);
         setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
         setRefreshing(false);
         if (addToast) addToast('Status refreshed', 'success');
@@ -303,7 +318,7 @@ export default function InsForgeTab({ addToast, isLive }) {
 
           <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>RESOURCE USAGE</div>
-            {SYSTEM_STATS.map(function(stat) {
+            {systemStats.map(function(stat) {
               return (
                 <div key={stat.label} style={{ marginBottom: 8 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
