@@ -11,28 +11,13 @@ var supabaseAdmin = createClient(
   { auth: { autoRefreshToken: false, persistSession: false }, realtime: { transport: 'ws' } }
 );
 
-// Individual DELETE statements avoid dynamic SQL identifier concatenation.
-var CLEANUP_QUERIES = [
-  'DELETE FROM room_join_requests    WHERE user_id    = $1 AND tenant_id = $2',
-  'DELETE FROM room_panel_slots      WHERE user_id    = $1 AND tenant_id = $2',
-  'DELETE FROM challenge_completions WHERE user_id    = $1 AND tenant_id = $2',
-  'DELETE FROM loyalty_point_events  WHERE user_id    = $1 AND tenant_id = $2',
-  'DELETE FROM user_loyalty          WHERE user_id    = $1 AND tenant_id = $2',
-  'DELETE FROM battles               WHERE creator_id = $1 AND tenant_id = $2',
-  'DELETE FROM streams               WHERE creator_id = $1 AND tenant_id = $2',
-  'DELETE FROM direct_pay_handles    WHERE user_id    = $1 AND tenant_id = $2',
-  'DELETE FROM rewards_selected_tier WHERE user_id    = $1 AND tenant_id = $2',
-  'DELETE FROM reward_points         WHERE user_id    = $1 AND tenant_id = $2',
-  'DELETE FROM guest_requests        WHERE user_id    = $1 AND tenant_id = $2',
-];
-
 router.delete('/me', requireAuth, async function(req, res) {
   var userId   = req.user && req.user.id;
   var tenantId = req.tenantId;
   if (!userId) return res.status(401).json({ success: false, error: 'Not authenticated' });
 
-  // Delete Supabase auth first — hardest to undo, most likely to fail externally.
-  // If it fails, local data is untouched and the caller can retry safely.
+  // Revoke Supabase auth so the user can no longer log in.
+  // If this fails, we abort — no local changes have been made yet.
   try {
     var delResult = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (delResult.error) throw delResult.error;
@@ -41,23 +26,19 @@ router.delete('/me', requireAuth, async function(req, res) {
     return res.status(500).json({ success: false, error: 'Could not delete account' });
   }
 
-  // Auth record gone — clean up local data atomically so no partial deletes.
-  var client = await db.pool.connect();
+  // Soft-delete: anonymize PII and set deleted_at. The row is retained for
+  // referential integrity (earnings records, audit logs, etc.).
+  var now = new Date().toISOString();
+  var anonName = 'deleted_' + userId.slice(0, 8);
   try {
-    await client.query('BEGIN');
-    for (var i = 0; i < CLEANUP_QUERIES.length; i++) {
-      await client.query(CLEANUP_QUERIES[i], [userId, tenantId]);
-    }
-    await client.query('DELETE FROM users WHERE id = $1 AND tenant_id = $2', [userId, tenantId]);
-    await client.query('COMMIT');
+    await db.pool.query(
+      'UPDATE users SET display_name = $1, email = NULL, avatar_url = NULL, bio = NULL, deleted_at = $2 WHERE id = $3 AND tenant_id = $4',
+      [anonName, now, userId, tenantId]
+    );
     return res.json({ success: true });
   } catch (e) {
-    await client.query('ROLLBACK');
-    // Auth is already gone; orphaned local rows need manual remediation.
-    console.error('[delete-account] local cleanup failed after auth delete — manual remediation needed userId=%s tenantId=%s err=%s', userId, tenantId, e.message);
+    console.error('[delete-account] soft-delete failed userId=%s err=%s', userId, e.message);
     return res.status(500).json({ success: false, error: 'Local cleanup failed' });
-  } finally {
-    client.release();
   }
 });
 
@@ -67,7 +48,7 @@ router.get('/search', async function(req, res) {
   if (!q || q.length < 2) return res.json({ users: [] });
   try {
     var result = await db.pool.query(
-      "SELECT id, display_name, avatar_url, account_type FROM users WHERE display_name ILIKE $1 LIMIT 20",
+      "SELECT id, display_name, avatar_url, account_type FROM users WHERE display_name ILIKE $1 AND deleted_at IS NULL LIMIT 20",
       ['%' + q + '%']
     );
     return res.json({ users: result.rows.map(function(u) {
@@ -82,7 +63,7 @@ router.get('/search', async function(req, res) {
 router.get('/creators', async function(req, res) {
   try {
     var result = await db.pool.query(
-      "SELECT u.id, u.display_name, u.avatar_url, u.account_type, COUNT(s.id) AS stream_count FROM users u LEFT JOIN streams s ON s.creator_id = u.id GROUP BY u.id ORDER BY stream_count DESC LIMIT 30"
+      "SELECT u.id, u.display_name, u.avatar_url, u.account_type, COUNT(s.id) AS stream_count FROM users u LEFT JOIN streams s ON s.creator_id = u.id WHERE u.deleted_at IS NULL GROUP BY u.id ORDER BY stream_count DESC LIMIT 30"
     );
     return res.json({ creators: result.rows.map(function(u) {
       return { id: u.id, displayName: u.display_name, avatarUrl: u.avatar_url, accountType: u.account_type, streamCount: parseInt(u.stream_count, 10) || 0 };
@@ -98,7 +79,7 @@ router.get('/:username', async function(req, res) {
   if (!username) return res.status(400).json({ error: 'username required' });
   try {
     var result = await db.pool.query(
-      "SELECT u.id, u.display_name, u.avatar_url, u.account_type, u.bio, u.created_at, COUNT(s.id) AS stream_count FROM users u LEFT JOIN streams s ON s.creator_id = u.id WHERE u.display_name ILIKE $1 GROUP BY u.id LIMIT 1",
+      "SELECT u.id, u.display_name, u.avatar_url, u.account_type, u.bio, u.created_at, COUNT(s.id) AS stream_count FROM users u LEFT JOIN streams s ON s.creator_id = u.id WHERE u.display_name ILIKE $1 AND u.deleted_at IS NULL GROUP BY u.id LIMIT 1",
       [username]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'not found' });
