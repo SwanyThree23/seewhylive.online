@@ -1990,11 +1990,13 @@ export default function App() {
           <PullToRefresh onRefresh={refreshDiscoverData}>
           <DiscoverTab
             onGoLive={handleGoLive}
+            onSwitchTab={setActiveTab}
             addToast={addToast}
             isLive={isLive}
             socket={socketRef.current}
             roomId={APP_ID}
             username={username}
+            role={role}
           />
           </PullToRefresh>
         )}
