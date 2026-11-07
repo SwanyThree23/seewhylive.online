@@ -1158,7 +1158,7 @@ export default function GoLive() {
       {<StreamerMonetizationCenter />}
       {user?.id && <VirtualGoodsStore userId={user.id} />}
       {<SoundAlertsManager creatorId={user?.id} />}
-      <ShareToSocial content={{text: ''}} />
+      <ShareToSocial content={{ title: party?.title || 'Live on SeeWhy LIVE', url: window.location.href }} />
       {partyId && user?.id && <VideoShortRecorder roomId={partyId} creatorId={user.id} />}
       {<BroadcastAnalyticsDashboard streamSession={party || null} isLive={partyId != null} />}
       {partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}

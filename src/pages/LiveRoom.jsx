@@ -1396,7 +1396,7 @@ export default function LiveRoom() {
       {!isHost && showGiftShop && roomId && <AnimatedGiftShop recipientId={party?.host_id || user?.id} roomId={roomId} onClose={() => setShowGiftShop(false)} />}
       {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
       {isHost && <SoundAlertsManager creatorId={party?.host_id || user?.id} />}
-      <ShareToSocial content={{text: ''}} />
+      <ShareToSocial content={{ title: party?.title || 'Live Room on SeeWhy LIVE', url: window.location.href }} />
       {isHost && roomId && user?.id && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
       {isHost && <BroadcastAnalyticsDashboard streamSession={party || null} isLive={roomId != null} />}
       {isHost && roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}

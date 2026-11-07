@@ -1890,7 +1890,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {!isHost && showGiftShop && partyId && <AnimatedGiftShop recipientId={party?.host_id || user?.id} roomId={partyId} onClose={() => setShowGiftShop(false)} />}
       {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
       {isHost && <SoundAlertsManager creatorId={party?.host_id || user?.id} />}
-      <ShareToSocial content={{text: ''}} />
+      <ShareToSocial content={{ title: party?.title || 'Broadcast on SeeWhy LIVE', url: window.location.href }} />
       {isHost && partyId && user?.id && <VideoShortRecorder roomId={partyId} creatorId={user.id} />}
       {isHost && <BroadcastAnalyticsDashboard streamSession={partyId ? { room_id: partyId, title: party?.title } : null} isLive={partyId != null} />}
       {isHost && partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
