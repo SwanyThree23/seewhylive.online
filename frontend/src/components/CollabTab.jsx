@@ -64,14 +64,16 @@ var TabBtn = function(props) {
 }
 
 export default function CollabTab({ addToast, isLive, userId, username, socket, roomId }) {
-  var [requests,      setRequests]      = useState([]);
-  var [section,       setSection]       = useState('requests');
-  var [inviteMsg,     setInviteMsg]     = useState('');
-  var [inviteType,    setInviteType]    = useState('LIVE COLLAB');
-  var [inviteSplit,   setInviteSplit]   = useState('50/50');
-  var [inviteTarget,  setInviteTarget]  = useState('');
-  var [chatMsgs,      setChatMsgs]      = useState({});
-  var [chatInputs,    setChatInputs]    = useState({});
+  var [requests,          setRequests]          = useState([]);
+  var [section,           setSection]           = useState('requests');
+  var [inviteMsg,         setInviteMsg]         = useState('');
+  var [inviteType,        setInviteType]        = useState('LIVE COLLAB');
+  var [inviteSplit,       setInviteSplit]       = useState('50/50');
+  var [inviteTarget,      setInviteTarget]      = useState('');
+  var [chatMsgs,          setChatMsgs]          = useState({});
+  var [chatInputs,        setChatInputs]        = useState({});
+  var [suggestedCreators, setSuggestedCreators] = useState([]);
+  var [creatorQuery,      setCreatorQuery]      = useState('');
 
   var chatBoxRefs     = useRef({});
   var addToastRef     = useRef(addToast);
@@ -137,6 +139,37 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
     };
   }, [socket, username]);
 
+  /* ── Load suggested creators on mount ── */
+  useEffect(function() {
+    fetch('/api/users/creators')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && Array.isArray(d.creators)) setSuggestedCreators(d.creators);
+      })
+      .catch(function() {});
+  }, []);
+
+  /* ── Search creators by query (debounced) ── */
+  var searchTimerRef = useRef(null);
+  useEffect(function() {
+    var q = creatorQuery.trim();
+    if (!q || q.length < 2) return;
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(function() {
+      fetch('/api/users/search?q=' + encodeURIComponent(q))
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d && Array.isArray(d.users)) {
+            setSuggestedCreators(d.users.map(function(u) {
+              return { id: u.id, displayName: u.displayName, avatarUrl: u.avatarUrl, streamCount: 0 };
+            }));
+          }
+        })
+        .catch(function() {});
+    }, 300);
+    return function() { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [creatorQuery]);
+
   /* ── Auto-scroll on new messages ── */
   useEffect(function() {
     var ids = Object.keys(chatBoxRefs.current);
@@ -201,7 +234,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
   }
 
   var sendInvite = function(creator) {
-    var target = creator ? creator.n : inviteTarget.trim();
+    var target = creator ? (creator.displayName || creator.n) : inviteTarget.trim();
     if (!target) { addToast('Enter a creator username to invite', 'error'); return; }
     if (!inviteMsg) { addToast('Add an invite message first', 'error'); return; }
     if (socket && roomId) {
@@ -376,35 +409,32 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
               </div>
             </div>
 
-            {/* Creator list */}
-            <div style={{ fontFamily: fD, fontSize: 13, color: MUTED, letterSpacing: 3, marginBottom: 6 }}>SUGGESTED CREATORS</div>
-            <div style={{ textAlign: 'center', padding: '20px 12px', color: MUTED, fontFamily: fM, fontSize: 10 }}>Creator suggestions coming soon</div>
+            {/* Creator search + list */}
+            <div style={{ fontFamily: fD, fontSize: 13, color: MUTED, letterSpacing: 3, marginBottom: 8 }}>SUGGESTED CREATORS</div>
+            <input
+              value={creatorQuery}
+              onChange={function(e) { setCreatorQuery(e.target.value); }}
+              placeholder="Search creators by name..."
+              style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,.04)', border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: fM, fontSize: 11, outline: 'none', marginBottom: 10 }}
+            />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[].map(function(creator) {
+              {suggestedCreators.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '14px 12px', color: MUTED, fontFamily: fM, fontSize: 10 }}>No creators found</div>
+              )}
+              {suggestedCreators.map(function(creator) {
                 return (
                   <div
                     key={creator.id}
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, background: FAINT, border: '1px solid ' + BORDER, borderRadius: 11, padding: '12px 14px', position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: creator.c }} />
-
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, background: FAINT, border: '1px solid ' + BORDER, borderRadius: 11, padding: '12px 14px', overflow: 'hidden' }}>
                     <div style={{ flexShrink: 0 }}>
-                      <AvatarPortrait username={creator.n} size={44} isLive={creator.live} />
+                      <AvatarPortrait username={creator.displayName || creator.n || ''} size={40} />
                     </div>
-
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 14, color: TEXT }}>{creator.n}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                        <span style={{ fontFamily: fM, fontSize: 8, color: creator.c, background: creator.c + '18', border: '1px solid ' + creator.c + '33', borderRadius: 4, padding: '1px 6px', letterSpacing: 1 }}>{creator.cat}</span>
-                        <span style={{ fontFamily: fM, fontSize: 8, color: GOLD_H }}>{creator.followers}</span>
-                        {creator.live && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                            <div style={{ width: 5, height: 5, borderRadius: '50%', background: BURG_H, boxShadow: '0 0 5px ' + BURG_H }} />
-                            <span style={{ fontFamily: fU, fontWeight: 700, fontSize: 9, color: '#FF6680', letterSpacing: 1 }}>LIVE · {fmtN(creator.v)}</span>
-                          </div>
-                        )}
-                      </div>
+                      <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 14, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{creator.displayName || creator.n || 'Creator'}</div>
+                      {creator.streamCount > 0 && (
+                        <div style={{ fontFamily: fM, fontSize: 9, color: MUTED, marginTop: 2 }}>{creator.streamCount} stream{creator.streamCount !== 1 ? 's' : ''}</div>
+                      )}
                     </div>
-
                     <button
                       onClick={function() { sendInvite(creator); }}
                       style={{ background: inviteMsg ? 'linear-gradient(135deg,' + BURG + ',' + BURG_H + ')' : 'rgba(255,255,255,.05)', border: '1px solid ' + (inviteMsg ? BURG_H + '88' : BORDER), borderRadius: 8, padding: '8px 14px', color: inviteMsg ? GOLD_H : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: inviteMsg ? 'pointer' : 'default', letterSpacing: 1, flexShrink: 0 }}>
