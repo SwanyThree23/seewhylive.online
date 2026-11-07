@@ -52,6 +52,8 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   var [currentSpeaker, setCurrentSpeaker] = useState(null);
   var [speakerDuration, setSpeakerDuration] = useState(0);
   var [shareCopied, setShareCopied] = useState(false);
+  var [confirmLeave, setConfirmLeave] = useState(false);
+  var confirmLeaveTimerRef = useRef(null);
   var [localAudioStream, setLocalAudioStream] = useState(null);
   var prevSpotlightRef = useRef(null);
   var exitTimersRef = useRef({});
@@ -174,6 +176,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       var onSlotMuted = function(payload) {
         var rid = payload.roomId, uid = payload.userId, isMuted = payload.isMuted;
         if (rid !== roomId) return;
+        if (uid === userId && isMuted && addToast) addToast('🔇 You were muted by the host', 'info');
         setSlots(function(prev) {
           return prev.map(function(s) { return s.user_id === uid ? Object.assign({}, s, { is_muted: isMuted }) : s; });
         });
@@ -184,6 +187,9 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       var onAllMuted = function(payload) {
         if (payload.roomId !== roomId) return;
         setSlots(function(prev) {
+          if (addToast && prev.some(function(s) { return s.user_id === userId; })) {
+            addToast('🔇 All panelists muted by the host', 'info');
+          }
           return prev.map(function(s) { return Object.assign({}, s, { is_muted: true }); });
         });
       }
@@ -486,9 +492,13 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
                 <span>✋</span><span>Ask to speak</span>
               </button>
             )}
-            {hasSlot && (
+            {hasSlot && !confirmLeave && (
               <button
-                onClick={handleLeave}
+                onClick={function() {
+                  setConfirmLeave(true);
+                  clearTimeout(confirmLeaveTimerRef.current);
+                  confirmLeaveTimerRef.current = setTimeout(function() { setConfirmLeave(false); }, 3000);
+                }}
                 style={{
                   background: 'transparent', color: RED, border: '1px solid ' + RED,
                   borderRadius: 6, padding: '5px 10px', fontSize: 12,
@@ -497,6 +507,22 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
               >
                 Leave Panel
               </button>
+            )}
+            {hasSlot && confirmLeave && (
+              <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                <button
+                  onClick={function() { clearTimeout(confirmLeaveTimerRef.current); setConfirmLeave(false); handleLeave(); }}
+                  style={{ background: RED, color: CREAM, border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontFamily: '"DM Sans", sans-serif', cursor: 'pointer', fontWeight: 700 }}
+                >
+                  Confirm
+                </button>
+                <button
+                  onClick={function() { clearTimeout(confirmLeaveTimerRef.current); setConfirmLeave(false); }}
+                  style={{ background: 'transparent', color: '#888', border: '1px solid #333', borderRadius: 6, padding: '5px 8px', fontSize: 12, fontFamily: '"DM Sans", sans-serif', cursor: 'pointer' }}
+                >
+                  ✕
+                </button>
+              </div>
             )}
           </div>
         </div>
