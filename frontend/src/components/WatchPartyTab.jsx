@@ -27,6 +27,15 @@ function extractYtId(url) {
   return m ? m[1] : '';
 }
 
+function extractTwitchChannel(url) {
+  if (!url) return '';
+  // twitch.tv/channelname  or  twitch.tv/videos/123456
+  var m = url.match(/twitch\.tv\/([A-Za-z0-9_]{3,25})(?:[/?]|$)/i);
+  if (!m) return '';
+  if (m[1].toLowerCase() === 'videos') return '';
+  return m[1].toLowerCase();
+}
+
 function pad2(n) { return n < 10 ? '0' + n : String(n); }
 function fmtS(s) {
   s = Math.floor(s) || 0;
@@ -102,6 +111,7 @@ export default function WatchPartyTab(props) {
   var [urlInput,     setUrlInput]     = useState('');
   var [videoId,      setVideoId]      = useState('');
   var [directUrl,    setDirectUrl]    = useState('');
+  var [twitchChannel,setTwitchChannel]= useState('');
   var [localFileUrl, setLocalFileUrl] = useState('');
   var [playing,      setPlaying]      = useState(false);
   var [position,     setPosition]     = useState(0);
@@ -342,11 +352,18 @@ export default function WatchPartyTab(props) {
       if (type === 'youtube' && data.videoId) {
         setVideoId(data.videoId);
         setDirectUrl('');
+        setTwitchChannel('');
+        setLocalFileUrl('');
+      } else if (type === 'twitch' && data.channel) {
+        setTwitchChannel(data.channel);
+        setVideoId('');
+        setDirectUrl('');
         setLocalFileUrl('');
       } else if (data.url) {
         if (!/^https:\/\//i.test(data.url)) return;
         setDirectUrl(data.url);
         setVideoId('');
+        setTwitchChannel('');
         setLocalFileUrl('');
       }
       setUrlInput(data.url || '');
@@ -392,11 +409,18 @@ export default function WatchPartyTab(props) {
       if (data.videoId) {
         setVideoId(data.videoId);
         setDirectUrl('');
+        setTwitchChannel('');
+        setWatchPartyActive(true);
+      } else if (type === 'twitch' && data.channel) {
+        setTwitchChannel(data.channel);
+        setVideoId('');
+        setDirectUrl('');
         setWatchPartyActive(true);
       } else if (data.url) {
         if (!/^https:\/\//i.test(data.url)) return;
         setDirectUrl(data.url);
         setVideoId('');
+        setTwitchChannel('');
         setWatchPartyActive(true);
       }
       if (typeof data.position === 'number') {
@@ -537,6 +561,7 @@ export default function WatchPartyTab(props) {
       }
       setVideoId(vid);
       setDirectUrl('');
+      setTwitchChannel('');
       setLocalFileUrl('');
       setCurrentTitle(raw);
       setPosition(0); posRef.current = 0;
@@ -544,6 +569,22 @@ export default function WatchPartyTab(props) {
         socket.emit('watch-party-url', { roomId: roomId, videoId: vid, url: raw, type: 'youtube' });
       }
       if (addToast) addToast('Loading YouTube video for all guests...', 'info');
+    } else if (sourceType === 'twitch') {
+      var ch = extractTwitchChannel(raw);
+      if (!ch) {
+        if (addToast) addToast('Invalid Twitch URL — paste a twitch.tv/channelname link', 'error');
+        return;
+      }
+      setTwitchChannel(ch);
+      setVideoId('');
+      setDirectUrl('');
+      setLocalFileUrl('');
+      setCurrentTitle('twitch.tv/' + ch);
+      setPosition(0); posRef.current = 0;
+      if (socket && roomId) {
+        socket.emit('watch-party-url', { roomId: roomId, channel: ch, url: raw, type: 'twitch' });
+      }
+      if (addToast) addToast('Loading Twitch stream for all guests...', 'info');
     } else {
       // Direct URL (MP4, WebM, HLS, etc.)
       if (!/^https:\/\//i.test(raw)) {
@@ -552,6 +593,7 @@ export default function WatchPartyTab(props) {
       }
       setDirectUrl(raw);
       setVideoId('');
+      setTwitchChannel('');
       setLocalFileUrl('');
       setCurrentTitle(raw.split('/').pop() || raw);
       setPosition(0); posRef.current = 0;
@@ -702,6 +744,12 @@ export default function WatchPartyTab(props) {
       if (vid) {
         setVideoId(vid);
         if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: vid, url: raw, type: 'youtube' });
+      }
+    } else if (raw && sourceType === 'twitch') {
+      var ch = extractTwitchChannel(raw);
+      if (ch) {
+        setTwitchChannel(ch);
+        if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, channel: ch, url: raw, type: 'twitch' });
       }
     } else if (raw && sourceType === 'direct') {
       setDirectUrl(raw);
@@ -880,7 +928,7 @@ export default function WatchPartyTab(props) {
         <div style={{ background: SURF, borderBottom: '1px solid ' + BORDER, padding: '6px 10px', display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Source type picker */}
           <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-            {[{ k: 'youtube', l: '▶ YT' }, { k: 'direct', l: '🎥 URL/File' }].map(function(s) {
+            {[{ k: 'youtube', l: '▶ YT' }, { k: 'twitch', l: '🟣 Twitch' }, { k: 'direct', l: '🎥 URL/File' }].map(function(s) {
               return (
                 <button key={s.k} onClick={function() { setSourceType(s.k); }}
                   style={{ background: sourceType === s.k ? 'rgba(201,168,76,.2)' : 'transparent', border: '1px solid ' + (sourceType === s.k ? 'rgba(201,168,76,.4)' : DIM), borderRadius: 5, padding: '4px 8px', color: sourceType === s.k ? GOLD : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer', letterSpacing: .5 }}>
@@ -893,7 +941,7 @@ export default function WatchPartyTab(props) {
             value={urlInput}
             onChange={function(e) { setUrlInput(e.target.value); }}
             onKeyDown={function(e) { if (e.key === 'Enter') handleLoadUrl(); }}
-            placeholder={sourceType === 'direct' ? 'Paste MP4/WebM/HLS URL...' : 'Paste YouTube URL...'}
+            placeholder={sourceType === 'direct' ? 'Paste MP4/WebM/HLS URL...' : sourceType === 'twitch' ? 'Paste Twitch URL (twitch.tv/channel)...' : 'Paste YouTube URL...'}
             style={{ flex: 1, background: 'rgba(14,12,9,.9)', border: '1px solid ' + DIM, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 9, outline: 'none', minWidth: 100 }}
           />
           {sourceType === 'direct' && (
@@ -1032,7 +1080,7 @@ export default function WatchPartyTab(props) {
           <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
             {[
               { key: 'youtube', label: '🔴 YouTube',    enabled: true },
-              { key: 'twitch',  label: '🟤 Twitch',     enabled: false },
+              { key: 'twitch',  label: '🟣 Twitch',     enabled: true },
               { key: 'direct',  label: '🎥 Direct / File', enabled: true }
             ].map(function(src) {
               return (
@@ -1065,7 +1113,7 @@ export default function WatchPartyTab(props) {
           <input
             value={urlInput}
             onChange={function(e) { setUrlInput(e.target.value); }}
-            placeholder={sourceType === 'direct' ? 'Paste MP4/WebM/HLS URL...' : 'Paste YouTube URL (youtube.com/watch?v=...)'}
+            placeholder={sourceType === 'direct' ? 'Paste MP4/WebM/HLS URL...' : sourceType === 'twitch' ? 'Paste Twitch URL (twitch.tv/channel)...' : 'Paste YouTube URL (youtube.com/watch?v=...)'}
             style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(14,12,9,.9)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 7, padding: '8px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 10, outline: 'none', marginBottom: sourceType === 'direct' ? 6 : 6 }}
           />
 
@@ -1243,6 +1291,18 @@ export default function WatchPartyTab(props) {
                   syncStatus={synced ? 'synced' : null}
                 />
               </div>
+            ) : twitchChannel ? (
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#000' }}>
+                <iframe
+                  src={'https://player.twitch.tv/?channel=' + encodeURIComponent(twitchChannel) + '&parent=' + encodeURIComponent(window.location.hostname) + '&autoplay=false'}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+                  allowFullScreen
+                  allow="autoplay; fullscreen"
+                />
+                <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(100,65,165,.85)', borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', letterSpacing: 1, zIndex: 5 }}>
+                  🟣 TWITCH LIVE
+                </div>
+              </div>
             ) : directUrl ? (
               <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#000' }}>
                 <video
@@ -1337,7 +1397,7 @@ export default function WatchPartyTab(props) {
             )}
 
             {/* ±Nms sync badge */}
-            {(videoId || directUrl) && (
+            {(videoId || directUrl || twitchChannel) && (
               <div style={{
                 position: 'absolute', top: 8,
                 right: is4K && isHost ? 50 : 8,
@@ -1454,8 +1514,8 @@ export default function WatchPartyTab(props) {
 
           {/* ── CONTROLS BAR ── */}
           <div style={{ background: BG, borderTop: '1px solid ' + DIM, padding: '8px 12px', flexShrink: 0 }}>
-            {/* Scrubber */}
-            {(videoId || directUrl) && (
+            {/* Scrubber — not shown for live Twitch */}
+            {(videoId || directUrl) && !twitchChannel && (
               <div
                 style={{ background: DIM, borderRadius: 3, height: 6, cursor: isHost ? 'pointer' : 'default', marginBottom: 9, position: 'relative' }}
                 onClick={isHost ? handleSeekClick : undefined}>
@@ -1468,21 +1528,21 @@ export default function WatchPartyTab(props) {
             )}
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              {/* Play / Pause */}
-              {isHost && (videoId || directUrl) ? (
+              {/* Play / Pause — not shown for live Twitch */}
+              {!twitchChannel && isHost && (videoId || directUrl) ? (
                 <button
                   onClick={playing ? handlePause : handlePlay}
                   style={{ background: 'linear-gradient(135deg,' + BURG + ',#C01838)', border: 'none', borderRadius: 8, padding: '7px 14px', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
                   {playing ? '⏸ PAUSE' : '▶ PLAY'}
                 </button>
-              ) : (
+              ) : !twitchChannel ? (
                 <div style={{ background: 'rgba(128,0,32,.18)', border: '1px solid ' + DIM, borderRadius: 8, padding: '7px 12px', color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, letterSpacing: 1, flexShrink: 0 }}>
                   {playing ? '▶ PLAYING' : '⏸ PAUSED'}
                 </div>
-              )}
+              ) : null}
 
-              {/* Timestamp */}
-              {(videoId || directUrl) && (
+              {/* Timestamp — not shown for live Twitch */}
+              {(videoId || directUrl) && !twitchChannel && (
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, flexShrink: 0 }}>
                   {fmtS(position)}{duration > 0 ? ' / ' + fmtS(duration) : ''}
                 </span>
@@ -1499,8 +1559,8 @@ export default function WatchPartyTab(props) {
                 </button>
               )}
 
-              {/* SYNC button — host only, for YouTube sync-watch */}
-              {isHost && (videoId || directUrl) && (
+              {/* SYNC button — host only, for YouTube/direct sync-watch */}
+              {isHost && (videoId || directUrl) && !twitchChannel && (
                 <button
                   onClick={function() {
                     setSyncActive(function(s) { return !s; });
@@ -1514,7 +1574,7 @@ export default function WatchPartyTab(props) {
               )}
 
               {/* Sync all — host only */}
-              {isHost && (videoId || directUrl) && (
+              {isHost && (videoId || directUrl || twitchChannel) && (
                 <button
                   onClick={handleSyncAll}
                   style={{ background: 'rgba(212,133,74,.12)', border: '1px solid rgba(212,133,74,.35)', borderRadius: 6, padding: '5px 8px', color: AMBER, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>

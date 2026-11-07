@@ -70,6 +70,11 @@ export default function AudioStageTab(props) {
   var [stageElapsed, setStageElapsed] = useState(0);
   var [stageStats,   setStageStats]   = useState({ peakSpeakers: 0, totalHands: 0 });
   var [showQueue,    setShowQueue]    = useState(false);
+  var [showSettings, setShowSettings] = useState(false);
+  var [noiseSuppression,  setNoiseSuppression]  = useState(true);
+  var [echoCancellation,  setEchoCancellation]  = useState(true);
+  var [micDevices,        setMicDevices]        = useState([]);
+  var [selectedMicId,     setSelectedMicId]     = useState('');
 
   var micStreamRef  = useRef(null);
   var audioCtxRef   = useRef(null);
@@ -215,7 +220,13 @@ export default function AudioStageTab(props) {
 
   var startMic = function() {
     micCancelledRef.current = false;
-    navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(stream) {
+    var audioConstraints = {
+      noiseSuppression: noiseSuppression,
+      echoCancellation: echoCancellation,
+      autoGainControl: true,
+    };
+    if (selectedMicId) audioConstraints.deviceId = { exact: selectedMicId };
+    navigator.mediaDevices.getUserMedia({ audio: audioConstraints, video: false }).then(function(stream) {
       if (micCancelledRef.current) { stream.getTracks().forEach(function(t) { t.stop(); }); return; }
       micStreamRef.current = stream;
       if (hiddenAudioRef.current) {
@@ -626,7 +637,15 @@ export default function AudioStageTab(props) {
             { icon: '🎵', label: 'Music', active: false, action: function() { if (addToast) addToast('Music — coming soon', 'info'); } },
             isHost
               ? { icon: stageLocked ? '🔒' : '🔓', label: stageLocked ? 'Unlock' : 'Lock', active: stageLocked, action: lockAction }
-              : { icon: '⚙', label: 'Settings', active: false, action: function() { if (addToast) addToast('Settings — coming soon', 'info'); } }
+              : { icon: '⚙', label: 'Settings', active: showSettings, action: function() {
+                  setShowSettings(function(v) { return !v; });
+                  if (!showSettings) {
+                    navigator.mediaDevices.enumerateDevices().then(function(devs) {
+                      var audioin = devs.filter(function(d) { return d.kind === 'audioinput'; });
+                      setMicDevices(audioin);
+                    }).catch(function() {});
+                  }
+                } }
           ];
           return items.map(function(item) {
             return (
@@ -708,6 +727,78 @@ export default function AudioStageTab(props) {
           </div>
         );
       })()}
+
+      {/* ── VIEWER SETTINGS PANEL ── */}
+      {showSettings && !isHost && (
+        <div style={{
+          position: 'absolute', bottom: 62, left: 0, right: 0,
+          background: CARD, borderTop: '2px solid ' + GOLD,
+          zIndex: 49, padding: '12px 14px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 2 }}>AUDIO SETTINGS</span>
+            <button onClick={function() { setShowSettings(false); }}
+              style={{ background: 'transparent', border: 'none', color: MUTED, fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>
+              ✕
+            </button>
+          </div>
+
+          {/* Toggles */}
+          {[
+            { label: 'Noise suppression', value: noiseSuppression, set: setNoiseSuppression },
+            { label: 'Echo cancellation', value: echoCancellation, set: setEchoCancellation },
+          ].map(function(item) {
+            return (
+              <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: TEXT, letterSpacing: 0.5 }}>{item.label}</span>
+                <button
+                  onClick={function() { item.set(function(v) { return !v; }); }}
+                  style={{
+                    width: 40, height: 22, borderRadius: 11,
+                    background: item.value ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.08)',
+                    border: '1px solid ' + (item.value ? 'rgba(201,168,76,.7)' : BORDER),
+                    cursor: 'pointer', position: 'relative', flexShrink: 0,
+                  }}
+                >
+                  <div style={{
+                    position: 'absolute', top: 2, left: item.value ? 20 : 2,
+                    width: 16, height: 16, borderRadius: '50%',
+                    background: item.value ? GOLD : MUTED,
+                    transition: 'left .15s',
+                  }} />
+                </button>
+              </div>
+            );
+          })}
+
+          {/* Mic device selector */}
+          {micDevices.length > 1 && (
+            <div style={{ marginTop: 6 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1, marginBottom: 4 }}>MICROPHONE</div>
+              <select
+                value={selectedMicId}
+                onChange={function(e) { setSelectedMicId(e.target.value); }}
+                style={{
+                  width: '100%', background: 'rgba(14,12,9,.9)', border: '1px solid ' + BORDER,
+                  borderRadius: 6, padding: '5px 8px', color: TEXT,
+                  fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12,
+                }}
+              >
+                <option value="">Default microphone</option>
+                {micDevices.map(function(d) {
+                  return React.createElement('option', { key: d.deviceId, value: d.deviceId }, d.label || ('Mic ' + d.deviceId.slice(0, 8)));
+                })}
+              </select>
+            </div>
+          )}
+
+          {myMicOn && (
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: AMBER, marginTop: 8, letterSpacing: 1 }}>
+              Changes apply next time you toggle your mic
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── BOTTOM ACTION BAR ── */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: SURF, borderTop: '1px solid ' + BORDER, padding: '10px 12px', display: 'flex', gap: 8, alignItems: 'center', zIndex: 50 }}>
