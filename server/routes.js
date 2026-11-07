@@ -699,14 +699,19 @@ router.post('/payments/subscription-checkout', requireAuth, subscribePayRateLimi
 
 router.get('/users/me', requireAuth, function(req, res) {
   try {
-    var profile = _userProfiles[req.user.id] || {};
+    var sdb = getRoutesDb();
+    var row = sdb.prepare(
+      'SELECT display_name, bio, avatar_emoji, tier, notify_new_stream, notify_tip, notify_subscriber, notify_email_digest FROM user_profiles WHERE user_id = ?'
+    ).get(req.user.id);
     return res.json({
-      username: profile.username || 'SwanyThree',
-      displayName: profile.displayName || 'SwanyThree',
-      bio: profile.bio || 'SeeWhy LIVE creator · Washington Classic host',
-      avatarEmoji: profile.avatarEmoji || '👑',
-      tier: 'pro',
-      isLive: false
+      displayName:       (row && row.display_name)  || '',
+      bio:               (row && row.bio)            || '',
+      avatarEmoji:       (row && row.avatar_emoji)   || '🎭',
+      tier:              (row && row.tier)            || 'free',
+      notifyNewStream:   row ? (row.notify_new_stream  !== 0) : true,
+      notifyTip:         row ? (row.notify_tip         !== 0) : true,
+      notifySubscriber:  row ? (row.notify_subscriber  !== 0) : true,
+      notifyEmailDigest: row ? (row.notify_email_digest !== 0) : false,
     });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });

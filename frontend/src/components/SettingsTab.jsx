@@ -92,6 +92,33 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
   var [deleteConfirm, setDeleteConfirm] = useState('');
 
   useEffect(function() {
+    // Load profile + notification prefs + tier from server
+    fetch('/api/users/me', { headers: _authHeaders() })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (!d) return;
+        if (d.displayName) {
+          setDisplayName(d.displayName);
+          try { localStorage.setItem('sw_displayName', d.displayName); } catch(e) {}
+        }
+        if (d.bio) {
+          setBio(d.bio);
+          try { localStorage.setItem('sw_bio', d.bio); } catch(e) {}
+        }
+        if (d.avatarEmoji) {
+          setAvatarEmoji(d.avatarEmoji);
+          try { localStorage.setItem('sw_avatar_emoji', d.avatarEmoji); } catch(e) {}
+        }
+        if (d.tier) setCurrentTier(d.tier);
+        setNotifyNewStream(d.notifyNewStream !== false);
+        setNotifyTip(d.notifyTip !== false);
+        setNotifySubscriber(d.notifySubscriber !== false);
+        setNotifyEmailDigest(d.notifyEmailDigest === true);
+      })
+      .catch(function() {});
+  }, []);
+
+  useEffect(function() {
     try {
       fetch('/api/creator/onboard/status', { headers: _authHeaders() })
         .then(function(r) { return r.json(); })
