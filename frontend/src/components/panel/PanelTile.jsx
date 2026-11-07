@@ -774,14 +774,34 @@ export default function PanelTile({
       )}
 
       {/* Name label */}
-      <div style={{ position: 'absolute', bottom: 4, left: 4, color: CREAM, fontSize: 11, fontFamily: '"DM Sans", sans-serif', textShadow: '0 1px 2px #000', display: 'flex', alignItems: 'center', gap: 4 }}>
-        <span>{display_name}</span>
-        {isLocal && <span style={{ color: GOLD, fontSize: 10 }}>You</span>}
+      <div style={{
+        position: 'absolute', bottom: 4, left: 4,
+        background: 'rgba(0,0,0,0.45)', borderRadius: 4, padding: '2px 5px',
+        color: CREAM, fontSize: 11, fontFamily: '"DM Sans", sans-serif',
+        display: 'flex', alignItems: 'center', gap: 4, maxWidth: '70%',
+      }}>
+        {effectiveSpeaking && (
+          <span style={{ display: 'flex', alignItems: 'flex-end', gap: 1, flexShrink: 0 }}>
+            {[0.5, 1, 0.7, 0.4].map(function(scale, i) {
+              var level = isLocal ? (micLevel || 0) : (effectiveSpeaking ? 0.6 : 0);
+              var barH = 4 + Math.round(Math.min(10, level * scale * 14));
+              return (
+                <span key={i} style={{
+                  width: 2, height: barH + 'px',
+                  background: GOLD, borderRadius: 1,
+                  transition: 'height 0.08s',
+                }} />
+              );
+            })}
+          </span>
+        )}
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{display_name}</span>
+        {isLocal && <span style={{ color: GOLD, fontSize: 10, flexShrink: 0 }}>You</span>}
         {role && role !== 'viewer' && (
           <span style={{
             fontSize: 9, textTransform: 'uppercase', fontFamily: '"DM Sans", sans-serif',
             color: role === 'host' ? GOLD : '#818cf8',
-            background: 'rgba(0,0,0,0.5)', borderRadius: 3, padding: '1px 3px',
+            background: 'rgba(0,0,0,0.5)', borderRadius: 3, padding: '1px 3px', flexShrink: 0,
           }}>{role}</span>
         )}
       </div>

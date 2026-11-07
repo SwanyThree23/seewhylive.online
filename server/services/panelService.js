@@ -17,7 +17,9 @@ async function assignSlot({ roomId, userId, tenantId }) {
   const maxGuests = room.rows[0].max_panel_guests;
 
   const existing = await db.query(
-    'SELECT * FROM room_panel_slots WHERE stream_id = $1 AND user_id = $2',
+    `SELECT s.*, u.display_name, u.avatar_url
+     FROM room_panel_slots s JOIN users u ON u.id = s.user_id
+     WHERE s.stream_id = $1 AND s.user_id = $2`,
     [roomId, userId]
   );
   if (existing.rows.length) return { slot: existing.rows[0], isNew: false };
@@ -26,16 +28,20 @@ async function assignSlot({ roomId, userId, tenantId }) {
   // This eliminates the TOCTOU between reading taken slots and inserting —
   // the NOT EXISTS subquery and the INSERT run at the same snapshot.
   const result = await db.query(
-    `INSERT INTO room_panel_slots (stream_id, slot_index, user_id)
-     SELECT $1, s.i, $3
-     FROM generate_series(0, $2::int - 1) AS s(i)
-     WHERE NOT EXISTS (
-       SELECT 1 FROM room_panel_slots
-       WHERE stream_id = $1 AND slot_index = s.i
+    `WITH inserted AS (
+       INSERT INTO room_panel_slots (stream_id, slot_index, user_id)
+       SELECT $1, s.i, $3
+       FROM generate_series(0, $2::int - 1) AS s(i)
+       WHERE NOT EXISTS (
+         SELECT 1 FROM room_panel_slots
+         WHERE stream_id = $1 AND slot_index = s.i
+       )
+       ORDER BY s.i
+       LIMIT 1
+       RETURNING *
      )
-     ORDER BY s.i
-     LIMIT 1
-     RETURNING *`,
+     SELECT i.*, u.display_name, u.avatar_url
+     FROM inserted i JOIN users u ON u.id = i.user_id`,
     [roomId, maxGuests, userId]
   );
   if (!result.rows.length) {
