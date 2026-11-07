@@ -20,6 +20,9 @@ export default function PanelJoinModal({ socket, roomId, onJoined, onCancel }) {
   var [joining, setJoining] = useState(false);
   var [error, setError] = useState(null);
   var [camError, setCamError] = useState(false);
+  var [micLevel, setMicLevel] = useState(0);
+  var micAnalyserRef = useRef(null);
+  var micRafRef = useRef(null);
 
   // Acquire local preview stream on mount
   useEffect(function() {
@@ -47,8 +50,42 @@ export default function PanelJoinModal({ socket, roomId, onJoined, onCancel }) {
         streamRef.current.getTracks().forEach(function(t) { t.stop(); });
         streamRef.current = null;
       }
+      if (micRafRef.current) cancelAnimationFrame(micRafRef.current);
+      try { if (micAnalyserRef.current) micAnalyserRef.current.ctx.close(); } catch (e) {}
     };
   }, []);
+
+  // Mic level meter
+  useEffect(function() {
+    var stream = streamRef.current;
+    if (!stream || !micOn) { setMicLevel(0); return; }
+    var audioTracks = stream.getAudioTracks();
+    if (!audioTracks.length) return;
+    var ctx, analyser, data;
+    try {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      ctx.createMediaStreamSource(stream).connect(analyser);
+      data = new Uint8Array(analyser.frequencyBinCount);
+      micAnalyserRef.current = { ctx: ctx };
+    } catch (e) { return; }
+    var active = true;
+    var loop = function() {
+      if (!active) return;
+      analyser.getByteTimeDomainData(data);
+      var sum = 0;
+      for (var i = 0; i < data.length; i++) { var v = (data[i] - 128) / 128; sum += v * v; }
+      setMicLevel(Math.min(1, Math.sqrt(sum / data.length) * 8));
+      micRafRef.current = requestAnimationFrame(loop);
+    };
+    loop();
+    return function() {
+      active = false;
+      if (micRafRef.current) cancelAnimationFrame(micRafRef.current);
+      try { ctx.close(); } catch (e) {}
+    };
+  }, [micOn, streamRef.current]); // eslint-disable-line react-hooks/exhaustive-deps
 
   var toggleCam = function() {
     var stream = streamRef.current;
@@ -141,6 +178,22 @@ export default function PanelJoinModal({ socket, roomId, onJoined, onCancel }) {
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: GOLD, display: 'inline-block' }} />
             <span style={{ color: CREAM, fontSize: 10, fontFamily: '"DM Sans", sans-serif' }}>PREVIEW</span>
           </div>
+        </div>
+
+        {/* Mic level meter */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ color: '#666', fontSize: 11, fontFamily: '"DM Sans", sans-serif', flexShrink: 0 }}>MIC</span>
+          <div style={{ flex: 1, height: 6, background: '#1a1a1a', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 3,
+              width: (micOn ? Math.round(micLevel * 100) : 0) + '%',
+              background: micLevel > 0.7 ? '#FF1A3C' : micLevel > 0.3 ? GOLD : '#6DBF7E',
+              transition: 'width 0.08s, background 0.15s',
+            }} />
+          </div>
+          <span style={{ color: micOn ? (micLevel > 0.05 ? GOLD : '#444') : '#444', fontSize: 11, fontFamily: '"DM Sans", sans-serif', flexShrink: 0 }}>
+            {micOn ? (micLevel > 0.05 ? '●' : '○') : '✕'}
+          </span>
         </div>
 
         {/* Toggle row */}
