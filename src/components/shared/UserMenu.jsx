@@ -64,8 +64,8 @@ export default function UserMenu({ user, isAdmin }) {
       items: [
         { label: 'Create Community', icon: Users, href: 'CreateCommunity' },
         { label: 'AI Moderation', icon: Shield, href: 'AIModeration' },
-        { label: 'Invite to Beta', icon: UserPlus, href: 'InviteUsers' },
-        { label: 'Beta Status', icon: Zap, href: 'BetaStatus' },
+        { label: 'Invite Users', icon: UserPlus, href: 'InviteUsers' },
+        { label: 'Platform Status', icon: Zap, href: 'BetaStatus' },
       ],
     },
   ];
