@@ -59,10 +59,22 @@ export default function VODLibraryTab({ addToast, isLive }) {
   var [shareClip,     setShareClip]     = useState(null);  // clip meta for branded share modal
   var [confirmDelete, setConfirmDelete] = useState(null);  // clip id
   var [shareCopied,   setShareCopied]   = useState(false);
-  var [channels,      setChannels]      = useState(CHANNELS);
+  var [channels,    setChannels]    = useState(CHANNELS);
+  var [publicVods,  setPublicVods]  = useState([]);
+  var [playingVod,  setPlayingVod]  = useState(null);
 
   useEffect(function() {
     setClips(listClips());
+  }, [tab]);
+
+  useEffect(function() {
+    if (tab !== 'streams') return;
+    fetch('/api/vod/public?limit=20')
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (d && Array.isArray(d.vods)) setPublicVods(d.vods);
+      })
+      .catch(function() {});
   }, [tab]);
 
   useEffect(function() {
@@ -170,6 +182,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 0 }}>
           {[
             { id: 'clips',    label: '📹 MY CLIPS' },
+            { id: 'streams',  label: '📼 STREAMS'  },
             { id: 'channels', label: '📡 CHANNELS' },
           ].map(function(t) {
             var isActive = tab === t.id;
@@ -232,6 +245,64 @@ export default function VODLibraryTab({ addToast, isLive }) {
                         style={{ flex: 1, background: 'none', border: 'none', padding: '10px', color: RED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
                         🗑 DEL
                       </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── STREAMS TAB ── */}
+      {tab === 'streams' && (
+        <div style={{ padding: 16 }}>
+          {playingVod && (
+            <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 14, overflow: 'hidden', marginBottom: 14 }}>
+              <div style={{ position: 'relative', paddingTop: '56.25%', background: '#000' }}>
+                <video
+                  src={playingVod.playback_url}
+                  controls={true}
+                  autoPlay={true}
+                  playsInline={true}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', background: '#000' }}
+                />
+              </div>
+              <div style={{ padding: '10px 14px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: TEXT }}>{playingVod.title || 'Live Recording'}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 2 }}>{fmtDur(playingVod.duration_seconds)} · {fmtDate(playingVod.created_at)}</div>
+                </div>
+                <button onClick={function() { setPlayingVod(null); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', lineHeight: 1 }}>✕</button>
+              </div>
+            </div>
+          )}
+
+          {publicVods.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '50px 24px' }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>📼</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: MUTED, letterSpacing: 1, marginBottom: 8 }}>NO RECORDINGS YET</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: .5, lineHeight: 1.5 }}>
+                Past live streams will appear here once published.
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {publicVods.map(function(vod) {
+                var isPlaying = playingVod && playingVod.id === vod.id;
+                return (
+                  <div key={vod.id} onClick={function() { setPlayingVod(isPlaying ? null : vod); }}
+                    style={{ background: isPlaying ? CARD2 : CARD, border: '1px solid ' + (isPlaying ? 'rgba(201,168,76,.4)' : BORDER), borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 10, background: isPlaying ? 'rgba(201,168,76,.18)' : 'rgba(212,133,74,.1)', border: '1.5px solid ' + (isPlaying ? 'rgba(201,168,76,.5)' : 'rgba(212,133,74,.3)'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+                      {isPlaying ? '⏸' : '▶'}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: isPlaying ? GOLD : TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vod.title || 'Live Recording'}</div>
+                      <div style={{ display: 'flex', gap: 10, marginTop: 3 }}>
+                        {vod.duration_seconds > 0 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL }}>{fmtDur(vod.duration_seconds)}</span>}
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{fmtDate(vod.created_at)}</span>
+                        {vod.view_count > 0 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{vod.view_count} view{vod.view_count !== 1 ? 's' : ''}</span>}
+                      </div>
                     </div>
                   </div>
                 );

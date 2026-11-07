@@ -232,6 +232,25 @@ router.get('/list', requireAuth, function(req, res) {
   });
 });
 
+router.get('/public', function(req, res) {
+  var tenantId = req.tenantId;
+  var limit    = Math.min(parseInt(req.query.limit, 10) || 20, 50);
+
+  if (!tenantId) return res.status(400).json({ error: 'tenant required' });
+
+  var sbPath = '/rest/v1/vods'
+    + '?tenant_id=eq.' + encodeURIComponent(tenantId)
+    + '&is_public=eq.true'
+    + '&order=created_at.desc'
+    + '&limit=' + limit;
+
+  sbReq('GET', sbPath, null, function(err, status, data) {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (status >= 400) return res.status(500).json({ error: 'Internal server error' });
+    return res.json({ vods: Array.isArray(data) ? data : [] });
+  });
+});
+
 router.delete('/:id', requireAuth, function(req, res) {
   var vodId = req.params.id || '';
   if (!vodId || !UUID_RE.test(vodId)) return res.status(400).json({ error: 'invalid vod id' });
