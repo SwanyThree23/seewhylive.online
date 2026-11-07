@@ -17,6 +17,7 @@ export default function PanelTile({
   isSpotlighted, onSpotlight,
   onExpand,
   isSwapSource, onSwap,
+  onSpeakChange,
 }) {
   var { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
   var videoRef = useRef(null);
@@ -368,6 +369,10 @@ export default function PanelTile({
   }, [isLocal, rtcManager, producerId]);
 
   var effectiveSpeaking = isLocal ? isSpeaking : remoteSpeaking;
+
+  useEffect(function() {
+    if (onSpeakChange) onSpeakChange(effectiveSpeaking);
+  }, [effectiveSpeaking]);
 
   var handleTileClick = function(e) {
     // Don't expand if clicking a control button
