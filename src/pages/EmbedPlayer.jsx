@@ -41,7 +41,8 @@ export default function EmbedPlayer() {
   var params      = new URLSearchParams(window.location.search);
   var roomId      = params.get('roomId') || params.get('room') || 'live';
   var isEmbed     = params.get('embed') === '1';
-  var noPaywall   = params.get('noPaywall') === '1';
+  // Paywall disabled for open access — all embedded streams are free
+  var noPaywall   = true;
   var paywallSec  = parseInt(params.get('paywallSec') || '120', 10) || 120;
   var warnAt      = paywallSec - WARNING_LEAD;
 
