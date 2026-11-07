@@ -2120,6 +2120,9 @@ export default function App() {
             panelInvite={panelInvite}
             setPanelInvite={setPanelInvite}
             viewerCount={viewerCount}
+            isLive={isLive}
+            uptime={uptime}
+            streamTitle={streamInfo ? streamInfo.title : ''}
           />
         )}
         {activeTab === 'watchparty' && (

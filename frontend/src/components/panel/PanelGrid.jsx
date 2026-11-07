@@ -33,13 +33,21 @@ var GOLD = '#C9A84C';
 var CREAM = '#F0E8D4';
 var RED = '#FF1A3C';
 
+function fmtUptime(s) {
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  var sec = s % 60;
+  if (h > 0) return h + ':' + (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+  return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
 /**
  * Responsive grid: N tiles in a roughly-square grid when nothing is
  * expanded; when one tile is expanded, it takes the majority of the space
  * and the rest collapse into a scrollable strip. Works for any count up to
  * the platform's MAX_PANEL_GUESTS=20 ceiling.
  */
-export default function PanelGrid({ socket, roomId, userId, username, isHost, rtcManager, guests, addToast, panelInvite, setPanelInvite, viewerCount }) {
+export default function PanelGrid({ socket, roomId, userId, username, isHost, rtcManager, guests, addToast, panelInvite, setPanelInvite, viewerCount, isLive, uptime, streamTitle }) {
   var [slots, setSlots] = useState([]);
   var [gatingMode, setGatingMode] = useState(null);
   var [isAudioOnlyRoom, setIsAudioOnlyRoom] = useState(false);
@@ -60,6 +68,7 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
   var [localAudioStream, setLocalAudioStream] = useState(null);
   var [roomBackground, setRoomBackground] = useState('default');
   var [brbBanner, setBrbBanner] = useState(null); // { msg } or null
+  var [brbActive, setBrbActive] = useState(false); // host BRB toggle state (local tracking)
   var prevSpotlightRef = useRef(null);
   var exitTimersRef = useRef({});
   var localStreamRef = useRef(null);
@@ -228,8 +237,9 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
       }));
 
       var onBrb = function(data) {
-        if (!data.active) { setBrbBanner(null); return; }
+        if (!data.active) { setBrbBanner(null); setBrbActive(false); return; }
         setBrbBanner({ msg: data.msg || '', from: data.from || 'Host' });
+        setBrbActive(true);
       };
       socket.on('brb', onBrb);
       unsubs.push(function() { socket.off('brb', onBrb); });
@@ -439,6 +449,11 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
                 👁 {viewerCount >= 1000 ? (Math.floor(viewerCount / 100) / 10).toFixed(1) + 'K' : viewerCount}
               </span>
             )}
+            {isLive && uptime > 0 && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, color: '#888', fontWeight: 400, fontFamily: '"DM Mono", monospace' }}>
+                ⏱ {fmtUptime(uptime)}
+              </span>
+            )}
             {currentSpeaker && (
               <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: CREAM, fontWeight: 500, fontSize: 10, background: 'rgba(201,168,76,.12)', borderRadius: 10, padding: '2px 8px', border: '1px solid rgba(201,168,76,.22)' }}>
                 <span style={{ fontSize: 9, flexShrink: 0 }}>🎤</span>
@@ -510,6 +525,28 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
                 }}
               />
             )}
+            {isHost && isLive && (
+              <button
+                onClick={function() {
+                  if (brbActive) {
+                    socket.emit('brb-end', { roomId: roomId });
+                  } else {
+                    socket.emit('brb-start', { roomId: roomId, msg: '' });
+                  }
+                }}
+                title={brbActive ? 'End BRB — resume stream' : 'Go BRB'}
+                style={{
+                  background: brbActive ? 'rgba(201,168,76,.2)' : 'transparent',
+                  color: brbActive ? GOLD : '#888',
+                  border: '1px solid ' + (brbActive ? 'rgba(201,168,76,.4)' : '#333'),
+                  borderRadius: 6, padding: '4px 8px', fontSize: 11,
+                  fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
+                  transition: 'color 0.2s, border-color 0.2s, background 0.2s',
+                }}
+              >
+                {brbActive ? '▶ Back' : '⏸ BRB'}
+              </button>
+            )}
             {!hasSlot && userId && (
               <button
                 onClick={function() { setShowJoinModal(true); }}
@@ -558,6 +595,11 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
             )}
           </div>
         </div>
+        {streamTitle && (
+          <div style={{ marginTop: 2, fontFamily: '"DM Sans", sans-serif', fontSize: 9, color: '#666', letterSpacing: 0.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+            {streamTitle}
+          </div>
+        )}
         {isHost && (
           <JoinRequestQueue socket={socket} roomId={roomId} />
         )}
