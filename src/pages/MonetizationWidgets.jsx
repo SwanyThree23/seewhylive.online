@@ -78,7 +78,7 @@ export default function MonetizationWidgets() {
           style={{ background: 'rgba(74,138,122,0.05)', border: '1px solid rgba(74,138,122,0.2)' }}>
           <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#4A8A7A' }} />
           <div>
-            <p className="text-sm font-black" style={{ ...T, color: '#4A8A7A' }}>Beta Testing</p>
+            <p className="text-sm font-black" style={{ ...T, color: '#4A8A7A' }}>Monetization Widgets</p>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
               Goals update in real-time, sound alerts fire during streams, and auctions let viewers bid during live sessions.
               {activeRoom ? (
