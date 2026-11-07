@@ -339,6 +339,17 @@ db.exec(`CREATE TABLE IF NOT EXISTS dm_requests (
 )`);
 try { db.exec('ALTER TABLE user_profiles ADD COLUMN dm_privacy TEXT DEFAULT \'everyone\''); } catch(_) {}
 
+// Community posts (creator announcements)
+db.exec(`CREATE TABLE IF NOT EXISTS community_posts (
+  id          TEXT PRIMARY KEY,
+  room_id     TEXT NOT NULL,
+  author_id   TEXT NOT NULL,
+  author_name TEXT NOT NULL,
+  body        TEXT NOT NULL,
+  created_at  INTEGER NOT NULL
+)`);
+db.prepare('CREATE INDEX IF NOT EXISTS idx_community_posts_room ON community_posts(room_id, created_at)').run();
+
 // Seed gift types if none exist
 var giftCount = db.prepare('SELECT COUNT(*) as c FROM gift_types').get();
 if (giftCount.c === 0) {
@@ -1695,6 +1706,53 @@ app.get('/api/schedule/:id/rsvps', requireAuth, function(req, res) {
     if (req.user.role !== 'admin' && ev.creator_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
     var rows = db.prepare('SELECT user_id, created_at FROM schedule_rsvps WHERE schedule_id = ? ORDER BY created_at ASC LIMIT 500').all(id);
     return res.json({ rsvps: rows, count: rows.length });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// ─── Community Posts ───────────────────────────────────────────────────────
+
+var communityRateLimit = rateLimit({ windowMs: 60 * 1000, max: 10, message: { error: 'Too many posts' } });
+
+// GET /api/community?roomId=  — public, most recent 50 posts for a room
+app.get('/api/community', function(req, res) {
+  var roomId = String(req.query.roomId || '').trim().slice(0, 64);
+  if (!roomId) return res.json({ posts: [] });
+  try {
+    var rows = db.prepare(
+      'SELECT id, author_name, body, created_at FROM community_posts WHERE room_id = ? ORDER BY created_at DESC LIMIT 50'
+    ).all(roomId);
+    return res.json({ posts: rows });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/community  — host/cohost/owner/admin only
+app.post('/api/community', requireAuth, communityRateLimit, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'cohost' && req.user.role !== 'owner' && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only hosts can post announcements' });
+  }
+  var roomId = String(req.body.roomId || '').trim().slice(0, 64);
+  var body   = String(req.body.body || '').trim().slice(0, 500);
+  var authorName = String(req.body.authorName || req.user.id).slice(0, 80);
+  if (!roomId || !body) return res.status(400).json({ error: 'roomId and body required' });
+  var id = uuidv4();
+  var now = Math.floor(Date.now() / 1000);
+  try {
+    db.prepare('INSERT INTO community_posts (id, room_id, author_id, author_name, body, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(id, roomId, req.user.id, authorName, body, now);
+    return res.json({ success: true, post: { id: id, author_name: authorName, body: body, created_at: now } });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// DELETE /api/community/:id  — author or admin can delete
+app.delete('/api/community/:id', requireAuth, function(req, res) {
+  var id = String(req.params.id || '').trim();
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({ error: 'invalid id' });
+  try {
+    var post = db.prepare('SELECT author_id FROM community_posts WHERE id = ?').get(id);
+    if (!post) return res.status(404).json({ error: 'Not found' });
+    if (post.author_id !== req.user.id && req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+    db.prepare('DELETE FROM community_posts WHERE id = ?').run(id);
+    return res.json({ success: true });
   } catch(e) { return res.status(500).json({ error: 'Server error' }); }
 });
 

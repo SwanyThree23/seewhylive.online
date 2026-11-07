@@ -44,10 +44,17 @@ var QUICK_ACTION_TABS = {
   create:  'room',
 };
 
+function _discoverAuthHeaders() {
+  var tok = '';
+  try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+  return tok ? { 'Authorization': 'Bearer ' + tok } : {};
+}
+
 export default function DiscoverTab(props) {
   var addToast     = props.addToast;
   var socket       = props.socket;
   var onSwitchTab  = props.onSwitchTab;
+  var role         = props.role || 'viewer';
 
   var queryState = useState('');
   var query = queryState[0];
@@ -104,6 +111,19 @@ export default function DiscoverTab(props) {
   var upcomingLoadingState = useState(false);
   var upcomingLoading    = upcomingLoadingState[0];
   var setUpcomingLoading = upcomingLoadingState[1];
+
+  var communityPostsState  = useState([]);
+  var communityPosts       = communityPostsState[0];
+  var setCommunityPosts    = communityPostsState[1];
+  var communityLoadingState = useState(false);
+  var communityLoading     = communityLoadingState[0];
+  var setCommunityLoading  = communityLoadingState[1];
+  var communityBodyState   = useState('');
+  var communityBody        = communityBodyState[0];
+  var setCommunityBody     = communityBodyState[1];
+  var communityPostingState = useState(false);
+  var communityPosting     = communityPostingState[0];
+  var setCommunityPosting  = communityPostingState[1];
 
   var unreadCount = notifs.filter(function(n) { return !n.read; }).length;
 
@@ -221,6 +241,20 @@ export default function DiscoverTab(props) {
         setUpcomingLoading(false);
       })
       .catch(function() { setUpcomingLoading(false); });
+  }, [contentTab]);
+
+  // ── Fetch community posts when tab is selected ──
+  useEffect(function() {
+    if (contentTab !== 'community') return;
+    setCommunityLoading(true);
+    var roomId = props.roomId || 'global';
+    fetch('/api/community?roomId=' + encodeURIComponent(roomId))
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        setCommunityPosts(Array.isArray(d.posts) ? d.posts : []);
+        setCommunityLoading(false);
+      })
+      .catch(function() { setCommunityLoading(false); });
   }, [contentTab]);
 
   // ── Socket: listen for notification events ──
@@ -1108,6 +1142,148 @@ export default function DiscoverTab(props) {
     );
   }
 
+  var isHostRole = role === 'host' || role === 'owner' || role === 'admin';
+
+  var handleCommunityPost = function() {
+    var body = communityBody.trim();
+    if (!body) return;
+    var roomId = props.roomId || 'global';
+    setCommunityPosting(true);
+    fetch('/api/community', {
+      method: 'POST',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, _discoverAuthHeaders()),
+      body: JSON.stringify({ roomId: roomId, body: body, authorName: props.username || 'Host' }),
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        setCommunityPosting(false);
+        if (d.success && d.post) {
+          setCommunityPosts(function(prev) { return [d.post].concat(prev); });
+          setCommunityBody('');
+          if (addToast) addToast('Post published!', 'success');
+        } else {
+          if (addToast) addToast(d.error || 'Post failed', 'error');
+        }
+      })
+      .catch(function() { setCommunityPosting(false); if (addToast) addToast('Network error', 'error'); });
+  }
+
+  var handleCommunityDelete = function(postId) {
+    fetch('/api/community/' + postId, { method: 'DELETE', headers: _discoverAuthHeaders() })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.success) setCommunityPosts(function(prev) { return prev.filter(function(p) { return p.id !== postId; }); });
+      })
+      .catch(function() {});
+  }
+
+  var renderCommunityTab = function() {
+    if (communityLoading) return renderComingSoon('LOADING...');
+    return React.createElement('div', { style: { padding: '0 2px' } },
+      isHostRole && React.createElement('div', {
+        style: {
+          background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.18)',
+          borderRadius: 10, padding: '12px 14px', marginBottom: 12,
+        }
+      },
+        React.createElement('div', {
+          style: { fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }
+        }, 'POST TO COMMUNITY'),
+        React.createElement('textarea', {
+          value: communityBody,
+          onChange: function(e) { setCommunityBody(e.target.value.slice(0, 500)); },
+          placeholder: 'Share an update with your community...',
+          rows: 3,
+          style: {
+            width: '100%', boxSizing: 'border-box',
+            background: 'rgba(14,12,9,.9)', border: '1px solid rgba(201,168,76,.18)',
+            borderRadius: 7, padding: '8px 10px', color: '#F0E8D4',
+            fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13,
+            outline: 'none', resize: 'none',
+            marginBottom: 8,
+          }
+        }),
+        React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+          React.createElement('span', {
+            style: { fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }
+          }, (communityBody.length) + '/500'),
+          React.createElement('button', {
+            disabled: !communityBody.trim() || communityPosting,
+            onClick: handleCommunityPost,
+            style: {
+              background: communityBody.trim() ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(80,0,20,.3)',
+              border: 'none', borderRadius: 7, padding: '7px 16px',
+              color: communityBody.trim() ? '#C9A84C' : '#8A7A62',
+              fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, letterSpacing: 2,
+              cursor: communityBody.trim() ? 'pointer' : 'not-allowed',
+            }
+          }, communityPosting ? 'POSTING...' : 'POST')
+        )
+      ),
+      communityPosts.length === 0 && React.createElement('div', {
+        style: {
+          background: 'rgba(26,21,16,.5)', border: '1px dashed rgba(201,168,76,.1)',
+          borderRadius: 10, padding: '24px 16px', textAlign: 'center',
+        }
+      },
+        React.createElement('div', { style: { fontSize: 32, marginBottom: 8, opacity: 0.3 } }, '📢'),
+        React.createElement('div', {
+          style: { fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1 }
+        }, 'NO COMMUNITY POSTS YET')
+      ),
+      React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        communityPosts.map(function(post) {
+          var ago = '';
+          var diff = Math.floor(Date.now() / 1000) - (post.created_at || 0);
+          if (diff < 60) ago = 'just now';
+          else if (diff < 3600) ago = Math.floor(diff / 60) + 'm ago';
+          else if (diff < 86400) ago = Math.floor(diff / 3600) + 'h ago';
+          else ago = Math.floor(diff / 86400) + 'd ago';
+          return React.createElement('div', {
+            key: post.id,
+            style: {
+              background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.1)',
+              borderRadius: 10, padding: '12px 14px',
+            }
+          },
+            React.createElement('div', {
+              style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }
+            },
+              React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                React.createElement('div', {
+                  style: {
+                    width: 28, height: 28, borderRadius: '50%', background: '#800020',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4',
+                    flexShrink: 0,
+                  }
+                }, (post.author_name || '?').slice(0, 1).toUpperCase()),
+                React.createElement('div', null,
+                  React.createElement('div', {
+                    style: { fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4', letterSpacing: 0.5 }
+                  }, post.author_name || 'Creator'),
+                  React.createElement('div', {
+                    style: { fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }
+                  }, ago)
+                )
+              ),
+              isHostRole && React.createElement('button', {
+                onClick: function() { handleCommunityDelete(post.id); },
+                style: { background: 'transparent', border: 'none', color: '#8A7A62', fontSize: 12, cursor: 'pointer', padding: '0 4px' }
+              }, '✕')
+            ),
+            React.createElement('div', {
+              style: {
+                fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: '#F0E8D4',
+                lineHeight: 1.4, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+              }
+            }, post.body)
+          );
+        })
+      )
+    );
+  }
+
   var filteredStreams = activeCategory === 'ALL'
     ? streams
     : streams.filter(function(s) { return s.category === activeCategory; });
@@ -1310,7 +1486,7 @@ export default function DiscoverTab(props) {
               : React.createElement('div', null, upcoming.map(renderUpcomingCard))
           )
         : contentTab === 'community'
-          ? renderComingSoon('COMMUNITY \xB7 COMING SOON')
+          ? renderCommunityTab()
           : view === 'streams'
             ? React.createElement('div', null, filteredStreams.map(renderStreamCard))
             : React.createElement('div', null, filteredCreators.map(renderCreatorCard)),

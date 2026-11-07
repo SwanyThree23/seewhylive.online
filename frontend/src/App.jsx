@@ -1996,6 +1996,7 @@ export default function App() {
             socket={socketRef.current}
             roomId={APP_ID}
             username={username}
+            role={role}
           />
           </PullToRefresh>
         )}
