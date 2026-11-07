@@ -13,10 +13,9 @@ function getCurrentPlan() {
   return localStorage.getItem('sw_saas_tier') || 'free';
 }
 
-function canUse(feature) {
-  var plan = getCurrentPlan();
-  var features = PLAN_FEATURES[plan] || PLAN_FEATURES['free'];
-  return !!features[feature];
+// All features unlocked during launch — plan gating disabled until post-production
+function canUse() {
+  return true;
 }
 
 function getPlanRank(planId) {
@@ -24,8 +23,8 @@ function getPlanRank(planId) {
   return idx === -1 ? 0 : idx;
 }
 
-function isAtLeast(planId) {
-  return getPlanRank(getCurrentPlan()) >= getPlanRank(planId);
+function isAtLeast() {
+  return true;
 }
 
 export { canUse, isAtLeast, getCurrentPlan, PLAN_FEATURES, PLANS };
