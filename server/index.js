@@ -545,12 +545,24 @@ var referralRegisterLimit = rateLimit({
 // so req.user.id is available for per-user keying.
 app.use(express.json({ limit: '2mb' }));
 
-// Light-weight per-path call counter (in-memory, resets on restart)
+// Light-weight per-path call counter + ring-buffer call log (in-memory, resets on restart)
 var _apiCallCounts = {};
-app.use('/api/', function(req, _res, next) {
-  if (req.path === '/health' || req.path === '/mcp/stats') { next(); return; }
-  var key = req.method + ' ' + req.path.replace(/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '/:id').replace(/\/[0-9]+(?=\/|$)/g, '/:id').split('?')[0];
+var _callLogBuf    = [];
+var _callLogMax    = 60;
+app.use('/api/', function(req, res, next) {
+  if (req.path === '/health' || req.path === '/mcp/stats' || req.path === '/mcp/call-log') { next(); return; }
+  var key = req.method + ' ' + req.path
+    .replace(/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '/:id')
+    .replace(/\/[0-9]+(?=\/|$)/g, '/:id')
+    .split('?')[0];
   _apiCallCounts[key] = (_apiCallCounts[key] || 0) + 1;
+  var _start = Date.now();
+  res.on('finish', function() {
+    var ms  = Date.now() - _start;
+    var ts  = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    _callLogBuf.push(ts + '  ' + key + '  → ' + res.statusCode + ' (' + ms + 'ms)');
+    if (_callLogBuf.length > _callLogMax) _callLogBuf.shift();
+  });
   next();
 });
 app.use('/api/battles', battleRoutes);
@@ -1192,6 +1204,11 @@ app.get('/api/health', function(req, res) {
 // GET /api/mcp/stats  — per-path call counts (auth required)
 app.get('/api/mcp/stats', requireAuth, function(req, res) {
   return res.json({ counts: _apiCallCounts });
+});
+
+// GET /api/mcp/call-log  — recent API call log ring buffer (auth required)
+app.get('/api/mcp/call-log', requireAuth, function(req, res) {
+  return res.json({ log: _callLogBuf.slice().reverse() });
 });
 
 // GET /api/metrics

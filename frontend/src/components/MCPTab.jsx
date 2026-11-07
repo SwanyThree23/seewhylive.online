@@ -53,15 +53,17 @@ export default function MCPTab({ addToast, isLive }) {
   var [healthCheckedAt, setHealthCheckedAt] = useState(null);
   var [serverHealth, setServerHealth] = useState(null);
 
-  // Seed call log on mount
+  // Fetch real call log from server ring buffer
   useEffect(function() {
-    setCallLog([
-      '14:03:12  get_stream_status        → 200 OK (4ms)',
-      '14:03:14  get_viewer_count         → 200 OK (2ms)',
-      '14:05:01  create_transaction       → 201 CREATED (8ms)',
-      '14:06:33  moderate_message         → 200 FLAGGED (420ms)',
-      '14:07:44  get_revenue_split        → 200 OK (5ms)',
-    ]);
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+    if (!tok) return;
+    fetch('/api/mcp/call-log', { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (d && d.log && d.log.length > 0) setCallLog(d.log);
+      })
+      .catch(function() {});
   }, []);
 
   // Fetch real API call counts
