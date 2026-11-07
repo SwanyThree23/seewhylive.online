@@ -26,6 +26,7 @@ import JoinRequestQueue from './JoinRequestQueue';
 import AudioOnlyToggle from './AudioOnlyToggle';
 import PanelReactionBar from './PanelReactionBar';
 import PanelPrivacySettings from './PanelPrivacySettings';
+import PanelChatTray from './PanelChatTray';
 import { useAutoSpeakGate } from '../../hooks/useAutoSpeakGate.js';
 
 var GOLD = '#C9A84C';
@@ -38,7 +39,7 @@ var RED = '#FF1A3C';
  * and the rest collapse into a scrollable strip. Works for any count up to
  * the platform's MAX_PANEL_GUESTS=20 ceiling.
  */
-export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, guests, addToast, panelInvite, setPanelInvite }) {
+export default function PanelGrid({ socket, roomId, userId, username, isHost, rtcManager, guests, addToast, panelInvite, setPanelInvite, viewerCount }) {
   var [slots, setSlots] = useState([]);
   var [gatingMode, setGatingMode] = useState(null);
   var [isAudioOnlyRoom, setIsAudioOnlyRoom] = useState(false);
@@ -58,6 +59,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   var confirmLeaveTimerRef = useRef(null);
   var [localAudioStream, setLocalAudioStream] = useState(null);
   var [roomBackground, setRoomBackground] = useState('default');
+  var [brbBanner, setBrbBanner] = useState(null); // { msg } or null
   var prevSpotlightRef = useRef(null);
   var exitTimersRef = useRef({});
   var localStreamRef = useRef(null);
@@ -224,6 +226,13 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         if (payload.roomId !== roomId) return;
         setRoomBackground(payload.presetId || 'default');
       }));
+
+      var onBrb = function(data) {
+        if (!data.active) { setBrbBanner(null); return; }
+        setBrbBanner({ msg: data.msg || '', from: data.from || 'Host' });
+      };
+      socket.on('brb', onBrb);
+      unsubs.push(function() { socket.off('brb', onBrb); });
 
 
       var onHandUpdate = function(payload) {
@@ -425,6 +434,11 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
               LIVE
             </span>
             Stage {slots.length > 0 && <span style={{ color: '#888' }}>· {slots.length}</span>}
+            {viewerCount > 0 && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, color: '#666', fontWeight: 400 }}>
+                👁 {viewerCount >= 1000 ? (Math.floor(viewerCount / 100) / 10).toFixed(1) + 'K' : viewerCount}
+              </span>
+            )}
             {currentSpeaker && (
               <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: CREAM, fontWeight: 500, fontSize: 10, background: 'rgba(201,168,76,.12)', borderRadius: 10, padding: '2px 8px', border: '1px solid rgba(201,168,76,.22)' }}>
                 <span style={{ fontSize: 9, flexShrink: 0 }}>🎤</span>
@@ -561,6 +575,25 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   return (
     <div style={Object.assign({ display: 'flex', flexDirection: 'column', height: '100%', transition: 'background 0.6s ease' }, bgStyle)}>
       {renderControls()}
+
+      {/* BRB banner */}
+      {brbBanner && (
+        <div style={{
+          margin: '4px 8px 0',
+          background: 'rgba(201,168,76,.1)',
+          border: '1px solid rgba(201,168,76,.35)',
+          borderRadius: 8,
+          padding: '5px 10px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}>
+          <span style={{ fontSize: 14 }}>⏸</span>
+          <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 10, color: GOLD, fontWeight: 600 }}>
+            {brbBanner.from} is BRB{brbBanner.msg ? ' — ' + brbBanner.msg : ''}
+          </span>
+        </div>
+      )}
 
       {/* PK Battle live score banner */}
       {pkBattle && (
@@ -705,6 +738,14 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
           <PanelReactionBar socket={socket} roomId={roomId} userId={userId} />
         </div>
       )}
+
+      {/* Compact chat tray for panelists — collapsed by default, unread badge shows */}
+      <PanelChatTray
+        socket={socket}
+        roomId={roomId}
+        userId={userId}
+        username={username}
+      />
 
       {showJoinModal && (
         <PanelJoinModal
