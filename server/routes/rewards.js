@@ -31,6 +31,16 @@ router.get('/leaderboard', requireAuth, async function(req, res) {
 
 var REWARDS_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+router.get('/me', requireAuth, async function(req, res) {
+  try {
+    var data = await rewardsService.getUserPoints(req.user.id, req.tenantId);
+    res.json(data);
+  } catch (err) {
+    console.error('[ROUTE ERROR]', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/me/:userId', requireAuth, requireOwnerOrSelf('userId'), async function(req, res) {
   if (!REWARDS_UUID_RE.test(req.params.userId)) return res.status(400).json({ error: 'invalid userId' });
   try {
