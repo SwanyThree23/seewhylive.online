@@ -131,8 +131,8 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         if (rid !== roomId) return;
         setSlots(function(prev) {
           var isNew = !prev.some(function(s) { return s.slot_index === slot.slot_index; });
-          if (isNew && isHost && addToast && slot.user_id !== userId) {
-            addToast('🎙 ' + (slot.display_name || 'Someone') + ' joined the panel', 'info');
+          if (isNew && addToast && slot.user_id !== userId) {
+            addToast('🎙 ' + (slot.display_name || 'Someone') + ' joined the stage', 'info');
           }
           return isNew
             ? prev.concat([slot])
@@ -630,9 +630,31 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         </div>
       )}
 
+      {/* On-stage avatar strip — video mode only; audio-only tiles already show names */}
+      {slots.length > 0 && !isAudioOnlyRoom && (
+        <div style={{ padding: '0 8px 4px', display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto' }}>
+          <span style={{ color: '#444', fontSize: 8, fontFamily: '"DM Sans", sans-serif', flexShrink: 0, letterSpacing: 0.8, textTransform: 'uppercase' }}>On stage</span>
+          {slots.map(function(slot) {
+            var isSpeaking = currentSpeaker && currentSpeaker.userId === slot.user_id;
+            return (
+              <div key={slot.user_id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                {slot.avatar_url ? (
+                  <img src={slot.avatar_url} alt={slot.display_name} style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover', border: isSpeaking ? ('2px solid ' + GOLD) : '2px solid #2a2a2a', transition: 'border-color 0.2s' }} />
+                ) : (
+                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#1e1e1e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: CREAM, fontFamily: '"DM Sans", sans-serif', border: isSpeaking ? ('2px solid ' + GOLD) : '2px solid #2a2a2a', transition: 'border-color 0.2s' }}>
+                    {(slot.display_name || '?')[0].toUpperCase()}
+                  </div>
+                )}
+                <span style={{ fontSize: 7, color: '#666', fontFamily: '"DM Sans", sans-serif', maxWidth: 34, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{slot.display_name}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Reaction bar + floating emojis (relative container for floats) */}
       {slots.length > 0 && (
-        <div style={{ position: 'relative', padding: '6px 8px 4px', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ position: 'relative', padding: '2px 8px 4px', display: 'flex', justifyContent: 'center' }}>
           <PanelReactionBar socket={socket} roomId={roomId} userId={userId} />
         </div>
       )}
