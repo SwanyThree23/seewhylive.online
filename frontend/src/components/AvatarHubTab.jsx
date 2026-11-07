@@ -48,12 +48,7 @@ var VIEWER_COLORS = ['#FF1A3C','#C9A84C','#C9A84C','#C9A84C','#C9A84C','#D4854A'
 export default function AvatarHubTab({ addToast, isLive }) {
   var [items,            setItems]            = useState(AVATAR_ITEMS.map(function(a) { return Object.assign({}, a); }));
   var [gemBal,           setGemBal]           = useState(350);
-  var [dailyClaimed,     setDailyClaimed]     = useState(function() {
-    try {
-      var d = localStorage.getItem('sw_daily_bonus');
-      return d === new Date().toDateString();
-    } catch(e) { return false; }
-  });
+  var [dailyClaimed,     setDailyClaimed]     = useState(false);
   var [filter,           setFilter]           = useState('all');
   var [frames,           setFrames]           = useState(FRAMES.map(function(f) { return Object.assign({}, f); }));
   var [equippedFrame,    setEquippedFrame]     = useState('f1');
@@ -75,14 +70,35 @@ export default function AvatarHubTab({ addToast, isLive }) {
     if (!isLive) setLiveViewerAvatars([]);
   }, [isLive]);
 
+  useEffect(function() {
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+    if (!tok) return;
+    fetch('/api/fuel/balance', { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (d && typeof d.balance === 'number') setGemBal(d.balance);
+      })
+      .catch(function() {});
+  }, []);
 
   var claimDailyBonus = function() {
-    setGemBal(function(b) { return Math.floor(b + 50); });
-    setDailyClaimed(true);
-    try {
-      localStorage.setItem('sw_daily_bonus', new Date().toDateString());
-    } catch(e) {}
-    if (addToast) addToast('🎁 Daily bonus claimed! +50 💎', 'success');
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+    if (!tok) { if (addToast) addToast('Sign in to claim your daily bonus', 'error'); return; }
+    fetch('/api/fuel/daily-bonus', { method: 'POST', headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && d.claimed) {
+          setGemBal(d.balance);
+          setDailyClaimed(true);
+          if (addToast) addToast('🎁 Daily bonus claimed! +50 💎', 'success');
+        } else if (d && d.error) {
+          setDailyClaimed(true);
+          if (addToast) addToast(d.error === 'Already claimed today' ? '✓ Already claimed today' : d.error, 'info');
+        }
+      })
+      .catch(function() { if (addToast) addToast('Could not claim bonus', 'error'); });
   }
 
   var equipped = items.find(function(a) { return a.equipped; });

@@ -274,6 +274,7 @@ db.exec(`CREATE TABLE IF NOT EXISTS fuel_transactions (
 )`);
 db.prepare('CREATE INDEX IF NOT EXISTS idx_fuel_tx_user ON fuel_transactions(user_id)').run();
 db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS idx_fuel_tx_ref ON fuel_transactions(type, ref_id) WHERE ref_id IS NOT NULL').run();
+try { db.exec('ALTER TABLE fuel_balances ADD COLUMN last_daily_bonus INTEGER NOT NULL DEFAULT 0'); } catch(_) {}
 
 // Referral program tables
 db.exec(`CREATE TABLE IF NOT EXISTS referrals (
@@ -539,6 +540,15 @@ var referralRegisterLimit = rateLimit({
 // NOTE: stripeOnboardRateLimit is applied on the route itself (after requireAuth)
 // so req.user.id is available for per-user keying.
 app.use(express.json({ limit: '2mb' }));
+
+// Light-weight per-path call counter (in-memory, resets on restart)
+var _apiCallCounts = {};
+app.use('/api/', function(req, _res, next) {
+  if (req.path === '/health' || req.path === '/mcp/stats') { next(); return; }
+  var key = req.method + ' ' + req.path.replace(/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '/:id').replace(/\/[0-9]+(?=\/|$)/g, '/:id').split('?')[0];
+  _apiCallCounts[key] = (_apiCallCounts[key] || 0) + 1;
+  next();
+});
 app.use('/api/battles', battleRoutes);
 app.use('/api/rewards', rewardsRoutes);
 const usersRoutes = require('./routes/users');
@@ -1175,6 +1185,11 @@ app.get('/api/health', function(req, res) {
   });
 });
 
+// GET /api/mcp/stats  — per-path call counts (auth required)
+app.get('/api/mcp/stats', requireAuth, function(req, res) {
+  return res.json({ counts: _apiCallCounts });
+});
+
 // GET /api/metrics
 app.get('/api/metrics', requireAuth, function(req, res) {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
@@ -1310,6 +1325,29 @@ app.get('/api/fuel/balance', requireAuth, fuelRateLimit, function(req, res) {
     if (!userId) return res.status(401).json({ error: 'Not authenticated' });
     var row = db.prepare('SELECT balance FROM fuel_balances WHERE user_id = ?').get(userId);
     return res.json({ balance: (row && row.balance) || 0 });
+  } catch (e) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/fuel/daily-bonus  — credit 50 FUEL once per 24h
+app.post('/api/fuel/daily-bonus', requireAuth, fuelRateLimit, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var now = Math.floor(Date.now() / 1000);
+    var row = db.prepare('SELECT balance, last_daily_bonus FROM fuel_balances WHERE user_id = ?').get(userId);
+    var last = (row && row.last_daily_bonus) || 0;
+    if (now - last < 86400) {
+      return res.status(429).json({ error: 'Already claimed today', next_at: last + 86400 });
+    }
+    if (row) {
+      db.prepare('UPDATE fuel_balances SET balance = balance + 50, last_daily_bonus = ?, updated_at = ? WHERE user_id = ?').run(now, now, userId);
+    } else {
+      db.prepare('INSERT INTO fuel_balances (user_id, balance, last_daily_bonus, updated_at) VALUES (?, 50, ?, ?)').run(userId, now, now);
+    }
+    var newRow = db.prepare('SELECT balance FROM fuel_balances WHERE user_id = ?').get(userId);
+    return res.json({ balance: (newRow && newRow.balance) || 50, claimed: true });
   } catch (e) {
     return res.status(500).json({ error: 'Server error' });
   }

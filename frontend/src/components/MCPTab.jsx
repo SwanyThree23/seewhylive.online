@@ -64,6 +64,47 @@ export default function MCPTab({ addToast, isLive }) {
     ]);
   }, []);
 
+  // Fetch real API call counts
+  useEffect(function() {
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+    if (!tok) return;
+    fetch('/api/mcp/stats', { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (!d || !d.counts) return;
+        var c = d.counts;
+        var sum = function(keys) {
+          var total = 0;
+          Object.keys(c).forEach(function(k) {
+            for (var i = 0; i < keys.length; i++) {
+              if (k.indexOf(keys[i]) !== -1) { total += c[k]; break; }
+            }
+          });
+          return total;
+        };
+        setTools(function(prev) {
+          return prev.map(function(t) {
+            var n = 0;
+            if (t.id === 't1') n = sum(['/streams', '/active-rooms']);
+            else if (t.id === 't2') n = sum(['/payments', '/fuel']);
+            else if (t.id === 't3') n = sum(['/discover/live', '/streams']);
+            else if (t.id === 't4') n = sum(['/panel-rooms', '/guests']);
+            else if (t.id === 't5') n = sum(['/moderation']);
+            else if (t.id === 't6') n = sum(['/aura', '/payout-history', '/creator/analytics']);
+            else if (t.id === 't7') n = sum(['/invites', '/panel-rooms']);
+            else if (t.id === 't8') n = sum(['/clips']);
+            else if (t.id === 't9') n = sum(['/state-rankings', '/battles', '/leaderboard']);
+            else if (t.id === 't10') n = sum(['/gifts']);
+            else if (t.id === 't11') n = sum(['/fanout']);
+            else if (t.id === 't12') n = sum(['/vault']);
+            return n > 0 ? Object.assign({}, t, { calls: n }) : t;
+          });
+        });
+      })
+      .catch(function() {});
+  }, []);
+
 
   // Health polling every 30s
   useEffect(function() {
