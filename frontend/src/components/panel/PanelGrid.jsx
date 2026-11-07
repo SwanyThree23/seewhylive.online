@@ -13,6 +13,7 @@ function injectPanelGridStyles() {
     '@keyframes panelSpeakPulse{0%,100%{box-shadow:0 0 6px rgba(212,175,55,.35)}50%{box-shadow:0 0 20px rgba(212,175,55,.85),0 0 40px rgba(212,175,55,.2)}}',
     '@keyframes pkScoreBump{0%{transform:scale(1.18)}100%{transform:scale(1)}}',
     '@keyframes speakRing{0%,100%{box-shadow:0 0 0 3px rgba(201,168,76,.55)}50%{box-shadow:0 0 0 5px rgba(201,168,76,.95),0 0 18px rgba(201,168,76,.4)}}',
+    '@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.35}}',
   ].join('');
   document.head.appendChild(el);
 }
@@ -216,7 +217,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         setRaisedHands(function(prev) {
           var next = Object.assign({}, prev);
           if (payload.raised) {
-            next[payload.userId] = true;
+            next[payload.userId] = payload.displayName || payload.userId || '?';
             if (isHost && addToast) {
               var _handName = payload.displayName || payload.userId || 'Someone';
               addToast('✋ ' + _handName + ' raised their hand', 'info');
@@ -405,6 +406,10 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       <div style={{ padding: '6px 8px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ color: GOLD, fontSize: 11, fontFamily: '"DM Sans", sans-serif', fontWeight: 600, letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.12)', borderRadius: 10, padding: '2px 7px', fontSize: 9, color: RED, border: '1px solid rgba(255,26,60,.28)', letterSpacing: 0.8 }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: RED, flexShrink: 0, animation: 'livePulse 1.5s ease-in-out infinite' }} />
+              LIVE
+            </span>
             Stage {slots.length > 0 && <span style={{ color: '#888' }}>· {slots.length}</span>}
             {currentSpeaker && (
               <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: CREAM, fontWeight: 500, fontSize: 10, background: 'rgba(201,168,76,.12)', borderRadius: 10, padding: '2px 8px', border: '1px solid rgba(201,168,76,.22)' }}>
@@ -414,7 +419,9 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
               </span>
             )}
             {Object.keys(raisedHands).length > 0 && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(201,168,76,.18)', borderRadius: 10, padding: '2px 8px', fontSize: 10, color: GOLD, border: '1px solid rgba(201,168,76,.35)', animation: 'panelSpeakPulse 2s ease-in-out infinite', flexShrink: 0 }}>
+              <span
+                title={Object.values(raisedHands).join(', ')}
+                style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(201,168,76,.18)', borderRadius: 10, padding: '2px 8px', fontSize: 10, color: GOLD, border: '1px solid rgba(201,168,76,.35)', animation: 'panelSpeakPulse 2s ease-in-out infinite', flexShrink: 0, cursor: 'default' }}>
                 ✋ {Object.keys(raisedHands).length}
               </span>
             )}
