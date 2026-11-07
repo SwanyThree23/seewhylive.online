@@ -12,6 +12,7 @@ function injectPanelGridStyles() {
     '@keyframes panelTileExit{from{opacity:1;transform:scale(1) translateY(0)}to{opacity:0;transform:scale(.78) translateY(10px)}}',
     '@keyframes panelSpeakPulse{0%,100%{box-shadow:0 0 6px rgba(212,175,55,.35)}50%{box-shadow:0 0 20px rgba(212,175,55,.85),0 0 40px rgba(212,175,55,.2)}}',
     '@keyframes pkScoreBump{0%{transform:scale(1.18)}100%{transform:scale(1)}}',
+    '@keyframes speakRing{0%,100%{box-shadow:0 0 0 3px rgba(201,168,76,.55)}50%{box-shadow:0 0 0 5px rgba(201,168,76,.95),0 0 18px rgba(201,168,76,.4)}}',
   ].join('');
   document.head.appendChild(el);
 }
@@ -383,8 +384,8 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
     return (
       <div style={{ padding: '6px 8px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ color: GOLD, fontSize: 11, fontFamily: '"DM Sans", sans-serif', fontWeight: 600 }}>
-            PANEL {slots.length > 0 && <span style={{ color: '#888' }}>· {slots.length} live</span>}
+          <span style={{ color: GOLD, fontSize: 11, fontFamily: '"DM Sans", sans-serif', fontWeight: 600, letterSpacing: 0.5 }}>
+            Stage {slots.length > 0 && <span style={{ color: '#888' }}>· {slots.length}</span>}
           </span>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             {isHost && (
@@ -413,12 +414,14 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
               <button
                 onClick={function() { setShowJoinModal(true); }}
                 style={{
-                  background: GOLD, color: '#111', border: 'none',
-                  borderRadius: 6, padding: '5px 12px', fontSize: 12,
+                  background: 'rgba(201,168,76,.15)', color: GOLD,
+                  border: '1px solid rgba(201,168,76,.4)',
+                  borderRadius: 20, padding: '5px 14px', fontSize: 12,
                   fontWeight: 700, fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 5,
                 }}
               >
-                + Join Panel
+                <span>✋</span><span>Ask to speak</span>
               </button>
             )}
             {hasSlot && (
@@ -442,7 +445,9 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
     );
   }
 
-  var cols = slots.length <= 1 ? 1 : slots.length <= 4 ? 2 : slots.length <= 9 ? 3 : slots.length <= 16 ? 4 : 5;
+  var cols = isAudioOnlyRoom
+    ? Math.min(3, slots.length)
+    : (slots.length <= 1 ? 1 : slots.length <= 4 ? 2 : slots.length <= 9 ? 3 : slots.length <= 16 ? 4 : 5);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -492,17 +497,18 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       {slots.length === 0 ? (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#555', fontFamily: '"DM Sans", sans-serif' }}>
           <div style={{ fontSize: 36 }}>🎙</div>
-          <div style={{ fontSize: 14 }}>No one is on the panel yet</div>
+          <div style={{ fontSize: 14 }}>No one is on stage yet</div>
           {userId && !hasSlot && (
             <button
               onClick={function() { setShowJoinModal(true); }}
               style={{
                 background: GOLD, color: '#111', border: 'none',
-                borderRadius: 8, padding: '10px 24px', fontSize: 14,
+                borderRadius: 24, padding: '11px 28px', fontSize: 14,
                 fontWeight: 700, fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 7,
               }}
             >
-              Be the first — Join Panel
+              <span>✋</span><span>Be the first to speak</span>
             </button>
           )}
         </div>
