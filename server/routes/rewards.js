@@ -21,7 +21,7 @@ router.get('/leaderboard', requireAuth, async function(req, res) {
   try {
     var period = req.query.period === 'weekly' ? 'weekly' : 'alltime';
     var rows = await rewardsService.getLeaderboard(period, req.tenantId);
-    var data = rows.map(function(r) { return { user_id: r.user_id, points: r.points || r.total_points, level: r.level }; });
+    var data = rows.map(function(r) { return { user_id: r.user_id, display_name: r.display_name || null, total_points: r.total_points || r.points || 0, level: r.level || 1 }; });
     res.json(data);
   } catch (err) {
     console.error('[ROUTE ERROR]', err);
