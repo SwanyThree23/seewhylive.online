@@ -2369,6 +2369,19 @@ io.on('connection', function(socket) {
   socket.on('join-room', function(data, ack) {
     if (!data) { if (ack) ack({ error: 'data required' }); return; }
     var roomId   = data.roomId;
+    // If the socket connected anonymously (no token at handshake) but join-room
+    // carries a valid JWT, upgrade the socket identity so privileged handlers
+    // (panel:join, etc.) can see the real userId.
+    if (data.token && String(socket.data.userId).startsWith('anon') && process.env.JWT_SECRET) {
+      try {
+        var _upgradeDecoded = jwt.verify(data.token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+        socket.data.userId  = _upgradeDecoded.userId || _upgradeDecoded.sub || socket.data.userId;
+        socket.data.role    = _upgradeDecoded.role || 'viewer';
+        socket.data.decoded = _upgradeDecoded;
+        // Join the per-user room so user-targeted events reach this socket
+        socket.join('user:' + socket.data.userId);
+      } catch (_upgradeErr) { /* token invalid — stay anon */ }
+    }
     var guestId  = socket.data.userId;
     var username = String(data.username || 'Guest').slice(0, 32);
     // Strip reserved system-message prefixes to prevent impersonating server chat

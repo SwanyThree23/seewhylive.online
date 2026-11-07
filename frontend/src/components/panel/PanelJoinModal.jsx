@@ -68,6 +68,10 @@ export default function PanelJoinModal({ socket, roomId, onJoined, onCancel }) {
 
   var handleJoin = async function() {
     if (joining) return;
+    if (!localStorage.getItem('sw_token')) {
+      setError('You must be logged in to go live on the panel');
+      return;
+    }
     setJoining(true);
     setError(null);
     try {
@@ -82,7 +86,9 @@ export default function PanelJoinModal({ socket, roomId, onJoined, onCancel }) {
       }
       onJoined(slot);
     } catch (err) {
-      setError(err.message || 'Failed to join panel');
+      var _msg = err.message || 'Failed to join panel';
+      if (_msg === 'auth required') _msg = 'You must be logged in to go live on the panel';
+      setError(_msg);
       setJoining(false);
     }
   }
