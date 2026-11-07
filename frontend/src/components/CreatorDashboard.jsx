@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { creatorCents } from '../platformConfig.js';
+
+function _cdAuthHeaders() {
+  var tok = '';
+  try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+  return tok ? { 'Authorization': 'Bearer ' + tok } : {};
+}
+
+var RANGE_TO_PERIOD = { '7D': 'week', '30D': 'month', '365D': 'month' };
 
 var D = {
   obs:  '#07050A', surf: '#0F0D14', card: '#161220', bord: '#2a1f3d',
@@ -87,20 +95,45 @@ export default function CreatorDashboard() {
   var payoutState   = useState(false);
   var showPayout    = payoutState[0];
   var setShowPayout = payoutState[1];
+  var apiDataState  = useState(null);
+  var apiData       = apiDataState[0];
+  var setApiData    = apiDataState[1];
+  var availState    = useState(null);
+  var availCents    = availState[0];
+  var setAvailCents = availState[1];
+
+  useEffect(function() {
+    fetch('/api/creator/onboard/status', { headers: _cdAuthHeaders() })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) { if (d && typeof d.availableCents === 'number') setAvailCents(d.availableCents); })
+      .catch(function() {});
+  }, []);
+
+  useEffect(function() {
+    var period = RANGE_TO_PERIOD[rangeVal] || 'month';
+    fetch('/api/creator/analytics?period=' + period, { headers: _cdAuthHeaders() })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) { if (d) setApiData(d); })
+      .catch(function() {});
+  }, [rangeVal]);
 
   var s = STATS[rangeVal];
+  var revCents = apiData ? (apiData.creatorCents || 0) : Math.round(s.rev * 100);
+  var revDollars = (Math.floor(revCents) / 100).toFixed(2);
+  var tipCents = apiData ? (apiData.byType && apiData.byType.tip ? apiData.byType.tip : 0) : Math.round(s.tips * 100);
+  var tipDollars = (Math.floor(tipCents) / 100).toFixed(2);
+  var streamCount = apiData ? (apiData.streamCount || 0) : s.streams;
+  var peakViewers = apiData ? (apiData.peakViewers || 0) : s.peak;
 
-  // bal is a placeholder dollar amount; convert to cents for the canonical helper
-  var bal = 847.23;
-  var balCents   = Math.floor(bal * 100);
-  var creatorBal = creatorCents(balCents) / 100;
+  var balCents   = availCents !== null ? availCents : Math.round(s.rev * 100);
+  var creatorBal = (creatorCents(balCents) / 100).toFixed(2);
 
   var statCards = [
-    { icon: '💰', label: 'Revenue',   value: '$' + s.rev.toLocaleString(), color: D.gold },
-    { icon: '📡', label: 'Streams',   value: s.streams,                    color: D.volt },
-    { icon: '👁', label: 'Peak',      value: s.peak.toLocaleString(),      color: D.golH },
-    { icon: '👥', label: 'Followers', value: '+' + s.followers.toLocaleString(), color: D.suc },
-    { icon: '💵', label: 'Tips',      value: '$' + s.tips,                 color: D.burH },
+    { icon: '💰', label: 'Revenue',   value: '$' + parseFloat(revDollars).toLocaleString(), color: D.gold },
+    { icon: '📡', label: 'Streams',   value: streamCount,                                   color: D.volt },
+    { icon: '👁', label: 'Peak',      value: peakViewers.toLocaleString(),                  color: D.golH },
+    { icon: '👥', label: 'Followers', value: '+' + s.followers.toLocaleString(),             color: D.suc },
+    { icon: '💵', label: 'Tips',      value: '$' + parseFloat(tipDollars).toLocaleString(),  color: D.burH },
   ];
 
   return React.createElement(
