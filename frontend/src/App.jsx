@@ -418,6 +418,7 @@ export default function App() {
   var [userTier, setUserTier] = useState(function() { return localStorage.getItem('sw_user_tier') || 'free'; });
   var [auraMessages, setAuraMessages] = useState([]);
   var [auraUnread, setAuraUnread] = useState(0);
+  var [dmUnread, setDmUnread] = useState(0);
   var [sessionEarningsCents, setSessionEarningsCents] = useState(0);
   var [streamRecap, setStreamRecap] = useState(null);
   var [streamGoal, setStreamGoal] = useState(function() {
@@ -1157,6 +1158,10 @@ export default function App() {
       var msg = { text: data.text, mode: data.mode || 'hype', ts: Date.now() };
       setAuraMessages(function(prev) { return [msg].concat(prev.slice(0, 19)); });
       setAuraUnread(function(n) { return n + 1; });
+    });
+
+    socket.on('dm:new', function() {
+      setDmUnread(function(n) { return n + 1; });
     });
 
     socket.on('user-muted', function(data) {
@@ -2298,7 +2303,7 @@ export default function App() {
         </Suspense>
       )}
       {activeTab !== 'room' && (
-        <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
+        <MobileNavBar activeTab={activeTab} setActiveTab={function(tab) { setActiveTab(tab); if (tab === 'dms') setDmUnread(0); }} isLive={isLive} auraUnread={auraUnread} dmUnread={dmUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
       )}
       <WelcomeAudio socket={socketRef.current} />
 

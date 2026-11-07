@@ -41,6 +41,7 @@ var MORE_TABS = [
   { id: 'rankings',  icon: '🏅', label: 'RANKINGS'   },
   { id: 'showcase',  icon: '🏆', label: 'SHOWCASE'   },
   { id: 'guardian',  icon: '🛡', label: 'GUARDIAN'   },
+  { id: 'dms',       icon: '💬', label: 'DMs'        },
   { id: 'vod',       icon: '🎬', label: 'VOD'        },
   { id: 'tips',      icon: '💡', label: 'TIPS'       },
   { id: 'settings',  icon: '⚙', label: 'SETTINGS'   },
@@ -51,6 +52,7 @@ export default function MobileNavBar(props) {
   var setActiveTab = props.setActiveTab;
   var isLive       = props.isLive;
   var auraUnread   = props.auraUnread || 0;
+  var dmUnread     = props.dmUnread   || 0;
   var onAuraClick  = props.onAuraClick;
   var onResetTab   = props.onResetTab;
 
@@ -131,6 +133,9 @@ export default function MobileNavBar(props) {
                     {t.label}
                     {t.id === 'aura' && auraUnread > 0 && (
                       <span style={{ color: RED }}> {auraUnread}</span>
+                    )}
+                    {t.id === 'dms' && dmUnread > 0 && (
+                      <span style={{ color: RED }}> {dmUnread}</span>
                     )}
                   </span>
                 </div>
