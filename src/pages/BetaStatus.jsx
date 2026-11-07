@@ -118,9 +118,9 @@ export default function BetaStatusPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: 'Features Live', value: liveCount, color: '#6DBF7E' },
-            { label: 'In Beta Preview', value: betaCount, color: GOLD },
             { label: 'Live Rooms Now', value: liveRooms, color: '#4A8A7A' },
             { label: 'Revenue Split', value: '90/10', color: '#D4AF37' },
+            { label: 'Access', value: 'Free', color: GOLD },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-4 text-center"
               style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
@@ -138,7 +138,7 @@ export default function BetaStatusPage() {
               <p className="font-black text-sm text-white" style={T}>Feature Checklist</p>
             </div>
             <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              {liveCount + betaCount} of {FEATURE_STATUS.length} features available to beta testers
+              {liveCount} of {FEATURE_STATUS.length} features live and available to all users
             </p>
           </div>
           <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>

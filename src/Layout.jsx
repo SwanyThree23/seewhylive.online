@@ -107,7 +107,7 @@ var DRAWER_ACCOUNT = [
   { name: 'VaultPro', icon: Lock,       href: createPageUrl('VaultPro') },
   { name: 'Terms',    icon: Video,      href: createPageUrl('TermsOfService') },
   { name: 'Privacy',  icon: Video,      href: createPageUrl('PrivacyPolicy') },
-  { name: 'BetaStatus',        icon: Radio,     href: createPageUrl('BetaStatus') },
+  { name: 'Platform Status',   icon: Radio,     href: createPageUrl('BetaStatus') },
   { name: 'Notifications',    icon: Bell,      href: createPageUrl('Notifications') },
   { name: 'Activity',         icon: Activity,  href: createPageUrl('Activity') },
   { name: 'Viewer Dashboard', icon: LayoutDashboard, href: createPageUrl('ViewerDashboard') },
