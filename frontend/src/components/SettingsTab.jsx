@@ -548,7 +548,23 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
               </div>
               {isUpgrade && (
                 <button
-                  onClick={function() { addToast('Upgrade to ' + tier.label + ' — coming soon!', 'info'); }}
+                  onClick={function() {
+                    var tok = '';
+                    try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+                    if (!tok) { addToast('Sign in to upgrade your plan', 'error'); return; }
+                    addToast('Opening checkout for ' + tier.label + '…', 'info');
+                    fetch('/api/payments/subscription-checkout', {
+                      method: 'POST',
+                      headers: Object.assign({ 'Content-Type': 'application/json' }, tok ? { 'Authorization': 'Bearer ' + tok } : {}),
+                      body: JSON.stringify({ tier: tier.id }),
+                    })
+                      .then(function(r) { return r.json(); })
+                      .then(function(d) {
+                        if (d && d.url) { window.location.href = d.url; }
+                        else { addToast((d && d.error) || 'Could not start checkout', 'error'); }
+                      })
+                      .catch(function() { addToast('Network error — try again', 'error'); });
+                  }}
                   style={{ background: tier.color + '22', border: '1px solid ' + tier.color, borderRadius: 6, padding: '6px 14px', color: tier.color, fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, letterSpacing: 2, cursor: 'pointer' }}>
                   UPGRADE
                 </button>

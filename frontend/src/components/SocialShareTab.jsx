@@ -124,11 +124,31 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
   var [view, setView] = useState('share');
   var [mainView, setMainView] = useState('share');
   var [invitedIds, setInvitedIds] = useState({});
+  var [communityMembers, setCommunityMembers] = useState(COMMUNITY_MEMBERS);
   var copyTimerRef = useRef(null);
 
   useEffect(function() {
     return function() { if (copyTimerRef.current) clearTimeout(copyTimerRef.current); };
   }, []);
+
+  useEffect(function() {
+    if (mainView !== 'community') return;
+    fetch('/api/users/creators')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d || !Array.isArray(d.creators) || d.creators.length === 0) return;
+        var mapped = d.creators.slice(0, 10).map(function(c) {
+          return {
+            id:     c.id,
+            name:   c.displayName || c.id.slice(0, 12),
+            status: 'ONLINE',
+            mutual: false,
+          };
+        });
+        setCommunityMembers(mapped);
+      })
+      .catch(function() {});
+  }, [mainView]);
 
   var shareMsg = customMsg || defaultMsg;
 
@@ -211,7 +231,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
       {mainView === 'community' && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, letterSpacing: 2, marginBottom: 2 }}>INVITE TO YOUR STREAM</div>
-          {COMMUNITY_MEMBERS.map(function(m) {
+          {communityMembers.map(function(m) {
             var statusColor = m.status === 'LIVE' ? '#FF1A3C' : m.status === 'ONLINE' ? '#C9A84C' : '#3D3020';
             var wasInvited = Boolean(invitedIds[m.id]);
             return (
@@ -237,7 +257,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
           })}
 
           <button
-            onClick={function() { COMMUNITY_MEMBERS.forEach(function(m) { if (m.status !== 'OFFLINE') { setInvitedIds(function(prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; }); } }); if (addToast) addToast('📨 Invites sent to all online members!', 'success'); }}
+            onClick={function() { communityMembers.forEach(function(m) { if (m.status !== 'OFFLINE') { setInvitedIds(function(prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; }); } }); if (addToast) addToast('📨 Invites sent to all online members!', 'success'); }}
             style={{ marginTop: 4, background: 'linear-gradient(135deg,rgba(201,168,76,.2),rgba(128,0,32,.12))', border: '1px solid rgba(201,168,76,.4)', borderRadius: 10, padding: '12px 0', color: '#C9A84C', fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 2, textAlign: 'center' }}>
             📨 INVITE ALL ONLINE
           </button>

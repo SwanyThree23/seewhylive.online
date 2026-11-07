@@ -397,7 +397,23 @@ export default function CreatorProfileTab(props) {
           React.createElement(
             'button',
             {
-              onClick: function() { addToast('Subscription flow coming soon for ' + tier.name, 'info'); },
+              onClick: function() {
+                var tok = '';
+                try { tok = localStorage.getItem('sw_token') || ''; } catch(e2) {}
+                if (!tok) { addToast('Sign in to subscribe', 'error'); return; }
+                addToast('Opening checkout for ' + tier.name + '…', 'info');
+                fetch('/api/payments/subscribe', {
+                  method: 'POST',
+                  headers: Object.assign({ 'Content-Type': 'application/json' }, tok ? { 'Authorization': 'Bearer ' + tok } : {}),
+                  body: JSON.stringify({ creatorId: profile.id || '', tier: tier.tier || 'fan', amountCents: tier.amountCents || 500 }),
+                })
+                  .then(function(r) { return r.json(); })
+                  .then(function(d) {
+                    if (d && d.url) { window.location.href = d.url; }
+                    else { addToast((d && d.error) || 'Could not start checkout', 'error'); }
+                  })
+                  .catch(function() { addToast('Network error — try again', 'error'); });
+              },
               style: {
                 width: '100%',
                 background: accentColor + '22',

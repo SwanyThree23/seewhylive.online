@@ -244,11 +244,70 @@ async function handleStripeWebhook(rawBody, signature) {
   }
 
   if (event.type === 'checkout.session.completed') {
-    var tenantBilling = require('./tenantBilling');
-    try {
-      await tenantBilling.handleTenantCheckoutCompleted(event.data.object);
-    } catch (err) {
-      console.error('[stripe] tenant provisioning failed for session ' + event.data.object.id + ':', err.message);
+    var session = event.data.object;
+    var sessionType = (session.metadata && session.metadata.type) || '';
+
+    if (sessionType === 'platform_plan') {
+      var planUserId = session.metadata.userId || '';
+      var planTier   = session.metadata.tier   || '';
+      if (planUserId && planTier) {
+        try {
+          db.exec(
+            'CREATE TABLE IF NOT EXISTS platform_subscriptions (' +
+            '  user_id TEXT NOT NULL,' +
+            '  tier TEXT NOT NULL,' +
+            '  stripe_subscription_id TEXT,' +
+            '  status TEXT NOT NULL DEFAULT \'active\',' +
+            '  created_at INTEGER NOT NULL,' +
+            '  updated_at INTEGER NOT NULL,' +
+            '  PRIMARY KEY (user_id)' +
+            ')'
+          );
+          var now2 = Math.floor(Date.now() / 1000);
+          db.prepare(
+            'INSERT INTO platform_subscriptions (user_id, tier, stripe_subscription_id, status, created_at, updated_at) ' +
+            'VALUES (?, ?, ?, \'active\', ?, ?) ' +
+            'ON CONFLICT(user_id) DO UPDATE SET tier = excluded.tier, stripe_subscription_id = excluded.stripe_subscription_id, status = \'active\', updated_at = excluded.updated_at'
+          ).run(planUserId, planTier, session.subscription || null, now2, now2);
+          console.log('[stripe] platform plan activated: user=' + planUserId + ' tier=' + planTier);
+        } catch (planErr) {
+          console.error('[stripe] platform_plan activation failed:', planErr.message);
+        }
+      }
+    } else if (sessionType === 'creator_subscription') {
+      var subId       = session.metadata.subscriberId || '';
+      var creatorId   = session.metadata.creatorId    || '';
+      var subTier     = session.metadata.tier         || 'fan';
+      var subCents    = parseInt(session.metadata.amountCents || '0', 10);
+      if (subId && creatorId && Number.isFinite(subCents) && subCents > 0) {
+        try {
+          var moderation = require('./moderation');
+          var subRowId   = require('crypto').randomUUID();
+          moderation.addSubscription(subRowId, subId, creatorId, subTier, subCents, session.subscription || null);
+          console.log('[stripe] creator subscription activated: subscriber=' + subId + ' creator=' + creatorId + ' tier=' + subTier);
+        } catch (subErr) {
+          console.error('[stripe] creator_subscription activation failed:', subErr.message);
+        }
+      }
+    } else {
+      var tenantBilling = require('./tenantBilling');
+      try {
+        await tenantBilling.handleTenantCheckoutCompleted(session);
+      } catch (err) {
+        console.error('[stripe] tenant provisioning failed for session ' + session.id + ':', err.message);
+      }
+    }
+  }
+
+  if (event.type === 'customer.subscription.deleted') {
+    var deletedSub = event.data.object;
+    var deletedMeta = deletedSub.metadata || {};
+    if (deletedMeta.type === 'platform_plan' && deletedMeta.userId) {
+      try {
+        db.exec('CREATE TABLE IF NOT EXISTS platform_subscriptions (user_id TEXT PRIMARY KEY, tier TEXT NOT NULL, stripe_subscription_id TEXT, status TEXT NOT NULL DEFAULT \'active\', created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)');
+        db.prepare('UPDATE platform_subscriptions SET status = \'cancelled\', updated_at = ? WHERE stripe_subscription_id = ?')
+          .run(Math.floor(Date.now() / 1000), deletedSub.id);
+      } catch (e) { console.error('[stripe] platform_plan cancel failed:', e.message); }
     }
   }
 
