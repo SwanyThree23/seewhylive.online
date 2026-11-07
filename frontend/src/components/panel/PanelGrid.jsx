@@ -48,6 +48,8 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   // panelInvite / setPanelInvite are lifted to App.jsx so the invite fires on all tabs
   var [swapSourceId, setSwapSourceId] = useState(null); // userId selected for swap (host only)
   var [pkBattle, setPkBattle] = useState(null);
+  var [currentSpeaker, setCurrentSpeaker] = useState(null);
+  var [shareCopied, setShareCopied] = useState(false);
   var [localAudioStream, setLocalAudioStream] = useState(null);
   var prevSpotlightRef = useRef(null);
   var exitTimersRef = useRef({});
@@ -370,6 +372,15 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
           setSwapSourceId(null);
         }
       } : null,
+      onSpeakChange: function(speaking) {
+        if (speaking) {
+          setCurrentSpeaker({ userId: slot.user_id, name: slot.display_name || '' });
+        } else {
+          setCurrentSpeaker(function(prev) {
+            return (prev && prev.userId === slot.user_id) ? null : prev;
+          });
+        }
+      },
     };
   }
 
@@ -384,10 +395,38 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
     return (
       <div style={{ padding: '6px 8px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ color: GOLD, fontSize: 11, fontFamily: '"DM Sans", sans-serif', fontWeight: 600, letterSpacing: 0.5 }}>
+          <span style={{ color: GOLD, fontSize: 11, fontFamily: '"DM Sans", sans-serif', fontWeight: 600, letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 6 }}>
             Stage {slots.length > 0 && <span style={{ color: '#888' }}>· {slots.length}</span>}
+            {currentSpeaker && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: CREAM, fontWeight: 500, fontSize: 10, background: 'rgba(201,168,76,.12)', borderRadius: 10, padding: '1px 7px', border: '1px solid rgba(201,168,76,.22)', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 9, flexShrink: 0 }}>🎤</span>{currentSpeaker.name}
+              </span>
+            )}
           </span>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              onClick={function() {
+                var url = window.location.href;
+                if (navigator.share) {
+                  navigator.share({ title: 'Join me live on SeeWhy', url: url }).catch(function() {});
+                } else {
+                  navigator.clipboard.writeText(url).then(function() {
+                    setShareCopied(true);
+                    setTimeout(function() { setShareCopied(false); }, 2200);
+                  }).catch(function() { if (addToast) addToast('Copy the URL from your browser', 'info'); });
+                }
+              }}
+              title="Share room link"
+              style={{
+                background: 'transparent', color: shareCopied ? GOLD : '#888',
+                border: '1px solid ' + (shareCopied ? 'rgba(201,168,76,.4)' : '#333'),
+                borderRadius: 6, padding: '4px 8px', fontSize: 11,
+                fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
+                transition: 'color 0.2s, border-color 0.2s',
+              }}
+            >
+              {shareCopied ? '✓' : '🔗'}
+            </button>
             {isHost && (
               <AudioOnlyToggle
                 socket={socket}
