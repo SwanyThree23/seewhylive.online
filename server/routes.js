@@ -609,28 +609,89 @@ router.post('/payments/payout', requireAuth, payoutRateLimit, function(req, res)
   }
 });
 
-router.post('/payments/subscribe', requireAuth, subscribePayRateLimit, function(req, res) {
+// Creator subscription checkout — viewer subscribes to a creator's tier.
+// Active subscription is only granted after Stripe confirms via webhook (checkout.session.completed).
+router.post('/payments/subscribe', requireAuth, subscribePayRateLimit, async function(req, res) {
   try {
+    var stripe = require('./stripe');
     var subscriberId = req.user.id;
     var creatorId = String(req.body.creatorId || '');
     if (!ROUTES_UUID_RE.test(creatorId)) return res.status(400).json({ error: 'invalid creatorId' });
     var VALID_TIERS = ['fan', 'supporter', 'ride_or_die'];
     var tier = VALID_TIERS.includes(String(req.body.tier || '')) ? String(req.body.tier) : 'fan';
-    var amountCents = req.body.amountCents || 0;
-    var id = uuidv4();
+    var amountCents = Number(req.body.amountCents) || 0;
 
-    if (!Number.isFinite(amountCents) || amountCents < 1 || amountCents > 50000) {
-      return res.status(400).json({ success: false, error: 'amountCents must be between 1 and 50000' });
+    if (!Number.isFinite(amountCents) || amountCents < 100 || amountCents > 50000) {
+      return res.status(400).json({ error: 'amountCents must be between 100 and 50000' });
     }
 
-    // Do NOT call moderation.addSubscription() here. Active subscription status must
-    // only be granted after Stripe confirms payment (invoice.payment_succeeded webhook).
-    // Calling addSubscription() without a verified stripeSubscriptionId lets any
-    // authenticated user claim subscriber-only access for any creator without paying.
+    var origin = process.env.FRONTEND_ORIGIN || 'https://seewhylive.online';
+    var stripeClient = stripe.getStripe();
 
-    return res.json({ success: true, tier: tier, id: id });
+    var session = await stripeClient.checkout.sessions.create({
+      mode: 'subscription',
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          unit_amount: amountCents,
+          recurring: { interval: 'month' },
+          product_data: { name: tier.charAt(0).toUpperCase() + tier.slice(1) + ' Fan Subscription' },
+        },
+        quantity: 1,
+      }],
+      metadata: {
+        type: 'creator_subscription',
+        subscriberId: subscriberId,
+        creatorId: creatorId,
+        tier: tier,
+        amountCents: String(amountCents),
+      },
+      success_url: origin + '/?sub=success&tier=' + encodeURIComponent(tier),
+      cancel_url:  origin + '/?sub=cancel',
+    });
+
+    return res.json({ url: session.url });
   } catch (err) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Checkout session creation failed: ' + err.message });
+  }
+});
+
+// Platform plan upgrade checkout — creator upgrades their own account tier.
+var PLAN_PRICE_IDS = {
+  creator: process.env.STRIPE_PRICE_PLAN_CREATOR,
+  pro:     process.env.STRIPE_PRICE_PLAN_PRO,
+  studio:  process.env.STRIPE_PRICE_PLAN_STUDIO,
+};
+
+router.post('/payments/subscription-checkout', requireAuth, subscribePayRateLimit, async function(req, res) {
+  try {
+    var stripe = require('./stripe');
+    var userId = req.user.id;
+    var VALID_PLANS = ['creator', 'pro', 'studio'];
+    var plan = VALID_PLANS.includes(String(req.body.tier || '')) ? String(req.body.tier) : null;
+    if (!plan) return res.status(400).json({ error: 'tier must be creator, pro, or studio' });
+
+    var priceId = PLAN_PRICE_IDS[plan];
+    if (!priceId) return res.status(503).json({ error: 'Subscription plans not yet configured — contact support.' });
+
+    var origin = process.env.FRONTEND_ORIGIN || 'https://seewhylive.online';
+    var stripeClient = stripe.getStripe();
+
+    var session = await stripeClient.checkout.sessions.create({
+      mode: 'subscription',
+      line_items: [{ price: priceId, quantity: 1 }],
+      metadata: {
+        type: 'platform_plan',
+        userId: userId,
+        tier: plan,
+      },
+      success_url: origin + '/?plan=success&tier=' + encodeURIComponent(plan),
+      cancel_url:  origin + '/?plan=cancel',
+    });
+
+    return res.json({ url: session.url });
+  } catch (err) {
+    return res.status(500).json({ error: 'Checkout session creation failed: ' + err.message });
   }
 });
 
@@ -652,22 +713,43 @@ router.get('/users/me', requireAuth, function(req, res) {
   }
 });
 
-router.get('/users/:username', function(req, res) {
+var _DEFAULT_SUBSCRIBER_TIERS = [
+  { name: 'Fan',         tier: 'fan',         amountCents: 499,  perks: ['Subscriber-only streams', 'Fan badge in chat'] },
+  { name: 'Supporter',   tier: 'supporter',   amountCents: 999,  perks: ['All Fan perks', 'Supporter badge', 'Exclusive clips'] },
+  { name: 'Ride or Die', tier: 'ride_or_die', amountCents: 2499, perks: ['All Supporter perks', 'Ride or Die badge', 'DM access', 'Monthly shoutout'] },
+];
+
+router.get('/users/:username', async function(req, res) {
   try {
     var username = String(req.params.username || '').slice(0, 80);
     var _profileUserId = _usernameIndex[username];
-    var profile = (_profileUserId && _userProfiles[_profileUserId]) || null;
-    if (profile) {
-      return res.json(Object.assign({}, profile, { username: username }));
-    }
-    return res.json({
-      username: username,
-      displayName: username,
-      bio: 'SeeWhy LIVE creator',
-      followerCount: 0,
-      isLive: false,
-      tier: 'free'
-    });
+    var _storedProfile = (_profileUserId && _userProfiles[_profileUserId]) || null;
+
+    var recentStreams = [];
+    try {
+      var _streamsRes = await db.query(
+        'SELECT id, title, peak_viewers, ended_at FROM streams WHERE creator_username = $1 AND is_live = false ORDER BY created_at DESC LIMIT 5',
+        [username]
+      );
+      recentStreams = (_streamsRes.rows || []).map(function(r) {
+        return { id: r.id, title: r.title, viewerPeak: r.peak_viewers || 0, endedAt: r.ended_at };
+      });
+    } catch (dbErr) { /* Supabase unavailable — return empty */ }
+
+    var baseProfile = {
+      id:              _profileUserId || '',
+      username:        username,
+      displayName:     (_storedProfile && _storedProfile.displayName) || username,
+      bio:             (_storedProfile && _storedProfile.bio)         || 'SeeWhy LIVE creator',
+      avatarEmoji:     (_storedProfile && _storedProfile.avatarEmoji) || '🎙',
+      followerCount:   0,
+      isLive:          false,
+      tier:            'free',
+      recentStreams:   recentStreams,
+      subscriberTiers: _DEFAULT_SUBSCRIBER_TIERS,
+    };
+
+    return res.json(baseProfile);
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
   }
