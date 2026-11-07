@@ -32,30 +32,9 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
   const [hostPaywallEnabled, setHostPaywallEnabled] = useState(() => { try { return localStorage.getItem('paywall_enabled') === 'true'; } catch { return false; } });
   const [customPrice, setCustomPrice] = useState('');
 
-  // Countdown timer — only for non-host non-unlocked viewers
-  useEffect(() => {
-    if (isHost || isUnlocked) return;
-
-    const id = setInterval(() => {
-      setSecondsLeft(s => {
-        if (s <= 1) {
-          clearInterval(id);
-          setPreviewExpired(true);
-          toast.error('Free preview ended — unlock to keep watching', {
-            duration: 6000,
-            icon: '🔒',
-          });
-          return 0;
-        }
-        if (s === 30) {
-          toast.warning('30 seconds of free preview remaining', { duration: 4000 });
-        }
-        return s - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(id);
-  }, [isHost, isUnlocked]);
+  // Paywall/countdown disabled — all viewers have free access during launch
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!isHost && !isUnlocked) onUnlock?.(); }, []);
 
   // ── Host panel ───────────────────────────────────────────────────────────
   if (isHost) {
