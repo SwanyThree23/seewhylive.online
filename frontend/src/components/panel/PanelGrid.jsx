@@ -14,10 +14,12 @@ function injectPanelGridStyles() {
     '@keyframes pkScoreBump{0%{transform:scale(1.18)}100%{transform:scale(1)}}',
     '@keyframes speakRing{0%,100%{box-shadow:0 0 0 3px rgba(201,168,76,.55)}50%{box-shadow:0 0 0 5px rgba(201,168,76,.95),0 0 18px rgba(201,168,76,.4)}}',
     '@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.35}}',
+    '@keyframes bgShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}',
   ].join('');
   document.head.appendChild(el);
 }
 import PanelTile from './PanelTile';
+import BackgroundPicker, { PRESETS } from './BackgroundPicker';
 import PrivateRoomGate from './PrivateRoomGate';
 import PanelJoinModal from './PanelJoinModal';
 import JoinRequestQueue from './JoinRequestQueue';
@@ -55,6 +57,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   var [confirmLeave, setConfirmLeave] = useState(false);
   var confirmLeaveTimerRef = useRef(null);
   var [localAudioStream, setLocalAudioStream] = useState(null);
+  var [roomBackground, setRoomBackground] = useState('default');
   var prevSpotlightRef = useRef(null);
   var exitTimersRef = useRef({});
   var localStreamRef = useRef(null);
@@ -216,6 +219,11 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       }
       socket.on('panel:slots_swapped', onSlotsSwapped);
       unsubs.push(function() { socket.off('panel:slots_swapped', onSlotsSwapped); });
+
+      unsubs.push(panelService.onStageBackgroundChanged(socket, function(payload) {
+        if (payload.roomId !== roomId) return;
+        setRoomBackground(payload.presetId || 'default');
+      }));
 
 
       var onHandUpdate = function(payload) {
@@ -478,6 +486,16 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
               </button>
             )}
             {isHost && <PanelPrivacySettings roomId={roomId} addToast={addToast} />}
+            {isHost && (
+              <BackgroundPicker
+                currentBgId={roomBackground}
+                onSelect={function(preset) {
+                  panelService.setStageBackground(socket, roomId, preset.id).catch(function() {
+                    if (addToast) addToast('Failed to set background', 'error');
+                  });
+                }}
+              />
+            )}
             {!hasSlot && userId && (
               <button
                 onClick={function() { setShowJoinModal(true); }}
@@ -537,8 +555,11 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
     ? Math.min(3, slots.length)
     : (slots.length <= 1 ? 1 : slots.length <= 4 ? 2 : slots.length <= 9 ? 3 : slots.length <= 16 ? 4 : 5);
 
+  var bgPreset = PRESETS.find(function(p) { return p.id === roomBackground; }) || PRESETS[0];
+  var bgStyle = bgPreset.style || {};
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={Object.assign({ display: 'flex', flexDirection: 'column', height: '100%', transition: 'background 0.6s ease' }, bgStyle)}>
       {renderControls()}
 
       {/* PK Battle live score banner */}

@@ -89,6 +89,19 @@ function setRoomPrivacy(roomId, isPrivate, gatingMode) {
   }).then(function (r) { return r.json(); });
 }
 
+function setStageBackground(socket, roomId, presetId) {
+  return new Promise(function(resolve, reject) {
+    socket.emit('panel:set_stage_background', { roomId: roomId, presetId: presetId }, function(res) {
+      if (res && res.ok) resolve(); else reject(new Error((res && res.error) || 'set background failed'));
+    });
+  });
+}
+
+function onStageBackgroundChanged(socket, cb) {
+  socket.on('panel:stage_background_changed', cb);
+  return function() { socket.off('panel:stage_background_changed', cb); };
+}
+
 var panelService = {
   joinPanel: joinPanel,
   requestJoin: requestJoin,
@@ -107,7 +120,9 @@ var panelService = {
   fetchPanelState: fetchPanelState,
   fetchJoinRequests: fetchJoinRequests,
   setRoomPrivacy: setRoomPrivacy,
-  muteAll: muteAll
+  muteAll: muteAll,
+  setStageBackground: setStageBackground,
+  onStageBackgroundChanged: onStageBackgroundChanged,
 };
 
 export default panelService;
