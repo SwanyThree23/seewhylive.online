@@ -29,9 +29,14 @@ export default function UploadTab({ addToast, isLive }) {
   var [duration,      setDuration]      = useState(null);
   var [durationError, setDurationError] = useState('');
 
-  var [deviceFiles, setDeviceFiles] = useState([]);
-  var [previewUrl,  setPreviewUrl]  = useState('');
-  var [isDragging,  setIsDragging]  = useState(false);
+  var [deviceFiles,    setDeviceFiles]    = useState([]);
+  var [previewUrl,     setPreviewUrl]     = useState('');
+  var [isDragging,     setIsDragging]     = useState(false);
+  var [uploading,      setUploading]      = useState(false);
+  var [uploadProgress, setUploadProgress] = useState(0);
+  var [uploadedFiles,  setUploadedFiles]  = useState(function() {
+    try { return JSON.parse(localStorage.getItem('sw_uploaded_files') || '[]'); } catch(e) { return []; }
+  });
 
   var ytInputRef       = useRef(null);
   var deviceInputRef   = useRef(null);
@@ -101,6 +106,52 @@ export default function UploadTab({ addToast, isLive }) {
     e.preventDefault();
     setIsDragging(false);
     handleDeviceFiles(e.dataTransfer.files);
+  }
+
+  var uploadToplatform = function() {
+    if (deviceFiles.length === 0) { addToast && addToast('Select at least one file first', 'error'); return; }
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+    if (!tok) { addToast && addToast('Sign in to upload files', 'error'); return; }
+    setUploading(true);
+    setUploadProgress(0);
+    var file = deviceFiles[0];
+    var fd = new FormData();
+    fd.append('file', file);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/media/upload');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + tok);
+    xhr.upload.onprogress = function(e) {
+      if (e.lengthComputable) setUploadProgress(Math.floor(e.loaded / e.total * 100));
+    };
+    xhr.onload = function() {
+      setUploading(false);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        var data = null;
+        try { data = JSON.parse(xhr.responseText); } catch(e2) {}
+        if (data && data.url) {
+          var entry = { id: Date.now(), name: file.name, url: data.url, size: file.size, type: file.type, ts: Date.now() };
+          setUploadedFiles(function(prev) {
+            var next = [entry].concat(prev).slice(0, 20);
+            try { localStorage.setItem('sw_uploaded_files', JSON.stringify(next)); } catch(e2) {}
+            return next;
+          });
+          setDeviceFiles(function(prev) { return prev.slice(1); });
+          addToast && addToast('Uploaded ' + file.name, 'success');
+        } else {
+          addToast && addToast('Upload failed — please try again', 'error');
+        }
+      } else {
+        var errMsg = 'Upload failed';
+        try { var d = JSON.parse(xhr.responseText); errMsg = (d && d.error) || errMsg; } catch(e2) {}
+        addToast && addToast(errMsg, 'error');
+      }
+    };
+    xhr.onerror = function() {
+      setUploading(false);
+      addToast && addToast('Network error — upload failed', 'error');
+    };
+    xhr.send(fd);
   }
 
   var durationDisplay = '';
@@ -310,9 +361,20 @@ export default function UploadTab({ addToast, isLive }) {
                   );
                 })}
               </div>
-              <button onClick={function() { addToast && addToast('Files exported to device', 'success'); }}
-                style={{ width: '100%', marginTop: 8, padding: '9px', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
-                💾 EXPORT TO DEVICE
+              {uploading && (
+                <div style={{ marginTop: 6, background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '8px 12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>UPLOADING...</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>{uploadProgress}%</span>
+                  </div>
+                  <div style={{ height: 4, background: 'rgba(255,255,255,.08)', borderRadius: 2 }}>
+                    <div style={{ height: '100%', width: uploadProgress + '%', background: '#C9A84C', borderRadius: 2, transition: 'width .2s' }} />
+                  </div>
+                </div>
+              )}
+              <button onClick={uploadToplatform} disabled={uploading}
+                style={{ width: '100%', marginTop: 8, padding: '9px', background: uploading ? 'rgba(26,21,16,.4)' : 'linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.08))', border: '1px solid rgba(201,168,76,' + (uploading ? '.15' : '.4') + ')', borderRadius: 8, color: uploading ? '#5A4E3A' : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: uploading ? 'not-allowed' : 'pointer' }}>
+                {uploading ? '⏳ UPLOADING...' : '☁ UPLOAD TO PLATFORM'}
               </button>
             </div>
           )}
@@ -320,6 +382,33 @@ export default function UploadTab({ addToast, isLive }) {
           {deviceFiles.length === 0 && !previewUrl && (
             <div style={{ textAlign: 'center', padding: '20px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>
               No files selected · Tap the zone above to pick files from your device
+            </div>
+          )}
+
+          {uploadedFiles.length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 6, letterSpacing: 2 }}>UPLOADED TO PLATFORM</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {uploadedFiles.map(function(u) {
+                  return (
+                    <div key={u.id} style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ fontSize: 18, flexShrink: 0 }}>{u.type && u.type.startsWith('video/') ? '🎬' : '🖼'}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{fmtBytes(u.size)}</div>
+                      </div>
+                      <button
+                        onClick={function() { try { navigator.clipboard.writeText(u.url); } catch(e2) {} addToast && addToast('URL copied!', 'success'); }}
+                        style={{ background: 'transparent', border: '1px solid rgba(201,168,76,.3)', borderRadius: 5, padding: '3px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', flexShrink: 0 }}>
+                        COPY URL
+                      </button>
+                      <button
+                        onClick={function() { setUploadedFiles(function(prev) { var next = prev.filter(function(x) { return x.id !== u.id; }); try { localStorage.setItem('sw_uploaded_files', JSON.stringify(next)); } catch(e2) {} return next; }); }}
+                        style={{ background: 'transparent', border: 'none', color: '#8A7A62', fontSize: 12, cursor: 'pointer', flexShrink: 0, padding: '0 4px' }}>✕</button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </>

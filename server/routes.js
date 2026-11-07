@@ -6,6 +6,10 @@ var uuidv4 = require('uuid').v4;
 var Database = require('better-sqlite3');
 var jwt = require('jsonwebtoken');
 var crypto = require('crypto');
+var fs = require('fs');
+var os = require('os');
+var https = require('https');
+var multer = require('multer');
 var requireAuth = require('./middleware/auth');
 var db = require('./db');
 var { rateLimit } = require('express-rate-limit');
@@ -1487,6 +1491,82 @@ router.get('/fanout-status', requireAuth, function(req, res) {
     });
     res.json({ ok: true, active_streams: active, count: active.length });
   }
+});
+
+// ── Media upload ──────────────────────────────────────────────────────────────
+var MEDIA_ALLOWED_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/avi', 'video/x-matroska', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+var MEDIA_ALLOWED_EXTS  = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.jpg', '.jpeg', '.png', '.gif', '.webp'];
+
+var mediaUploadRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Upload limit reached — maximum 20 uploads per hour.' },
+});
+
+var mediaUpload = multer({
+  storage: multer.diskStorage({ destination: os.tmpdir() }),
+  limits: { fileSize: 500 * 1024 * 1024 },
+  fileFilter: function(req, file, cb) {
+    var ext = require('path').extname(file.originalname).toLowerCase();
+    if (MEDIA_ALLOWED_TYPES.indexOf(file.mimetype) !== -1 || MEDIA_ALLOWED_EXTS.indexOf(ext) !== -1) {
+      return cb(null, true);
+    }
+    return cb(new Error('Unsupported file type'));
+  },
+});
+
+function sbStorageUpload(bucketPath, filePath, fileSize, contentType, cb) {
+  var key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  var supaUrl = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+  if (!key || !supaUrl) return cb(new Error('storage not configured'));
+  var urlParsed;
+  try { urlParsed = require('url').parse(supaUrl); } catch(e) { return cb(e); }
+  var opts = {
+    hostname: urlParsed.hostname,
+    path:     '/storage/v1/object/' + bucketPath,
+    method:   'POST',
+    headers: {
+      'Authorization': 'Bearer ' + key,
+      'Content-Type': contentType,
+      'Content-Length': fileSize,
+      'x-upsert': 'true',
+    },
+  };
+  var req = https.request(opts, function(res) {
+    var chunks = [];
+    res.on('data', function(c) { chunks.push(c); });
+    res.on('end', function() {
+      var raw = Buffer.concat(chunks).toString();
+      var parsed = null;
+      try { parsed = JSON.parse(raw); } catch(e) { parsed = raw; }
+      cb(null, res.statusCode, parsed);
+    });
+  });
+  req.on('error', function(e) { cb(e); });
+  fs.createReadStream(filePath).pipe(req);
+}
+
+router.post('/media/upload', requireAuth, mediaUploadRateLimit, mediaUpload.single('file'), function(req, res) {
+  if (!req.file) return res.status(400).json({ error: 'file is required' });
+  var userId   = req.user.id;
+  var safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 128);
+  var bucket   = 'media-uploads';
+  var storagePath = userId + '/' + Date.now() + '-' + safeName;
+  var contentType = req.file.mimetype || 'application/octet-stream';
+  var supaUrl = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+
+  sbStorageUpload(bucket + '/' + storagePath, req.file.path, req.file.size, contentType, function(err, status, data) {
+    fs.unlink(req.file.path, function() {});
+    if (err || status >= 400) {
+      return res.status(500).json({ error: 'Upload failed — storage unavailable' });
+    }
+    var publicUrl = supaUrl + '/storage/v1/object/public/' + bucket + '/' + storagePath;
+    return res.json({ ok: true, url: publicUrl, name: req.file.originalname, size: req.file.size, type: contentType });
+  });
 });
 
 module.exports = router;

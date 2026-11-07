@@ -125,6 +125,10 @@ export default function DiscoverTab(props) {
   var communityPosting     = communityPostingState[0];
   var setCommunityPosting  = communityPostingState[1];
 
+  var trendingCreatorsState = useState(TRENDING_CHANNELS);
+  var trendingCreators      = trendingCreatorsState[0];
+  var setTrendingCreators   = trendingCreatorsState[1];
+
   var unreadCount = notifs.filter(function(n) { return !n.read; }).length;
 
   var debounceRef = useRef(null);
@@ -256,6 +260,29 @@ export default function DiscoverTab(props) {
       })
       .catch(function() { setCommunityLoading(false); });
   }, [contentTab]);
+
+  // ── Fetch trending creators from API ──
+  useEffect(function() {
+    fetch('/api/users/creators')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d || !Array.isArray(d.creators) || d.creators.length === 0) return;
+        var CHANNEL_COLORS = ['#C9A84C', '#FF6B9D', '#7B5DA6', '#4A8A7A', '#D4854A', '#C0392B'];
+        var CHANNEL_EMOJIS = ['🎙', '📡', '🎲', '🎬', '🎵', '🏆', '📖', '💡'];
+        var mapped = d.creators.slice(0, 10).map(function(c, i) {
+          return {
+            id:     c.id,
+            name:   c.displayName || c.id.slice(0, 12),
+            handle: '@' + (c.displayName || c.id).toLowerCase().replace(/\s+/g, '').slice(0, 15),
+            emoji:  CHANNEL_EMOJIS[i % CHANNEL_EMOJIS.length],
+            color:  CHANNEL_COLORS[i % CHANNEL_COLORS.length],
+            live:   false,
+          };
+        });
+        setTrendingCreators(mapped);
+      })
+      .catch(function() {});
+  }, []);
 
   // ── Socket: listen for notification events ──
   useEffect(function() {
@@ -844,7 +871,7 @@ export default function DiscoverTab(props) {
             WebkitOverflowScrolling: 'touch',
           }
         },
-        TRENDING_CHANNELS.map(function(channel) {
+        trendingCreators.map(function(channel) {
           return React.createElement(
             'div',
             {
