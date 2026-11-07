@@ -59,9 +59,32 @@ export default function VODLibraryTab({ addToast, isLive }) {
   var [shareClip,     setShareClip]     = useState(null);  // clip meta for branded share modal
   var [confirmDelete, setConfirmDelete] = useState(null);  // clip id
   var [shareCopied,   setShareCopied]   = useState(false);
+  var [channels,      setChannels]      = useState(CHANNELS);
 
   useEffect(function() {
     setClips(listClips());
+  }, [tab]);
+
+  useEffect(function() {
+    if (tab !== 'channels') return;
+    fetch('/api/users/creators')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d || !Array.isArray(d.creators) || d.creators.length === 0) return;
+        var CHANNEL_COLORS_VOD = [GOLD, TEAL, '#C0392B', '#FF6B9D', '#7B5DA6'];
+        var mapped = d.creators.slice(0, 8).map(function(c, i) {
+          return {
+            id:     c.id,
+            name:   c.displayName || c.id.slice(0, 12),
+            handle: '@' + (c.displayName || c.id).toLowerCase().replace(/\s+/g, '').slice(0, 15),
+            thumb:  '🎙',
+            color:  CHANNEL_COLORS_VOD[i % CHANNEL_COLORS_VOD.length],
+            status: 'online',
+          };
+        });
+        setChannels(mapped);
+      })
+      .catch(function() {});
   }, [tab]);
 
   var closePlayer = function() {
@@ -222,7 +245,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
       {tab === 'channels' && (
         <div style={{ padding: 16 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {CHANNELS.map(function(ch) {
+            {channels.map(function(ch) {
               var isLiveCh = ch.status === 'live';
               return (
                 <div key={ch.id} style={{ background: CARD, border: '1px solid ' + (isLiveCh ? 'rgba(255,26,60,.3)' : BORDER), borderRadius: 14, padding: '16px 12px', textAlign: 'center' }}>
