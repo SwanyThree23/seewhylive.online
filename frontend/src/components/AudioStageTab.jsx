@@ -69,6 +69,7 @@ export default function AudioStageTab(props) {
   var [speakerVols,  setSpeakerVols]  = useState({});
   var [stageElapsed, setStageElapsed] = useState(0);
   var [stageStats,   setStageStats]   = useState({ peakSpeakers: 0, totalHands: 0 });
+  var [showQueue,    setShowQueue]    = useState(false);
 
   var micStreamRef  = useRef(null);
   var audioCtxRef   = useRef(null);
@@ -621,7 +622,7 @@ export default function AudioStageTab(props) {
           };
           var items = [
             { icon: '🔗', label: 'Share', active: false, action: shareAction },
-            { icon: '📋', label: 'Queue', active: false, action: function() { if (addToast) addToast('Queue — coming soon', 'info'); } },
+            { icon: '📋', label: 'Queue', active: showQueue, action: function() { setShowQueue(function(v) { return !v; }); } },
             { icon: '🎵', label: 'Music', active: false, action: function() { if (addToast) addToast('Music — coming soon', 'info'); } },
             isHost
               ? { icon: stageLocked ? '🔒' : '🔓', label: stageLocked ? 'Unlock' : 'Lock', active: stageLocked, action: lockAction }
@@ -644,6 +645,69 @@ export default function AudioStageTab(props) {
           });
         })()}
       </div>
+
+      {/* ── SPEAKER QUEUE PANEL ── */}
+      {showQueue && (function() {
+        var queued = listeners.filter(function(l) { return l.handRaised; });
+        return (
+          <div style={{
+            position: 'absolute', bottom: 62, left: 0, right: 0,
+            background: CARD, borderTop: '2px solid ' + GOLD,
+            maxHeight: 220, overflowY: 'auto',
+            zIndex: 49, padding: '10px 12px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 2 }}>
+                SPEAKER QUEUE ({queued.length})
+              </span>
+              <button onClick={function() { setShowQueue(false); }}
+                style={{ background: 'transparent', border: 'none', color: MUTED, fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>
+                ✕
+              </button>
+            </div>
+            {queued.length === 0 && (
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center', padding: '8px 0' }}>
+                No raised hands
+              </div>
+            )}
+            {queued.map(function(lst, idx) {
+              return (
+                <div key={lst.userId || idx} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '7px 0',
+                  borderBottom: idx < queued.length - 1 ? '1px solid rgba(255,255,255,.04)' : 'none',
+                }}>
+                  <div style={{
+                    width: 30, height: 30, borderRadius: '50%', background: avatarColor(lst.username),
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: TEXT, flexShrink: 0,
+                  }}>{getInitials(lst.username)}</div>
+                  <div style={{ flex: 1, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {lst.username || 'Guest'}
+                  </div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: AMBER }}>✋ WAITING</div>
+                  {isHost && (
+                    <button
+                      onClick={function() {
+                        promoteUser(lst.stageId);
+                        setShowQueue(false);
+                      }}
+                      style={{
+                        background: 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.4)',
+                        borderRadius: 6, padding: '4px 10px',
+                        color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700,
+                        cursor: 'pointer', flexShrink: 0, letterSpacing: 0.5,
+                      }}
+                    >
+                      INVITE
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* ── BOTTOM ACTION BAR ── */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: SURF, borderTop: '1px solid ' + BORDER, padding: '10px 12px', display: 'flex', gap: 8, alignItems: 'center', zIndex: 50 }}>

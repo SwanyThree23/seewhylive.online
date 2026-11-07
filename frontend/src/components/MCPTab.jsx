@@ -93,7 +93,17 @@ export default function MCPTab({ addToast, isLive }) {
   }
 
   var pingAll = function() {
-    addToast('MCP ping requires a server-side health endpoint — not yet available', 'error');
+    var t0 = Date.now();
+    fetch('/api/health')
+      .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, d: d, ms: Date.now() - t0 }; }); })
+      .then(function(result) {
+        if (result.ok) {
+          addToast('MCP server healthy · ' + result.ms + 'ms · db=' + (result.d.db || 'ok') + ' pg=' + (result.d.pg || 'ok'), 'success');
+        } else {
+          addToast('MCP server returned error', 'error');
+        }
+      })
+      .catch(function() { addToast('MCP server unreachable', 'error'); });
   }
 
   var totalCalls = 0;
