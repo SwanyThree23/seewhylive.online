@@ -495,11 +495,48 @@ router.post('/moderation/shadow-ban', requireAuth, moderationRateLimit, function
 
 router.get('/creator/onboard/status', requireAuth, function(req, res) {
   try {
+    var creatorId = req.user.id;
+    var availableCents = 0;
+    try {
+      var sdb = getRoutesDb();
+      var balRow = sdb.prepare(
+        'SELECT ' +
+        '  COALESCE(SUM(CASE WHEN payment_type != ? THEN creator_cents ELSE 0 END), 0) - ' +
+        '  COALESCE(SUM(CASE WHEN payment_type = ? THEN amount_cents ELSE 0 END), 0) AS avail ' +
+        'FROM creator_earnings WHERE creator_id = ?'
+      ).get('payout', 'payout', creatorId);
+      if (balRow && typeof balRow.avail === 'number') {
+        availableCents = Math.max(0, Math.floor(balRow.avail));
+      }
+    } catch (_e) {}
     return res.json({
       connected: !!(process.env.STRIPE_SECRET_KEY),
       accountId: null,
-      availableCents: 0
+      availableCents: availableCents
     });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/creator/streams/recent', requireAuth, function(req, res) {
+  try {
+    var creatorId = req.user.id;
+    var limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
+    var rows = getRoutesDb().prepare(
+      'SELECT stream_id,' +
+      '  MIN(recorded_at) AS started_at,' +
+      '  MAX(recorded_at) AS ended_at,' +
+      '  MAX(viewer_count) AS peak_viewers,' +
+      '  SUM(earnings_cents) AS total_cents,' +
+      '  COUNT(*) AS event_count' +
+      ' FROM stream_analytics' +
+      ' WHERE host_id = ?' +
+      ' GROUP BY stream_id' +
+      ' ORDER BY started_at DESC' +
+      ' LIMIT ?'
+    ).all(creatorId, limit);
+    return res.json({ streams: rows || [] });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
   }
