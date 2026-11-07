@@ -1,7 +1,7 @@
 // frontend/src/services/rewardsService.js
 // Base44-ruleset compliant: function expressions only, var only, no optional chaining/??.
 
-var LEADERBOARD_BASE = '/api/leaderboard';
+var REWARDS_BASE = '/api/rewards';
 var CHALLENGES_BASE = '/api/challenges';
 
 function _authHeaders() {
@@ -11,24 +11,24 @@ function _authHeaders() {
 
 var rewardsService = {
   getGlobalLeaderboard: function (limit) {
-    var qs = limit ? ('?limit=' + limit) : '';
-    return fetch(LEADERBOARD_BASE + '/global' + qs)
+    var qs = limit ? ('?period=alltime&limit=' + limit) : '?period=alltime';
+    return fetch(REWARDS_BASE + '/leaderboard' + qs, { headers: _authHeaders() })
       .then(function (r) { return r.json(); });
   },
 
   getWeeklyLeaderboard: function (limit) {
-    var qs = limit ? ('?limit=' + limit) : '';
-    return fetch(LEADERBOARD_BASE + '/weekly' + qs)
+    var qs = limit ? ('?period=weekly&limit=' + limit) : '?period=weekly';
+    return fetch(REWARDS_BASE + '/leaderboard' + qs, { headers: _authHeaders() })
       .then(function (r) { return r.json(); });
   },
 
   getMyStanding: function () {
-    return fetch(LEADERBOARD_BASE + '/me', { headers: _authHeaders() })
+    return fetch(REWARDS_BASE + '/me', { headers: _authHeaders() })
       .then(function (r) { return r.json(); });
   },
 
   getRewardTiers: function () {
-    return fetch(LEADERBOARD_BASE + '/tiers')
+    return fetch(REWARDS_BASE + '/tiers', { headers: _authHeaders() })
       .then(function (r) { return r.json(); });
   },
 
