@@ -1651,6 +1651,43 @@ router.post('/media/upload', requireAuth, mediaUploadRateLimit, mediaUpload.sing
   });
 });
 
+// ─── DISCOVER routes ──────────────────────────────────────────────────────────
+
+var discoverRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  keyGenerator: function(req) { return req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'too many requests' },
+});
+
+router.get('/discover/live', discoverRateLimit, async function(req, res) {
+  try {
+    var limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 50);
+    var result = await db.query(
+      'SELECT id, creator_id, creator_username, title, viewer_count, peak_viewers, thumbnail_url, started_at ' +
+      'FROM streams WHERE is_live = true ORDER BY viewer_count DESC NULLS LAST LIMIT $1',
+      [limit]
+    );
+    var streams = (result.rows || []).map(function(r) {
+      return {
+        id:              r.id,
+        creatorUsername: r.creator_username,
+        title:           r.title,
+        viewerCount:     r.viewer_count || 0,
+        peakViewers:     r.peak_viewers || 0,
+        thumbnailUrl:    r.thumbnail_url || null,
+        startedAt:       r.started_at || null,
+      };
+    });
+    return res.json({ streams: streams });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // ─── MERCH routes ─────────────────────────────────────────────────────────────
 
 var _getMerchDb = (function() {

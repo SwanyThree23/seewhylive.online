@@ -97,6 +97,31 @@ export default function PortalTab({ addToast, isLive, socket, roomId }) {
   var [layout, setLayout] = useState('grid');
   var [channels, setChannels] = useState(PORTAL_CHANNELS.map(function(ch) { return Object.assign({}, ch); }));
 
+  useEffect(function() {
+    var mounted = true;
+    var doFetch = function() {
+      fetch('/api/discover/live')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (!mounted || !d || !Array.isArray(d.streams)) return;
+          setChannels(function(prev) {
+            return prev.map(function(ch) {
+              var match = d.streams.find(function(s) {
+                return s.creatorUsername && ch.host && ch.host.toLowerCase().indexOf(s.creatorUsername.toLowerCase()) !== -1;
+              });
+              if (match) {
+                return Object.assign({}, ch, { live: true, viewers: match.viewerCount || 0, latestEp: match.title || ch.latestEp });
+              }
+              return ch;
+            });
+          });
+        })
+        .catch(function() {});
+    };
+    doFetch();
+    var id = setInterval(doFetch, 30000);
+    return function() { mounted = false; clearInterval(id); };
+  }, []);
 
   var openChannel = function(ch) {
     setActive(ch);
