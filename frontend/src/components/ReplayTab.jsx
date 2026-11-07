@@ -45,6 +45,15 @@ var REPLAY_CLIPS = [
 
 var TOTAL_DURATION = 1842;
 
+function _replayAuthToken() {
+  try { return localStorage.getItem('sw_token') || ''; } catch(e) { return ''; }
+}
+
+function fmtDate(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
 export default function ReplayTab({ addToast, isLive }) {
   var [clips, setClips]           = useState(REPLAY_CLIPS.map(function(c) { return Object.assign({}, c); }));
   var [playHead, setPlayHead]     = useState(0);
@@ -57,10 +66,25 @@ export default function ReplayTab({ addToast, isLive }) {
   var [liveClips, setLiveClips]   = useState([]);
   var [copiedId, setCopiedId]     = useState(null);
   var [searchQuery, setSearchQuery] = useState('');
+  var [pastStreams, setPastStreams] = useState([]);
+  var [activeStream, setActiveStream] = useState(null);
   var playRef                     = useRef(null);
   var recRef                      = useRef(null);
   var clipTimerRef                = useRef(null);
   var recDurRef                   = useRef(0);
+
+  useEffect(function() {
+    var tok = _replayAuthToken();
+    if (!tok) return;
+    fetch('/api/creator/streams/recent?limit=8', { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (d && Array.isArray(d.streams) && d.streams.length > 0) {
+          setPastStreams(d.streams);
+        }
+      })
+      .catch(function() {});
+  }, []);
 
   useEffect(function() {
     if (!playing) {
@@ -338,6 +362,43 @@ export default function ReplayTab({ addToast, isLive }) {
 
       {/* SCROLLABLE CLIP LIST */}
       <div style={{ flex: 1, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+        {/* Past streams selector */}
+        {pastStreams.length > 0 && (
+          <div style={{ marginBottom: 4 }}>
+            <div style={{ fontFamily: fM, fontSize: 8, color: TEXT_M, letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>Past Streams</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {pastStreams.map(function(s) {
+                var isActive = activeStream === s.stream_id;
+                return (
+                  <div
+                    key={s.stream_id}
+                    onClick={function() { setActiveStream(isActive ? null : s.stream_id); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      background: isActive ? 'rgba(201,168,76,.12)' : FAINT,
+                      border: '1px solid ' + (isActive ? 'rgba(201,168,76,.4)' : BORDER),
+                      borderRadius: 7, padding: '7px 10px', cursor: 'pointer',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 11, color: isActive ? GOLD : TEXT }}>
+                        {fmtDate(s.started_at)}
+                      </div>
+                      <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, marginTop: 1 }}>
+                        {s.peak_viewers || 0} peak · {s.event_count || 0} events
+                      </div>
+                    </div>
+                    <span style={{ fontFamily: fM, fontSize: 8, color: isActive ? GOLD : MUTED, letterSpacing: 1 }}>
+                      {isActive ? 'ACTIVE' : '▶'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ height: 1, background: BORDER, margin: '10px 0' }} />
+          </div>
+        )}
 
         {/* Search filter */}
         <div style={{ marginBottom: 4 }}>
