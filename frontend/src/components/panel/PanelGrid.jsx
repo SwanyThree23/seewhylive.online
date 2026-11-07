@@ -394,6 +394,13 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
       onMuteToggle: (!isLocal && isHost)
         ? function(isMuted) { panelService.mutePanelist(socket, roomId, slot.user_id, isMuted); }
         : null,
+      onPromote: (!isLocal && isHost)
+        ? function() {
+            var currentRole = guest ? (guest.role || 'guest') : 'guest';
+            var newRole = currentRole === 'cohost' ? 'guest' : 'cohost';
+            socket.emit('promote-guest', { guestId: slot.user_id, role: newRole });
+          }
+        : null,
       role: guest ? (guest.role || null) : null,
       isScreenSharing: !!(screenSharingIds[slot.user_id]),
       remoteCamOff: !!(guest && guest.remoteCamOff),

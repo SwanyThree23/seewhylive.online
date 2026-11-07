@@ -12,7 +12,7 @@ export default function PanelTile({
   isAudioOnlyRoom, isHost, micLevel, isSpeaking,
   rtcManager, producerId, audioProducerId, isLocal,
   isRaisedHand, onRaiseHand,
-  onKick, onMuteToggle,
+  onKick, onMuteToggle, onPromote,
   role, isScreenSharing, remoteCamOff,
   isSpotlighted, onSpotlight,
   onExpand,
@@ -631,6 +631,21 @@ export default function PanelTile({
             title={isSwapSource ? 'Cancel swap' : 'Swap slot position'}
           >
             ⇄
+          </button>
+        )}
+        {onPromote && (
+          <button
+            onClick={onPromote}
+            style={{
+              background: role === 'cohost' ? 'rgba(201,168,76,.8)' : 'rgba(0,0,0,0.75)',
+              border: 'none', borderRadius: 4,
+              padding: '3px 6px', fontSize: 10,
+              color: role === 'cohost' ? '#0E0C09' : GOLD, cursor: 'pointer',
+              fontFamily: '"DM Sans", sans-serif', fontWeight: 700,
+            }}
+            title={role === 'cohost' ? 'Demote to guest' : 'Promote to co-host'}
+          >
+            {role === 'cohost' ? '★' : '☆'}
           </button>
         )}
         <button
