@@ -69,6 +69,7 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
   var [roomBackground, setRoomBackground] = useState('default');
   var [brbBanner, setBrbBanner] = useState(null); // { msg } or null
   var [brbActive, setBrbActive] = useState(false); // host BRB toggle state (local tracking)
+  var [showInviteMenu, setShowInviteMenu] = useState(false);
   var prevSpotlightRef = useRef(null);
   var exitTimersRef = useRef({});
   var localStreamRef = useRef(null);
@@ -553,6 +554,70 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
               >
                 {brbActive ? '▶ Back' : '⏸ BRB'}
               </button>
+            )}
+            {isHost && (
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={function() { setShowInviteMenu(function(v) { return !v; }); }}
+                  title="Invite viewer to panel"
+                  style={{
+                    background: showInviteMenu ? 'rgba(201,168,76,.2)' : 'transparent',
+                    color: showInviteMenu ? GOLD : '#888',
+                    border: '1px solid ' + (showInviteMenu ? 'rgba(201,168,76,.4)' : '#333'),
+                    borderRadius: 6, padding: '4px 8px', fontSize: 11,
+                    fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
+                  }}
+                >
+                  👤+
+                </button>
+                {showInviteMenu && (function() {
+                  var panelUserIds = slots.map(function(s) { return s.user_id; });
+                  var uninvited = (guests || []).filter(function(g) {
+                    var gid = g.guestId || g.userId;
+                    return gid && gid !== userId && panelUserIds.indexOf(gid) === -1;
+                  });
+                  return (
+                    <div style={{
+                      position: 'absolute', top: 32, right: 0, zIndex: 200,
+                      background: '#1A1510', border: '1px solid rgba(201,168,76,.25)',
+                      borderRadius: 8, padding: '8px 0', minWidth: 180, maxHeight: 220,
+                      overflowY: 'auto', boxShadow: '0 4px 16px rgba(0,0,0,.6)',
+                    }}>
+                      <div style={{ fontFamily: '"DM Mono",monospace', fontSize: 8, color: '#8A7A62', letterSpacing: 2, padding: '0 10px 6px' }}>INVITE TO PANEL</div>
+                      {uninvited.length === 0 && (
+                        <div style={{ fontFamily: '"DM Sans",sans-serif', fontSize: 10, color: '#666', textAlign: 'center', padding: '8px 12px' }}>No viewers to invite</div>
+                      )}
+                      {uninvited.map(function(g) {
+                        var gid = g.guestId || g.userId;
+                        return (
+                          <div key={gid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 10px', cursor: 'default' }}>
+                            <span style={{ flex: 1, fontFamily: '"DM Sans",sans-serif', fontSize: 11, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {g.username || gid.slice(0, 8)}
+                            </span>
+                            <button
+                              onClick={function() {
+                                socket.emit('panel:invite', { roomId: roomId, targetUserId: gid }, function(res) {
+                                  if (addToast) {
+                                    if (res && res.ok) addToast('Invite sent to ' + (g.username || 'viewer'), 'success');
+                                    else addToast((res && res.error) || 'Invite failed', 'error');
+                                  }
+                                });
+                                setShowInviteMenu(false);
+                              }}
+                              style={{
+                                background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.35)',
+                                borderRadius: 4, padding: '3px 8px', color: GOLD,
+                                fontFamily: '"DM Mono",monospace', fontSize: 8, fontWeight: 700,
+                                cursor: 'pointer', flexShrink: 0,
+                              }}
+                            >INVITE</button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
             )}
             {!hasSlot && userId && (
               <button
