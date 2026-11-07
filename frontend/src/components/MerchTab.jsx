@@ -38,7 +38,7 @@ var MERCH_ITEMS = [
 ];
 
 export default function MerchTab({ addToast, isLive, socket, roomId, username }) {
-  var [items, setItems] = useState([]);
+  var [items, setItems] = useState(MERCH_ITEMS);
   var [dropped, setDropped] = useState(null);
   var [cart, setCart] = useState([]);
   var [section, setSection] = useState('shop');
@@ -50,6 +50,18 @@ export default function MerchTab({ addToast, isLive, socket, roomId, username })
   useEffect(function() {
     return function() { clearInterval(cdRef.current); };
   }, []);
+
+  useEffect(function() {
+    if (!username) return;
+    fetch('/api/merch/items?creator=' + encodeURIComponent(username))
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && Array.isArray(d.items) && d.items.length > 0) {
+          setItems(d.items);
+        }
+      })
+      .catch(function() {});
+  }, [username]);
 
   var cartTotal = cart.reduce(function(s, ci) { return s + ci.price * ci.qty; }, 0);
   var cartCreator = Math.floor(cartTotal * 90) / 100;
