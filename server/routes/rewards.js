@@ -62,6 +62,17 @@ router.get('/me', requireAuth, async function(req, res) {
   }
 });
 
+// Alias used by MonetizeTab
+router.get('/my-tier', requireAuth, async function(req, res) {
+  try {
+    var data = await rewardsService.getUserPoints(req.user.id, req.tenantId);
+    res.json(data);
+  } catch (err) {
+    console.error('[ROUTE ERROR]', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/me/:userId', requireAuth, requireOwnerOrSelf('userId'), async function(req, res) {
   if (!REWARDS_UUID_RE.test(req.params.userId)) return res.status(400).json({ error: 'invalid userId' });
   try {
