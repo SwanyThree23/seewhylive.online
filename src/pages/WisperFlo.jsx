@@ -15,7 +15,6 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 
 const GUARDIAN_FLAG_THRESHOLD = 0.50;
-const CREATOR_SPLIT = 0.90;
 
 const LANG_FLAGS = {
   en: '🇺🇸', es: '🇪🇸', fr: '🇫🇷', pt: '🇧🇷', ja: '🇯🇵', ko: '🇰🇷', zh: '🇨🇳',

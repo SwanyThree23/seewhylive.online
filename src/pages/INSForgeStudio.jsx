@@ -13,8 +13,6 @@ import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyt
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const CREATOR_SPLIT = 0.90;
-
 const CONTENT_TYPES = [
   { id: 'social_caption', label: 'Social Caption', emoji: '📱' },
   { id: 'stream_title', label: 'Stream Title', emoji: '📺' },
