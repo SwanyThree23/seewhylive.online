@@ -191,6 +191,7 @@ export default function MultiPlatform() {
 
   function handleAddWebhook() {
     if (!newWHUrl.trim()) return;
+    if (!newWHUrl.trim().startsWith('https://')) { showToast('Webhook URL must start with https://'); return; }
     const wh = { id: Date.now().toString(), url: newWHUrl.trim(), events: newWHEvents, status: 'active' };
     saveWebhooks([...webhooks, wh]);
     setNewWHUrl(''); setNewWHEvents([]); setAddingWebhook(false);
