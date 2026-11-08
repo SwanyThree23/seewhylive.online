@@ -166,7 +166,7 @@ export default function InviteUsersPage() {
           )}
         </div>
 
-        {/* Share beta link */}
+        {/* Share invite link */}
         <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
           <div className="flex items-center gap-2 mb-1">
             <Copy className="w-4 h-4" style={{ color: GOLD }} />
