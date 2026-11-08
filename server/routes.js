@@ -292,11 +292,24 @@ router.post('/aura/trigger', requireAuth, auraTriggerRateLimit, async function(r
 
 // ─── SEARCH routes ────────────────────────────────────────────────────────────
 
-router.get('/search', function(req, res) {
+router.get('/search', async function(req, res) {
   try {
-    var q = String(req.query.q || '').slice(0, 200);
+    var q = String(req.query.q || '').trim().slice(0, 200);
     var type = req.query.type || 'all';
     var limit = Math.min(parseInt(req.query.limit || '20', 10) || 20, 100);
+
+    if (type === 'creators') {
+      if (!db.isPgUp()) return res.json({ results: [] });
+      var rows = await db.pool.query(
+        "SELECT id, display_name, account_type FROM users WHERE display_name ILIKE $1 AND deleted_at IS NULL LIMIT 20",
+        ['%' + q + '%']
+      );
+      var results = rows.rows.map(function(u) {
+        return { id: u.id, displayName: u.display_name || u.id.slice(0, 10), accountType: u.account_type || 'standard' };
+      });
+      return res.json({ results: results });
+    }
+
     if (search) {
       var data = search.search(q, type, limit);
       return res.json({ results: data, total: data.length });
@@ -1837,48 +1850,6 @@ router.patch('/merch/items/:itemId/stock', requireAuth, merchRateLimit, function
     return res.json({ id: itemId, stock: newStock, sold: newSold });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-var searchRateLimit = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
-  keyGenerator: function(req) { return req.ip; },
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: { xForwardedForHeader: false },
-  message: { error: 'Too many search requests' },
-});
-
-router.get('/search', searchRateLimit, async function(req, res) {
-  var q    = String(req.query.q || '').trim().slice(0, 100);
-  var type = String(req.query.type || 'streams');
-  if (!q) return res.json({ results: [] });
-
-  try {
-    if (type === 'creators') {
-      if (!db.isPgUp()) return res.json({ results: [] });
-      var rows = await db.pool.query(
-        "SELECT id, display_name, account_type FROM users WHERE display_name ILIKE $1 AND deleted_at IS NULL LIMIT 20",
-        ['%' + q + '%']
-      );
-      var results = rows.rows.map(function(u) {
-        return { id: u.id, displayName: u.display_name || u.id.slice(0, 10), accountType: u.account_type || 'standard' };
-      });
-      return res.json({ results: results });
-    }
-    // type === 'streams': Postgres streams table (title search, live only)
-    if (!db.isPgUp()) return res.json({ results: [] });
-    var srows = await db.pool.query(
-      "SELECT id, title, creator_id FROM streams WHERE title ILIKE $1 AND status = 'live' LIMIT 20",
-      ['%' + q + '%']
-    );
-    var sresults = srows.rows.map(function(s) {
-      return { id: s.id, title: s.title, hostName: s.creator_id ? s.creator_id.slice(0, 10) : 'Host', isLive: true, viewerCount: 0 };
-    });
-    return res.json({ results: sresults });
-  } catch (_err) {
-    return res.json({ results: [] });
   }
 });
 
