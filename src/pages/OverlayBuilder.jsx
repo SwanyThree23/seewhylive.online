@@ -267,7 +267,8 @@ export default function OverlayBuilderPage() {
           )}
           <input value={layoutName} onChange={e => setLayoutName(e.target.value)}
             className="px-2 py-1.5 rounded-lg text-[10px] outline-none w-32"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }} />
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}
+            maxLength={80} />
           <button onClick={() => saveMut.mutate()} disabled={saveMut.isPending}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
             style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>

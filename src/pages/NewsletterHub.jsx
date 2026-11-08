@@ -215,15 +215,15 @@ export default function NewsletterHubPage() {
               </div>
             </div>
             <div style={{ fontFamily:'Barlow Condensed', fontSize:11, color:C.gray, letterSpacing:1, marginBottom:3 }}>SUBJECT</div>
-            <input style={inp} value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="Your newsletter subject…" />
+            <input style={inp} value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="Your newsletter subject…" maxLength={150} />
             <div style={{ fontFamily:'Barlow Condensed', fontSize:11, color:C.gray, letterSpacing:1, marginBottom:3 }}>PREVIEW TEXT</div>
-            <input style={inp} value={form.preview_text} onChange={e=>setForm(f=>({...f,preview_text:e.target.value}))} placeholder="Short preview shown in inbox…" />
+            <input style={inp} value={form.preview_text} onChange={e=>setForm(f=>({...f,preview_text:e.target.value}))} placeholder="Short preview shown in inbox…" maxLength={200} />
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
               <span style={{ fontFamily:'Barlow Condensed', fontSize:11, color:C.gray, letterSpacing:1 }}>CONTENT</span>
               <span style={{ fontSize:10, color:C.gray }}>**bold** *italic* ## header</span>
             </div>
             <textarea style={{...inp, height:280, resize:'vertical', fontFamily:'Share Tech Mono, monospace', fontSize:12}}
-              value={form.content} onChange={e=>setForm(f=>({...f,content:e.target.value}))} placeholder="Write your newsletter…" />
+              value={form.content} onChange={e=>setForm(f=>({...f,content:e.target.value}))} placeholder="Write your newsletter…" maxLength={20000} />
             {/* Schedule toggle */}
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
               <button onClick={()=>setScheduleMode(v=>!v)} style={{ width:36, height:20, borderRadius:10, background:scheduleMode?C.gold:'#333', border:'none', cursor:'pointer', position:'relative', transition:'background 0.2s' }}>

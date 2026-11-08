@@ -129,14 +129,14 @@ export default function PollManager() {
             className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
             <h2 className="font-black text-sm text-white mb-2" style={T}>New Poll Template</h2>
             <label style={lbl}>Template Name</label>
-            <input placeholder="e.g., Quick Yes/No" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} style={inp} />
+            <input placeholder="e.g., Quick Yes/No" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} style={inp} maxLength={60} />
             <label style={lbl}>Poll Question</label>
-            <input placeholder="What would you like to ask?" value={formData.question} onChange={e => setFormData(p => ({ ...p, question: e.target.value }))} style={inp} />
+            <input placeholder="What would you like to ask?" value={formData.question} onChange={e => setFormData(p => ({ ...p, question: e.target.value }))} style={inp} maxLength={200} />
             <label style={lbl}>Options</label>
             <div className="space-y-2">
               {formData.options.map((opt, idx) => (
                 <div key={idx} className="flex gap-2">
-                  <input placeholder={`Option ${idx + 1}`} value={opt} onChange={e => handleOptionChange(idx, e.target.value)} style={{ ...inp, flex: 1 }} />
+                  <input placeholder={`Option ${idx + 1}`} value={opt} onChange={e => handleOptionChange(idx, e.target.value)} style={{ ...inp, flex: 1 }} maxLength={100} />
                   {formData.options.length > 2 && (
                     <button onClick={() => handleRemoveOption(idx)}
                       className="px-3 rounded-lg" style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', cursor: 'pointer' }}>
@@ -154,7 +154,7 @@ export default function PollManager() {
             <div className="grid grid-cols-2 gap-4 mt-2">
               <div>
                 <label style={lbl}>Timeout (seconds)</label>
-                <input type="number" min="0" value={formData.timeout_seconds}
+                <input type="number" min="0" max="3600" value={formData.timeout_seconds}
                   onChange={e => setFormData(p => ({ ...p, timeout_seconds: parseInt(e.target.value) }))} style={inp} />
               </div>
               <div>
