@@ -139,6 +139,8 @@ const LLMLinguaStudio          = lazy(() => import('./pages/LLMLinguaStudio'));
 const VDONinjaManager          = lazy(() => import('./pages/VDONinjaManager'));
 const DeviceManager            = lazy(() => import('./pages/DeviceManager'));
 const RecordingsLibrary        = lazy(() => import('./pages/RecordingsLibrary'));
+const OAuthConsent             = lazy(() => import('./pages/OAuthConsent'));
+const Mfa                      = lazy(() => import('./pages/Mfa'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -271,6 +273,8 @@ export const PAGES = {
     "LLMLinguaStudio": LLMLinguaStudio,
     "VDONinjaManager": VDONinjaManager,
     "DeviceManager": DeviceManager,
+    "OAuthConsent": OAuthConsent,
+    "Mfa": Mfa,
 }
 
 export const pagesConfig = {
