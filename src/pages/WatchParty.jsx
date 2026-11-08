@@ -67,6 +67,7 @@ import LoveTap from '../components/live/LoveTap';
 import TipWidget from '../components/live/TipWidget';
 import SuperChatRail from '../components/live/SuperChatRail';
 import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
+import BrandChyron from '../components/live/BrandChyron';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -1561,6 +1562,7 @@ export default function WatchPartyPage() {
         { key: 'Space', label: 'Push-to-talk (hold when muted)' },
         { key: '?',     label: 'Show keyboard shortcuts' },
       ]} />
+      <BrandChyron />
 
 
       {/* Spotlight overlay — double-tap any octagon in the participant strip */}

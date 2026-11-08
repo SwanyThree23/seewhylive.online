@@ -161,7 +161,7 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
             </span>
           )}
         </p>
-        <p className="text-[10px] truncate" style={{ color: 'rgba(255,255,255,0.3)' }}>{user?.email}</p>
+        <p className="text-[10px] truncate" style={{ color: 'rgba(255,255,255,0.3)' }}>{user?.id ? 'Creator' : ''}</p>
       </div>
 
       {/* score */}
