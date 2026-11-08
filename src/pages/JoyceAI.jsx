@@ -152,16 +152,16 @@ export default function JoyceAI() {
   }, [messages]);
 
   async function send(text) {
-    const userText = (text || input).trim();
+    const userText = (text || input).trim().slice(0, 500);
     if (!userText || loading) return;
     setInput('');
     const next = [...messages, { role: 'user', text: userText }];
     setMessages(next);
     setLoading(true);
     try {
-      const history = next.map(m => m.role + ': ' + m.text).join('\n');
+      const recentHistory = next.slice(-10).map(m => m.role + ': ' + m.text).join('\n');
       const res = await base44.integrations.Core.InvokeLLM({
-        prompt: JOYCE_SYSTEM + '\n\nConversation so far:\n' + history + '\n\nRespond as Joyce AI in 1-3 sentences. Be direct and broadcast-ready.'
+        prompt: JOYCE_SYSTEM + '\n\nConversation so far:\n' + recentHistory + '\n\nRespond as Joyce AI in 1-3 sentences. Be direct and broadcast-ready.'
       });
       const reply = res || "Let's keep it moving — what do you need?";
       setMessages(m => [...m, { role: 'assistant', text: reply }]);
