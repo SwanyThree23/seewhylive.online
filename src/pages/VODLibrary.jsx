@@ -164,6 +164,7 @@ export default function VODLibraryPage() {
                   placeholder="Title"
                   className="w-full mb-3 px-3 py-2 rounded-lg text-sm text-white outline-none"
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
+                  maxLength={150}
                 />
                 <textarea
                   value={editDesc}
@@ -172,6 +173,7 @@ export default function VODLibraryPage() {
                   rows={3}
                   className="w-full mb-4 px-3 py-2 rounded-lg text-sm text-white outline-none resize-none"
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
+                  maxLength={1000}
                 />
                 <div className="flex gap-2 justify-end">
                   <button onClick={() => setSelectedForEdit(null)} style={{ padding: '6px 16px', borderRadius: 8, background: 'transparent', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 12, cursor: 'pointer' }}>Cancel</button>

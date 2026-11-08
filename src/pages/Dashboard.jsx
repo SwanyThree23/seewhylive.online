@@ -467,7 +467,6 @@ function ContentTab({ user }) {
               </button>
             ))}
           </div>
-            <option value="newest">Newest</option>
           <button onClick={() => setShowCreate(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
             style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>

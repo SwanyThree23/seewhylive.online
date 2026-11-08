@@ -153,7 +153,7 @@ export default function ViewerDashboard() {
     return h > 0 ? `in ${h}h ${m}m` : `in ${m}m`;
   };
 
-  const initials = (title) => title?.charAt(0)?.toUpperCase() || '?';
+  const initials = function(title) { return (title && title.charAt(0) && title.charAt(0).toUpperCase()) || '?'; };
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>

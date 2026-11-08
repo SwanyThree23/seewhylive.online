@@ -89,7 +89,7 @@ export default function PKBattlePage() {
 
   const { data: creators = [] } = useQuery({
     queryKey: ['allCreators'],
-    queryFn: () => base44.entities.CreatorProfile.list().then(p => p?.slice(0, 10) || []),
+    queryFn: () => base44.entities.CreatorProfile.list().then(function(p) { return (p && p.slice(0, 10)) || []; }),
   });
 
   const battles = tab === 'active' ? activeBattles : endedBattles;
@@ -203,7 +203,7 @@ export default function PKBattlePage() {
                     <BattleListItem
                       key={battle.id}
                       battle={battle}
-                      isSelected={displayBattle?.id === battle.id}
+                      isSelected={displayBattle && displayBattle.id === battle.id}
                       onClick={() => setSelectedBattle(battle)}
                     />
                   ))
@@ -265,25 +265,25 @@ export default function PKBattlePage() {
         onClose={() => setShowInviteModal(false)}
         creators={creators}
       />
-      <SwanAIRecommendations roomId={activeBattle?.id || null} currentLayout="battle" viewerCount={battles?.length || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeBattle?.id || null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {activeBattle?.id && <BattleMode roomId={activeBattle.id} isHost={true} hostName={user?.full_name || ''} />}
+      <SwanAIRecommendations roomId={(activeBattle && activeBattle.id) || null} currentLayout="battle" viewerCount={(battles && battles.length) || 0} />
+      <MilestoneAlerts userId={user && user.id} roomId={(activeBattle && activeBattle.id) || null} />
+      {user && user.id && <AlertConfig creatorId={user.id} />}
+      {user && user.id && <ShopDashboard creatorId={user.id} />}
+      {activeBattle && activeBattle.id && <BattleMode roomId={activeBattle.id} isHost={true} hostName={(user && user.full_name) || ''} />}
       {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
-      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
-      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={activeBattle?.status === 'active'} />}
-      {activeBattle?.id && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
+      {user && user.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {<GuestStreamMonitor guestName={(user && user.full_name) || ''} isStreaming={activeBattle && activeBattle.status === 'active'} />}
+      {activeBattle && activeBattle.id && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={battles?.length || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(battles && battles.length) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeBattle?.id || null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={(activeBattle && activeBattle.id) || null} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={battles?.length || 0} peakViewers={battles?.length || 0} />
+      <ViewerCount count={(battles && battles.length) || 0} peakViewers={(battles && battles.length) || 0} />
       <BackgroundCustomizer />
     </div>
   );
