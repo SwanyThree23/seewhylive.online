@@ -166,10 +166,10 @@ export default function CreateRoomPage() {
           {/* Basic Info */}
           <Section title="Basic Information">
             <label style={lbl}>Room Title *</label>
-            <input style={inp} placeholder="Enter room title…" value={formData.title} onChange={e => set('title', e.target.value)} required />
+            <input style={inp} placeholder="Enter room title…" value={formData.title} onChange={e => set('title', e.target.value)} required maxLength={100} />
 
             <label style={lbl}>Description</label>
-            <textarea style={{ ...inp, height: 80, resize: 'none' }} placeholder="What's this room about?" value={formData.description} onChange={e => set('description', e.target.value)} />
+            <textarea style={{ ...inp, height: 80, resize: 'none' }} placeholder="What's this room about?" value={formData.description} onChange={e => set('description', e.target.value)} maxLength={500} />
 
             <label style={lbl}>Thumbnail</label>
             {formData.thumbnail_url ? (
@@ -193,7 +193,7 @@ export default function CreateRoomPage() {
             <label style={lbl}>Tags</label>
             <div className="flex gap-2">
               <input style={{ ...inp, flex: 1 }} placeholder="Add a tag…" value={tagInput} onChange={e => setTagInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} />
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} maxLength={30} />
               <button type="button" onClick={addTag}
                 className="px-4 rounded-lg font-black text-xs uppercase flex items-center gap-1"
                 style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
