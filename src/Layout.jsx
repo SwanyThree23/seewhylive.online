@@ -97,7 +97,6 @@ var DRAWER_CREATE = [
   { name: 'Poll Manager',      icon: LayoutDashboard, href: createPageUrl('PollManager') },
 ];
 
-var DRAWER_MONETIZE_AI = [];
 var DRAWER_ACCOUNT = [
   { name: 'My Dashboard', icon: LayoutDashboard, href: createPageUrl('Dashboard') },
   { name: 'Profile',  icon: User,       href: createPageUrl('Profile') },
@@ -418,10 +417,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Group 2: Create & Stream */}
               <DrawerSection label="Create & Stream" items={DRAWER_CREATE} />
 
-              {/* Group 3: Monetize & AI */}
-              <DrawerSection label="Monetize & AI" items={DRAWER_MONETIZE_AI} labelColor="#FF8C00" />
-
-              {/* Group 4: Account */}
+              {/* Group 3: Account */}
               <DrawerSection label="Account" items={DRAWER_ACCOUNT} />
 
               {/* Group 4: Admin (isAdmin only) */}

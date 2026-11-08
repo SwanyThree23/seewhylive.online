@@ -264,7 +264,6 @@ export const PAGES = {
     "UnifiedRoom": UnifiedRoom,
     "WebsiteGenerator": WebsiteGenerator,
     "VoiceAgentBuilder": VoiceAgentBuilder,
-    "VoiceAISettings": VoiceAISettings,
     "WashingtonClassic": WashingtonClassic,
     "WisperFlo": WisperFlo,
     "EmbedPlayer": EmbedPlayer,
