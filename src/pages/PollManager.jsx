@@ -100,7 +100,7 @@ export default function PollManager() {
   const handleOptionChange = (idx, value) => setFormData(prev => ({ ...prev, options: prev.options.map((opt, i) => i === idx ? value : opt) }));
 
   const handleSubmit = () => {
-    if (!formData.name || !formData.question || formData.options.some(o => !o)) { alert('Please fill in all fields'); return; }
+    if (!formData.name || !formData.question || formData.options.some(o => !o)) { toast.error('Please fill in all fields'); return; }
     createTemplateMutation.mutate(formData);
   };
 

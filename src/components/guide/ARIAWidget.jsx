@@ -356,7 +356,7 @@ export default function SwanyBotWidget({ pageName }) {
   // Voice input via Web Speech API
   const toggleVoice = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      alert('Voice input is not supported in this browser. Try Chrome or Edge.');
+      toast.error('Voice input is not supported in this browser. Try Chrome or Edge.');
       return;
     }
 

@@ -55,6 +55,7 @@ export default function EmbedPlayer() {
   var [playSeconds,   setPlaySeconds]   = useState(0);   // per-second when playing
   var [paywallActive, setPaywallActive] = useState(false);
   var [dismissed,     setDismissed]     = useState(false); // viewer dismissed via app CTA
+  var [linkCopied,    setLinkCopied]    = useState(false);
   var tickRef   = useRef(0);  // viewer update every 5 ticks
   var videoRef  = useRef(null);
   var tickTimer = useRef(null);
@@ -531,16 +532,20 @@ export default function EmbedPlayer() {
             <button
               onClick={function() {
                 navigator.clipboard?.writeText(watchUrl).catch(function(){});
-                alert('Watch link copied!');
+                setLinkCopied(true);
+                setTimeout(function() { setLinkCopied(false); }, 2000);
               }}
               style={{
-                background: C.slate, color: C.textM,
-                border: 'none', borderRadius: 6,
+                background: linkCopied ? 'rgba(109,191,126,0.15)' : C.slate,
+                color: linkCopied ? '#6DBF7E' : C.textM,
+                border: linkCopied ? '1px solid rgba(109,191,126,0.3)' : 'none',
+                borderRadius: 6,
                 padding: '8px 14px', cursor: 'pointer',
                 fontSize: 12, fontWeight: 600,
+                transition: 'all 0.2s',
               }}
             >
-              📋 Copy Link
+              {linkCopied ? '✓ Copied!' : '📋 Copy Link'}
             </button>
           </div>
         </div>

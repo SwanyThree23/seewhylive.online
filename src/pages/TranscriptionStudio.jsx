@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { MobileSelect } from '@/components/ui/MobileSelect';
@@ -194,7 +195,7 @@ export default function TranscriptionStudio() {
 
   async function startDeepgram() {
     const key = getDgKey();
-    if (!key) { alert('Add your Deepgram API key in VaultPro → AI Keys first.'); return; }
+    if (!key) { toast.error('Add your Deepgram API key in VaultPro → AI Keys first.'); return; }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const ws = new WebSocket(`wss://api.deepgram.com/v1/listen?language=${activeLang}&punctuate=true&interim_results=true`, ['token', key]);
@@ -226,7 +227,7 @@ export default function TranscriptionStudio() {
       ws.onclose = () => setDgLive(false);
       dgWsRef.current = ws;
     } catch (e) {
-      alert(`Microphone access denied: ${e.message}`);
+      toast.error(`Microphone access denied: ${e.message}`);
     }
   }
 
