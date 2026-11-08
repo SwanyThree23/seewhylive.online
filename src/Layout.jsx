@@ -41,13 +41,12 @@ var DRAWER_WATCH = [
   { name: 'Home',             icon: Home,    href: createPageUrl('Home') },
   { name: 'Discover',         icon: Eye,     href: createPageUrl('Discover') },
   { name: 'State vs State',   icon: Swords,  href: createPageUrl('StateVsState') },
-  { name: 'WA Classic',       icon: Trophy,  href: '/WashingtonClassic' },
   { name: 'Tribute Wall',     icon: Heart,   href: createPageUrl('TributeWall') },
   { name: 'Fallen Legends',   icon: Heart,   href: createPageUrl('FallenLegendsPage') },
   { name: 'Watch Party',      icon: Eye,     href: createPageUrl('WatchParty') },
   { name: 'Audio Room',       icon: Radio,   href: createPageUrl('AudioRoom') },
   { name: 'VOD Library',      icon: Video,   href: createPageUrl('VODLibrary') },
-  { name: 'Recordings',       icon: Video,   href: '/RecordingsLibrary' },
+  { name: 'Recordings',       icon: Video,   href: createPageUrl('RecordingsLibrary') },
   { name: 'PPV Events',       icon: Eye,     href: createPageUrl('PayPerViewEvents') },
   { name: 'Challenges',       icon: Trophy,  href: createPageUrl('ChallengesHub') },
   { name: 'Washington Classic',icon: Swords, href: createPageUrl('WashingtonClassic') },
@@ -100,7 +99,7 @@ var DRAWER_CREATE = [
 
 var DRAWER_MONETIZE_AI = [];
 var DRAWER_ACCOUNT = [
-  { name: 'My Dashboard', icon: LayoutDashboard, href: createPageUrl('MyDashboard') },
+  { name: 'My Dashboard', icon: LayoutDashboard, href: createPageUrl('Dashboard') },
   { name: 'Profile',  icon: User,       href: createPageUrl('Profile') },
   { name: 'Settings', icon: SearchIcon, href: createPageUrl('Settings') },
   { name: 'My Link-in-Bio', icon: Globe, href: '/link-in-bio' },

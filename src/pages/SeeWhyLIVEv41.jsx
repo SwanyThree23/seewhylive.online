@@ -1411,7 +1411,7 @@ function TranscriptionPanel() {
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>Caption.Ninja Setup</p>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
           <Input value={roomName} onChange={e => setRoomName(e.target.value)} placeholder="stream room name" />
-          <Btn onClick={() => window.open(captionNinjaUrl, '_blank')} small>Open</Btn>
+          <Btn onClick={() => window.open(captionNinjaUrl, '_blank', 'noopener,noreferrer')} small>Open</Btn>
         </div>
         <div style={{ background: C.bg2, borderRadius: 6, padding: '8px 12px', marginBottom: 12 }}>
           <span style={{ color: C.textM, fontSize: 11 }}>URL: </span>
@@ -1709,9 +1709,9 @@ function RoomsPanel() {
       <Card style={{ marginBottom: 16 }}>
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 12, fontWeight: 600 }}>VDO.Ninja — Remote Co-Streaming</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
-          <Btn onClick={() => window.open(VDO_JOIN, '_blank')} small>Join (Push)</Btn>
+          <Btn onClick={() => window.open(VDO_JOIN, '_blank', 'noopener,noreferrer')} small>Join (Push)</Btn>
           <Btn onClick={() => copyURL(VDO_WATCH)} small style={{ background: C.slate }}>Copy Watch URL</Btn>
-          <Btn onClick={() => window.open(VDO_OBS, '_blank')} small style={{ background: C.purple }}>OBS Scene</Btn>
+          <Btn onClick={() => window.open(VDO_OBS, '_blank', 'noopener,noreferrer')} small style={{ background: C.purple }}>OBS Scene</Btn>
         </div>
         <div style={{ background: C.bg2, borderRadius: 6, padding: '8px 12px' }}>
           <p style={{ color: C.textM, fontSize: 10 }}>Room: <span style={{ color: C.amber }}>{VDO_ROOM}</span></p>
@@ -1866,7 +1866,7 @@ function ShareEmbedPanel() {
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>Share Link Generator</p>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
           <Input value={roomId} onChange={function(e) { setRoomId(e.target.value); }} placeholder="Room ID (e.g. nyc-la)" />
-          <Btn onClick={function() { window.open(watchUrl, '_blank'); }} small>Preview</Btn>
+          <Btn onClick={function() { window.open(watchUrl, '_blank', 'noopener,noreferrer'); }} small>Preview</Btn>
         </div>
         <div style={{ background: C.bg2, borderRadius: 8, padding: '10px 14px', marginBottom: 10 }}>
           <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>Watch URL</p>
@@ -1953,14 +1953,14 @@ function ShareEmbedPanel() {
           <Btn
             onClick={function() {
               var creatorUrl = APP_URL + '/EmbedPlayer?roomId=' + encodeURIComponent(roomId) + '&noPaywall=1';
-              window.open(creatorUrl, '_blank');
+              window.open(creatorUrl, '_blank', 'noopener,noreferrer');
             }}
             small
             style={{ background: 'rgba(201,168,76,0.1)', color: C.gold, border: '1px solid ' + C.goldD }}
           >
             🔑 Creator Preview (no paywall)
           </Btn>
-          <Btn onClick={function() { window.open(watchUrl, '_blank'); }} small>
+          <Btn onClick={function() { window.open(watchUrl, '_blank', 'noopener,noreferrer'); }} small>
             👁 Viewer Preview
           </Btn>
         </div>

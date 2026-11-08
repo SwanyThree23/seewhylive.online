@@ -138,6 +138,7 @@ const OpenRouterHub            = lazy(() => import('./pages/OpenRouterHub'));
 const LLMLinguaStudio          = lazy(() => import('./pages/LLMLinguaStudio'));
 const VDONinjaManager          = lazy(() => import('./pages/VDONinjaManager'));
 const DeviceManager            = lazy(() => import('./pages/DeviceManager'));
+const RecordingsLibrary        = lazy(() => import('./pages/RecordingsLibrary'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -242,6 +243,7 @@ export const PAGES = {
     "CoverPage": CoverPage,
     "Login": Login,
     "TranscriptionStudio": TranscriptionStudio,
+    "RecordingsLibrary": RecordingsLibrary,
     "RoomsManager": RoomsManager,
     "PKBattleArena": PKBattleArena,
     "EmbedPage": EmbedPage,
