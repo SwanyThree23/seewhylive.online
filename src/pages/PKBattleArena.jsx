@@ -292,7 +292,7 @@ export default function PKBattleArena() {
       </div>
       <SwanyBotWidget />
       <NotificationBell />
-      <GiftSystem roomId={roomId} userId={user?.id || null} isHost={true} />
+      <GiftSystem roomId={roomId} userId={(user && user.id) || null} isHost={true} />
       <GiftLeaderboard roomId={roomId} />
       <ViewerCount count={totalVotes} peakViewers={totalVotes} />
       <SwanAIRecommendations roomId={roomId} currentLayout='pkbattle' viewerCount={totalVotes} />

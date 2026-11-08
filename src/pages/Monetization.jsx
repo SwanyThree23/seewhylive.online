@@ -86,7 +86,7 @@ const MILESTONES = [
 function exportCSV(transactions, subscriptions) {
   const rows = [
     ['Type', 'Amount', 'Date', 'Description'],
-    ...transactions.map(t => [t.transaction_type || 'transaction', `$${(t.creator_payout || 0) + (t.platform_cut || 0)}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
+    ...transactions.map(t => [t.transaction_type || 'transaction', `$${(t.creator_payout || 0).toFixed(2)}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
     ...subscriptions.map(s => ['subscription', `$${s.price || 0}/mo`, new Date(s.created_date).toLocaleDateString(), s.tier_name || '']),
   ];
   const csv = rows.map(r => r.map(v => JSON.stringify(v)).join(',')).join('\n');
