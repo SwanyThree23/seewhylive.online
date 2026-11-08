@@ -78,17 +78,13 @@ async function getLeaderboard(period, tenantId) {
   if (!tenantId) throw Object.assign(new Error('tenantId is required'), { status: 400 });
   if (period === 'weekly') {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    let q = supabase.from('loyalty_point_events').select('user_id, points').gte('created_at', since).eq('tenant_id', tenantId).limit(10000);
-    const { data, error } = await q;
-    if (error) throw error;
-    const totals = {};
-    data.forEach((row) => {
-      totals[row.user_id] = (totals[row.user_id] || 0) + row.points;
-    });
-    return Object.entries(totals)
-      .map(([user_id, points]) => ({ user_id, points }))
-      .sort((a, b) => b.points - a.points)
-      .slice(0, 100);
+    const result = await db.pool.query(
+      'SELECT user_id, SUM(points)::int AS points FROM loyalty_point_events' +
+      ' WHERE created_at >= $1 AND tenant_id = $2' +
+      ' GROUP BY user_id ORDER BY points DESC LIMIT 100',
+      [since, tenantId]
+    );
+    return result.rows;
   }
   let q = supabase.from('user_loyalty').select('user_id, total_points, level').order('total_points', { ascending: false }).limit(100).eq('tenant_id', tenantId);
   const { data, error } = await q;
