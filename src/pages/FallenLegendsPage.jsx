@@ -258,11 +258,11 @@ export default function FallenLegendsPage() {
                 <div style={{ fontSize: 16, fontWeight: 900, color: '#C9A0A0', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 4 }}>Nominate a Legend</div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 20 }}>Honor a player who shaped the domino community</div>
                 {[
-                  { key: 'name', label: 'Full Name *', placeholder: 'e.g. Big Sal Washington' },
-                  { key: 'years', label: 'Years Active *', placeholder: 'e.g. 1965–2020' },
-                  { key: 'region', label: 'Region *', placeholder: 'e.g. Pacific Northwest' },
-                  { key: 'quote', label: 'Signature Quote', placeholder: 'Their most memorable words...' },
-                  { key: 'tribute', label: 'Your Tribute Message', placeholder: 'Share a memory or tribute...' },
+                  { key: 'name', label: 'Full Name *', placeholder: 'e.g. Big Sal Washington', max: 100 },
+                  { key: 'years', label: 'Years Active *', placeholder: 'e.g. 1965–2020', max: 30 },
+                  { key: 'region', label: 'Region *', placeholder: 'e.g. Pacific Northwest', max: 100 },
+                  { key: 'quote', label: 'Signature Quote', placeholder: 'Their most memorable words...', max: 300 },
+                  { key: 'tribute', label: 'Your Tribute Message', placeholder: 'Share a memory or tribute...', max: 500 },
                 ].map(field => (
                   <div key={field.key} style={{ marginBottom: 14 }}>
                     <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em', marginBottom: 6 }}>{field.label}</label>
@@ -271,6 +271,7 @@ export default function FallenLegendsPage() {
                         value={state.form[field.key]}
                         onChange={e => dispatch({ type: 'SET_FORM', key: field.key, value: e.target.value })}
                         placeholder={field.placeholder}
+                        maxLength={field.max}
                         rows={3}
                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none', resize: 'vertical', boxSizing: 'border-box', fontFamily: 'Rajdhani, sans-serif' }}
                       />
@@ -279,6 +280,7 @@ export default function FallenLegendsPage() {
                         value={state.form[field.key]}
                         onChange={e => dispatch({ type: 'SET_FORM', key: field.key, value: e.target.value })}
                         placeholder={field.placeholder}
+                        maxLength={field.max}
                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
                       />
                     )}

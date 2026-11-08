@@ -456,6 +456,7 @@ export default function Messages() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && input.trim()) sendMutation.mutate(input.trim()); }}
+                maxLength={1000}
               />
               <button
                 onClick={() => input.trim() && sendMutation.mutate(input.trim())}
@@ -502,6 +503,7 @@ export default function Messages() {
                 placeholder="Recipient name or ID…"
                 className="text-sm text-white outline-none placeholder:text-white/25 px-4 py-2.5 rounded-2xl"
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,184,0,0.15)", ...T }}
+                maxLength={100}
               />
               <textarea
                 value={composeMsg}
@@ -510,6 +512,7 @@ export default function Messages() {
                 rows={3}
                 className="text-sm text-white outline-none resize-none placeholder:text-white/25 px-4 py-2.5 rounded-2xl"
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,184,0,0.15)", ...T }}
+                maxLength={1000}
               />
               <button
                 onClick={() => { if (composeName.trim() && composeMsg.trim()) composeMutation.mutate(); }}
