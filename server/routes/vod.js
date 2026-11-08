@@ -35,7 +35,16 @@ var upload = multer({
   }
 });
 
-var SB_HOST = (function() { try { return new URL(process.env.SUPABASE_URL || '').hostname || 'xlrcibziouffgxciecvc.supabase.co'; } catch(e) { return 'xlrcibziouffgxciecvc.supabase.co'; } }());
+var SB_HOST = (function() {
+  try {
+    var h = new URL(process.env.SUPABASE_URL || '').hostname;
+    if (!h) throw new Error('empty hostname');
+    return h;
+  } catch (e) {
+    console.error('[vod] SUPABASE_URL ' + (process.env.SUPABASE_URL ? 'is malformed' : 'is not set') + ' — VOD storage will fail');
+    return '';
+  }
+}());
 
 function sbReq(method, path, body, cb) {
   var key     = process.env.SUPABASE_SERVICE_ROLE_KEY;
