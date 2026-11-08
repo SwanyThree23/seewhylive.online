@@ -62,8 +62,8 @@ router.get('/me', requireAuth, async function(req, res) {
   }
 });
 
-// Alias used by MonetizeTab
-router.get('/my-tier', requireAuth, async function(req, res) {
+// Loyalty points summary for the calling user
+router.get('/my-points', requireAuth, async function(req, res) {
   try {
     var data = await rewardsService.getUserPoints(req.user.id, req.tenantId);
     res.json(data);
