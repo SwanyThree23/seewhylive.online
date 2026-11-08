@@ -5,8 +5,15 @@ var loyaltyService = require('../services/loyaltyService');
 var requireAuth    = require('../middleware/auth');
 
 var CACHE_TTL_MS = 60000; // 60 s
-var _globalCache = {};  // keyed by tenantId
-var _weeklyCache = {};  // keyed by tenantId
+var _globalCache = {};  // keyed by tenantId:limit
+var _weeklyCache = {};  // keyed by tenantId:limit
+
+// Prune stale entries so the caches don't grow unboundedly on many-tenant deployments
+setInterval(function() {
+  var cutoff = Date.now() - CACHE_TTL_MS * 2;
+  Object.keys(_globalCache).forEach(function(k) { if (_globalCache[k].ts < cutoff) delete _globalCache[k]; });
+  Object.keys(_weeklyCache).forEach(function(k) { if (_weeklyCache[k].ts < cutoff) delete _weeklyCache[k]; });
+}, CACHE_TTL_MS * 2).unref();
 
 router.get('/global', async function(req, res) {
   try {
