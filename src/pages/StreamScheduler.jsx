@@ -288,6 +288,7 @@ export default function StreamScheduler() {
 
   const handleSave = () => {
     if (!form.title.trim() || !form.scheduled_start) return toast.error('Title and start time required');
+    if (new Date(form.scheduled_start) <= new Date()) return toast.error('Scheduled time must be in the future');
     const data = { ...form, creator_id: user?.id, scheduled_start: new Date(form.scheduled_start).toISOString() };
     if (editingStream) updateMutation.mutate({ id: editingStream.id, data });
     else createMutation.mutate(data);
