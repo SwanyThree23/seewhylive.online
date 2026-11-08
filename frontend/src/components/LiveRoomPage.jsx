@@ -1466,6 +1466,7 @@ export default function LiveRoomPage({
       socket.off('qa-answering-cleared');
       socket.off('viewer-milestone');
       socket.off('gift-leaderboard');
+      socket.off('host-private-msg');
       socket.off('creator-followed', onCreatorFollowed);
       socket.off('chat-pinned');
       socket.off('chat-unpinned');
