@@ -219,7 +219,7 @@ function PanelLaunchSheet({ roomId, participants, onClose }) {
 
           {/* Director + OBS row */}
           <div style={{ display: 'flex', gap: 6 }}>
-            <button onClick={function() { window.open(directorUrl, '_blank'); }}
+            <button onClick={function() { window.open(directorUrl, '_blank', 'noopener,noreferrer'); }}
               style={{ flex: 1, padding: '7px 0', borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', ...T, fontSize: 10, fontWeight: 700 }}>
               🎬 Director Panel ↗
             </button>
@@ -338,7 +338,7 @@ function SeatInviteDrawer({ seat, roomId, onClose }) {
               </div>
             );
           })}
-          <button onClick={function() { window.open(pushUrl, '_blank'); }}
+          <button onClick={function() { window.open(pushUrl, '_blank', 'noopener,noreferrer'); }}
             style={{ width: '100%', padding: '12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,' + C.crimson + ',' + C.gold + ')', color: '#000', cursor: 'pointer', ...T, fontSize: 15, fontWeight: 900, letterSpacing: '0.06em' }}>
             ↗ OPEN GUEST LINK
           </button>
@@ -572,7 +572,7 @@ function LinksTab({ roomId, isHost, isCoHost }) {
                 <div style={{ ...T, fontSize: 12, color: C.text, fontWeight: 600 }}>{link.label}</div>
                 <div style={{ ...T, fontSize: 10, color: C.textD }}>{link.note}</div>
               </div>
-              <button onClick={function() { window.open(link.url, '_blank'); }} style={{ padding: '5px 8px', borderRadius: 5, border: '1px solid ' + C.gold + '44', background: 'transparent', color: C.gold, cursor: 'pointer', ...T, fontSize: 10 }}>↗</button>
+              <button onClick={function() { window.open(link.url, '_blank', 'noopener,noreferrer'); }} style={{ padding: '5px 8px', borderRadius: 5, border: '1px solid ' + C.gold + '44', background: 'transparent', color: C.gold, cursor: 'pointer', ...T, fontSize: 10 }}>↗</button>
               <button onClick={function() { copy(link.url, link.key); }} style={{ padding: '5px 8px', borderRadius: 5, border: '1px solid ' + (copied === link.key ? C.green : C.gold) + '44', background: copied === link.key ? C.green + '18' : C.gold + '14', color: copied === link.key ? C.green : C.gold, cursor: 'pointer', ...T, fontSize: 10, fontWeight: 700 }}>
                 {copied === link.key ? '✓' : '📋'}
               </button>
@@ -679,7 +679,7 @@ export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, com
                 style={{ padding: '5px 12px', borderRadius: 6, border: 'none', background: 'linear-gradient(135deg,' + C.crimson + ',#A0003A)', cursor: 'pointer', ...T, fontSize: 10, fontWeight: 900, color: C.gold, letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 4 }}>
                 🚀 LAUNCH PANEL
               </button>
-              <button onClick={function() { window.open(buildDirectorUrl(roomId), '_blank'); }}
+              <button onClick={function() { window.open(buildDirectorUrl(roomId), '_blank', 'noopener,noreferrer'); }}
                 style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid ' + C.gold + '44', background: C.gold + '14', cursor: 'pointer', ...T, fontSize: 10, fontWeight: 700, color: C.gold }}>
                 🎬 DIRECTOR
               </button>
