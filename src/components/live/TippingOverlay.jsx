@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Gift, DollarSign } from 'lucide-react';
+import { Gift } from 'lucide-react';
 
 const G = '#FFB800';
 

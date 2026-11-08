@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff, Crown, Hand, Check, X } from 'lucide-react';
+import { Mic, MicOff, Crown, Check, X } from 'lucide-react';
 import { useAudioLevel } from '../../hooks/useAudioLevel';
 
 const GOLD    = '#D4AF37';

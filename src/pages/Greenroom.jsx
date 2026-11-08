@@ -4,8 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  CheckCircle, ChevronDown, ChevronUp, Settings,
-  Eye, EyeOff, Users, ArrowRight, X, Clock, Layers
+  CheckCircle, ChevronDown, ChevronUp, Settings, Users, ArrowRight, X, Layers
 } from 'lucide-react';
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
@@ -157,7 +156,6 @@ import PaymentMethodSelector from '../components/monetization/PaymentMethodSelec
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
-import GreenRoomPreflight from '../components/live/GreenRoomPreflight';
 import AuraPanel from '../components/live/AuraPanel';
 import LivePoll from '../components/live/LivePoll';
 const GOLD = '#D4AF37';

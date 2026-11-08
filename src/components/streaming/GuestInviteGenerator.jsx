@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
-import { Link2, Copy, X, Plus, QrCode, CheckCircle, Clock, Users, Trash2 } from 'lucide-react';
+import { Link2, Copy, X, Plus, QrCode, CheckCircle, Users, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const GOLD = '#FFB800';

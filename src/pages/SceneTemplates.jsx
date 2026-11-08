@@ -1,17 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import SceneSwitcher from '../components/live/SceneSwitcher';
-import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
-import ChatOverlay from '../components/live/ChatOverlay';
-import EvmuxWebSource from '../components/live/EvmuxWebSource';
-import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
-import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
-import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
-import CompositorOverlay from '../components/streaming/CompositorOverlay';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import {
   Layers, Grid3X3, Monitor, Maximize, PictureInPicture2,
   Layout, Plus, Check, Star, Trash2, Edit3,

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
-import { UserPlus, Copy, Check, Link2, Mic, Video } from 'lucide-react';
+import { UserPlus, Copy, Check, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const GOLD = '#FFB800';

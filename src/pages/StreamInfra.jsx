@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import StreamHealthDashboard from '@/components/streaming/StreamHealthDashboard';
-import OBSBridge from '../components/obs/OBSBridge';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -22,18 +21,15 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
-import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import CreatorBridge from '../components/social/CreatorBridge';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
-  Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
-  Share2, Headphones, Crown, Eye, AlertCircle, Hand,
-  Settings, Play, Square, Plus, Trash2, ExternalLink,
-  Wifi, Activity, BarChart2, Lock, Unlock, Shield,
-  ChevronRight, Music, Monitor, PhoneOff, UserCheck
+  Video, VideoOff, Zap, RefreshCw, Terminal,
+  Share2, Headphones, Crown, Eye, Hand,
+  Settings, Play, Square, Plus, Trash2, ExternalLink, Activity, BarChart2, Shield,
+  ChevronRight, Music, UserCheck
 } from 'lucide-react';
 
 /* ─── Helpers ─── */

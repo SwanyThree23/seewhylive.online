@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { X, Zap, Heart, Star, Crown, Diamond } from 'lucide-react';
+import { X, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
 const G = '#FFB800';

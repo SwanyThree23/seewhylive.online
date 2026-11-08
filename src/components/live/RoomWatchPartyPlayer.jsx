@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useWatchPartySocket } from '../../hooks/useWatchPartySocket';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Tv2, Search, X, Volume2, VolumeX, Users } from 'lucide-react';
+import { Tv2, Search, X, Volume2, VolumeX } from 'lucide-react';
 import { toast } from 'sonner';
 
 const REACTIONS = ['👏', '❤️', '😂', '🔥', '😮'];

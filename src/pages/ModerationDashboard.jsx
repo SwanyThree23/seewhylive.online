@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -15,8 +14,7 @@ import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay'
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import {
-  Shield, AlertTriangle, CheckCircle, XCircle, Zap, RefreshCw,
-  MessageSquare, Eye, Clock, Flag, TrendingUp, ChevronDown
+  Shield, Zap, Eye, Flag, TrendingUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';

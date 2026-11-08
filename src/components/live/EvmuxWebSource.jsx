@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Volume2, VolumeX, Link, ChevronDown, Globe, Plus, Trash2 } from 'lucide-react';
+import { X, Volume2, VolumeX, Globe } from 'lucide-react';
 
 const BG = '#03030A';
 const GOLD = '#FFB800';

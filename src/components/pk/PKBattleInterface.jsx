@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Users, Trophy, Zap, Timer, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Swords, Trophy, Zap, Timer } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 

@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  DollarSign, TrendingUp, Users, Zap, Crown, Star, Gift, Radio,
-  CreditCard, Target, ArrowRight, ChevronRight, BarChart3, Download,
-  Repeat, RefreshCw, Flame, Award, Clock, CheckCircle, Lock, Unlock,
-  PlayCircle, Heart, MessageSquare, ShoppingBag, Music, ArrowUpRight,
-  Percent, Calendar, Bell, Shield, Rocket, Eye, Activity
+  DollarSign, TrendingUp, Users, Zap, Crown, Star, Gift,
+  CreditCard, ArrowRight, ChevronRight, BarChart3, Download,
+  Repeat, Flame, Award, CheckCircle, Lock,
+  PlayCircle, Heart, Music, Calendar, Shield, Rocket, Eye, Activity
 } from 'lucide-react';
 import PayPerViewManager from '@/components/monetization/PayPerViewManager';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
@@ -26,7 +25,6 @@ import PayPerViewCard from '@/components/monetization/PayPerViewCard';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';

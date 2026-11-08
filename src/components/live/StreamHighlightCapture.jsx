@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scissors, Flame, Star, Zap, Check } from 'lucide-react';
+import { Scissors, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import ClipThisButton from './ClipThisButton';
 

@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast as showToast } from 'sonner';
@@ -9,10 +7,7 @@ import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerat
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import VODCard from '../components/vod/VODCard';
-import VODTrimEditor from '../components/vod/VODTrimEditor';
-import ChapterEditor from '../components/vod/ChapterEditor';
 import VideoShortRecorder from '../components/vod/VideoShortRecorder';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 

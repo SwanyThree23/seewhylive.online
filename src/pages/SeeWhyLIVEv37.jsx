@@ -3,23 +3,10 @@
  * All AI calls use base44.integrations.Core.InvokeLLM
  * Earth-tone palette only — no forbidden colors
  */
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { isSafeUrl } from '@/lib/security';
-import { useLocalMedia } from '../hooks/useLocalMedia';
-import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
-import { useVODRecording } from '../hooks/useVODRecording';
-import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import ReactionOverlay from '../components/watchparty/ReactionOverlay';
-import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
-import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
-import GreenroomQueue from '../components/streaming/GreenroomQueue';
-import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
 import NotificationHub from '../components/live/NotificationHub';

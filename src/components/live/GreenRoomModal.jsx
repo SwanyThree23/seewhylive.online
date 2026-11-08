@@ -169,7 +169,7 @@ export default function GreenRoomModal({
     setResults({ mic: null, cam: null, net: null });
     runStep(0);
     return clearTimers;
-  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen]);  
 
   // ── step metadata ────────────────────────────────────────────────────────────
   const steps = [

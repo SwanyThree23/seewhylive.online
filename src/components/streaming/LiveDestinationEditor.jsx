@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Radio, Plus, Trash2, Wifi, WifiOff, Settings,
-  Eye, EyeOff, Copy, Check, Play, Square, Loader2, AlertCircle,
+  Eye, EyeOff, Copy, Check, Play, Square, Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 

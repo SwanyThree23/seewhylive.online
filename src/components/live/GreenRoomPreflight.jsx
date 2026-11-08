@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mic, Camera, Globe, Copy, Check, Rocket } from 'lucide-react';
+import { X, Copy, Check } from 'lucide-react';
 
 const G  = '#FFB800';
 const BG = 'rgba(10,7,16,0.98)';

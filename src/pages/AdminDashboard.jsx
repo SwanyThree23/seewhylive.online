@@ -15,8 +15,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import {
-  Users, Radio, DollarSign, MessageSquare, Shield, TrendingUp,
-  Activity, Crown, AlertTriangle, CheckCircle, RefreshCw,
+  Users, Radio, DollarSign, MessageSquare, Shield, AlertTriangle, CheckCircle, RefreshCw,
   Search, Globe
 } from 'lucide-react';
 import { toast } from 'sonner';

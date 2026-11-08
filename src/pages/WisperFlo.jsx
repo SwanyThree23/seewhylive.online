@@ -1,7 +1,7 @@
 import React, { useReducer, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Pin, Globe, Clock, Users, Lock, MessageSquare, ChevronDown } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Send, Pin, Globe, Clock, Lock, MessageSquare, ChevronDown } from 'lucide-react';
 import { WhisperPanel } from '../components/live/DMWhisperPanel';
 import AggregatedChat from '../components/live/AggregatedChat';
 import GiftAnimation from '../components/live/GiftAnimation';

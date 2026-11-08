@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import {
-  Globe, Sparkles, Copy, Download, RefreshCw, Code2, Eye,
-  Bot, Phone, Search, Palette, Plus, Clock, X, ChevronDown,
+  Globe, Sparkles, Copy, Download, RefreshCw, Code2, Eye, Clock, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';

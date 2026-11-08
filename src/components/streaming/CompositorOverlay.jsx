@@ -53,7 +53,7 @@ export default function CompositorOverlay({
     if (open && savedWhipDests.length > 0 && !customWhip) {
       setCustomWhip(savedWhipDests[0].server_url || '');
     }
-  }, [open, savedWhipDests]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open, savedWhipDests]);  
 
   const saveWhipMut = useMutation({
     mutationFn: async (url) => {
@@ -100,7 +100,7 @@ export default function CompositorOverlay({
     } else if (!open && isRunning) {
       stopCompositor();
     }
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open]);  
 
   const goLive = useCallback(async () => {
     if (!customWhip.trim()) {

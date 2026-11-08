@@ -8,8 +8,8 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
-  Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv,
+  Trophy, Eye, X, User, ChevronRight,
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Globe, Mic2, Swords, Heart, Bot, Tv,
   Users, Calendar, Bell, FileText, Settings2, Activity
 } from 'lucide-react';
 // DollarSign, Heart, Sparkles already imported above

@@ -10,10 +10,7 @@ import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
 import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
 import ChatModeration from '../components/live/ChatModeration';
 import StreamMetadata from '../components/live/StreamMetadata';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
@@ -23,8 +20,6 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import CreatorBridge from '../components/social/CreatorBridge';
 
 const TABS = [

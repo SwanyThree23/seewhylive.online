@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Users, Zap, TrendingUp, TrendingDown, Minus, Radio, Eye, MessageSquare, DollarSign, Wifi, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Activity, Users, Zap, TrendingUp, TrendingDown, Minus, Radio, Eye, MessageSquare, Wifi, AlertTriangle } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 
 // ── Real-time metric tile ───────────────────────────────────────────────────

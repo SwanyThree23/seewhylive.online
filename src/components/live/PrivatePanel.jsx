@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Lock, Users, Plus, X, MessageSquare, Crown, Send } from 'lucide-react';
+import { Lock, Users, Plus, X, MessageSquare, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PANEL_TYPES = [

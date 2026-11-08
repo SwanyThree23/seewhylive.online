@@ -5,7 +5,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts';
 import SafeResponsiveContainer from '@/components/shared/SafeChart';
-import { TrendingUp, TrendingDown, Users, Eye, MessageSquare, Heart } from 'lucide-react';
+import { Users, Eye, MessageSquare, Heart } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Gift, X, Trophy, ChevronDown } from 'lucide-react';
+import { Gift, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const GOLD = '#FFB800';

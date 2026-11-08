@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Search, Radio, Users, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function GlobalSearch({ onClose }) {
   const [query, setQuery] = useState('');

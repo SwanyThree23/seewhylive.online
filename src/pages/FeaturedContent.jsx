@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Play, ExternalLink, Youtube, Star, Users, Eye } from 'lucide-react';
+import { Play, ExternalLink, Youtube, Star, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import SpotlightSection from '../components/community/SpotlightSection';

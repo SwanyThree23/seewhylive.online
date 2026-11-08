@@ -1,8 +1,8 @@
 import React, { useReducer } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { TrendingUp, TrendingDown, DollarSign, Eye, Gem, Radio, Clock, Users, Award } from 'lucide-react';
+import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { TrendingUp, TrendingDown, DollarSign, Eye, Radio, Clock, Users, Award } from 'lucide-react';
 import AudienceInsights from '../components/dashboard/AudienceInsights';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
@@ -12,7 +12,6 @@ import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightR
 import ShareToSocial from '../components/social/ShareToSocial';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
 const CREATOR_SPLIT = 0.90;
 function creatorCut(g) { return Math.floor(g * CREATOR_SPLIT); }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2, Zap, Check } from 'lucide-react';
+import { Lock, Eye, EyeOff, Plus, Copy, Key, FileText, Hash, ClipboardList, Loader2, Zap, Check } from 'lucide-react';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Share2, Youtube, Copy, CheckCircle2, Link as LinkIcon } from 'lucide-react';
+import { Share2, Youtube, CheckCircle2, Link as LinkIcon } from 'lucide-react';
 
 export default function ShareToSocial({ content }) {
   const [copied, setCopied] = useState(false);

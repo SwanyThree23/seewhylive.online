@@ -2,20 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from 'sonner';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucide-react";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "../utils";
-import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import { MessageSquare, PenSquare, Send, ChevronLeft, X } from "lucide-react";
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import TippingModal from '../components/monetization/TippingModal';
 import NotificationBell from '../components/shared/NotificationBell';
-import SuperChatRail from '../components/live/SuperChatRail';
-import AnnouncementFeed from '../components/community/AnnouncementFeed';
-import UnifiedChat from '../components/live/UnifiedChat';
-import { WhisperPanel } from '../components/live/DMWhisperPanel';
-import ShareButtons from '../components/shared/ShareButtons';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';

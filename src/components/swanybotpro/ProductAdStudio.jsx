@@ -1,8 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  Upload, Loader2, Film, Check, Copy,
+import { Loader2, Film, Check, Copy,
   Wand2, Megaphone, User, Save, Link2,
   Library, Zap, Plus, X, Calendar,
 } from 'lucide-react';

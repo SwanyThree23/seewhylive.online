@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X, Languages, Shield
+  Send, Pin, Trash2, Reply, Smile, Sliders, ChevronDown, X, Languages, Shield
 } from 'lucide-react';
 import { Drawer } from 'vaul';
 
@@ -185,7 +185,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
       }
     });
     return () => { cancelled = true; };
-  }, [messages, translateLang]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [messages, translateLang]);  
 
   useEffect(() => {
     const recent = messages.filter(m => Date.now() - new Date(m.created_date).getTime() < 60000);

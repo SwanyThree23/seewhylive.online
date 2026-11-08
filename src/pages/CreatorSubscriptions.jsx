@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Crown, Users, Settings, Star, Check, ChevronRight, Zap } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Crown, Users, Settings, Star, Check, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPageUrl } from '../utils';
 import { Link, useSearchParams } from 'react-router-dom';

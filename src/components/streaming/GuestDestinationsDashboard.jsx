@@ -16,8 +16,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Zap, ShieldCheck, TrendingUp, Users, Globe,
-  Play, Square, RefreshCw, ChevronDown, ChevronUp, Lock,
-  Eye, EyeOff, KeyRound, Trash2, Plus, Wifi, CheckCircle, XCircle,
+  Play, Square, RefreshCw, Lock,
+  Eye, EyeOff, KeyRound, Trash2, Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 

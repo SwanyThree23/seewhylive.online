@@ -2,25 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  User, Mail, Award, Star, Gift, TrendingUp, Camera, Radio, BarChart2,
-  Settings, DollarSign, Activity, Clock, Share2, Scissors, Sparkles, Layout,
+  User, Mail, Award, Star, Gift, TrendingUp, Camera, Radio,
+  Settings, DollarSign, Activity, Share2, Scissors, Sparkles, Layout,
   Download, LogOut,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
-import OnlinePresenceDot from '../components/shared/OnlinePresence';
 import MySubscriptions from '../components/subscriptions/MySubscriptions';
-import LeaderboardPanel from '../components/live/LeaderboardPanel';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import RevenueDashboard from '../components/monetization/RevenueDashboard';
-import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
-import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';

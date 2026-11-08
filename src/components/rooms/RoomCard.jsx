@@ -1,5 +1,4 @@
 import React from 'react';
-import { Badge } from "@/components/ui/badge";
 import { Video, Mic, Users, Clock, Radio, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';

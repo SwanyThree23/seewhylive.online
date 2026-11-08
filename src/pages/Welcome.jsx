@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Radio, ChevronRight, Zap } from 'lucide-react';
+import { Radio, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ContentRecommendations from '../components/social/ContentRecommendations';

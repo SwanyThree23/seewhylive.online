@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Trophy, Plus, Play, Users, Swords, Crown, ChevronRight, Calendar, Zap, CheckCircle } from 'lucide-react';
+import { Trophy, Plus, Play, Crown } from 'lucide-react';
 
 var ET = {
   rust: '#6B4423',

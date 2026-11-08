@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Unlock, DollarSign, Crown, Timer, Zap } from 'lucide-react';
+import { Lock, Unlock, Crown, Timer, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PREVIEW_SECONDS = 120;
@@ -33,7 +33,7 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
   const [customPrice, setCustomPrice] = useState('');
 
   // Paywall/countdown disabled — all viewers have free access during launch
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   useEffect(() => { if (!isHost && !isUnlocked) onUnlock?.(); }, []);
 
   // ── Host panel ───────────────────────────────────────────────────────────

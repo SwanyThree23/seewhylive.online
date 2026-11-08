@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Star, Zap, Crown, TrendingUp } from 'lucide-react';
+import { Trophy, TrendingUp } from 'lucide-react';
 
 const RANK_COLORS = ['#d4af37', '#c0c0c0', '#cd7f32', 'rgba(255,255,255,0.4)', 'rgba(255,255,255,0.3)'];
 const RANK_ICONS = ['👑', '🥈', '🥉', '4️⃣', '5️⃣'];

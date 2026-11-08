@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Palette, Type, Image as ImageIcon, Settings2, Eye } from 'lucide-react';
+import { Palette, Type, Image as ImageIcon, Eye } from 'lucide-react';
 import { MobileSelect } from '@/components/ui/MobileSelect';
 
 export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost }) {

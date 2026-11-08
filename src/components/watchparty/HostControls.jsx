@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Lock, Unlock, Users, Palette, MessageSquare, Mic, Video, Volume2, VolumeX, ChevronDown, ChevronUp } from 'lucide-react';
+import { Settings, Users, MessageSquare, Mic, Video, Volume2, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function HostControls({ isHost, party, onUpdate }) {
   const [open, setOpen] = useState(false);

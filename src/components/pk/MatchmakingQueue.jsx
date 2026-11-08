@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Users, Zap, Clock, Swords, LogIn, LogOut, Shield, Trophy, Star, RefreshCw } from 'lucide-react';
+import { Users, Swords, LogIn, LogOut, RefreshCw } from 'lucide-react';
 
 /* Earth tone palette */
 var ET = {

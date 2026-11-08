@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Crown, Edit2, Trash2, Eye } from 'lucide-react';
+import { Crown, Edit2, Trash2 } from 'lucide-react';
 
 const G = '#FFB800';
 const TIERS = ['Bronze', 'Silver', 'Gold', 'Diamond'];

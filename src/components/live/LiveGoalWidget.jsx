@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Check, Edit2, Flame } from 'lucide-react';
+import { Target, Check, Edit2 } from 'lucide-react';
 import { MobileSelect } from '@/components/ui/MobileSelect';
 
 const F = { fontFamily: 'Barlow Condensed, sans-serif' };

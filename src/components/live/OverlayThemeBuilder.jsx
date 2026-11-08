@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Palette, Save, Trash2, Copy, Check, Edit2 } from 'lucide-react';
+import { Palette, Save, Trash2, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 const G     = '#FFB800';

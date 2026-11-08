@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDeepgramTranscription } from '../../hooks/useDeepgramTranscription';
-import { Mic, MicOff, Type, X } from 'lucide-react';
+import { Type, X } from 'lucide-react';
 
 // LiveCaptionOverlay — floating real-time caption bar for host streams
 // stream: MediaStream from useLocalMedia

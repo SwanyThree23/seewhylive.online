@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Play, Plus, Trash2, X, Check, Volume2, Music } from 'lucide-react';
+import { Play, Plus, Trash2, X, Check, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const GOLD = '#FFB800';

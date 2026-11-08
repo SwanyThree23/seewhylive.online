@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ListVideo, Plus, X, Play, Youtube, Video, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
+import { ListVideo, Plus, X, Play, Youtube, Video, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 function getYouTubeId(url) {

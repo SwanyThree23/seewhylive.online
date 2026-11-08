@@ -19,7 +19,7 @@
  *       zegoEngine.startPublishingStream(streamId) for panelists, and
  *       zegoEngine.startPlayingStream(streamId)   for each remote in a loop.
  */
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import { useLocalMedia } from './useLocalMedia';
 import { useWebRTCPeers } from './useWebRTCPeers';
 

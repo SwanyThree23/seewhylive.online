@@ -152,7 +152,7 @@ export default function DevicePreview({ user, onDeviceState, onStreamReady }) {
   useEffect(() => {
     startCamera();
     return () => { streamRef.current?.getTracks().forEach(t => t.stop()); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
   const toggleCamera = () => { cameraOn ? stopCamera() : startCamera(); };
   const toggleMic = () => {

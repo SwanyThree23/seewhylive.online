@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Music, Play, Pause, Copy, Check, Loader2, Sparkles, Mic2,
-  Film, Upload, Radio, Tag, Clock, Save, Calendar, Link2, RefreshCw, Waves,
+  Film, Upload, Tag, Save, Calendar, Link2, Waves,
 } from 'lucide-react';
 import TrackUploader from '@/components/swanybotpro/TrackUploader';
 

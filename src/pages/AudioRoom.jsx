@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MobileSelect } from '@/components/ui/MobileSelect';
-import { Link, useSearchParams } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, MessageCircle, Heart, Hand,
@@ -56,7 +55,6 @@ import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import AudioPanel from '../components/live/AudioPanel';
-import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
 import ChatModeration from '../components/live/ChatModeration';
 import BrandChyron from '../components/live/BrandChyron';
 import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
@@ -137,15 +135,11 @@ import PrivatePanel from '../components/live/PrivatePanel';
 import StreamChatbot from '../components/live/StreamChatbot';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
-import ReportModal from '../components/moderation/ReportModal';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import TippingOverlay from '../components/live/TippingOverlay';
-import TipNowModal from '../components/live/TipNowModal';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import SceneSwitcher from '../components/live/SceneSwitcher';
-import ModerationActionModal from '../components/moderation/ModerationActionModal';
 import PayPerViewGate from '../components/live/PayPerViewGate';
 import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
@@ -312,7 +306,7 @@ export default function AudioRoom() {
     const entries = Array.from(peersRef.current.entries());
     const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
     setActivePc(connected ? connected[1].pc : null);
-  }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [remoteStreams]);  
 
   const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
 
@@ -460,7 +454,7 @@ export default function AudioRoom() {
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
     return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [audioEnabled, pttActive]);
 
   // Apply audio output device to all media elements when speaker pref changes

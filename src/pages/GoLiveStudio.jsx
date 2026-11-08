@@ -23,10 +23,9 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import {
-  Radio, Video, Mic, Wifi, Shield, Layers, ChevronRight,
-  AlertTriangle, Play, Square, SkipForward, Volume2, Monitor,
-  Users, Clock, Activity, Zap, Youtube, Twitch, Facebook,
-  ToggleLeft, ToggleRight, Eye, TrendingUp, Settings
+  Radio, Mic, Shield, ChevronRight,
+  AlertTriangle, Square, Volume2, Activity, Youtube, Twitch, Facebook,
+  ToggleLeft, ToggleRight, Eye, Settings
 } from 'lucide-react';
 
 const RTMP_URL = 'rtmp://ingest.seewhylive.online:1935/live';

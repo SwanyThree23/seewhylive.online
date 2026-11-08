@@ -4,8 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Users } from 'lucide-react';
 import SignalBars from './SignalBars';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../../utils';
 
 /**
  * BrandChyron — permanent 34px bottom bar pinned to viewport.

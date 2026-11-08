@@ -1,21 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Shield, Zap, RefreshCw, AlertTriangle, Check, Ban, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
-import ReportsManager from '../components/admin/ReportsManager';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
-import AIModeration from '../components/live/AIModeration';
-import ModerationActionModal from '../components/moderation/ModerationActionModal';
-import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
-import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
-import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';

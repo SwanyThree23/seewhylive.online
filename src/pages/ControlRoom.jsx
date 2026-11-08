@@ -7,9 +7,8 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
-  Radio, Zap, AlertTriangle, CheckCircle, Eye, EyeOff, Copy,
-  RefreshCw, Power, StopCircle, Cpu, Wifi, Clock, Monitor,
-  ChevronDown, X
+  Radio, Eye, EyeOff, Copy,
+  RefreshCw, StopCircle, Cpu, Clock, Monitor
 } from 'lucide-react';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
@@ -33,7 +32,6 @@ import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
 import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 import GoldenWall from '../components/live/GoldenWall';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
-import GiftTray from '../components/live/GiftTray';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -48,7 +46,6 @@ import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboar
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import ChatModeration from '../components/live/ChatModeration';
 import BrandChyron from '../components/live/BrandChyron';
-import { WhisperPanel } from '../components/live/DMWhisperPanel';
 import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
 import SceneSwitcher from '../components/live/SceneSwitcher';
 import NotificationHub from '../components/live/NotificationHub';
@@ -58,9 +55,7 @@ import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyt
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
-import QuickTip from '../components/rooms/QuickTip';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import ShareToSocial from '../components/social/ShareToSocial';
@@ -80,12 +75,10 @@ import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 import RewardShop from '../components/loyalty/RewardShop';
-import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import PKBattleInterface from '../components/pk/PKBattleInterface';
 import CoStreamPanel from '../components/collaboration/CoStreamPanel';
 import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
 import TipAlert from '../components/monetization/TipAlert';
-import TippingModal from '../components/monetization/TippingModal';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import { MerchStrip as MerchWidget } from '../components/merch/MerchWidget';
 import NotificationBell from '../components/shared/NotificationBell';
@@ -158,7 +151,6 @@ import AudioPanel from '../components/live/AudioPanel';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import LivePollOverlay from '../components/live/LivePollOverlay';
 import StripeConnectButton from '../components/monetization/StripeConnectButton';
-import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
 import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
 import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';

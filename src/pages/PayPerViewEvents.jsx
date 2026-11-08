@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Users, DollarSign, Calendar, Clock, Plus, CheckCircle, Eye, Tv, BarChart3, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Lock, Users, Calendar, Clock, CheckCircle, Tv, BarChart3, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';

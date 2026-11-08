@@ -4,12 +4,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import TipAlert from '../components/monetization/TipAlert';
 import TippingModal from '../components/monetization/TippingModal';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Radio, Users, MessageSquare, Hand, Settings, 
-  LogOut, Mic, MicOff, Video, VideoOff, PhoneOff,
-  Share2, MoreVertical, DollarSign, TrendingUp, Circle, StopCircle
+  Radio, Users, MessageSquare, Hand, Settings, Mic, MicOff, Video, VideoOff, PhoneOff,
+  Share2, DollarSign, TrendingUp, Circle, StopCircle
 } from 'lucide-react';
 import StageView from '../components/rooms/StageView';
 import ChatPanel from '../components/rooms/ChatPanel';
@@ -20,7 +18,6 @@ import QuickTip from '../components/rooms/QuickTip';
 import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
 import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
 import { createPageUrl } from '../utils';
 import ShareButtons from '../components/shared/ShareButtons';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
@@ -58,7 +55,7 @@ import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 import GoldenWall from '../components/live/GoldenWall';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import GiftTray from '../components/live/GiftTray';
-import ModerationToast, { useModerationToasts } from '../components/shared/ModerationToast';
+import { useModerationToasts } from '../components/shared/ModerationToast';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -280,7 +277,7 @@ export default function RoomPage() {
     const entries = Array.from(peersRef?.current?.entries() || []);
     const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
     setActivePc(connected ? connected[1].pc : null);
-  }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [remoteStreams]);  
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activePc, 5000);
 
   const [busViewerCount, setBusViewerCount] = useState(0);

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Sparkles, Play, Download, Share2, Trash2, Loader2, Check } from 'lucide-react';
+import { Sparkles, Play, Share2, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const HighlightCard = ({ highlight, onDelete, onShare }) => (

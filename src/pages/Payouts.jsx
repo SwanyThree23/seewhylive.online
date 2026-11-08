@@ -15,7 +15,7 @@ import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import {
   DollarSign, CreditCard, Zap, Clock, CheckCircle, AlertCircle,
-  ArrowDownToLine, Link as LinkIcon, Banknote, TrendingUp, TrendingDown,
+  ArrowDownToLine, Link as LinkIcon, Banknote, TrendingUp,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {

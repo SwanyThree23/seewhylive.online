@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Plus, Trash2, Eye, EyeOff, ExternalLink, X, Monitor } from 'lucide-react';
+import { Globe, Plus, Trash2, Eye, EyeOff, X, Monitor } from 'lucide-react';
 import { toast } from 'sonner';
 
 const G = '#FFB800';

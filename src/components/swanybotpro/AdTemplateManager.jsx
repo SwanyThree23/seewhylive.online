@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Save, Clock, Play, Trash2, Calendar, Film, Zap,
+  Save, Clock, Play, Trash2, Film, Zap,
   ChevronDown, ChevronUp,
 } from 'lucide-react';
 

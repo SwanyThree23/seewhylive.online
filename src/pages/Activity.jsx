@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Activity as ActivityIcon, Radio, Users, Trophy, Gift, Award, Bell,
   DollarSign, Heart, MessageSquare, Star, Zap, Eye, TrendingUp,
-  Check, Filter, RefreshCw, Scissors, Calendar,
+  Check, RefreshCw, Scissors, Calendar,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -19,7 +18,6 @@ import PointsNotification from '../components/live/PointsNotification';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import ShareToSocial from '../components/social/ShareToSocial';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';

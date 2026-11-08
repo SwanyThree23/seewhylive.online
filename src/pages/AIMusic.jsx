@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -20,11 +17,6 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
-import SoundboardWidget from '../components/live/SoundboardWidget';
-import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import CreatorBridge from '../components/social/CreatorBridge';
 import {
   Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,

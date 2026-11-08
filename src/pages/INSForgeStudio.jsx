@@ -1,7 +1,7 @@
 import React, { useReducer } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Sparkles, Copy, Edit, Calendar, Check, Clock, Save, Trash2, Send } from 'lucide-react';
+import { Sparkles, Copy, Calendar, Check, Clock, Save, Trash2 } from 'lucide-react';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import VODLibrary from '../components/vod/VODLibrary';

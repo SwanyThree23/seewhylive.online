@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, StopCircle, Monitor, X } from 'lucide-react';
+import { Share2, StopCircle, Monitor } from 'lucide-react';
 
 export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare }) {
   const [showOptions, setShowOptions] = useState(false);

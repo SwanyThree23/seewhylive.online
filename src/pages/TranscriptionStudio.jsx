@@ -276,7 +276,7 @@ export default function TranscriptionStudio() {
       if (!cancelled && result) setTranslationMap(prev => ({ ...prev, [l.id]: result }));
     });
     return () => { cancelled = true; };
-  }, [lines, translateTarget]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [lines, translateTarget]);  
 
   // ── Export helpers ────────────────────────────────────────────────────────────
   function toSrtTime(ms) {

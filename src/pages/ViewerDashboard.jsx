@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import {
-  Radio, Heart, Bell, Clock, DollarSign, Scissors,
+  Radio, Heart, Bell, Clock, Scissors,
   Play, TrendingUp, Star, Users, CheckCheck
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -31,7 +31,6 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import RoomReactionOverlay from '../components/live/RoomReactionOverlay';
 import CreatorBridge from '../components/social/CreatorBridge';
 

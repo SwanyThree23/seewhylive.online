@@ -5,22 +5,13 @@ import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, 
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { useAuth } from '@/lib/AuthContext';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import AccountDeletionFlow from '../components/settings/AccountDeletionFlow';
 import CreatorBridge from '../components/social/CreatorBridge';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import TierEditor from '../components/subscriptions/TierEditor';
-import ZEGOSettingsDrawer from '../components/live/ZEGOSettingsDrawer';
-import MySubscriptions from '../components/subscriptions/MySubscriptions';
-import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
-import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
-import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
-import StripeConnectButton from '../components/monetization/StripeConnectButton';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';

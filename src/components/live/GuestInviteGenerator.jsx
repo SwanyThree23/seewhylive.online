@@ -2,8 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Copy, Check, QrCode, Link, Trash2, Plus, Clock, Users, RefreshCw, Download } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Copy, Check, QrCode, Link, Trash2, Plus, Clock, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
 const G = '#FFB800';

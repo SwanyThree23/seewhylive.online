@@ -1,25 +1,10 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Layers, Bell, Palette, Target, Info, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { Layers } from 'lucide-react';
 import AlertConfig from '@/components/live/AlertConfig';
-import OverlayThemeBuilder from '@/components/live/OverlayThemeBuilder';
-import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
-import SoundboardWidget from '../components/live/SoundboardWidget';
-import SceneSwitcher from '../components/live/SceneSwitcher';
-import LowerThirdsBanner from '@/components/live/LowerThirdsBanner';
-import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
-import StreamMetricsBar from '../components/live/StreamMetricsBar';
-import ChatOverlay from '../components/live/ChatOverlay';
-import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
-import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
-import ShareToSocial from '../components/social/ShareToSocial';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
@@ -148,7 +148,7 @@ export default function GreenroomEnhanced() {
   // Auto-start camera on mount so preview isn't stuck black
   useEffect(() => {
     acquireCamera();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   function handleVideoChange(id) { setSelectedCam(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} acquireCamera({ camId: id }); }

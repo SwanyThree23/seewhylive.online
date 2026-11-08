@@ -28,7 +28,7 @@ import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
-import { DollarSign, Gift } from 'lucide-react';
+import { Gift } from 'lucide-react';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
@@ -470,7 +470,7 @@ export default function LiveRoom() {
   useEffect(() => {
     if (!user?.id || !roomId) return;
     announceJoinRef.current?.(user.id);
-  }, [user?.id, roomId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.id, roomId]);  
   useEffect(() => () => leaveRoomRef.current?.(), []);
 
   const { isSpeaking: localSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: true });
@@ -485,7 +485,7 @@ export default function LiveRoom() {
     const entries = Array.from(peersRef.current.entries());
     const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
     setActivePc(connected ? connected[1].pc : null);
-  }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [remoteStreams]);  
 
   const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
 
@@ -686,7 +686,7 @@ export default function LiveRoom() {
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
     return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [audioEnabled, pttActive]);
 
   // Route audio output to selected speaker device

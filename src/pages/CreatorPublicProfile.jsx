@@ -1,23 +1,14 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
-import SignalBars from '../components/live/SignalBars';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import ShareToSocial from '../components/social/ShareToSocial';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import AnnouncementPanel from '../components/community/AnnouncementPanel';
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Radio, Users, DollarSign, Clock, Star,
+  Radio, Users, DollarSign,
   Play, Heart, Eye, Share2, ArrowLeft, Zap, Video
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanyBotWidget from '../components/guide/ARIAWidget';

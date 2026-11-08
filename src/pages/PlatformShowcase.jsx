@@ -4,17 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Zap, Users, Trophy, Radio, MessageSquare, Sparkles, Gamepad2, Eye, Target } from 'lucide-react';
-import ActivitySidebar from '../components/shared/ActivitySidebar';
-import QuickActionPanel from '../components/shared/QuickActionPanel';
+import { ChevronRight, Zap, Radio, Sparkles } from 'lucide-react';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
-import VODLibrary from '../components/vod/VODLibrary';
 import ShopDashboard from '../components/merch/ShopDashboard';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
-import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';

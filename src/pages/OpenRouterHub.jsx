@@ -1,7 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  Zap, Send, RotateCcw, Copy, ChevronDown, BarChart2, Cpu,
-  Clock, DollarSign, Layers, CheckCircle, X, Plus,
+import React, { useState } from 'react';
+import { Send, RotateCcw, Copy, Layers, CheckCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';

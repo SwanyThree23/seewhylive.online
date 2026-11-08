@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Lock, Users, DollarSign, Calendar, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 import moment from 'moment';
 
 const GOLD    = '#FFB800';

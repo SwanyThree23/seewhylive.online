@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Video, VideoOff, Maximize2, Minimize2, Crown, Link, Radio } from 'lucide-react';
 import GuestDestinationsPanel from './GuestDestinationsPanel';

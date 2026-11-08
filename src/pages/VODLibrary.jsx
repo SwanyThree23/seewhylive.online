@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Film, Scissors, Archive, BookOpen, Sparkles, ChevronDown, Play, Eye } from 'lucide-react';
+import { Film, Scissors, Archive, BookOpen, Sparkles, Play, Eye } from 'lucide-react';
 import VODLibraryComponent from '@/components/vod/VODLibrary';
 import RecordingManager from '../components/content/RecordingManager';
 import ChapterEditor from '../components/vod/ChapterEditor';

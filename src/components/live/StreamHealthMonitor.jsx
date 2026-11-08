@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wifi, WifiOff, ChevronDown, ChevronUp, AlertTriangle, Volume2, Monitor, Copy } from 'lucide-react';
+import { ChevronDown, ChevronUp, AlertTriangle, Volume2, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
 const QUALITY_LABELS = [
