@@ -123,7 +123,7 @@ function GuestCard({ guest, roomId, onRemove, onUpdate }) {
         <div style={{ flex: 1, padding: '5px 8px', borderRadius: 7, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.04)', fontSize: 9, color: DIM, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {guestLink}
         </div>
-        <button onClick={() => window.open(guestLink, '_blank')} title="Open guest link" style={{ padding: '5px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: DIM, cursor: 'pointer' }}>
+        <button onClick={() => window.open(guestLink, '_blank', 'noopener,noreferrer')} title="Open guest link" style={{ padding: '5px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: DIM, cursor: 'pointer' }}>
           <ExternalLink style={{ width: 11, height: 11 }} />
         </button>
       </div>
@@ -336,7 +336,7 @@ export default function VDONinjaManager() {
                         <button onClick={() => copy(link.url)} style={{ flex: 1, padding: '5px 0', borderRadius: 6, cursor: 'pointer', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: DIM, fontSize: 9, fontWeight: 700, ...T }}>
                           Copy
                         </button>
-                        <button onClick={() => window.open(link.url, '_blank')} style={{ padding: '5px 7px', borderRadius: 6, cursor: 'pointer', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: DIM }}>
+                        <button onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')} style={{ padding: '5px 7px', borderRadius: 6, cursor: 'pointer', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: DIM }}>
                           <ExternalLink style={{ width: 10, height: 10 }} />
                         </button>
                       </div>
