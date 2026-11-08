@@ -37,7 +37,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
 const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
-const BETA_REFERRAL_BASE = `${window.location.origin}/Welcome`;
+const REFERRAL_BASE = `${window.location.origin}/Welcome`;
 
 export default function InviteUsersPage() {
   const [email, setEmail] = useState('');
@@ -58,7 +58,7 @@ export default function InviteUsersPage() {
   const userCommunityId = userCommunity?.id || null;
 
   const isAdmin = user?.role === 'admin';
-  const referralLink = `${BETA_REFERRAL_BASE}?ref=${user?.id}`;
+  const referralLink = `${REFERRAL_BASE}?ref=${user?.id}`;
 
   const handleInvite = async () => {
     if (!email.trim() || !email.includes('@')) { toast.error('Please enter a valid email address'); return; }
@@ -85,7 +85,7 @@ export default function InviteUsersPage() {
     navigator.clipboard.writeText(referralLink).then(() => {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2500);
-      toast.success('Beta invite link copied!');
+      toast.success('Invite link copied!');
     }).catch(() => toast.error('Copy failed.'));
   };
 
@@ -227,7 +227,7 @@ export default function InviteUsersPage() {
           <ZEGOMobileAppBanner />
         </div>
 
-        {/* Beta info */}
+        {/* Platform info */}
         <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
           <div className="flex gap-3">
             <span className="text-2xl">🚀</span>

@@ -73,7 +73,7 @@ export default function MonetizationWidgets() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 space-y-4">
-        {/* Beta notice */}
+        {/* Info notice */}
         <div className="flex items-start gap-3 p-4 rounded-xl"
           style={{ background: 'rgba(74,138,122,0.05)', border: '1px solid rgba(74,138,122,0.2)' }}>
           <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#4A8A7A' }} />

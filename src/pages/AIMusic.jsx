@@ -948,7 +948,7 @@ Return ONLY valid JSON (no markdown, no backticks):
             textTransform: 'uppercase',
           }}>
             <Zap size={10} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-            AI Beta
+            AI Studio
           </span>
         </div>
       </div>
