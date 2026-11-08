@@ -296,6 +296,7 @@ function FormatCard({ fmt, onSelect }) {
 
 function CameraPreview({ onStreamReady, onMicChange, startRef }) {
   const videoRef = useRef(null);
+  const streamRef = useRef(null);
   const [stream,     setStream]     = useState(null);
   const [camOn,      setCamOn]      = useState(false);
   const [micOn,      setMicOn]      = useState(true);
@@ -309,7 +310,7 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
 
   const start = useCallback(async (opts = {}) => {
     setError(null);
-    stream?.getTracks().forEach(t => t.stop());
+    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
     try {
       const resPresets = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } };
       const res = resPresets[opts.resolution || resolution] || resPresets['720p'];
@@ -317,6 +318,7 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
         video: { ...res, ...(opts.videoId || videoId ? { deviceId: { ideal: opts.videoId || videoId } } : {}) },
         audio: { echoCancellation: true, noiseSuppression: true, ...(opts.audioId || audioId ? { deviceId: { ideal: opts.audioId || audioId } } : {}) },
       });
+      streamRef.current = s;
       setStream(s);
       setCamOn(true);
       s.getAudioTracks().forEach(t => { t.enabled = micOn; });
@@ -325,14 +327,14 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
     } catch {
       setError('Camera/mic access denied — check browser permissions');
     }
-  }, [onStreamReady, videoId, audioId, resolution, micOn, stream]);
+  }, [onStreamReady, videoId, audioId, resolution, micOn]);
 
-  useEffect(() => { start(); return () => stream?.getTracks().forEach(t => t.stop()); }, []);
+  useEffect(() => { start(); return () => { if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); }; }, []);
   useEffect(() => { if (startRef) startRef.current = start; }, [startRef, start]);
 
   function toggleMic() {
     const next = !micOn;
-    stream?.getAudioTracks().forEach(t => { t.enabled = next; });
+    if (streamRef.current) streamRef.current.getAudioTracks().forEach(t => { t.enabled = next; });
     setMicOn(next);
     onMicChange?.(next);
   }

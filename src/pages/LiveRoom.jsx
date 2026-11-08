@@ -213,7 +213,7 @@ const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%,
 const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#4A8A7A','#EF6C00'];
 
 function avatarColor(name) {
-  return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
+  return PALETTE[((name && name.charCodeAt(0)) || 0) % PALETTE.length];
 }
 
 // ── Demo data (replaced by real WebRTC when roomId is available) ──────────────
