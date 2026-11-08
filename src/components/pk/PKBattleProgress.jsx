@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Flame, Trophy, Users, TrendingUp } from 'lucide-react';
+import { Flame, Trophy } from 'lucide-react';
 
 const TIP_AMOUNTS_CENTS = [99, 199, 499];
 

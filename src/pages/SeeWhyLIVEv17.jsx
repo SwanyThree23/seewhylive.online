@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { GiftTray, GiftAnimationOverlay, GiftLeaderboard, TipAlertOverlay } from "@/components/live/GiftSystem";
+import { GiftAnimationOverlay, GiftLeaderboard } from "@/components/live/GiftSystem";
 import ViewerControlsPanel from "@/components/live/ViewerControlsPanel";
 import ZEGOSettingsDrawer, { StreamHealthHUD } from "@/components/live/ZEGOSettingsDrawer";
 import TipNowModal, { SubscribeButton } from "@/components/live/TipNowModal";
@@ -16,8 +16,6 @@ import AuraPanelDrawer from "@/components/live/AuraPanelDrawer";
 import SwanDirectorPanel, { SwanDirectorHUD } from "@/components/live/SwanDirectorPanel";
 import ClipCreatorSheet from "@/components/live/ClipCreatorSheet";
 import { MerchShopV2, ViewerControlsV2, InRoomSubWidgetV2, TipAlertConfig, EngagementDashboardV2 } from "@/components/live/v162Components";
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 

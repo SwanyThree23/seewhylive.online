@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Trophy, TrendingUp, Swords, Star, Clock, Users, DollarSign, Zap, Crown, Target } from 'lucide-react';
+import { Trophy, TrendingUp, Star, Users, DollarSign, Zap, Crown, Target } from 'lucide-react';
 
 var ET = {
   rust: '#6B4423',

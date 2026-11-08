@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Monitor, Play, Pause, RefreshCw, Wifi, WifiOff, Camera } from 'lucide-react';
+import { Monitor, Play, Pause, RefreshCw, Camera } from 'lucide-react';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 

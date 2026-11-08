@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, Volume2, Trash2, Play } from 'lucide-react';
+import { Bell, Volume2, Trash2 } from 'lucide-react';
 import SelectSheet from '@/components/shared/SelectSheet';
 import { toast } from 'sonner';
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Share2, Copy, Gift, Users } from 'lucide-react';
+import { Share2, Copy, Gift } from 'lucide-react';
 
 const G = '#D4AF37';
 const PANEL = '#0D1022';

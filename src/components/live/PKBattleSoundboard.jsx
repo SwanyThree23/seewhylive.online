@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Volume2 } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import SoundboardWidget from './SoundboardWidget';
 
 const G = '#FFB800';

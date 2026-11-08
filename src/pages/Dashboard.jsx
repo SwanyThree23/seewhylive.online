@@ -5,13 +5,12 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer,
   CartesianGrid, Tooltip, PieChart, Pie, Cell
 } from 'recharts';
 import {
   Radio, Users, DollarSign, TrendingUp, Eye, Clock, MessageSquare,
-  Heart, Zap, Plus, Video, BookOpen, Settings, ChevronRight,
-  Star, Play, Trash2, Edit, X, Check, FileText, Target, BarChart2,
+  Heart, Plus, Video, Settings, ChevronRight, Play, Trash2, Edit, X, BarChart2,
   Crown, Layers
 } from 'lucide-react';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
@@ -21,7 +20,6 @@ import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
-import ActivitySidebar from '../components/shared/ActivitySidebar';
 import RecordingManager from '../components/content/RecordingManager';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
@@ -40,10 +38,8 @@ import SpotlightSection from '../components/community/SpotlightSection';
 import PollCard from '../components/community/PollCard';
 import CreatorBridge from '../components/social/CreatorBridge';
 import { toast } from 'sonner';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';

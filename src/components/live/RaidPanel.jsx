@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Repeat, X, Search, Users, ArrowRight, Radio } from 'lucide-react';
+import { Repeat, X, Search, Users, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 const GOLD = '#FFB800';

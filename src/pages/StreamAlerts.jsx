@@ -1,20 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, BellRing, Volume2, Play, Zap, Gift, Star, Heart, Users } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { BellRing, Zap, Gift, Star, Heart, Users } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AlertConfig from '@/components/live/AlertConfig';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import StreamGoals from '../components/live/StreamGoals';
-import PollLaunchBar from '../components/live/PollLaunchBar';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
-import GiftAnimation from '../components/live/GiftAnimation';
-import TippingModal from '../components/monetization/TippingModal';
-import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';

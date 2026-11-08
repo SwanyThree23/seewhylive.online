@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
-import { Radio, Users, TrendingUp, CheckCircle2, X } from 'lucide-react';
+import { Radio, Users, TrendingUp, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 

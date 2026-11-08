@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, X, Star, Users, DollarSign, Radio, Zap } from 'lucide-react';
+import { Trophy, X, Star, Users, DollarSign, Radio } from 'lucide-react';
 
 const MILESTONES = [
   { type: 'subscribers', thresholds: [1, 5, 10, 25, 50, 100, 250, 500, 1000], icon: Users, label: 'subscribers', color: 'from-[#FF1564] to-[#FF2040]' },

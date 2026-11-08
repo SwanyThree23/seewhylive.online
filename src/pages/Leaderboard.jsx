@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Crown, TrendingUp, Star, Zap, DollarSign, Users, Trophy, Radio, Swords } from 'lucide-react';
+import { Crown, Star, DollarSign, Users, Trophy, Swords } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
@@ -20,9 +20,6 @@ import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 const SVS_BRACKET_ID = 'svs_bracket_v1';
 

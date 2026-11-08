@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, Send, Sparkles, Calendar, TrendingUp, Users } from 'lucide-react';
+import { Mail, Send, Sparkles, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactQuill from 'react-quill';
 import ShareToSocial from '../components/social/ShareToSocial';

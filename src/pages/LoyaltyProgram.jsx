@@ -1,20 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Star, Gift, Trophy, Users, Zap, Download, Trash2, X, Check } from 'lucide-react';
-import RedemptionQueue from '../components/loyalty/RedemptionQueue';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import { Plus, Star, Gift, Trophy, Users, Download, Trash2, X, Check } from 'lucide-react';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
-import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import RewardShopEditor from '../components/loyalty/RewardShopEditor';
-import LeaderboardPanel from '../components/live/LeaderboardPanel';
-import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import SpotlightBanner from '../components/community/SpotlightBanner';
 
 function Toggle({ checked, onChange }) {
   return (

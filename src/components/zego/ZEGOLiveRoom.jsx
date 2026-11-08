@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Mic, MicOff, Video, VideoOff, PhoneOff, Users, Monitor, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWebRTCPeers } from '@/hooks/useWebRTCPeers';

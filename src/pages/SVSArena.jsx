@@ -1,7 +1,7 @@
 import React, { useReducer, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Swords, Trophy, MapPin, Users, Plus, Clock } from 'lucide-react';
+import { Swords, MapPin, Plus } from 'lucide-react';
 import BattleScoreboard from '../components/live/BattleScoreboard';
 import BattleMode from '../components/streaming/BattleMode';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';

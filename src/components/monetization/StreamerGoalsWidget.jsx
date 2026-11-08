@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Plus, Check, Trash2, X, Zap, Edit3 } from 'lucide-react';
+import { Target, Plus, Check, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import NativeSelect from '../shared/NativeSelect';

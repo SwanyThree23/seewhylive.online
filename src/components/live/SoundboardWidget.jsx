@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, Zap, Music, Square, RotateCcw, Plus, X, Clock } from 'lucide-react';
+import { Volume2, Music, Square, RotateCcw, Plus, X, Clock } from 'lucide-react';
 
 const G     = '#FFB800';
 const PANEL = '#0D1022';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, Zap, Heart, Gift, Users, TrendingUp, DollarSign } from 'lucide-react';
+import { Zap, Heart, Gift, Users, TrendingUp, DollarSign } from 'lucide-react';
 
 const GOLD = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Wifi, WifiOff, Play, Square, Circle, Monitor, RefreshCw,
-  ChevronRight, Settings, Activity, Layers
+  ChevronRight, Layers
 } from 'lucide-react';
 import { toast } from 'sonner';
 

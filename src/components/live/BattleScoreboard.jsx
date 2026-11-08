@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Zap, Trophy } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Swords } from 'lucide-react';
 
 export default function BattleScoreboard({ roomId }) {
   const [prevScores, setPrevScores] = useState({});

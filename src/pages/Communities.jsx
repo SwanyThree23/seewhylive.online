@@ -42,10 +42,6 @@ function usePullToRefresh(onRefresh) {
   return { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd };
 }
 
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
 
 const GOLD    = '#FFB800';
 const CRIMSON = '#FF1564';

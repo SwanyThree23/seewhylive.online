@@ -5,8 +5,8 @@
  */
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Trophy, Users, Swords, Calendar, MapPin, Star, ChevronRight, Plus, Radio } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Trophy, Users, Calendar, MapPin, Star, Radio } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BattleScoreboard from '../components/live/BattleScoreboard';
 import BattleMode from '../components/streaming/BattleMode';

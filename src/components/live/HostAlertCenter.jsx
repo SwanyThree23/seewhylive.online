@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mic, Star, AlertTriangle, Zap, Scissors } from 'lucide-react';
+import { X } from 'lucide-react';
 
 let alertIdCounter = 0;
 const alertListeners = new Set();

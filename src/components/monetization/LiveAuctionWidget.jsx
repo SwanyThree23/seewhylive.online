@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Gavel, Clock, Plus, X, Check, Trophy, Flame, Crown, ArrowUp,
-  Package, Users, Zap, ChevronDown, ChevronUp
+  Gavel, Clock, Plus, X, Crown, Zap, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';

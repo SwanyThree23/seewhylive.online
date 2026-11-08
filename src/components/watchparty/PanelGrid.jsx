@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin, Volume2, X } from 'lucide-react';
+import { Crown, Mic, MicOff, Maximize2, MoreHorizontal, UserPlus, Pin, Volume2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import PanelMusicPlayer from '../live/PanelMusicPlayer';
 import { useAudioLevel } from '../../hooks/useAudioLevel';

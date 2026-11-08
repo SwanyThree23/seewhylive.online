@@ -5,15 +5,14 @@
  */
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import NativeSelect from '@/components/shared/NativeSelect';
 import {
-  Shield, ShieldOff, Mic, MicOff, Video, VideoOff, Radio,
-  Wifi, WifiOff, Pin, Users, Zap, Crown, Lock, Unlock,
-  BarChart2, Signal, Settings, X, Eye, EyeOff, Hand,
-  Copy, RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp,
+  Shield, ShieldOff, Mic, MicOff, Video, VideoOff, Radio, Pin, Users, Zap, Crown, Lock, Unlock,
+  BarChart2, X, Eye, Hand,
+  Copy,
   Timer, DollarSign, Tv,
 } from 'lucide-react';
 import GuestRTMPPanel from '../streaming/GuestRTMPPanel';

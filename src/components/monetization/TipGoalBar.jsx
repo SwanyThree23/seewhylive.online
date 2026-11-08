@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Target, Zap } from 'lucide-react';
+import { Target } from 'lucide-react';
 
 const G       = '#FFB800';
 const CRIMSON = '#FF1564';

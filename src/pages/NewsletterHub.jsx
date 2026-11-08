@@ -1,21 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast as showToast } from 'sonner';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import ShareToSocial from '../components/social/ShareToSocial';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import AnnouncementFeed from '../components/community/AnnouncementFeed';
-import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
-import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import SwanyBotWidget from '../components/guide/ARIAWidget';

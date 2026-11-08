@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, Gift, X, Zap, Star, Crown, Heart, Flame, CheckCircle } from 'lucide-react';
+import { Gift, X, Star, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const SUPER_AMOUNTS = [

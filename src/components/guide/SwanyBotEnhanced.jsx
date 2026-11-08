@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Brain, Zap } from 'lucide-react';
+import { Brain } from 'lucide-react';
 
 const G = '#d4af37';
 

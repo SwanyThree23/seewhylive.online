@@ -1,7 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
-  Minimize2, Copy, Download, RefreshCw, BarChart2, Zap,
-  ChevronDown, Info, Layers, X,
+  Minimize2, Copy, Download, RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';

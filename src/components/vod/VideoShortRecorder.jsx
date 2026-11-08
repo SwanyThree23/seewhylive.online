@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { Video, Clock, Lock } from 'lucide-react';
+import { Video, Lock } from 'lucide-react';
 
 const G = '#d4af37';
 

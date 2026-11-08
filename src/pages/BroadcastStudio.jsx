@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { MobileSelect } from '@/components/ui/MobileSelect';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
@@ -7,9 +6,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
-  Mic, MicOff, Video, VideoOff, PhoneOff, Users,
+  Mic, MicOff, Video, VideoOff, PhoneOff,
   Radio, LogOut, Copy, Maximize2, Minimize2,
-  ChevronLeft, ChevronRight, Swords, Monitor, LayoutGrid, FlipHorizontal2,
+  ChevronLeft, ChevronRight, Monitor, LayoutGrid, FlipHorizontal2,
   Hand,
 } from 'lucide-react';
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
@@ -23,20 +22,16 @@ import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import PanelGrid from '../components/watchparty/PanelGrid';
 import BattleTiers from '../components/watchparty/BattleTiers';
-import AggregatedChat from '../components/live/AggregatedChat';
 import ViewerRail from '../components/watchparty/ViewerRail';
-import LivePollWidget from '../components/live/LivePollWidget';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import PartyReactionsOverlay from '../components/watchparty/PartyReactionsOverlay';
 import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
-import HostControls from '../components/watchparty/HostControls';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import { useVoiceAgentRuntime } from '../hooks/useVoiceAgentRuntime';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
-import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import { useCameraDevices } from '../hooks/useCameraDevices';
 import LoveHearts from '../components/live/LoveHearts';
 import GiftShop from '../components/live/GiftShop';
@@ -47,15 +42,10 @@ import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import StudioTabContent from '../components/live/StudioTabContent';
 import LowLatencyPreviewToggle from '../components/live/LowLatencyPreviewToggle';
 import { useLowLatencyPreview } from '../hooks/useLowLatencyPreview';
-import GuestQueue from '../components/live/GuestQueue';
 import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import SuperChatRail from '../components/live/SuperChatRail';
-import LiveGoalWidget from '../components/live/LiveGoalWidget';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
-import AIModeration from '../components/live/AIModeration';
 import AIStreamSummary from '../components/live/AIStreamSummary';
-import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
-import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import GoldenWall from '../components/live/GoldenWall';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import GiftTray from '../components/live/GiftTray';
@@ -115,8 +105,6 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CreatorBridge from '../components/social/CreatorBridge';
 import BattleMode from '../components/streaming/BattleMode';
 import BitratePresets from '../components/streaming/BitratePresets';
-import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
-import GuestDestinationsDashboard from '../components/streaming/GuestDestinationsDashboard';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
@@ -145,7 +133,6 @@ import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import AudioMixer from '../components/live/AudioMixer';
 import AudioPanel from '../components/live/AudioPanel';
 import AuraPanel from '../components/live/AuraPanel';
-import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
@@ -159,16 +146,10 @@ import NewsBlockOverlay from '../components/live/NewsBlockOverlay';
 import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
-import StreamWebSourceManager from '../components/streaming/StreamWebSourceManager';
-import DualStreamManager from '../components/streaming/DualStreamManager';
-import LiveDestinationEditor from '../components/streaming/LiveDestinationEditor';
-import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
 import LivePollOverlay from '../components/live/LivePollOverlay';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
-import TipGoalBar from '../components/monetization/TipGoalBar';
-import TopTippers from '../components/monetization/TopTippers';
 import TipWidget from '../components/live/TipWidget';
 import InviteSheet from '../components/live/InviteSheet';
 import GuestControls from '../components/live/GuestControls';
@@ -186,8 +167,6 @@ import LoveTap from '../components/live/LoveTap';
 import ShareModal from '../components/live/ShareModal';
 import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
 import RoomEntryGate from '../components/RoomEntryGate';
-import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
-import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
 import PipCameraTile from '../components/live/PipCameraTile';
 import AlertConfig from '../components/live/AlertConfig';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
@@ -726,7 +705,7 @@ export default function BroadcastStudio() {
     const entries = Array.from(peersRef.current.entries());
     const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
     setActivePc(connected ? connected[1].pc : null);
-  }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [remoteStreams]);  
   const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
 
   // Low-latency preview — auto-on for mobile networks, lightens our capture and caps guest feeds
@@ -930,7 +909,7 @@ export default function BroadcastStudio() {
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
     return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [canStream, audioEnabled, videoEnabled, screenEnabled, isHost, pttActive]);
 
   // AI highlight detector — auto-clips when hype + sentiment spike

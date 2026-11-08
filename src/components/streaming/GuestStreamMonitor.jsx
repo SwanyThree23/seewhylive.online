@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, AlertTriangle, TrendingDown, Zap, Wifi, WifiOff } from 'lucide-react';
+import { Activity, AlertTriangle, Zap, Wifi, WifiOff } from 'lucide-react';
 
 export default function GuestStreamMonitor({ guestName, isStreaming }) {
   const [stats, setStats] = useState({

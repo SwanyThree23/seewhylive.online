@@ -6,8 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Mic, MicOff, Video, VideoOff, Users, Link, Copy, Check,
-  Radio, Maximize2, Minimize2, Crown, UserX, Signal,
-  WifiOff, Wifi, ChevronDown,
+  Radio, Crown, UserX, Wifi,
 } from 'lucide-react';
 import { useLocalMedia } from '@/hooks/useLocalMedia';
 import { useWebRTCPeers } from '@/hooks/useWebRTCPeers';
@@ -294,7 +293,7 @@ export default function MultiGuestCoStreamPanel({
   useEffect(() => {
     if (roomId && currentUser?.id) announceJoin(currentUser.id);
     return () => { leaveRoom(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [roomId]);
 
   // Mute mutation

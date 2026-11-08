@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Zap, Heart, BarChart2, Smile, Volume2, VolumeX, RefreshCw, Copy, CheckCheck } from 'lucide-react';
-import { toast } from 'sonner';
+import { Sparkles, Volume2, VolumeX, RefreshCw, Copy, CheckCheck } from 'lucide-react';
 
 const MODES = [
   { id: 'SASSY', label: 'Sassy', emoji: '💅', color: '#FF2040', desc: 'Sharp & witty' },

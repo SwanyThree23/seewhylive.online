@@ -1,7 +1,7 @@
-import React, { useReducer, useState } from 'react';
+import React, { useReducer } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Flame, Heart, Star, Award, MapPin, Send, Calendar } from 'lucide-react';
+import { Flame, Star, MapPin, Send } from 'lucide-react';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ShareToSocial from '../components/social/ShareToSocial';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';

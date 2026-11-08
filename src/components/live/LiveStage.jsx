@@ -265,7 +265,7 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
         await engine.logoutRoom(roomId);
       })();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [roomId, userId, token]);
 
   // ── Mic / camera toggles ───────────────────────────────────────────

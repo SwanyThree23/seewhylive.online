@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Flame, TrendingUp } from 'lucide-react';
+import { Flame } from 'lucide-react';
 
 export default function PartyHypeMeter({ partyId, memberCount, onHypeChange }) {
   const [hypeLevel, setHypeLevel] = useState(0);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { DollarSign, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 const G = '#ffb800';
 

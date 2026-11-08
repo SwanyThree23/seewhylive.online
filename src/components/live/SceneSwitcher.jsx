@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Monitor, Layout, Pause, Play, Sunrise, Sunset, ChevronDown, ChevronUp } from 'lucide-react';
+import { Camera, Monitor, Layout, Pause, Sunrise, Sunset, ChevronDown, ChevronUp } from 'lucide-react';
 
 const SCENES = [
   { id: 'camera', label: 'Camera Only', icon: Camera, desc: 'Webcam full view' },

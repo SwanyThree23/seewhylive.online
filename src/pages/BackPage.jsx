@@ -14,8 +14,6 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import { motion } from 'framer-motion';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 export default function BackPage() {
   const navigate = useNavigate();

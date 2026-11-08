@@ -10,8 +10,6 @@ import {
   Copy,
   Globe,
   Lock,
-  Radio,
-  Shield,
   ArrowLeft,
   Tag,
   Users,

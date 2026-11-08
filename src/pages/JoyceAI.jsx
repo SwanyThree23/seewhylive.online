@@ -7,10 +7,6 @@ import { base44 } from '@/api/base44Client';
 
 import StreamEventBus from '../components/live/StreamEventBus';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
-import ChatOverlay from '../components/live/ChatOverlay';
-import AICopilotSidebar from '../components/live/AICopilotSidebar';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';

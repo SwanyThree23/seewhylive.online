@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Mic, MicOff, Volume2, VolumeX, Trash2, Shield, MicOff as MuteAll } from 'lucide-react';
+import { Users, Mic, MicOff, Volume2, Trash2, Shield } from 'lucide-react';
 
 export default function GuestControls({ participants = [], onMuteGuest, onRemoveGuest, speakingIds = [] }) {
   const [expanded, setExpanded] = useState(() => { try { return localStorage.getItem('guest_controls_expanded') !== 'false'; } catch { return true; } });

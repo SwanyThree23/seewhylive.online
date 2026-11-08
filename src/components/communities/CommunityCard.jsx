@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Users, CheckCircle, Lock, Globe, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GripVertical, X, Volume2, VolumeX, Maximize2, Minimize2, Globe, Plus, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';

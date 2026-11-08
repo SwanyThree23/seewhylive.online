@@ -1,10 +1,10 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
-  CheckCircle, AlertCircle, Clock, Radio, Users, DollarSign,
+  CheckCircle, Clock, Radio, Users, DollarSign,
   MessageSquare, Shield, Star, Zap, Globe, BarChart2, UserPlus
 } from 'lucide-react';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';

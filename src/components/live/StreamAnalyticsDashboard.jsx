@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area, ReferenceLine } from 'recharts';
 import SafeResponsiveContainer from '@/components/shared/SafeChart';
-import { TrendingUp, TrendingDown, Users, MessageSquare, Zap, Heart, Eye, Download, RefreshCw, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, MessageSquare, Heart, Eye, Download, RefreshCw, DollarSign } from 'lucide-react';
 
 const G      = '#FFB800';
 const BG     = '#03030A';

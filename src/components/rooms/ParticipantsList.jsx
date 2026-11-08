@@ -5,8 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
-  Users, Hand, Mic, MicOff, Video, VideoOff, 
-  Crown, Shield, Search, MoreVertical, DollarSign, Flag
+  Users, Hand, Mic, MicOff, Video, 
+  Crown, Shield, MoreVertical, DollarSign, Flag
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";

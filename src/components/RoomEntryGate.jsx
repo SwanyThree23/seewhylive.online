@@ -590,7 +590,7 @@ export default function RoomEntryGate({ role, user, onPass, onRoleDowngrade, onE
   const noSteps = steps.length === 0;
   useEffect(() => {
     if (noSteps) onPass();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);  
   if (noSteps) return null;
 
   const currentStep = steps[stepIndex];

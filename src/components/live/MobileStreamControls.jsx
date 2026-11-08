@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff, Camera, MessageSquare, Heart, DollarSign, MoreHorizontal, X, RotateCcw } from 'lucide-react';
+import { Mic, MicOff, MessageSquare, DollarSign, MoreHorizontal, RotateCcw } from 'lucide-react';
 
 export default function MobileStreamControls({ micMuted, onMicToggle, onReact, onQuickTip, onWebSource, onGoal, onClip, onRaid, onPoll, onQA, roomId }) {
   const [showChat, setShowChat] = useState(() => { try { return localStorage.getItem('mobile_chat_visible') !== 'false'; } catch { return true; } });

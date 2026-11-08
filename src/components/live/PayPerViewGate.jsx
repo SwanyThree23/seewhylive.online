@@ -1,8 +1,4 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Lock, Unlock } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { toast } from 'sonner';
+import React from 'react';
 
 const G = '#FFB800';
 

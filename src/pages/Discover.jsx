@@ -4,12 +4,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLiveHomeRanking } from '../hooks/useLiveHomeRanking';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Radio, Search, TrendingUp, Users, Calendar, Star,
-  Zap, Eye, Clock, ChevronRight, Filter, Clapperboard
+  Radio, Search, TrendingUp, Users, Calendar, Star, Eye, ChevronRight, Clapperboard
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';

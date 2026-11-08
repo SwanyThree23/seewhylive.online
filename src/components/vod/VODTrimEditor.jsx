@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Scissors, Play, Pause, Save } from 'lucide-react';
+import React, { useState } from 'react';
+import { Scissors, Save } from 'lucide-react';
 
 export default function VODTrimEditor({ video, onSave, onCancel }) {
   const [trimStart, setTrimStart] = useState(video.trim_start || 0);

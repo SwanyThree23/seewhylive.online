@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,21 +6,12 @@ import { toast } from 'sonner';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
-  Swords, Trophy, Crown, ArrowLeft, Plus, Users, Zap, Clock,
-  Gift, Send, CheckCircle, XCircle, Star, Flame, Search,
-  BarChart2, Shield, AlertCircle, Copy, Share2, Sparkles,
-  ChevronRight, Play, Square, RefreshCw, Medal
+  Swords, Trophy, Crown, ArrowLeft, Plus, Zap, Send, CheckCircle, XCircle, Star, AlertCircle, Share2,
+  ChevronRight, Play, Medal
 } from 'lucide-react';
-import MatchmakingQueue from '../components/pk/MatchmakingQueue';
-import TournamentBracket from '../components/pk/TournamentBracket';
-import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
 import BattleOverlay from '../components/pk/BattleOverlay';
-import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
+import VideoSourcePicker, { getYouTubeId } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
-import BattleMode from '../components/streaming/BattleMode';
-import TipAlert from '../components/monetization/TipAlert';
-import TippingModal from '../components/monetization/TippingModal';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';

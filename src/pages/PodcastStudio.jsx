@@ -1,30 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { MobileSelect } from '@/components/ui/MobileSelect';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import AudioMixer from '../components/live/AudioMixer';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
-import GuestConnector from '../components/live/GuestConnector';
 import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
 import SoundboardWidget from '../components/live/SoundboardWidget';
-import AIStreamSummary from '../components/live/AIStreamSummary';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
-import VODCard from '../components/vod/VODCard';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
 import { isSafeUrl } from '@/lib/security';
-import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
-import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
-import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
-import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 
 
 import AlertConfig from '../components/live/AlertConfig';

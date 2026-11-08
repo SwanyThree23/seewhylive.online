@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Play, Pause, Volume2, VolumeX, Maximize,
-  Settings, Lock, Clock, Copy, Code2, Users, X, AlertCircle,
+  Play, Pause, Volume2, VolumeX, Maximize, Lock, Clock, Copy, Code2, Users, X, AlertCircle,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { useMutation } from '@tanstack/react-query';
 
 const GOLD = '#ffb800';
 const CRIM = '#FF2040';

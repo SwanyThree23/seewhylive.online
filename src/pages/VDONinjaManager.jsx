@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
-  Video, Link2, Copy, Plus, Trash2, RefreshCw, Users, Settings,
-  ExternalLink, Eye, EyeOff, Share2, Wifi, WifiOff, QrCode,
+  Video, Copy, Plus, Trash2, RefreshCw, Settings,
+  ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Trophy, TrendingUp } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 
 const G = '#FFB800';
 

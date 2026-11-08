@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CreditCard, CheckCircle, ExternalLink, Loader2, DollarSign, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { isSafeUrl } from '@/lib/security';
 
 const GOLD = '#FFB800';
 

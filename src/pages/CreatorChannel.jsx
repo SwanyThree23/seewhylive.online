@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
 import {
   Radio, Users, CheckCircle, Share2, Bell, Play, Clock,
   Twitter, Instagram, Youtube, ExternalLink, Calendar, Crown

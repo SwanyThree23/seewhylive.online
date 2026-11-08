@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import StreamEventBus from '../components/live/StreamEventBus';
 
@@ -24,8 +23,6 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 import CreatorBridge from '../components/social/CreatorBridge';
 
 

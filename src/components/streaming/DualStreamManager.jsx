@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Monitor, Smartphone, Play, Pause, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Monitor, Smartphone, Play, Pause } from 'lucide-react';
 
 const G = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };

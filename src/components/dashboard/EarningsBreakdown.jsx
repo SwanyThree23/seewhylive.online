@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { DollarSign, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 
 const G = '#FFB800';
 const PANEL = '#0D1022';

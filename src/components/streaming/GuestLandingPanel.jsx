@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Video, VideoOff, Mic, MicOff, CheckCircle, AlertCircle, Wifi, Users, Radio, Camera } from 'lucide-react';
+import { Video, VideoOff, Mic, MicOff, CheckCircle, AlertCircle, Radio, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 
 const GOLD = '#FFB800';

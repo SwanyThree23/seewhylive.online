@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Mic, MicOff, Video, VideoOff, PhoneOff, Gift, Swords,
-  Clock, Trophy, Crown, Wifi, WifiOff,
+  Mic, MicOff, Video, VideoOff, PhoneOff, Swords,
+  Clock, Crown, Wifi, WifiOff,
 } from 'lucide-react';
 import { useLocalMedia } from '@/hooks/useLocalMedia';
 import { useWebRTCPeers } from '@/hooks/useWebRTCPeers';
@@ -238,7 +238,7 @@ export default function FaceToFaceRoom({
   useEffect(() => {
     if (roomId) announceJoin(currentUserId);
     return () => { leaveRoom(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [roomId]);
 
   // Gift mutation — increments the relevant tips counter

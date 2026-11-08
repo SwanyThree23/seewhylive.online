@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, MessageSquare, Plus, CheckCircle, Radio, Shield, Globe, Lock, Check, Copy, UserCheck, UserPlus } from 'lucide-react';;;
+import { Users, MessageSquare, Plus, CheckCircle, Radio, Shield, Globe, UserCheck, UserPlus } from 'lucide-react';;;
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';

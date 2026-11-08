@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LineChart, Line, Tooltip } from 'recharts';
+import { LineChart, Line } from 'recharts';
 import SafeResponsiveContainer from '@/components/shared/SafeChart';
 import { Users, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import confetti from 'canvas-confetti';

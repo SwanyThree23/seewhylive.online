@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Swords, Trophy, X, Zap, Users, Flame } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Swords, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 

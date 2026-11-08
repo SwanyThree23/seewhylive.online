@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
-  Tv2, Users, Star, Zap, Globe, Mic, Gift, DollarSign,
-  Trophy, Play, ExternalLink, ChevronRight, Ticket, Percent,
+  Tv2, Users, Star, Zap, Globe, Mic, DollarSign,
+  Trophy, Play, ExternalLink, Ticket, Percent,
   Radio, Heart, Award, Crown, Sparkles, Calendar, Share2, ArrowRight
 } from 'lucide-react';
 import { createPageUrl } from '../utils';

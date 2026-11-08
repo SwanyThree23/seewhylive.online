@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line } from 'recharts';
 import SafeResponsiveContainer from '@/components/shared/SafeChart';
-import { Users, TrendingUp, Clock, ThumbsUp, MessageSquare, BarChart2 } from 'lucide-react';
+import { Users, TrendingUp, Clock, ThumbsUp } from 'lucide-react';
 
 function StatCard({ icon: IconComp, label, value, sub, color = '#d4af37' }) {
   const Icon = IconComp;

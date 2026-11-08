@@ -1,6 +1,6 @@
-import React, { useReducer, useRef, useEffect, useCallback, useState } from 'react';
+import React, { useReducer, useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Mic, MicOff, Video, VideoOff, X, Maximize2, Star } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, X, Star } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import SpeakerHighlightSettings from './SpeakerHighlightSettings';
 

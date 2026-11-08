@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Gift, Crown, Trophy } from 'lucide-react';
+import { Gift, Trophy } from 'lucide-react';
 
 const G      = '#FFB800';
 const BORDER = 'rgba(255,184,0,0.18)';

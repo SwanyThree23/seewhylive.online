@@ -1,6 +1,6 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import { MobileSelect } from '@/components/ui/MobileSelect';
-import { Mic, Play, Square, Volume2, Save, Plus, Trash2, Zap, Bot, ChevronDown, ChevronUp, Link, Webhook, BarChart2, BookOpen, MessageSquare, X, RefreshCw } from 'lucide-react';
+import { Play, Volume2, Save, Plus, Trash2, Zap, Bot, Link, Webhook, BarChart2, BookOpen, MessageSquare, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';

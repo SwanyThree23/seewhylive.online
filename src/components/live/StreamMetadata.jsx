@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Tag, Globe, AlertTriangle, X, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Check, Tag, Globe, X, Plus } from 'lucide-react';
 import { MobileSelect } from '@/components/ui/MobileSelect';
 import { toast } from 'sonner';
 

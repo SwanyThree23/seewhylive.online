@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Radio, ShieldCheck, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Radio, ShieldCheck } from 'lucide-react';
 import { calcAge, setStoredDob } from '@/lib/ageVerification';
 import NativeSelect from '@/components/shared/NativeSelect';
 

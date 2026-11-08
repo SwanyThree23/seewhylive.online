@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';
 import GlobalSearch from '../components/shared/GlobalSearch';

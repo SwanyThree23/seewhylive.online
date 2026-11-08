@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Zap, Trophy, DollarSign, Users, Crown, Timer, X, Plus } from 'lucide-react';
+import { Swords, Zap, Trophy, DollarSign, Crown, Timer, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 /**

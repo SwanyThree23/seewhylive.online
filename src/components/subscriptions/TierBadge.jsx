@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Star, Crown, Zap, Heart, Diamond } from 'lucide-react';
+import { Flame, Star, Crown, Zap, Heart } from 'lucide-react';
 
 const ICON_MAP = {
   bronze: ({ className }) => <span className={className}>🥉</span>,

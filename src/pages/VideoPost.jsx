@@ -1,19 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Upload, Video, Clock, Lock, Globe, Tag, Play, Share2, X, CheckCircle } from 'lucide-react';
+import { Upload, Video, Clock, Lock, Globe, Share2, X, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ShareModal from '../components/live/ShareModal';
 import ShareButtons from '../components/shared/ShareButtons';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import DiscussionFeed from '../components/community/DiscussionFeed';
-import VODCard from '../components/vod/VODCard';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import StreamGoals from '../components/live/StreamGoals';
 
 

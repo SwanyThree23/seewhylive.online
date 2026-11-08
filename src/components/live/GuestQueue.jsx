@@ -10,9 +10,6 @@ import {
   Clock,
   Mic,
   MicOff,
-  Video,
-  ChevronUp,
-  ChevronDown,
 } from 'lucide-react';
 
 const GOLD = '#FFB800';

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Send, Mic, ChevronDown, Sparkles, Volume2, Clock, Trash2, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw } from 'lucide-react';
+import { X, Send, Mic, ChevronDown, Sparkles, Volume2, Clock, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 const G = '#FFB800';

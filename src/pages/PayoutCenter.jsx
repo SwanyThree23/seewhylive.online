@@ -1,7 +1,7 @@
-import React, { useReducer, useEffect } from 'react';
+import React, { useReducer } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { DollarSign, Shield, Clock, CheckCircle, AlertCircle, TrendingUp, Lock, Bell, CreditCard, FileText } from 'lucide-react';
+import { DollarSign, Shield, CheckCircle, AlertCircle, TrendingUp, Lock, Bell, CreditCard, FileText } from 'lucide-react';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SubscriptionManager from '../components/monetization/SubscriptionManager';

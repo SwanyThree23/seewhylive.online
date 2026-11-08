@@ -3,7 +3,7 @@
  * Subscribes to Transaction entity, shows top 5 by amount, updates live.
  * Props: { roomId, limit (default 5), compact (bool) }
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';

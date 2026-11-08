@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import {
   Radio, Mic, Tv, Settings, Swords, Users, Video,
   Zap, BarChart2, Globe, Cpu, Sliders, ChevronRight,
-  Bot, Layers, Scissors, Camera,
+  Bot, Scissors, Camera,
 } from 'lucide-react';
 import StreamGoals from '../components/live/StreamGoals';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';

@@ -4,21 +4,16 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search as SearchIcon, Radio, Users, Trophy, User,
-  TrendingUp, Clock, X, Flame, Star, Eye,
+  TrendingUp, Clock, X, Flame, Star,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import ChallengeCard from '../components/community/ChallengeCard';
-import SpotlightBanner from '../components/community/SpotlightBanner';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import FollowButton from '../components/shared/FollowButton';
-import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
-import ShareToSocial from '../components/social/ShareToSocial';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';

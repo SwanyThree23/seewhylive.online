@@ -5,9 +5,9 @@ function cryptoHex(len = 16) {
   return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, len);
 }
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Server, Copy, RefreshCw, Eye, EyeOff, Radio, Tv2, Wifi, Zap, Terminal, Globe, Lock, Layers, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Server, Copy, RefreshCw, Eye, EyeOff, Radio, Tv2, Wifi, Zap, Terminal, Globe, Lock, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';

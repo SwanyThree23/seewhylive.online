@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Webhook, Plus, Trash2, ChevronDown, Check, AlertCircle } from 'lucide-react';
+import { Webhook, Plus, Trash2, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';

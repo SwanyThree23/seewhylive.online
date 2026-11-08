@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, ThumbsUp, ThumbsDown, SkipForward, Trash2, CheckCircle, Youtube, Video, ListVideo } from 'lucide-react';
+import { Plus, ThumbsUp, ThumbsDown, SkipForward, Trash2, CheckCircle, Video, ListVideo } from 'lucide-react';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';

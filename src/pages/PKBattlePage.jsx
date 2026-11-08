@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isSafeUrl } from '@/lib/security';
-import { Swords, Trophy, ArrowLeft, Plus, Users, Zap, Clock, Gift, Crown } from 'lucide-react';
+import { Swords, ArrowLeft, Crown } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
@@ -480,7 +480,7 @@ export default function PKBattlePage() {
   const leaveRoomBattleRef = useRef(leaveRoomBattle);
   useEffect(() => { announceJoinBattleRef.current = announceJoinBattle; }, [announceJoinBattle]);
   useEffect(() => { leaveRoomBattleRef.current = leaveRoomBattle; }, [leaveRoomBattle]);
-  useEffect(() => { if (!user?.id || !battleId) return; announceJoinBattleRef.current?.(user.id); }, [user?.id, battleId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!user?.id || !battleId) return; announceJoinBattleRef.current?.(user.id); }, [user?.id, battleId]);  
   useEffect(() => () => leaveRoomBattleRef.current?.(), []);
 
   const [activeBattlePc, setActiveBattlePc] = useState(null);
@@ -488,7 +488,7 @@ export default function PKBattlePage() {
     const entries = Array.from(battlePeersRef.current.entries());
     const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
     setActiveBattlePc(connected ? connected[1].pc : null);
-  }, [battleRemoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [battleRemoteStreams]);  
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeBattlePc, 5000);
 
   const [peakViewers, setPeakViewers] = useState(0);
@@ -511,7 +511,7 @@ export default function PKBattlePage() {
   useEffect(() => () => {
     leftCaptureStream?.getTracks().forEach(t => t.stop());
     rightCaptureStream?.getTracks().forEach(t => t.stop());
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);  
 
   if (!battleId) {
     return (
