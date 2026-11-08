@@ -400,7 +400,7 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
         <AICopilotSidebar roomId={activeRoomId} isHost={true} viewerCount={0} />
         <ContentRecommendations />
         <VODLibrary creatorId={user?.id} />
-        <ShareToSocial content={null} />
+        <ShareToSocial content={{ title: 'INS Forge Studio on SeeWhy LIVE', url: window.location.href }} />
         <AutomatedHighlightReels streamSession={activeRoom || null} />
         <AutomatedClipGenerator streamSession={activeRoom || null} isLive={!!activeRoomId} />
         <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user?.id} />

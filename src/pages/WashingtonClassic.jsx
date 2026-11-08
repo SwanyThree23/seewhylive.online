@@ -361,7 +361,7 @@ export default function WashingtonClassic() {
         <TournamentBracket />
         <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
         <LeaderboardPanel roomId={activeRoomId} />
-        <ShareToSocial content={null} />
+        <ShareToSocial content={{ title: 'Washington Classic Domino Tournament — SeeWhy LIVE', url: window.location.href }} />
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
       </div>

@@ -358,7 +358,7 @@ export default function CreatorAnalytics() {
         <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
         <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
         <AutomatedHighlightReels streamSession={activeRoom || null} />
-        <ShareToSocial content={null} />
+        <ShareToSocial content={{ title: 'Creator Analytics on SeeWhy LIVE', url: window.location.href }} />
         <CollaborationMatcher />
         <OnlineUsersGrid compact maxVisible={8} />
       </div>

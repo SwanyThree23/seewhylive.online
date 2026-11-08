@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -83,9 +84,9 @@ export default function CreatorChannel() {
       title: `${profile?.display_name} went live!`,
       message: `${profile?.display_name} is now streaming. Join now!`,
     }),
-    onError: () => alert('Failed to set reminder. Please try again.'),
+    onError: () => toast.error('Failed to set reminder. Please try again.'),
     onSuccess: () => {
-      alert('Reminder set!');
+      toast.success('Reminder set!');
       if (currentUser?.id) {
         base44.entities.Activity.create({
           user_id: currentUser.id,

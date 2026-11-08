@@ -1665,7 +1665,7 @@ export default function WatchPartyPage() {
         {partyId && <SuperChatRail roomId={partyId} currentUser={user} />}
         {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={activePoll} />}
         {isHost && user?.id && <FanoutEnginePanel members={members} isHost={isHost} roomId={partyId} />}
-        <ShareToSocial url={window.location.href} title={party?.title ? `Watching "${party.title}" on SeeWhy LIVE!` : 'Join my watch party on SeeWhy LIVE!'} />
+        <ShareToSocial content={{ url: window.location.href, title: party?.title ? `Watching "${party.title}" on SeeWhy LIVE!` : 'Join my watch party on SeeWhy LIVE!' }} />
         {partyId && party?.host_id && !isHost && (
           <LoveTap roomId={partyId} user={user} creatorId={party.host_id} creatorName={party.host_name || 'Host'} />
         )}
