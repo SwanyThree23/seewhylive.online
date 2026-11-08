@@ -44,8 +44,14 @@ var upload = multer({
 });
 
 var SB_HOST = (function() {
-  try { return new URL(process.env.SUPABASE_URL || '').hostname || 'xlrcibziouffgxciecvc.supabase.co'; }
-  catch(e) { return 'xlrcibziouffgxciecvc.supabase.co'; }
+  try {
+    var h = new URL(process.env.SUPABASE_URL || '').hostname;
+    if (!h) throw new Error('empty hostname');
+    return h;
+  } catch (e) {
+    console.error('[media] SUPABASE_URL ' + (process.env.SUPABASE_URL ? 'is malformed' : 'is not set') + ' — media upload will fail');
+    return '';
+  }
 }());
 
 function sbUploadStream(bucketPath, filePath, fileSize, contentType, cb) {
