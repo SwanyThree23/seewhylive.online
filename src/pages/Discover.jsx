@@ -138,12 +138,13 @@ export default function DiscoverPage() {
 
   const totalViewers = liveRooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
 
-  const filterRooms = (rooms) => {
-    return rooms.filter(r => {
-      const matchSearch = !debouncedSearch ||
-        r.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        r.description?.toLowerCase().includes(debouncedSearch.toLowerCase());
-      const matchGenre = genre === 'All' || r.tags?.includes(genre.toLowerCase());
+  var filterRooms = function(rooms) {
+    return rooms.filter(function(r) {
+      var lq = debouncedSearch.toLowerCase();
+      var titleMatch = r.title && r.title.toLowerCase().includes(lq);
+      var descMatch = r.description && r.description.toLowerCase().includes(lq);
+      var matchSearch = !debouncedSearch || titleMatch || descMatch;
+      var matchGenre = genre === 'All' || (r.tags && r.tags.includes(genre.toLowerCase()));
       return matchSearch && matchGenre;
     });
   };

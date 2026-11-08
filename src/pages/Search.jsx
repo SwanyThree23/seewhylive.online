@@ -157,16 +157,21 @@ export default function SearchPage() {
 
   const liveRooms = rooms.filter(r => r.status === 'live');
 
-  const q = debouncedQuery.toLowerCase().trim();
+  var q = debouncedQuery.toLowerCase().trim();
 
-  const filter = (arr, fields) =>
-    arr.filter(item => fields.some(f => item[f]?.toLowerCase().includes(q)));
+  var filter = function(arr, fields) {
+    return arr.filter(function(item) {
+      return fields.some(function(f) {
+        return item[f] && item[f].toLowerCase().includes(q);
+      });
+    });
+  };
 
-  const filteredLive       = q ? liveRooms.filter(r => r.title?.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q)) : liveRooms;
-  const filteredRooms      = q ? filter(rooms, ['title', 'description']) : rooms;
-  const filteredCommunities = q ? filter(communities, ['name', 'description']) : communities;
-  const filteredChallenges  = q ? filter(challenges, ['title', 'description']) : challenges;
-  const filteredCreators    = q ? filter(creators, ['full_name', 'username', 'category', 'bio']) : creators;
+  var filteredLive       = q ? liveRooms.filter(function(r) { return (r.title && r.title.toLowerCase().includes(q)) || (r.description && r.description.toLowerCase().includes(q)); }) : liveRooms;
+  var filteredRooms      = q ? filter(rooms, ['title', 'description']) : rooms;
+  var filteredCommunities = q ? filter(communities, ['name', 'description']) : communities;
+  var filteredChallenges  = q ? filter(challenges, ['title', 'description']) : challenges;
+  var filteredCreators    = q ? filter(creators, ['full_name', 'username', 'category', 'bio']) : creators;
 
   const counts = {
     live: filteredLive.length,
