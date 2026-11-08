@@ -243,7 +243,7 @@ export default function NewsletterPage() {
         </div>
 
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-        <ShareToSocial />
+        <ShareToSocial content={{ url: window.location.href, title: 'Newsletter — SeeWhy LIVE' }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
           <EarningsBreakdown creatorId={user?.id} />
           <AudienceInsights creatorId={user?.id} />

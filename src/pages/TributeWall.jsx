@@ -353,7 +353,7 @@ export default function TributeWall() {
         <GoldenWall roomId={activeRoomId} isExpanded={false} />
         <MilestoneAlerts creatorId={user?.id} />
         <AnnouncementFeed communityId={userCommunityId} />
-        <ShareToSocial />
+        <ShareToSocial content={{ url: window.location.href, title: 'Tribute Wall — SeeWhy LIVE' }} />
         <ContentRecommendations />
 
         {/* Bottom note */}

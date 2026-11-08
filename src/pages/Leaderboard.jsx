@@ -490,7 +490,7 @@ export default function LeaderboardPage() {
         <MilestoneAlerts userId={currentUser?.id} roomId={roomId} />
         <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <CollaborationMatcher />
-          <ShareToSocial url={window.location.href} title="Check out the SeeWhy LIVE leaderboard!" />
+          <ShareToSocial content={{ url: window.location.href, title: 'Check out the SeeWhy LIVE leaderboard!' }} />
         </div>
       </div>
     </div>

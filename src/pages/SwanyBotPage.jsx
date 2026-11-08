@@ -273,7 +273,7 @@ export default function SwanyBotPage() {
         <AIStreamSummary roomId={activeRoomId} isHost={true} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
         <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
         <div style={{ marginTop: 10 }}>
-          <ShareToSocial />
+          <ShareToSocial content={{ url: window.location.href, title: 'SwanyBot on SeeWhy LIVE' }} />
         </div>
         <ContentRecommendations />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />

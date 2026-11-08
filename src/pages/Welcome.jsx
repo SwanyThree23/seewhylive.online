@@ -206,7 +206,6 @@ export default function WelcomePage() {
       <div className="relative z-20 px-4 pb-4 space-y-4">
         <FeaturedContentSection />
         <ZEGOMobileAppBanner />
-        <ShareToSocial />
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ContentRecommendations userId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />

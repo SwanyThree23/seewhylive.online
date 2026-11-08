@@ -236,7 +236,7 @@ export default function PublicProfile() {
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
           <CollaborationMatcher />
-          <ShareToSocial url={window.location.href} title="Check out this creator on SeeWhy LIVE!" />
+          <ShareToSocial content={{ url: window.location.href, title: 'Check out this creator on SeeWhy LIVE!' }} />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="profile" viewerCount={0} />

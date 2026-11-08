@@ -1403,7 +1403,7 @@ export default function SeeWhyLIVEv37() {
       <ViewerCount roomId={activeRoomId} />
       <NotificationHub userId={user?.id || null} roomId={activeRoomId} />
       <BroadcastAnalyticsDashboard roomId={activeRoomId} isHost={true} />
-      <ShareToSocial roomId={activeRoomId} streamTitle={''} isLive={!!activeRoomId} />
+      <ShareToSocial content={{ url: window.location.href, title: activeRoomId ? 'Join my live stream on SeeWhy LIVE!' : 'SeeWhy LIVE' }} />
       <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />

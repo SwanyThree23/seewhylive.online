@@ -620,7 +620,7 @@ export default function PayoutsPage() {
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <StreamGoals isHost={true} />
-          <ShareToSocial />
+          <ShareToSocial content={{ url: window.location.href, title: 'Creator Payouts — SeeWhy LIVE' }} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>
