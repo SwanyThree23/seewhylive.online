@@ -285,6 +285,14 @@ export default function ModerationDashboardPage() {
     { id: 'reports',  label: `📋 Reports (${reports.length})` },
   ];
 
+  if (user && user.role !== 'admin' && user.role !== 'host' && user.role !== 'owner') {
+    return (
+      <div style={{ minHeight: '100vh', background: '#080B18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 16 }}>Access restricted to moderators.</span>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
       {/* Header */}
