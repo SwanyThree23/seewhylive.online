@@ -798,7 +798,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="relative z-20 mx-4 mt-3 mb-1 rounded-2xl overflow-hidden cursor-pointer"
           style={{ background: 'linear-gradient(135deg, rgba(255,21,100,0.35) 0%, rgba(255,184,0,0.18) 100%)', border: '1px solid rgba(255,184,0,0.3)' }}
-          onClick={() => { window.location.href = '/Onboarding'; }}
+          onClick={() => { navigate(createPageUrl('Onboarding')); }}
         >
           <div className="flex items-center gap-3 px-4 py-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"

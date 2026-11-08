@@ -1638,9 +1638,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               { icon: '🚪', label: 'Breakout', action: () => setShowBreakoutRooms(true) },
               { icon: '📢', label: 'Share',    action: () => setShowShareModal(true) },
               { icon: '⚡', label: 'Activity', action: () => setShowActivitySidebar(v => !v) },
-              { icon: '📊', label: 'Poll',     action: () => { window.location.href = '/PollManager'; } },
+              { icon: '📊', label: 'Poll',     action: () => { navigate(createPageUrl('PollManager')); } },
               { icon: '🔔', label: 'Alert',    action: () => toast.info('Alert sent to audience!') },
-              { icon: '🎵', label: 'Music',    action: () => { window.location.href = '/AIMusic'; } },
+              { icon: '🎵', label: 'Music',    action: () => { navigate(createPageUrl('AIMusic')); } },
             ].map(item => (
               <button key={item.label}
                 onClick={item.action}
