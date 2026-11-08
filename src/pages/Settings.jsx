@@ -215,7 +215,7 @@ export default function SettingsPage() {
               <label className="block text-[10px] font-black uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Email</label>
               <DarkInput value={user?.email || ''} disabled />
             </div>
-            <SaveButton onClick={() => updateProfileMutation.mutate({ full_name: fullName })} disabled={updateProfileMutation.isPending} />
+            <SaveButton onClick={() => updateProfileMutation.mutate({ full_name: fullName.slice(0, 60) })} disabled={updateProfileMutation.isPending} />
           </div>
         </Section>
 

@@ -198,7 +198,7 @@ export default function CommunitySettingsPage() {
           <textarea style={{ ...inp, height: 80, resize: 'none' }} value={description} onChange={e => setDescription(e.target.value)} placeholder="What is this community about?" maxLength={500} />
 
           <label style={lbl}>Community Rules</label>
-          <textarea style={{ ...inp, height: 96, resize: 'none' }} value={rules} onChange={e => setRules(e.target.value)} placeholder="1. Be respectful&#10;2. No spam&#10;3. Stay on topic" />
+          <textarea style={{ ...inp, height: 96, resize: 'none' }} value={rules} onChange={e => setRules(e.target.value)} placeholder="1. Be respectful&#10;2. No spam&#10;3. Stay on topic" maxLength={1000} />
 
           <label style={lbl}>Category</label>
           <div className="flex flex-wrap gap-2 mt-1">

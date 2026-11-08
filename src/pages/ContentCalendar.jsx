@@ -237,10 +237,10 @@ export default function ContentCalendarPage() {
               </div>
 
               <label style={lbl}>Title</label>
-              <input style={inp} value={formData.title} onChange={e => set('title', e.target.value)} placeholder="Enter title" />
+              <input style={inp} value={formData.title} onChange={e => set('title', e.target.value)} placeholder="Enter title" maxLength={100} />
 
               <label style={lbl}>Description</label>
-              <textarea style={{ ...inp, height: 72, resize: 'none' }} value={formData.description} onChange={e => set('description', e.target.value)} placeholder="Enter description" />
+              <textarea style={{ ...inp, height: 72, resize: 'none' }} value={formData.description} onChange={e => set('description', e.target.value)} placeholder="Enter description" maxLength={500} />
 
               <label style={lbl}>Schedule For</label>
               <input type="datetime-local" style={inp}

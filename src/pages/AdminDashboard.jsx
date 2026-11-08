@@ -102,12 +102,13 @@ export default function AdminDashboard() {
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const roomId = new URLSearchParams(window.location.search).get('room_id');
-  const { data: allUsers = [], isLoading: loadingUsers } = useQuery({ queryKey: ['adminUsers'], queryFn: () => base44.entities.User.list('-created_date', 200), enabled: user?.role === 'admin' });
-  const { data: allRooms = [] } = useQuery({ queryKey: ['adminRooms'], queryFn: () => base44.entities.Room.list('-created_date', 100), enabled: user?.role === 'admin' });
-  const { data: transactions = [] } = useQuery({ queryKey: ['adminTransactions'], queryFn: () => base44.entities.Transaction.list('-created_date', 200), enabled: user?.role === 'admin' });
-  const { data: reports = [] } = useQuery({ queryKey: ['adminReports'], queryFn: () => base44.entities.Report.list('-created_date', 50), enabled: user?.role === 'admin' });
-  const { data: messages = [] } = useQuery({ queryKey: ['adminMessages'], queryFn: () => base44.entities.Message.list('-created_date', 500), enabled: user?.role === 'admin' });
-  const { data: communities = [] } = useQuery({ queryKey: ['adminCommunities'], queryFn: () => base44.entities.Community.list('-member_count', 50), enabled: user?.role === 'admin' });
+  const isAdminOrOwner = user && (user.role === 'admin' || user.role === 'owner');
+  const { data: allUsers = [], isLoading: loadingUsers } = useQuery({ queryKey: ['adminUsers'], queryFn: () => base44.entities.User.list('-created_date', 200), enabled: !!isAdminOrOwner });
+  const { data: allRooms = [] } = useQuery({ queryKey: ['adminRooms'], queryFn: () => base44.entities.Room.list('-created_date', 100), enabled: !!isAdminOrOwner });
+  const { data: transactions = [] } = useQuery({ queryKey: ['adminTransactions'], queryFn: () => base44.entities.Transaction.list('-created_date', 200), enabled: !!isAdminOrOwner });
+  const { data: reports = [] } = useQuery({ queryKey: ['adminReports'], queryFn: () => base44.entities.Report.list('-created_date', 50), enabled: !!isAdminOrOwner });
+  const { data: messages = [] } = useQuery({ queryKey: ['adminMessages'], queryFn: () => base44.entities.Message.list('-created_date', 500), enabled: !!isAdminOrOwner });
+  const { data: communities = [] } = useQuery({ queryKey: ['adminCommunities'], queryFn: () => base44.entities.Community.list('-member_count', 50), enabled: !!isAdminOrOwner });
   const firstCommunityId = communities[0]?.id || null;
   const activeAdminRoomId = allRooms.find(r => r.status === 'live')?.id || null;
 
@@ -122,7 +123,7 @@ export default function AdminDashboard() {
     onError: () => toast.error('Action failed.'),
   });
 
-  if (!user || user.role !== 'admin') return (
+  if (!user || (user.role !== 'admin' && user.role !== 'owner')) return (
     <div className="min-h-screen flex items-center justify-center text-center" style={{ background: BG }}>
       <div>
         <Shield className="w-16 h-16 mx-auto mb-4" style={{ color: '#C0392B' }} />
@@ -437,6 +438,7 @@ export default function AdminDashboard() {
               <div className="flex gap-2 mb-3">
                 <input value={newBanIP} onChange={e => setNewBanIP(e.target.value)}
                   placeholder="IP address (e.g. 192.168.1.1)"
+                  maxLength={45}
                   className="flex-1 h-9 px-3 rounded-xl text-xs text-white outline-none"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
                 <button onClick={() => { if(newBanIP.trim()) { setBannedIPs(p => [...p, { ip: newBanIP.trim(), reason: banReason, date: new Date().toISOString() }]); setNewBanIP(''); setBanReason(''); toast.success('IP banned'); }}}
@@ -447,6 +449,7 @@ export default function AdminDashboard() {
               </div>
               <input value={banReason} onChange={e => setBanReason(e.target.value)}
                 placeholder="Reason (optional)"
+                maxLength={200}
                 className="w-full h-8 px-3 rounded-xl text-xs text-white outline-none mb-3"
                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }} />
               <div className="space-y-2 max-h-40 overflow-y-auto">
@@ -474,6 +477,7 @@ export default function AdminDashboard() {
               <div className="flex gap-2 mb-2">
                 <input value={suspendUser} onChange={e => setSuspendUser(e.target.value)}
                   placeholder="Username or user ID"
+                  maxLength={100}
                   className="flex-1 h-9 px-3 rounded-xl text-xs text-white outline-none"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
                 <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
