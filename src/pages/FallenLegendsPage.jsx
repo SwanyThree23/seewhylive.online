@@ -298,7 +298,7 @@ export default function FallenLegendsPage() {
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-        <ShareToSocial content={null} />
+        <ShareToSocial content={{ title: 'Fallen Legends on SeeWhy LIVE', url: window.location.href }} />
         <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
         <AnnouncementFeed communityId={userCommunityId} />
         <RealtimeLeaderboard roomId={activeRoomId} creatorId={user?.id} />

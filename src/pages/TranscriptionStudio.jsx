@@ -564,7 +564,7 @@ export default function TranscriptionStudio() {
         </div>
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <ShareToSocial />
+        <ShareToSocial content={{ title: 'Transcription Studio on SeeWhy LIVE', url: window.location.href }} />
         <AIStreamSummary roomId={activeRoomId} isHost={true} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
         <RecordingManager userId={user?.id} />
         <LiveTranslationWidget roomId={activeRoomId} isHost={true} targetLanguage="en" />

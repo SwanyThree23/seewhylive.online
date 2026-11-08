@@ -390,7 +390,7 @@ export default function AnalyticsPage() {
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <LeaderboardPanel roomId={rooms[0]?.id || null} />
-          <ShareToSocial />
+          <ShareToSocial content={{ title: 'SeeWhy LIVE Analytics', url: window.location.href }} />
           <AudienceInsights />
           <StreamerMonetizationCenter userId={user?.id} />
         </div>
