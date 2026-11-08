@@ -16,18 +16,19 @@ router.delete('/me', requireAuth, async function(req, res) {
   var tenantId = req.tenantId;
   if (!userId) return res.status(401).json({ success: false, error: 'Not authenticated' });
 
-  // Revoke Supabase auth so the user can no longer log in.
-  // If this fails, we abort — no local changes have been made yet.
+  // Step 1: Fetch original row so we can roll back if Supabase auth delete fails.
+  var original = null;
   try {
-    var delResult = await supabaseAdmin.auth.admin.deleteUser(userId);
-    if (delResult.error) throw delResult.error;
+    var origResult = await db.pool.query(
+      'SELECT display_name, email, avatar_url, bio, deleted_at FROM users WHERE id = $1 AND tenant_id = $2',
+      [userId, tenantId]
+    );
+    original = origResult.rows[0] || null;
   } catch (e) {
-    console.error('[delete-account] supabase auth delete failed', e.message);
-    return res.status(500).json({ success: false, error: 'Could not delete account' });
+    console.warn('[delete-account] could not fetch original row for rollback; continuing anyway');
   }
 
-  // Soft-delete: anonymize PII and set deleted_at. The row is retained for
-  // referential integrity (earnings records, audit logs, etc.).
+  // Step 2: Soft-delete first — anonymize PII. If this fails nothing has changed.
   var now = new Date().toISOString();
   var anonName = 'deleted_' + userId.slice(0, 8);
   try {
@@ -35,11 +36,32 @@ router.delete('/me', requireAuth, async function(req, res) {
       'UPDATE users SET display_name = $1, email = NULL, avatar_url = NULL, bio = NULL, deleted_at = $2 WHERE id = $3 AND tenant_id = $4',
       [anonName, now, userId, tenantId]
     );
-    return res.json({ success: true });
   } catch (e) {
     console.error('[delete-account] soft-delete failed userId=%s err=%s', userId, e.message);
-    return res.status(500).json({ success: false, error: 'Local cleanup failed' });
+    return res.status(500).json({ success: false, error: 'Could not delete account' });
   }
+
+  // Step 3: Revoke Supabase auth. If this fails, roll back the soft-delete so
+  // the user's data is restored and they can retry.
+  try {
+    var delResult = await supabaseAdmin.auth.admin.deleteUser(userId);
+    if (delResult.error) throw delResult.error;
+  } catch (e) {
+    console.error('[delete-account] supabase auth delete failed userId=%s err=%s', userId, e.message);
+    if (original) {
+      try {
+        await db.pool.query(
+          'UPDATE users SET display_name = $1, email = $2, avatar_url = $3, bio = $4, deleted_at = $5 WHERE id = $6 AND tenant_id = $7',
+          [original.display_name, original.email, original.avatar_url, original.bio, original.deleted_at, userId, tenantId]
+        );
+      } catch (rbErr) {
+        console.error('[delete-account] rollback failed userId=%s — data anonymized but auth still active', userId, rbErr.message);
+      }
+    }
+    return res.status(500).json({ success: false, error: 'Could not delete account' });
+  }
+
+  return res.json({ success: true });
 });
 
 // GET /api/users/search?q=<term> — search users by display_name (public, no auth)

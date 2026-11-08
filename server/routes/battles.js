@@ -3,7 +3,7 @@ var express = require('express');
 var router = express.Router();
 var battleService = require('../services/battleService');
 var requireAuth   = require('../middleware/auth');
-var pool          = require('../db');
+var db            = require('../db');
 var { rateLimit } = require('express-rate-limit');
 
 var VALID_GIFT_CENTS = new Set([100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000]);
@@ -139,7 +139,7 @@ router.get('/active', requireAuth, async function(req, res) {
 router.get('/leaderboard', async function(req, res) {
   try {
     var limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
-    var result = await pool.query(
+    var result = await db.query(
       'SELECT winner_id, COUNT(*) AS wins, ' +
       'COALESCE(SUM(CASE WHEN winner_id = challenger_id THEN challenger_points ELSE defender_points END), 0) AS total_points, ' +
       'MAX(CASE WHEN winner_id = challenger_id THEN challenger_name ELSE defender_name END) AS display_name ' +
