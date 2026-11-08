@@ -353,7 +353,7 @@ export default function ProfilePage() {
               />
               <div className="flex gap-2">
                 <button
-                  onClick={() => updateProfileMutation.mutate({ bio, full_name: displayName })}
+                  onClick={() => updateProfileMutation.mutate({ bio: bio.slice(0, 500), full_name: displayName.slice(0, 60) })}
                   disabled={updateProfileMutation.isPending}
                   className="px-4 py-1.5 rounded-xl font-black uppercase text-[10px]"
                   style={{ background: CRIMSON, color: GOLD, border: '1px solid rgba(255,184,0,0.3)', ...T }}>
