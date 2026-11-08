@@ -54,7 +54,7 @@ export default function UnifiedRoom() {
         name: s.user_name || 'Guest',
         role: s.role || 'Member',
         is_host: s.role === 'Host',
-        is_muted: s.is_muted ?? false,
+        is_muted: s.is_muted || false,
         is_speaking: false,
         avatar_url: s.avatar_url,
       }));
