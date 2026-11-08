@@ -285,7 +285,8 @@ function registerPanelHandlers(io, socket, rooms) {
       var roomId = payload && payload.roomId;
       var targetUserId = payload && payload.targetUserId;
       var background = payload && payload.background;
-      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) return;
+      var r = socket.data.role;
+      if ((r !== 'host' && r !== 'cohost' && r !== 'owner' && r !== 'admin') || socket.data.roomId !== roomId) return;
       if (!targetUserId || !PANEL_UUID_RE.test(String(targetUserId))) return;
       if (typeof background !== 'string' || background.length > 200) return;
       io.to(roomId).emit('panel:background_command', { roomId: roomId, userId: targetUserId, background: background });
