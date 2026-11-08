@@ -158,8 +158,6 @@ import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import AudioMixer from '../components/live/AudioMixer';
 import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
 import ScreenSharePanel from '../components/live/ScreenSharePanel';
-import PayPerViewGate from '../components/live/PayPerViewGate';
-import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';

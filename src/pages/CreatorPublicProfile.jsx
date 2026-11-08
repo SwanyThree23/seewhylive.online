@@ -3,7 +3,6 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
 import SpotlightBanner from '../components/community/SpotlightBanner';
-import PayPerViewGate from '../components/live/PayPerViewGate';
 import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
 import SignalBars from '../components/live/SignalBars';
 import ContentRecommendations from '../components/social/ContentRecommendations';
