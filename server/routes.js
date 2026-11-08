@@ -834,17 +834,6 @@ router.put('/users/me', requireAuth, profileUpdateRateLimit, function(req, res) 
   }
 });
 
-router.delete('/users/me', requireAuth, function(req, res) {
-  try {
-    var _delProfile = _userProfiles[req.user.id];
-    if (_delProfile && _delProfile.displayName) delete _usernameIndex[_delProfile.displayName];
-    delete _userProfiles[req.user.id];
-    return res.json({ success: true });
-  } catch (err) {
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 router.get('/users/me/earnings', requireAuth, function(req, res) {
   try {
     return res.json({ availableCents: 0, totalEarnedCents: 0, pendingCents: 0 });
