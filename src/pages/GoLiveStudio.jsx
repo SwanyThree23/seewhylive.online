@@ -607,7 +607,7 @@ export default function GoLiveStudio() {
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
           <CollaborationMatcher />
-          <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+          <ShareToSocial content={{ url: window.location.href, title: 'SeeWhy LIVE' }} />
         </div>
       </div>
       {activeRoomId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={activeRoomId} tipTotal={0} />}

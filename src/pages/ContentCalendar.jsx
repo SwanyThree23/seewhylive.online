@@ -279,7 +279,7 @@ export default function ContentCalendarPage() {
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AutomatedHighlightReels streamSession={activeRoom || null} />
-        <ShareToSocial />
+        <ShareToSocial content={{ url: window.location.href, title: 'Content Calendar — SeeWhy LIVE' }} />
         <ContentRecommendations />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         {user?.id && <MilestoneAlerts creatorId={user.id} />}

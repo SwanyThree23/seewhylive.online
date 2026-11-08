@@ -821,7 +821,7 @@ export default function SocialExpo() {
           <FeaturedContentSection />
           <CollaborationMatcher />
           <CreatorBridge user={null} />
-          <ShareToSocial />
+          <ShareToSocial content={{ url: window.location.href, title: 'Social Expo — SeeWhy LIVE' }} />
           <ContentRecommendations />
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         </div>

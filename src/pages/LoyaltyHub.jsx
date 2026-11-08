@@ -408,7 +408,7 @@ export default function LoyaltyHubPage() {
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />
           <ContentRecommendations />
-          <ShareToSocial url={window.location.href} title="Check out my loyalty rewards on SeeWhy LIVE!" />
+          <ShareToSocial content={{ url: window.location.href, title: 'Check out my loyalty rewards on SeeWhy LIVE!' }} />
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '12px 0 32px' }}>
           {[

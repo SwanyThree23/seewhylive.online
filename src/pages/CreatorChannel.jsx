@@ -338,7 +338,7 @@ export default function CreatorChannel() {
 
             <ContentRecommendations />
             <CollaborationMatcher />
-            <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+            <ShareToSocial content={{ url: window.location.href, title: 'SeeWhy LIVE' }} />
           </div>
         </div>
       </div>

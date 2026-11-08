@@ -367,7 +367,7 @@ export default function CommunityPage() {
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher currentUserId={user?.id} />
-        <ShareToSocial url={window.location.href} title={community?.name ? `Join "${community.name}" community on SeeWhy LIVE!` : 'Join our community on SeeWhy LIVE!'} />
+        <ShareToSocial content={{ url: window.location.href, title: community?.name ? `Join "${community.name}" community on SeeWhy LIVE!` : 'Join our community on SeeWhy LIVE!' }} />
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="community" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />
