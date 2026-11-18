@@ -3,6 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import PipCameraTile from '../components/live/PipCameraTile';
+import VoiceModulator from '../components/live/VoiceModulator';
+import CueSoundboard from '../components/live/CueSoundboard';
+import HarmonicGate from '../components/live/HarmonicGate';
+import InstantReelSyndication from '../components/live/InstantReelSyndication';
 import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
 import LiveCaptionOverlay from '../components/live/LiveCaptionOverlay';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
@@ -600,6 +604,10 @@ export default function GoLiveStudio() {
         <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={activeRoomId} isHost={true} />
         <StreamingPresets onApply={() => {}} />
         <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={isLive} />
+        <VoiceModulator isHost={true} />
+        <CueSoundboard isHost={true} />
+        <HarmonicGate isHost={true} />
+        <InstantReelSyndication isHost={true} streamTitle="" />
         {(user && user.id) && <RTMPFanoutPanel userId={user.id} isStreaming={state.phase === 'live'} streamId={activeRoomId} />}
         {(user && user.id) && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
