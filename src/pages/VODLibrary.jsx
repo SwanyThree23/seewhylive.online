@@ -23,13 +23,13 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import VODCard from '../components/vod/VODCard';
 import VODPicker from '../components/vod/VODPicker';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const G = GOLD;
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var G = GOLD;
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TABS = [
+var TABS = [
   { id: 'library', label: 'VOD Library', icon: Film, color: GOLD },
   { id: 'highlights', label: 'AI Highlights', icon: Sparkles, color: '#D4854A' },
   { id: 'recordings', label: 'Recordings', icon: Play, color: '#6DBF7E' },
@@ -37,53 +37,53 @@ const TABS = [
 ];
 
 export default function VODLibraryPage() {
-  const [activeTab, setActiveTab] = useState('library');
-  const [selectedForChapters, setSelectedForChapters] = useState(null);
-  const [selectedForTrim, setSelectedForTrim] = useState(null);
-  const [selectedForHighlights, setSelectedForHighlights] = useState(null);
-  const [selectedForClips, setSelectedForClips] = useState(null);
-  const [selectedForEdit, setSelectedForEdit] = useState(null);
-  const [editTitle, setEditTitle] = useState('');
-  const [editDesc, setEditDesc] = useState('');
-  const [editSaving, setEditSaving] = useState(false);
-  const queryClient = useQueryClient();
+  var [activeTab, setActiveTab] = useState('library');
+  var [selectedForChapters, setSelectedForChapters] = useState(null);
+  var [selectedForTrim, setSelectedForTrim] = useState(null);
+  var [selectedForHighlights, setSelectedForHighlights] = useState(null);
+  var [selectedForClips, setSelectedForClips] = useState(null);
+  var [selectedForEdit, setSelectedForEdit] = useState(null);
+  var [editTitle, setEditTitle] = useState('');
+  var [editDesc, setEditDesc] = useState('');
+  var [editSaving, setEditSaving] = useState(false);
+  var queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const roomId = activeRoomId;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var roomId = activeRoomId;
 
-  const { data: stats } = useQuery({
-    queryKey: ['vodStats', user?.id],
+  var { data: stats } = useQuery({
+    queryKey: ['vodStats', (user && user.id)],
     queryFn: async () => {
-      if (!user?.id) return { vods: 0, clips: 0, totalViews: 0, highlights: 0 };
-      const [vods, clips] = await Promise.all([
+      if (!(user && user.id)) return { vods: 0, clips: 0, totalViews: 0, highlights: 0 };
+      var [vods, clips] = await Promise.all([
         base44.entities.VODVideo.filter({ creator_id: user.id }),
         base44.entities.StreamClip.filter({ creator_id: user.id }),
       ]);
-      const highlights = [];
-      const totalViews = (vods || []).reduce((s, v) => s + (v.views || 0), 0)
+      var highlights = [];
+      var totalViews = (vods || []).reduce((s, v) => s + (v.views || 0), 0)
         + (clips || []).reduce((s, c) => s + (c.view_count || 0), 0);
-      return { vods: vods?.length || 0, clips: clips?.length || 0, totalViews, highlights: highlights?.length || 0 };
+      return { vods: (vods && vods.length) || 0, clips: (clips && clips.length) || 0, totalViews, highlights: (highlights && highlights.length) || 0 };
     },
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
-  const { data: myVODs = [] } = useQuery({
-    queryKey: ['myVODs', user?.id],
+  var { data: myVODs = [] } = useQuery({
+    queryKey: ['myVODs', (user && user.id)],
     queryFn: () => base44.entities.VODVideo.filter({ creator_id: user.id }),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
-  const TABS = [
+  var TABS = [
     { id: 'library',    icon: <Film className="w-3.5 h-3.5" />,     label: 'Library' },
     { id: 'recordings', icon: <Archive className="w-3.5 h-3.5" />,  label: 'Recordings' },
     { id: 'chapters',   icon: <BookOpen className="w-3.5 h-3.5" />, label: 'Chapters' },
@@ -108,10 +108,10 @@ export default function VODLibraryPage() {
         {/* Stats row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
           {[
-            { label: 'VODs', value: stats?.vods || 0, color: GOLD },
-            { label: 'Clips', value: stats?.clips || 0, color: '#D4854A' },
-            { label: 'AI Highlights', value: stats?.highlights || 0, color: '#6DBF7E' },
-            { label: 'Total Views', value: (stats?.totalViews || 0).toLocaleString(), color: GOLD },
+            { label: 'VODs', value: (stats && stats.vods) || 0, color: GOLD },
+            { label: 'Clips', value: (stats && stats.clips) || 0, color: '#D4854A' },
+            { label: 'AI Highlights', value: (stats && stats.highlights) || 0, color: '#6DBF7E' },
+            { label: 'Total Views', value: ((stats && stats.totalViews) || 0).toLocaleString(), color: GOLD },
           ].map(({ label, value, color }) => (
             <div key={label} className="p-3 rounded-2xl text-center" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <p className="text-2xl font-black" style={{ color, fontFamily: 'Orbitron, monospace' }}>{value}</p>
@@ -138,7 +138,7 @@ export default function VODLibraryPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-        {activeTab === 'library' && user?.id && (
+        {activeTab === 'library' && (user && user.id) && (
           <div className="space-y-4">
             <VODLibraryComponent creatorId={user.id} />
             {myVODs.map(v => (
@@ -150,7 +150,7 @@ export default function VODLibraryPage() {
                 onChapters={() => setSelectedForChapters(v)}
                 onPublish={() => {
                   base44.entities.VODVideo.update(v.id, { status: 'published' })
-                    .then(() => queryClient.invalidateQueries({ queryKey: ['myVODs', user?.id] }))
+                    .then(() => queryClient.invalidateQueries({ queryKey: ['myVODs', (user && user.id)] }))
                     .catch(() => {});
                 }}
               />
@@ -182,7 +182,7 @@ export default function VODLibraryPage() {
                     onClick={() => {
                       setEditSaving(true);
                       base44.entities.VODVideo.update(selectedForEdit.id, { title: editTitle, description: editDesc })
-                        .then(() => { queryClient.invalidateQueries({ queryKey: ['myVODs', user?.id] }); setSelectedForEdit(null); })
+                        .then(() => { queryClient.invalidateQueries({ queryKey: ['myVODs', (user && user.id)] }); setSelectedForEdit(null); })
                         .catch(() => {})
                         .finally(() => setEditSaving(false));
                     }}
@@ -194,9 +194,9 @@ export default function VODLibraryPage() {
           </div>
         )}
 
-        {activeTab === 'recordings' && user?.id && <RecordingManager userId={user.id} />}
+        {activeTab === 'recordings' && (user && user.id) && <RecordingManager userId={user.id} />}
 
-        {activeTab === 'chapters' && user?.id && (
+        {activeTab === 'chapters' && (user && user.id) && (
           <div>
             <VODPicker vods={myVODs} selected={selectedForChapters} onSelect={setSelectedForChapters} placeholder="Pick a VOD to edit chapters…" />
             {selectedForChapters
@@ -206,7 +206,7 @@ export default function VODLibraryPage() {
           </div>
         )}
 
-        {activeTab === 'trim' && user?.id && (
+        {activeTab === 'trim' && (user && user.id) && (
           <div>
             <VODPicker vods={myVODs} selected={selectedForTrim} onSelect={setSelectedForTrim} placeholder="Pick a VOD to trim…" />
             {selectedForTrim
@@ -216,7 +216,7 @@ export default function VODLibraryPage() {
           </div>
         )}
 
-        {activeTab === 'clips' && user?.id && (
+        {activeTab === 'clips' && (user && user.id) && (
           <div>
             <VODPicker vods={myVODs} selected={selectedForClips} onSelect={setSelectedForClips} placeholder="Pick a recording to clip…" />
             {selectedForClips
@@ -231,7 +231,7 @@ export default function VODLibraryPage() {
           </div>
         )}
 
-        {activeTab === 'highlights' && user?.id && (
+        {activeTab === 'highlights' && (user && user.id) && (
           <div>
             <VODPicker vods={myVODs} selected={selectedForHighlights} onSelect={setSelectedForHighlights} placeholder="Pick a recording to generate highlights…" />
             {selectedForHighlights
@@ -242,9 +242,9 @@ export default function VODLibraryPage() {
         )}
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="vod" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

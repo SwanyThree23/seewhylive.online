@@ -36,40 +36,40 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function PublicProfile() {
-  const [showCreatorSetup, setShowCreatorSetup] = useState(false);
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const urlParams = new URLSearchParams(window.location.search);
-  const userId = urlParams.get('id');
+  var [showCreatorSetup, setShowCreatorSetup] = useState(false);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var urlParams = new URLSearchParams(window.location.search);
+  var userId = urlParams.get('id');
 
-  const { data: profile, isLoading } = useQuery({
+  var { data: profile, isLoading } = useQuery({
     queryKey: ['public-profile', userId],
     queryFn: () => base44.entities.CreatorProfile.filter({ user_id: userId }).then(r => r[0]),
     enabled: !!userId,
   });
 
-  const { data: rooms = [] } = useQuery({
+  var { data: rooms = [] } = useQuery({
     queryKey: ['public-rooms', userId],
     queryFn: () => base44.entities.Room.filter({ host_id: userId, is_public: true }, '-created_date', 6),
     enabled: !!userId,
   });
 
-  const { data: currentUser } = useQuery({
+  var { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', currentUser?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
-    enabled: !!currentUser?.id,
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (currentUser && currentUser.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (currentUser && currentUser.id) }).then(r => r[0] || null),
+    enabled: !!(currentUser && currentUser.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
@@ -92,7 +92,7 @@ export default function PublicProfile() {
     </div>
   );
 
-  const liveRoom = rooms.find(r => r.status === 'live');
+  var liveRoom = rooms.find(r => r.status === 'live');
 
   return (
     <div className="min-h-screen" style={{ background: BG }}>
@@ -115,7 +115,7 @@ export default function PublicProfile() {
             <div className="absolute inset-[3px] flex items-center justify-center" style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)` }}>
               {profile.avatar_url
                 ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.display_name} style={{ clipPath: OCT }} />
-                : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{profile.display_name?.charAt(0)}</span>
+                : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{profile.(display_name && display_name.charAt(0)}</span>
               }
             </div>
           </div>
@@ -172,14 +172,14 @@ export default function PublicProfile() {
         {/* Subscription Tiers */}
         {userId && (
           <div className="mb-6">
-            <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
+            <SubscriberTierView creatorId={userId} userId={(currentUser && currentUser.id)} />
             <div className="mt-3 flex items-center gap-3 flex-wrap">
               <TierBadge tier={null} size="sm" showName />
-              {currentUser?.id && userId !== currentUser.id && (
-                <StripeSubscribeButton creatorId={userId} creatorName={profile?.display_name || ''} currentUserId={currentUser.id} />
+              {(currentUser && currentUser.id) && userId !== currentUser.id && (
+                <StripeSubscribeButton creatorId={userId} creatorName={(profile && profile.display_name) || ''} currentUserId={currentUser.id} />
               )}
             </div>
-            {currentUser?.id && userId !== currentUser.id && (
+            {(currentUser && currentUser.id) && userId !== currentUser.id && (
               <div className="mt-3">
                 <TierSubscribeCard tier={null} currentSub={null} userId={currentUser.id} creatorId={userId} isHighlighted={false} />
               </div>
@@ -212,7 +212,7 @@ export default function PublicProfile() {
         <VideoLibrary creatorId={userId} />
 
         {/* Subscription option */}
-        {userId && currentUser?.id && userId !== currentUser.id && (
+        {userId && (currentUser && currentUser.id) && userId !== currentUser.id && (
           <div className="mt-6">
             <SubscriptionCard
               tier={null}
@@ -240,9 +240,9 @@ export default function PublicProfile() {
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="profile" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -251,7 +251,7 @@ export default function PublicProfile() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

@@ -23,17 +23,17 @@ import ViewerCount from '../components/live/ViewerCount';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
-const BG      = '#080B18';
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
-const TEAL    = '#C9A84C';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG      = '#080B18';
+var GOLD    = '#D4AF37';
+var CRIMSON = '#800020';
+var PINK    = '#C0392B';
+var TEAL    = '#C9A84C';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
 // ─── Preset data ──────────────────────────────────────────────────────────────
-const PRESETS = [
+var PRESETS = [
   { id: 'single',    name: 'Full Screen',    desc: 'One camera, full coverage',   icon: Maximize },
   { id: 'split',     name: 'Split Screen',   desc: 'Side-by-side dual cameras',   icon: Layout },
   { id: 'pip',       name: 'Picture-in-Pic', desc: 'Main + guest overlay',        icon: PictureInPicture2 },
@@ -45,12 +45,12 @@ const PRESETS = [
 ];
 
 // ─── Layout preview renderers ─────────────────────────────────────────────────
-const MAIN  = CRIMSON;
-const SEC   = 'rgba(212,175,55,0.4)';
-const GHOST = 'rgba(255,255,255,0.08)';
+var MAIN  = CRIMSON;
+var SEC   = 'rgba(212,175,55,0.4)';
+var GHOST = 'rgba(255,255,255,0.08)';
 
 function LayoutPreview({ id }) {
-  const wrap = {
+  var wrap = {
     position: 'relative',
     width: '100%',
     height: '120px',
@@ -60,7 +60,7 @@ function LayoutPreview({ id }) {
     marginBottom: '12px',
   };
 
-  const r = (style) => (
+  var r = (style) => (
     <div style={{
       position: 'absolute',
       borderRadius: '4px',
@@ -68,7 +68,7 @@ function LayoutPreview({ id }) {
     }} />
   );
 
-  const previews = {
+  var previews = {
     single: (
       <div style={wrap}>
         {r({ background: MAIN, width: '85%', height: '70%', top: '15%', left: '7.5%' })}
@@ -130,7 +130,7 @@ function LayoutPreview({ id }) {
 
 // ─── Preset card ──────────────────────────────────────────────────────────────
 function PresetCard({ preset, isActive, onApply }) {
-  const Icon = preset.icon;
+  var Icon = preset.icon;
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -279,12 +279,12 @@ function CustomCard({ tpl, isActive, onApply, onEdit, onDelete }) {
 
 // ─── Create form ──────────────────────────────────────────────────────────────
 function CreateForm({ userId, onSuccess }) {
-  const qc = useQueryClient();
-  const [name, setName]         = useState('');
-  const [description, setDesc]  = useState('');
-  const [selectedBase, setBase] = useState('single');
+  var qc = useQueryClient();
+  var [name, setName]         = useState('');
+  var [description, setDesc]  = useState('');
+  var [selectedBase, setBase] = useState('single');
 
-  const { mutate: save, isPending } = useMutation({
+  var { mutate: save, isPending } = useMutation({
     mutationFn: () =>
       base44.entities.SceneTemplate.create({
         creator_id:  userId,
@@ -302,17 +302,17 @@ function CreateForm({ userId, onSuccess }) {
         base44.entities.Activity.create({
           user_id: userId,
           type: 'milestone',
-          title: `Created scene template: ${template?.name || 'Scene Template'}`,
+          title: `Created scene template: ${(template && template.name) || 'Scene Template'}`,
         }).catch(() => {});
       }
-      onSuccess?.();
+      if (onSuccess) onSuccess();
     },
     onError: (err) => {
-      toast.error(err?.message || 'Failed to save template');
+      toast.error((err && err.message) || 'Failed to save template');
     },
   });
 
-  const inputStyle = {
+  var inputStyle = {
     ...T,
     width: '100%',
     padding: '10px 12px',
@@ -418,9 +418,9 @@ function CreateForm({ userId, onSuccess }) {
 
 // ─── Edit modal ───────────────────────────────────────────────────────────────
 function EditModal({ tpl, onClose, onSave, isSaving }) {
-  const [name, setName]   = useState(tpl.name || '');
-  const [desc, setDesc]   = useState(tpl.description || '');
-  const inputStyle = {
+  var [name, setName]   = useState(tpl.name || '');
+  var [desc, setDesc]   = useState(tpl.description || '');
+  var inputStyle = {
     ...T,
     width: '100%',
     padding: '10px 12px',
@@ -507,47 +507,47 @@ function EditModal({ tpl, onClose, onSave, isSaving }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function SceneTemplates() {
-  const qc = useQueryClient();
-  const [activeTemplate, setActiveTemplate] = useState('single');
-  const [showCreate, setShowCreate]         = useState(false);
-  const [editingTpl, setEditingTpl]         = useState(null);
+  var qc = useQueryClient();
+  var [activeTemplate, setActiveTemplate] = useState('single');
+  var [showCreate, setShowCreate]         = useState(false);
+  var [editingTpl, setEditingTpl]         = useState(null);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['scenetemplates-active-room', user?.id],
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['scenetemplates-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const { data: customTemplates = [], isLoading: loadingCustom } = useQuery({
-    queryKey: ['scene-templates', user?.id],
+  var { data: customTemplates = [], isLoading: loadingCustom } = useQuery({
+    queryKey: ['scene-templates', (user && user.id)],
     queryFn:  () => base44.entities.SceneTemplate.filter({ creator_id: user.id }),
-    enabled:  !!user?.id,
+    enabled:  !!(user && user.id),
   });
 
-  const { mutate: deleteTemplate } = useMutation({
+  var { mutate: deleteTemplate } = useMutation({
     mutationFn: (tpl) => base44.entities.SceneTemplate.delete(tpl.id),
     onSuccess: () => {
       toast.success('Template deleted');
-      qc.invalidateQueries({ queryKey: ['scene-templates', user?.id] });
+      qc.invalidateQueries({ queryKey: ['scene-templates', (user && user.id)] });
     },
     onError: () => toast.error('Failed to delete template'),
   });
 
-  const { mutate: updateTemplate, isPending: isUpdating } = useMutation({
+  var { mutate: updateTemplate, isPending: isUpdating } = useMutation({
     mutationFn: ({ id, ...fields }) => base44.entities.SceneTemplate.update(id, fields),
     onSuccess: () => {
       toast.success('Template updated');
-      qc.invalidateQueries(['scene-templates', user?.id]);
+      qc.invalidateQueries(['scene-templates', (user && user.id)]);
       setEditingTpl(null);
     },
     onError: () => toast.error('Failed to update template'),
   });
 
   function handleApply(item) {
-    const key = item.id ?? item.layout_type ?? 'single';
+    var key = item.id || item.layout_type || 'single';
     setActiveTemplate(key);
     toast.success(`${item.name} applied!`);
   }
@@ -764,7 +764,7 @@ export default function SceneTemplates() {
                   padding: '20px 18px 22px',
                 }}>
                   <CreateForm
-                    userId={user?.id}
+                    userId={(user && user.id)}
                     onSuccess={() => setShowCreate(false)}
                   />
                 </div>
@@ -773,20 +773,20 @@ export default function SceneTemplates() {
           </AnimatePresence>
         </div>
       </div>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="overlay" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="overlay" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.peak_viewers) || 0} />
       <BackgroundCustomizer />
     </div>
   );

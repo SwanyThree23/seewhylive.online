@@ -12,11 +12,11 @@ import MuteNotificationToast from '@/components/room/MuteNotificationToast';
 import RoomReactionOverlay from '../components/live/RoomReactionOverlay';
 import { toast } from 'sonner';
 
-const GOLD = '#d4af37';
-const RED = '#C0392B';
-const GREEN = '#6DBF7E';
+var GOLD = '#d4af37';
+var RED = '#C0392B';
+var GREEN = '#6DBF7E';
 
-const SAMPLE_PARTICIPANTS = [
+var SAMPLE_PARTICIPANTS = [
   { id: '1', user_id: 'host', name: 'ladrue swanson', role: 'Host', is_host: true, is_muted: false, is_speaking: true, avatar_url: null },
   { id: '2', user_id: 'cohost', name: 'SwanyThree', role: 'Co-host', is_muted: false, is_speaking: false, avatar_url: null },
   { id: '3', user_id: 'u3', name: 'Tom', role: 'Member', is_muted: true, is_speaking: false, avatar_url: null },
@@ -26,27 +26,27 @@ const SAMPLE_PARTICIPANTS = [
 ];
 
 export default function UnifiedRoom() {
-  const navigate = useNavigate();
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('id');
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var navigate = useNavigate();
+  var urlParams = new URLSearchParams(window.location.search);
+  var roomId = urlParams.get('id');
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const [isMicOn, setIsMicOn] = useState(false);
-  const [isVideoOn, setIsVideoOn] = useState(false);
-  const [reactEmoji, setReactEmoji] = useState(null);
-  const [muteNotification, setMuteNotification] = useState(null);
-  const [speakingId, setSpeakingId] = useState('host');
+  var [isMicOn, setIsMicOn] = useState(false);
+  var [isVideoOn, setIsVideoOn] = useState(false);
+  var [reactEmoji, setReactEmoji] = useState(null);
+  var [muteNotification, setMuteNotification] = useState(null);
+  var [speakingId, setSpeakingId] = useState('host');
 
-  const { data: room } = useQuery({
+  var { data: room } = useQuery({
     queryKey: ['unified-room', roomId],
     queryFn: () => base44.entities.Room.get(roomId),
     enabled: !!roomId,
   });
 
-  const { data: participants = SAMPLE_PARTICIPANTS } = useQuery({
+  var { data: participants = SAMPLE_PARTICIPANTS } = useQuery({
     queryKey: ['room-participants', roomId],
     queryFn: async () => {
-      const stages = await base44.entities.Stage.filter({ room_id: roomId });
+      var stages = await base44.entities.Stage.filter({ room_id: roomId });
       if (stages.length === 0) return SAMPLE_PARTICIPANTS;
       return stages.map(s => ({
         id: s.id,
@@ -65,16 +65,16 @@ export default function UnifiedRoom() {
 
   // speakingId is set by real WebRTC audio level detection from useWebRTCPeers
 
-  const handleToggleMic = () => {
-    const next = !isMicOn;
+  var handleToggleMic = () => {
+    var next = !isMicOn;
     setIsMicOn(next);
     if (!next) {
       setMuteNotification({ userName: 'You' });
     }
   };
 
-  const handleAction = (key) => {
-    const labels = {
+  var handleAction = (key) => {
+    var labels = {
       auction: 'Auction panel opening…',
       invite: 'Invite link copied!',
       ai: 'AI assistant activated',
@@ -88,12 +88,12 @@ export default function UnifiedRoom() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#0a0a0f', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <RoomStatusHeader
-        title={room?.title || 'SeeWhy LIVE Room'}
-        subtitle={room?.description || 'Audiovisual Podcast'}
-        viewerCount={room?.viewer_count || 327}
+        title={(room && room.title) || 'SeeWhy LIVE Room'}
+        subtitle={(room && room.description) || 'Audiovisual Podcast'}
+        viewerCount={(room && room.viewer_count) || 327}
         hereNow={participants.length}
-        speakingName={participants.find(p => p.user_id === speakingId)?.name}
-        isLive={room?.status === 'live' || !room}
+        speakingName={(participants.find(p => p.user_id === speakingId) && participants.find(p => p.user_id === speakingId).name)}
+        isLive={(room && room.status) === 'live' || !room}
         onClose={() => navigate('/')}
         onShare={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Share link copied!')).catch(() => {})}
         onMenu={() => toast('Menu')}
@@ -108,7 +108,7 @@ export default function UnifiedRoom() {
               Stream
             </span>
             <span style={{ fontSize: 14, color: GOLD }}>
-              {participants.find(p => p.user_id === speakingId)?.name || 'Someone'} is sharing
+              {(participants.find(p => p.user_id === speakingId) && participants.find(p => p.user_id === speakingId).name) || 'Someone'} is sharing
             </span>
           </div>
           <div className="relative w-full rounded-2xl overflow-hidden" style={{
@@ -135,7 +135,7 @@ export default function UnifiedRoom() {
             participants={participants}
             speakingId={speakingId}
             hostId="host"
-            maxParticipants={room?.max_participants || 20}
+            maxParticipants={(room && room.max_participants) || 20}
           />
         </div>
 
@@ -150,7 +150,7 @@ export default function UnifiedRoom() {
             {participants.slice(0, 6).map(p => (
               <div key={`other-${p.id}`} className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
-                {p.name?.charAt(0).toUpperCase()}
+                {(p.name && p.name.charAt(0).toUpperCase()) || '?'}
               </div>
             ))}
           </div>
@@ -208,7 +208,7 @@ export default function UnifiedRoom() {
               { icon: Hand, color: GOLD },
               { icon: DollarSign, color: GREEN },
             ].map((btn, i) => {
-              const Icon = btn.icon;
+              var Icon = btn.icon;
               return (
                 <button key={i} className="relative flex items-center justify-center rounded-full active:scale-90 transition-transform"
                   style={{ width: 40, height: 40, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>

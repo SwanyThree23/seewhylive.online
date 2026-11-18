@@ -14,7 +14,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 
-const initState = {
+var initState = {
   tab: 'wall',
   showCeremony: false,
   form: { name: '', years: '', region: '', quote: '', tribute: '' },
@@ -101,25 +101,25 @@ function LegendCard({ legend, localExtra, onLightCandle, isCeremony }) {
 }
 
 export default function FallenLegendsPage() {
-  const [state, dispatch] = useReducer(reducer, initState);
-  const qc = useQueryClient();
+  var [state, dispatch] = useReducer(reducer, initState);
+  var qc = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const { data: dbLegends } = useQuery({
+  var { data: dbLegends } = useQuery({
     queryKey: ['fallen-legends'],
     queryFn: () => base44.entities.FallenLegend.filter({ approved: true }).catch(() => []),
   });
@@ -127,7 +127,7 @@ export default function FallenLegendsPage() {
   var legends = dbLegends || [];
   var ceremony2026 = legends.filter(l => l.featured_year === 2026);
 
-  const submitLegend = useMutation({
+  var submitLegend = useMutation({
     mutationFn: () => base44.entities.FallenLegend.create({
       name: state.form.name,
       years: state.form.years,
@@ -301,9 +301,9 @@ export default function FallenLegendsPage() {
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ShareToSocial content={{ title: 'Fallen Legends on SeeWhy LIVE', url: window.location.href }} />
-        <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+        <EngagementBadgesDisplay roomId={activeRoomId} userId={(user && user.id)} creatorId={(user && user.id)} />
         <AnnouncementFeed communityId={userCommunityId} />
-        <RealtimeLeaderboard roomId={activeRoomId} creatorId={user?.id} />
+        <RealtimeLeaderboard roomId={activeRoomId} creatorId={(user && user.id)} />
         <SocialLeaderboard roomId={activeRoomId} />
         <SpotlightSection communityId={userCommunityId} />
         <OnlineUsersGrid compact maxVisible={10} />

@@ -176,7 +176,7 @@ function ScheduledCard({ room }) {
 }
 
 export default function CreatorPublicProfile() {
-  const [showCreatorSetup, setShowCreatorSetup] = useState(false);
+  var [showCreatorSetup, setShowCreatorSetup] = useState(false);
   var urlParams = new URLSearchParams(window.location.search);
   var creatorId = urlParams.get("id");
   var navigate = useNavigate();
@@ -242,7 +242,7 @@ export default function CreatorPublicProfile() {
       base44.entities.Activity.create({
         user_id: currentUser.id,
         type: 'follow',
-        title: `Followed creator: ${profile?.display_name || profile?.full_name || 'Creator'}`,
+        title: `Followed creator: ${(profile && profile.display_name) || (profile && profile.full_name) || 'Creator'}`,
         recipient_id: creatorId,
       }).catch(() => {});
     }
@@ -252,7 +252,7 @@ export default function CreatorPublicProfile() {
   function handleShare() {
     var url = window.location.href;
     if (navigator.share) {
-      navigator.share({ title: profile?.display_name || 'SeeWhy LIVE Creator', url }).catch(() => {});
+      navigator.share({ title: (profile && profile.display_name) || 'SeeWhy LIVE Creator', url }).catch(() => {});
     } else {
       navigator.clipboard.writeText(url).then(() => {
         setFollowToast('Link copied!');
@@ -314,7 +314,7 @@ export default function CreatorPublicProfile() {
       {/* Hero Banner */}
       <div style={{
         height: 140,
-        background: profile?.banner_url
+        background: (profile && profile.banner_url)
           ? `url(${profile.banner_url}) center/cover`
           : "linear-gradient(135deg, #1A0505 0%, #2d0a00 40%, #1a1200 100%)",
         position: "relative",
@@ -338,7 +338,7 @@ export default function CreatorPublicProfile() {
             overflow: "hidden",
             flexShrink: 0,
           }}>
-            {profile?.avatar_url
+            {(profile && profile.avatar_url)
               ? <img src={profile.avatar_url} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               : "🎤"}
           </div>
@@ -377,16 +377,16 @@ export default function CreatorPublicProfile() {
 
         <div style={{ marginBottom: 6 }}>
           <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 24, fontWeight: 900, color: "#fff", lineHeight: 1 }}>
-            {profile?.display_name || currentUser?.full_name || "Creator"}
+            {(profile && profile.display_name) || (currentUser && currentUser.full_name) || "Creator"}
           </div>
-          {profile?.bio && (
+          {(profile && profile.bio) && (
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 5, lineHeight: 1.4 }}>
               {profile.bio}
             </div>
           )}
         </div>
 
-        {profile?.category && (
+        {(profile && profile.category) && (
           <div style={{
             display: "inline-flex",
             alignItems: "center",
@@ -442,7 +442,7 @@ export default function CreatorPublicProfile() {
                     {badge.title}
                   </span>
                   <span style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 7, color: rColor, letterSpacing: 1 }}>
-                    {badge.rarity?.toUpperCase()}
+                    {badge.(rarity && rarity.toUpperCas)e()}
                   </span>
                 </motion.div>
               );
@@ -531,11 +531,11 @@ export default function CreatorPublicProfile() {
                     {t.transaction_type === "subscription" ? "New subscriber" : "Direct support"}
                   </div>
                   <div style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 11, color: G.gray }}>
-                    {t.payment_method?.toUpperCase()}
+                    {t.(payment_method && payment_method.toUpperCas)e()}
                   </div>
                 </div>
                 <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 16, fontWeight: 700, color: "#6DBF7E" }}>
-                  ${t.creator_payout?.toFixed(2) || "—"}
+                  ${t.(creator_payout && creator_payout.toFixe)d(2) || "—"}
                 </div>
               </div>
             ))}
@@ -543,9 +543,9 @@ export default function CreatorPublicProfile() {
         </div>
       )}
       <SwanAIRecommendations roomId={null} currentLayout="profile" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
       <SwanyBotWidget />
       <CollaborationMatcher />

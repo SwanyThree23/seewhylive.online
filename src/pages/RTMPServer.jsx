@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
-function cryptoHex(len = 16) {
-  var arr = crypto.getRandomValues(new Uint8Array(Math.ceil(len / 2)));
-  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, len);
+function cryptoHex(len) {
+  var l = len === undefined ? 16 : len;
+  var arr = crypto.getRandomValues(new Uint8Array(Math.ceil(l / 2)));
+  return Array.from(arr, function(b) { return b.toString(16).padStart(2, '0'); }).join('').slice(0, l);
 }
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';

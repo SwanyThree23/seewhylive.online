@@ -9,21 +9,21 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import CreatorBridge from '../components/social/CreatorBridge';
 import GlobalSearch from '../components/shared/GlobalSearch';
 
-const BG    = '#080B18';
-const BG2   = 'rgba(13,6,24,0.95)';
-const GOLD  = '#D4AF37';
-const GOLDD = '#8A6F2E';
-const SLATE = '#1A1530';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#7A6E8A';
-const CRIMSON = '#800020';
-const CYAN  = '#D4AF37';
-const GREEN = '#6DBF7E';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO = { fontFamily: 'Space Mono, monospace' };
+var BG    = '#080B18';
+var BG2   = 'rgba(13,6,24,0.95)';
+var GOLD  = '#D4AF37';
+var GOLDD = '#8A6F2E';
+var SLATE = '#1A1530';
+var TEXT  = '#F0EAF8';
+var TEXTD = '#B8AECF';
+var TEXTM = '#7A6E8A';
+var CRIMSON = '#800020';
+var CYAN  = '#D4AF37';
+var GREEN = '#6DBF7E';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var MONO = { fontFamily: 'Space Mono, monospace' };
 
-const GLOBAL_CSS = `
+var GLOBAL_CSS = `
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 @keyframes pulse-live{0%,100%{opacity:1;}50%{opacity:.35;}}
 .fade-up{animation:fadeUp .3s ease forwards;}
@@ -31,7 +31,7 @@ const GLOBAL_CSS = `
 `;
 
 // All platforms with proper share URL builders
-const PLATFORMS = [
+var PLATFORMS = [
   {
     key: 'twitter',
     label: 'X / Twitter',
@@ -118,17 +118,17 @@ const PLATFORMS = [
 ];
 
 function buildWatchUrl(roomId) {
-  const origin = window.location.origin;
+  var origin = window.location.origin;
   return `${origin}/watch?id=${roomId}`;
 }
 
 function buildEmbedCode(roomId) {
-  const origin = window.location.origin;
+  var origin = window.location.origin;
   return `<iframe\n  src="${origin}/embed?room=${roomId}"\n  width="560"\n  height="315"\n  frameborder="0"\n  allow="autoplay; camera; microphone; fullscreen"\n  allowfullscreen\n  title="SeeWhy LIVE Stream"\n></iframe>`;
 }
 
 function CopyButton({ text, label = 'COPY', successLabel = 'COPIED ✓', style: s = {} }) {
-  const [copied, setCopied] = useState(false);
+  var [copied, setCopied] = useState(false);
   function copy() {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
@@ -151,7 +151,7 @@ function CopyButton({ text, label = 'COPY', successLabel = 'COPIED ✓', style: 
 }
 
 function QRPreview({ url }) {
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(url)}&bgcolor=080B18&color=D4AF37&margin=10`;
+  var qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(url)}&bgcolor=080B18&color=D4AF37&margin=10`;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
       <img
@@ -169,17 +169,17 @@ function QRPreview({ url }) {
 }
 
 export default function StreamShareHub() {
-  const [searchParams] = useSearchParams();
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = searchParams.get('id');
+  var [searchParams] = useSearchParams();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var roomId = searchParams.get('id');
 
-  const [room, setRoom]         = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [copiedKey, setCopied]  = useState(null);
-  const [activeSection, setActiveSection] = useState('share'); // share | embed | qr | flywheel
+  var [room, setRoom]         = useState(null);
+  var [loading, setLoading]   = useState(true);
+  var [copiedKey, setCopied]  = useState(null);
+  var [activeSection, setActiveSection] = useState('share'); // share | embed | qr | flywheel
 
   useEffect(() => {
-    const style = document.createElement('style');
+    var style = document.createElement('style');
     style.textContent = GLOBAL_CSS;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
@@ -188,7 +188,7 @@ export default function StreamShareHub() {
   useEffect(() => {
     if (!roomId) { setLoading(false); return; }
     base44.entities.Room.filter({ id: roomId })
-      .then(rooms => { if (rooms?.length) setRoom(rooms[0]); })
+      .then(rooms => { if ((rooms && rooms.length)) setRoom(rooms[0]); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [roomId]);
@@ -196,14 +196,14 @@ export default function StreamShareHub() {
   // Auto-clear copied state
   useEffect(() => {
     if (!copiedKey) return;
-    const t = setTimeout(() => setCopied(null), 2500);
+    var t = setTimeout(() => setCopied(null), 2500);
     return () => clearTimeout(t);
   }, [copiedKey]);
 
-  const watchUrl  = roomId ? buildWatchUrl(roomId) : window.location.href;
-  const embedCode = roomId ? buildEmbedCode(roomId) : '';
-  const streamTitle = room?.title || 'SeeWhy LIVE Stream';
-  const isLive    = room?.status === 'live';
+  var watchUrl  = roomId ? buildWatchUrl(roomId) : window.location.href;
+  var embedCode = roomId ? buildEmbedCode(roomId) : '';
+  var streamTitle = (room && room.title) || 'SeeWhy LIVE Stream';
+  var isLive    = (room && room.status) === 'live';
 
   function handlePlatform(platform) {
     if (platform.action) {
@@ -213,7 +213,7 @@ export default function StreamShareHub() {
     }
   }
 
-  const TABS = [
+  var TABS = [
     { key: 'share',    label: '🌐 Share' },
     { key: 'embed',    label: '🖥️ Embed' },
     { key: 'qr',       label: '📱 QR Code' },

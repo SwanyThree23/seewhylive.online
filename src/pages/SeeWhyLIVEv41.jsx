@@ -28,7 +28,7 @@ import NativeSelect from '../components/ui/NativeSelect';
 import { isSafeUrl } from '@/lib/security';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
-const C = {
+var C = {
   bg:      '#07050A',
   bg2:     '#0D0A08',
   bg3:     '#13100A',
@@ -128,7 +128,7 @@ function Btn({ children, onClick, color, disabled, small, style }) {
 }
 
 function Input({ value, onChange, placeholder, type, style, rows, onKeyDown }) {
-  const common = {
+  var common = {
     background: C.bg2,
     border: `1px solid ${C.slate}`,
     borderRadius: 6,
@@ -197,23 +197,23 @@ function downloadBlob(content, filename, type) {
 
 // ── STAGE PANEL ────────────────────────────────────────────────────────────
 function StagePanel() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [live, setLive] = useState(false);
-  const [viewers, setViewers] = useState(0);
-  const [health, setHealth] = useState(null);
-  const [roomName, setRoomName] = useState('');
-  const [activeRoomId, setActiveRoomId] = useState(null);
-  const [toastMsg, setToastMsg] = useState('');
-  const timerRef = useRef(null);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [live, setLive] = useState(false);
+  var [viewers, setViewers] = useState(0);
+  var [health, setHealth] = useState(null);
+  var [roomName, setRoomName] = useState('');
+  var [activeRoomId, setActiveRoomId] = useState(null);
+  var [toastMsg, setToastMsg] = useState('');
+  var timerRef = useRef(null);
 
   async function startStream() {
     if (!roomName.trim()) { toast('Enter a room name', setToastMsg); return; }
     setLive(true);
     setHealth({ bitrate: 0, fps: 0, latency: 0, dropped: 0 });
     try {
-      const room = await base44.entities.Room.create({
+      var room = await base44.entities.Room.create({
         name: roomName.trim(),
-        host_id: user?.id,
+        host_id: (user && user.id),
         status: 'live',
         started_at: new Date().toISOString(),
         viewer_count: 0,
@@ -239,7 +239,7 @@ function StagePanel() {
     if (!live || !activeRoomId) return;
     function syncViewers() {
       base44.entities.Room.filter({ id: activeRoomId }).then(rooms => {
-        setViewers(rooms[0]?.viewer_count ?? 0);
+        setViewers((rooms[0] && rooms[0].viewer_count) || 0);
       }).catch(() => {});
     }
     syncViewers();
@@ -247,7 +247,7 @@ function StagePanel() {
     return () => clearInterval(timerRef.current);
   }, [live, activeRoomId]);
 
-  const metrics = [
+  var metrics = [
     { label: 'Viewers', val: viewers, color: C.gold },
     { label: 'Bitrate', val: health ? `${health.bitrate}kbps` : '—', color: C.teal },
     { label: 'FPS', val: health ? health.fps : '—', color: C.green },
@@ -320,28 +320,28 @@ function StagePanel() {
 
 // ── STATE VS STATE PANEL ───────────────────────────────────────────────────
 function SVSPanel() {
-  const STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
-  const [s1, setS1] = useState('NY');
-  const [s2, setS2] = useState('TX');
-  const [scores, setScores] = useState({ s1: 0, s2: 0 });
-  const [judges] = useState(['Judge A','Judge B','Judge C']);
-  const [judgeScores] = useState(() =>
+  var STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
+  var [s1, setS1] = useState('NY');
+  var [s2, setS2] = useState('TX');
+  var [scores, setScores] = useState({ s1: 0, s2: 0 });
+  var [judges] = useState(['Judge A','Judge B','Judge C']);
+  var [judgeScores] = useState(() =>
     ['Judge A','Judge B','Judge C'].map(j => {
-      let h = 0;
-      for (let i = 0; i < j.length; i++) h = (h * 31 + j.charCodeAt(i)) & 0xff;
+      var h = 0;
+      for (var i = 0; i < j.length; i++) h = (h * 31 + j.charCodeAt(i)) & 0xff;
       return { s1: 6 + (h % 5), s2: 6 + ((h >> 2) % 5) };
     })
   );
-  const [toastMsg, setToastMsg] = useState('');
+  var [toastMsg, setToastMsg] = useState('');
 
   function vote(side) {
     setScores(prev => ({ ...prev, [side]: prev[side] + 1 }));
     toast(`+1 for ${side === 's1' ? s1 : s2}`, setToastMsg);
   }
 
-  const total = scores.s1 + scores.s2 || 1;
-  const pct1 = Math.floor((scores.s1 / total) * 100);
-  const pct2 = 100 - pct1;
+  var total = scores.s1 + scores.s2 || 1;
+  var pct1 = Math.floor((scores.s1 / total) * 100);
+  var pct2 = 100 - pct1;
 
   return (
     <div>
@@ -398,21 +398,21 @@ function SVSPanel() {
 
 // ── TRIBUTE PANEL ──────────────────────────────────────────────────────────
 function TributePanel() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [tributes, setTributes] = useState([]);
-  const [name, setName] = useState('');
-  const [msg, setMsg] = useState('');
-  const [era, setEra] = useState('');
-  const [toastMsg, setToastMsg] = useState('');
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [tributes, setTributes] = useState([]);
+  var [name, setName] = useState('');
+  var [msg, setMsg] = useState('');
+  var [era, setEra] = useState('');
+  var [toastMsg, setToastMsg] = useState('');
 
   useEffect(() => {
-    if (user?.v41_tributes) setTributes(user.v41_tributes);
-  }, [user?.id]);
+    if ((user && user.v41_tributes)) setTributes(user.v41_tributes);
+  }, [(user && user.id)]);
 
   function addTribute() {
     if (!name.trim()) { toast('Enter a name', setToastMsg); return; }
-    const t = { id: Date.now(), name: name.trim(), msg: msg.trim(), era: era.trim(), at: new Date().toLocaleDateString() };
-    const updated = [t, ...tributes].slice(0, 30);
+    var t = { id: Date.now(), name: name.trim(), msg: msg.trim(), era: era.trim(), at: new Date().toLocaleDateString() };
+    var updated = [t, ...tributes].slice(0, 30);
     setTributes(updated);
     base44.auth.updateMe({ v41_tributes: updated }).catch(() => {});
     setName(''); setMsg(''); setEra('');
@@ -420,7 +420,7 @@ function TributePanel() {
   }
 
   function removeTribute(id) {
-    const updated = tributes.filter(t => t.id !== id);
+    var updated = tributes.filter(t => t.id !== id);
     setTributes(updated);
     base44.auth.updateMe({ v41_tributes: updated }).catch(() => {});
   }
@@ -457,22 +457,22 @@ function TributePanel() {
 
 // ── PODCAST PANEL ─────────────────────────────────────────────────────────
 function PodcastPanel() {
-  const [tab, setTab] = useState('create');
-  const [topic, setTopic] = useState('');
-  const [hosts, setHosts] = useState('');
-  const [sources, setSources] = useState([]);
-  const [srcInput, setSrcInput] = useState('');
-  const [ep, setEp] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [toastMsg, setToastMsg] = useState('');
-  const { data: podUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [nlmUrl, setNlmUrl] = useState('');
-  const [nlmLabel, setNlmLabel] = useState('');
-  const [nlmSources, setNlmSources] = useState([]);
+  var [tab, setTab] = useState('create');
+  var [topic, setTopic] = useState('');
+  var [hosts, setHosts] = useState('');
+  var [sources, setSources] = useState([]);
+  var [srcInput, setSrcInput] = useState('');
+  var [ep, setEp] = useState(null);
+  var [loading, setLoading] = useState(false);
+  var [toastMsg, setToastMsg] = useState('');
+  var { data: podUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [nlmUrl, setNlmUrl] = useState('');
+  var [nlmLabel, setNlmLabel] = useState('');
+  var [nlmSources, setNlmSources] = useState([]);
 
   useEffect(() => {
-    if (podUser?.v41_nlm_sources) setNlmSources(podUser.v41_nlm_sources);
-  }, [podUser?.id]);
+    if ((podUser && podUser.v41_nlm_sources)) setNlmSources(podUser.v41_nlm_sources);
+  }, [(podUser && podUser.id)]);
 
   function addSource() {
     if (!srcInput.trim() || sources.length >= 5) return;
@@ -482,11 +482,11 @@ function PodcastPanel() {
 
   function addNlm() {
     if (!nlmUrl.trim() || !isSafeUrl(nlmUrl.trim()) || !nlmUrl.includes('notebooklm.google.com')) { toast('Need a notebooklm.google.com URL', setToastMsg); return; }
-    const m = nlmUrl.match(/\/notebook\/([^/?#]+)(?:\/artifact\/([^/?#]+))?/);
+    var m = nlmUrl.match(/\/notebook\/([^/?#]+)(?:\/artifact\/([^/?#]+))?/);
     if (!m) { toast('Cannot parse NLM URL', setToastMsg); return; }
-    const label = nlmLabel.trim() || `NLM ${nlmSources.length + 1}`;
-    const src = { id: Date.now(), label, url: nlmUrl.trim(), notebookId: m[1], artifactId: m[2] || null, at: new Date().toISOString() };
-    const updated = [src, ...nlmSources].slice(0, 20);
+    var label = nlmLabel.trim() || `NLM ${nlmSources.length + 1}`;
+    var src = { id: Date.now(), label, url: nlmUrl.trim(), notebookId: m[1], artifactId: m[2] || null, at: new Date().toISOString() };
+    var updated = [src, ...nlmSources].slice(0, 20);
     setNlmSources(updated);
     base44.auth.updateMe({ v41_nlm_sources: updated }).catch(() => {});
     setNlmUrl(''); setNlmLabel('');
@@ -497,9 +497,9 @@ function PodcastPanel() {
     if (!topic.trim()) { toast('Enter a topic', setToastMsg); return; }
     setLoading(true);
     try {
-      const srcCtx = sources.map(s => `- ${s.label}: ${s.content}`).join('\n');
-      const nlmCtx = nlmSources.slice(0, 3).map(s => `- ${s.label} [${s.notebookId.slice(0,8)}...]`).join('\n');
-      const result = await base44.integrations.Core.InvokeLLM({
+      var srcCtx = sources.map(s => `- ${s.label}: ${s.content}`).join('\n');
+      var nlmCtx = nlmSources.slice(0, 3).map(s => `- ${s.label} [${s.notebookId.slice(0,8)}...]`).join('\n');
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `SeeWhy LIVE AI Podcast Producer.\nTopic: "${topic}"\nHosts: ${hosts || 'Co-hosts TBD'}\nSources:\n${srcCtx}\nNotebookLM References:\n${nlmCtx}\nPlatform: SeeWhy LIVE — domino culture, State vs State, 90/10 creator split.\nGenerate a complete podcast episode outline with title, tagline, 4-6 segments, cold open, and call to action.`,
         response_json_schema: {
           type: 'object',
@@ -582,7 +582,7 @@ function PodcastPanel() {
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <a href={isSafeUrl(s.url) ? s.url : undefined} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
-                  <button onClick={() => { const u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); base44.auth.updateMe({ v41_nlm_sources: u }).catch(() => {}); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
+                  <button onClick={() => { var u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); base44.auth.updateMe({ v41_nlm_sources: u }).catch(() => {}); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
                 </div>
               </div>
             </Card>
@@ -630,22 +630,22 @@ function PodcastPanel() {
 
 // ── MUSIC PANEL ────────────────────────────────────────────────────────────
 function MusicPanel() {
-  const [prompt, setPrompt] = useState('');
-  const [genre, setGenre] = useState('Hip-Hop');
-  const [bpm, setBpm] = useState('95');
-  const [keyV, setKeyV] = useState('C Minor');
-  const [track, setTrack] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [toastMsg, setToastMsg] = useState('');
+  var [prompt, setPrompt] = useState('');
+  var [genre, setGenre] = useState('Hip-Hop');
+  var [bpm, setBpm] = useState('95');
+  var [keyV, setKeyV] = useState('C Minor');
+  var [track, setTrack] = useState(null);
+  var [loading, setLoading] = useState(false);
+  var [toastMsg, setToastMsg] = useState('');
 
-  const GENRES = ['Hip-Hop','R&B','Trap','Drill','Afrobeats','Gospel','Soul','Jazz','Electronic','Lo-Fi'];
-  const KEYS = ['C Major','C Minor','D Major','D Minor','E Major','E Minor','F Major','F Minor','G Major','G Minor','A Major','A Minor','B Major','B Minor'];
+  var GENRES = ['Hip-Hop','R&B','Trap','Drill','Afrobeats','Gospel','Soul','Jazz','Electronic','Lo-Fi'];
+  var KEYS = ['C Major','C Minor','D Major','D Minor','E Major','E Minor','F Major','F Minor','G Major','G Minor','A Major','A Minor','B Major','B Minor'];
 
   async function gen() {
     if (!prompt.trim()) { toast('Describe your track concept', setToastMsg); return; }
     setLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `SeeWhy LIVE AI Music Director.\nConcept: "${prompt}"\nGenre: ${genre} | BPM: ${bpm} | Key: ${keyV}\nCreate a detailed track arrangement with sections, hooks, and mix tips for a broadcast performance.`,
         response_json_schema: {
           type: 'object',
@@ -745,7 +745,7 @@ function MusicPanel() {
 
 // ── PLATFORMS PANEL ────────────────────────────────────────────────────────
 function PlatformsPanel() {
-  const PLATFORMS = [
+  var PLATFORMS = [
     { name: 'YouTube Live', color: '#FF0000', icon: '▶' },
     { name: 'Facebook Live', color: '#1877F2', icon: 'f' },
     { name: 'Instagram Live', color: '#E4405F', icon: '📸' },
@@ -755,9 +755,9 @@ function PlatformsPanel() {
     { name: 'Kick', color: '#53FC18', icon: '🎯' },
     { name: 'LinkedIn Live', color: '#0A66C2', icon: 'in' },
   ];
-  const [active, setActive] = useState({});
-  const [keys, setKeys] = useState({});
-  const [toastMsg, setToastMsg] = useState('');
+  var [active, setActive] = useState({});
+  var [keys, setKeys] = useState({});
+  var [toastMsg, setToastMsg] = useState('');
 
   function toggle(name) {
     setActive(prev => ({ ...prev, [name]: !prev[name] }));
@@ -812,16 +812,16 @@ function PlatformsPanel() {
 
 // ── WATCH PARTY PANEL ──────────────────────────────────────────────────────
 function WatchPartyPanel() {
-  const [url, setUrl] = useState('');
-  const [partyId, setPartyId] = useState('');
-  const [guests, setGuests] = useState([]);
-  const [chat, setChat] = useState([]);
-  const [chatInput, setChatInput] = useState('');
-  const [toastMsg, setToastMsg] = useState('');
+  var [url, setUrl] = useState('');
+  var [partyId, setPartyId] = useState('');
+  var [guests, setGuests] = useState([]);
+  var [chat, setChat] = useState([]);
+  var [chatInput, setChatInput] = useState('');
+  var [toastMsg, setToastMsg] = useState('');
 
   function createParty() {
     if (!url.trim()) { toast('Enter a video URL', setToastMsg); return; }
-    const arr = new Uint8Array(4); crypto.getRandomValues(arr);
+    var arr = new Uint8Array(4); crypto.getRandomValues(arr);
     setPartyId(`PARTY-${Array.from(arr).map(b=>b.toString(36)).join('').toUpperCase().slice(0,6)}`);
     setGuests(['Host (You)', 'Guest1', 'Guest2']);
     setChat([{ user: 'System', msg: 'Watch party started! Share the party ID with friends.' }]);
@@ -887,7 +887,7 @@ function WatchPartyPanel() {
 
 // ── ANALYTICS PANEL ────────────────────────────────────────────────────────
 function AnalyticsPanel() {
-  const stats = [
+  var stats = [
     { label: 'Total Views', val: '24,817', delta: '+12%', color: C.gold },
     { label: 'Watch Time (hrs)', val: '3,402', delta: '+8%', color: C.teal },
     { label: 'Followers', val: '1,284', delta: '+22%', color: C.green },
@@ -896,7 +896,7 @@ function AnalyticsPanel() {
     { label: 'Chat Messages', val: '18,440', delta: '+17%', color: C.blue },
   ];
 
-  const topContent = [
+  var topContent = [
     { title: 'NY vs TX — Domino Championship', views: '8,412', rev: '$214' },
     { title: 'Friday Night Cypher Live', views: '4,200', rev: '$98' },
     { title: 'Culture Talk w/ Joyce AI', views: '3,100', rev: '$74' },
@@ -936,14 +936,14 @@ function AnalyticsPanel() {
 
 // ── MONETIZE PANEL ─────────────────────────────────────────────────────────
 function MonetizePanel() {
-  const CREATOR_SHARE = 0.90;
-  const PLATFORM_FEE = 0.10;
+  var CREATOR_SHARE = 0.90;
+  var PLATFORM_FEE = 0.10;
 
-  const [gross, setGross] = useState('0');
-  const creatorEarnings = Math.floor(parseFloat(gross || '0') * CREATOR_SHARE * 100) / 100;
-  const platformFee = Math.floor(parseFloat(gross || '0') * PLATFORM_FEE * 100) / 100;
+  var [gross, setGross] = useState('0');
+  var creatorEarnings = Math.floor(parseFloat(gross || '0') * CREATOR_SHARE * 100) / 100;
+  var platformFee = Math.floor(parseFloat(gross || '0') * PLATFORM_FEE * 100) / 100;
 
-  const streams = [
+  var streams = [
     { name: 'Subscriptions', icon: '🔒', amount: '$412.00', color: C.gold },
     { name: 'Tips & Gifts', icon: '🎁', amount: '$234.50', color: C.amber },
     { name: 'PPV Events', icon: '🎟', amount: '$180.00', color: C.ruby },
@@ -999,14 +999,14 @@ function MonetizePanel() {
 
 // ── GUARDIAN AI PANEL ──────────────────────────────────────────────────────
 function GuardianPanel() {
-  const [rules, setRules] = useState([
+  var [rules, setRules] = useState([
     { id: 1, text: 'Block hate speech and slurs', active: true, level: 'high' },
     { id: 2, text: 'Flag violent content for review', active: true, level: 'high' },
     { id: 3, text: 'Warn on excessive profanity', active: true, level: 'medium' },
     { id: 4, text: 'Detect spam patterns', active: true, level: 'medium' },
     { id: 5, text: 'Auto-mute repeat offenders', active: false, level: 'low' },
   ]);
-  const [flagged, setFlagged] = useState([
+  var [flagged, setFlagged] = useState([
     { id: 1, user: 'user_329', msg: 'Message flagged for review', reason: 'Potential hate speech', time: '2m ago' },
     { id: 2, user: 'user_441', msg: 'Excessive spam detected', reason: 'Spam pattern', time: '8m ago' },
   ]);
@@ -1015,7 +1015,7 @@ function GuardianPanel() {
     setRules(prev => prev.map(r => r.id === id ? { ...r, active: !r.active } : r));
   }
 
-  const levelColor = { high: C.red, medium: C.warn, low: C.teal };
+  var levelColor = { high: C.red, medium: C.warn, low: C.teal };
 
   return (
     <div>
@@ -1070,7 +1070,7 @@ function GuardianPanel() {
 
 // ── INS FORGE PANEL ────────────────────────────────────────────────────────
 function InsForgePanel() {
-  const ASSETS = [
+  var ASSETS = [
     { id: 'thumb', label: 'Thumbnail', icon: '🖼' },
     { id: 'banner', label: 'Stream Banner', icon: '🎨' },
     { id: 'endcard', label: 'End Card', icon: '🎬' },
@@ -1078,17 +1078,17 @@ function InsForgePanel() {
     { id: 'social', label: 'Social Post', icon: '📱' },
     { id: 'promo', label: 'Promo Card', icon: '🎟' },
   ];
-  const [sel, setSel] = useState(ASSETS[0]);
-  const [prompt, setPrompt] = useState('');
-  const [res, setRes] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [toastMsg, setToastMsg] = useState('');
+  var [sel, setSel] = useState(ASSETS[0]);
+  var [prompt, setPrompt] = useState('');
+  var [res, setRes] = useState(null);
+  var [loading, setLoading] = useState(false);
+  var [toastMsg, setToastMsg] = useState('');
 
   async function gen() {
     if (!prompt.trim()) { toast('Describe your asset concept', setToastMsg); return; }
     setLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `SeeWhy LIVE INS Forge — Content Asset Generator.\nAsset Type: ${sel.label}\nConcept: "${prompt}"\nBrand: Dark background (#0E0C09), gold (#C9A84C) accents, Bebas Neue font, broadcast aesthetic, domino culture.\nGenerate complete copy, layout instructions, and dimensions for this asset.`,
         response_json_schema: {
           type: 'object',
@@ -1167,31 +1167,31 @@ function InsForgePanel() {
 
 // ── JOYCE AI PANEL ─────────────────────────────────────────────────────────
 function JoyceAIPanel() {
-  const SYS_PROMPT = `You are Joyce AI — SeeWhy LIVE's intelligent creator assistant. You are an expert in streaming, domino culture, State vs State competition format, content creation, monetization, and the African American broadcasting community. You speak directly, knowledgeably, and with cultural fluency. The platform gives creators 90% revenue, uses earth-tone dark design, and celebrates domino culture as a competitive sport and cultural art form.`;
+  var SYS_PROMPT = `You are Joyce AI — SeeWhy LIVE's intelligent creator assistant. You are an expert in streaming, domino culture, State vs State competition format, content creation, monetization, and the African American broadcasting community. You speak directly, knowledgeably, and with cultural fluency. The platform gives creators 90% revenue, uses earth-tone dark design, and celebrates domino culture as a competitive sport and cultural art form.`;
 
-  const [msgs, setMsgs] = useState([
+  var [msgs, setMsgs] = useState([
     { r: 'assistant', c: "Hey! I'm Joyce AI — your SeeWhy LIVE creator assistant. Ask me anything about streaming, content strategy, monetization, or domino culture." },
   ]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const endRef = useRef(null);
+  var [input, setInput] = useState('');
+  var [loading, setLoading] = useState(false);
+  var endRef = useRef(null);
 
   useEffect(() => {
     if (endRef.current) endRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [msgs]);
 
   async function send() {
-    const q = input.trim();
+    var q = input.trim();
     if (!q) return;
     setMsgs(prev => [...prev, { r: 'user', c: q }]);
     setInput('');
     setLoading(true);
     try {
-      const history = msgs.slice(-8).map(m => `${m.r === 'user' ? 'USER' : 'JOYCE AI'}: ${m.c}`).join('\n');
-      const result = await base44.integrations.Core.InvokeLLM({
+      var history = msgs.slice(-8).map(m => `${m.r === 'user' ? 'USER' : 'JOYCE AI'}: ${m.c}`).join('\n');
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `${SYS_PROMPT}\n\nConversation:\n${history}\nUSER: ${q}\n\nRespond as Joyce AI in 2-4 sentences, direct and helpful.`,
       });
-      const reply = typeof result === 'string' ? result : (result.response || result.text || result.content || JSON.stringify(result));
+      var reply = typeof result === 'string' ? result : (result.response || result.text || result.content || JSON.stringify(result));
       setMsgs(prev => [...prev, { r: 'assistant', c: reply }]);
     } catch (e) {
       setMsgs(prev => [...prev, { r: 'assistant', c: 'Having trouble connecting right now — try again in a moment.' }]);
@@ -1256,11 +1256,11 @@ function JoyceAIPanel() {
 
 // ── SETTINGS PANEL ─────────────────────────────────────────────────────────
 function SettingsPanel() {
-  const [handle, setHandle] = useState('');
-  const [bio, setBio] = useState('');
-  const [email, setEmail] = useState('');
-  const [notifs, setNotifs] = useState({ email: true, push: true, subs: true, tips: true });
-  const [saved, setSaved] = useState(false);
+  var [handle, setHandle] = useState('');
+  var [bio, setBio] = useState('');
+  var [email, setEmail] = useState('');
+  var [notifs, setNotifs] = useState({ email: true, push: true, subs: true, tips: true });
+  var [saved, setSaved] = useState(false);
 
   async function save() {
     try {
@@ -1321,7 +1321,7 @@ function SettingsPanel() {
 
 // ── TRANSCRIPTION PANEL ────────────────────────────────────────────────────
 function TranscriptionPanel() {
-  const LANGS = [
+  var LANGS = [
     { code: 'en', label: 'English',    flag: '🇺🇸' },
     { code: 'es', label: 'Español',    flag: '🇪🇸' },
     { code: 'fr', label: 'Français',   flag: '🇫🇷' },
@@ -1330,7 +1330,7 @@ function TranscriptionPanel() {
     { code: 'ar', label: 'العربية',    flag: '🇸🇦' },
   ];
 
-  const DEMO_CAPTIONS = [
+  var DEMO_CAPTIONS = [
     'Welcome to SeeWhy LIVE — the creator platform.',
     "Tonight we're breaking down the top 10 plays of the week.",
     'Real-time live streaming for creators and communities.',
@@ -1338,19 +1338,19 @@ function TranscriptionPanel() {
     'Shoutout to everyone in the watch party tonight.',
   ];
 
-  const [roomName, setRoomName] = useState('mystream');
-  const [targetLang, setTargetLang] = useState('es');
-  const [demoIdx, setDemoIdx] = useState(0);
-  const [history, setHistory] = useState([DEMO_CAPTIONS[0]]);
-  const [translating, setTranslating] = useState(false);
-  const [translated, setTranslated] = useState('');
-  const [toastMsg, setToastMsg] = useState('');
+  var [roomName, setRoomName] = useState('mystream');
+  var [targetLang, setTargetLang] = useState('es');
+  var [demoIdx, setDemoIdx] = useState(0);
+  var [history, setHistory] = useState([DEMO_CAPTIONS[0]]);
+  var [translating, setTranslating] = useState(false);
+  var [translated, setTranslated] = useState('');
+  var [toastMsg, setToastMsg] = useState('');
 
   useEffect(() => {
-    const iv = setInterval(() => {
+    var iv = setInterval(() => {
       setDemoIdx(i => {
-        const next = (i + 1) % DEMO_CAPTIONS.length;
-        const line = DEMO_CAPTIONS[next];
+        var next = (i + 1) % DEMO_CAPTIONS.length;
+        var line = DEMO_CAPTIONS[next];
         setHistory(h => [line, ...h].slice(0, 30));
         return next;
       });
@@ -1358,18 +1358,18 @@ function TranscriptionPanel() {
     return () => clearInterval(iv);
   }, []);
 
-  const captionNinjaUrl = `https://caption.ninja/?room=${encodeURIComponent(roomName)}&lang=${targetLang}`;
-  const obsOverlayUrl   = `https://caption.ninja/overlay?room=${encodeURIComponent(roomName)}&lang=${targetLang}`;
+  var captionNinjaUrl = `https://caption.ninja/?room=${encodeURIComponent(roomName)}&lang=${targetLang}`;
+  var obsOverlayUrl   = `https://caption.ninja/overlay?room=${encodeURIComponent(roomName)}&lang=${targetLang}`;
 
   async function doTranslate() {
     setTranslating(true);
     setTranslated('');
-    const src = history.slice(0, 5).join(' ');
+    var src = history.slice(0, 5).join(' ');
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Translate this English caption text to ${LANGS.find(l => l.code === targetLang)?.label || targetLang}:\n\n"${src}"\n\nReturn only the translated text, nothing else.`,
+      var result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Translate this English caption text to ${(LANGS.find(l => l.code === targetLang) && LANGS.find(l => l.code === targetLang).label) || targetLang}:\n\n"${src}"\n\nReturn only the translated text, nothing else.`,
       });
-      setTranslated(typeof result === 'string' ? result : (result?.text || result?.content || JSON.stringify(result)));
+      setTranslated(typeof result === 'string' ? result : ((result && result.text) || (result && result.content) || JSON.stringify(result)));
     } catch (e) {
       setTranslated('Translation failed — check AI connection.');
     }
@@ -1377,9 +1377,9 @@ function TranscriptionPanel() {
   }
 
   function exportSRT() {
-    const content = history.map((line, i) => {
-      const start = formatSRTTime(i * 3.5);
-      const end   = formatSRTTime((i + 1) * 3.5);
+    var content = history.map((line, i) => {
+      var start = formatSRTTime(i * 3.5);
+      var end   = formatSRTTime((i + 1) * 3.5);
       return `${i + 1}\n${start} --> ${end}\n${line}\n`;
     }).join('\n');
     downloadBlob(content, `captions-${roomName}.srt`, 'text/plain');
@@ -1392,13 +1392,13 @@ function TranscriptionPanel() {
   }
 
   function exportJSON() {
-    const data = history.map((line, i) => ({ index: i + 1, time: i * 3.5, text: line }));
+    var data = history.map((line, i) => ({ index: i + 1, time: i * 3.5, text: line }));
     downloadBlob(JSON.stringify(data, null, 2), `captions-${roomName}.json`, 'application/json');
     toast('JSON exported', setToastMsg);
   }
 
   function copyOBSOverlay() {
-    navigator.clipboard?.writeText(obsOverlayUrl).catch(() => {});
+    navigator.(clipboard && clipboard.writeTex)t(obsOverlayUrl).catch(() => {});
     toast('OBS overlay URL copied!', setToastMsg);
   }
 
@@ -1444,7 +1444,7 @@ function TranscriptionPanel() {
           ))}
         </div>
         <Btn onClick={doTranslate} disabled={translating}>
-          {translating ? '⏳ Translating…' : `🌐 Translate to ${LANGS.find(l => l.code === targetLang)?.label}`}
+          {translating ? '⏳ Translating…' : '🌐 Translate to ' + (function(){ var _l = LANGS.find(function(l){ return l.code === targetLang; }); return _l ? _l.label : ''; })()}
         </Btn>
         {translated && (
           <div style={{ marginTop: 12, background: C.bg2, borderRadius: 8, padding: 12, borderLeft: `3px solid ${C.amber}` }}>
@@ -1514,32 +1514,32 @@ function TranscriptionPanel() {
 
 // ── ROOMS PANEL ────────────────────────────────────────────────────────────
 function RoomsPanel() {
-  const MOCK_ROOMS = [
+  var MOCK_ROOMS = [
     { id: 'nyc-la',        name: 'NYC vs LA',      status: 'live',    viewers: 312 },
     { id: 'dominos-champ', name: 'Domino Champ',   status: 'offline', viewers: 0   },
     { id: 'weekly-cypher', name: 'Weekly Cypher',  status: 'offline', viewers: 0   },
   ];
 
-  const DESTINATIONS = [
+  var DESTINATIONS = [
     { id: 'youtube',  label: 'YouTube',  icon: '▶', color: '#FF0000' },
     { id: 'twitch',   label: 'Twitch',   icon: '🟣', color: '#9146FF' },
     { id: 'facebook', label: 'Facebook', icon: 'f',  color: '#1877F2' },
     { id: 'kick',     label: 'Kick',     icon: '🟢', color: '#53FC18' },
   ];
 
-  const VDO_ROOM  = 'sw_thrrj4';
-  const VDO_JOIN  = `https://vdo.ninja/?room=${VDO_ROOM}&push`;
-  const VDO_WATCH = `https://vdo.ninja/?room=${VDO_ROOM}&view`;
-  const VDO_OBS   = `https://vdo.ninja/?room=${VDO_ROOM}&scene`;
+  var VDO_ROOM  = 'sw_thrrj4';
+  var VDO_JOIN  = `https://vdo.ninja/?room=${VDO_ROOM}&push`;
+  var VDO_WATCH = `https://vdo.ninja/?room=${VDO_ROOM}&view`;
+  var VDO_OBS   = `https://vdo.ninja/?room=${VDO_ROOM}&scene`;
 
-  const [selectedRoom, setSelectedRoom] = useState(MOCK_ROOMS[0].id);
-  const [recording, setRecording] = useState(false);
-  const [recSeconds, setRecSeconds] = useState(0);
-  const [recLib, setRecLib] = useState([]);
-  const [destinations, setDestinations] = useState({ youtube: false, twitch: false, facebook: false, kick: false });
-  const [mtxStatus, setMtxStatus] = useState(null);
-  const [toastMsg, setToastMsg] = useState('');
-  const timerRef = useRef(null);
+  var [selectedRoom, setSelectedRoom] = useState(MOCK_ROOMS[0].id);
+  var [recording, setRecording] = useState(false);
+  var [recSeconds, setRecSeconds] = useState(0);
+  var [recLib, setRecLib] = useState([]);
+  var [destinations, setDestinations] = useState({ youtube: false, twitch: false, facebook: false, kick: false });
+  var [mtxStatus, setMtxStatus] = useState(null);
+  var [toastMsg, setToastMsg] = useState('');
+  var timerRef = useRef(null);
 
   useEffect(() => {
     if (recording) {
@@ -1558,8 +1558,8 @@ function RoomsPanel() {
 
   function stopRecording() {
     setRecording(false);
-    const mb = Math.floor(recSeconds / 60 * 5) || 1;
-    const name = `${selectedRoom}-${new Date().toISOString().slice(0,10)}`;
+    var mb = Math.floor(recSeconds / 60 * 5) || 1;
+    var name = `${selectedRoom}-${new Date().toISOString().slice(0,10)}`;
     setRecLib(prev => [{ name, duration: recSeconds, mb, date: new Date().toLocaleDateString() }, ...prev]);
     toast(`Saved: ${name} (${mb} MB)`, setToastMsg);
     setRecSeconds(0);
@@ -1580,14 +1580,14 @@ function RoomsPanel() {
   }
 
   function copyURL(url) {
-    navigator.clipboard?.writeText(url).catch(() => {});
+    navigator.(clipboard && clipboard.writeTex)t(url).catch(() => {});
     toast('Copied!', setToastMsg);
   }
 
-  const mm     = String(Math.floor(recSeconds / 60)).padStart(2, '0');
-  const ss     = String(recSeconds % 60).padStart(2, '0');
-  const recMB  = Math.floor(recSeconds / 60 * 5);
-  const recPct = Math.min(100, Math.floor((recSeconds / 7200) * 100));
+  var mm     = String(Math.floor(recSeconds / 60)).padStart(2, '0');
+  var ss     = String(recSeconds % 60).padStart(2, '0');
+  var recMB  = Math.floor(recSeconds / 60 * 5);
+  var recPct = Math.min(100, Math.floor((recSeconds / 7200) * 100));
 
   return (
     <div>
@@ -1784,9 +1784,9 @@ function RoomsPanel() {
 
 // ── SHARE & EMBED PANEL ────────────────────────────────────────────────────
 function ShareEmbedPanel() {
-  const APP_URL = 'https://seewhylive.online';
+  var APP_URL = 'https://seewhylive.online';
 
-  const PLATFORMS = [
+  var PLATFORMS = [
     {
       id: 'instagram', name: 'Instagram', icon: '📸', color: '#E4405F',
       note: 'Paste in Bio link, Story, or Reel caption.',
@@ -1829,19 +1829,19 @@ function ShareEmbedPanel() {
     },
   ];
 
-  const [roomId, setRoomId] = useState('nyc-la');
-  const [copied, setCopied] = useState('');
-  const [toastMsg, setToastMsg] = useState('');
-  const [flywheelCount, setFlywheelCount] = useState({ shares: 0, views: 0, installs: 0 });
-  const [paywallEnabled, setPaywallEnabled] = useState(true);
-  const [paywallSecs, setPaywallSecs] = useState(120);
+  var [roomId, setRoomId] = useState('nyc-la');
+  var [copied, setCopied] = useState('');
+  var [toastMsg, setToastMsg] = useState('');
+  var [flywheelCount, setFlywheelCount] = useState({ shares: 0, views: 0, installs: 0 });
+  var [paywallEnabled, setPaywallEnabled] = useState(true);
+  var [paywallSecs, setPaywallSecs] = useState(120);
 
-  const paywallParam = !paywallEnabled ? '&noPaywall=1' : (paywallSecs !== 120 ? '&paywallSec=' + paywallSecs : '');
-  const watchUrl  = APP_URL + '/EmbedPlayer?roomId=' + encodeURIComponent(roomId) + paywallParam;
-  const embedCode = '<iframe\n  src="' + watchUrl + '&embed=1"\n  width="100%" height="480"\n  frameborder="0"\n  allow="autoplay; camera; microphone"\n  allowfullscreen\n></iframe>';
+  var paywallParam = !paywallEnabled ? '&noPaywall=1' : (paywallSecs !== 120 ? '&paywallSec=' + paywallSecs : '');
+  var watchUrl  = APP_URL + '/EmbedPlayer?roomId=' + encodeURIComponent(roomId) + paywallParam;
+  var embedCode = '<iframe\n  src="' + watchUrl + '&embed=1"\n  width="100%" height="480"\n  frameborder="0"\n  allow="autoplay; camera; microphone"\n  allowfullscreen\n></iframe>';
 
   function copyText(text, label) {
-    navigator.clipboard?.writeText(text).catch(function() {});
+    navigator.(clipboard && clipboard.writeTex)t(text).catch(function() {});
     setCopied(label);
     toast(label + ' copied!', setToastMsg);
     setTimeout(function() { setCopied(''); }, 2000);
@@ -2074,7 +2074,7 @@ function ShareEmbedPanel() {
 
 // ── MAIN COMPONENT ─────────────────────────────────────────────────────────
 
-const TABS = [
+var TABS = [
   { id: 'stage',         label: '📡 Stage' },
   { id: 'svs',           label: '⚔️ SVS' },
   { id: 'tribute',       label: '🕊 Tribute' },
@@ -2094,17 +2094,17 @@ const TABS = [
 ];
 
 export default function SeeWhyLIVEv41() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const [activeTab, setActiveTab] = useState('stage');
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var [activeTab, setActiveTab] = useState('stage');
 
-  const panelMap = {
+  var panelMap = {
     stage:         <StagePanel />,
     svs:           <SVSPanel />,
     tribute:       <TributePanel />,
@@ -2170,7 +2170,7 @@ export default function SeeWhyLIVEv41() {
       {/* Panel Content */}
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px' }}>
         <div style={{ color: C.textM, fontSize: 11, marginBottom: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
-          {TABS.find(t => t.id === activeTab)?.label}
+          {(function(){ var _t = TABS.find(function(t){ return t.id === activeTab; }); return _t ? _t.label : ''; })()}
         </div>
         {panelMap[activeTab]}
       </div>
@@ -2178,17 +2178,17 @@ export default function SeeWhyLIVEv41() {
       <SwanyBotEnhanced />
       <NotificationBell />
       <SwanDirectorHUD roomId={activeRoomId} participants={[]} onAdmit={() => {}} onRemove={() => {}} />
-      <GiftSystem roomId={activeRoomId} userId={user?.id || null} isHost={true} />
+      <GiftSystem roomId={activeRoomId} userId={(user && user.id) || null} isHost={true} />
       <GiftLeaderboard roomId={activeRoomId} />
       <ViewerCount count={0} peakViewers={0} />
       <HostAlertCenter />
       <StreamHealthMonitor isStreaming={!!activeRoomId} />
       <SwanAIRecommendations roomId={activeRoomId} currentLayout='v41' viewerCount={0} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <MilestoneAlerts userId={user?.id || null} roomId={activeRoomId} />
+      <MilestoneAlerts userId={(user && user.id) || null} roomId={activeRoomId} />
       <BroadcastAnalyticsDashboard />
       <StreamerMonetizationCenter />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <BackgroundCustomizer />
     </div>
   );

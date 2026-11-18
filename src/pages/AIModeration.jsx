@@ -28,12 +28,12 @@ import CreatorBridge from '../components/social/CreatorBridge';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const VIOLATION_STYLE = {
+var VIOLATION_STYLE = {
   spam:         { bg: 'rgba(212,175,55,0.1)',   border: 'rgba(212,175,55,0.3)',   color: '#D4AF37' },
   harassment:   { bg: 'rgba(192,57,43,0.1)',   border: 'rgba(192,57,43,0.3)',   color: '#C0392B' },
   hate_speech:  { bg: 'rgba(192,57,43,0.1)',  border: 'rgba(192,57,43,0.3)',  color: '#C0392B' },
@@ -41,36 +41,36 @@ const VIOLATION_STYLE = {
   safe:         { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)', color: '#6DBF7E' },
 };
 
-const TABS = ['pending', 'reviewed', 'insights'];
+var TABS = ['pending', 'reviewed', 'insights'];
 
 export default function AIModerationPage() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const queryClient = useQueryClient();
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanProgress, setScanProgress] = useState(0);
-  const [activeTab, setActiveTab] = useState('pending');
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var queryClient = useQueryClient();
+  var roomId = new URLSearchParams(window.location.search).get('room_id');
+  var [isScanning, setIsScanning] = useState(false);
+  var [scanProgress, setScanProgress] = useState(0);
+  var [activeTab, setActiveTab] = useState('pending');
 
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: moderations = [] } = useQuery({
+  var { data: moderations = [] } = useQuery({
     queryKey: ['moderations'],
     queryFn: () => base44.entities.ContentModeration.list('-created_date', 100),
   });
 
-  const reviewMutation = useMutation({
+  var reviewMutation = useMutation({
     mutationFn: async ({ id, decision, action }) => {
       return await base44.entities.ContentModeration.update(id, {
         reviewed_by: 'admin',
@@ -86,24 +86,24 @@ export default function AIModerationPage() {
     onError: () => toast.error('Action failed.'),
   });
 
-  const handleAIScan = async () => {
+  var handleAIScan = async () => {
     setIsScanning(true);
     setScanProgress(10);
     try {
-      const messages = await base44.entities.Message.list('-created_date', 50);
+      var messages = await base44.entities.Message.list('-created_date', 50);
       setScanProgress(30);
       if (messages.length === 0) { toast.info('No messages to scan yet.'); setIsScanning(false); setScanProgress(0); return; }
-      const scannedIds = new Set(moderations.map(m => m.content_id));
-      const unscanned = messages.filter(m => !scannedIds.has(m.id));
+      var scannedIds = new Set(moderations.map(m => m.content_id));
+      var unscanned = messages.filter(m => !scannedIds.has(m.id));
       if (unscanned.length === 0) { toast.info('All recent messages already scanned.'); setIsScanning(false); setScanProgress(0); return; }
       setScanProgress(50);
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are a content moderation AI. Analyze the following chat messages and classify each one.\nFor each message, return a JSON object with:\n- "id": the message id\n- "violation_type": one of "spam", "harassment", "hate_speech", "inappropriate", "safe"\n- "ai_confidence": a number between 0 and 1\n- "ai_explanation": a brief explanation (one sentence, only if not safe)\n\nMessages:\n${unscanned.map(m => `ID: ${m.id} | User: ${m.user_name} | Message: "${m.content}"`).join('\n')}\n\nReturn ONLY a JSON object with a "results" array.`,
         response_json_schema: { type: 'object', properties: { results: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, violation_type: { type: 'string' }, ai_confidence: { type: 'number' }, ai_explanation: { type: 'string' } } } } } },
       });
       setScanProgress(80);
-      const scanResults = result?.results || [];
-      const violations = scanResults.filter(r => r.violation_type !== 'safe');
+      var scanResults = (result && result.results) || [];
+      var violations = scanResults.filter(r => r.violation_type !== 'safe');
       await Promise.all(scanResults.map(r => base44.entities.ContentModeration.create({ content_type: 'message', content_id: r.id, violation_type: r.violation_type, ai_confidence: r.ai_confidence, ai_explanation: r.ai_explanation || null, action_taken: r.violation_type !== 'safe' ? 'flagged' : 'none' })));
       setScanProgress(100);
       toast.success(`Scanned ${scanResults.length} messages — ${violations.length} violation(s) found.`);
@@ -116,9 +116,9 @@ export default function AIModerationPage() {
     }
   };
 
-  const flagged = moderations.filter(m => m.violation_type !== 'safe' && !m.reviewed_by);
-  const reviewed = moderations.filter(m => m.reviewed_by);
-  const stats = {
+  var flagged = moderations.filter(m => m.violation_type !== 'safe' && !m.reviewed_by);
+  var reviewed = moderations.filter(m => m.reviewed_by);
+  var stats = {
     total: moderations.length,
     pending: flagged.length,
     safe: moderations.filter(m => m.violation_type === 'safe').length,
@@ -126,16 +126,16 @@ export default function AIModerationPage() {
   };
 
   function ViolationBadge({ type }) {
-    const s = VIOLATION_STYLE[type] || VIOLATION_STYLE.safe;
+    var s = VIOLATION_STYLE[type] || VIOLATION_STYLE.safe;
     return (
       <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
         style={{ ...T, background: s.bg, border: `1px solid ${s.border}`, color: s.color }}>
-        {type?.replace('_', ' ')}
+        {(type && type.replace)('_', ' ')}
       </span>
     );
   }
 
-  const tabLabels = { pending: `Pending (${flagged.length})`, reviewed: `Reviewed (${reviewed.length})`, insights: 'AI Insights' };
+  var tabLabels = { pending: `Pending (${flagged.length})`, reviewed: `Reviewed (${reviewed.length})`, insights: 'AI Insights' };
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -298,7 +298,7 @@ export default function AIModerationPage() {
                 <div className="space-y-3">
                   {Object.entries(moderations.reduce((acc, m) => { acc[m.violation_type] = (acc[m.violation_type] || 0) + 1; return acc; }, {}))
                     .sort((a, b) => b[1] - a[1]).map(([type, count]) => {
-                      const s = VIOLATION_STYLE[type] || VIOLATION_STYLE.safe;
+                      var s = VIOLATION_STYLE[type] || VIOLATION_STYLE.safe;
                       return (
                         <div key={type} className="flex items-center gap-3">
                           <span className="capitalize text-xs w-24" style={{ color: 'rgba(255,255,255,0.5)', ...T }}>{type.replace('_', ' ')}</span>
@@ -346,22 +346,22 @@ export default function AIModerationPage() {
           <HostAlertCenter roomId={activeRoomId} />
           <ReportModal isOpen={false} onClose={() => {}} contentId={null} contentType="message" />
           <ModerationAppealPanel flagId={null} messageId={null} roomId={activeRoomId} onClose={() => {}} />
-          <ReportsManager communityId={userCommunityId} userId={user?.id} />
-          <AnnouncementScheduler communityId={userCommunityId} userId={user?.id} />
+          <ReportsManager communityId={userCommunityId} userId={(user && user.id)} />
+          <AnnouncementScheduler communityId={userCommunityId} userId={(user && user.id)} />
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         </div>
 
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
-          <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
-          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+          <EngagementBadgesDisplay roomId={activeRoomId} userId={(user && user.id)} creatorId={(user && user.id)} />
+          <AnnouncementPanel communityId={userCommunityId} userId={(user && user.id)} />
         </div>
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="moderation" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

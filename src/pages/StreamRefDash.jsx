@@ -22,7 +22,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import CreatorBridge from '../components/social/CreatorBridge';
 
-const TABS = [
+var TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
   { id: "webrtc",    icon: "🌐", label: "WebRTC" },
   { id: "webhooks",  icon: "🔔", label: "Webhooks" },
@@ -34,8 +34,8 @@ const TABS = [
   { id: "judges",    icon: "⚖️",  label: "Judges" },
 ];
 
-const Badge = ({ type, children }) => {
-  const styles = {
+var Badge = ({ type, children }) => {
+  var styles = {
     live:     "bg-[#6DBF7E]/20 text-green-300 border border-green-500/40",
     pending:  "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40",
     critical: "bg-[#C0392B]/20 text-red-300 border border-red-500/40",
@@ -50,9 +50,9 @@ const Badge = ({ type, children }) => {
   );
 };
 
-const Code = ({ children, copy = true }) => {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = () => {
+var Code = ({ children, copy = true }) => {
+  var [copied, setCopied] = useState(false);
+  var handleCopy = () => {
     navigator.clipboard.writeText(children).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
@@ -70,7 +70,7 @@ const Code = ({ children, copy = true }) => {
   );
 };
 
-const Section = ({ title, children }) => (
+var Section = ({ title, children }) => (
   <div className="mb-6">
     <div className="flex items-center gap-2 mb-3">
       <div className="h-px flex-1 bg-white/10" />
@@ -81,7 +81,7 @@ const Section = ({ title, children }) => (
   </div>
 );
 
-const Row = ({ label, value, badge, pending }) => (
+var Row = ({ label, value, badge, pending }) => (
   <div className="flex items-start justify-between gap-4 py-2 border-b border-white/5">
     <span className="text-white/50 text-xs font-mono shrink-0 w-44">{label}</span>
     <div className="flex items-center gap-2 flex-1 flex-wrap justify-end">
@@ -95,7 +95,7 @@ const Row = ({ label, value, badge, pending }) => (
   </div>
 );
 
-const CheckItem = ({ done, children }) => (
+var CheckItem = ({ done, children }) => (
   <div className={`flex items-start gap-3 py-1.5 text-sm ${done ? "text-white/40 line-through" : "text-white/80"}`}>
     <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-[#6DBF7E]" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
     {children}
@@ -305,8 +305,8 @@ function WebhooksTab() {
 }
 
 function ConnectTab() {
-  const [creatorDone, setCreatorDone] = useState(Array(9).fill(false));
-  const creatorSteps = [
+  var [creatorDone, setCreatorDone] = useState(Array(9).fill(false));
+  var creatorSteps = [
     "Confirm Supabase auth is live (test login at seewhylive.online)",
     "Verify OBS stream key: sw_{your_username}live",
     "Set OBS server to rtmp://seewhylive.online/live",
@@ -513,7 +513,7 @@ function SupabaseTab() {
 }
 
 function EnvTab() {
-  const envVars = [
+  var envVars = [
     { key: "NODE_ENV",                  val: "production",                                  status: "live" },
     { key: "PORT",                      val: "3000",                                        status: "live" },
     { key: "FRONTEND_URL",              val: "https://seewhylive.online",                   status: "live" },
@@ -536,7 +536,7 @@ function EnvTab() {
     { key: "SOCKET_CORS_ORIGIN",        val: "https://seewhylive.online",                   status: "live" },
   ];
 
-  const statusCounts = {
+  var statusCounts = {
     live:     envVars.filter((v) => v.status === "live").length,
     pending:  envVars.filter((v) => v.status === "pending").length,
     critical: envVars.filter((v) => v.status === "critical").length,
@@ -590,10 +590,10 @@ function EnvTab() {
 }
 
 function StatusTab() {
-  const [results, setResults] = useState({});
-  const [checking, setChecking] = useState({});
+  var [results, setResults] = useState({});
+  var [checking, setChecking] = useState({});
 
-  const checks = [
+  var checks = [
     { id: "frontend",      label: "Frontend (seewhylive.online)",     url: "https://seewhylive.online",                                          method: "fetch" },
     { id: "api",           label: "Backend API (/api/health)",        url: "https://seewhylive.online/api/health",                               method: "fetch" },
     { id: "hls",           label: "MediaMTX HLS API",                 url: "https://seewhylive.online/mediamtx/v3/paths/list",                   method: "fetch" },
@@ -601,22 +601,22 @@ function StatusTab() {
     { id: "auth",          label: "Supabase Auth Ping",               url: "https://rxlgywvfclyjdfyvfvyc.supabase.co/auth/v1/health",            method: "fetch" },
   ];
 
-  const runCheck = async (check) => {
+  var runCheck = async (check) => {
     setChecking((c) => ({ ...c, [check.id]: true }));
-    const start = Date.now();
+    var start = Date.now();
     try {
       await fetch(check.url, { method: check.method === "head" ? "HEAD" : "GET", mode: "no-cors", signal: AbortSignal.timeout(5000) });
-      const ms = Date.now() - start;
+      var ms = Date.now() - start;
       setResults((r) => ({ ...r, [check.id]: { ok: true, ms } }));
     } catch (e) {
-      const ms = Date.now() - start;
+      var ms = Date.now() - start;
       setResults((r) => ({ ...r, [check.id]: { ok: false, ms, error: e.message } }));
     } finally {
       setChecking((c) => ({ ...c, [check.id]: false }));
     }
   };
 
-  const runAll = () => checks.forEach(runCheck);
+  var runAll = () => checks.forEach(runCheck);
 
   return (
     <div>
@@ -628,8 +628,8 @@ function StatusTab() {
           ▶ Check All Endpoints
         </button>
         {checks.map((check) => {
-          const r = results[check.id];
-          const isChecking = checking[check.id];
+          var r = results[check.id];
+          var isChecking = checking[check.id];
           return (
             <div key={check.id} className="flex items-center gap-3 py-3 border-b border-white/5">
               <div className="w-3 h-3 rounded-full shrink-0"
@@ -690,9 +690,9 @@ function StatusTab() {
 // ── JUDGES TAB ───────────────────────────────────────────────────────────────
 
 function JudgesTab() {
-  const [judgeCheckDone, setJudgeCheckDone] = useState(Array(8).fill(false));
+  var [judgeCheckDone, setJudgeCheckDone] = useState(Array(8).fill(false));
 
-  const judgePreMatchSteps = [
+  var judgePreMatchSteps = [
     "Confirm judge credentials in Supabase (role = 'judge', tournament_id assigned)",
     "Log in at seewhylive.online — verify ⚖️ Judge badge visible in profile",
     "Open the active SVS match from State vs State → active bracket",
@@ -939,7 +939,7 @@ function JudgesTab() {
 
 // ── TAB MAP ───────────────────────────────────────────────────────────────────
 
-const TAB_CONTENT = {
+var TAB_CONTENT = {
   rtmp:     RTMPTab,
   webrtc:   WebRTCTab,
   webhooks: WebhooksTab,
@@ -952,16 +952,16 @@ const TAB_CONTENT = {
 };
 
 export default function StreamRefDash() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const [activeTab, setActiveTab] = useState("rtmp");
-  const ActiveContent = TAB_CONTENT[activeTab];
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var [activeTab, setActiveTab] = useState("rtmp");
+  var ActiveContent = TAB_CONTENT[activeTab];
 
   return (
     <div style={{ fontFamily: "'DM Mono', 'Courier New', monospace" }} className="min-h-screen bg-[#0a0608] text-white">
@@ -980,7 +980,7 @@ export default function StreamRefDash() {
               <div className="text-white/30 text-[10px] font-mono mt-1">SeeWhy LIVE · SwanyThree EntTech LLC</div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-[#D4AF37] text-[10px] font-mono">let the bones fall</div>
+              <div className="text-[#D4AF37] text-[10px] font-mono">var the bones fall</div>
               <div className="text-white/20 text-[9px] font-mono mt-1">v41 · Washington Classic 2026</div>
             </div>
           </div>
@@ -1030,8 +1030,8 @@ export default function StreamRefDash() {
         <StreamHealthDashboard isLive={!!activeRoomId} />
         <ZEGOConfigPanel roomId={activeRoomId} />
         <OBSBridge roomId={activeRoomId} isHost={true} />
-        <SwanDirectorPanel roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
-        <ZEGOLiveRoom roomId={activeRoomId} userId={user?.id} userName={user?.full_name || ""} isHost={true} onStreamHealth={() => {}} />
+        <SwanDirectorPanel roomId={activeRoomId} hostId={(user && user.id)} onClose={() => {}} />
+        <ZEGOLiveRoom roomId={activeRoomId} userId={(user && user.id)} userName={(user && user.full_name) || ""} isHost={true} onStreamHealth={() => {}} />
         <ChatModeration />
         <StreamMetadata room={activeRoom || null} isHost={true} />
       </div>
@@ -1049,7 +1049,7 @@ export default function StreamRefDash() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
     </div>

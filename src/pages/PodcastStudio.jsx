@@ -27,19 +27,19 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 // ── Brand tokens ──────────────────────────────────────────────────────────────
-const BG     = '#0E0C09';
-const BG2    = 'rgba(14,12,9,0.92)';
-const GOLD   = '#D4AF37';
-const CRIMSON = '#800020';
-const CYAN   = '#D4854A';
-const PURPLE = '#D4854A';
-const GREEN  = '#4A9B5E';
-const NLM    = '#4285F4'; // Google NotebookLM blue
-const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
-const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+var BG     = '#0E0C09';
+var BG2    = 'rgba(14,12,9,0.92)';
+var GOLD   = '#D4AF37';
+var CRIMSON = '#800020';
+var CYAN   = '#D4854A';
+var PURPLE = '#D4854A';
+var GREEN  = '#4A9B5E';
+var NLM    = '#4285F4'; // Google NotebookLM blue
+var T      = { fontFamily: 'Barlow Condensed, sans-serif' };
+var OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
 // ── NotebookLM Library ────────────────────────────────────────────────────────
-const NLM_LIB = [
+var NLM_LIB = [
   { id:'p1',  title:'SeeWhy LIVE: AI Multi-Platform Production Suite',        nbId:'c5285f97-1e18-41c7-ac0f-dcdaf996ae25', artId:'d10969fe-4505-48be-9a97-aa017c38347f', icon:'🚀', cat:'platform' },
   { id:'p2',  title:'Mastering Suno Studio: AI Music Production',             nbId:'db023bed-6228-4049-97f0-9037cc044ecc', artId:'4f3ca811-1e08-425f-9ac4-b268dd7f9c86', icon:'🎵', cat:'music'    },
   { id:'p3',  title:'High-Fidelity Remote Production & AI Chatbot Orchestration', nbId:'c3c8f857-0fd5-460c-9b69-df7ec11ffc8d', artId:'983483a3-3a76-4025-916c-f2e760bbf8a9', icon:'🤖', cat:'production' },
@@ -53,11 +53,11 @@ const NLM_LIB = [
   { id:'p11', title:'PRISM Live Studio YouTube Overview',                     nbId:'nlm-prism',           artId:null, icon:'🎬', cat:'production' },
   { id:'p12', title:'TikTok Trending Creators & Viral Content Feed',          nbId:'nlm-tiktok',          artId:null, icon:'📱', cat:'social'     },
 ];
-const CATS   = ['all','platform','ai','music','production','monetize','domino','social'];
-const CAT_C  = { platform:'#D4854A', ai:'#D4854A', music:'#D4854A', production:'#D4AF37', monetize:'#4A9B5E', domino:'#C62828', social:'#D4854A' };
+var CATS   = ['all','platform','ai','music','production','monetize','domino','social'];
+var CAT_C  = { platform:'#D4854A', ai:'#D4854A', music:'#D4854A', production:'#D4AF37', monetize:'#4A9B5E', domino:'#C62828', social:'#D4854A' };
 
 // ── Generation steps ──────────────────────────────────────────────────────────
-const GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogue…', 'Polishing script…'];
+var GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogue…', 'Polishing script…'];
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ message }) {
@@ -140,18 +140,18 @@ function PanelSlot({ name, emoji, borderColor, onInvite }) {
 
 // ── NotebookLM Sources Tab ────────────────────────────────────────────────────
 function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
-  const [urlInput, setUrlInput]   = useState('');
-  const [titleInput, setTitleInput] = useState('');
-  const [topicInput, setTopicInput] = useState('');
-  const [fetchState, setFetchState] = useState('idle'); // idle | fetching | ok | partial | failed
-  const [editIdx, setEditIdx]     = useState(null);
-  const [deleteIdx, setDeleteIdx] = useState(null);
-  const [libCat, setLibCat]       = useState('all');
+  var [urlInput, setUrlInput]   = useState('');
+  var [titleInput, setTitleInput] = useState('');
+  var [topicInput, setTopicInput] = useState('');
+  var [fetchState, setFetchState] = useState('idle'); // idle | fetching | ok | partial | failed
+  var [editIdx, setEditIdx]     = useState(null);
+  var [deleteIdx, setDeleteIdx] = useState(null);
+  var [libCat, setLibCat]       = useState('all');
 
   function addPreset(p) {
     if (nlmSources.find(nb => nb.notebookId === p.nbId)) { showToast('Already in sources'); return; }
     if (nlmSources.length >= 8) { showToast('Maximum 8 sources'); return; }
-    const nb = {
+    var nb = {
       url: p.artId
         ? `https://notebooklm.google.com/notebook/${p.nbId}/artifact/${p.artId}`
         : `https://notebooklm.google.com/notebook/${p.nbId}`,
@@ -172,13 +172,13 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
   }
 
   function parseNlmIds(url) {
-    const nb  = url.match(/notebook\/([a-f0-9-]+)/);
-    const art = url.match(/artifact\/([a-f0-9-]+)/);
-    return { notebookId: nb?.[1] || null, artifactId: art?.[1] || null };
+    var nb  = url.match(/notebook\/([a-f0-9-]+)/);
+    var art = url.match(/artifact\/([a-f0-9-]+)/);
+    return { notebookId: (nb && nb[1]) || null, artifactId: (art && art[1]) || null };
   }
 
   async function handleFetch() {
-    const url = urlInput.trim();
+    var url = urlInput.trim();
     if (!url) { showToast('Paste a NotebookLM URL first'); return; }
     if (!isNlmUrl(url)) { showToast('Must be a notebooklm.google.com URL'); return; }
 
@@ -186,15 +186,15 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
     setTitleInput('');
 
     // Try a plain fetch — NLM serves page metadata before the auth redirect
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
+    var controller = new AbortController();
+    var timer = setTimeout(() => controller.abort(), 5000);
     try {
-      const res = await fetch(url, { signal: controller.signal, redirect: 'follow' });
+      var res = await fetch(url, { signal: controller.signal, redirect: 'follow' });
       clearTimeout(timer);
-      const html = await res.text();
+      var html = await res.text();
       // Extract <title>
-      const m = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-      const raw = (m?.[1] || '')
+      var m = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+      var raw = ((m && m[1]) || '')
         .replace(/\s*[-–|]\s*Google NotebookLM\s*$/i, '')
         .replace(/^Google NotebookLM\s*/i, '')
         .trim();
@@ -215,14 +215,14 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
   }
 
   function handleAdd() {
-    const url = urlInput.trim();
+    var url = urlInput.trim();
     if (!url)          { showToast('URL is required'); return; }
     if (!isNlmUrl(url)) { showToast('Must be a notebooklm.google.com URL'); return; }
     if (!titleInput.trim()) { showToast('Add a title so the AI knows what this source is'); return; }
     if (nlmSources.length >= 8) { showToast('Maximum 8 NotebookLM sources'); return; }
 
-    const ids = parseNlmIds(url);
-    const newSrc = {
+    var ids = parseNlmIds(url);
+    var newSrc = {
       url,
       title: titleInput.trim(),
       topic: topicInput.trim(),
@@ -239,7 +239,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
   }
 
   function handleSaveEdit(idx) {
-    const updated = nlmSources.map((s, i) =>
+    var updated = nlmSources.map((s, i) =>
       i === idx ? { ...s, title: titleInput.trim(), topic: topicInput.trim() } : s
     );
     saveNlmSources(updated);
@@ -250,7 +250,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
   }
 
   function startEdit(idx) {
-    const s = nlmSources[idx];
+    var s = nlmSources[idx];
     setEditIdx(idx);
     setTitleInput(s.title);
     setTopicInput(s.topic || '');
@@ -263,13 +263,13 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
   }
 
   function handleUrlPaste(e) {
-    const pasted = e.target.value;
+    var pasted = e.target.value;
     setUrlInput(pasted);
     setFetchState('idle');
     setTitleInput('');
   }
 
-  const fetchLabel = {
+  var fetchLabel = {
     idle: '🔍 Fetch Title',
     fetching: 'Fetching…',
     ok: '✓ Title Found',
@@ -277,7 +277,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
     failed: '⚠ Could Not Fetch — Enter Title Manually',
   }[fetchState];
 
-  const fetchColor = { ok: '#6DBF7E', partial: GOLD, failed: '#C0392B' }[fetchState] || NLM;
+  var fetchColor = { ok: '#6DBF7E', partial: GOLD, failed: '#C0392B' }[fetchState] || NLM;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -590,8 +590,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
         {/* Library entries */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
           {NLM_LIB.filter(p => libCat === 'all' || p.cat === libCat).map(p => {
-            const alreadyAdded = nlmSources.some(nb => nb.notebookId === p.nbId);
-            const catColor = CAT_C[p.cat] || NLM;
+            var alreadyAdded = nlmSources.some(nb => nb.notebookId === p.nbId);
+            var catColor = CAT_C[p.cat] || NLM;
             return (
               <div key={p.id} style={{
                 display: 'flex', alignItems: 'center', gap: 10,
@@ -636,36 +636,36 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PodcastStudio() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [tab, setTab] = useState('create');
-  const [noiseSupp, setNoiseSupp] = useState(true);
-  const [echoCan, setEchoCan] = useState(true);
-  const [sources, setSources] = useState([]);
-  const [addingSource, setAddingSource] = useState(false);
-  const [sourceInput, setSourceInput] = useState('');
-  const [sourceType, setSourceType] = useState('text');
-  const [episodeTitle, setEpisodeTitle] = useState('');
-  const [hostName, setHostName] = useState('SwanyThree');
-  const [cohostName, setCohostName] = useState('ARIA');
-  const [duration, setDuration] = useState('15min');
-  const [tone, setTone] = useState('Casual');
-  const [topic, setTopic] = useState('');
-  const [generating, setGenerating] = useState(false);
-  const [genStep, setGenStep] = useState('');
-  const [script, setScript] = useState(null);
-  const [library, setLibrary] = useState([]);
-  const [nlmSources, setNlmSources] = useState([]);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [tab, setTab] = useState('create');
+  var [noiseSupp, setNoiseSupp] = useState(true);
+  var [echoCan, setEchoCan] = useState(true);
+  var [sources, setSources] = useState([]);
+  var [addingSource, setAddingSource] = useState(false);
+  var [sourceInput, setSourceInput] = useState('');
+  var [sourceType, setSourceType] = useState('text');
+  var [episodeTitle, setEpisodeTitle] = useState('');
+  var [hostName, setHostName] = useState('SwanyThree');
+  var [cohostName, setCohostName] = useState('ARIA');
+  var [duration, setDuration] = useState('15min');
+  var [tone, setTone] = useState('Casual');
+  var [topic, setTopic] = useState('');
+  var [generating, setGenerating] = useState(false);
+  var [genStep, setGenStep] = useState('');
+  var [script, setScript] = useState(null);
+  var [library, setLibrary] = useState([]);
+  var [nlmSources, setNlmSources] = useState([]);
 
   useEffect(() => {
     if (!user) return;
     if (user.podcast_library) setLibrary(user.podcast_library);
     if (user.podcast_nlm_sources) setNlmSources(user.podcast_nlm_sources);
-  }, [user?.id]);
-  const [editingIdx, setEditingIdx] = useState(null);
-  const [toast, setToast] = useState('');
-  const [panelSegIdx, setPanelSegIdx] = useState(0);
-  const [deleteConfirmIdx, setDeleteConfirmIdx] = useState(null);
-  const [micOn, setMicOn] = useState(true);
+  }, [(user && user.id)]);
+  var [editingIdx, setEditingIdx] = useState(null);
+  var [toast, setToast] = useState('');
+  var [panelSegIdx, setPanelSegIdx] = useState(0);
+  var [deleteConfirmIdx, setDeleteConfirmIdx] = useState(null);
+  var [micOn, setMicOn] = useState(true);
 
   function showToast(msg) {
     setToast(msg);
@@ -680,7 +680,7 @@ export default function PodcastStudio() {
   function addSource() {
     if (!sourceInput.trim()) return;
     if (sources.length >= 5) { showToast('Maximum 5 sources'); return; }
-    const label = sourceInput.slice(0, 30);
+    var label = sourceInput.slice(0, 30);
     setSources(prev => [...prev, { type: sourceType, label, content: sourceInput }]);
     setSourceInput('');
     setAddingSource(false);
@@ -700,15 +700,15 @@ export default function PodcastStudio() {
     setGenerating(true);
     setGenStep('Generating script…');
     try {
-      const srcText = sources.length
+      var srcText = sources.length
         ? sources.map(s => `[${s.label}]: ${s.content}`).join('\n---\n')
         : 'No sources provided — generate based on topic only.';
-      const nlmText = nlmSources.length
+      var nlmText = nlmSources.length
         ? `\n\nNotebookLM Research Sources (treat as research context for the discussion):\n${
             nlmSources.map(s => `- "${s.title}"${s.topic ? ' — ' + s.topic : ''}`).join('\n')
           }`
         : '';
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are a podcast script writer for SeeWhy LIVE, a live streaming platform. Write a ${duration} podcast script between ${hostName} (host) and ${cohostName} (co-host/AI) about: "${topic || 'live streaming, creator economy, and community building'}". Sources: ${srcText}${nlmText}. Tone: ${tone}. The script should feel like a real conversation about the topic, with the hosts reacting to each other naturally. If NotebookLM sources are provided, weave their topics into the discussion naturally.`,
         response_json_schema: {
           type: 'object',
@@ -731,14 +731,14 @@ export default function PodcastStudio() {
           },
         },
       });
-      const ep = { ...result, title: episodeTitle || result.title, generatedAt: new Date().toISOString(), duration, tone };
+      var ep = { ...result, title: episodeTitle || result.title, generatedAt: new Date().toISOString(), duration, tone };
       setScript(ep);
-      const newLib = [ep, ...library].slice(0, 20);
+      var newLib = [ep, ...library].slice(0, 20);
       setLibrary(newLib);
       base44.auth.updateMe({ podcast_library: newLib }).catch(() => {});
       setTab('script');
     } catch (e) {
-      const fallback = {
+      var fallback = {
         title: episodeTitle || 'Episode: ' + topic,
         episode: library.length + 1,
         intro: `Welcome to SeeWhy LIVE! I'm ${hostName}, joined by ${cohostName}. Today we're diving into: ${topic || 'the world of live streaming'}.`,
@@ -751,7 +751,7 @@ export default function PodcastStudio() {
         generatedAt: new Date().toISOString(), duration, tone,
       };
       setScript(fallback);
-      const newLib = [fallback, ...library].slice(0, 20);
+      var newLib = [fallback, ...library].slice(0, 20);
       setLibrary(newLib);
       base44.auth.updateMe({ podcast_library: newLib }).catch(() => {});
       setTab('script');
@@ -761,7 +761,7 @@ export default function PodcastStudio() {
 
   function copyTranscript() {
     if (!script) return;
-    let text = `${script.title}\n\n`;
+    var text = `${script.title}\n\n`;
     text += `INTRO:\n${script.intro}\n\n`;
     (script.segments || []).forEach(seg => {
       text += `--- ${seg.title} ---\n`;
@@ -780,7 +780,7 @@ export default function PodcastStudio() {
   }
 
   function deleteEpisode(idx) {
-    const newLib = library.filter((_, i) => i !== idx);
+    var newLib = library.filter((_, i) => i !== idx);
     setLibrary(newLib);
     base44.auth.updateMe({ podcast_library: newLib }).catch(() => {});
     setDeleteConfirmIdx(null);
@@ -788,10 +788,10 @@ export default function PodcastStudio() {
   }
 
   // DJ track for panel tab
-  let djTrack = null;
+  var djTrack = null;
   try { djTrack = JSON.parse(localStorage.getItem('seewhy_dj_track') || 'null'); } catch {}
 
-  const inputStyle = {
+  var inputStyle = {
     width: '100%', boxSizing: 'border-box',
     background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)',
     borderRadius: 10, padding: '10px 14px',
@@ -799,7 +799,7 @@ export default function PodcastStudio() {
     outline: 'none',
   };
 
-  const selectStyle = { ...inputStyle };
+  var selectStyle = { ...inputStyle };
 
   return (
     <div style={{ minHeight: '100vh', background: BG, paddingBottom: 80 }}>
@@ -1275,13 +1275,13 @@ export default function PodcastStudio() {
                     minHeight: 100,
                   }}>
                     <p style={{ ...T, fontSize: 11, fontWeight: 900, color: GOLD, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
-                      {script.segments[panelSegIdx]?.title}
+                      {(script.segments[panelSegIdx] && script.segments[panelSegIdx].title)}
                     </p>
                     <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, margin: 0 }}>
-                      <strong style={{ color: GOLD }}>{hostName}:</strong> {script.segments[panelSegIdx]?.host_line}
+                      <strong style={{ color: GOLD }}>{hostName}:</strong> {(script.segments[panelSegIdx] && script.segments[panelSegIdx].host_line)}
                     </p>
                     <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginTop: 8 }}>
-                      <strong style={{ color: PURPLE }}>{cohostName}:</strong> {script.segments[panelSegIdx]?.cohost_line}
+                      <strong style={{ color: PURPLE }}>{cohostName}:</strong> {(script.segments[panelSegIdx] && script.segments[panelSegIdx].cohost_line)}
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'center' }}>
@@ -1485,15 +1485,15 @@ export default function PodcastStudio() {
 
       {tab === 'library' && library.length > 0 && (
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
-          <TranscriptionPanel recordingUrl={library[0]?.audio_url} roomTitle={library[0]?.title || 'Podcast Episode'} />
+          <TranscriptionPanel recordingUrl={(library[0] && library[0].audio_url)} roomTitle={(library[0] && library[0].title) || 'Podcast Episode'} />
         </div>
       )}
 
       <Toast message={toast} />
       <SwanAIRecommendations roomId={null} currentLayout="podcast" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -1501,7 +1501,7 @@ export default function PodcastStudio() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

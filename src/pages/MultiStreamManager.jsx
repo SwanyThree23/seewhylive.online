@@ -49,7 +49,7 @@ function TabsList({ children, className = '' }) { return <div className={`flex g
 function TabsTrigger({ children, value, className = '' }) { return null; }
 function TabsContent({ children, value }) { return <div>{children}</div>; }
 
-const PLATFORMS = [
+var PLATFORMS = [
   { id: 'twitch', label: 'Twitch', color: '#9146ff', server: 'rtmp://live.twitch.tv/live' },
   { id: 'youtube', label: 'YouTube', color: '#ff0000', server: 'rtmp://a.rtmp.youtube.com/live2' },
   { id: 'tiktok', label: 'TikTok', color: '#010101', server: 'rtmp://push.tiktokv.com/rtmp' },
@@ -63,13 +63,13 @@ const PLATFORMS = [
 ];
 
 function StatusDot({ status }) {
-  const styles = {
+  var styles = {
     live: 'bg-[#6DBF7E] animate-pulse',
     connecting: 'bg-yellow-400 animate-pulse',
     error: 'bg-[#C0392B]',
     offline: 'bg-white/20',
   };
-  const labels = { live: 'LIVE', connecting: '...', error: 'ERR', offline: 'OFF' };
+  var labels = { live: 'LIVE', connecting: '...', error: 'ERR', offline: 'OFF' };
   return (
     <div className="flex items-center gap-1.5">
       <div className={`w-2 h-2 rounded-full ${styles[status] || styles.offline}`} />
@@ -81,60 +81,60 @@ function StatusDot({ status }) {
 }
 
 export default function MultiStreamManager() {
-  const qc = useQueryClient();
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
-  const [showKeyFor, setShowKeyFor] = useState({});
-  const [testingId, setTestingId] = useState(null);
-  const [newLabel, setNewLabel] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState('twitch');
-  const [showAddForm, setShowAddForm] = useState(false);
+  var qc = useQueryClient();
+  var roomId = new URLSearchParams(window.location.search).get('room_id');
+  var [showKeyFor, setShowKeyFor] = useState({});
+  var [testingId, setTestingId] = useState(null);
+  var [newLabel, setNewLabel] = useState('');
+  var [selectedPlatform, setSelectedPlatform] = useState('twitch');
+  var [showAddForm, setShowAddForm] = useState(false);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['multistreammanager-active-room', user?.id],
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['multistreammanager-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const { data: destinations = [], isLoading } = useQuery({
-    queryKey: ['rtmp-destinations', user?.id],
-    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: user?.id }),
+  var { data: destinations = [], isLoading } = useQuery({
+    queryKey: ['rtmp-destinations', (user && user.id)],
+    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: (user && user.id) }),
     enabled: !!user,
   });
 
-  const createMutation = useMutation({
+  var createMutation = useMutation({
     mutationFn: (data) => base44.entities.RTMPDestination.create(data),
     onSuccess: (dest) => {
       qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
       setShowAddForm(false);
       setNewLabel('');
       toast.success('Destination added');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
-          title: `Added multi-stream destination: ${dest?.label || selectedPlatform}`,
+          title: `Added multi-stream destination: ${(dest && dest.label) || selectedPlatform}`,
         }).catch(() => {});
       }
     },
     onError: () => toast.error('Action failed.'),
   });
 
-  const updateMutation = useMutation({
+  var updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.RTMPDestination.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }),
     onError: () => toast.error('Action failed.'),
   });
 
-  const deleteMutation = useMutation({
+  var deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }); toast.success('Destination removed'); },
     onError: () => toast.error('Action failed.'),
   });
 
-  const testConnection = async (dest) => {
+  var testConnection = async (dest) => {
     setTestingId(dest.id);
     // RTMP connection testing requires server-side validation; mark configured destinations as online
     updateMutation.mutate({ id: dest.id, data: { status: 'online' } });
@@ -142,18 +142,18 @@ export default function MultiStreamManager() {
     setTestingId(null);
   };
 
-  const toggleEnabled = (dest) => {
+  var toggleEnabled = (dest) => {
     updateMutation.mutate({ id: dest.id, data: { is_enabled: !dest.is_enabled } });
   };
 
-  const enabledCount = destinations.filter(d => d.is_enabled).length;
-  const totalBitrate = destinations.filter(d => d.is_enabled).reduce((s, d) => s + (d.bitrate_kbps || 3000), 0);
-  const recommendedMax = 25000;
-  const anyLive = destinations.some(d => d.status === 'live');
+  var enabledCount = destinations.filter(d => d.is_enabled).length;
+  var totalBitrate = destinations.filter(d => d.is_enabled).reduce((s, d) => s + (d.bitrate_kbps || 3000), 0);
+  var recommendedMax = 25000;
+  var anyLive = destinations.some(d => d.status === 'live');
 
   // MediaMTX fanout: mark all enabled destinations as 'connecting' then 'live'
-  const goLiveFanout = async () => {
-    const enabled = destinations.filter(d => d.is_enabled && d.stream_key_encrypted);
+  var goLiveFanout = async () => {
+    var enabled = destinations.filter(d => d.is_enabled && d.stream_key_encrypted);
     if (enabled.length === 0) {
       toast.error('Add stream keys to at least one enabled destination first');
       return;
@@ -169,8 +169,8 @@ export default function MultiStreamManager() {
     }
   };
 
-  const stopAllFanout = async () => {
-    const live = destinations.filter(d => d.status === 'live' || d.status === 'connecting');
+  var stopAllFanout = async () => {
+    var live = destinations.filter(d => d.status === 'live' || d.status === 'connecting');
     try {
       await Promise.all(live.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'offline' } })));
       toast.success('All streams stopped');
@@ -180,14 +180,14 @@ export default function MultiStreamManager() {
     }
   };
 
-  const addDestination = () => {
+  var addDestination = () => {
     if (!newLabel.trim()) return;
-    const platform = PLATFORMS.find(p => p.id === selectedPlatform);
+    var platform = PLATFORMS.find(p => p.id === selectedPlatform);
     createMutation.mutate({
-      creator_id: user?.id,
+      creator_id: (user && user.id),
       platform: selectedPlatform,
       label: newLabel,
-      server_url: platform?.server || '',
+      server_url: (platform && platform.server) || '',
       stream_key_encrypted: '',
       bitrate_kbps: 3000,
       is_enabled: true,
@@ -300,7 +300,7 @@ export default function MultiStreamManager() {
                   <div className="flex gap-3">
                     <Input
                       value={newLabel} onChange={(e) => setNewLabel(e.target.value)}
-                      placeholder={`Label (e.g., My ${PLATFORMS.find(p => p.id === selectedPlatform)?.label} Stream)`}
+                      placeholder={`Label (e.g., My ${(PLATFORMS.find(function(p) { return p.id === selectedPlatform; }) || {}).label || ''} Stream)`}
                       className="bg-white/5 border-white/20 text-white placeholder:text-white/30"
                       onKeyDown={(e) => e.key === 'Enter' && addDestination()}
                     />
@@ -332,8 +332,8 @@ export default function MultiStreamManager() {
         ) : (
           <div className="space-y-3">
             {destinations.map((dest) => {
-              const platform = PLATFORMS.find(p => p.id === dest.platform);
-              const isTesting = testingId === dest.id;
+              var platform = PLATFORMS.find(p => p.id === dest.platform);
+              var isTesting = testingId === dest.id;
               return (
                 <motion.div key={dest.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                   <Card className={`bg-[rgba(255,255,255,0.04)] transition-all ${
@@ -346,9 +346,9 @@ export default function MultiStreamManager() {
                         {/* Platform indicator */}
                         <div
                           className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
-                          style={{ background: `${platform?.color}30`, border: `1px solid ${platform?.color}40` }}
+                          style={{ background: `${(platform && platform.color)}30`, border: `1px solid ${(platform && platform.color)}40` }}
                         >
-                          {platform?.label?.charAt(0)}
+                          {(platform && platform.label) ? (platform.label).charAt(0) : ''}
                         </div>
 
                         {/* Info */}
@@ -356,11 +356,11 @@ export default function MultiStreamManager() {
                           <div className="flex items-center gap-3 flex-wrap">
                             <p className="font-semibold text-white text-sm">{dest.label}</p>
                             <Badge className="text-[11px] px-1.5 py-0" style={{
-                              background: `${platform?.color}20`,
-                              color: platform?.color,
-                              borderColor: `${platform?.color}40`
+                              background: `${(platform && platform.color)}20`,
+                              color: (platform && platform.color),
+                              borderColor: `${(platform && platform.color)}40`
                             }}>
-                              {platform?.label}
+                              {(platform && platform.label)}
                             </Badge>
                             <StatusDot status={dest.status} />
                           </div>
@@ -477,7 +477,7 @@ export default function MultiStreamManager() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
           <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
           <OBSBridge roomId={activeRoomId} isHost={true} />
-          <GuestRTMPPanel participantId={null} userId={user?.id} />
+          <GuestRTMPPanel participantId={null} userId={(user && user.id)} />
           <GuestStreamMonitor guestName="Guest" isStreaming={anyLive} />
           <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
           <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={anyLive} />
@@ -498,9 +498,9 @@ export default function MultiStreamManager() {
         </div>
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="multistream" viewerCount={destinations.length} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -508,7 +508,7 @@ export default function MultiStreamManager() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={destinations.length} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={activeRoomId} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={activeRoomId} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={destinations.length} peakViewers={destinations.length} />
       <BackgroundCustomizer />

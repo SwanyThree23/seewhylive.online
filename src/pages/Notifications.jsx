@@ -30,11 +30,11 @@ import StreamerMonetizationCenter from '../components/monetization/StreamerMonet
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import ViewerCount from '../components/live/ViewerCount';
 
-const GOLD = '#FFB800';
-const PINK    = '#FF2040';
-const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD = '#FFB800';
+var PINK    = '#FF2040';
+var T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TYPE_CONFIG = {
+var TYPE_CONFIG = {
   tip:          { icon: Gift,      color: '#FFB800' },
   subscription: { icon: Users,     color: '#FFB800' },
   room_invite:  { icon: Radio,     color: '#FF2040' },
@@ -44,42 +44,42 @@ const TYPE_CONFIG = {
 };
 
 export default function NotificationsPage() {
-  const queryClient = useQueryClient();
-  const navigate    = useNavigate();
+  var queryClient = useQueryClient();
+  var navigate    = useNavigate();
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['notifications', user?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: user?.id }, '-created_date', 50),
+  var { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', (user && user.id)],
+    queryFn: () => base44.entities.Notification.filter({ user_id: (user && user.id) }, '-created_date', 50),
     enabled: !!user,
   });
 
-  const markReadMutation = useMutation({
+  var markReadMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
     onError: () => toast.error('Action failed.'),
   });
 
-  const markAllReadMutation = useMutation({
+  var markAllReadMutation = useMutation({
     mutationFn: async () => {
-      const unread = notifications.filter(n => !n.is_read);
+      var unread = notifications.filter(n => !n.is_read);
       await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
     },
     onSuccess: () => {
@@ -89,15 +89,15 @@ export default function NotificationsPage() {
     onError: () => toast.error('Action failed.'),
   });
 
-  const deleteMutation = useMutation({
+  var deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
     onError: () => toast.error('Action failed.'),
   });
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  var unreadCount = notifications.filter(n => !n.is_read).length;
 
-  const handleNotifClick = (notif) => {
+  var handleNotifClick = (notif) => {
     if (!notif.is_read) markReadMutation.mutate(notif.id);
     if (notif.link) navigate(notif.link);
   };
@@ -147,8 +147,8 @@ export default function NotificationsPage() {
         ) : (
           <div className="space-y-2">
             {notifications.map((notif) => {
-              const cfg  = TYPE_CONFIG[notif.type] || { icon: Bell, color: GOLD };
-              const Icon = cfg.icon;
+              var cfg  = TYPE_CONFIG[notif.type] || { icon: Bell, color: GOLD };
+              var Icon = cfg.icon;
               return (
                 <div
                   key={notif.id}
@@ -216,14 +216,14 @@ export default function NotificationsPage() {
           </div>
         )}
 
-        {user?.id && (
+        {(user && user.id) && (
           <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <StreamGoals isHost={true} />
             <LeaderboardPanel roomId={activeRoomId} />
             <MilestoneAlerts creatorId={user.id} />
             <AnnouncementFeed communityId={userCommunityId} />
             <PointsNotification userId={user.id} />
-            <EngagementBadgesDisplay roomId={activeRoomId} userId={user.id} creatorId={user?.id} />
+            <EngagementBadgesDisplay roomId={activeRoomId} userId={user.id} creatorId={(user && user.id)} />
             <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           </div>
         )}
@@ -235,9 +235,9 @@ export default function NotificationsPage() {
         <ChallengeLeaderboard challengeId={null} />
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -245,7 +245,7 @@ export default function NotificationsPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

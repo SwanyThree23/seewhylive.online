@@ -32,13 +32,13 @@ import SubscriptionCard from '../components/monetization/SubscriptionCard';
 import TierEditor from '../components/subscriptions/TierEditor';
 import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
 
-const REWARD_TYPES = [
+var REWARD_TYPES = [
   { id: 'badge', label: '🏅 Badge', icon: '🏅' },
   { id: 'discount_code', label: '🎟 Discount Code', icon: '🎟' },
   { id: 'exclusive_content', label: '🔒 Exclusive Content', icon: '🔒' },
@@ -46,104 +46,104 @@ const REWARD_TYPES = [
   { id: 'custom_emote', label: '😎 Custom Emote', icon: '😎' },
 ];
 
-const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#4A8A7A', '#7B5DA6'];
+var TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#4A8A7A', '#7B5DA6'];
 
 export default function LoyaltyProgram() {
-  const qc = useQueryClient();
-  const urlParams = new URLSearchParams(window.location.search);
-  const creatorId = urlParams.get('creator');
-  const [activeTab, setActiveTab] = useState(null);
-  const [showRewardForm, setShowRewardForm] = useState(false);
-  const [showTierEditor, setShowTierEditor] = useState(false);
-  const [editingTier, setEditingTier] = useState(null);
-  const [rewardForm, setRewardForm] = useState({ name: '', description: '', points_required: 100, reward_type: 'badge', reward_value: '', is_active: true });
-  const [earnConfig] = useState({ watch: 1, message: 2, tip: 10, subscribe: 100, reaction: 1 });
+  var qc = useQueryClient();
+  var urlParams = new URLSearchParams(window.location.search);
+  var creatorId = urlParams.get('creator');
+  var [activeTab, setActiveTab] = useState(null);
+  var [showRewardForm, setShowRewardForm] = useState(false);
+  var [showTierEditor, setShowTierEditor] = useState(false);
+  var [editingTier, setEditingTier] = useState(null);
+  var [rewardForm, setRewardForm] = useState({ name: '', description: '', points_required: 100, reward_type: 'badge', reward_value: '', is_active: true });
+  var [earnConfig] = useState({ watch: 1, message: 2, tip: 10, subscribe: 100, reaction: 1 });
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const roomId = activeRoomId;
-  const activeChallengeId = null;
-  const isOwnProgram = !creatorId || creatorId === user?.id;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var roomId = activeRoomId;
+  var activeChallengeId = null;
+  var isOwnProgram = !creatorId || creatorId === (user && user.id);
 
   React.useEffect(() => {
     setActiveTab(isOwnProgram ? 'creator' : 'viewer');
   }, [isOwnProgram]);
 
-  const { data: rewards = [] } = useQuery({
-    queryKey: ['loyalty-rewards', creatorId || user?.id],
-    queryFn: () => base44.entities.LoyaltyReward.filter({ creator_id: creatorId || user?.id }, 'points_required'),
+  var { data: rewards = [] } = useQuery({
+    queryKey: ['loyalty-rewards', creatorId || (user && user.id)],
+    queryFn: () => base44.entities.LoyaltyReward.filter({ creator_id: creatorId || (user && user.id) }, 'points_required'),
     enabled: !!(user || creatorId),
   });
-  const { data: myPoints } = useQuery({
-    queryKey: ['my-viewer-points', user?.id, creatorId],
-    queryFn: () => base44.entities.ViewerPoints.filter({ user_id: user?.id, room_id: creatorId }).then(r => r[0]),
+  var { data: myPoints } = useQuery({
+    queryKey: ['my-viewer-points', (user && user.id), creatorId],
+    queryFn: () => base44.entities.ViewerPoints.filter({ user_id: (user && user.id), room_id: creatorId }).then(r => r[0]),
     enabled: !!user && !!creatorId,
   });
-  const { data: leaderboard = [] } = useQuery({
-    queryKey: ['points-leaderboard', creatorId || user?.id],
-    queryFn: () => base44.entities.ViewerPoints.filter({ room_id: creatorId || user?.id }, '-points', 50),
+  var { data: leaderboard = [] } = useQuery({
+    queryKey: ['points-leaderboard', creatorId || (user && user.id)],
+    queryFn: () => base44.entities.ViewerPoints.filter({ room_id: creatorId || (user && user.id) }, '-points', 50),
     enabled: !!(user || creatorId),
   });
 
-  const createRewardMutation = useMutation({
+  var createRewardMutation = useMutation({
     mutationFn: (data) => base44.entities.LoyaltyReward.create(data),
     onSuccess: (reward) => {
       qc.invalidateQueries({ queryKey: ['loyalty-rewards'] });
       setShowRewardForm(false);
       toast.success('Reward created!');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
-          title: `Created loyalty reward: ${reward?.name || 'Reward'}`,
+          title: `Created loyalty reward: ${(reward && reward.name) || 'Reward'}`,
         }).catch(() => {});
       }
     },
     onError: () => toast.error('Action failed.'),
   });
-  const toggleRewardMutation = useMutation({
+  var toggleRewardMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.LoyaltyReward.update(id, { is_active }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }),
     onError: () => toast.error('Action failed.'),
   });
-  const deleteRewardMutation = useMutation({
+  var deleteRewardMutation = useMutation({
     mutationFn: (id) => base44.entities.LoyaltyReward.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }),
     onError: () => toast.error('Action failed.'),
   });
 
-  const totalDistributed = leaderboard.reduce((s, l) => s + (l.points || 0), 0);
-  const userPoints = myPoints?.points || 0;
-  const sortedRewards = [...rewards].sort((a, b) => a.points_required - b.points_required);
-  const nextReward = sortedRewards.find(r => r.points_required > userPoints);
-  const progressToNext = nextReward ? (userPoints / nextReward.points_required) * 100 : 100;
+  var totalDistributed = leaderboard.reduce((s, l) => s + (l.points || 0), 0);
+  var userPoints = (myPoints && myPoints.points) || 0;
+  var sortedRewards = [...rewards].sort((a, b) => a.points_required - b.points_required);
+  var nextReward = sortedRewards.find(r => r.points_required > userPoints);
+  var progressToNext = nextReward ? (userPoints / nextReward.points_required) * 100 : 100;
 
-  const exportData = () => {
-    const rows = leaderboard.map((l, i) => `${i + 1},${l.user_id},${l.points},${l.watch_minutes},${l.messages_sent_count}`);
-    const csv = 'Rank,UserID,Points,WatchMinutes,Messages\n' + rows.join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'loyalty-data.csv'; a.click();
+  var exportData = () => {
+    var rows = leaderboard.map((l, i) => `${i + 1},${l.user_id},${l.points},${l.watch_minutes},${l.messages_sent_count}`);
+    var csv = 'Rank,UserID,Points,WatchMinutes,Messages\n' + rows.join('\n');
+    var blob = new Blob([csv], { type: 'text/csv' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = 'loyalty-data.csv'; a.click();
     URL.revokeObjectURL(url);
   };
 
-  const TABS = isOwnProgram
+  var TABS = isOwnProgram
     ? [{ id: 'creator', label: 'Creator View' }, { id: 'rewards', label: 'Rewards' }, { id: 'leaderboard', label: 'Leaderboard' }]
     : [{ id: 'viewer', label: 'My Progress' }, { id: 'rewards', label: 'Rewards' }, { id: 'leaderboard', label: 'Leaderboard' }];
 
-  const tab = activeTab || TABS[0]?.id;
+  var tab = activeTab || (TABS[0] && TABS[0].id);
 
   return (
     <div className="min-h-screen pb-10 text-white" style={{ background: BG }}>
@@ -267,14 +267,14 @@ export default function LoyaltyProgram() {
           ) : (
             <div className="space-y-3">
               {sortedRewards.map((r, i) => {
-                const canClaim = !isOwnProgram && userPoints >= r.points_required;
+                var canClaim = !isOwnProgram && userPoints >= r.points_required;
                 return (
                   <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                     <div className="rounded-2xl p-4 flex items-center gap-4 transition-all"
                       style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${canClaim ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.06)'}` }}>
                       <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
                         style={{ background: `${TIER_COLORS[i % 5]}20`, border: `1px solid ${TIER_COLORS[i % 5]}40` }}>
-                        {REWARD_TYPES.find(rt => rt.id === r.reward_type)?.icon || '🎁'}
+                        {(REWARD_TYPES.find(rt => rt.id === r.reward_type) && REWARD_TYPES.find(rt => rt.id === r.reward_type).icon) || '🎁'}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
@@ -335,7 +335,7 @@ export default function LoyaltyProgram() {
                     {i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white truncate" style={T}>{l.user_id?.slice(0, 8) || 'Anonymous'}</p>
+                    <p className="text-sm text-white truncate" style={T}>{l.(user_id && user_id.slice)(0, 8) || 'Anonymous'}</p>
                     <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{l.watch_minutes || 0}min watched</p>
                   </div>
                   <p className="font-black text-sm" style={{ fontFamily: 'Orbitron, monospace', color: '#D4AF37' }}>{(l.points || 0).toLocaleString()} pts</p>
@@ -381,7 +381,7 @@ export default function LoyaltyProgram() {
                 </div>
                 <input value={rewardForm.reward_value} onChange={e => setRewardForm(f => ({ ...f, reward_value: e.target.value }))}
                   placeholder="Reward value (badge name, code, etc.)" style={inp} />
-                <button onClick={() => createRewardMutation.mutate({ ...rewardForm, creator_id: user?.id })}
+                <button onClick={() => createRewardMutation.mutate({ ...rewardForm, creator_id: (user && user.id) })}
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-black uppercase text-sm mt-2"
                   style={{ ...T, background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: '#000', cursor: 'pointer' }}>
                   <Check className="w-4 h-4" /> Create Reward
@@ -392,13 +392,13 @@ export default function LoyaltyProgram() {
         )}
       </AnimatePresence>
       <SwanAIRecommendations roomId={null} currentLayout="loyalty" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
-      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
-      <RewardShopEditor creatorId={user?.id} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
+      {(user && user.id) && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={(user && user.id)} isSubscribed={false} />}
+      {(user && user.id) && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={(user && user.id)} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
+      <RewardShopEditor creatorId={(user && user.id)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -406,7 +406,7 @@ export default function LoyaltyProgram() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

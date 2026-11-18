@@ -25,16 +25,16 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 
-const BG      = '#080B18';
-const BG2     = '#0D1022';
-const BG3     = '#13182C';
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const PURPLE  = '#800020';
-const PURPLE_L= '#C9A84C';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG      = '#080B18';
+var BG2     = '#0D1022';
+var BG3     = '#13182C';
+var GOLD    = '#D4AF37';
+var CRIMSON = '#800020';
+var PURPLE  = '#800020';
+var PURPLE_L= '#C9A84C';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const GLOBAL_CSS = `
+var GLOBAL_CSS = `
 @keyframes glowTribute{0%,100%{box-shadow:0 0 8px #80002044;}50%{box-shadow:0 0 28px #80002099;}}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 .glow-tribute{animation:glowTribute 2.5s ease infinite;}
@@ -67,15 +67,15 @@ function Tag({ label, color }) {
 }
 
 function Btn({ label, icon, onClick, variant = 'gold', size = 'md', disabled, style }) {
-  const variants = {
+  var variants = {
     gold:    `linear-gradient(135deg,${GOLD},#8A6F2E)`,
     ghost:   'transparent',
     ruby:    `linear-gradient(135deg,${CRIMSON},#B22340)`,
     tribute: `linear-gradient(135deg,${PURPLE},${PURPLE_L})`,
   };
-  const textColors = { gold: '#07050A', ghost: GOLD, ruby: '#fff', tribute: '#fff' };
-  const pads = { sm: '6px 12px', md: '10px 18px', lg: '14px 28px' };
-  const fonts = { sm: 11, md: 13, lg: 15 };
+  var textColors = { gold: '#07050A', ghost: GOLD, ruby: '#fff', tribute: '#fff' };
+  var pads = { sm: '6px 12px', md: '10px 18px', lg: '14px 28px' };
+  var fonts = { sm: 11, md: 13, lg: 15 };
   return (
     <button onClick={onClick} disabled={disabled} style={{
       background: variants[variant] || variants.gold,
@@ -93,7 +93,7 @@ function Btn({ label, icon, onClick, variant = 'gold', size = 'md', disabled, st
   );
 }
 
-const LEGENDS = [
+var LEGENDS = [
   {
     id: 1, name: 'Big Bone Earl', years: '1958–2021', state: 'WA', photo: '🎯', color: PURPLE,
     bio: 'Pioneer of Pacific Northwest domino culture. Won the Regional 7-0 Championship 4 consecutive times. Founded the Seattle Domino Society in 1994.',
@@ -111,48 +111,48 @@ const LEGENDS = [
   },
 ];
 
-const INIT_MESSAGES = [
+var INIT_MESSAGES = [
   { legendId: 1, author: 'CaliBonesOG', msg: 'Big Bone Earl — REST EASY LEGEND. You built this whole culture 🙏', time: '2 days ago' },
   { legendId: 2, author: 'SwanyThree23', msg: 'Mama Joyce your tournaments gave us all a home. We carry you forward ❤️', time: '1 week ago' },
   { legendId: 3, author: 'VibeNBones', msg: 'Fast Hands was the reason I got serious about domino. GOAT forever ⚡', time: '3 days ago' },
 ];
 
 export default function TributeWall() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const [selected, setSelected] = useState(null);
-  const [tributeMsg, setTributeMsg] = useState('');
-  const [messages, setMessages] = useState(INIT_MESSAGES);
-  const [aiWriting, setAiWriting] = useState(false);
-  const [eventOpen, setEventOpen] = useState(false);
-  const [nominateName, setNominateName] = useState('');
-  const [nominateState, setNominateState] = useState('');
-  const [nominateBio, setNominateBio] = useState('');
-  const [nominateOpen, setNominateOpen] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  var [selected, setSelected] = useState(null);
+  var [tributeMsg, setTributeMsg] = useState('');
+  var [messages, setMessages] = useState(INIT_MESSAGES);
+  var [aiWriting, setAiWriting] = useState(false);
+  var [eventOpen, setEventOpen] = useState(false);
+  var [nominateName, setNominateName] = useState('');
+  var [nominateState, setNominateState] = useState('');
+  var [nominateBio, setNominateBio] = useState('');
+  var [nominateOpen, setNominateOpen] = useState(false);
+  var [submitted, setSubmitted] = useState(false);
 
   async function aiWriteTribute() {
     if (!selected || aiWriting) return;
     setAiWriting(true);
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
+      var res = await base44.integrations.Core.InvokeLLM({
         prompt: `Write a heartfelt 2-3 sentence tribute message for ${selected.name} (${selected.years}, ${selected.state}), a domino legend. Their story: ${selected.bio} Achievements: ${selected.achievements.join(', ')}. Write in the voice of a fellow domino player paying respects — authentic, warm, community-rooted. No hashtags.`,
         response_json_schema: { type: 'object', properties: { message: { type: 'string' } }, required: ['message'] },
       });
-      setTributeMsg(res?.message || res?.toString?.() || '');
+      setTributeMsg((res && res.message) || (res && res.toString && res.toString()) || '');
     } catch {
       setTributeMsg(`${selected.name}, your legacy lives in every domino game played in your honor. Thank you for building this culture. Rest easy, Legend. 🙏`);
     }
@@ -161,7 +161,7 @@ export default function TributeWall() {
 
   function postTribute() {
     if (!tributeMsg.trim() || !selected) return;
-    const now = new Date().toLocaleDateString();
+    var now = new Date().toLocaleDateString();
     setMessages(m => [...m, { legendId: selected.id, author: 'You', msg: tributeMsg, time: now }]);
     setTributeMsg('');
   }
@@ -172,7 +172,7 @@ export default function TributeWall() {
     setTimeout(() => { setNominateOpen(false); setSubmitted(false); setNominateName(''); setNominateState(''); setNominateBio(''); }, 2200);
   }
 
-  const EVENT_DETAILS = [
+  var EVENT_DETAILS = [
     { l: 'EVENT DATE', v: 'July 4, 2026' },
     { l: 'PRIZE POOL', v: '$2,500' },
     { l: 'MEMORIAL FUND', v: '5% of All Entry' },
@@ -266,7 +266,7 @@ export default function TributeWall() {
 
         {/* Legend cards */}
         {LEGENDS.map(leg => {
-          const isOpen = selected && selected.id === leg.id;
+          var isOpen = selected && selected.id === leg.id;
           return (
             <div key={leg.id} style={{ marginBottom: 12, cursor: 'pointer' }}
               onClick={() => setSelected(isOpen ? null : leg)}>
@@ -351,7 +351,7 @@ export default function TributeWall() {
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <DiscussionFeed communityId="tribute-wall" />
         <GoldenWall roomId={activeRoomId} isExpanded={false} />
-        <MilestoneAlerts creatorId={user?.id} />
+        <MilestoneAlerts creatorId={(user && user.id)} />
         <AnnouncementFeed communityId={userCommunityId} />
         <ShareToSocial content={{ url: window.location.href, title: 'Tribute Wall — SeeWhy LIVE' }} />
         <ContentRecommendations />
@@ -364,13 +364,13 @@ export default function TributeWall() {
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />
-          <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+          <EngagementBadgesDisplay roomId={activeRoomId} userId={(user && user.id)} creatorId={(user && user.id)} />
           <ChallengeLeaderboard challengeId={null} />
         </div>
 
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id || null} roomId={activeRoomId} />
+      <MilestoneAlerts userId={(user && user.id) || null} roomId={activeRoomId} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -378,7 +378,7 @@ export default function TributeWall() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

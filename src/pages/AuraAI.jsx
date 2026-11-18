@@ -11,23 +11,23 @@ import StreamGoals from '../components/live/StreamGoals';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import VoiceAISettings from '../components/settings/VoiceAISettings';
 
-const BG    = '#080B18';
-const BG2   = '#0D0A08';
-const BG3   = '#13100A';
-const GOLD  = '#D4AF37';
-const GOLDD = '#8A6F2E';
-const SLATE = '#1A1530';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#7A6E8A';
-const PURPLE = '#7B5DA6';
-const CYAN   = '#D4AF37';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO = { fontFamily: 'Space Mono, monospace' };
-const PILL = 999;
-const GREEN = '#6DBF7E';
+var BG    = '#080B18';
+var BG2   = '#0D0A08';
+var BG3   = '#13100A';
+var GOLD  = '#D4AF37';
+var GOLDD = '#8A6F2E';
+var SLATE = '#1A1530';
+var TEXT  = '#F0EAF8';
+var TEXTD = '#B8AECF';
+var TEXTM = '#7A6E8A';
+var PURPLE = '#7B5DA6';
+var CYAN   = '#D4AF37';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var MONO = { fontFamily: 'Space Mono, monospace' };
+var PILL = 999;
+var GREEN = '#6DBF7E';
 
-const GLOBAL_CSS = `
+var GLOBAL_CSS = `
 @keyframes aura-pulse{0%,100%{box-shadow:0 0 12px #7B5DA644;}50%{box-shadow:0 0 32px #7B5DA699;}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 @keyframes dot-blink{0%,100%{opacity:1;}50%{opacity:.3;}}
@@ -35,7 +35,7 @@ const GLOBAL_CSS = `
 .msg-in{animation:fadeUp .25s ease forwards;}
 `;
 
-const AURA_SYSTEM = `You are Aura AI — a premium live-streaming co-host and creative partner by SwanyThree EntTech LLC on SeeWhy LIVE (seewhylive.online). You are polished, sophisticated, and deeply creative.
+var AURA_SYSTEM = `You are Aura AI — a premium live-streaming co-host and creative partner by SwanyThree EntTech LLC on SeeWhy LIVE (seewhylive.online). You are polished, sophisticated, and deeply creative.
 
 Platform facts: Creator keeps 90%, platform 10%. RTMP: rtmp://seewhylive.online/live. Features: Live streaming, State vs State domino tournaments, AI Podcast Studio, Multi-Stream fanout, Pay-Per-View, VOD Library, Overlay Editor, Sound Alerts, Loyalty Program.
 
@@ -44,7 +44,7 @@ Your personality: Articulate, encouraging, premium-feel. You help creators craft
 Respond in 1-3 sentences. Be direct, polished, and inspiring.`;
 
 
-const AURA_MODES = {
+var AURA_MODES = {
   STRATEGY: {
     label: '🎬 Strategy',
     color: PURPLE,
@@ -71,7 +71,7 @@ const AURA_MODES = {
   },
 };
 
-const QUICK_ACTIONS_BY_MODE = {
+var QUICK_ACTIONS_BY_MODE = {
   STRATEGY: [
     { label: '🎬 Stream Opener', prompt: 'Write me a luxury opening script for tonight\'s live domino tournament stream. Make it cinematic and hype the audience in the first 10 seconds.' },
     { label: '💸 Revenue Drive', prompt: 'Give me a 3-step subscriber conversion script I can run during a slow moment in the stream to drive Gold tier sign-ups.' },
@@ -103,7 +103,7 @@ const QUICK_ACTIONS_BY_MODE = {
   ],
 };
 
-const QUICK_ACTIONS = QUICK_ACTIONS_BY_MODE.STRATEGY;
+var QUICK_ACTIONS = QUICK_ACTIONS_BY_MODE.STRATEGY;
 
 function ThinkDots() {
   return (
@@ -116,26 +116,26 @@ function ThinkDots() {
 }
 
 export default function AuraAI() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['aura-active-room', user?.id],
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['aura-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const [activeMode, setActiveMode] = useState('STRATEGY');
-  const [messages, setMessages] = useState([
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var [activeMode, setActiveMode] = useState('STRATEGY');
+  var [messages, setMessages] = useState([
     { role: 'assistant', text: "I'm Aura — your premium creative partner on SeeWhy LIVE. Ready to elevate your stream, sharpen your brand, and help you build something unforgettable. What are we creating today? ✨" },
   ]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [copiedIdx, setCopiedIdx] = useState(null);
-  const chatRef = useRef(null);
-  const inputRef = useRef(null);
+  var [input, setInput] = useState('');
+  var [loading, setLoading] = useState(false);
+  var [copiedIdx, setCopiedIdx] = useState(null);
+  var chatRef = useRef(null);
+  var inputRef = useRef(null);
 
   useEffect(() => {
-    const style = document.createElement('style');
+    var style = document.createElement('style');
     style.textContent = GLOBAL_CSS;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
@@ -153,25 +153,25 @@ export default function AuraAI() {
   }
 
   async function send(text) {
-    const userText = (text || input).trim();
+    var userText = (text || input).trim();
     if (!userText || loading) return;
     setInput('');
-    const next = [...messages, { role: 'user', text: userText }];
+    var next = [...messages, { role: 'user', text: userText }];
     setMessages(next);
     setLoading(true);
     try {
-      const history = next.map(m => m.role + ': ' + m.text).join('\n');
-      const res = await base44.integrations.Core.InvokeLLM({
+      var history = next.map(m => m.role + ': ' + m.text).join('\n');
+      var res = await base44.integrations.Core.InvokeLLM({
         prompt: AURA_SYSTEM + '\n\nConversation:\n' + history + '\n\nRespond as Aura AI in 1-3 sentences.',
       });
-      const reply = res || "Let me think on that — what's your vision for the stream?";
+      var reply = res || "Let me think on that — what's your vision for the stream?";
       setMessages(m => [...m, { role: 'assistant', text: reply }]);
       speakReply(reply);
     } catch {
       setMessages(m => [...m, { role: 'assistant', text: "Stay with me — the connection flickered. Ask me again and we'll create something amazing. ✨" }]);
     }
     setLoading(false);
-    inputRef.current?.focus();
+    inputRef.(current && current.focus());
   }
 
   function clearChat() {
@@ -321,7 +321,7 @@ export default function AuraAI() {
       <SwanyBotWidget />
       <NotificationBell />
       <GlobalSearch />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <ContentRecommendations />
       <VoiceAISettings />
     </div>

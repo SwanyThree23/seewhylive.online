@@ -27,16 +27,16 @@ import CreatorBridge from '../components/social/CreatorBridge';
 
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
-const BG     = '#080B18';
-const BG2    = 'rgba(8,11,24,0.9)';
-const GOLD   = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK   = '#C0392B';
-const CYAN   = '#4A8A7A';
-const PURPLE = '#7B5DA6';
-const GREEN  = '#6DBF7E';
-const AMBER  = '#D4854A';
-const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG     = '#080B18';
+var BG2    = 'rgba(8,11,24,0.9)';
+var GOLD   = '#D4AF37';
+var CRIMSON = '#800020';
+var PINK   = '#C0392B';
+var CYAN   = '#4A8A7A';
+var PURPLE = '#7B5DA6';
+var GREEN  = '#6DBF7E';
+var AMBER  = '#D4854A';
+var T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
 function Toggle({ value, onChange, activeColor }) {
@@ -142,64 +142,64 @@ function FeatureItem({ icon, label }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
-  const qc = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['aihub-active-room', user?.id],
+  var qc = useQueryClient();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['aihub-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: recentRoomMessages = [] } = useQuery({
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: recentRoomMessages = [] } = useQuery({
     queryKey: ['aihub-recent-messages', activeRoomId],
     queryFn: () => base44.entities.Message.filter({ room_id: activeRoomId }, '-created_date', 50),
     enabled: !!activeRoomId,
     refetchInterval: 10000,
   });
-  const ariaPostMut = useMutation({
+  var ariaPostMut = useMutation({
     mutationFn: (msg) => base44.entities.Message.create({
       room_id: activeRoomId,
-      user_id: user?.id,
+      user_id: (user && user.id),
       user_name: 'ARIA AI',
       content: msg,
       is_moderator: true,
     }),
   });
-  const [tipTotal, setTipTotal] = useState(0);
-  const [busViewerCount, setBusViewerCount] = useState(0);
-  const [guardianOn, setGuardianOn]   = useState(true);
-  const [ariaOn, setAriaOn]           = useState(false);
-  const [directorOn, setDirectorOn]   = useState(false);
-  const [toast, setToast]             = useState({ visible: false, message: '' });
+  var [tipTotal, setTipTotal] = useState(0);
+  var [busViewerCount, setBusViewerCount] = useState(0);
+  var [guardianOn, setGuardianOn]   = useState(true);
+  var [ariaOn, setAriaOn]           = useState(false);
+  var [directorOn, setDirectorOn]   = useState(false);
+  var [toast, setToast]             = useState({ visible: false, message: '' });
 
   // DJ track state
-  const [djTrack, setDjTrack]         = useState(null);
+  var [djTrack, setDjTrack]         = useState(null);
 
   // ARIA state
-  const [ariaMessage, setAriaMessage] = useState('');
-  const [ariaLoading, setAriaLoading] = useState(false);
+  var [ariaMessage, setAriaMessage] = useState('');
+  var [ariaLoading, setAriaLoading] = useState(false);
 
   // Guardian state
-  const [guardianResult, setGuardianResult] = useState(null);
-  const [guardianLoading, setGuardianLoading] = useState(false);
+  var [guardianResult, setGuardianResult] = useState(null);
+  var [guardianLoading, setGuardianLoading] = useState(false);
 
   // Stage Director state
-  const [directorSuggestion, setDirectorSuggestion] = useState(null);
-  const [directorLoading, setDirectorLoading]       = useState(false);
+  var [directorSuggestion, setDirectorSuggestion] = useState(null);
+  var [directorLoading, setDirectorLoading]       = useState(false);
 
   // Poll DJ track from localStorage every 3s
   useEffect(() => {
     function readDjTrack() {
       try {
-        const raw = localStorage.getItem('seewhy_dj_track');
+        var raw = localStorage.getItem('seewhy_dj_track');
         setDjTrack(raw ? JSON.parse(raw) : null);
       } catch {
         setDjTrack(null);
       }
     }
     readDjTrack();
-    const iv = setInterval(readDjTrack, 3000);
+    var iv = setInterval(readDjTrack, 3000);
     return () => clearInterval(iv);
   }, []);
 
@@ -211,13 +211,13 @@ export default function AIHub() {
   async function generateAriaMessage() {
     setAriaLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: 'You are ARIA, an AI co-host for a live streaming platform. Generate one engaging chat message to say in a live stream right now. Keep it under 20 words, energetic, relevant to streaming culture. No hashtags.',
         response_json_schema: { type: 'object', properties: { message: { type: 'string' } } },
       });
       setAriaMessage(result.message || '');
     } catch {
-      setAriaMessage('Hey chat, let\'s keep the energy up! Drop a 🔥 if you\'re loving this stream!');
+      setAriaMessage('Hey chat, var\'s keep the energy up! Drop a 🔥 if you\'re loving this stream!');
     } finally {
       setAriaLoading(false);
     }
@@ -226,10 +226,10 @@ export default function AIHub() {
   async function scanGuardian() {
     setGuardianLoading(true);
     try {
-      const msgContext = recentRoomMessages.length > 0
+      var msgContext = recentRoomMessages.length > 0
         ? recentRoomMessages.map(m => `${m.user_name || 'User'}: ${m.content}`).join('\n')
         : '(no recent messages — stream may not be live)';
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are Guardian, an AI content moderator for SeeWhy LIVE. Analyze these ${recentRoomMessages.length} recent chat messages and return a moderation status report.
 
 Messages:
@@ -257,7 +257,7 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
   async function suggestLayout() {
     setDirectorLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: 'You are an AI stage director for a live streaming panel with up to 20 participants. Suggest the optimal stage layout for a panel of 6 participants. Format: { layout: string, columns: number, reason: string }',
         response_json_schema: {
           type: 'object',
@@ -284,7 +284,7 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
   }
 
   // Real status bar values
-  const statusItems = [
+  var statusItems = [
     { dot: guardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.2)', label: guardianOn ? 'Guardian Active' : 'Guardian Off' },
     { dot: ariaOn ? GOLD : 'rgba(255,255,255,0.2)',           label: ariaOn ? 'ARIA Online' : 'ARIA Offline' },
     { dot: djTrack ? CYAN : 'rgba(255,255,255,0.2)',          label: djTrack ? `DJ: ${djTrack.title}` : 'No DJ Track' },
@@ -583,9 +583,9 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
 
           {/* Stats row */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 14 }}>
-            <StatPill label={`Blocked: ${guardianResult?.blocked ?? 0}`} />
-            <StatPill label={`Warned: ${guardianResult?.warned ?? 0}`} />
-            <StatPill label={`Scanned: ${guardianResult?.scanned ?? recentRoomMessages.length} msgs`} />
+            <StatPill label={`Blocked: ${(guardianResult && guardianResult.blocked) || 0}`} />
+            <StatPill label={`Warned: ${(guardianResult && guardianResult.warned) || 0}`} />
+            <StatPill label={`Scanned: ${(guardianResult && guardianResult.scanned) || recentRoomMessages.length} msgs`} />
             <StatPill label="Response time: <50ms" />
           </div>
 
@@ -1091,9 +1091,9 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
 
       <Toast message={toast.message} visible={toast.visible} />
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="ai" viewerCount={busViewerCount} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -1101,11 +1101,11 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
       <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={0} currentViewers={busViewerCount} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={busViewerCount} peakViewers={busViewerCount} />
       <BackgroundCustomizer />
-      {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={() => {}} />}
+      {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor((msg && msg.tip_amount) || 0))} onMessageReceived={() => {}} />}
     </div>
   );
 }

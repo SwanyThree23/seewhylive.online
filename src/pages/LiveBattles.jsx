@@ -28,20 +28,20 @@ import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 
-const GOLD = '#D4AF37';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD = '#D4AF37';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function BattleCard({ battle, index }) {
-  const names = (battle.title && battle.title.split(' vs ')) || ['?', '?'];
-  const [leftName, rightName] = names;
-  const leftVotes = battle.current_bid || 0;
-  const rightVotes = battle.bid_count || 0;
-  const total = leftVotes + rightVotes || 1;
-  const leftPct = Math.round((leftVotes / total) * 100);
-  const isActive = battle.status === 'active';
-  const isEnded = battle.status === 'ended';
-  const endsAt = battle.ends_at ? new Date(battle.ends_at) : null;
-  const timeRemaining = endsAt && isActive ? formatDistanceToNow(endsAt, { addSuffix: true }) : null;
+  var names = (battle.title && battle.title.split(' vs ')) || ['?', '?'];
+  var [leftName, rightName] = names;
+  var leftVotes = battle.current_bid || 0;
+  var rightVotes = battle.bid_count || 0;
+  var total = leftVotes + rightVotes || 1;
+  var leftPct = Math.round((leftVotes / total) * 100);
+  var isActive = battle.status === 'active';
+  var isEnded = battle.status === 'ended';
+  var endsAt = battle.ends_at ? new Date(battle.ends_at) : null;
+  var timeRemaining = endsAt && isActive ? formatDistanceToNow(endsAt, { addSuffix: true }) : null;
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} whileHover={{ y: -3 }}
@@ -122,11 +122,11 @@ function BattleCard({ battle, index }) {
 }
 
 export default function LiveBattles() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [filter, setFilter] = useState('active');
-  const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [filter, setFilter] = useState('active');
+  var [selectedBitrate, setSelectedBitrate] = useState(3000);
 
-  const { data: battles = [], isLoading } = useQuery({
+  var { data: battles = [], isLoading } = useQuery({
     queryKey: ['battles', filter],
     queryFn: () => filter === 'all'
       ? base44.entities.LiveAuction.filter({ auction_type: 'experience' }, '-created_date', 30)
@@ -134,8 +134,8 @@ export default function LiveBattles() {
     refetchInterval: 10000,
   });
 
-  const activeBattle = battles.find(b => b.status === 'active') || null;
-  const roomId = (activeBattle && activeBattle.id) || null;
+  var activeBattle = battles.find(b => b.status === 'active') || null;
+  var roomId = (activeBattle && activeBattle.id) || null;
 
   return (
     <div className="min-h-screen text-white pb-10"

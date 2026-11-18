@@ -21,10 +21,10 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
-const SVS_BRACKET_ID = 'svs_bracket_v1';
+var SVS_BRACKET_ID = 'svs_bracket_v1';
 
 // Static config: colors/names/abbr only — W-L derived from DB
-const SVS_STATE_CONFIG = [
+var SVS_STATE_CONFIG = [
   { id: 'wa', name: 'Washington', abbr: 'WA', color: '#D4854A', pts: 1820 },
   { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#C0392B', pts: 1740 },
   { id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E', pts: 1650 },
@@ -33,24 +33,24 @@ const SVS_STATE_CONFIG = [
   { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#CC7755', pts: 1120 },
 ];
 // Fallback with static W-L for when DB has no records yet
-const SVS_STATES = SVS_STATE_CONFIG.map((s, i) => ({
+var SVS_STATES = SVS_STATE_CONFIG.map((s, i) => ({
   ...s,
   w: [4, 3, 3, 3, 2, 1][i],
   l: [1, 1, 2, 2, 3, 4][i],
 }));
 
-const PERIOD_MS = { week: 7 * 86_400_000, month: 30 * 86_400_000, all: Infinity };
+var PERIOD_MS = { week: 7 * 86_400_000, month: 30 * 86_400_000, all: Infinity };
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const SILVER  = '#9ca3af';
-const BRONZE  = '#CD7F32';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
-const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+var GOLD    = '#D4AF37';
+var CRIMSON = '#800020';
+var SILVER  = '#9ca3af';
+var BRONZE  = '#CD7F32';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
-const RANK_COLORS = [GOLD, SILVER, BRONZE];
-const RANK_GLOWS  = ['rgba(212,175,55,0.35)', 'rgba(156,163,175,0.2)', 'rgba(205,127,50,0.2)'];
-const RANK_LABELS = ['#1', '#2', '#3'];
+var RANK_COLORS = [GOLD, SILVER, BRONZE];
+var RANK_GLOWS  = ['rgba(212,175,55,0.35)', 'rgba(156,163,175,0.2)', 'rgba(205,127,50,0.2)'];
+var RANK_LABELS = ['#1', '#2', '#3'];
 
 /* ── OctAvatar ─────────────────────────────────────────────────────── */
 function OctAvatar({ size = 60, src, initials, rankColor = GOLD, glow = false }) {
@@ -79,14 +79,14 @@ function OctAvatar({ size = 60, src, initials, rankColor = GOLD, glow = false })
 
 /* ── Top-3 Podium ──────────────────────────────────────────────────── */
 function PodiumEntry({ rank, entry, statLabel, statValue }) {
-  const color  = RANK_COLORS[rank - 1];
-  const glow   = RANK_GLOWS[rank - 1];
-  const isFirst = rank === 1;
-  const size   = isFirst ? 72 : 60;
-  const initials = entry.user?.full_name?.charAt(0)?.toUpperCase() || '?';
+  var color  = RANK_COLORS[rank - 1];
+  var glow   = RANK_GLOWS[rank - 1];
+  var isFirst = rank === 1;
+  var size   = isFirst ? 72 : 60;
+  var initials = (entry.user && entry.user.full_name && entry.user.full_name.charAt(0) && entry.user.full_name.charAt(0).toUpperCase()) || '?';
 
   // Heights: 1st tallest, 3rd medium, 2nd shortest
-  const podiumHeights = { 1: 'pt-0', 2: 'pt-8', 3: 'pt-4' };
+  var podiumHeights = { 1: 'pt-0', 2: 'pt-8', 3: 'pt-4' };
 
   return (
     <div className={`flex flex-col items-center gap-2 ${podiumHeights[rank]}`} style={{ minWidth: isFirst ? 100 : 80 }}>
@@ -102,11 +102,11 @@ function PodiumEntry({ rank, entry, statLabel, statValue }) {
       </div>
 
       {/* oct avatar */}
-      <OctAvatar size={size} src={entry.user?.avatar_url} initials={initials} rankColor={color} glow={isFirst} />
+      <OctAvatar size={size} src={entry.(user && user.avatar_url)} initials={initials} rankColor={color} glow={isFirst} />
 
       {/* name */}
       <p className="font-black text-[11px] text-white text-center truncate max-w-[96px]" style={T}>
-        {entry.user?.full_name || 'Anonymous'}
+        {entry.(user && user.full_name) || 'Anonymous'}
       </p>
 
       {/* stat */}
@@ -131,7 +131,7 @@ function PodiumEntry({ rank, entry, statLabel, statValue }) {
 
 /* ── Rank row (4th+) ───────────────────────────────────────────────── */
 function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
-  const initials = user?.full_name?.charAt(0)?.toUpperCase() || '?';
+  var initials = (user && user.full_name && user.full_name.charAt(0) && user.full_name.charAt(0).toUpperCase()) || '?';
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl transition-all"
       style={{
@@ -148,12 +148,12 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
       </div>
 
       {/* oct avatar (40px) */}
-      <OctAvatar size={40} src={user?.avatar_url} initials={initials} rankColor="rgba(212,175,55,0.6)" />
+      <OctAvatar size={40} src={(user && user.avatar_url)} initials={initials} rankColor="rgba(212,175,55,0.6)" />
 
       {/* name + subtitle */}
       <div className="flex-1 min-w-0">
         <p className="font-black text-sm text-white truncate flex items-center gap-1" style={T}>
-          {user?.full_name || 'Anonymous'}
+          {(user && user.full_name) || 'Anonymous'}
           {isCurrentUser && (
             <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded-md"
               style={{ background: 'rgba(212,175,55,0.15)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', ...T }}>
@@ -161,7 +161,7 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
             </span>
           )}
         </p>
-        <p className="text-[10px] truncate" style={{ color: 'rgba(255,255,255,0.3)' }}>{user?.id ? 'Creator' : ''}</p>
+        <p className="text-[10px] truncate" style={{ color: 'rgba(255,255,255,0.3)' }}>{(user && user.id) ? 'Creator' : ''}</p>
       </div>
 
       {/* score */}
@@ -177,114 +177,114 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
 
 /* ── main page ──────────────────────────────────────────────────────── */
 export default function LeaderboardPage() {
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', currentUser?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
-    enabled: !!currentUser?.id,
+  var { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (currentUser && currentUser.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (currentUser && currentUser.id) }).then(r => r[0] || null),
+    enabled: !!(currentUser && currentUser.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const { data: activeChallenge } = useQuery({
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var { data: activeChallenge } = useQuery({
     queryKey: ['activeChallenge'],
     queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
     enabled: true,
   });
-  const activeChallengeId = activeChallenge?.id || null;
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
-  const activeRoomId = roomId;
+  var activeChallengeId = (activeChallenge && activeChallenge.id) || null;
+  var roomId = new URLSearchParams(window.location.search).get('room_id');
+  var activeRoomId = roomId;
 
-  const { data: creators = [] } = useQuery({
+  var { data: creators = [] } = useQuery({
     queryKey: ['leaderboardCreators'],
     queryFn: () => base44.entities.CreatorProfile.list('-subscriber_count', 50),
   });
 
-  const { data: rooms = [] } = useQuery({
+  var { data: rooms = [] } = useQuery({
     queryKey: ['leaderboardRooms'],
     queryFn: () => base44.entities.Room.list('-viewer_count', 50),
   });
 
-  const { data: transactions = [] } = useQuery({
+  var { data: transactions = [] } = useQuery({
     queryKey: ['leaderboardTransactions'],
     queryFn: () => base44.entities.Transaction.list('-created_date', 500),
   });
 
-  const { data: allUsers = [] } = useQuery({
+  var { data: allUsers = [] } = useQuery({
     queryKey: ['leaderboardUsers'],
     queryFn: () => base44.entities.User.list('-created_date', 200),
   });
 
-  const { data: svsRecords = [] } = useQuery({
+  var { data: svsRecords = [] } = useQuery({
     queryKey: ['svs-bracket-records'],
     queryFn: () => base44.entities.PKBattle.filter({ room_id: SVS_BRACKET_ID }, '-created_date', 20),
     staleTime: 60000,
     refetchInterval: 60000,
   });
 
-  const [activeTab, setActiveTab] = useState('earnings');
-  const [period, setPeriod] = useState('all');
+  var [activeTab, setActiveTab] = useState('earnings');
+  var [period, setPeriod] = useState('all');
 
   // SVS standings derived from DB; fall back to static if no records yet
-  const svsStates = useMemo(() => {
+  var svsStates = useMemo(() => {
     if (!svsRecords.length) return SVS_STATES;
-    const wl = {};
+    var wl = {};
     SVS_STATE_CONFIG.forEach(s => { wl[s.id] = { w: 0, l: 0 }; });
     svsRecords.filter(r => r.status === 'ended').forEach(r => {
-      const aWon = (r.creator_tips || 0) > (r.challenger_tips || 0);
+      var aWon = (r.creator_tips || 0) > (r.challenger_tips || 0);
       if (wl[r.creator_name] !== undefined) wl[r.creator_name][aWon ? 'w' : 'l']++;
       if (wl[r.challenger_name] !== undefined) wl[r.challenger_name][aWon ? 'l' : 'w']++;
     });
     return SVS_STATE_CONFIG
-      .map(s => ({ ...s, w: wl[s.id]?.w ?? 0, l: wl[s.id]?.l ?? 0 }))
+      .map(s => ({ ...s, w: (wl[s.id] && wl[s.id].w) || 0, l: (wl[s.id] && wl[s.id].l) || 0 }))
       .sort((a, b) => b.w - a.w || a.l - b.l);
   }, [svsRecords]);
 
   // Period cutoff for earnings / viewers tabs
-  const cutoff = period === 'all' ? 0 : Date.now() - PERIOD_MS[period];
-  const filteredTransactions = period === 'all' ? transactions
+  var cutoff = period === 'all' ? 0 : Date.now() - PERIOD_MS[period];
+  var filteredTransactions = period === 'all' ? transactions
     : transactions.filter(t => new Date(t.created_date || 0).getTime() >= cutoff);
-  const filteredRooms = period === 'all' ? rooms
+  var filteredRooms = period === 'all' ? rooms
     : rooms.filter(r => new Date(r.created_date || 0).getTime() >= cutoff);
 
   // Revenue leaderboard: aggregate by creator
-  const revenueByCreator = filteredTransactions.reduce((acc, t) => {
-    const key = t.recipient_id || t.to_user_id;
+  var revenueByCreator = filteredTransactions.reduce((acc, t) => {
+    var key = t.recipient_id || t.to_user_id;
     if (!key) return acc;
     acc[key] = (acc[key] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
 
-  const topEarners = Object.entries(revenueByCreator)
+  var topEarners = Object.entries(revenueByCreator)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 20)
     .map(([userId, revenue]) => {
-      const user = allUsers.find(u => u.id === userId);
+      var user = allUsers.find(u => u.id === userId);
       return { user: user || { full_name: 'Creator', email: '', id: userId }, revenue };
     })
     .filter(e => e.user);
 
-  const topByViewers = [...filteredRooms]
+  var topByViewers = [...filteredRooms]
     .sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0))
     .slice(0, 20)
     .map(room => {
-      const user = allUsers.find(u => u.id === room.host_id);
+      var user = allUsers.find(u => u.id === room.host_id);
       return { user: user || { full_name: room.host_id || 'Creator', email: '', id: room.host_id }, viewers: room.viewer_count || 0, room };
     })
     .filter(e => e.user);
 
-  const topBySubscribers = creators.slice(0, 20).map(profile => {
-    const user = allUsers.find(u => u.id === profile.user_id);
+  var topBySubscribers = creators.slice(0, 20).map(profile => {
+    var user = allUsers.find(u => u.id === profile.user_id);
     return { user: user || { full_name: profile.display_name, email: '', id: profile.user_id }, subscribers: profile.subscriber_count || 0 };
   }).filter(e => e.user);
 
   // Select list + stat accessors by active tab
-  const tabData = {
+  var tabData = {
     earnings:    { list: topEarners,      getStat: e => `$${e.revenue.toFixed(0)}`,   label: 'earned' },
     viewers:     { list: topByViewers,    getStat: e => e.viewers,                    label: 'viewers' },
     subscribers: { list: topBySubscribers, getStat: e => e.subscribers,               label: 'subs' },
   };
-  const { list, getStat, label } = tabData[activeTab];
-  const top3    = list.slice(0, 3);
-  const rest    = list.slice(3);
+  var { list, getStat, label } = tabData[activeTab];
+  var top3    = list.slice(0, 3);
+  var rest    = list.slice(3);
 
   return (
     <div className="min-h-screen pb-8" style={{ background: '#080B18' }}>
@@ -441,7 +441,7 @@ export default function LeaderboardPage() {
           </div>
         ) : activeTab === 'earnings' && (
           <div className="mb-4">
-            <RealtimeLeaderboard creatorId={currentUser?.id} roomId={activeRoomId} />
+            <RealtimeLeaderboard creatorId={(currentUser && currentUser.id)} roomId={activeRoomId} />
           </div>
         )}
         {activeTab !== 'svs' && rest.length > 0 && (
@@ -457,12 +457,12 @@ export default function LeaderboardPage() {
             <div className="p-2 space-y-1">
               {rest.map((entry, i) => (
                 <RankRow
-                  key={entry.user?.id || i}
+                  key={entry.(user && user.id) || i}
                   rank={i + 4}
                   user={entry.user}
                   stat={getStat(entry)}
                   statLabel={label}
-                  isCurrentUser={entry.user?.id === currentUser?.id}
+                  isCurrentUser={entry.(user && user.id) === (currentUser && currentUser.id)}
                   isEven={i % 2 === 0}
                 />
               ))}
@@ -477,14 +477,14 @@ export default function LeaderboardPage() {
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <StreamGoals isHost={true} />
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-          <TipWidget roomId={roomId} hostId={currentUser?.id} currentUser={currentUser} />
-          <TippingOverlay roomId={roomId} creatorId={currentUser?.id} isVisible={true} />
-          <AnimatedGiftShop recipientId={currentUser?.id} roomId={roomId} onClose={() => {}} />
+          <TipWidget roomId={roomId} hostId={(currentUser && currentUser.id)} currentUser={currentUser} />
+          <TippingOverlay roomId={roomId} creatorId={(currentUser && currentUser.id)} isVisible={true} />
+          <AnimatedGiftShop recipientId={(currentUser && currentUser.id)} roomId={roomId} onClose={() => {}} />
           <LeaderboardPanel roomId={roomId} />
           <ChallengeLeaderboard challengeId={activeChallengeId} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
-        <MilestoneAlerts userId={currentUser?.id} roomId={roomId} />
+        <MilestoneAlerts userId={(currentUser && currentUser.id)} roomId={roomId} />
         <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <CollaborationMatcher />
           <ShareToSocial content={{ url: window.location.href, title: 'Check out the SeeWhy LIVE leaderboard!' }} />

@@ -323,7 +323,7 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
       setCamOn(true);
       s.getAudioTracks().forEach(t => { t.enabled = micOn; });
       if (videoRef.current) videoRef.current.srcObject = s;
-      onStreamReady?.(s);
+      if (onStreamReady) onStreamReady(s);
     } catch {
       setError('Camera/mic access denied — check browser permissions');
     }
@@ -336,7 +336,7 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
     var next = !micOn;
     if (streamRef.current) streamRef.current.getAudioTracks().forEach(t => { t.enabled = next; });
     setMicOn(next);
-    onMicChange?.(next);
+    if (onMicChange) onMicChange(next);
   }
 
   function handleVideoChange(id) { setVideoId(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} start({ videoId: id }); }
@@ -566,7 +566,7 @@ export default function GoLive() {
   var { cameras } = useCameraDevices();
   var handleVideoChange = useCallback((id) => {
     try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {}
-    cameraRetryRef.current?.({ videoId: id });
+    if (cameraRetryRef.current) cameraRetryRef.current({ videoId: id });
   }, []);
   var { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   var speakingIds = isSpeaking && (user && user.id) ? { [user.id]: true } : {};
@@ -775,7 +775,7 @@ export default function GoLive() {
     var stopFanout = () => {
       var API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
       var blob = new Blob([JSON.stringify({ stream_id: partyId })], { type: 'application/json' });
-      navigator.sendBeacon?.(`${API_BASE}/fanout-stop`, blob);
+      if (navigator.sendBeacon) navigator.sendBeacon(API_BASE + '/fanout-stop', blob);
     };
     window.addEventListener('beforeunload', stopFanout);
     return () => window.removeEventListener('beforeunload', stopFanout);
@@ -1140,7 +1140,7 @@ export default function GoLive() {
       {partyId && <GreenroomQueue roomId={partyId} isHost={true} />}
       {<StreamingPresets onApply={(p) => { try { localStorage.setItem('swl_pref_resolution', p.resolution); localStorage.setItem('swl_pref_bitrate', String(p.bitrate)); } catch {} }} />}
       {partyId && <EmbedPlayer roomId={partyId} creatorName={(user && user.full_name) || ''} streamTitle={'Live Stream'} viewerCount={viewerCount} />}
-      <LiveTranslationWidget chatMessage={chatMessages[chatMessages.length - 1]?.content || null} onTranslation={() => {}} />
+      <LiveTranslationWidget chatMessage={(chatMessages[chatMessages.length - 1] && chatMessages[chatMessages.length - 1].content) || null} onTranslation={() => {}} />
       {(user && user.id) && <RecordingManager userId={user.id} />}
       {<OBSBridge />}
       <ZEGOMobileAppBanner />
@@ -1221,7 +1221,7 @@ export default function GoLive() {
       {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => toast.success('Permissions updated')} />}
       {partyId && <MultiStreamConfig roomId={partyId} isHost={true} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={micOn} videoEnabled={videoOn} onRetry={() => cameraRetryRef.current?.()} />
+      <WebRTCSetupBanner error={null} audioEnabled={micOn} videoEnabled={videoOn} onRetry={() => { if (cameraRetryRef.current) cameraRetryRef.current(); }} />
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       {partyId && <WebhookHooks roomId={partyId} isHost={true} />}
       {<PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}

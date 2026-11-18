@@ -35,22 +35,22 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 
-const BG      = '#080B18';
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
-const GREEN   = '#6DBF7E';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG      = '#080B18';
+var GOLD    = '#D4AF37';
+var CRIMSON = '#800020';
+var PINK    = '#C0392B';
+var GREEN   = '#6DBF7E';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ─── tiny helpers ─────────────────────────────────────────────────────── */
-const card = {
+var card = {
   background: 'rgba(13,6,24,0.9)',
   border: `1px solid rgba(212,175,55,0.1)`,
   borderRadius: 16,
   padding: '20px 20px',
 };
 
-const inputStyle = {
+var inputStyle = {
   ...T,
   background: 'rgba(255,255,255,0.04)',
   border: '1px solid rgba(212,175,55,0.2)',
@@ -63,7 +63,7 @@ const inputStyle = {
   boxSizing: 'border-box',
 };
 
-const labelStyle = {
+var labelStyle = {
   ...T,
   fontSize: 12,
   color: 'rgba(255,255,255,0.5)',
@@ -75,7 +75,7 @@ const labelStyle = {
 
 /* ─── custom recharts tooltip ──────────────────────────────────────────── */
 function CustomTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null;
+  if (!active || !(payload && payload.length)) return null;
   return (
     <div style={{
       ...T,
@@ -93,50 +93,50 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function PayoutsPage() {
-  const qc = useQueryClient();
-  const [stripeId, setStripeId]     = useState('');
-  const [bank4, setBank4]           = useState('');
-  const [connecting, setConnecting] = useState(false);
-  const [directPayOpen, setDirectPayOpen] = useState(false);
+  var qc = useQueryClient();
+  var [stripeId, setStripeId]     = useState('');
+  var [bank4, setBank4]           = useState('');
+  var [connecting, setConnecting] = useState(false);
+  var [directPayOpen, setDirectPayOpen] = useState(false);
 
   /* ─── queries ──────────────────────────────────────────────────────── */
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn:  () => base44.auth.me(),
   });
 
-  const { data: payoutRecord, isLoading } = useQuery({
-    queryKey: ['payout-record', user?.id],
+  var { data: payoutRecord, isLoading } = useQuery({
+    queryKey: ['payout-record', (user && user.id)],
     queryFn:  () => base44.entities.CreatorPayout.filter({ creator_id: user.id }).then(r => r[0] || null),
     enabled:  !!user,
   });
 
-  const { data: transactions = [] } = useQuery({
-    queryKey: ['payout-transactions', user?.id],
+  var { data: transactions = [] } = useQuery({
+    queryKey: ['payout-transactions', (user && user.id)],
     queryFn:  () => base44.entities.Transaction.filter({ recipient_id: user.id }, '-created_date', 20),
     enabled:  !!user,
   });
 
   /* ─── derived ──────────────────────────────────────────────────────── */
-  const pendingTips = transactions
+  var pendingTips = transactions
     .filter(t => t.transaction_type === 'tip' && t.status !== 'paid_out')
     .reduce((sum, t) => sum + (t.creator_payout || 0), 0);
 
-  const balance     = payoutRecord?.pending_balance ?? pendingTips;
-  const isConnected = payoutRecord?.stripe_connected;
+  var balance     = (payoutRecord && payoutRecord.pending_balance) || pendingTips;
+  var isConnected = (payoutRecord && payoutRecord.stripe_connected);
 
   /* ─── 30-day revenue chart data ────────────────────────────────────── */
-  const chartData = useMemo(() => {
-    const days   = 30;
-    const result = [];
-    const now    = Date.now();
-    for (let i = days - 1; i >= 0; i--) {
-      const dayStart = now - i * 86400000;
-      const dayEnd   = dayStart + 86400000;
-      const label    = new Date(dayStart).toLocaleDateString('en', { month: 'short', day: 'numeric' });
-      const earned   = transactions
+  var chartData = useMemo(() => {
+    var days   = 30;
+    var result = [];
+    var now    = Date.now();
+    for (var i = days - 1; i >= 0; i--) {
+      var dayStart = now - i * 86400000;
+      var dayEnd   = dayStart + 86400000;
+      var label    = new Date(dayStart).toLocaleDateString('en', { month: 'short', day: 'numeric' });
+      var earned   = transactions
         .filter(t => {
-          const d = new Date(t.created_date).getTime();
+          var d = new Date(t.created_date).getTime();
           return d >= dayStart && d < dayEnd;
         })
         .reduce((sum, t) => sum + (t.creator_payout || 0), 0);
@@ -146,7 +146,7 @@ export default function PayoutsPage() {
   }, [transactions]);
 
   /* ─── mutations ────────────────────────────────────────────────────── */
-  const connectMutation = useMutation({
+  var connectMutation = useMutation({
     mutationFn: async () => {
       setConnecting(true);
       if (payoutRecord) {
@@ -168,7 +168,7 @@ export default function PayoutsPage() {
     },
     onSuccess: () => {
       toast.success('Stripe account connected!');
-      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
+      qc.invalidateQueries({ queryKey: ['payout-record', (user && user.id)] });
       setConnecting(false);
       setStripeId('');
       setBank4('');
@@ -176,7 +176,7 @@ export default function PayoutsPage() {
     onError: () => { setConnecting(false); toast.error('Failed to connect Stripe account.'); },
   });
 
-  const disconnectMutation = useMutation({
+  var disconnectMutation = useMutation({
     mutationFn: async () => {
       return await base44.entities.CreatorPayout.update(payoutRecord.id, {
         stripe_connected:  false,
@@ -186,14 +186,14 @@ export default function PayoutsPage() {
     },
     onSuccess: () => {
       toast.success('Stripe account disconnected');
-      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
+      qc.invalidateQueries({ queryKey: ['payout-record', (user && user.id)] });
     },
     onError: () => toast.error('Failed to disconnect Stripe account.'),
   });
 
-  const payoutMutation = useMutation({
+  var payoutMutation = useMutation({
     mutationFn: async () => {
-      const amount = payoutRecord?.pending_balance || pendingTips;
+      var amount = (payoutRecord && payoutRecord.pending_balance) || pendingTips;
       if (amount <= 0) throw new Error('No balance to pay out');
       await base44.entities.CreatorPayout.update(payoutRecord.id, {
         pending_balance:     0,
@@ -205,9 +205,9 @@ export default function PayoutsPage() {
     },
     onSuccess: (amount) => {
       toast.success(`$${amount.toFixed(2)} payout initiated! Arrives in 2-5 business days.`);
-      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
+      qc.invalidateQueries({ queryKey: ['payout-record', (user && user.id)] });
     },
-    onError: (e) => toast.error(e?.message === 'No balance to pay out' ? 'No balance to pay out.' : 'Payout request failed. Please try again.'),
+    onError: (e) => toast.error((e && e.message) === 'No balance to pay out' ? 'No balance to pay out.' : 'Payout request failed. Please try again.'),
   });
 
   /* ─── loading ──────────────────────────────────────────────────────── */
@@ -276,7 +276,7 @@ export default function PayoutsPage() {
               Total Paid
             </div>
             <div style={{ fontSize: 24, fontWeight: 800, color: GOLD, lineHeight: 1 }}>
-              ${(payoutRecord?.total_paid_out || 0).toFixed(2)}
+              ${((payoutRecord && payoutRecord.total_paid_out) || 0).toFixed(2)}
             </div>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>all time</div>
           </div>
@@ -531,7 +531,7 @@ export default function PayoutsPage() {
                 </div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 6 }}>
                   Arrives in 2–5 business days
-                  {payoutRecord?.bank_last4 ? ` · bank ending in ${payoutRecord.bank_last4}` : ''}
+                  {(payoutRecord && payoutRecord.bank_last4) ? ` · bank ending in ${payoutRecord.bank_last4}` : ''}
                 </div>
               </div>
 
@@ -608,7 +608,7 @@ export default function PayoutsPage() {
           </div>
         )}
 
-        {user?.id && (
+        {(user && user.id) && (
           <div style={{ marginBottom: 16 }}>
             <button onClick={() => setDirectPayOpen(true)}
               style={{ padding: '10px 20px', borderRadius: 12, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
@@ -637,19 +637,19 @@ export default function PayoutsPage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
-          <StripeConnectButton userId={user?.id} accountId={null} />
-          <MonetizationDashboard userId={user?.id} />
+          <StripeConnectButton userId={(user && user.id)} accountId={null} />
+          <MonetizationDashboard userId={(user && user.id)} />
           <PaymentMethodSelector onSelect={() => {}} selectedMethod={null} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
-          <EarningsBreakdown userId={user?.id} />
+          <EarningsBreakdown userId={(user && user.id)} />
           <CollaborationMatcher />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -657,7 +657,7 @@ export default function PayoutsPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

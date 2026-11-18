@@ -20,16 +20,16 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
-const BG = '#080B18';
-const BG2 = 'rgba(8,11,24,0.9)';
-const GOLD = '#D4AF37';
-const GREEN = '#6DBF7E';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var BG2 = 'rgba(8,11,24,0.9)';
+var GOLD = '#D4AF37';
+var GREEN = '#6DBF7E';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Crypto helpers ────────────────────────────────────────────────────────────
 async function deriveKey(password, salt) {
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  var enc = new TextEncoder();
+  var keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
   return crypto.subtle.deriveKey(
     { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
     keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
@@ -37,24 +37,24 @@ async function deriveKey(password, salt) {
 }
 
 async function encryptText(plaintext, password) {
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  const iv   = crypto.getRandomValues(new Uint8Array(12));
-  const key  = await deriveKey(password, salt);
-  const enc  = new TextEncoder();
-  const buf  = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(plaintext));
-  const combined = new Uint8Array(salt.length + iv.length + buf.byteLength);
+  var salt = crypto.getRandomValues(new Uint8Array(16));
+  var iv   = crypto.getRandomValues(new Uint8Array(12));
+  var key  = await deriveKey(password, salt);
+  var enc  = new TextEncoder();
+  var buf  = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(plaintext));
+  var combined = new Uint8Array(salt.length + iv.length + buf.byteLength);
   combined.set(salt, 0); combined.set(iv, 16); combined.set(new Uint8Array(buf), 28);
   return btoa(String.fromCharCode(...combined));
 }
 
 async function decryptText(cipherB64, password) {
-  const bytes = Uint8Array.from(atob(cipherB64), c => c.charCodeAt(0));
-  const salt  = bytes.slice(0, 16);
-  const iv    = bytes.slice(16, 28);
-  const data  = bytes.slice(28);
-  const key   = await deriveKey(password, salt);
-  const dec   = new TextDecoder();
-  const buf   = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+  var bytes = Uint8Array.from(atob(cipherB64), c => c.charCodeAt(0));
+  var salt  = bytes.slice(0, 16);
+  var iv    = bytes.slice(16, 28);
+  var data  = bytes.slice(28);
+  var key   = await deriveKey(password, salt);
+  var dec   = new TextDecoder();
+  var buf   = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
   return dec.decode(buf);
 }
 
@@ -113,50 +113,50 @@ function InputField({ placeholder, value, onChange, type = 'text', maxLength }) 
   );
 }
 
-const PLATFORMS = ['OBS', 'Twitch', 'YouTube', 'Facebook Live', 'Custom RTMP'];
+var PLATFORMS = ['OBS', 'Twitch', 'YouTube', 'Facebook Live', 'Custom RTMP'];
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function VaultPro() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   // Vault lock state
-  const [vaultUnlocked, setVaultUnlocked]   = useState(false);
-  const [vaultPassword, setVaultPassword]   = useState('');
-  const [passwordInput, setPasswordInput]   = useState('');
-  const [activeTab, setActiveTab]           = useState('streamkeys');
-  const [isLoading, setIsLoading]           = useState(false);
-  const [error, setError]                   = useState('');
+  var [vaultUnlocked, setVaultUnlocked]   = useState(false);
+  var [vaultPassword, setVaultPassword]   = useState('');
+  var [passwordInput, setPasswordInput]   = useState('');
+  var [activeTab, setActiveTab]           = useState('streamkeys');
+  var [isLoading, setIsLoading]           = useState(false);
+  var [error, setError]                   = useState('');
 
   // Stream keys
-  const [streamKeys, setStreamKeys]         = useState([]);
-  const [showAddKey, setShowAddKey]         = useState(false);
-  const [newKeyPlatform, setNewKeyPlatform] = useState('OBS');
-  const [newKeyValue, setNewKeyValue]       = useState('');
-  const [revealedKeys, setRevealedKeys]     = useState({});
+  var [streamKeys, setStreamKeys]         = useState([]);
+  var [showAddKey, setShowAddKey]         = useState(false);
+  var [newKeyPlatform, setNewKeyPlatform] = useState('OBS');
+  var [newKeyValue, setNewKeyValue]       = useState('');
+  var [revealedKeys, setRevealedKeys]     = useState({});
 
   // Protected content
-  const [protectedContent, setProtectedContent] = useState([
+  var [protectedContent, setProtectedContent] = useState([
     { id: 1, title: 'Subscriber Exclusive VOD — March', encryptedDesc: null, raw: 'Full 3-hour stream replay, March 2024. Subscribers only.', protected: true },
     { id: 2, title: 'Private Q&A Session',              encryptedDesc: null, raw: 'Behind-the-scenes Q&A with top supporters.',              protected: true },
     { id: 3, title: 'Patreon Bonus Clip Pack',          encryptedDesc: null, raw: '42 premium clips available for Patreon tier members.',    protected: true },
   ]);
-  const [showProtectContent, setShowProtectContent] = useState(false);
-  const [newContentTitle, setNewContentTitle]       = useState('');
-  const [newContentDesc, setNewContentDesc]         = useState('');
-  const [unlockedContent, setUnlockedContent]       = useState({});
+  var [showProtectContent, setShowProtectContent] = useState(false);
+  var [newContentTitle, setNewContentTitle]       = useState('');
+  var [newContentDesc, setNewContentDesc]         = useState('');
+  var [unlockedContent, setUnlockedContent]       = useState({});
 
   // Room PINs
-  const [roomPins, setRoomPins]           = useState([]);
-  const [showAddPin, setShowAddPin]       = useState(false);
-  const [newPinRoom, setNewPinRoom]       = useState('');
-  const [newPinValue, setNewPinValue]     = useState('');
-  const [copiedPin, setCopiedPin]         = useState(null);
-  const [sharePin, setSharePin]           = useState(null);
+  var [roomPins, setRoomPins]           = useState([]);
+  var [showAddPin, setShowAddPin]       = useState(false);
+  var [newPinRoom, setNewPinRoom]       = useState('');
+  var [newPinValue, setNewPinValue]     = useState('');
+  var [copiedPin, setCopiedPin]         = useState(null);
+  var [sharePin, setSharePin]           = useState(null);
 
   // Audit log
-  const [auditLog, setAuditLog] = useState([]);
+  var [auditLog, setAuditLog] = useState([]);
 
   // AI API Keys (plain localStorage, not vault-encrypted)
-  const AI_SERVICES = [
+  var AI_SERVICES = [
     { id: 'openrouter', label: 'OpenRouter', desc: 'Multi-model routing (GPT-4, Claude, Gemini, Llama)', link: 'https://openrouter.ai/keys', placeholder: 'sk-or-v1-…' },
     { id: 'anthropic',  label: 'Anthropic',  desc: 'Claude API direct access',                          link: 'https://console.anthropic.com', placeholder: 'sk-ant-…' },
     { id: 'openai',     label: 'OpenAI',     desc: 'GPT-4o, Whisper, TTS',                              link: 'https://platform.openai.com/api-keys', placeholder: 'sk-…' },
@@ -165,17 +165,17 @@ export default function VaultPro() {
     { id: 'wispr',      label: 'WisperFlo',  desc: 'AI voice automation',                               link: 'https://wispr.io', placeholder: 'API key…' },
   ];
 
-  const [aiKeys, setAiKeys] = useState(() => {
-    const obj = {};
+  var [aiKeys, setAiKeys] = useState(() => {
+    var obj = {};
     AI_SERVICES.forEach(s => {
       try { obj[s.id] = localStorage.getItem(`swl_apikey_${s.id}`) || ''; } catch { obj[s.id] = ''; }
     });
     return obj;
   });
-  const [aiRevealed, setAiRevealed] = useState({});
-  const [aiEditing, setAiEditing]   = useState({});
-  const [aiSaved, setAiSaved]       = useState({});
-  const [aiCopied, setAiCopied]     = useState({});
+  var [aiRevealed, setAiRevealed] = useState({});
+  var [aiEditing, setAiEditing]   = useState({});
+  var [aiSaved, setAiSaved]       = useState({});
+  var [aiCopied, setAiCopied]     = useState({});
 
   function saveAiKey(id) {
     try {
@@ -183,7 +183,7 @@ export default function VaultPro() {
       setAiSaved(p => ({ ...p, [id]: true }));
       setTimeout(() => setAiSaved(p => ({ ...p, [id]: false })), 1800);
       setAiEditing(p => ({ ...p, [id]: false }));
-      addAudit(`AI key saved — ${AI_SERVICES.find(s => s.id === id)?.label || id}`, '🔑');
+      addAudit(`AI key saved — ${(AI_SERVICES.find(s => s.id === id) && AI_SERVICES.find(s => s.id === id).label) || id}`, '🔑');
     } catch {
       setError('Could not save key.');
     }
@@ -194,7 +194,7 @@ export default function VaultPro() {
       localStorage.removeItem(`swl_apikey_${id}`);
       setAiKeys(p => ({ ...p, [id]: '' }));
       setAiRevealed(p => ({ ...p, [id]: false }));
-      addAudit(`AI key cleared — ${AI_SERVICES.find(s => s.id === id)?.label || id}`, '🗑️');
+      addAudit(`AI key cleared — ${(AI_SERVICES.find(s => s.id === id) && AI_SERVICES.find(s => s.id === id).label) || id}`, '🗑️');
     } catch {}
   }
 
@@ -235,7 +235,7 @@ export default function VaultPro() {
     if (!newKeyValue.trim()) return;
     setIsLoading(true);
     try {
-      const encrypted = await encryptText(newKeyValue.trim(), vaultPassword);
+      var encrypted = await encryptText(newKeyValue.trim(), vaultPassword);
       setStreamKeys(prev => [...prev, { id: Date.now(), platform: newKeyPlatform, encrypted }]);
       addAudit(`Stream key added — ${newKeyPlatform}`, '🔑');
       setNewKeyValue('');
@@ -249,16 +249,16 @@ export default function VaultPro() {
 
   async function handleRevealKey(key) {
     if (revealedKeys[key.id]) {
-      setRevealedKeys(prev => { const n = { ...prev }; delete n[key.id]; return n; });
+      setRevealedKeys(prev => { var n = { ...prev }; delete n[key.id]; return n; });
       return;
     }
     setIsLoading(true);
     try {
-      const plain = await decryptText(key.encrypted, vaultPassword);
+      var plain = await decryptText(key.encrypted, vaultPassword);
       setRevealedKeys(prev => ({ ...prev, [key.id]: plain }));
       addAudit(`Stream key revealed — ${key.platform}`, '👁️');
       setTimeout(() => {
-        setRevealedKeys(prev => { const n = { ...prev }; delete n[key.id]; return n; });
+        setRevealedKeys(prev => { var n = { ...prev }; delete n[key.id]; return n; });
       }, 10000);
     } catch {
       setError('Decryption failed. Wrong password?');
@@ -272,7 +272,7 @@ export default function VaultPro() {
     if (!newContentTitle.trim()) return;
     setIsLoading(true);
     try {
-      const encrypted = await encryptText(newContentDesc || '(no description)', vaultPassword);
+      var encrypted = await encryptText(newContentDesc || '(no description)', vaultPassword);
       setProtectedContent(prev => [...prev, {
         id: Date.now(), title: newContentTitle.trim(),
         encryptedDesc: encrypted, raw: null, protected: true,
@@ -290,12 +290,12 @@ export default function VaultPro() {
 
   async function handleUnlockContent(item) {
     if (unlockedContent[item.id]) {
-      setUnlockedContent(prev => { const n = { ...prev }; delete n[item.id]; return n; });
+      setUnlockedContent(prev => { var n = { ...prev }; delete n[item.id]; return n; });
       return;
     }
     setIsLoading(true);
     try {
-      let plain;
+      var plain;
       if (item.encryptedDesc) {
         plain = await decryptText(item.encryptedDesc, vaultPassword);
       } else {
@@ -315,7 +315,7 @@ export default function VaultPro() {
     if (!newPinRoom.trim() || !newPinValue.trim()) return;
     setIsLoading(true);
     try {
-      const encrypted = await encryptText(newPinValue.trim(), vaultPassword);
+      var encrypted = await encryptText(newPinValue.trim(), vaultPassword);
       setRoomPins(prev => [...prev, { id: Date.now(), room: newPinRoom.trim(), encrypted }]);
       addAudit(`Room PIN created — ${newPinRoom.trim()}`, '🚪');
       setNewPinRoom('');
@@ -331,7 +331,7 @@ export default function VaultPro() {
   async function handleCopyPin(pin) {
     setIsLoading(true);
     try {
-      const plain = await decryptText(pin.encrypted, vaultPassword);
+      var plain = await decryptText(pin.encrypted, vaultPassword);
       await navigator.clipboard.writeText(plain);
       setCopiedPin(pin.id);
       addAudit(`Room PIN copied — ${pin.room}`, '📋');
@@ -631,11 +631,11 @@ export default function VaultPro() {
                 </div>
 
                 {AI_SERVICES.map(svc => {
-                  const val     = aiKeys[svc.id] || '';
-                  const hasKey  = val.length > 0;
-                  const revealed = aiRevealed[svc.id];
-                  const editing  = aiEditing[svc.id];
-                  const saved    = aiSaved[svc.id];
+                  var val     = aiKeys[svc.id] || '';
+                  var hasKey  = val.length > 0;
+                  var revealed = aiRevealed[svc.id];
+                  var editing  = aiEditing[svc.id];
+                  var saved    = aiSaved[svc.id];
 
                   return (
                     <div key={svc.id} className="rounded-2xl p-4 space-y-2" style={{ background: 'rgba(255,255,255,0.03)', border: hasKey ? '1px solid rgba(212,175,55,0.18)' : '1px solid rgba(255,255,255,0.07)' }}>
@@ -753,9 +753,9 @@ export default function VaultPro() {
         </div>
       )}
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -763,7 +763,7 @@ export default function VaultPro() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

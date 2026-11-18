@@ -39,7 +39,7 @@ function copyText(val) {
 
 function genKey(prefix, userId) {
   var id = userId ? userId.slice(0, 8) : 'demo0000';
-  const arr = new Uint8Array(5); crypto.getRandomValues(arr);
+  var arr = new Uint8Array(5); crypto.getRandomValues(arr);
   return prefix + '_' + id + '_' + Array.from(arr).map(b=>b.toString(36)).join('').slice(0, 8);
 }
 
@@ -136,7 +136,7 @@ function StreamTab({ user }) {
   var [streamKey, setStreamKey] = useState(function() { return genKey('sw', userId); });
   var [egressKeys, setEgressKeys] = useState({ youtube: '', twitch: '', facebook: '', x: '' });
   var [vdoRoom] = useState(function() {
-    const arr = new Uint8Array(5); crypto.getRandomValues(arr);
+    var arr = new Uint8Array(5); crypto.getRandomValues(arr);
     return 'sw_' + Array.from(arr).map(b=>b.toString(36)).join('').slice(0, 8);
   });
   var [perms, setPerms] = useState({
@@ -865,7 +865,7 @@ function FanoutEngineTab({ user }) {
         </PanelCard>
 
         <div className="md:col-span-2">
-          <RTMPFanoutPanel userId={user?.id} streamId={null} isStreaming={false} />
+          <RTMPFanoutPanel userId={(user && user.id)} streamId={null} isStreaming={false} />
         </div>
       </div>
     </div>
@@ -884,20 +884,20 @@ var TABS = [
 ];
 
 export default function StreamInfra() {
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  var roomId = new URLSearchParams(window.location.search).get('room_id');
   var [activeTab, setActiveTab] = useState('stream');
 
   var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: function() { return base44.auth.me(); },
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
   return (
     <div className="min-h-screen" style={{ background: '#0B0B18', fontFamily: 'Rajdhani, sans-serif' }}>
@@ -962,9 +962,9 @@ export default function StreamInfra() {
         </AnimatePresence>
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="infra" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -972,7 +972,7 @@ export default function StreamInfra() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

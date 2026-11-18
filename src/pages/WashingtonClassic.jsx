@@ -19,7 +19,7 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const C = {
+var C = {
   bg:    '#07050A',
   bg2:   '#0D0A08',
   bg3:   '#13100A',
@@ -38,14 +38,14 @@ const C = {
 };
 
 // ── Static seed data (real tournament history) ──────────────────────────────
-const PAST_CHAMPIONS = [
+var PAST_CHAMPIONS = [
   { year: 2023, name: 'Marcus "Domino King" Williams', state: 'WA', record: '7-0', prize: '$2,500' },
   { year: 2022, name: 'Jerome "Big Spin" Carter',      state: 'CA', record: '6-1', prize: '$2,000' },
   { year: 2021, name: 'Darius "Double Six" Johnson',   state: 'TX', record: '7-0', prize: '$1,500' },
   { year: 2019, name: 'Antoine "Rock Solid" Freeman',  state: 'GA', record: '5-2', prize: '$1,200' },
 ];
 
-const TEAMS_2026 = [
+var TEAMS_2026 = [
   { id: 't1', name: 'Pacific NW Kings',   state: 'WA', seed: 1,  wins: 5, losses: 0, ppg: 142 },
   { id: 't2', name: 'So-Cal Dominators',  state: 'CA', seed: 2,  wins: 4, losses: 1, ppg: 138 },
   { id: 't3', name: 'ATL Hardliners',     state: 'GA', seed: 3,  wins: 4, losses: 1, ppg: 135 },
@@ -56,7 +56,7 @@ const TEAMS_2026 = [
   { id: 't8', name: 'H-Town Originals',   state: 'TX', seed: 8,  wins: 1, losses: 4, ppg: 112 },
 ];
 
-const BRACKET_2026 = [
+var BRACKET_2026 = [
   // QF Winners Bracket
   { id: 'm1', round: 'QF', bracket: 'W', team_a: 't1', team_b: 't8', score_a: 150, score_b: 112, winner: 't1', status: 'completed' },
   { id: 'm2', round: 'QF', bracket: 'W', team_a: 't4', team_b: 't5', score_a: 132, score_b: 145, winner: 't5', status: 'completed' },
@@ -77,13 +77,13 @@ const BRACKET_2026 = [
 function teamById(id) { return TEAMS_2026.find(t => t.id === id); }
 
 function StatusBadge({ status }) {
-  const cfg = {
+  var cfg = {
     completed: { bg: 'rgba(46,204,113,0.12)', color: C.green, label: 'FINAL' },
     scheduled:  { bg: 'rgba(201,168,76,0.12)', color: C.gold,  label: 'SCHEDULED' },
     live:       { bg: 'rgba(139,26,47,0.2)',  color: '#E74C3C', label: 'LIVE' },
     upcoming:   { bg: 'rgba(42,36,24,0.6)',   color: C.textM,   label: 'UPCOMING' },
   };
-  const s = cfg[status] || cfg.upcoming;
+  var s = cfg[status] || cfg.upcoming;
   return (
     <span style={{ background: s.bg, color: s.color, borderRadius: 99, padding: '2px 8px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', fontFamily: 'Barlow Condensed, sans-serif' }}>
       {s.label}
@@ -92,10 +92,10 @@ function StatusBadge({ status }) {
 }
 
 function MatchCard({ match }) {
-  const a = match.team_a ? teamById(match.team_a) : null;
-  const b = match.team_b ? teamById(match.team_b) : null;
-  const winA = match.winner === match.team_a;
-  const winB = match.winner === match.team_b;
+  var a = match.team_a ? teamById(match.team_a) : null;
+  var b = match.team_b ? teamById(match.team_b) : null;
+  var winA = match.winner === match.team_a;
+  var winB = match.winner === match.team_b;
 
   return (
     <div style={{ background: C.bg3, border: `1px solid ${C.slate}`, borderRadius: 10, padding: 14, marginBottom: 10 }}>
@@ -116,7 +116,7 @@ function MatchCard({ match }) {
           {a && <span style={{ color: C.textM, fontSize: 11 }}>({a.state})</span>}
         </div>
         <span style={{ color: winA ? C.gold : C.textD, fontWeight: 700, fontSize: 18, fontFamily: 'Barlow Condensed, sans-serif' }}>
-          {match.score_a ?? '—'}
+          {match.score_a || '—'}
         </span>
       </div>
 
@@ -132,7 +132,7 @@ function MatchCard({ match }) {
           {b && <span style={{ color: C.textM, fontSize: 11 }}>({b.state})</span>}
         </div>
         <span style={{ color: winB ? C.gold : C.textD, fontWeight: 700, fontSize: 18, fontFamily: 'Barlow Condensed, sans-serif' }}>
-          {match.score_b ?? '—'}
+          {match.score_b || '—'}
         </span>
       </div>
 
@@ -146,7 +146,7 @@ function MatchCard({ match }) {
 }
 
 // ── Tabs ────────────────────────────────────────────────────────────────────
-const TABS = [
+var TABS = [
   { id: 'bracket',  label: '🏆 Bracket' },
   { id: 'standings',label: '📊 Standings' },
   { id: 'history',  label: '👑 Champions' },
@@ -154,30 +154,30 @@ const TABS = [
 ];
 
 export default function WashingtonClassic() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const [tab, setTab] = useState('bracket');
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var [tab, setTab] = useState('bracket');
 
-  const sorted = [...TEAMS_2026].sort((a, b) => {
+  var sorted = [...TEAMS_2026].sort((a, b) => {
     if (b.wins !== a.wins) return b.wins - a.wins;
     return b.ppg - a.ppg;
   });
 
-  const wbMatches  = BRACKET_2026.filter(m => m.bracket === 'W');
-  const lbMatches  = BRACKET_2026.filter(m => m.bracket === 'L');
-  const gfMatches  = BRACKET_2026.filter(m => m.bracket === 'G');
+  var wbMatches  = BRACKET_2026.filter(m => m.bracket === 'W');
+  var lbMatches  = BRACKET_2026.filter(m => m.bracket === 'L');
+  var gfMatches  = BRACKET_2026.filter(m => m.bracket === 'G');
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: "'Barlow Condensed', sans-serif" }}>
@@ -359,7 +359,7 @@ export default function WashingtonClassic() {
         <StreamAnalyticsDashboard roomId={activeRoomId} />
         <ChallengeLeaderboard communityId={userCommunityId} />
         <TournamentBracket />
-        <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+        <EngagementBadgesDisplay roomId={activeRoomId} userId={(user && user.id)} creatorId={(user && user.id)} />
         <LeaderboardPanel roomId={activeRoomId} />
         <ShareToSocial content={{ title: 'Washington Classic Domino Tournament — SeeWhy LIVE', url: window.location.href }} />
         <OnlineUsersGrid compact maxVisible={10} />

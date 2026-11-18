@@ -26,15 +26,15 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import MomentsFeed from '../components/live/MomentsFeed';
-const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
-const STATUSES = { processing:{label:'PROCESSING',color:'#D4AF37'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
+var C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
+var STATUSES = { processing:{label:'PROCESSING',color:'#D4AF37'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
 
 function ClipCard({ clip, onDelete, onShare, onLike }) {
-  const dur = clip.duration_seconds || (clip.end_timestamp_seconds - clip.start_timestamp_seconds) || 30;
-  const status = clip.clip_url ? 'published' : 'processing';
-  const S = STATUSES[status];
-  const emojis = ['🎮','🎙','🏆','🔥','⚡','🎯'];
-  const emoji = emojis[parseInt(clip.id?.slice(-1), 16) % emojis.length] || '🎬';
+  var dur = clip.duration_seconds || (clip.end_timestamp_seconds - clip.start_timestamp_seconds) || 30;
+  var status = clip.clip_url ? 'published' : 'processing';
+  var S = STATUSES[status];
+  var emojis = ['🎮','🎙','🏆','🔥','⚡','🎯'];
+  var emoji = emojis[parseInt(clip.(id && id.slice(-1), 16) % emojis.length] || '🎬';
   return (
     <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}}
       style={{ borderRadius:10, overflow:'hidden', border:'1px solid rgba(255,255,255,0.06)', background:'rgba(8,11,24,0.9)', cursor:'pointer' }}>
@@ -65,77 +65,77 @@ function ClipCard({ clip, onDelete, onShare, onLike }) {
 }
 
 export default function ClipsLibraryPage() {
-  const [tab, setTab] = useState('library'); // 'library' | 'moments'
-  const [filter, setFilter] = useState('all');
-  const [sort, setSort] = useState('newest');
-  const [toast, setToast] = useState('');
-  const [trimVod, setTrimVod] = useState(null);
-  const [chapterVod, setChapterVod] = useState(null);
-  const qc = useQueryClient();
+  var [tab, setTab] = useState('library'); // 'library' | 'moments'
+  var [filter, setFilter] = useState('all');
+  var [sort, setSort] = useState('newest');
+  var [toast, setToast] = useState('');
+  var [trimVod, setTrimVod] = useState(null);
+  var [chapterVod, setChapterVod] = useState(null);
+  var qc = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const { data: vods = [] } = useQuery({
-    queryKey: ['vod-videos', user?.id],
+  var { data: vods = [] } = useQuery({
+    queryKey: ['vod-videos', (user && user.id)],
     queryFn: () => base44.entities.VODVideo.filter({ creator_id: user.id }, '-created_date', 20),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
-  const { data: clips=[], isLoading } = useQuery({
-    queryKey: ['clips', user?.id, filter],
+  var { data: clips=[], isLoading } = useQuery({
+    queryKey: ['clips', (user && user.id), filter],
     queryFn: async () => {
       if (filter==='mine') return base44.entities.StreamClip.filter({ clipped_by_id: user.id }, '-created_date', 50);
       // Clips a creator removed from their dashboard never show in the public library
-      const all = await base44.entities.StreamClip.list('-created_date', 50);
+      var all = await base44.entities.StreamClip.list('-created_date', 50);
       return all.filter(c => (c.approval_status || 'pending') !== 'removed');
     },
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
-  const { data: highlights=[] } = useQuery({
+  var { data: highlights=[] } = useQuery({
     queryKey: ['highlights'],
     queryFn: () => base44.entities.StreamHighlight.list('-created_date', 10),
   });
-  const { data: followingList=[] } = useQuery({
-    queryKey: ['following', user?.id],
+  var { data: followingList=[] } = useQuery({
+    queryKey: ['following', (user && user.id)],
     queryFn: () => base44.entities.Follow.filter({ follower_id: user.id }, '-created_date', 200),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     staleTime: 60000,
   });
-  const followingIds = followingList.map(f => f.following_id).filter(Boolean);
+  var followingIds = followingList.map(f => f.following_id).filter(Boolean);
 
-  const deleteMut = useMutation({
+  var deleteMut = useMutation({
     mutationFn: id => base44.entities.StreamClip.delete(id),
     onError: () => showToast.error('Failed to delete clip.'),
     onSuccess: () => qc.invalidateQueries({ queryKey:['clips'] }),
   });
 
-  const likeMut = useMutation({
+  var likeMut = useMutation({
     mutationFn: clip => base44.entities.StreamClip.update(clip.id, { like_count: (clip.like_count || 0) + 1 }),
     onSuccess: () => qc.invalidateQueries({ queryKey:['clips'] }),
   });
 
   // Real-time clip updates
   useEffect(() => {
-    const unsub = base44.entities.StreamClip.subscribe(() => {
+    var unsub = base44.entities.StreamClip.subscribe(() => {
       qc.invalidateQueries({ queryKey: ['clips'] });
       qc.invalidateQueries({ queryKey: ['moments-strip'] });
     });
     return unsub;
   }, [qc]);
 
-  const sorted = [...clips].sort((a,b) => {
+  var sorted = [...clips].sort((a,b) => {
     if (sort==='views') return (b.view_count||0)-(a.view_count||0);
     if (sort==='shares') return (b.share_count||0)-(a.share_count||0);
     return new Date(b.created_date) - new Date(a.created_date);
   });
 
-  const share = (clip) => {
+  var share = (clip) => {
     navigator.clipboard.writeText(`${window.location.origin}/ClipsLibrary`).then(() => {
       setToast('Link copied! 🔗');
       setTimeout(() => setToast(''), 2500);
@@ -170,7 +170,7 @@ export default function ClipsLibraryPage() {
       {/* Moments tab */}
       {tab === 'moments' && (
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'20px' }}>
-          <MomentsFeed currentUserId={user?.id} followingIds={followingIds} />
+          <MomentsFeed currentUserId={(user && user.id)} followingIds={followingIds} />
         </div>
       )}
       <div style={{ maxWidth:900, margin:'0 auto', padding:'20px', display:tab==='library'?'block':'none' }}>
@@ -201,7 +201,7 @@ export default function ClipsLibraryPage() {
                   </div>
                   <button
                     onClick={() => {
-                      if (!user?.id) return;
+                      if (!(user && user.id)) return;
                       base44.entities.StreamClip.create({
                         title: h.description || 'AI Highlight Clip',
                         clipped_by_id: user.id,
@@ -217,7 +217,7 @@ export default function ClipsLibraryPage() {
                         base44.entities.Activity.create({
                           user_id: user.id,
                           type: 'clip_created',
-                          title: `Created clip: ${clip?.title || 'AI Highlight Clip'}`,
+                          title: `Created clip: ${(clip && clip.title) || 'AI Highlight Clip'}`,
                         }).catch(() => {});
                       }).catch(() => setToast('Failed to create clip'));
                     }}
@@ -238,7 +238,7 @@ export default function ClipsLibraryPage() {
           <AutomatedHighlightReels />
         </div>
         {/* AI-powered clip suggestions */}
-        {user?.id && (
+        {(user && user.id) && (
           <div style={{ marginTop: 16 }}>
             <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user.id} />
           </div>
@@ -264,7 +264,7 @@ export default function ClipsLibraryPage() {
         )}
 
         {/* Video Short Recorder */}
-        {user?.id && (
+        {(user && user.id) && (
           <div style={{ marginTop: 24 }}>
             <VideoShortRecorder roomId={activeRoomId} creatorId={user.id} />
           </div>
@@ -272,9 +272,9 @@ export default function ClipsLibraryPage() {
       </div>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
       <SwanAIRecommendations roomId={null} currentLayout="clips" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <AIHighlightGenerator recording={null} />
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -283,7 +283,7 @@ export default function ClipsLibraryPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

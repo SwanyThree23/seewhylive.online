@@ -29,17 +29,17 @@ import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const SCARLET = '#C0392B';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var SCARLET = '#C0392B';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function BattleListItem({ battle, isSelected, onClick }) {
-  const creatorScore = (battle.creator_tips || 0) + (battle.creator_subs || 0) * 10;
-  const challengerScore = (battle.challenger_tips || 0) + (battle.challenger_subs || 0) * 10;
-  const total = creatorScore + challengerScore || 1;
-  const creatorPct = Math.round((creatorScore / total) * 100);
+  var creatorScore = (battle.creator_tips || 0) + (battle.creator_subs || 0) * 10;
+  var challengerScore = (battle.challenger_tips || 0) + (battle.challenger_subs || 0) * 10;
+  var total = creatorScore + challengerScore || 1;
+  var creatorPct = Math.round((creatorScore / total) * 100);
 
   return (
     <motion.button whileHover={{ x: 3 }} onClick={onClick}
@@ -68,37 +68,37 @@ function BattleListItem({ battle, isSelected, onClick }) {
 }
 
 export default function PKBattlePage() {
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [selectedBattle, setSelectedBattle] = useState(null);
-  const [selectedBitrate, setSelectedBitrate] = useState(3000);
-  const [tab, setTab] = useState('active');
-  const [votes, setVotes] = useState({});
+  var [showInviteModal, setShowInviteModal] = useState(false);
+  var [selectedBattle, setSelectedBattle] = useState(null);
+  var [selectedBitrate, setSelectedBitrate] = useState(3000);
+  var [tab, setTab] = useState('active');
+  var [votes, setVotes] = useState({});
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const { data: activeBattles = [] } = useQuery({
+  var { data: activeBattles = [] } = useQuery({
     queryKey: ['activePKBattles'],
     queryFn: () => base44.entities.PKBattle.filter({ status: ['pending', 'accepted', 'active'] }, '-created_date', 20),
     refetchInterval: 5000,
   });
 
-  const { data: endedBattles = [] } = useQuery({
+  var { data: endedBattles = [] } = useQuery({
     queryKey: ['endedPKBattles'],
     queryFn: () => base44.entities.PKBattle.filter({ status: 'ended' }, '-ended_at', 10),
   });
 
-  const { data: creators = [] } = useQuery({
+  var { data: creators = [] } = useQuery({
     queryKey: ['allCreators'],
     queryFn: () => base44.entities.CreatorProfile.list().then(function(p) { return (p && p.slice(0, 10)) || []; }),
   });
 
-  const battles = tab === 'active' ? activeBattles : endedBattles;
-  const displayBattle = selectedBattle || activeBattles[0];
-  const activeBattle = displayBattle;
+  var battles = tab === 'active' ? activeBattles : endedBattles;
+  var displayBattle = selectedBattle || activeBattles[0];
+  var activeBattle = displayBattle;
 
-  const totalActiveBattles = activeBattles.filter(b => b.status === 'active').length;
-  const pendingBattles = activeBattles.filter(b => b.status === 'pending').length;
-  const totalPoints = activeBattles.reduce((sum, b) =>
+  var totalActiveBattles = activeBattles.filter(b => b.status === 'active').length;
+  var pendingBattles = activeBattles.filter(b => b.status === 'pending').length;
+  var totalPoints = activeBattles.reduce((sum, b) =>
     sum + (b.creator_tips || 0) + (b.creator_subs || 0) * 10 + (b.challenger_tips || 0) + (b.challenger_subs || 0) * 10, 0);
 
   return (
@@ -222,10 +222,10 @@ export default function PKBattlePage() {
                 </div>
                 <div className="p-3 space-y-2">
                   {endedBattles.slice(0, 5).map((battle, idx) => {
-                    const cScore = (battle.creator_tips || 0) + (battle.creator_subs || 0) * 10;
-                    const chScore = (battle.challenger_tips || 0) + (battle.challenger_subs || 0) * 10;
-                    const winner = cScore >= chScore ? battle.creator_name : battle.challenger_name;
-                    const winnerScore = Math.max(cScore, chScore);
+                    var cScore = (battle.creator_tips || 0) + (battle.creator_subs || 0) * 10;
+                    var chScore = (battle.challenger_tips || 0) + (battle.challenger_subs || 0) * 10;
+                    var winner = cScore >= chScore ? battle.creator_name : battle.challenger_name;
+                    var winnerScore = Math.max(cScore, chScore);
                     return (
                       <div key={battle.id} className="flex items-center gap-2">
                         <span className="text-[10px] font-black w-5 text-center" style={{ color: idx === 0 ? GOLD : 'rgba(255,255,255,0.3)', ...T }}>

@@ -56,12 +56,12 @@ import OnlinePresence from '../components/shared/OnlinePresence';
 import AlertConfig from '../components/live/AlertConfig';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import ShopDashboard from '../components/merch/ShopDashboard';
-const GOLD = '#D4AF37';
-const BURGUNDY = '#800020';
-const CREAM = '#F5E6D3';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD = '#D4AF37';
+var BURGUNDY = '#800020';
+var CREAM = '#F5E6D3';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TABS = [
+var TABS = [
   { id: 'overview',     label: '📊 Overview',     icon: BarChart2 },
   { id: 'analytics',   label: '📈 Analytics',    icon: TrendingUp },
   { id: 'content',     label: '🎬 Content',       icon: Video },
@@ -98,7 +98,7 @@ function StatTile({ label, value, sub, color = GOLD, icon: Icon }) {
 
 /* ═══════════════ QUICK START CARD ═══════════════ */
 function QuickStartCard() {
-  const [visible, setVisible] = useState(function() {
+  var [visible, setVisible] = useState(function() {
     try { return localStorage.getItem('swlv_first_visit') !== 'done'; } catch(e) { return true; }
   });
 
@@ -140,38 +140,38 @@ function QuickStartCard() {
 
 /* ═══════════════ OVERVIEW TAB ═══════════════ */
 function OverviewTab({ user }) {
-  const { data: payout } = useQuery({
-    queryKey: ['db-payout', user?.id],
-    queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: user?.id }).then(r => r[0]),
-    enabled: !!user?.id,
+  var { data: payout } = useQuery({
+    queryKey: ['db-payout', (user && user.id)],
+    queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: (user && user.id) }).then(r => r[0]),
+    enabled: !!(user && user.id),
   });
-  const { data: profile } = useQuery({
-    queryKey: ['db-profile', user?.id],
-    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
-    enabled: !!user?.id,
+  var { data: profile } = useQuery({
+    queryKey: ['db-profile', (user && user.id)],
+    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: (user && user.id) }).then(r => r[0]),
+    enabled: !!(user && user.id),
   });
-  const { data: liveRooms = [] } = useQuery({
+  var { data: liveRooms = [] } = useQuery({
     queryKey: ['db-live'],
     queryFn: () => base44.entities.Room.filter({ status: 'live' }),
     refetchInterval: 10000,
   });
-  const { data: txns = [] } = useQuery({
-    queryKey: ['db-txns7', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
-    enabled: !!user?.id,
+  var { data: txns = [] } = useQuery({
+    queryKey: ['db-txns7', (user && user.id)],
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: (user && user.id) }, '-created_date', 100),
+    enabled: !!(user && user.id),
   });
-  const { data: activities = [] } = useQuery({
-    queryKey: ['db-activities', user?.id],
-    queryFn: () => base44.entities.Activity.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+  var { data: activities = [] } = useQuery({
+    queryKey: ['db-activities', (user && user.id)],
+    queryFn: () => base44.entities.Activity.filter({ user_id: (user && user.id) }, '-created_date', 10),
+    enabled: !!(user && user.id),
   });
 
   // Last 7 days chart
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (6 - i));
-    const label = d.toLocaleDateString('en', { weekday: 'short' });
-    const total = txns.filter(t => {
-      const td = new Date(t.created_date);
+  var days = Array.from({ length: 7 }, (_, i) => {
+    var d = new Date(); d.setDate(d.getDate() - (6 - i));
+    var label = d.toLocaleDateString('en', { weekday: 'short' });
+    var total = txns.filter(t => {
+      var td = new Date(t.created_date);
       return td.toDateString() === d.toDateString();
     }).reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
     return { label, total };
@@ -181,9 +181,9 @@ function OverviewTab({ user }) {
     <div className="space-y-5">
       <QuickStartCard />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatTile label="Pending Balance" value={`$${Math.floor(payout?.pending_balance || 0)}`} icon={DollarSign} color={GOLD} />
-        <StatTile label="Subscribers" value={(profile?.subscriber_count || 0).toLocaleString()} icon={Users} color="#C9A84C" />
-        <StatTile label="Hours Streamed" value={`${Math.floor(profile?.total_hours_streamed || 0)}h`} icon={Clock} color="#D4AF37" />
+        <StatTile label="Pending Balance" value={`$${Math.floor((payout && payout.pending_balance) || 0)}`} icon={DollarSign} color={GOLD} />
+        <StatTile label="Subscribers" value={((profile && profile.subscriber_count) || 0).toLocaleString()} icon={Users} color="#C9A84C" />
+        <StatTile label="Hours Streamed" value={`${Math.floor((profile && profile.total_hours_streamed) || 0)}h`} icon={Clock} color="#D4AF37" />
         <StatTile label="Live Rooms" value={liveRooms.length} icon={Radio} color="#C0392B" sub="right now" />
       </div>
 
@@ -221,7 +221,7 @@ function OverviewTab({ user }) {
         </div>
       </Card>
 
-      {user?.id && <MilestoneAlerts creatorId={user.id} />}
+      {(user && user.id) && <MilestoneAlerts creatorId={user.id} />}
 
       {user && (
         <div className="mb-4">
@@ -257,43 +257,43 @@ function OverviewTab({ user }) {
 
 /* ═══════════════ ANALYTICS TAB ═══════════════ */
 function AnalyticsTab({ user }) {
-  const { data: roomAnalytics = [] } = useQuery({
-    queryKey: ['db-roomanalytics', user?.id],
-    queryFn: () => base44.entities.RoomAnalytics.filter({ host_id: user?.id }, '-created_date', 20),
-    enabled: !!user?.id,
+  var { data: roomAnalytics = [] } = useQuery({
+    queryKey: ['db-roomanalytics', (user && user.id)],
+    queryFn: () => base44.entities.RoomAnalytics.filter({ host_id: (user && user.id) }, '-created_date', 20),
+    enabled: !!(user && user.id),
   });
-  const { data: follows = [] } = useQuery({
-    queryKey: ['db-follows', user?.id],
-    queryFn: () => base44.entities.Follow.filter({ following_id: user?.id }, '-created_date', 50),
-    enabled: !!user?.id,
+  var { data: follows = [] } = useQuery({
+    queryKey: ['db-follows', (user && user.id)],
+    queryFn: () => base44.entities.Follow.filter({ following_id: (user && user.id) }, '-created_date', 50),
+    enabled: !!(user && user.id),
   });
-  const { data: messages = [] } = useQuery({
-    queryKey: ['db-msgs', user?.id],
-    queryFn: () => base44.entities.Message.filter({ user_id: user?.id }),
-    enabled: !!user?.id,
+  var { data: messages = [] } = useQuery({
+    queryKey: ['db-msgs', (user && user.id)],
+    queryFn: () => base44.entities.Message.filter({ user_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
-  const { data: destinations = [] } = useQuery({
-    queryKey: ['db-rtmp', user?.id],
-    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: user?.id }),
-    enabled: !!user?.id,
+  var { data: destinations = [] } = useQuery({
+    queryKey: ['db-rtmp', (user && user.id)],
+    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
 
-  const peakViewers = roomAnalytics.reduce((m, r) => Math.max(m, r.peak_viewers || 0), 0);
-  const avgWatch = roomAnalytics.length
+  var peakViewers = roomAnalytics.reduce((m, r) => Math.max(m, r.peak_viewers || 0), 0);
+  var avgWatch = roomAnalytics.length
     ? Math.round(roomAnalytics.reduce((s, r) => s + (r.average_watch_time || 0), 0) / roomAnalytics.length)
     : 0;
-  const totalTips = roomAnalytics.reduce((s, r) => s + (r.total_tips || 0), 0);
-  const engagementRate = roomAnalytics.length
+  var totalTips = roomAnalytics.reduce((s, r) => s + (r.total_tips || 0), 0);
+  var engagementRate = roomAnalytics.length
     ? ((messages.length / Math.max(1, peakViewers)) * 100).toFixed(1) : '0.0';
 
-  const sortedRooms = [...roomAnalytics].sort((a, b) => (b.peak_viewers || 0) - (a.peak_viewers || 0)).slice(0, 5);
+  var sortedRooms = [...roomAnalytics].sort((a, b) => (b.peak_viewers || 0) - (a.peak_viewers || 0)).slice(0, 5);
 
-  const platformData = destinations.map(d => ({
+  var platformData = destinations.map(d => ({
     name: d.platform || d.label || 'Custom',
     viewers: d.viewer_count || 0,
   }));
 
-  const COLORS = [GOLD, '#C9A84C', '#D4AF37', '#C0392B', '#6DBF7E'];
+  var COLORS = [GOLD, '#C9A84C', '#D4AF37', '#C0392B', '#6DBF7E'];
 
   return (
     <div className="space-y-5">
@@ -325,7 +325,7 @@ function AnalyticsTab({ user }) {
                 ? <tr><td colSpan={5} className="px-4 py-6 text-center" style={{ color: CREAM + '30' }}>No data yet</td></tr>
                 : sortedRooms.map(r => (
                   <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <td className="px-4 py-2" style={{ color: CREAM + '80' }}>{r.room_id?.slice(0,8) || '—'}</td>
+                    <td className="px-4 py-2" style={{ color: CREAM + '80' }}>{r.(room_id && room_id.slice)(0,8) || '—'}</td>
                     <td className="px-4 py-2" style={{ color: CREAM + '40' }}>{new Date(r.created_date).toLocaleDateString()}</td>
                     <td className="px-4 py-2 font-black" style={{ color: GOLD }}>{r.peak_viewers || 0}</td>
                     <td className="px-4 py-2" style={{ color: '#6DBF7E' }}>${Math.floor(r.total_tips || 0)}</td>
@@ -358,26 +358,26 @@ function AnalyticsTab({ user }) {
       )}
 
       {/* Analytics Overview */}
-      {user?.id && <AnalyticsOverview creatorId={user.id} />}
+      {(user && user.id) && <AnalyticsOverview creatorId={user.id} />}
 
       {/* Audience Insights */}
-      {user?.id && <AudienceInsights creatorId={user.id} />}
+      {(user && user.id) && <AudienceInsights creatorId={user.id} />}
 
       {/* Earnings Breakdown */}
-      {user?.id && <EarningsBreakdown creatorId={user.id} />}
+      {(user && user.id) && <EarningsBreakdown creatorId={user.id} />}
 
       {/* Monetization dashboard widget */}
-      {roomAnalytics[0]?.room_id && (
+      {(roomAnalytics[0] && roomAnalytics[0].room_id) && (
         <MonetizationDashboard roomId={roomAnalytics[0].room_id} />
       )}
 
       {/* Room Analytics Panel (most recent stream) */}
-      {roomAnalytics[0]?.room_id && (
+      {(roomAnalytics[0] && roomAnalytics[0].room_id) && (
         <RoomAnalyticsPanel roomId={roomAnalytics[0].room_id} />
       )}
 
       {/* Streamer goals widget */}
-      {user?.id && (
+      {(user && user.id) && (
         <StreamerGoalsWidget creatorId={user.id} isCreator={true} />
       )}
 
@@ -389,52 +389,52 @@ function AnalyticsTab({ user }) {
 
 /* ═══════════════ CONTENT TAB ═══════════════ */
 function ContentTab({ user }) {
-  const [filter, setFilter] = useState('all');
-  const [sort, setSort] = useState('newest');
-  const [showCreate, setShowCreate] = useState(false);
-  const [editVod, setEditVod] = useState(null);
-  const [form, setForm] = useState({ title: '', video_url: '', description: '', category: 'other', status: 'draft', tags: [] });
-  const qc = useQueryClient();
+  var [filter, setFilter] = useState('all');
+  var [sort, setSort] = useState('newest');
+  var [showCreate, setShowCreate] = useState(false);
+  var [editVod, setEditVod] = useState(null);
+  var [form, setForm] = useState({ title: '', video_url: '', description: '', category: 'other', status: 'draft', tags: [] });
+  var qc = useQueryClient();
 
-  const { data: vods = [] } = useQuery({
-    queryKey: ['db-vods', user?.id],
-    queryFn: () => base44.entities.VODVideo.filter({ creator_id: user?.id }, '-created_date', 50),
-    enabled: !!user?.id,
+  var { data: vods = [] } = useQuery({
+    queryKey: ['db-vods', (user && user.id)],
+    queryFn: () => base44.entities.VODVideo.filter({ creator_id: (user && user.id) }, '-created_date', 50),
+    enabled: !!(user && user.id),
   });
-  const { data: highlights = [] } = useQuery({
-    queryKey: ['db-highlights', user?.id],
-    queryFn: () => base44.entities.StreamHighlight.filter({ creator_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+  var { data: highlights = [] } = useQuery({
+    queryKey: ['db-highlights', (user && user.id)],
+    queryFn: () => base44.entities.StreamHighlight.filter({ creator_id: (user && user.id) }, '-created_date', 10),
+    enabled: !!(user && user.id),
   });
 
-  const createMut = useMutation({
-    mutationFn: () => base44.entities.VODVideo.create({ ...form, creator_id: user?.id, views: 0 }),
+  var createMut = useMutation({
+    mutationFn: () => base44.entities.VODVideo.create({ ...form, creator_id: (user && user.id), views: 0 }),
     onSuccess: (vod) => {
       qc.invalidateQueries({ queryKey: ['db-vods'] });
       setShowCreate(false);
       toast.success('VOD created!');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'clip_created',
-          title: `Uploaded VOD: ${vod?.title || 'Video'}`,
+          title: `Uploaded VOD: ${(vod && vod.title) || 'Video'}`,
         }).catch(() => {});
       }
     },
     onError: () => toast.error('Action failed.'),
   });
-  const updateMut = useMutation({
+  var updateMut = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['db-vods'] }); setEditVod(null); toast.success('Updated!'); },
     onError: () => toast.error('Action failed.'),
   });
-  const deleteMut = useMutation({
+  var deleteMut = useMutation({
     mutationFn: (id) => base44.entities.VODVideo.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['db-vods'] }),
     onError: () => toast.error('Action failed.'),
   });
 
-  let filtered = vods.filter(v => {
+  var filtered = vods.filter(v => {
     if (filter === 'published') return v.status === 'published';
     if (filter === 'draft') return v.status === 'draft';
     if (filter === 'clips') return v.is_clipped;
@@ -443,7 +443,7 @@ function ContentTab({ user }) {
   if (sort === 'views') filtered = [...filtered].sort((a, b) => (b.views || 0) - (a.views || 0));
   if (sort === 'longest') filtered = [...filtered].sort((a, b) => (b.duration_seconds || 0) - (a.duration_seconds || 0));
 
-  const statusColors = { published: '#6DBF7E', draft: 'rgba(255,255,255,0.3)', unlisted: GOLD };
+  var statusColors = { published: '#6DBF7E', draft: 'rgba(255,255,255,0.3)', unlisted: GOLD };
 
   return (
     <div className="space-y-4">
@@ -568,7 +568,7 @@ function ContentTab({ user }) {
               ))}
               <div className="flex flex-wrap gap-1.5">
                 {['draft','published','unlisted'].map(s => {
-                  const cur = (editVod ? editVod : form).status;
+                  var cur = (editVod ? editVod : form).status;
                   return <button key={s} onClick={() => editVod ? setEditVod(v => ({...v, status: s})) : setForm(f => ({...f, status: s}))}
                     className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
                     style={{ background: cur===s ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${cur===s ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: cur===s ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>{s}</button>;
@@ -576,7 +576,7 @@ function ContentTab({ user }) {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {['gaming','music','education','talk','other'].map(c => {
-                  const cur = (editVod ? editVod : form).category;
+                  var cur = (editVod ? editVod : form).category;
                   return <button key={c} onClick={() => editVod ? setEditVod(v => ({...v, category: c})) : setForm(f => ({...f, category: c}))}
                     className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
                     style={{ background: cur===c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${cur===c ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: cur===c ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>{c}</button>;
@@ -594,7 +594,7 @@ function ContentTab({ user }) {
       </AnimatePresence>
 
       {/* Recording Manager */}
-      {user?.id && (
+      {(user && user.id) && (
         <div className="mt-4">
           <RecordingManager userId={user.id} />
         </div>
@@ -605,34 +605,34 @@ function ContentTab({ user }) {
 
 /* ═══════════════ COMMUNITY TAB ═══════════════ */
 function CommunityTab({ user }) {
-  const [selectedCommunity, setSelectedCommunity] = useState(null);
-  const [showPollForm, setShowPollForm] = useState(false);
-  const [pollForm, setPollForm] = useState({ question: '', options: ['',''], ends_at: '' });
-  const qc = useQueryClient();
+  var [selectedCommunity, setSelectedCommunity] = useState(null);
+  var [showPollForm, setShowPollForm] = useState(false);
+  var [pollForm, setPollForm] = useState({ question: '', options: ['',''], ends_at: '' });
+  var qc = useQueryClient();
 
-  const { data: communities = [] } = useQuery({
-    queryKey: ['db-communities', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }),
-    enabled: !!user?.id,
+  var { data: communities = [] } = useQuery({
+    queryKey: ['db-communities', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
-  useEffect(() => { if (communities.length && !selectedCommunity) setSelectedCommunity(communities[0]?.id); }, [communities]);
+  useEffect(() => { if (communities.length && !selectedCommunity) setSelectedCommunity(communities[0] && communities[0].id); }, [communities]);
 
-  const { data: polls = [] } = useQuery({
+  var { data: polls = [] } = useQuery({
     queryKey: ['db-polls', selectedCommunity],
     queryFn: () => base44.entities.Poll.filter({ community_id: selectedCommunity }),
     enabled: !!selectedCommunity,
     refetchInterval: 5000,
   });
-  const { data: challenges = [] } = useQuery({
+  var { data: challenges = [] } = useQuery({
     queryKey: ['db-challenges', selectedCommunity],
     queryFn: () => base44.entities.Challenge.filter({ community_id: selectedCommunity }),
     enabled: !!selectedCommunity,
   });
 
-  const createPollMut = useMutation({
+  var createPollMut = useMutation({
     mutationFn: () => base44.entities.Poll.create({
       community_id: selectedCommunity,
-      creator_id: user?.id,
+      creator_id: (user && user.id),
       question: pollForm.question,
       options: pollForm.options.filter(Boolean).map(o => ({ text: o, votes: 0 })),
       ends_at: pollForm.ends_at || new Date(Date.now() + 60 * 60 * 1000).toISOString(),
@@ -643,18 +643,18 @@ function CommunityTab({ user }) {
       qc.invalidateQueries({ queryKey: ['db-polls'] });
       setShowPollForm(false);
       toast.success('Poll created!');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
-          title: `Created poll: ${poll?.question || 'Community Poll'}`,
+          title: `Created poll: ${(poll && poll.question) || 'Community Poll'}`,
         }).catch(() => {});
       }
     },
     onError: () => toast.error('Action failed.'),
   });
 
-  const endPollMut = useMutation({
+  var endPollMut = useMutation({
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['db-polls'] }),
     onError: () => toast.error('Action failed.'),
@@ -701,8 +701,8 @@ function CommunityTab({ user }) {
           <PollCard key={`pc-${poll.id}`} poll={poll} />
         ))}
         {polls.filter(p => p.status === 'active').map(poll => {
-          const opts = Array.isArray(poll.options) ? poll.options : [];
-          const total = poll.total_votes || 1;
+          var opts = Array.isArray(poll.options) ? poll.options : [];
+          var total = poll.total_votes || 1;
           return (
             <Card key={poll.id}>
               <div className="p-4 space-y-3">
@@ -714,9 +714,9 @@ function CommunityTab({ user }) {
                 </div>
                 <div className="space-y-1.5">
                   {opts.map((o, i) => {
-                    const label = typeof o === 'object' ? o.text : o;
-                    const votes = typeof o === 'object' ? (o.votes || 0) : 0;
-                    const pct = Math.round((votes / total) * 100);
+                    var label = typeof o === 'object' ? o.text : o;
+                    var votes = typeof o === 'object' ? (o.votes || 0) : 0;
+                    var pct = Math.round((votes / total) * 100);
                     return (
                       <div key={i} className="space-y-0.5">
                         <div className="flex justify-between text-[11px]">
@@ -744,7 +744,7 @@ function CommunityTab({ user }) {
       <div className="space-y-3">
         <p className="text-[11px] font-black uppercase" style={{ color: CREAM + '60', ...T }}>Challenges</p>
         {challenges.map(c => {
-          const progress = c.goal_value > 0 ? Math.min(100, Math.round((c.participant_count || 0) / c.goal_value * 100)) : 0;
+          var progress = c.goal_value > 0 ? Math.min(100, Math.round((c.participant_count || 0) / c.goal_value * 100)) : 0;
           return (
             <Card key={c.id}>
               <div className="p-3 space-y-2">
@@ -804,53 +804,53 @@ function CommunityTab({ user }) {
 
 /* ═══════════════ MONETIZATION TAB ═══════════════ */
 function MonetizationTab({ user }) {
-  const { data: tiers = [] } = useQuery({
-    queryKey: ['db-tiers', user?.id],
-    queryFn: () => base44.entities.SubscriptionTier.filter({ creator_id: user?.id }),
-    enabled: !!user?.id,
+  var { data: tiers = [] } = useQuery({
+    queryKey: ['db-tiers', (user && user.id)],
+    queryFn: () => base44.entities.SubscriptionTier.filter({ creator_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
-  const { data: payout } = useQuery({
-    queryKey: ['db-payout', user?.id],
-    queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: user?.id }).then(r => r[0]),
-    enabled: !!user?.id,
+  var { data: payout } = useQuery({
+    queryKey: ['db-payout', (user && user.id)],
+    queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: (user && user.id) }).then(r => r[0]),
+    enabled: !!(user && user.id),
   });
-  const { data: txns = [] } = useQuery({
-    queryKey: ['db-txns', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
-    enabled: !!user?.id,
+  var { data: txns = [] } = useQuery({
+    queryKey: ['db-txns', (user && user.id)],
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: (user && user.id) }, '-created_date', 100),
+    enabled: !!(user && user.id),
   });
-  const { data: goals = [] } = useQuery({
-    queryKey: ['db-goals', user?.id],
-    queryFn: () => base44.entities.StreamerGoal.filter({ creator_id: user?.id }),
-    enabled: !!user?.id,
+  var { data: goals = [] } = useQuery({
+    queryKey: ['db-goals', (user && user.id)],
+    queryFn: () => base44.entities.StreamerGoal.filter({ creator_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
-  const { data: dashCommunity } = useQuery({
-    queryKey: ['dashCommunity-mt', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: dashCommunity } = useQuery({
+    queryKey: ['dashCommunity-mt', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const dashCommunityId = dashCommunity?.id || null;
-  const { data: dashActiveRoom } = useQuery({
-    queryKey: ['dashActiveRoom-mt', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var dashCommunityId = (dashCommunity && dashCommunity.id) || null;
+  var { data: dashActiveRoom } = useQuery({
+    queryKey: ['dashActiveRoom-mt', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const dashActiveRoomId = dashActiveRoom?.id || null;
-  const qc = useQueryClient();
-  const toggleTierMut = useMutation({
+  var dashActiveRoomId = (dashActiveRoom && dashActiveRoom.id) || null;
+  var qc = useQueryClient();
+  var toggleTierMut = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.SubscriptionTier.update(id, { is_active }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['db-tiers'] }),
     onError: () => toast.error('Action failed.'),
   });
 
-  const tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
-  const subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
-  const giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
-  const total = tipTotal + subTotal + giftTotal;
-  const creatorShare = Math.floor(total * 90) / 100;
-  const platformShare = total - creatorShare;
+  var tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
+  var subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
+  var giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
+  var total = tipTotal + subTotal + giftTotal;
+  var creatorShare = Math.floor(total * 90) / 100;
+  var platformShare = total - creatorShare;
 
-  const pieData = [
+  var pieData = [
     { name: 'Tips', value: tipTotal, color: GOLD },
     { name: 'Subs', value: subTotal, color: '#C9A84C' },
     { name: 'Gifts', value: giftTotal, color: '#D4AF37' },
@@ -896,19 +896,19 @@ function MonetizationTab({ user }) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="text-[11px]" style={{ color: CREAM + '40' }}>Pending Balance</p>
-              <p className="text-xl font-black" style={{ color: '#6DBF7E', fontFamily: 'Orbitron, monospace' }}>${Math.floor(payout?.pending_balance || 0)}</p>
+              <p className="text-xl font-black" style={{ color: '#6DBF7E', fontFamily: 'Orbitron, monospace' }}>${Math.floor((payout && payout.pending_balance) || 0)}</p>
             </div>
             <div>
               <p className="text-[11px]" style={{ color: CREAM + '40' }}>Total Paid Out</p>
-              <p className="text-xl font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${Math.floor(payout?.total_paid_out || 0)}</p>
+              <p className="text-xl font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${Math.floor((payout && payout.total_paid_out) || 0)}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
-              style={{ background: payout?.stripe_connected ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#6DBF7E' : '#FF4444', ...T }}>
-              {payout?.stripe_connected ? '● Stripe Connected' : '● Setup Stripe'}
+              style={{ background: (payout && payout.stripe_connected) ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: (payout && payout.stripe_connected) ? '#6DBF7E' : '#FF4444', ...T }}>
+              {(payout && payout.stripe_connected) ? '● Stripe Connected' : '● Setup Stripe'}
             </span>
-            {payout?.last_payout_at && <span className="text-[11px]" style={{ color: CREAM + '30' }}>Last: {new Date(payout.last_payout_at).toLocaleDateString()}</span>}
+            {(payout && payout.last_payout_at) && <span className="text-[11px]" style={{ color: CREAM + '30' }}>Last: {new Date(payout.last_payout_at).toLocaleDateString()}</span>}
           </div>
         </div>
       </Card>
@@ -962,7 +962,7 @@ function MonetizationTab({ user }) {
         <div className="space-y-2">
           <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Streamer Goals</p>
           {goals.map(g => {
-            const progress = g.target_amount > 0 ? Math.min(100, Math.round((g.current_amount || 0) / g.target_amount * 100)) : 0;
+            var progress = g.target_amount > 0 ? Math.min(100, Math.round((g.current_amount || 0) / g.target_amount * 100)) : 0;
             return (
               <Card key={g.id}>
                 <div className="p-3 space-y-1.5">
@@ -985,7 +985,7 @@ function MonetizationTab({ user }) {
       )}
 
       {/* Subscription manager + tiers */}
-      {user?.id && (
+      {(user && user.id) && (
         <div className="mb-4 space-y-4">
           <SubscriptionManager creatorId={user.id} />
           <SubscriptionTiers communityId={dashCommunityId} userId={user.id} />
@@ -993,7 +993,7 @@ function MonetizationTab({ user }) {
       )}
 
       {/* PPV manager */}
-      {user?.id && (
+      {(user && user.id) && (
         <div className="mb-4">
           <PayPerViewManager roomId={dashActiveRoomId} />
           <PayPerViewCard event={null} />
@@ -1001,21 +1001,21 @@ function MonetizationTab({ user }) {
       )}
 
       {/* Virtual goods store */}
-      {user?.id && (
+      {(user && user.id) && (
         <div className="mb-4">
           <VirtualGoodsStore userId={user.id} />
         </div>
       )}
 
       {/* Monetization center */}
-      {user?.id && (
+      {(user && user.id) && (
         <div className="mb-4">
           <StreamerMonetizationCenter />
         </div>
       )}
 
       {/* Direct payments modal */}
-      <DirectPayments isOpen={false} onClose={() => {}} creatorName={user?.full_name || ''} />
+      <DirectPayments isOpen={false} onClose={() => {}} creatorName={(user && user.full_name) || ''} />
 
       {/* Deep links to monetization pages */}
       <div className="flex flex-wrap gap-3 pt-2">
@@ -1039,26 +1039,26 @@ function MonetizationTab({ user }) {
 
 /* ═══════════════ SETTINGS TAB ═══════════════ */
 function SettingsTab({ user }) {
-  const [profile, setProfile] = useState({ display_name: '', bio: '', category: 'other', avatar_url: '', social_links: {} });
-  const [schedule, setSchedule] = useState([]);
-  const [prefs, setPrefs] = useState({});
-  const [rtmpDests, setRtmpDests] = useState([]);
-  const qc = useQueryClient();
+  var [profile, setProfile] = useState({ display_name: '', bio: '', category: 'other', avatar_url: '', social_links: {} });
+  var [schedule, setSchedule] = useState([]);
+  var [prefs, setPrefs] = useState({});
+  var [rtmpDests, setRtmpDests] = useState([]);
+  var qc = useQueryClient();
 
-  const { data: creatorProfile } = useQuery({
-    queryKey: ['db-cprofile', user?.id],
-    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
-    enabled: !!user?.id,
+  var { data: creatorProfile } = useQuery({
+    queryKey: ['db-cprofile', (user && user.id)],
+    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: (user && user.id) }).then(r => r[0]),
+    enabled: !!(user && user.id),
   });
-  const { data: destinations = [] } = useQuery({
-    queryKey: ['db-rtmp', user?.id],
-    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: user?.id }),
-    enabled: !!user?.id,
+  var { data: destinations = [] } = useQuery({
+    queryKey: ['db-rtmp', (user && user.id)],
+    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
-  const { data: userPref } = useQuery({
-    queryKey: ['db-userpref', user?.id],
-    queryFn: () => base44.entities.UserPreference.filter({ user_id: user?.id }).then(r => r[0]),
-    enabled: !!user?.id,
+  var { data: userPref } = useQuery({
+    queryKey: ['db-userpref', (user && user.id)],
+    queryFn: () => base44.entities.UserPreference.filter({ user_id: (user && user.id) }).then(r => r[0]),
+    enabled: !!(user && user.id),
   });
 
   useEffect(() => {
@@ -1070,34 +1070,34 @@ function SettingsTab({ user }) {
   useEffect(() => { if (destinations) setRtmpDests(destinations); }, [destinations]);
   useEffect(() => { if (userPref) setPrefs(userPref.notification_preferences || {}); }, [userPref]);
 
-  const saveProfile = useMutation({
-    mutationFn: () => creatorProfile?.id
+  var saveProfile = useMutation({
+    mutationFn: () => (creatorProfile && creatorProfile.id)
       ? base44.entities.CreatorProfile.update(creatorProfile.id, { ...profile, stream_schedule: schedule })
-      : base44.entities.CreatorProfile.create({ user_id: user?.id, ...profile, stream_schedule: schedule }),
+      : base44.entities.CreatorProfile.create({ user_id: (user && user.id), ...profile, stream_schedule: schedule }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['db-cprofile'] }); toast.success('Profile saved!'); },
     onError: () => toast.error('Action failed.'),
   });
-  const savePrefs = useMutation({
-    mutationFn: () => userPref?.id
+  var savePrefs = useMutation({
+    mutationFn: () => (userPref && userPref.id)
       ? base44.entities.UserPreference.update(userPref.id, { notification_preferences: prefs })
-      : base44.entities.UserPreference.create({ user_id: user?.id, notification_preferences: prefs }),
+      : base44.entities.UserPreference.create({ user_id: (user && user.id), notification_preferences: prefs }),
     onSuccess: () => toast.success('Preferences saved!'),
     onError: () => toast.error('Action failed.'),
   });
-  const toggleDest = useMutation({
+  var toggleDest = useMutation({
     mutationFn: ({ id, is_enabled }) => base44.entities.RTMPDestination.update(id, { is_enabled }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['db-rtmp'] }),
     onError: () => toast.error('Action failed.'),
   });
-  const deleteDest = useMutation({
+  var deleteDest = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['db-rtmp'] }),
     onError: () => toast.error('Action failed.'),
   });
 
-  const SOCIAL_FIELDS = ['twitter','instagram','tiktok','youtube','discord','website'];
-  const NOTIF_KEYS = ['tip_alerts','new_subscriber','raid_received','challenge_completed','announcement'];
-  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var SOCIAL_FIELDS = ['twitter','instagram','tiktok','youtube','discord','website'];
+  var NOTIF_KEYS = ['tip_alerts','new_subscriber','raid_received','challenge_completed','announcement'];
+  var DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -1133,7 +1133,7 @@ function SettingsTab({ user }) {
             <label className="text-[11px] uppercase font-black block mb-2" style={{ color: CREAM + '35', ...T }}>Social Links</label>
             <div className="grid grid-cols-2 gap-2">
               {SOCIAL_FIELDS.map(s => (
-                <input key={s} placeholder={s} value={profile.social_links?.[s] || ''}
+                <input key={s} placeholder={s} value={(profile.social_links && profile.social_links[s]) || ''}
                   onChange={e => setProfile(p => ({ ...p, social_links: { ...p.social_links, [s]: e.target.value } }))}
                   className="px-2 py-1.5 rounded-lg text-[10px] outline-none"
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: CREAM }} />
@@ -1154,19 +1154,19 @@ function SettingsTab({ user }) {
           <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Stream Schedule</p>
           <div className="space-y-1.5">
             {DAYS.map((day, i) => {
-              const slot = schedule.find(s => s.day === day) || {};
+              var slot = schedule.find(s => s.day === day) || {};
               return (
                 <div key={day} className="flex items-center gap-2">
                   <span className="text-[11px] w-8 font-black" style={{ color: CREAM + '50', ...T }}>{day}</span>
                   <input type="time" value={slot.time || ''} onChange={e => setSchedule(prev => {
-                    const next = prev.filter(s => s.day !== day);
+                    var next = prev.filter(s => s.day !== day);
                     if (e.target.value) next.push({ day, time: e.target.value, title: slot.title || '' });
                     return next;
                   })}
                     className="px-2 py-1 rounded text-[10px] outline-none"
                     style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: CREAM }} />
                   <input placeholder="Stream title" value={slot.title || ''} onChange={e => setSchedule(prev => {
-                    const next = prev.filter(s => s.day !== day);
+                    var next = prev.filter(s => s.day !== day);
                     if (slot.time) next.push({ day, time: slot.time, title: e.target.value });
                     return next;
                   })}
@@ -1192,7 +1192,7 @@ function SettingsTab({ user }) {
             {NOTIF_KEYS.map(k => (
               <div key={k} className="flex items-center justify-between">
                 <span className="text-[11px] capitalize" style={{ color: CREAM + '70' }}>{k.replace('_',' ')}</span>
-                <button onClick={() => { const n = { ...prefs, [k]: !prefs[k] }; setPrefs(n); savePrefs.mutate(); }}
+                <button onClick={() => { var n = { ...prefs, [k]: !prefs[k] }; setPrefs(n); savePrefs.mutate(); }}
                   className="w-10 h-5 rounded-full relative transition-all"
                   style={{ background: prefs[k] ? GOLD : 'rgba(255,255,255,0.1)' }}>
                   <motion.div animate={{ x: prefs[k] ? 20 : 2 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -1222,7 +1222,7 @@ function SettingsTab({ user }) {
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <div className="flex-1">
                 <p className="text-[10px] font-bold text-white">{d.label || d.platform}</p>
-                <p className="text-[11px]" style={{ color: CREAM + '35' }}>{d.rtmp_url?.slice(0, 30)}…</p>
+                <p className="text-[11px]" style={{ color: CREAM + '35' }}>{d.(rtmp_url && rtmp_url.slice)(0, 30)}…</p>
               </div>
               <button onClick={() => toggleDest.mutate({ id: d.id, is_enabled: !d.is_enabled })}
                 className="w-9 h-5 rounded-full relative shrink-0"
@@ -1263,30 +1263,30 @@ function SettingsTab({ user }) {
 
 /* ═══════════════ MAIN PAGE ═══════════════ */
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [showQuickAction, setShowQuickAction] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showTierEditor, setShowTierEditor] = useState(false);
-  const [editingTier, setEditingTier] = useState(null);
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['dashboard-active-room', user?.id],
+  var [activeTab, setActiveTab] = useState('overview');
+  var [showQuickAction, setShowQuickAction] = useState(false);
+  var [showOnboarding, setShowOnboarding] = useState(false);
+  var [showTierEditor, setShowTierEditor] = useState(false);
+  var [editingTier, setEditingTier] = useState(null);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['dashboard-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: profile } = useQuery({
-    queryKey: ['db-profile', user?.id],
-    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: profile } = useQuery({
+    queryKey: ['db-profile', (user && user.id)],
+    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: (user && user.id) }).then(r => r[0]),
+    enabled: !!(user && user.id),
   });
-  const { data: dashCommunity } = useQuery({
-    queryKey: ['dashCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: dashCommunity } = useQuery({
+    queryKey: ['dashCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const dashCommunityId = dashCommunity?.id || null;
+  var dashCommunityId = (dashCommunity && dashCommunity.id) || null;
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
@@ -1297,13 +1297,13 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0"
                 style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
-                {profile?.avatar_url
+                {(profile && profile.avatar_url)
                   ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                   : <Crown className="w-6 h-6 m-2.5 text-black" />}
               </div>
               <div>
                 <h1 className="font-black text-lg uppercase leading-none" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
-                  {profile?.display_name || user?.full_name || 'Creator Dashboard'}
+                  {(profile && profile.display_name) || (user && user.full_name) || 'Creator Dashboard'}
                 </h1>
                 <p className="text-[11px] mt-0.5" style={{ color: CREAM + '40', ...T }}>SeeWhy LIVE Creator Studio</p>
               </div>
@@ -1347,28 +1347,28 @@ export default function DashboardPage() {
           </motion.div>
         </AnimatePresence>
       </div>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="dashboard" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
-      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
-      <RewardShopEditor creatorId={user?.id} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="dashboard" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
+      {(user && user.id) && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={(user && user.id)} isSubscribed={false} />}
+      {(user && user.id) && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={(user && user.id)} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
+      <RewardShopEditor creatorId={(user && user.id)} />
       <QuickActionPanel isOpen={showQuickAction} onClose={() => setShowQuickAction(false)} />
       <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={activeRoomId} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={activeRoomId} currentUser={user} />
       <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.peak_viewers) || 0} />
       <BackgroundCustomizer />
-      <OnlinePresence userId={user?.id || null} />
+      <OnlinePresence userId={(user && user.id) || null} />
     </div>
   );
 }

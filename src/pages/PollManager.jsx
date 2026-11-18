@@ -33,73 +33,73 @@ import ViewerCount from '../components/live/ViewerCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
-const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+var lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
-const categories = {
+var categories = {
   quick: '⚡ Quick', engagement: '🎯 Engagement', decision: '🤔 Decision', feedback: '💬 Feedback', custom: '✨ Custom',
 };
 
 export default function PollManager() {
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', question: '', options: ['', ''], timeout_seconds: 60, allow_re_vote: false, category: 'custom' });
-  const queryClient = useQueryClient();
+  var [showForm, setShowForm] = useState(false);
+  var [formData, setFormData] = useState({ name: '', question: '', options: ['', ''], timeout_seconds: 60, allow_re_vote: false, category: 'custom' });
+  var queryClient = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: templates } = useQuery({
-    queryKey: ['pollTemplates', user?.id],
+  var { data: templates } = useQuery({
+    queryKey: ['pollTemplates', (user && user.id)],
     queryFn: () => user ? base44.entities.PollTemplate.filter({ creator_id: user.id }) : Promise.resolve([]),
     enabled: !!user,
   });
 
-  const createTemplateMutation = useMutation({
+  var createTemplateMutation = useMutation({
     mutationFn: (data) => {
-      if (!user?.id) throw new Error('Not authenticated');
+      if (!(user && user.id)) throw new Error('Not authenticated');
       return base44.entities.PollTemplate.create({ ...data, creator_id: user.id });
     },
     onError: () => toast.error('Failed to create template.'),
     onSuccess: (template) => {
-      queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['pollTemplates', (user && user.id)] });
       setFormData({ name: '', question: '', options: ['', ''], timeout_seconds: 60, allow_re_vote: false, category: 'custom' });
       setShowForm(false);
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
-          title: `Created poll template: ${template?.name || template?.question || 'Poll'}`,
+          title: `Created poll template: ${(template && template.name) || (template && template.question) || 'Poll'}`,
         }).catch(() => {});
       }
     },
   });
 
-  const deleteTemplateMutation = useMutation({
+  var deleteTemplateMutation = useMutation({
     mutationFn: (id) => base44.entities.PollTemplate.delete(id),
     onError: () => toast.error('Failed to delete template.'),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pollTemplates', (user && user.id)] }),
   });
-  const handleAddOption = () => setFormData(prev => ({ ...prev, options: [...prev.options, ''] }));
-  const handleRemoveOption = (idx) => setFormData(prev => ({ ...prev, options: prev.options.filter((_, i) => i !== idx) }));
-  const handleOptionChange = (idx, value) => setFormData(prev => ({ ...prev, options: prev.options.map((opt, i) => i === idx ? value : opt) }));
+  var handleAddOption = () => setFormData(prev => ({ ...prev, options: [...prev.options, ''] }));
+  var handleRemoveOption = (idx) => setFormData(prev => ({ ...prev, options: prev.options.filter((_, i) => i !== idx) }));
+  var handleOptionChange = (idx, value) => setFormData(prev => ({ ...prev, options: prev.options.map((opt, i) => i === idx ? value : opt) }));
 
-  const handleSubmit = () => {
+  var handleSubmit = () => {
     if (!formData.name || !formData.question || formData.options.some(o => !o)) { toast.error('Please fill in all fields'); return; }
     createTemplateMutation.mutate(formData);
   };
@@ -190,7 +190,7 @@ export default function PollManager() {
 
         {/* Templates grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {templates?.map(template => (
+          {(templates && templates.map(template => (
             <motion.div key={template.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
               <div className="flex items-start justify-between mb-2">
@@ -223,7 +223,7 @@ export default function PollManager() {
           ))}
         </div>
 
-        {templates?.length === 0 && !showForm && (
+        {(templates && templates.length) === 0 && !showForm && (
           <div className="text-center py-12" style={{ color: 'rgba(255,255,255,0.3)' }}>
             <p className="text-sm mb-4" style={T}>No templates yet. Create your first one!</p>
           </div>
@@ -237,7 +237,7 @@ export default function PollManager() {
         )}
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <EnhancedPollingSystem roomId={activeRoomId} hostId={user?.id} isHost={true} />
+          <EnhancedPollingSystem roomId={activeRoomId} hostId={(user && user.id)} isHost={true} />
           <InteractivePollingSystem roomId={activeRoomId} isHost={true} currentUser={user} />
           <PollCard poll={null} />
           <LivePollOverlay roomId={activeRoomId} currentUser={user} isHost={true} />
@@ -262,20 +262,20 @@ export default function PollManager() {
         <StreamGoals isHost={true} />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.peak_viewers) || 0} />
       <BackgroundCustomizer />
     </div>
   );
