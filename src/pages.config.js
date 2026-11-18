@@ -88,6 +88,7 @@ const GreenroomEnhanced   = lazy(() => import('./pages/GreenroomEnhanced'));
 const VaultPro            = lazy(() => import('./pages/VaultPro'));
 const AudioRoom           = lazy(() => import('./pages/AudioRoom'));
 const SceneTemplates      = lazy(() => import('./pages/SceneTemplates'));
+const EpisodeSeries       = lazy(() => import('./pages/EpisodeSeries'));
 const StreamAlerts        = lazy(() => import('./pages/StreamAlerts'));
 const PodcastStudio       = lazy(() => import('./pages/PodcastStudio'));
 const MultiPlatform       = lazy(() => import('./pages/MultiPlatform'));
@@ -223,6 +224,7 @@ export const PAGES = {
     "VaultPro": VaultPro,
     "AudioRoom": AudioRoom,
     "SceneTemplates": SceneTemplates,
+    "EpisodeSeries": EpisodeSeries,
     "StreamAlerts": StreamAlerts,
     "PodcastStudio": PodcastStudio,
     "MultiPlatform": MultiPlatform,
