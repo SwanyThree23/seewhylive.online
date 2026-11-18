@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { base44 } from '@/api/base44Client';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 
@@ -418,6 +418,221 @@ function SpotlightStrip() {
                 }}>{item.sub}</p>
               </div>
             </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Episode Preview Section ───────────────────────────────────────────────
+var DRAMA_EPISODES = [
+  { id: 'e1', series: 'Shadow Reign', ep: 'S1E3', hook: 'She finally discovers the truth...', emoji: '👑', color: '#7B2D8B' },
+  { id: 'e2', series: 'Street Code',  ep: 'S2E1', hook: 'New city, same enemies.',            emoji: '🌆', color: '#1A3A5C' },
+  { id: 'e3', series: 'Cyber Hearts', ep: 'S1E7', hook: 'The AI knows too much.',             emoji: '🤖', color: '#0D3D2B' },
+  { id: 'e4', series: 'Block Party',  ep: 'S3E5', hook: 'The final showdown.',                emoji: '🎭', color: '#5C1A1A' },
+];
+
+function EpisodePreviewSection() {
+  var [activeEp, setActiveEp] = useState(null);
+
+  function openModal(ep) { setActiveEp(ep); }
+  function closeModal() { setActiveEp(null); }
+
+  return (
+    <div style={{ paddingTop: 8, paddingBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 8px' }}>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)' }}>
+          🎬 Featured Micro Drama
+        </span>
+        <Link to={createPageUrl('AIHub')} style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.55)', textDecoration: 'none' }}>
+          All Series →
+        </Link>
+      </div>
+      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 10, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {DRAMA_EPISODES.map(function(ep) {
+          return (
+            <div key={ep.id} style={{ flexShrink: 0, width: 148, borderRadius: 14, overflow: 'hidden', background: 'rgba(7,7,15,0.95)', border: '1px solid ' + ep.color + '55', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}>
+              <div style={{ height: 90, background: 'linear-gradient(135deg, ' + ep.color + 'aa, #0E0C09)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
+                {ep.emoji}
+              </div>
+              <div style={{ padding: '8px 10px 10px' }}>
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, color: '#F0E8D4', margin: 0, lineHeight: 1.2 }}>{ep.series}</p>
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: ep.color, margin: '2px 0 4px', letterSpacing: '0.05em' }}>{ep.ep}</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', margin: '0 0 8px', lineHeight: 1.4 }}>{ep.hook}</p>
+                <button
+                  onClick={function() { openModal(ep); }}
+                  style={{ width: '100%', padding: '5px 0', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.06em', cursor: 'pointer', background: ep.color + '22', border: '1px solid ' + ep.color + '55', color: '#F0E8D4' }}
+                >
+                  ▶ Preview
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {activeEp && (
+        <div
+          onClick={closeModal}
+          style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+        >
+          <div
+            onClick={function(e) { e.stopPropagation(); }}
+            style={{ width: '100%', maxWidth: 420, background: '#0E0C09', borderRadius: 18, overflow: 'hidden', border: '1px solid ' + activeEp.color + '55', boxShadow: '0 20px 60px rgba(0,0,0,0.9)' }}
+          >
+            <div style={{ width: '100%', paddingTop: '56.25%', position: 'relative', background: 'linear-gradient(135deg, ' + activeEp.color + 'cc, #0E0C09)' }}>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 60 }}>
+                {activeEp.emoji}
+              </div>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>▶</div>
+              </div>
+            </div>
+            <div style={{ padding: 20 }}>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 18, color: '#F0E8D4', margin: '0 0 2px' }}>{activeEp.series}</p>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: activeEp.color, margin: '0 0 10px', letterSpacing: '0.07em' }}>{activeEp.ep}</p>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: '0 0 16px', lineHeight: 1.5 }}>{activeEp.hook} Watch the full episode to find out what happens next in this gripping series.</p>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <Link
+                  to={createPageUrl('AIHub')}
+                  style={{ flex: 1, padding: '10px 0', borderRadius: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, letterSpacing: '0.06em', textAlign: 'center', background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.4)', color: '#C9A84C', textDecoration: 'none', display: 'block' }}
+                >
+                  Watch Full Episode
+                </Link>
+                <button
+                  onClick={closeModal}
+                  style={{ padding: '10px 18px', borderRadius: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, cursor: 'pointer', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── AI Music Sample Widget ────────────────────────────────────────────────
+var MUSIC_TRACKS = [
+  { id: 't1', name: 'Neon Drift',    genre: 'Lo-Fi',     bpm: 85,  color: '#8B5CF6' },
+  { id: 't2', name: 'Street Gospel', genre: 'Gospel',    bpm: 94,  color: '#D97706' },
+  { id: 't3', name: 'Cyber 808',     genre: 'Trap',      bpm: 140, color: '#EF4444' },
+  { id: 't4', name: 'AfroTech',      genre: 'Afrobeats', bpm: 118, color: '#10B981' },
+];
+
+function AIAudioSampleWidget() {
+  var [playing, setPlaying] = useState(null);
+  var ctxRef = useRef(null);
+  var oscRef = useRef(null);
+
+  function stopCurrent() {
+    if (oscRef.current) { try { oscRef.current.stop(); } catch (_e) {} oscRef.current = null; }
+    if (ctxRef.current && ctxRef.current.state !== 'closed') { ctxRef.current.close(); ctxRef.current = null; }
+    setPlaying(null);
+  }
+
+  function playTrack(track) {
+    if (playing === track.id) { stopCurrent(); return; }
+    stopCurrent();
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    var ctx = new AudioCtx();
+    ctxRef.current = ctx;
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.value = 220 + (track.bpm % 12) * 8;
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.setTargetAtTime(0, ctx.currentTime + 2.5, 0.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 3);
+    oscRef.current = osc;
+    setPlaying(track.id);
+    setTimeout(function() { setPlaying(null); ctxRef.current = null; oscRef.current = null; }, 3200);
+  }
+
+  return (
+    <div style={{ paddingTop: 8, paddingBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 8px' }}>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)' }}>
+          🎵 AI Music Studio — Live Samples
+        </span>
+        <Link to={createPageUrl('AIMusic')} style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.55)', textDecoration: 'none' }}>
+          Open Studio →
+        </Link>
+      </div>
+      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 10, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {MUSIC_TRACKS.map(function(track) {
+          var isPlaying = playing === track.id;
+          return (
+            <div key={track.id} style={{ flexShrink: 0, width: 142, borderRadius: 14, overflow: 'hidden', background: 'rgba(7,7,15,0.95)', border: '1px solid ' + track.color + '44', padding: '12px 12px 10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <button
+                  onClick={function() { playTrack(track); }}
+                  style={{ width: 36, height: 36, borderRadius: '50%', background: isPlaying ? track.color : track.color + '22', border: '1px solid ' + track.color + '66', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, color: isPlaying ? '#fff' : track.color, flexShrink: 0 }}
+                >
+                  {isPlaying ? '⏸' : '▶'}
+                </button>
+                <div style={{ overflow: 'hidden' }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
+                  <p style={{ fontSize: 9, color: track.color, margin: 0, letterSpacing: '0.05em' }}>{track.genre} · {track.bpm} BPM</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 24 }}>
+                {[1,2,3,4,5,6,7,8,9,10,11,12].map(function(i) {
+                  var h = 4 + (Math.sin(i * 1.5) + 1) * 10;
+                  return (
+                    <div key={i} style={{ flex: 1, borderRadius: 2, height: isPlaying ? (4 + (i % 5) * 4) + 'px' : h + 'px', background: isPlaying ? track.color : track.color + '55', transition: isPlaying ? 'height 0.2s ease' : 'none' }} />
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Creator Highlights Row ────────────────────────────────────────────────
+var CREATOR_HIGHLIGHTS = [
+  { id: 'c1', handle: '@SwanyThree23',  quote: 'SeeWhy let me co-stream with 4 creators at once — unprecedented!', role: 'Host',       color: '#C9A84C' },
+  { id: 'c2', handle: '@QueenPulse',    quote: 'The DSP voice modulator is elite. Studio quality, live.',          role: 'Creator',    color: '#A78BFA' },
+  { id: 'c3', handle: '@BlockchainBro', quote: 'Battle mode + loyalty points = my audience never leaves.',         role: 'Host',       color: '#F472B6' },
+  { id: 'c4', handle: '@JoyceAI',       quote: 'Co-hosting with an AI kept my stream running 24/7.',              role: 'AI Co-Host', color: '#34D399' },
+  { id: 'c5', handle: '@TrapKingLive',  quote: 'First paycheck from streaming came through in days.',             role: 'Creator',    color: '#FB923C' },
+];
+
+function CreatorHighlightsRow() {
+  return (
+    <div style={{ paddingTop: 8, paddingBottom: 4 }}>
+      <div style={{ padding: '0 16px 8px' }}>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)' }}>
+          ⭐ Creator Highlights
+        </span>
+      </div>
+      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 10, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {CREATOR_HIGHLIGHTS.map(function(c) {
+          var initials = c.handle.replace('@', '').slice(0, 2).toUpperCase();
+          return (
+            <div key={c.id} style={{ flexShrink: 0, width: 192, borderRadius: 14, background: 'rgba(7,7,15,0.95)', border: '1px solid ' + c.color + '33', padding: '14px 14px 12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, ' + c.color + '88, #0E0C09)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: c.color, flexShrink: 0 }}>
+                  {initials}
+                </div>
+                <div>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, color: '#F0E8D4', margin: 0 }}>{c.handle}</p>
+                  <span style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 99, background: c.color + '22', color: c.color, letterSpacing: '0.05em' }}>{c.role}</span>
+                </div>
+              </div>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', margin: '0 0 10px', lineHeight: 1.5, fontStyle: 'italic' }}>&ldquo;{c.quote}&rdquo;</p>
+              <span style={{ fontSize: 10, fontWeight: 700, color: c.color, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>🔴 Watch Live</span>
+            </div>
           );
         })}
       </div>
@@ -901,6 +1116,15 @@ export default function Home() {
 
       {/* ── PLATFORM FEATURES SPOTLIGHT ── */}
       <SpotlightStrip />
+
+      {/* ── MICRO DRAMA EPISODE PREVIEW ── */}
+      <EpisodePreviewSection />
+
+      {/* ── AI MUSIC SAMPLE WIDGET ── */}
+      <AIAudioSampleWidget />
+
+      {/* ── CREATOR HIGHLIGHTS ── */}
+      <CreatorHighlightsRow />
 
       {/* ── FEATURED PARTNER CONTENT ── */}
       <FeaturedContentSection />

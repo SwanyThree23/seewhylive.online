@@ -184,6 +184,33 @@ function getRoutesDb() {
   return _routesSqliteDb;
 }
 
+// ─── Username availability check (public, rate-limited) ───────────────────────
+var usernameCheckLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  keyGenerator: function(req) { return req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'too many requests' },
+});
+
+router.get('/check-username', usernameCheckLimit, async function(req, res) {
+  var username = (req.query.username || '').toLowerCase().trim();
+  if (!username || username.length < 3 || username.length > 30 || !/^[a-z0-9_]+$/.test(username)) {
+    return res.status(400).json({ available: false, error: 'invalid username' });
+  }
+  try {
+    var result = await db.query(
+      'SELECT 1 FROM users WHERE lower(username) = $1 LIMIT 1',
+      [username]
+    );
+    return res.json({ available: result.rows.length === 0 });
+  } catch (err) {
+    return res.status(500).json({ available: false, error: 'server error' });
+  }
+});
+
 // ─── AURA routes ──────────────────────────────────────────────────────────────
 
 router.get('/aura/usage', requireAuth, function(req, res) {
