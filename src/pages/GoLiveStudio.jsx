@@ -31,6 +31,8 @@ import {
   AlertTriangle, Square, Volume2, Activity, Youtube, Twitch, Facebook,
   ToggleLeft, ToggleRight, Eye, Settings
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 
 var RTMP_URL = 'rtmp://ingest.seewhylive.online:1935/live';
 var CREATOR_SPLIT = 0.90;
@@ -611,6 +613,32 @@ export default function GoLiveStudio() {
         {(user && user.id) && <RTMPFanoutPanel userId={user.id} isStreaming={state.phase === 'live'} streamId={activeRoomId} />}
         {(user && user.id) && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Creator Studios */}
+          <div style={{ padding: 16, borderRadius: 16, border: '1px solid rgba(123,45,139,0.22)', background: 'rgba(13,6,24,0.5)' }}>
+            <p style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(176,102,204,0.7)', marginBottom: 12 }}>Creator Studios</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 }}>
+              {[
+                { emoji: '🎬', label: 'Micro Drama', sub: 'Episode creator', href: 'EpisodeCreatorStudio', color: '#7B2D8B' },
+                { emoji: '🎵', label: 'AI Music', sub: 'Beat & vocal studio', href: 'AIMusic', color: '#00A8E8' },
+                { emoji: '🎙️', label: 'Podcast Studio', sub: 'AI-assisted pods', href: 'PodcastStudio', color: '#B066CC' },
+              ].map(function(s) {
+                return (
+                  <Link key={s.href} to={createPageUrl(s.href)} style={{ textDecoration: 'none' }}>
+                    <div style={{ borderRadius: 12, padding: '10px 12px', border: '1px solid rgba(123,45,139,0.18)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer' }}>
+                      <div style={{ fontSize: 20, marginBottom: 4 }}>{s.emoji}</div>
+                      <div style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: s.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', marginTop: 2 }}>{s.sub}</div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+            <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ textDecoration: 'none' }}>
+              <div style={{ borderRadius: 12, padding: '8px 12px', textAlign: 'center', fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.08em', background: 'rgba(123,45,139,0.1)', border: '1px solid rgba(123,45,139,0.3)', color: '#B066CC', cursor: 'pointer' }}>
+                🎬 Launch Episode Creator Studio →
+              </div>
+            </Link>
+          </div>
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
           <CollaborationMatcher />
