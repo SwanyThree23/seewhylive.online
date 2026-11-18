@@ -6,15 +6,15 @@ import {
   Radio, Eye, DollarSign, Trophy, Loader2, Copy, Check,
 } from 'lucide-react';
 
-const C = {
+var C = {
   bg: '#03030A', surface: '#07070F', card: '#0B0B18', cardHi: '#10101E',
   line: '#16162A', text: '#F0F0FF', muted: '#5A5A7A',
   accent: '#FF1564', gold: '#FFB800', cyan: '#00F5FF', green: '#00FF88', purple: '#8B5CF6',
 };
-const FONT = 'Barlow Condensed, sans-serif';
-const DISPLAY = 'Syne, sans-serif';
+var FONT = 'Barlow Condensed, sans-serif';
+var DISPLAY = 'Syne, sans-serif';
 
-const SOCIALS = [
+var SOCIALS = [
   { key: 'instagram', label: 'Instagram', icon: Instagram, color: C.accent },
   { key: 'tiktok', label: 'TikTok', icon: Music2, color: C.cyan },
   { key: 'twitter', label: 'X', icon: Twitter, color: C.text },
@@ -39,41 +39,41 @@ function StatCard({ icon: Icon, label, value, color }) {
 }
 
 export default function LinkInBio() {
-  const { userId } = useParams();
-  const [creatorId, setCreatorId] = useState(userId || null);
-  const [profile, setProfile] = useState(null);
-  const [isLive, setIsLive] = useState(false);
-  const [stats, setStats] = useState({ viewers: 0, tips: 0, topStream: '—' });
-  const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
+  var { userId } = useParams();
+  var [creatorId, setCreatorId] = useState(userId || null);
+  var [profile, setProfile] = useState(null);
+  var [isLive, setIsLive] = useState(false);
+  var [stats, setStats] = useState({ viewers: 0, tips: 0, topStream: '—' });
+  var [loading, setLoading] = useState(true);
+  var [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
+    var cancelled = false;
     (async () => {
-      let id = creatorId;
+      var id = creatorId;
       if (!id) {
-        const me = await base44.auth.me();
+        var me = await base44.auth.me();
         id = me.id;
         if (!cancelled) setCreatorId(id);
       }
-      const profileRes = await base44.entities.CreatorProfile.filter({ user_id: id });
-      const loaded = (profileRes.items || profileRes || [])[0] || null;
+      var profileRes = await base44.entities.CreatorProfile.filter({ user_id: id });
+      var loaded = (profileRes.items || profileRes || [])[0] || null;
 
-      const liveRes = await base44.entities.Room.filter({ host_id: id, status: 'live' });
-      const liveRooms = liveRes.items || liveRes || [];
+      var liveRes = await base44.entities.Room.filter({ host_id: id, status: 'live' });
+      var liveRooms = liveRes.items || liveRes || [];
 
-      let tips = 0;
-      let topStream = '—';
-      let viewers = 0;
+      var tips = 0;
+      var topStream = '—';
+      var viewers = 0;
       try {
-        const agg = await base44.entities.GemTransaction.aggregate({ query: { recipient_id: id }, sum: ['usd_value'] });
-        tips = Math.round(agg?.rows?.[0]?.sum_usd_value || 0);
+        var agg = await base44.entities.GemTransaction.aggregate({ query: { recipient_id: id }, sum: ['usd_value'] });
+        tips = Math.round((agg && agg.rows)?.[0]?.sum_usd_value || 0);
       } catch (e) { /* tips stat is best-effort */ }
       try {
-        const topRes = await base44.entities.Room.filter({ host_id: id }, { sort: '-viewer_count', limit: 1 });
-        const top = (topRes.items || topRes || [])[0];
-        topStream = top?.title || '—';
-        viewers = top?.viewer_count || 0;
+        var topRes = await base44.entities.Room.filter({ host_id: id }, { sort: '-viewer_count', limit: 1 });
+        var top = (topRes.items || topRes || [])[0];
+        topStream = (top && top.title) || '—';
+        viewers = (top && top.viewer_count) || 0;
       } catch (e) { /* top stream stat is best-effort */ }
 
       if (cancelled) return;
@@ -85,12 +85,12 @@ export default function LinkInBio() {
     return () => { cancelled = true; };
   }, [userId]);
 
-  const shareUrl = `${window.location.origin}/link-in-bio${creatorId ? `/${creatorId}` : ''}`;
+  var shareUrl = `${window.location.origin}/link-in-bio${creatorId ? `/${creatorId}` : ''}`;
 
   async function share() {
     if (navigator.share) {
       try {
-        await navigator.share({ title: profile?.display_name || 'SeeWhy LIVE', url: shareUrl });
+        await navigator.share({ title: (profile && profile.display_name) || 'SeeWhy LIVE', url: shareUrl });
         return;
       } catch (e) { /* user dismissed the sheet */ }
     }
@@ -99,7 +99,7 @@ export default function LinkInBio() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const links = SOCIALS.filter(s => profile?.social_links?.[s.key]);
+  var links = SOCIALS.filter(s => (profile && profile.social_links)?.[s.key]);
 
   if (loading) {
     return (
@@ -141,11 +141,11 @@ export default function LinkInBio() {
               className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center"
               style={{ background: C.cardHi, border: `2px solid ${isLive ? C.accent : 'rgba(255,255,255,0.1)'}` }}
             >
-              {profile?.avatar_url ? (
+              {(profile && profile.avatar_url) ? (
                 <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-3xl font-black" style={{ fontFamily: DISPLAY, color: C.gold }}>
-                  {(profile?.display_name || 'S')[0].toUpperCase()}
+                  {((profile && profile.display_name) || 'S')[0].toUpperCase()}
                 </span>
               )}
             </div>
@@ -160,14 +160,14 @@ export default function LinkInBio() {
           </div>
 
           <h1 className="mt-4 text-xl font-extrabold" style={{ fontFamily: DISPLAY, letterSpacing: '0.02em' }}>
-            {profile?.display_name || 'SeeWhy Creator'}
+            {(profile && profile.display_name) || 'SeeWhy Creator'}
           </h1>
-          {profile?.category && (
+          {(profile && profile.category) && (
             <span className="mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest" style={{ background: 'rgba(255,184,0,0.1)', border: `1px solid ${C.gold}33`, color: C.gold, fontFamily: FONT }}>
               {profile.category}
             </span>
           )}
-          {profile?.bio && (
+          {(profile && profile.bio) && (
             <p className="mt-3 text-[13px] leading-relaxed" style={{ fontFamily: FONT, color: 'rgba(240,240,255,0.72)' }}>
               {profile.bio}
             </p>

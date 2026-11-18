@@ -25,27 +25,27 @@ import StreamerMonetizationCenter from '../components/monetization/StreamerMonet
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import ViewerCount from '../components/live/ViewerCount';
 
-const GOLD = '#D4AF37';
+var GOLD = '#D4AF37';
 
-const MAX_DURATION_SECONDS = 600; // 10 minutes
+var MAX_DURATION_SECONDS = 600; // 10 minutes
 
 export default function VideoPost() {
-  const fileInputRef = useRef(null);
-  const videoRef = useRef(null);
-  const videoUrlRef = useRef(null);
+  var fileInputRef = useRef(null);
+  var videoRef = useRef(null);
+  var videoUrlRef = useRef(null);
 
   useEffect(() => () => { if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current); }, []);
 
-  const [step, setStep] = useState('upload'); // upload | details | published
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [videoUrl, setVideoUrl] = useState(null);
-  const [videoDuration, setVideoDuration] = useState(0);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [publishedUrl, setPublishedUrl] = useState('');
+  var [step, setStep] = useState('upload'); // upload | details | published
+  var [selectedFile, setSelectedFile] = useState(null);
+  var [videoUrl, setVideoUrl] = useState(null);
+  var [videoDuration, setVideoDuration] = useState(0);
+  var [uploading, setUploading] = useState(false);
+  var [uploadProgress, setUploadProgress] = useState(0);
+  var [shareOpen, setShareOpen] = useState(false);
+  var [publishedUrl, setPublishedUrl] = useState('');
 
-  const [form, setForm] = useState({
+  var [form, setForm] = useState({
     title: '',
     description: '',
     tags: '',
@@ -55,27 +55,27 @@ export default function VideoPost() {
     thumbnail: '',
   });
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const roomId = activeRoomId;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var roomId = activeRoomId;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
+  var handleFileSelect = (e) => {
+    var file = e.target.files[0];
     if (!file) return;
 
     if (!file.type.startsWith('video/')) {
@@ -89,15 +89,15 @@ export default function VideoPost() {
     }
 
     if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current);
-    const url = URL.createObjectURL(file);
+    var url = URL.createObjectURL(file);
     videoUrlRef.current = url;
     setSelectedFile(file);
     setVideoUrl(url);
     setForm(prev => ({ ...prev, title: file.name.replace(/\.[^/.]+$/, '') }));
   };
 
-  const handleVideoLoad = () => {
-    const duration = videoRef.current?.duration || 0;
+  var handleVideoLoad = () => {
+    var duration = videoRef.(current && current.duration) || 0;
     setVideoDuration(Math.round(duration));
     if (duration > MAX_DURATION_SECONDS) {
       toast.error(`Video must be ${MAX_DURATION_SECONDS / 60} minutes or less. Your video is ${Math.round(duration / 60)} minutes.`);
@@ -106,7 +106,7 @@ export default function VideoPost() {
     }
   };
 
-  const handleUpload = async () => {
+  var handleUpload = async () => {
     if (!selectedFile) return;
     if (!form.title.trim()) { toast.error('Add a title'); return; }
     if (videoDuration > MAX_DURATION_SECONDS) { toast.error('Video too long'); return; }
@@ -116,19 +116,19 @@ export default function VideoPost() {
 
     try {
       // Simulate progress
-      const progressInterval = setInterval(() => {
+      var progressInterval = setInterval(() => {
         setUploadProgress(p => Math.min(p + 15, 85));
       }, 400);
 
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
+      var { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
       clearInterval(progressInterval);
       setUploadProgress(100);
 
       // Save as a room of type "video"
-      const post = await base44.entities.Room.create({
+      var post = await base44.entities.Room.create({
         title: form.title,
         description: form.description,
-        host_id: user?.id,
+        host_id: (user && user.id),
         type: 'video',
         status: 'ended',
         is_public: !form.isPrivate,
@@ -136,7 +136,7 @@ export default function VideoPost() {
         tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
       });
 
-      const postUrl = `${window.location.origin}${createPageUrl('Room')}?id=${post.id}`;
+      var postUrl = `${window.location.origin}${createPageUrl('Room')}?id=${post.id}`;
       setPublishedUrl(postUrl);
       setStep('published');
       toast.success('Video posted!');
@@ -148,9 +148,9 @@ export default function VideoPost() {
     }
   };
 
-  const formatDuration = (s) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
+  var formatDuration = (s) => {
+    var m = Math.floor(s / 60);
+    var sec = s % 60;
     return `${m}:${String(sec).padStart(2, '0')}`;
   };
 
@@ -176,7 +176,7 @@ export default function VideoPost() {
             {/* Drop zone */}
             {!selectedFile ? (
               <div
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => fileInputRef.(current && current.click()}
                 className="border-2 border-dashed border-[#d4af37]/30 rounded-2xl p-12 text-center cursor-pointer hover:border-[#d4af37]/60 hover:bg-[#d4af37]/5 transition-all"
               >
                 <Upload className="w-12 h-12 mx-auto mb-4 text-[#d4af37]/50" />
@@ -352,9 +352,9 @@ export default function VideoPost() {
         title={form.title}
       />
       <SwanAIRecommendations roomId={null} currentLayout="vod" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -362,7 +362,7 @@ export default function VideoPost() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

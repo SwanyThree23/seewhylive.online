@@ -21,13 +21,13 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
-const FONT = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var PINK    = '#C0392B';
+var FONT = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const OVERLAY_TYPES = [
+var OVERLAY_TYPES = [
   { type: 'new_follower',  icon: Users,    color: '#C9A84C', label: 'New Follower',   desc: 'Shown when someone follows you live',  trigger: 'Auto' },
   { type: 'new_sub',       icon: Star,     color: '#D4AF37', label: 'New Subscriber', desc: 'Banner for new paid subscribers',       trigger: 'Auto' },
   { type: 'tip_received',  icon: Gift,     color: '#6DBF7E', label: 'Tip Alert',      desc: 'Animated tip overlay with amount',      trigger: 'Auto' },
@@ -69,47 +69,47 @@ function ToggleSwitch({ enabled, onToggle }) {
 }
 
 export default function StreamAlerts() {
-  const [activeTab, setActiveTab] = useState('sound');
-  const [enabledOverlays, setEnabledOverlays] = useState(
+  var [activeTab, setActiveTab] = useState('sound');
+  var [enabledOverlays, setEnabledOverlays] = useState(
     () => new Set(OVERLAY_TYPES.map((o) => o.type))
   );
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: alerts = [] } = useQuery({
-    queryKey: ['soundAlerts', user?.id],
+  var { data: alerts = [] } = useQuery({
+    queryKey: ['soundAlerts', (user && user.id)],
     queryFn: () =>
-      base44.entities.SoundAlert.filter({ creator_id: user?.id }),
-    enabled: !!user?.id,
+      base44.entities.SoundAlert.filter({ creator_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
 
-  const totalAlerts = alerts.length;
-  const activeAlerts = alerts.filter((a) => !a.status || a.status === 'active').length;
-  const uniqueTypes = new Set(alerts.map((a) => a.trigger_type)).size;
+  var totalAlerts = alerts.length;
+  var activeAlerts = alerts.filter((a) => !a.status || a.status === 'active').length;
+  var uniqueTypes = new Set(alerts.map((a) => a.trigger_type)).size;
 
-  const toggleOverlay = (type) => {
+  var toggleOverlay = (type) => {
     setEnabledOverlays((prev) => {
-      const next = new Set(prev);
+      var next = new Set(prev);
       if (next.has(type)) next.delete(type);
       else next.add(type);
       return next;
     });
   };
 
-  const STATS = [
+  var STATS = [
     { label: 'Total Alerts',  value: totalAlerts },
     { label: 'Active Alerts', value: activeAlerts },
     { label: 'Alert Types',   value: uniqueTypes },
@@ -200,7 +200,7 @@ export default function StreamAlerts() {
             { key: 'sound',   label: 'Sound Alerts' },
             { key: 'overlay', label: 'Overlay Triggers' },
           ].map((tab) => {
-            const active = activeTab === tab.key;
+            var active = activeTab === tab.key;
             return (
               <button
                 key={tab.key}
@@ -246,7 +246,7 @@ export default function StreamAlerts() {
                   padding: 24,
                 }}
               >
-                <AlertConfig creatorId={user?.id} />
+                <AlertConfig creatorId={(user && user.id)} />
               </div>
             </motion.div>
           )}
@@ -261,8 +261,8 @@ export default function StreamAlerts() {
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {OVERLAY_TYPES.map((item) => {
-                  const Icon = item.icon;
-                  const enabled = enabledOverlays.has(item.type);
+                  var Icon = item.icon;
+                  var enabled = enabledOverlays.has(item.type);
                   return (
                     <motion.div
                       key={item.type}
@@ -337,7 +337,7 @@ export default function StreamAlerts() {
         </AnimatePresence>
 
         {/* ── Sound Alerts Manager ── */}
-        {user?.id && (
+        {(user && user.id) && (
           <div style={{ marginTop: 16 }}>
             <SoundAlertsManager creatorId={user.id} />
           </div>
@@ -356,20 +356,20 @@ export default function StreamAlerts() {
           Alerts require an active broadcast. Sound alerts play through browser audio.
         </p>
       </div>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="alerts" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="alerts" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.peak_viewers) || 0} />
       <BackgroundCustomizer />
     </div>
   );

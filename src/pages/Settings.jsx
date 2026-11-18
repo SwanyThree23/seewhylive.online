@@ -28,9 +28,9 @@ import SubscriptionCard from '../components/monetization/SubscriptionCard';
 import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import VoiceAISettings from '../components/settings/VoiceAISettings';
 import ApiKeyManager from '../components/settings/ApiKeyManager';
-const GOLD = '#FFB800';
-const CRIMSON = '#FF1564';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD = '#FFB800';
+var CRIMSON = '#FF1564';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function Section({ icon: Icon, title, description, children }) {
   return (
@@ -80,26 +80,26 @@ function DarkInput({ value, onChange, placeholder, disabled }) {
 }
 
 export default function SettingsPage() {
-  const queryClient = useQueryClient();
-  const [showCreatorSetup, setShowCreatorSetup] = useState(false);
-  const [showTierEditor, setShowTierEditor] = useState(false);
-  const [editingTier, setEditingTier] = useState(null);
-  const [fullName, setFullName] = useState('');
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [showActivity, setShowActivity] = useState(true);
-  const [publicProfile, setPublicProfile] = useState(true);
-  const { data: user } = useQuery({
+  var queryClient = useQueryClient();
+  var [showCreatorSetup, setShowCreatorSetup] = useState(false);
+  var [showTierEditor, setShowTierEditor] = useState(false);
+  var [editingTier, setEditingTier] = useState(null);
+  var [fullName, setFullName] = useState('');
+  var [emailNotifications, setEmailNotifications] = useState(true);
+  var [pushNotifications, setPushNotifications] = useState(true);
+  var [showActivity, setShowActivity] = useState(true);
+  var [publicProfile, setPublicProfile] = useState(true);
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
-  const activeRoomId = roomId;
+  var roomId = new URLSearchParams(window.location.search).get('room_id');
+  var activeRoomId = roomId;
 
-  const { data: preferences } = useQuery({
-    queryKey: ['userPreferences', user?.id],
+  var { data: preferences } = useQuery({
+    queryKey: ['userPreferences', (user && user.id)],
     queryFn: async () => {
-      const prefs = await base44.entities.UserPreference.filter({ user_id: user?.id });
+      var prefs = await base44.entities.UserPreference.filter({ user_id: (user && user.id) });
       return prefs[0] || null;
     },
     enabled: !!user,
@@ -111,14 +111,14 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (preferences) {
-      setEmailNotifications(preferences.email_notifications ?? true);
-      setPushNotifications(preferences.push_notifications ?? true);
-      setShowActivity(preferences.show_activity ?? true);
-      setPublicProfile(preferences.public_profile ?? true);
+      setEmailNotifications(preferences.email_notifications || true);
+      setPushNotifications(preferences.push_notifications || true);
+      setShowActivity(preferences.show_activity || true);
+      setPublicProfile(preferences.public_profile || true);
     }
   }, [preferences]);
 
-  const updateProfileMutation = useMutation({
+  var updateProfileMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: () => {
       toast.success('Profile saved!');
@@ -127,10 +127,10 @@ export default function SettingsPage() {
     onError: () => toast.error('Action failed.'),
   });
 
-  const savePreferencesMutation = useMutation({
+  var savePreferencesMutation = useMutation({
     mutationFn: (data) => {
-      if (preferences?.id) return base44.entities.UserPreference.update(preferences.id, data);
-      return base44.entities.UserPreference.create({ user_id: user?.id, ...data });
+      if ((preferences && preferences.id)) return base44.entities.UserPreference.update(preferences.id, data);
+      return base44.entities.UserPreference.create({ user_id: (user && user.id), ...data });
     },
     onSuccess: () => {
       toast.success('Preferences saved!');
@@ -139,7 +139,7 @@ export default function SettingsPage() {
     onError: () => toast.error('Action failed.'),
   });
 
-  const CREATOR_LINKS = [
+  var CREATOR_LINKS = [
     { label: 'Creator Dashboard', href: 'CreatorDashboard' },
     { label: 'Viewer Dashboard',  href: 'ViewerDashboard' },
     { label: 'Stream Scheduler',  href: 'StreamScheduler' },
@@ -213,7 +213,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className="block text-[10px] font-black uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Email</label>
-              <DarkInput value={user?.email || ''} disabled />
+              <DarkInput value={(user && user.email) || ''} disabled />
             </div>
             <SaveButton onClick={() => updateProfileMutation.mutate({ full_name: fullName.slice(0, 60) })} disabled={updateProfileMutation.isPending} />
           </div>
@@ -289,12 +289,12 @@ export default function SettingsPage() {
       </div>
 
       <SwanAIRecommendations roomId={null} currentLayout="settings" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
-      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
+      {(user && user.id) && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={(user && user.id)} isSubscribed={false} />}
+      {(user && user.id) && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={(user && user.id)} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
       <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -303,7 +303,7 @@ export default function SettingsPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

@@ -20,7 +20,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CreatorBridge from '../components/social/CreatorBridge';
 
 // ─── CRITERION VAULT DESIGN SYSTEM ───────────────────────────────────────────
-const CV = {
+var CV = {
   bg:       "#0D0508",
   bgCard:   "#120A0F",
   bgPanel:  "#1A0E16",
@@ -37,9 +37,9 @@ const CV = {
   live:     "#FF3B3B",
 };
 
-const css = String.raw;
+var css = String.raw;
 
-const EMOJI_CATEGORIES = {
+var EMOJI_CATEGORIES = {
   "🔥 Hype": ["🔥","🚀","💯","⚡","🎯","🏆","💎","👑","🌟","✨","💥","🎆","🎇","🎊","🎉"],
   "❤️ React": ["❤️","🧡","💛","💚","💙","💜","🖤","🤍","💕","💖","💗","💓","💞","💝","❣️"],
   "😂 Vibes": ["😂","🤣","😭","😍","🥰","😎","🤯","🥴","😤","🤩","🫶","👏","🙌","🤙","✌️"],
@@ -48,9 +48,9 @@ const EMOJI_CATEGORIES = {
   "🌊 SeeWhy": ["👁️","🌊","📡","🎬","📺","🎮","🕹️","🖥️","📱","💻","🛸","🌐","📡","🔴","⬛"],
 };
 
-const QUICK_REACTIONS = ["🔥","💯","❤️","😂","🚀","👑","💎","🎉"];
+var QUICK_REACTIONS = ["🔥","💯","❤️","😂","🚀","👑","💎","🎉"];
 
-const SHARE_PLATFORMS = [
+var SHARE_PLATFORMS = [
   { id: "twitter", name: "X / Twitter", icon: "𝕏", color: "#1a1a1a", textColor: "#fff" },
   { id: "facebook", name: "Facebook", icon: "f", color: "#1877F2", textColor: "#fff" },
   { id: "instagram", name: "Instagram", icon: "◈", color: "#E1306C", textColor: "#fff" },
@@ -61,7 +61,7 @@ const SHARE_PLATFORMS = [
   { id: "copy", name: "Copy Link", icon: "⧉", color: CV.bgPanel, textColor: CV.gold },
 ];
 
-const GLOBAL_STYLES = css`
+var GLOBAL_STYLES = css`
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap');
 
   .seewhy-app * { box-sizing: border-box; }
@@ -470,52 +470,52 @@ const GLOBAL_STYLES = css`
 `;
 
 function fmtAgo(dateStr) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
+  var diff = Date.now() - new Date(dateStr).getTime();
+  var m = Math.floor(diff / 60000);
   if (m < 1) return 'just now';
   if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
+  var h = Math.floor(m / 60);
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
 }
 
 export default function EnhancementSuite() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [activeTab, setActiveTab] = useState("emoji");
-  const [messages, setMessages] = useState([]);
-  const [chatInput, setChatInput] = useState("");
-  const [activeCategory, setActiveCategory] = useState("🔥 Hype");
-  const [hoveredEmoji, setHoveredEmoji] = useState(null);
-  const [floatingReactions, setFloatingReactions] = useState([]);
-  const [burstingBtn, setBurstingBtn] = useState(null);
-  const [emojiSearch, setEmojiSearch] = useState("");
-  const [selectedVod, setSelectedVod] = useState(null);
-  const [vodPlaying, setVodPlaying] = useState(false);
-  const [vodProgress, setVodProgress] = useState(22);
-  const [activeChapter, setActiveChapter] = useState(1);
-  const [sharedPlatforms, setSharedPlatforms] = useState({});
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [shareMessage, setShareMessage] = useState("🔴 LIVE NOW on SeeWhy LIVE — join the stream! 🎵🔥");
-  const messagesEndRef = useRef(null);
-  const progressTimerRef = useRef(null);
-  const styleRef = useRef(null);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [activeTab, setActiveTab] = useState("emoji");
+  var [messages, setMessages] = useState([]);
+  var [chatInput, setChatInput] = useState("");
+  var [activeCategory, setActiveCategory] = useState("🔥 Hype");
+  var [hoveredEmoji, setHoveredEmoji] = useState(null);
+  var [floatingReactions, setFloatingReactions] = useState([]);
+  var [burstingBtn, setBurstingBtn] = useState(null);
+  var [emojiSearch, setEmojiSearch] = useState("");
+  var [selectedVod, setSelectedVod] = useState(null);
+  var [vodPlaying, setVodPlaying] = useState(false);
+  var [vodProgress, setVodProgress] = useState(22);
+  var [activeChapter, setActiveChapter] = useState(1);
+  var [sharedPlatforms, setSharedPlatforms] = useState({});
+  var [copiedLink, setCopiedLink] = useState(false);
+  var [shareMessage, setShareMessage] = useState("🔴 LIVE NOW on SeeWhy LIVE — join the stream! 🎵🔥");
+  var messagesEndRef = useRef(null);
+  var progressTimerRef = useRef(null);
+  var styleRef = useRef(null);
 
-  const { data: clips = [] } = useQuery({
+  var { data: clips = [] } = useQuery({
     queryKey: ['enhancement-clips'],
     queryFn: () => base44.entities.Clip.list('-created_date', 12),
   });
 
-  const { data: recentMessages = [] } = useQuery({
+  var { data: recentMessages = [] } = useQuery({
     queryKey: ['enhancement-messages'],
     queryFn: () => base44.entities.Message.list('-created_date', 20),
   });
 
-  const { data: shareActivities = [] } = useQuery({
+  var { data: shareActivities = [] } = useQuery({
     queryKey: ['share-activities'],
     queryFn: () => base44.entities.Activity.filter({ type: 'share' }),
   });
 
-  const displayVods = clips.map(c => ({
+  var displayVods = clips.map(c => ({
     id: c.id,
     title: c.title || 'Untitled Recording',
     creator: c.creator_name || 'Creator',
@@ -529,8 +529,8 @@ export default function EnhancementSuite() {
     highlights: c.highlights || 0,
   }));
 
-  const SHARE_ANALYTICS_DATA = (() => {
-    const defs = [
+  var SHARE_ANALYTICS_DATA = (() => {
+    var defs = [
       { label: 'Twitter/X', color: CV.cyan },
       { label: 'Discord',   color: '#D4854A' },
       { label: 'WhatsApp',  color: '#25D366' },
@@ -538,8 +538,8 @@ export default function EnhancementSuite() {
       { label: 'Instagram', color: '#E1306C' },
       { label: 'Facebook',  color: '#1877F2' },
     ];
-    const counts = defs.map(d => shareActivities.filter(a => a.title?.toLowerCase().includes(d.label.toLowerCase())).length);
-    const maxCount = Math.max(...counts, 1);
+    var counts = defs.map(d => shareActivities.filter(a => a.(title && title.toLowerCas)e().includes(d.label.toLowerCase())).length);
+    var maxCount = Math.max(...counts, 1);
     return defs.map((d, i) => ({ ...d, count: counts[i], pct: Math.round((counts[i] / maxCount) * 100) }));
   })();
 
@@ -557,7 +557,7 @@ export default function EnhancementSuite() {
   }, [recentMessages]);
 
   useEffect(() => {
-    const style = document.createElement("style");
+    var style = document.createElement("style");
     style.textContent = GLOBAL_STYLES;
     document.head.appendChild(style);
     styleRef.current = style;
@@ -565,7 +565,7 @@ export default function EnhancementSuite() {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.(current && current.scrollIntoVie)w({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
@@ -582,7 +582,7 @@ export default function EnhancementSuite() {
     return () => clearInterval(progressTimerRef.current);
   }, [vodPlaying]);
 
-  const sendMessage = useCallback(() => {
+  var sendMessage = useCallback(() => {
     if (!chatInput.trim()) return;
     setMessages(prev => [...prev, {
       id: Date.now(), user: "You", role: "sub", avatar: "😎",
@@ -592,16 +592,16 @@ export default function EnhancementSuite() {
     setChatInput("");
   }, [chatInput]);
 
-  const addEmoji = (emoji) => {
+  var addEmoji = (emoji) => {
     setChatInput(prev => prev + emoji);
     setHoveredEmoji(emoji);
   };
 
-  const fireReaction = (emoji, e) => {
+  var fireReaction = (emoji, e) => {
     setBurstingBtn(emoji);
     setTimeout(() => setBurstingBtn(null), 400);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const id = Date.now();
+    var rect = e.currentTarget.getBoundingClientRect();
+    var id = Date.now();
     setFloatingReactions(prev => [...prev, { id, emoji, x: rect.left + rect.width / 2, y: rect.top }]);
     setTimeout(() => setFloatingReactions(prev => prev.filter(r => r.id !== id)), 2000);
     setMessages(prev => [...prev, {
@@ -611,17 +611,17 @@ export default function EnhancementSuite() {
     }]);
   };
 
-  const handleShare = (platformId) => {
+  var handleShare = (platformId) => {
     setSharedPlatforms(prev => ({ ...prev, [platformId]: true }));
-    setTimeout(() => setSharedPlatforms(prev => { const n = { ...prev }; delete n[platformId]; return n; }), 3000);
+    setTimeout(() => setSharedPlatforms(prev => { var n = { ...prev }; delete n[platformId]; return n; }), 3000);
   };
 
-  const handleCopyLink = () => {
+  var handleCopyLink = () => {
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
-  const filteredEmojis = emojiSearch
+  var filteredEmojis = emojiSearch
     ? Object.values(EMOJI_CATEGORIES).flat().filter(e => e.includes(emojiSearch))
     : EMOJI_CATEGORIES[activeCategory] || [];
 
@@ -639,7 +639,7 @@ export default function EnhancementSuite() {
               <button className="vod-close-btn" onClick={() => setSelectedVod(null)}>✕</button>
               <div className="vod-player-ui">
                 <div className="vod-progress-bar" onClick={e => {
-                  const rect = e.currentTarget.getBoundingClientRect();
+                  var rect = e.currentTarget.getBoundingClientRect();
                   setVodProgress(((e.clientX - rect.left) / rect.width) * 100);
                 }}>
                   <div className="vod-progress-fill" style={{ width: `${vodProgress}%` }} />
@@ -911,9 +911,9 @@ export default function EnhancementSuite() {
         </div>
       )}
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -921,7 +921,7 @@ export default function EnhancementSuite() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

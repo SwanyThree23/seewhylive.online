@@ -5,36 +5,36 @@ import { base44 } from '@/api/base44Client';
 import { Share2, Play, ArrowLeft, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#D4AF37';
-const BG   = '#080B18';
+var GOLD = '#D4AF37';
+var BG   = '#080B18';
 
 export default function MomentDetail() {
-  const { id } = useParams();
+  var { id } = useParams();
 
-  const { data: clip, isLoading } = useQuery({
+  var { data: clip, isLoading } = useQuery({
     queryKey: ['moment', id],
     queryFn: () => base44.entities.StreamClip.get(id),
     enabled: !!id,
   });
 
-  const { data: room } = useQuery({
-    queryKey: ['moment-room', clip?.room_id],
+  var { data: room } = useQuery({
+    queryKey: ['moment-room', (clip && clip.room_id)],
     queryFn: () => base44.entities.WatchParty.filter({ id: clip.room_id }).then(r => r[0]),
-    enabled: !!clip?.room_id,
+    enabled: !!(clip && clip.room_id),
   });
 
   function handleShare() {
-    const url = window.location.href;
+    var url = window.location.href;
     if (navigator.share) {
-      navigator.share({ title: clip?.title || 'Moment', url }).catch(() => {});
+      navigator.share({ title: (clip && clip.title) || 'Moment', url }).catch(() => {});
     } else {
       navigator.clipboard.writeText(url).then(() => toast.success('Link copied!')).catch(() => {});
     }
   }
 
-  const dur = clip?.duration_seconds || Math.max(0, (clip?.end_timestamp_seconds || 30) - (clip?.start_timestamp_seconds || 0));
-  const durStr = `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, '0')}`;
-  const isLive = room?.status === 'live';
+  var dur = (clip && clip.duration_seconds) || Math.max(0, ((clip && clip.end_timestamp_seconds) || 30) - ((clip && clip.start_timestamp_seconds) || 0));
+  var durStr = `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, '0')}`;
+  var isLive = (room && room.status) === 'live';
 
   if (isLoading) {
     return (

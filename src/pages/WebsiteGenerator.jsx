@@ -7,15 +7,15 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useOpenRouter } from '../hooks/useOpenRouter';
 
-const BG   = '#07050A';
-const GOLD = '#C9A84C';
-const BURG = '#6B1F2A';
-const DIM  = 'rgba(255,255,255,0.45)';
-const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG   = '#07050A';
+var GOLD = '#C9A84C';
+var BURG = '#6B1F2A';
+var DIM  = 'rgba(255,255,255,0.45)';
+var T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const HISTORY_KEY = 'swl_website_history';
+var HISTORY_KEY = 'swl_website_history';
 
-const CATEGORIES = [
+var CATEGORIES = [
   { id: 'streaming',  label: '📡 Streaming' },
   { id: 'business',   label: '💼 Business' },
   { id: 'health',     label: '🏥 Health' },
@@ -30,7 +30,7 @@ const CATEGORIES = [
   { id: 'events',     label: '🎉 Events' },
 ];
 
-const TEMPLATES = {
+var TEMPLATES = {
   streaming: [
     {
       id: 'streaming',
@@ -414,7 +414,7 @@ Output complete self-contained HTML with embedded CSS and JS.`,
   ],
 };
 
-const COLOR_THEMES = [
+var COLOR_THEMES = [
   { id: 'dark-gold', label: 'Dark Gold', preview: ['#07050A', '#C9A84C'] },
   { id: 'dark-purple', label: 'Dark Purple', preview: ['#0A0714', '#9B59B6'] },
   { id: 'dark-blue', label: 'Dark Blue', preview: ['#080C18', '#3B82F6'] },
@@ -422,7 +422,7 @@ const COLOR_THEMES = [
   { id: 'warm-amber', label: 'Warm Amber', preview: ['#0E0905', '#F59E0B'] },
 ];
 
-const MODELS = [
+var MODELS = [
   { id: 'anthropic/claude-haiku-4-5', label: 'Claude Haiku (Fast)' },
   { id: 'anthropic/claude-sonnet-4-5', label: 'Claude Sonnet (Balanced)' },
   { id: 'openai/gpt-4o-mini', label: 'GPT-4o Mini' },
@@ -438,7 +438,7 @@ function saveHistory(items) {
   try { localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 5))); } catch {}
 }
 
-const inp = {
+var inp = {
   marginTop: 4, width: '100%', padding: '9px 12px', borderRadius: 8,
   background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(201,168,76,0.25)',
   color: 'rgba(255,255,255,0.9)', fontSize: 13, fontFamily: 'Barlow Condensed, sans-serif',
@@ -446,30 +446,30 @@ const inp = {
 };
 
 export default function WebsiteGenerator() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { invoke: invokeAI } = useOpenRouter();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { invoke: invokeAI } = useOpenRouter();
 
-  const [category, setCategory] = useState('streaming');
-  const [templateId, setTemplateId] = useState('streaming');
-  const [formData, setFormData] = useState({ name: '', tagline: '', context: '' });
-  const [selectedModel, setSelectedModel] = useState(MODELS[0].id);
-  const [colorTheme, setColorTheme] = useState('dark-gold');
-  const [embedChatbot, setEmbedChatbot] = useState(false);
-  const [embedVoice, setEmbedVoice] = useState(false);
-  const [embedSEO, setEmbedSEO] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [html, setHtml] = useState('');
-  const [tab, setTab] = useState('preview');
-  const [history, setHistory] = useState(loadHistory);
-  const [showHistory, setShowHistory] = useState(false);
-  const iframeRef = useRef(null);
+  var [category, setCategory] = useState('streaming');
+  var [templateId, setTemplateId] = useState('streaming');
+  var [formData, setFormData] = useState({ name: '', tagline: '', context: '' });
+  var [selectedModel, setSelectedModel] = useState(MODELS[0].id);
+  var [colorTheme, setColorTheme] = useState('dark-gold');
+  var [embedChatbot, setEmbedChatbot] = useState(false);
+  var [embedVoice, setEmbedVoice] = useState(false);
+  var [embedSEO, setEmbedSEO] = useState(true);
+  var [generating, setGenerating] = useState(false);
+  var [html, setHtml] = useState('');
+  var [tab, setTab] = useState('preview');
+  var [history, setHistory] = useState(loadHistory);
+  var [showHistory, setShowHistory] = useState(false);
+  var iframeRef = useRef(null);
 
-  const categoryTemplates = TEMPLATES[category] || [];
-  const selectedTemplate = categoryTemplates.find(t => t.id === templateId) || categoryTemplates[0];
+  var categoryTemplates = TEMPLATES[category] || [];
+  var selectedTemplate = categoryTemplates.find(t => t.id === templateId) || categoryTemplates[0];
 
   function selectCategory(cat) {
     setCategory(cat);
-    const first = TEMPLATES[cat]?.[0];
+    var first = TEMPLATES[cat]?.[0];
     if (first) setTemplateId(first.id);
   }
 
@@ -531,9 +531,9 @@ function startVoiceCall(){
 
   function buildSEOSnippet(name, tagline) {
     if (!embedSEO) return '';
-    const theme = COLOR_THEMES.find(t => t.id === colorTheme);
+    var theme = COLOR_THEMES.find(t => t.id === colorTheme);
     return `
-<meta name="description" content="${tagline || name} — ${selectedTemplate?.desc || 'Professional website'}" />
+<meta name="description" content="${tagline || name} — ${(selectedTemplate && selectedTemplate.desc) || 'Professional website'}" />
 <meta property="og:title" content="${name}" />
 <meta property="og:description" content="${tagline}" />
 <meta property="og:type" content="website" />
@@ -545,17 +545,17 @@ function startVoiceCall(){
 
   async function generate() {
     if (!selectedTemplate) { toast.error('Select a template first.'); return; }
-    const name = formData.name.trim() || user?.full_name || 'Brand Name';
-    const tagline = formData.tagline.trim() || selectedTemplate.desc;
-    const context = formData.context.trim();
+    var name = formData.name.trim() || (user && user.full_name) || 'Brand Name';
+    var tagline = formData.tagline.trim() || selectedTemplate.desc;
+    var context = formData.context.trim();
 
-    const chatbot_inject = buildChatbotSnippet();
-    const voice_inject = buildVoiceSnippet();
-    const seo_inject = buildSEOSnippet(name, tagline);
-    const theme = COLOR_THEMES.find(t => t.id === colorTheme);
-    const themeNote = theme ? `Use color scheme: primary background ${theme.preview[0]}, accent ${theme.preview[1]}.` : '';
+    var chatbot_inject = buildChatbotSnippet();
+    var voice_inject = buildVoiceSnippet();
+    var seo_inject = buildSEOSnippet(name, tagline);
+    var theme = COLOR_THEMES.find(t => t.id === colorTheme);
+    var themeNote = theme ? `Use color scheme: primary background ${theme.preview[0]}, accent ${theme.preview[1]}.` : '';
 
-    const finalPrompt = selectedTemplate.prompt
+    var finalPrompt = selectedTemplate.prompt
       .replace(/\{name\}/g, name)
       .replace(/\{tagline\}/g, tagline)
       .replace(/\{context\}/g, context || `${selectedTemplate.desc}.`)
@@ -570,19 +570,19 @@ function startVoiceCall(){
     setGenerating(true);
     setHtml('');
     try {
-      const raw = await invokeAI({
+      var raw = await invokeAI({
         prompt: finalPrompt,
         systemPrompt: 'You are an expert full-stack web developer specializing in conversion-optimized landing pages. Output ONLY complete, self-contained HTML with embedded CSS and JS. No explanations, no markdown fences unless asked. The entire page must work offline as a single .html file.',
         maxTokens: 6000,
         model: selectedModel,
       });
-      const match = raw.match(/```(?:html)?\s*([\s\S]*?)```/i);
-      const generated = match ? match[1].trim() : raw.trim();
+      var match = raw.match(/```(?:html)?\s*([\s\S]*?)```/i);
+      var generated = match ? match[1].trim() : raw.trim();
       setHtml(generated);
       setTab('preview');
       toast.success('Site generated!');
-      const item = { id: Date.now(), name, template: selectedTemplate.label, ts: Date.now() };
-      const updated = [{ ...item, html: generated }, ...history.filter(h => h.id !== item.id)];
+      var item = { id: Date.now(), name, template: selectedTemplate.label, ts: Date.now() };
+      var updated = [{ ...item, html: generated }, ...history.filter(h => h.id !== item.id)];
       setHistory(updated);
       saveHistory(updated);
     } catch (err) {
@@ -599,9 +599,9 @@ function startVoiceCall(){
 
   function downloadHtml() {
     if (!html) return;
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    var blob = new Blob([html], { type: 'text/html' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
     a.href = url;
     a.download = `${(formData.name || 'site').toLowerCase().replace(/\s+/g, '-')}.html`;
     a.click();
@@ -688,15 +688,15 @@ function startVoiceCall(){
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
-              <label style={{ fontSize: 11, color: DIM, ...T }}>{selectedTemplate?.fields?.[0] || 'Name'}</label>
+              <label style={{ fontSize: 11, color: DIM, ...T }}>{(selectedTemplate && selectedTemplate.fields)?.[0] || 'Name'}</label>
               <input value={formData.name} onChange={e => setField('name', e.target.value)}
-                placeholder={selectedTemplate?.fields?.[0] || 'Brand / Creator Name'}
+                placeholder={(selectedTemplate && selectedTemplate.fields)?.[0] || 'Brand / Creator Name'}
                 style={inp} />
             </div>
             <div>
-              <label style={{ fontSize: 11, color: DIM, ...T }}>{selectedTemplate?.fields?.[1] || 'Tagline'}</label>
+              <label style={{ fontSize: 11, color: DIM, ...T }}>{(selectedTemplate && selectedTemplate.fields)?.[1] || 'Tagline'}</label>
               <input value={formData.tagline} onChange={e => setField('tagline', e.target.value)}
-                placeholder={selectedTemplate?.fields?.[1] || 'Tagline or key phrase'}
+                placeholder={(selectedTemplate && selectedTemplate.fields)?.[1] || 'Tagline or key phrase'}
                 style={inp} />
             </div>
           </div>
@@ -704,7 +704,7 @@ function startVoiceCall(){
           <div>
             <label style={{ fontSize: 11, color: DIM, ...T }}>Additional Context (optional — location, hours, pricing, features)</label>
             <textarea value={formData.context} onChange={e => setField('context', e.target.value)}
-              placeholder={`E.g., "${selectedTemplate?.fields?.[2] || 'Located in Austin TX, est. 2020, 5-star rated'}, ${selectedTemplate?.fields?.[3] || 'contact@example.com'}"`}
+              placeholder={`E.g., "${(selectedTemplate && selectedTemplate.fields)?.[2] || 'Located in Austin TX, est. 2020, 5-star rated'}, ${(selectedTemplate && selectedTemplate.fields)?.[3] || 'contact@example.com'}"`}
               rows={2}
               style={{ ...inp, resize: 'vertical', lineHeight: 1.5 }} />
           </div>

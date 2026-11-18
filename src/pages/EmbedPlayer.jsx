@@ -16,11 +16,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 
-const VPS_HLS_BASE = 'https://srv1581658.hstgr.cloud/hls';
-const APP_URL      = 'https://seewhylive.online';
-const WARNING_LEAD = 30;   // seconds before paywall that warning bar appears
+var VPS_HLS_BASE = 'https://srv1581658.hstgr.cloud/hls';
+var APP_URL      = 'https://seewhylive.online';
+var WARNING_LEAD = 30;   // seconds before paywall that warning bar appears
 
-const C = {
+var C = {
   bg:     '#07050A',
   bg2:    '#0D0A08',
   gold:   '#C9A84C',
@@ -65,7 +65,7 @@ export default function EmbedPlayer() {
     if (!roomId || roomId === 'live') return;
     function fetchViewers() {
       base44.entities.Room.filter({ id: roomId })
-        .then(function(rooms) { if (rooms?.[0]?.viewer_count != null) setViewers(rooms[0].viewer_count); })
+        .then(function(rooms) { if ((rooms && rooms[0])?.viewer_count != null) setViewers(rooms[0].viewer_count); })
         .catch(function() {});
     }
     fetchViewers();
@@ -531,7 +531,7 @@ export default function EmbedPlayer() {
             </a>
             <button
               onClick={function() {
-                navigator.clipboard?.writeText(watchUrl).catch(function(){});
+                navigator.(clipboard && clipboard.writeTex)t(watchUrl).catch(function(){});
                 setLinkCopied(true);
                 setTimeout(function() { setLinkCopied(false); }, 2000);
               }}

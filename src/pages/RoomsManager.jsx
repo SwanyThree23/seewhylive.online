@@ -6,42 +6,42 @@ import QuickActionPanel from '../components/shared/QuickActionPanel';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
-const BG   = '#080B18';
-const BG2  = 'rgba(13,6,24,0.95)';
-const GOLD  = '#D4AF37';
-const GOLDD = '#8A6F2E';
-const SLATE = '#1A1530';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#7A6E8A';
-const GREEN = '#6DBF7E';
-const RED   = '#C0392B';
-const CYAN  = '#D4AF37';
-const PURPLE = '#7B5DA6';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO = { fontFamily: 'Space Mono, monospace' };
+var BG   = '#080B18';
+var BG2  = 'rgba(13,6,24,0.95)';
+var GOLD  = '#D4AF37';
+var GOLDD = '#8A6F2E';
+var SLATE = '#1A1530';
+var TEXT  = '#F0EAF8';
+var TEXTD = '#B8AECF';
+var TEXTM = '#7A6E8A';
+var GREEN = '#6DBF7E';
+var RED   = '#C0392B';
+var CYAN  = '#D4AF37';
+var PURPLE = '#7B5DA6';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var MONO = { fontFamily: 'Space Mono, monospace' };
 
-const OCT = 'polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)';
+var OCT = 'polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)';
 
-const VDO_ROOM = 'sw_thrrj4';
-const MEDIAMTX_API = 'https://seewhylive.online:9997';
+var VDO_ROOM = 'sw_thrrj4';
+var MEDIAMTX_API = 'https://seewhylive.online:9997';
 
-const DESTINATIONS = [
+var DESTINATIONS = [
   { key: 'youtube',  label: 'YouTube',  color: '#ff0000', icon: '▶' },
   { key: 'twitch',   label: 'Twitch',   color: '#9146ff', icon: '🎮' },
   { key: 'facebook', label: 'Facebook', color: '#1877f2', icon: 'f' },
   { key: 'kick',     label: 'Kick',     color: '#53fc18', icon: '⚡' },
 ];
 
-const INITIAL_ROOMS = [
+var INITIAL_ROOMS = [
   { id: 1, name: 'State vs State Main Stage', host: 'SwanyThree', status: 'live', viewers: 247, category: 'Tournament' },
   { id: 2, name: 'PK Battle Arena #1',        host: 'BigBoneEarl', status: 'live', viewers: 89, category: 'PK Battle' },
   { id: 3, name: 'Practice Lounge',           host: 'SwanyThree', status: 'idle', viewers: 0, category: 'Practice' },
   { id: 4, name: 'Watch Party — Classics',    host: 'SwanyThree', status: 'scheduled', viewers: 0, category: 'Watch Party' },
 ];
 
-const GLOBAL_CSS = `
+var GLOBAL_CSS = `
 @keyframes pulse-live{0%,100%{opacity:1;}50%{opacity:.35;}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 @keyframes rec-blink{0%,100%{opacity:1;}50%{opacity:.2;}}
@@ -51,9 +51,9 @@ const GLOBAL_CSS = `
 `;
 
 function formatTime(secs) {
-  const h = Math.floor(secs / 3600);
-  const m = Math.floor((secs % 3600) / 60);
-  const s = secs % 60;
+  var h = Math.floor(secs / 3600);
+  var m = Math.floor((secs % 3600) / 60);
+  var s = secs % 60;
   return h > 0
     ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
     : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
@@ -86,7 +86,7 @@ function Toggle({ value, onChange, color }) {
 }
 
 function StatusBadge({ status }) {
-  const conf = status === 'live'
+  var conf = status === 'live'
     ? { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.35)', color: GREEN, label: 'LIVE' }
     : status === 'scheduled'
     ? { bg: 'rgba(212,175,55,0.1)', border: 'rgba(212,175,55,0.3)', color: CYAN, label: 'SOON' }
@@ -104,19 +104,19 @@ function StatusBadge({ status }) {
 }
 
 export default function RoomsManager() {
-  const [rooms]             = useState(INITIAL_ROOMS);
-  const [selectedRoom, setSelectedRoom]   = useState(null);
-  const [recording, setRecording]         = useState(false);
-  const [recSecs, setRecSecs]             = useState(0);
-  const [destinations, setDestinations]   = useState({ youtube: false, twitch: false, facebook: false, kick: false });
-  const [recordings, setRecordings]       = useState([]);
-  const [mtxStatus, setMtxStatus]         = useState(null);
-  const [activeTab, setActiveTab]         = useState('rooms');
-  const recTimerRef = useRef(null);
-  const recBytesRef = useRef(0);
+  var [rooms]             = useState(INITIAL_ROOMS);
+  var [selectedRoom, setSelectedRoom]   = useState(null);
+  var [recording, setRecording]         = useState(false);
+  var [recSecs, setRecSecs]             = useState(0);
+  var [destinations, setDestinations]   = useState({ youtube: false, twitch: false, facebook: false, kick: false });
+  var [recordings, setRecordings]       = useState([]);
+  var [mtxStatus, setMtxStatus]         = useState(null);
+  var [activeTab, setActiveTab]         = useState('rooms');
+  var recTimerRef = useRef(null);
+  var recBytesRef = useRef(0);
 
   useEffect(() => {
-    const style = document.createElement('style');
+    var style = document.createElement('style');
     style.textContent = GLOBAL_CSS;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
@@ -126,12 +126,12 @@ export default function RoomsManager() {
   useEffect(() => {
     async function fetchMtx() {
       try {
-        const res = await fetch(`${MEDIAMTX_API}/v3/paths/list`, { signal: AbortSignal.timeout(5000) });
-        if (res.ok) { const d = await res.json(); setMtxStatus(d); }
+        var res = await fetch(`${MEDIAMTX_API}/v3/paths/list`, { signal: AbortSignal.timeout(5000) });
+        if (res.ok) { var d = await res.json(); setMtxStatus(d); }
       } catch { /* MediaMTX may not be reachable from browser — normal */ }
     }
     fetchMtx();
-    const id = setInterval(fetchMtx, 15000);
+    var id = setInterval(fetchMtx, 15000);
     return () => clearInterval(id);
   }, []);
 
@@ -148,16 +148,16 @@ export default function RoomsManager() {
   function stopRecording() {
     clearInterval(recTimerRef.current);
     setRecording(false);
-    const durationSecs = recSecs;
+    var durationSecs = recSecs;
     if (durationSecs > 0) {
-      const now = new Date();
+      var now = new Date();
       setRecordings(prev => [...prev, {
         id: Date.now(),
         name: `Recording ${now.toLocaleTimeString()}`,
         duration: formatTime(durationSecs),
         size: formatBytes(recBytesRef.current),
         date: now.toLocaleDateString(),
-        room: selectedRoom?.name || 'Unknown Room',
+        room: (selectedRoom && selectedRoom.name) || 'Unknown Room',
       }]);
     }
     setRecSecs(0);
@@ -169,7 +169,7 @@ export default function RoomsManager() {
     setDestinations(prev => ({ ...prev, [key]: !prev[key] }));
   }
 
-  const TABS = [
+  var TABS = [
     { key: 'rooms',   label: 'Rooms' },
     { key: 'stream',  label: 'Stream' },
     { key: 'vdo',     label: 'VDO.Ninja' },
@@ -214,7 +214,7 @@ export default function RoomsManager() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {rooms.map(room => (
               <div key={room.id} className="room-card" style={{
-                background: BG2, border: `1px solid ${selectedRoom?.id === room.id ? GOLD : 'rgba(212,175,55,0.1)'}`,
+                background: BG2, border: `1px solid ${(selectedRoom && selectedRoom.id) === room.id ? GOLD : 'rgba(212,175,55,0.1)'}`,
                 borderRadius: 14, padding: '14px 16px', cursor: 'pointer',
                 transition: 'border-color 0.15s',
               }} onClick={() => setSelectedRoom(room)}>

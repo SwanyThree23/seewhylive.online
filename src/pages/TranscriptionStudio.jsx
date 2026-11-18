@@ -23,24 +23,24 @@ import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const BG   = '#080B18';
-const BG2  = 'rgba(13,6,24,0.95)';
-const BG3  = '#0D0A1A';
-const GOLD = '#D4AF37';
-const GOLDD = '#8A6F2E';
-const SLATE = '#1A1530';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#7A6E8A';
-const CYAN  = '#D4AF37';
-const GREEN = '#6DBF7E';
-const SCARL = '#C0392B';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO = { fontFamily: 'Space Mono, monospace' };
+var BG   = '#080B18';
+var BG2  = 'rgba(13,6,24,0.95)';
+var BG3  = '#0D0A1A';
+var GOLD = '#D4AF37';
+var GOLDD = '#8A6F2E';
+var SLATE = '#1A1530';
+var TEXT  = '#F0EAF8';
+var TEXTD = '#B8AECF';
+var TEXTM = '#7A6E8A';
+var CYAN  = '#D4AF37';
+var GREEN = '#6DBF7E';
+var SCARL = '#C0392B';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var MONO = { fontFamily: 'Space Mono, monospace' };
 
-const CAPTION_NINJA_URL = 'https://caption.ninja';
+var CAPTION_NINJA_URL = 'https://caption.ninja';
 
-const SUPPORTED_LANGS = [
+var SUPPORTED_LANGS = [
   { code: 'en', label: 'English',    flag: '🇺🇸', voice: 'en-US' },
   { code: 'es', label: 'Español',    flag: '🇪🇸', voice: 'es-ES' },
   { code: 'fr', label: 'Français',   flag: '🇫🇷', voice: 'fr-FR' },
@@ -55,14 +55,14 @@ const SUPPORTED_LANGS = [
   { code: 'it', label: 'Italiano',   flag: '🇮🇹', voice: 'it-IT' },
 ];
 
-const EXPORT_FORMATS = [
+var EXPORT_FORMATS = [
   { key: 'srt',  label: 'SRT',  mime: 'text/plain', ext: 'srt' },
   { key: 'vtt',  label: 'VTT',  mime: 'text/vtt',   ext: 'vtt' },
   { key: 'txt',  label: 'TXT',  mime: 'text/plain', ext: 'txt' },
   { key: 'json', label: 'JSON', mime: 'application/json', ext: 'json' },
 ];
 
-const GLOBAL_CSS = `
+var GLOBAL_CSS = `
 @keyframes caretBlink{0%,100%{opacity:1;}50%{opacity:0;}}
 @keyframes lineIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 .ts-line{animation:lineIn .25s ease forwards;}
@@ -70,18 +70,18 @@ const GLOBAL_CSS = `
 
 
 // LANGS derived from SUPPORTED_LANGS so selector and Deepgram mode stay in sync
-const LANGS = SUPPORTED_LANGS.map(l => l.label);
+var LANGS = SUPPORTED_LANGS.map(l => l.label);
 
 function buildSRT(lines) {
   return lines.map((l, i) => {
-    const [m, s] = l.time.split(':').slice(1).map(Number);
-    const startMs = m * 60000 + s * 1000;
-    const endMs   = startMs + 3200;
-    const fmt = ms => {
-      const hh = String(Math.floor(ms / 3600000)).padStart(2, '0');
-      const mm = String(Math.floor((ms % 3600000) / 60000)).padStart(2, '0');
-      const ss = String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
-      const ff = String(ms % 1000).padStart(3, '0');
+    var [m, s] = l.time.split(':').slice(1).map(Number);
+    var startMs = m * 60000 + s * 1000;
+    var endMs   = startMs + 3200;
+    var fmt = ms => {
+      var hh = String(Math.floor(ms / 3600000)).padStart(2, '0');
+      var mm = String(Math.floor((ms % 3600000) / 60000)).padStart(2, '0');
+      var ss = String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
+      var ff = String(ms % 1000).padStart(3, '0');
       return `${hh}:${mm}:${ss},${ff}`;
     };
     return `${i + 1}\n${fmt(startMs)} --> ${fmt(endMs)}\n${l.text}\n`;
@@ -89,7 +89,7 @@ function buildSRT(lines) {
 }
 
 function CopyBtn({ value }) {
-  const [copied, setCopied] = useState(false);
+  var [copied, setCopied] = useState(false);
   return (
     <button
       onClick={() => { navigator.clipboard.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1600); }}
@@ -102,62 +102,63 @@ function CopyBtn({ value }) {
 }
 
 export default function TranscriptionStudio() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const roomId = activeRoomId;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var roomId = activeRoomId;
 
-  const [lines, setLines]         = useState([]);
-  const [live, setLive]           = useState(false);
-  const [lang, setLang]           = useState('English');
-  const [showOverlay, setShowOverlay] = useState(true);
-  const [autoScroll, setAutoScroll]  = useState(true);
-  const [tab, setTab]             = useState('transcript');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [translateTarget, setTranslateTarget] = useState('');  // target lang code for translation tab
-  const [translationMap, setTranslationMap] = useState({});    // { lineId: translated text }
-  const bottomRef = useRef(null);
-  const tickRef   = useRef(null);
-  const idRef     = useRef(1);
-  const startMsRef = useRef(Date.now());
-  const [captionHistory, setCaptionHistory] = useState([]);
-  const [demoText, setDemoText] = useState('');
-  const activeLang = SUPPORTED_LANGS.find(l => l.label === lang)?.code || 'en';
+  var [lines, setLines]         = useState([]);
+  var [live, setLive]           = useState(false);
+  var [lang, setLang]           = useState('English');
+  var [showOverlay, setShowOverlay] = useState(true);
+  var [autoScroll, setAutoScroll]  = useState(true);
+  var [tab, setTab]             = useState('transcript');
+  var [searchQuery, setSearchQuery] = useState('');
+  var [translateTarget, setTranslateTarget] = useState('');  // target lang code for translation tab
+  var [translationMap, setTranslationMap] = useState({});    // { lineId: translated text }
+  var bottomRef = useRef(null);
+  var tickRef   = useRef(null);
+  var idRef     = useRef(1);
+  var startMsRef = useRef(Date.now());
+  var [captionHistory, setCaptionHistory] = useState([]);
+  var [demoText, setDemoText] = useState('');
+  var _activeLangEntry = SUPPORTED_LANGS.find(l => l.label === lang);
+  var activeLang = (_activeLangEntry && _activeLangEntry.code) || 'en';
 
-  const tsTranslationCache = useRef(new Map());
+  var tsTranslationCache = useRef(new Map());
 
   async function tsTranslate(text, targetLang) {
-    const key = `${text}|${targetLang}`;
+    var key = `${text}|${targetLang}`;
     if (tsTranslationCache.current.has(key)) return tsTranslationCache.current.get(key);
     try {
-      const res = await fetch(
+      var res = await fetch(
         `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=${activeLang}|${targetLang}`
       );
       if (!res.ok) return null;
-      const data = await res.json();
-      const result = data.responseData?.translatedText || null;
+      var data = await res.json();
+      var result = data.(responseData && responseData.translatedText) || null;
       if (result) tsTranslationCache.current.set(key, result);
       return result;
     } catch { return null; }
   }
 
   useEffect(() => {
-    const style = document.createElement('style');
+    var style = document.createElement('style');
     style.textContent = GLOBAL_CSS;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
   }, []);
 
   useEffect(() => {
-    if (autoScroll) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (autoScroll) bottomRef.(current && current.scrollIntoVie)w({ behavior: 'smooth' });
   }, [lines, autoScroll]);
 
-  const SIMULATED = [
+  var SIMULATED = [
     "Alright, the players are taking their seats — this is going to be intense.",
     "Georgia is looking sharp tonight, they've been training hard for this rematch.",
     "Seven rock format means the first team to one-fifty wins the game.",
@@ -169,39 +170,39 @@ export default function TranscriptionStudio() {
     "Remember, creator keeps ninety percent on SeeWhy LIVE.",
     "Let's get this bracket started, domino culture all day.",
   ];
-  let simIdx = useRef(0);
+  var simIdx = useRef(0);
 
   function startLive() {
     setLive(true);
     tickRef.current = setInterval(() => {
-      const secs = Math.floor(Date.now() / 1000) % 3600;
-      const mm   = String(Math.floor(secs / 60)).padStart(2, '0');
-      const ss   = String(secs % 60).padStart(2, '0');
-      const text = SIMULATED[simIdx.current % SIMULATED.length];
+      var secs = Math.floor(Date.now() / 1000) % 3600;
+      var mm   = String(Math.floor(secs / 60)).padStart(2, '0');
+      var ss   = String(secs % 60).padStart(2, '0');
+      var text = SIMULATED[simIdx.current % SIMULATED.length];
       simIdx.current++;
       setLines(prev => [...prev, { id: idRef.current++, time: `00:${mm}:${ss}`, text }]);
     }, 3800);
   }
 
   // ── Deepgram live transcription ──────────────────────────────────────────────
-  const [dgMode, setDgMode]         = useState(false);    // true = Deepgram active
-  const [dgLines, setDgLines]       = useState([]);
-  const [dgLive, setDgLive]         = useState(false);
-  const dgWsRef    = useRef(null);
-  const dgRecRef   = useRef(null);
-  const dgChunkRef = useRef(null);
+  var [dgMode, setDgMode]         = useState(false);    // true = Deepgram active
+  var [dgLines, setDgLines]       = useState([]);
+  var [dgLive, setDgLive]         = useState(false);
+  var dgWsRef    = useRef(null);
+  var dgRecRef   = useRef(null);
+  var dgChunkRef = useRef(null);
 
   function getDgKey() { try { return localStorage.getItem('swl_apikey_deepgram') || ''; } catch { return ''; } }
 
   async function startDeepgram() {
-    const key = getDgKey();
+    var key = getDgKey();
     if (!key) { toast.error('Add your Deepgram API key in VaultPro → AI Keys first.'); return; }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const ws = new WebSocket(`wss://api.deepgram.com/v1/listen?language=${activeLang}&punctuate=true&interim_results=true`, ['token', key]);
+      var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      var ws = new WebSocket(`wss://api.deepgram.com/v1/listen?language=${activeLang}&punctuate=true&interim_results=true`, ['token', key]);
       ws.onopen = () => {
         setDgLive(true);
-        const rec = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+        var rec = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
         rec.ondataavailable = e => { if (ws.readyState === 1 && e.data.size > 0) ws.send(e.data); };
         rec.start(250);
         dgRecRef.current = rec;
@@ -209,13 +210,13 @@ export default function TranscriptionStudio() {
       };
       ws.onmessage = evt => {
         try {
-          const d = JSON.parse(evt.data);
-          const alt = d?.channel?.alternatives?.[0];
-          if (!alt?.transcript) return;
-          const isFinal = d.is_final;
+          var d = JSON.parse(evt.data);
+          var alt = (d && d.channel && d.channel.alternatives && d.channel.alternatives[0]);
+          if (!(alt && alt.transcript)) return;
+          var isFinal = d.is_final;
           if (isFinal && alt.transcript.trim()) {
-            const now = Date.now() - startMsRef.current;
-            const confidence = alt.confidence != null ? Math.round(alt.confidence * 100) : null;
+            var now = Date.now() - startMsRef.current;
+            var confidence = alt.confidence != null ? Math.round(alt.confidence * 100) : null;
             setDgLines(prev => [...prev, { text: alt.transcript.trim(), startMs: now, endMs: now + 3000, lang: activeLang, confidence }]);
             setCaptionHistory(prev => [...prev, { text: alt.transcript.trim(), startMs: now, endMs: now + 3000, lang: activeLang }]);
             setDemoText(alt.transcript.trim());
@@ -232,9 +233,9 @@ export default function TranscriptionStudio() {
   }
 
   function stopDeepgram() {
-    dgRecRef.current?.stop?.();
-    dgChunkRef.current?.getTracks?.()?.forEach?.(t => t.stop());
-    dgWsRef.current?.close?.();
+    if (dgRecRef.current && dgRecRef.current.stop) dgRecRef.current.stop();
+    if (dgChunkRef.current && dgChunkRef.current.getTracks) dgChunkRef.current.getTracks().forEach(function(t) { t.stop(); });
+    if (dgWsRef.current && dgWsRef.current.close) dgWsRef.current.close();
     dgRecRef.current = null;
     dgWsRef.current  = null;
     setDgLive(false);
@@ -247,17 +248,17 @@ export default function TranscriptionStudio() {
   }
 
   function msToSrt(ms) {
-    const pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
-    const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10);
+    var pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
+    var h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10);
     return `${pad(h)}:${pad(m)}:${pad(s)},${pad(cs)}`;
   }
 
-  const fullText = lines.map(l => `[${l.time}] ${l.text}`).join('\n');
-  const srtText = lines.map((l, i) => `${i + 1}\n${l.time},000 --> ${l.time},999\n${l.text}\n`).join('\n');
+  var fullText = lines.map(l => `[${l.time}] ${l.text}`).join('\n');
+  var srtText = lines.map((l, i) => `${i + 1}\n${l.time},000 --> ${l.time},999\n${l.text}\n`).join('\n');
 
   function downloadSRT() {
-    const blob = new Blob([srtText], { type: 'text/plain' });
-    const a = document.createElement('a');
+    var blob = new Blob([srtText], { type: 'text/plain' });
+    var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'transcript.srt';
     a.click();
@@ -269,10 +270,10 @@ export default function TranscriptionStudio() {
   // Auto-translate lines when a target language is selected
   useEffect(() => {
     if (!translateTarget) return;
-    let cancelled = false;
-    const pending = lines.filter(l => !translationMap[l.id]);
+    var cancelled = false;
+    var pending = lines.filter(l => !translationMap[l.id]);
     pending.slice(-15).forEach(async l => {
-      const result = await tsTranslate(l.text, translateTarget);
+      var result = await tsTranslate(l.text, translateTarget);
       if (!cancelled && result) setTranslationMap(prev => ({ ...prev, [l.id]: result }));
     });
     return () => { cancelled = true; };
@@ -280,19 +281,19 @@ export default function TranscriptionStudio() {
 
   // ── Export helpers ────────────────────────────────────────────────────────────
   function toSrtTime(ms) {
-    const pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
-    const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10);
+    var pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
+    var h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10);
     return `${pad(h)}:${pad(m)}:${pad(s)},${pad(cs)}`;
   }
 
   function toVttTime(ms) {
-    const pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
-    const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10);
+    var pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
+    var h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10);
     return `${pad(h)}:${pad(m)}:${pad(s)}.${pad(cs)}`;
   }
 
   function handleExport(fmt) {
-    let content = '';
+    var content = '';
     if (fmt.key === 'srt') {
       content = captionHistory.map((c, i) => `${i+1}\n${toSrtTime(c.startMs)} --> ${toSrtTime(c.endMs)}\n${c.text}\n`).join('\n');
     } else if (fmt.key === 'vtt') {
@@ -302,8 +303,8 @@ export default function TranscriptionStudio() {
     } else {
       content = captionHistory.map(c => `[${msToSrt(c.startMs).slice(0,8)}] ${c.text}`).join('\n');
     }
-    const blob = new Blob([content], { type: fmt.mime });
-    const a = document.createElement('a');
+    var blob = new Blob([content], { type: fmt.mime });
+    var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `transcript.${fmt.ext}`;
     a.click();
@@ -319,7 +320,7 @@ export default function TranscriptionStudio() {
     startMsRef.current = Date.now();
   }
 
-  const otherLangs = SUPPORTED_LANGS.filter(l => l.code !== activeLang);
+  var otherLangs = SUPPORTED_LANGS.filter(l => l.code !== activeLang);
 
   return (
     <div style={{ minHeight: '100vh', background: BG, display: 'flex', flexDirection: 'column' }}>
@@ -458,7 +459,7 @@ export default function TranscriptionStudio() {
                 </div>
                 <div style={{ paddingLeft: 63, fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: TEXT, lineHeight: 1.5 }}>
                   {translationMap[l.id] ? (
-                    <span style={{ color: '#6DBF7E' }}>{SUPPORTED_LANGS.find(x => x.code === translateTarget)?.flag} {translationMap[l.id]}</span>
+                    <span style={{ color: '#6DBF7E' }}>{(SUPPORTED_LANGS.find(x => x.code === translateTarget) && SUPPORTED_LANGS.find(x => x.code === translateTarget).flag)} {translationMap[l.id]}</span>
                   ) : (
                     <span style={{ color: TEXTM, ...MONO, fontSize: 9 }}>translating…</span>
                   )}
@@ -567,7 +568,7 @@ export default function TranscriptionStudio() {
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ShareToSocial content={{ title: 'Transcription Studio on SeeWhy LIVE', url: window.location.href }} />
         <AIStreamSummary roomId={activeRoomId} isHost={true} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
-        <RecordingManager userId={user?.id} />
+        <RecordingManager userId={(user && user.id)} />
         <LiveTranslationWidget roomId={activeRoomId} isHost={true} targetLanguage="en" />
         <LiveTranscription roomId={activeRoomId} isHost={true} />
         <OnlineUsersGrid compact maxVisible={8} />

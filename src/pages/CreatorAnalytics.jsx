@@ -13,14 +13,14 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
-const CREATOR_SPLIT = 0.90;
+var CREATOR_SPLIT = 0.90;
 function creatorCut(g) { return Math.floor(g * CREATOR_SPLIT); }
 function platformFee(g) { return g - creatorCut(g); }
 
-const RANGES = ['24h', '7d', '30d', '90d', 'All'];
-const TABS = ['overview', 'revenue', 'gems', 'viewers', 'streams'];
+var RANGES = ['24h', '7d', '30d', '90d', 'All'];
+var TABS = ['overview', 'revenue', 'gems', 'viewers', 'streams'];
 
-const GEM_TYPES = [
+var GEM_TYPES = [
   { name: 'Ruby', color: '#C0392B', value: 4200 },
   { name: 'Gold', color: '#d4af37', value: 3100 },
   { name: 'Diamond', color: '#D4854A', value: 2800 },
@@ -28,30 +28,30 @@ const GEM_TYPES = [
   { name: 'Bone', color: '#C4A882', value: 1200 },
 ];
 
-const MONTHLY_REVENUE = [
+var MONTHLY_REVENUE = [
   { month: 'Jan', gross: 620 }, { month: 'Feb', gross: 940 },
   { month: 'Mar', gross: 1870 }, { month: 'Apr', gross: 2180 },
   { month: 'May', gross: 3240 }, { month: 'Jun', gross: 2890 },
 ];
 
-const WEEKLY_GEMS = [
+var WEEKLY_GEMS = [
   { day: 'Mon', gems: 420 }, { day: 'Tue', gems: 380 }, { day: 'Wed', gems: 610 },
   { day: 'Thu', gems: 520 }, { day: 'Fri', gems: 890 }, { day: 'Sat', gems: 1240 }, { day: 'Sun', gems: 780 },
 ];
 
-const RETENTION = [
+var RETENTION = [
   { min: 0, pct: 100 }, { min: 5, pct: 88 }, { min: 10, pct: 76 }, { min: 15, pct: 68 },
   { min: 20, pct: 61 }, { min: 30, pct: 54 }, { min: 45, pct: 47 }, { min: 60, pct: 42 },
 ];
 
-const TRAFFIC_SOURCES = [
+var TRAFFIC_SOURCES = [
   { name: 'Direct', value: 38, color: '#d4af37' },
   { name: 'Social', value: 29, color: '#C0392B' },
   { name: 'Search', value: 18, color: '#6DBF7E' },
   { name: 'Referral', value: 15, color: '#D4854A' },
 ];
 
-const TIPPERS = [
+var TIPPERS = [
   { rank: 1, handle: 'DominoKing_WA', gems: 8420, streams: 34, value: 842 },
   { rank: 2, handle: 'CaliBones_Champ', gems: 6180, streams: 28, value: 618 },
   { rank: 3, handle: 'SwanyFan_OG', gems: 4290, streams: 41, value: 429 },
@@ -59,14 +59,14 @@ const TIPPERS = [
   { rank: 5, handle: 'VibeNBones99', gems: 2940, streams: 22, value: 294 },
 ];
 
-const TOP_STREAMS = [
+var TOP_STREAMS = [
   { title: 'Washington Classic 2026 — Finals', date: 'Jun 8', revenue: 1840, viewers: 4120, gems: 18400 },
   { title: 'PK Battle Night — SwanyThree23 vs King James', date: 'Jun 2', revenue: 920, viewers: 2840, gems: 9200 },
   { title: 'State vs State — WA vs CA Semifinals', date: 'May 28', revenue: 680, viewers: 1980, gems: 6800 },
   { title: 'Cali Bones × VibeN\'Bones Collab', date: 'May 22', revenue: 480, viewers: 1420, gems: 4800 },
 ];
 
-const initState = { tab: 'overview', range: '30d' };
+var initState = { tab: 'overview', range: '30d' };
 function reducer(state, action) {
   switch (action.type) {
     case 'SET_TAB': return { ...state, tab: action.payload };
@@ -96,18 +96,18 @@ function StatCard({ label, value, sub, delta, color, icon }) {
   );
 }
 
-const TOOLTIP_STYLE = { background: 'rgba(7,5,10,0.95)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, fontSize: 12, color: '#fff' };
+var TOOLTIP_STYLE = { background: 'rgba(7,5,10,0.95)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, fontSize: 12, color: '#fff' };
 
 export default function CreatorAnalytics() {
-  const [state, dispatch] = useReducer(reducer, initState);
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var [state, dispatch] = useReducer(reducer, initState);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
   var totalGross = MONTHLY_REVENUE.reduce((s, r) => s + r.gross, 0);
   var creatorTotal = creatorCut(totalGross);
@@ -351,9 +351,9 @@ export default function CreatorAnalytics() {
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <AudienceInsights creatorId={user?.id} />
+        <AudienceInsights creatorId={(user && user.id)} />
         <BroadcastAnalyticsDashboard streamSession={activeRoom || null} isLive={!!activeRoomId} />
-        <StreamerGoalsWidget creatorId={user?.id} roomId={activeRoomId} isCreator={true} embedded={true} />
+        <StreamerGoalsWidget creatorId={(user && user.id)} roomId={activeRoomId} isCreator={true} embedded={true} />
         <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
         <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
         <AutomatedHighlightReels streamSession={activeRoom || null} />

@@ -4,18 +4,18 @@ import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import ViewerCount from '../components/live/ViewerCount';
 
 // ── Brand constants ───────────────────────────────────────────────────────────
-const GOLD    = '#D4AF37';
-const GOLDD   = '#8A6F2E';
-const CRIMSON = '#800020';
-const BG      = '#080B18';
-const T       = 'Barlow Condensed, sans-serif';
-const MONO    = 'Space Mono, monospace';
+var GOLD    = '#D4AF37';
+var GOLDD   = '#8A6F2E';
+var CRIMSON = '#800020';
+var BG      = '#080B18';
+var T       = 'Barlow Condensed, sans-serif';
+var MONO    = 'Space Mono, monospace';
 
-const PREVIEW_SECS    = 120; // Golden Paywall preview window
-const BLUR_START_SECS = 20;  // Begin blurring with this many seconds left
-const MAX_BLUR_PX     = 18;
+var PREVIEW_SECS    = 120; // Golden Paywall preview window
+var BLUR_START_SECS = 20;  // Begin blurring with this many seconds left
+var MAX_BLUR_PX     = 18;
 
-const GLOBAL_CSS = `
+var GLOBAL_CSS = `
 @keyframes live-pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
 @keyframes wave{0%,100%{transform:scaleY(0.4);}50%{transform:scaleY(1);}}
 @keyframes fade-in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
@@ -31,8 +31,8 @@ const GLOBAL_CSS = `
 .timer-warn{animation:timer-warn .8s ease infinite;}
 `;
 
-const BARS = [0.4, 0.7, 1.0, 0.7, 0.5, 0.9, 0.6, 0.8, 0.45, 0.75];
-const PAY_METHODS = ['Stripe', 'PayPal', 'CashApp', 'Venmo'];
+var BARS = [0.4, 0.7, 1.0, 0.7, 0.5, 0.9, 0.6, 0.8, 0.45, 0.75];
+var PAY_METHODS = ['Stripe', 'PayPal', 'CashApp', 'Venmo'];
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 function LiveBadge() {
@@ -86,36 +86,36 @@ function AttributionBadge() {
 }
 
 function fmt(secs) {
-  const m = Math.floor(secs / 60);
-  const s = secs % 60;
+  var m = Math.floor(secs / 60);
+  var s = secs % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function EmbedPage() {
-  const params   = new URLSearchParams(window.location.search);
-  const roomId   = params.get('room');
-  const priceOTP = parseFloat(params.get('price') || '4.99');
-  const priceSub = parseFloat(params.get('sub')   || '9.99');
+  var params   = new URLSearchParams(window.location.search);
+  var roomId   = params.get('room');
+  var priceOTP = parseFloat(params.get('price') || '4.99');
+  var priceSub = parseFloat(params.get('sub')   || '9.99');
 
-  const [room, setRoom]         = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(false);
+  var [room, setRoom]         = useState(null);
+  var [loading, setLoading]   = useState(true);
+  var [error, setError]       = useState(false);
 
   // Playback state
-  const [muted, setMuted]       = useState(true);
-  const videoRef                = useRef(null);
+  var [muted, setMuted]       = useState(true);
+  var videoRef                = useRef(null);
 
   // Golden Paywall state
-  const [timeLeft, setTimeLeft]       = useState(PREVIEW_SECS);
-  const [paywallLocked, setPaywallLocked] = useState(false);
-  const [extended, setExtended]       = useState(false);
-  const [blurPx, setBlurPx]           = useState(0);
-  const [selectedMethod, setMethod]   = useState(null);
+  var [timeLeft, setTimeLeft]       = useState(PREVIEW_SECS);
+  var [paywallLocked, setPaywallLocked] = useState(false);
+  var [extended, setExtended]       = useState(false);
+  var [blurPx, setBlurPx]           = useState(0);
+  var [selectedMethod, setMethod]   = useState(null);
 
   // ── Styles injected once ──────────────────────────────────────────────────
   useEffect(() => {
-    const tag = document.createElement('style');
+    var tag = document.createElement('style');
     tag.textContent = GLOBAL_CSS;
     document.head.appendChild(tag);
     document.body.style.cssText = 'margin:0;padding:0;overflow:hidden;background:#080B18;';
@@ -130,7 +130,7 @@ export default function EmbedPage() {
     if (!roomId) { setError(true); setLoading(false); return; }
     base44.entities.Room.filter({ id: roomId })
       .then(rooms => {
-        if (rooms?.length) setRoom(rooms[0]);
+        if ((rooms && rooms.length)) setRoom(rooms[0]);
         else setError(true);
       })
       .catch(() => setError(true))
@@ -140,7 +140,7 @@ export default function EmbedPage() {
   // ── HLS playback ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!room || !videoRef.current) return;
-    const vid = videoRef.current;
+    var vid = videoRef.current;
     vid.src = `https://seewhylive.online:8888/${roomId}/index.m3u8`;
     vid.muted = muted;
     vid.play().catch(() => {});
@@ -153,9 +153,9 @@ export default function EmbedPage() {
   // ── 120-second Golden Paywall countdown ──────────────────────────────────
   useEffect(() => {
     if (paywallLocked) return;
-    const tid = setInterval(() => {
+    var tid = setInterval(() => {
       setTimeLeft(prev => {
-        const next = prev - 1;
+        var next = prev - 1;
         // Ramp up blur in the final BLUR_START_SECS seconds
         if (next <= BLUR_START_SECS && next > 0) {
           setBlurPx(((BLUR_START_SECS - next) / BLUR_START_SECS) * MAX_BLUR_PX);
@@ -178,10 +178,10 @@ export default function EmbedPage() {
   }
 
   // Preview progress: how much of the bar is "consumed"
-  const progressPct = ((PREVIEW_SECS - timeLeft) / PREVIEW_SECS) * 100;
-  const isLive      = room?.status === 'live';
-  const nearEnd     = timeLeft <= 30 && !paywallLocked;
-  const creatorChar = (room?.host_id || 'S').charAt(0).toUpperCase();
+  var progressPct = ((PREVIEW_SECS - timeLeft) / PREVIEW_SECS) * 100;
+  var isLive      = (room && room.status) === 'live';
+  var nearEnd     = timeLeft <= 30 && !paywallLocked;
+  var creatorChar = ((room && room.host_id) || 'S').charAt(0).toUpperCase();
 
   // ── Loading / Error screens ───────────────────────────────────────────────
   if (loading) {
@@ -469,7 +469,7 @@ export default function EmbedPage() {
         </div>
       )}
       <StreamHealthMonitor isStreaming={true} />
-      <ViewerCount count={room?.viewer_count || 0} peakViewers={room?.viewer_count || 0} />
+      <ViewerCount count={(room && room.viewer_count) || 0} peakViewers={(room && room.viewer_count) || 0} />
     </div>
   );
 }

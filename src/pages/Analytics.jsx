@@ -126,7 +126,7 @@ export default function AnalyticsPage() {
   var revenueChartData = Object.entries(revenueByMonth).slice(-6).map(([month, revenue]) => ({ month, revenue }));
 
   var categoryGroups = rooms.reduce((acc, r) => {
-    var cat = r.tags?.[0] || 'other';
+    var cat = (r.tags && r.tags[0]) || 'other';
     acc[cat] = (acc[cat] || 0) + 1;
     return acc;
   }, {});
@@ -389,7 +389,7 @@ export default function AnalyticsPage() {
         </div>
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <LeaderboardPanel roomId={rooms[0]?.id || null} />
+          <LeaderboardPanel roomId={(rooms[0] && rooms[0].id) || null} />
           <ShareToSocial content={{ title: 'SeeWhy LIVE Analytics', url: window.location.href }} />
           <AudienceInsights />
           <StreamerMonetizationCenter userId={(user && user.id)} />

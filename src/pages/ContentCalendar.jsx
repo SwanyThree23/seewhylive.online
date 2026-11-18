@@ -20,14 +20,14 @@ import PreStreamCountdown from '../components/live/PreStreamCountdown';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
-const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+var lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
-const STATUS_STYLE = {
+var STATUS_STYLE = {
   draft:      { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)' },
   scheduled:  { bg: 'rgba(74,138,122,0.1)',    border: 'rgba(74,138,122,0.3)',    color: '#4A8A7A' },
   published:  { bg: 'rgba(109,191,126,0.1)',    border: 'rgba(109,191,126,0.3)',    color: '#6DBF7E' },
@@ -45,70 +45,70 @@ function getTypeIcon(type) {
   }
 }
 
-const FILTERS = ['all', 'today', 'week', 'month'];
+var FILTERS = ['all', 'today', 'week', 'month'];
 
 export default function ContentCalendarPage() {
-  const [dateFilter, setDateFilter] = useState('all');
-  const [showCreate, setShowCreate] = useState(false);
-  const [formData, setFormData] = useState({ content_type: 'room', title: '', description: '', scheduled_for: new Date().toISOString(), recurrence: 'none' });
-  const queryClient = useQueryClient();
+  var [dateFilter, setDateFilter] = useState('all');
+  var [showCreate, setShowCreate] = useState(false);
+  var [formData, setFormData] = useState({ content_type: 'room', title: '', description: '', scheduled_for: new Date().toISOString(), recurrence: 'none' });
+  var queryClient = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: scheduledContent = [] } = useQuery({
-    queryKey: ['scheduled-content', user?.id],
-    queryFn: () => base44.entities.ScheduledContent.filter({ creator_id: user?.id }, 'scheduled_for'),
+  var { data: scheduledContent = [] } = useQuery({
+    queryKey: ['scheduled-content', (user && user.id)],
+    queryFn: () => base44.entities.ScheduledContent.filter({ creator_id: (user && user.id) }, 'scheduled_for'),
     enabled: !!user,
   });
 
-  const createMutation = useMutation({
+  var createMutation = useMutation({
     mutationFn: (data) => base44.entities.ScheduledContent.create({ ...data, creator_id: user.id, status: 'scheduled' }),
     onSuccess: (content) => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-content'] });
       setShowCreate(false);
       setFormData({ content_type: 'room', title: '', description: '', scheduled_for: new Date().toISOString(), recurrence: 'none' });
       toast.success('Content scheduled!');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'stream_scheduled',
-          title: `Scheduled content: ${content?.title || 'Content'}`,
+          title: `Scheduled content: ${(content && content.title) || 'Content'}`,
         }).catch(() => {});
       }
     },
     onError: () => toast.error('Action failed.'),
   });
 
-  const updateStatusMutation = useMutation({
+  var updateStatusMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.ScheduledContent.update(id, { status }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['scheduled-content'] }),
     onError: () => toast.error('Action failed.'),
   });
 
-  const filteredContent = scheduledContent.filter(item => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const d = new Date(item.scheduled_for);
+  var filteredContent = scheduledContent.filter(item => {
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var d = new Date(item.scheduled_for);
     if (dateFilter === 'today') return isSameDay(d, today);
     if (dateFilter === 'week') return d >= today && d <= addDays(today, 7);
     if (dateFilter === 'month') return d >= startOfMonth(now) && d <= endOfMonth(now);
     return true;
   });
 
-  const set = (k, v) => setFormData(f => ({ ...f, [k]: v }));
+  var set = (k, v) => setFormData(f => ({ ...f, [k]: v }));
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -156,10 +156,10 @@ export default function ContentCalendarPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredContent.map((item) => {
-              const scheduledDate = new Date(item.scheduled_for);
-              const isUpcoming = scheduledDate > new Date();
-              const ss = STATUS_STYLE[item.status] || STATUS_STYLE.draft;
-              const todayHighlight = isToday(scheduledDate);
+              var scheduledDate = new Date(item.scheduled_for);
+              var isUpcoming = scheduledDate > new Date();
+              var ss = STATUS_STYLE[item.status] || STATUS_STYLE.draft;
+              var todayHighlight = isToday(scheduledDate);
               return (
                 <div key={item.id} className="rounded-2xl p-4 space-y-3"
                   style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${todayHighlight ? 'rgba(212,175,55,0.35)' : 'rgba(212,175,55,0.08)'}` }}>
@@ -267,7 +267,7 @@ export default function ContentCalendarPage() {
         </div>
       )}
 
-      {user?.id && (
+      {(user && user.id) && (
         <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <StreamGoals roomId={new URLSearchParams(window.location.search).get('room_id')} isHost={true} />
           <AIHighlightGenerator creatorId={user.id} />
@@ -279,7 +279,7 @@ export default function ContentCalendarPage() {
         <ShareToSocial content={{ url: window.location.href, title: 'Content Calendar — SeeWhy LIVE' }} />
         <ContentRecommendations />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        {(user && user.id) && <MilestoneAlerts creatorId={user.id} />}
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
       </div>
 

@@ -18,27 +18,27 @@ import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDas
 import GuestControls from '../components/live/GuestControls';
 import LivePoll from '../components/live/LivePoll';
 
-const BG    = '#080B18';
-const BG2   = '#0D0A08';
-const BG3   = '#13100A';
-const GOLD  = '#D4AF37';
-const GOLDD = '#8A6F2E';
-const SLATE = '#1A1530';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#7A6E8A';
-const CRIMSON = '#800020';
-const RED   = '#C0392B';
-const GREEN = '#6DBF7E';
-const SCARL = '#C0392B';
-const CRIM = '#800020';
-const CYAN  = '#D4AF37';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO = { fontFamily: 'Space Mono, monospace' };
+var BG    = '#080B18';
+var BG2   = '#0D0A08';
+var BG3   = '#13100A';
+var GOLD  = '#D4AF37';
+var GOLDD = '#8A6F2E';
+var SLATE = '#1A1530';
+var TEXT  = '#F0EAF8';
+var TEXTD = '#B8AECF';
+var TEXTM = '#7A6E8A';
+var CRIMSON = '#800020';
+var RED   = '#C0392B';
+var GREEN = '#6DBF7E';
+var SCARL = '#C0392B';
+var CRIM = '#800020';
+var CYAN  = '#D4AF37';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var MONO = { fontFamily: 'Space Mono, monospace' };
 
-const OCT = 'polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)';
+var OCT = 'polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)';
 
-const OPPONENTS = [
+var OPPONENTS = [
   { id: 'swanythree',   name: 'SwanyThree',    state: 'WA', wins: 47, losses: 8,  avatar: '🦁' },
   { id: 'bigbone',      name: 'BigBoneEarl',   state: 'WA', wins: 38, losses: 14, avatar: '🏆' },
   { id: 'fasthandsr',   name: 'FastHandsR',    state: 'TX', wins: 52, losses: 11, avatar: '⚡' },
@@ -46,7 +46,7 @@ const OPPONENTS = [
   { id: 'stonewall',    name: 'StoneWall',     state: 'CA', wins: 33, losses: 19, avatar: '🪨' },
 ];
 
-const GLOBAL_CSS = `
+var GLOBAL_CSS = `
 @keyframes pkPulse{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0);}50%{box-shadow:0 0 0 8px rgba(192,57,43,0.18);}}
 @keyframes voteShake{0%,100%{transform:scale(1);}25%{transform:scale(1.08);}75%{transform:scale(0.96);}}
 @keyframes pk-in{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
@@ -54,8 +54,8 @@ const GLOBAL_CSS = `
 `;
 
 function battleToUI(b) {
-  const creatorScore  = (b.creator_tips || 0) + (b.creator_subs || 0) * 10;
-  const challengerScore = (b.challenger_tips || 0) + (b.challenger_subs || 0) * 10;
+  var creatorScore  = (b.creator_tips || 0) + (b.creator_subs || 0) * 10;
+  var challengerScore = (b.challenger_tips || 0) + (b.challenger_subs || 0) * 10;
   return {
     id: b.id,
     raw: b,
@@ -68,8 +68,8 @@ function battleToUI(b) {
 }
 
 function ScoreBar({ battle }) {
-  const total = battle.a.score + battle.b.score;
-  const pct   = total > 0 ? (battle.a.score / total) * 100 : 50;
+  var total = battle.a.score + battle.b.score;
+  var pct   = total > 0 ? (battle.a.score / total) * 100 : 50;
   return (
     <div style={{ height: 6, borderRadius: 3, overflow: 'hidden', background: 'rgba(212,133,74,0.2)', margin: '8px 0' }}>
       <motion.div
@@ -82,9 +82,9 @@ function ScoreBar({ battle }) {
 }
 
 function BattleCard({ battle, onVote, myVote }) {
-  const isLive = battle.status === 'live';
-  const total  = battle.a.score + battle.b.score;
-  const pctA   = total > 0 ? Math.round((battle.a.score / total) * 100) : 50;
+  var isLive = battle.status === 'live';
+  var total  = battle.a.score + battle.b.score;
+  var pctA   = total > 0 ? Math.round((battle.a.score / total) * 100) : 50;
 
   return (
     <motion.div
@@ -191,36 +191,36 @@ function BattleCard({ battle, onVote, myVote }) {
 }
 
 export default function PKBattleArena() {
-  const roomId = new URLSearchParams(window.location.search).get('id') || null;
-  const navigate = useNavigate();
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: battleMembers = [] } = useQuery({
+  var roomId = new URLSearchParams(window.location.search).get('id') || null;
+  var navigate = useNavigate();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: battleMembers = [] } = useQuery({
     queryKey: ['pk-members', roomId],
     queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: roomId, is_active: true }),
     enabled: !!roomId,
     refetchInterval: 10000,
   });
-  const [tab, setTab] = useState('live');
-  const [votes, setVotes] = useState({});
-  const { data: rawBattles = [] } = useQuery({
+  var [tab, setTab] = useState('live');
+  var [votes, setVotes] = useState({});
+  var { data: rawBattles = [] } = useQuery({
     queryKey: ['pk-arena-battles'],
     queryFn: () => base44.entities.PKBattle.list('-created_date', 20),
     refetchInterval: 5000,
   });
-  const battles = rawBattles.map(battleToUI);
-  const [selectedOpponent, setSelectedOpponent] = useState(null);
-  const [battleSecs, setBattleSecs]             = useState(0);
-  const [hostVotes, setHostVotes]               = useState(50);
-  const [oppVotes, setOppVotes]                 = useState(50);
-  const [battleHistory, setBattleHistory]       = useState([]);
-  const [phase, setPhase]                       = useState('select'); // select | countdown | live | result
-  const [countdown, setCountdown]               = useState(3);
-  const timerRef = useRef(null);
-  const voteRef  = useRef(null);
-  const cdRef    = useRef(null);
+  var battles = rawBattles.map(battleToUI);
+  var [selectedOpponent, setSelectedOpponent] = useState(null);
+  var [battleSecs, setBattleSecs]             = useState(0);
+  var [hostVotes, setHostVotes]               = useState(50);
+  var [oppVotes, setOppVotes]                 = useState(50);
+  var [battleHistory, setBattleHistory]       = useState([]);
+  var [phase, setPhase]                       = useState('select'); // select | countdown | live | result
+  var [countdown, setCountdown]               = useState(3);
+  var timerRef = useRef(null);
+  var voteRef  = useRef(null);
+  var cdRef    = useRef(null);
 
   useEffect(() => {
-    const style = document.createElement('style');
+    var style = document.createElement('style');
     style.textContent = GLOBAL_CSS;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
@@ -229,18 +229,18 @@ export default function PKBattleArena() {
   async function vote(battleId, side) {
     if (votes[battleId] || !user) return;
     setVotes(v => ({ ...v, [battleId]: side }));
-    const battle = rawBattles.find(b => b.id === battleId);
+    var battle = rawBattles.find(b => b.id === battleId);
     if (!battle) return;
-    const field = side === 'a' ? 'creator_tips' : 'challenger_tips';
+    var field = side === 'a' ? 'creator_tips' : 'challenger_tips';
     await base44.entities.PKBattle.update(battleId, { [field]: (battle[field] || 0) + 1 }).catch(() => {});
     await base44.entities.Activity.create({ type: 'pk_vote', user_id: user.id, entity_id: battleId, metadata: { side } }).catch(() => {});
   }
 
-  const liveBattles     = battles.filter(b => b.status === 'live');
-  const upcomingBattles = battles.filter(b => b.status === 'upcoming' || b.status === 'pending');
-  const displayed       = tab === 'live' ? liveBattles : upcomingBattles;
-  const totalVotes = battles.length;
-  const battleActive = liveBattles.length > 0;
+  var liveBattles     = battles.filter(b => b.status === 'live');
+  var upcomingBattles = battles.filter(b => b.status === 'upcoming' || b.status === 'pending');
+  var displayed       = tab === 'live' ? liveBattles : upcomingBattles;
+  var totalVotes = battles.length;
+  var battleActive = liveBattles.length > 0;
 
   return (
     <div style={{ minHeight: '100vh', background: BG, display: 'flex', flexDirection: 'column' }}>

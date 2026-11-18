@@ -18,12 +18,12 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const FEATURE_STATUS = [
+var FEATURE_STATUS = [
   { name: 'Live Room Streaming', status: 'live', icon: Radio, note: 'Audio/Video/Hybrid rooms, participant management, hand-raise' },
   { name: 'Real-Time Chat', status: 'live', icon: MessageSquare, note: 'Full chat with moderation, emoji, quick reactions' },
   { name: 'Multi-Stream / RTMP Fanout', status: 'live', icon: Globe, note: 'Simultaneous broadcast to YouTube, Twitch, TikTok, Facebook via MediaMTX' },
@@ -62,36 +62,36 @@ const FEATURE_STATUS = [
   { name: 'Guardian AI Moderation', status: 'live', icon: Shield, note: 'Real-time risk thresholds with auto-flag/mute/ban — Claude Haiku powered' },
 ];
 
-const STATUS_STYLE = {
+var STATUS_STYLE = {
   live:    { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)',  color: '#6DBF7E', dot: '#6DBF7E' },
   beta:    { bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: GOLD,      dot: GOLD },
   planned: { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)', dot: 'rgba(255,255,255,0.2)' },
 };
 
 export default function BetaStatusPage() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: rooms = [] } = useQuery({
+  var { data: rooms = [] } = useQuery({
     queryKey: ['all-rooms-beta'],
     queryFn: () => base44.entities.Room.list('-created_date', 100),
   });
 
-  const liveCount = FEATURE_STATUS.filter(f => f.status === 'live').length;
-  const betaCount = FEATURE_STATUS.filter(f => f.status === 'beta').length;
-  const liveRooms = rooms.filter(r => r.status === 'live').length;
+  var liveCount = FEATURE_STATUS.filter(f => f.status === 'live').length;
+  var betaCount = FEATURE_STATUS.filter(f => f.status === 'beta').length;
+  var liveRooms = rooms.filter(r => r.status === 'live').length;
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -143,8 +143,8 @@ export default function BetaStatusPage() {
           </div>
           <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
             {FEATURE_STATUS.map((feature) => {
-              const cfg = STATUS_STYLE[feature.status];
-              const Icon = feature.icon;
+              var cfg = STATUS_STYLE[feature.status];
+              var Icon = feature.icon;
               return (
                 <div key={feature.name} className="flex items-start gap-3 px-5 py-3">
                   <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ background: cfg.dot }} />
@@ -223,8 +223,8 @@ export default function BetaStatusPage() {
           <StreamGoals isHost={true} />
           <StreamAnalyticsDashboard roomId={activeRoomId} />
           <HostAlertCenter />
-          <PointsNotification userId={user?.id} />
-          <MilestoneAlerts creatorId={user?.id} />
+          <PointsNotification userId={(user && user.id)} />
+          <MilestoneAlerts creatorId={(user && user.id)} />
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />

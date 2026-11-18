@@ -28,44 +28,44 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
-const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+var lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
-const REFERRAL_BASE = `${window.location.origin}/Welcome`;
+var REFERRAL_BASE = `${window.location.origin}/Welcome`;
 
 export default function InviteUsersPage() {
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('user');
-  const [inviting, setInviting] = useState(false);
-  const [invitedList, setInvitedList] = useState([]);
-  const [copiedLink, setCopiedLink] = useState(false);
+  var [email, setEmail] = useState('');
+  var [role, setRole] = useState('user');
+  var [inviting, setInviting] = useState(false);
+  var [invitedList, setInvitedList] = useState([]);
+  var [copiedLink, setCopiedLink] = useState(false);
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const isAdmin = user?.role === 'admin';
-  const referralLink = `${REFERRAL_BASE}?ref=${user?.id}`;
+  var isAdmin = (user && user.role) === 'admin';
+  var referralLink = `${REFERRAL_BASE}?ref=${(user && user.id)}`;
 
-  const handleInvite = async () => {
+  var handleInvite = async () => {
     if (!email.trim() || !email.includes('@')) { toast.error('Please enter a valid email address'); return; }
     setInviting(true);
     try {
       await base44.users.inviteUser(email.trim(), isAdmin ? role : 'user');
       setInvitedList(prev => [...prev, { email: email.trim(), role: isAdmin ? role : 'user', sentAt: new Date() }]);
       toast.success(`Invite sent to ${email.trim()}!`);
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'follow',
@@ -79,7 +79,7 @@ export default function InviteUsersPage() {
     setInviting(false);
   };
 
-  const handleCopyLink = () => {
+  var handleCopyLink = () => {
     navigator.clipboard.writeText(referralLink).then(() => {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2500);
@@ -240,9 +240,9 @@ export default function InviteUsersPage() {
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -250,7 +250,7 @@ export default function InviteUsersPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

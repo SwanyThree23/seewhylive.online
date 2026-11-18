@@ -235,7 +235,7 @@ export default function CreatorChannel() {
                 <Radio className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>Not currently live</p>
                 {scheduledRooms.length > 0 && (
-                  <p className="text-sm mt-2">Next stream: <strong style={{ color: GOLD }}>{scheduledRooms[0]?.title}</strong></p>
+                  <p className="text-sm mt-2">Next stream: <strong style={{ color: GOLD }}>{scheduledRooms[0] && scheduledRooms[0].title}</strong></p>
                 )}
               </div>
             )}
@@ -274,7 +274,7 @@ export default function CreatorChannel() {
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase" style={{ background: 'rgba(74,138,122,0.1)', border: '1px solid rgba(74,138,122,0.2)', color: '#4A8A7A', ...T }}>Upcoming</span>
               </div>
             ))}
-            {!(profile && profile.stream_schedule)?.length && !scheduledRooms.length && (
+            {!((profile && profile.stream_schedule && profile.stream_schedule.length)) && !scheduledRooms.length && (
               <p className="text-center py-12" style={{ color: 'rgba(255,255,255,0.25)' }}>No upcoming streams scheduled</p>
             )}
           </div>

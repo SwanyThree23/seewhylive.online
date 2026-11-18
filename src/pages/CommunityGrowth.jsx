@@ -30,53 +30,53 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TABS = [
+var TABS = [
   { id: 'challenges', label: 'Challenges', icon: Trophy },
   { id: 'referrals', label: 'Referrals', icon: Gift },
   { id: 'announcements', label: 'Announcements', icon: Megaphone },
 ];
 
 export default function CommunityGrowthPage() {
-  const [searchParams] = useSearchParams();
-  const communityId = searchParams.get('id');
-  const [selectedChallenge, setSelectedChallenge] = useState(null);
-  const [activeTab, setActiveTab] = useState('challenges');
+  var [searchParams] = useSearchParams();
+  var communityId = searchParams.get('id');
+  var [selectedChallenge, setSelectedChallenge] = useState(null);
+  var [activeTab, setActiveTab] = useState('challenges');
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: community } = useQuery({
+  var { data: community } = useQuery({
     queryKey: ['community', communityId],
     queryFn: () => base44.entities.Community.filter({ id: communityId }).then(c => c[0]),
     enabled: !!communityId,
   });
 
-  const { data: membership } = useQuery({
-    queryKey: ['membership', communityId, user?.id],
-    queryFn: () => base44.entities.CommunityMember.filter({ community_id: communityId, user_id: user?.id }).then(m => m[0]),
+  var { data: membership } = useQuery({
+    queryKey: ['membership', communityId, (user && user.id)],
+    queryFn: () => base44.entities.CommunityMember.filter({ community_id: communityId, user_id: (user && user.id) }).then(m => m[0]),
     enabled: !!communityId && !!user,
   });
 
-  const { data: challenges = [] } = useQuery({
+  var { data: challenges = [] } = useQuery({
     queryKey: ['challenges', communityId],
     queryFn: () => base44.entities.Challenge.filter({ community_id: communityId }, '-start_date'),
     enabled: !!communityId,
   });
 
-  const { data: userParticipation = [] } = useQuery({
-    queryKey: ['challengeParticipation', user?.id],
-    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: user?.id }),
+  var { data: userParticipation = [] } = useQuery({
+    queryKey: ['challengeParticipation', (user && user.id)],
+    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: (user && user.id) }),
     enabled: !!user,
   });
 
-  const isAdmin = membership?.role === 'admin' || membership?.role === 'owner';
+  var isAdmin = (membership && membership.role) === 'admin' || (membership && membership.role) === 'owner';
 
   if (!community) {
     return (
@@ -102,8 +102,8 @@ export default function CommunityGrowthPage() {
           {/* Tab bar */}
           <div className="flex border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
             {TABS.map(tab => {
-              const Icon = tab.icon;
-              const active = activeTab === tab.id;
+              var Icon = tab.icon;
+              var active = activeTab === tab.id;
               return (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all"
@@ -131,7 +131,7 @@ export default function CommunityGrowthPage() {
                     <ChallengeCard
                       challenge={challenge}
                       userParticipation={userParticipation.find(p => p.challenge_id === challenge.id)}
-                      userId={user?.id}
+                      userId={(user && user.id)}
                     />
                   </div>
                 ))}
@@ -149,7 +149,7 @@ export default function CommunityGrowthPage() {
                   <h3 className="text-lg font-black text-white mb-3" style={T}>Coming Soon</h3>
                   <div className="space-y-4">
                     {challenges.filter(c => c.status === 'upcoming').map((challenge) => (
-                      <ChallengeCard key={challenge.id} challenge={challenge} userId={user?.id} />
+                      <ChallengeCard key={challenge.id} challenge={challenge} userId={(user && user.id)} />
                     ))}
                   </div>
                 </div>
@@ -173,7 +173,7 @@ export default function CommunityGrowthPage() {
         {/* Referrals */}
         {activeTab === 'referrals' && (
           <div className="max-w-2xl">
-            <ReferralProgram communityId={communityId} userId={user?.id} />
+            <ReferralProgram communityId={communityId} userId={(user && user.id)} />
           </div>
         )}
 
@@ -182,7 +182,7 @@ export default function CommunityGrowthPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {isAdmin && (
               <div>
-                <AnnouncementPanel communityId={communityId} userId={user?.id} />
+                <AnnouncementPanel communityId={communityId} userId={(user && user.id)} />
               </div>
             )}
             <div className={isAdmin ? '' : 'lg:col-span-2'}>
@@ -216,9 +216,9 @@ export default function CommunityGrowthPage() {
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -226,7 +226,7 @@ export default function CommunityGrowthPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

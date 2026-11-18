@@ -28,10 +28,10 @@ import {
   ToggleLeft, ToggleRight, Eye, Settings
 } from 'lucide-react';
 
-const RTMP_URL = 'rtmp://ingest.seewhylive.online:1935/live';
-const CREATOR_SPLIT = 0.90;
+var RTMP_URL = 'rtmp://ingest.seewhylive.online:1935/live';
+var CREATOR_SPLIT = 0.90;
 
-const SCENES = [
+var SCENES = [
   { id: 'main', label: 'Main Broadcast', icon: '📺' },
   { id: 'facecam', label: 'Face Cam Only', icon: '🎥' },
   { id: 'game', label: 'Game Focus', icon: '🁣' },
@@ -41,14 +41,14 @@ const SCENES = [
   { id: 'outro', label: 'Outro', icon: '👋' },
 ];
 
-const DESTINATIONS = [
+var DESTINATIONS = [
   { id: 'seewhy', label: 'SeeWhy LIVE', color: '#d4af37', required: true },
   { id: 'youtube', label: 'YouTube', color: '#FF0000', icon: Youtube },
   { id: 'twitch', label: 'Twitch', color: '#9146FF', icon: Twitch },
   { id: 'facebook', label: 'Facebook', color: '#1877F2', icon: Facebook },
 ];
 
-const initState = {
+var initState = {
   phase: 'preflight', // preflight | countdown | live | ended
   countdown: null,
   scene: 'main',
@@ -140,25 +140,25 @@ function StatBox({ label, value, unit, color, warn }) {
 }
 
 export default function GoLiveStudio() {
-  const [state, dispatch] = useReducer(reducer, initState);
-  const uptimeRef = useRef(null);
-  const healthRef = useRef(null);
-  const countdownRef = useRef(null);
-  const [showCamSettings, setShowCamSettings] = useState(false);
-  const [wizardStep, setWizardStep] = useState(1);
+  var [state, dispatch] = useReducer(reducer, initState);
+  var uptimeRef = useRef(null);
+  var healthRef = useRef(null);
+  var countdownRef = useRef(null);
+  var [showCamSettings, setShowCamSettings] = useState(false);
+  var [wizardStep, setWizardStep] = useState(1);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || undefined; } catch { return undefined; } })();
-  const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || undefined; } catch { return undefined; } })();
-  const { localStream, videoEnabled, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
+  var prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || undefined; } catch { return undefined; } })();
+  var prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || undefined; } catch { return undefined; } })();
+  var { localStream, videoEnabled, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
 
   function handleCamChange(deviceId) {
     try { if (deviceId) localStorage.setItem('swl_pref_cam', deviceId); } catch {}
@@ -179,7 +179,7 @@ export default function GoLiveStudio() {
     if (state.phase !== 'live' || !activeRoomId) return;
     function syncViewers() {
       base44.entities.Room.filter({ id: activeRoomId }).then(rooms => {
-        const count = rooms[0]?.viewer_count ?? 0;
+        var count = rooms[0]?.viewer_count || 0;
         dispatch({ type: 'UPDATE_HEALTH', payload: { viewerCount: count } });
       }).catch(() => {});
     }
@@ -591,7 +591,7 @@ export default function GoLiveStudio() {
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <StreamHealthDashboard isLive={isLive} />
         <BitratePresets selected={null} onChange={() => {}} />
-        <DestinationsManager userId={user?.id} />
+        <DestinationsManager userId={(user && user.id)} />
         <ChatModeration />
         <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
         <StreamMetadataEditor />
@@ -600,8 +600,8 @@ export default function GoLiveStudio() {
         <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={activeRoomId} isHost={true} />
         <StreamingPresets onApply={() => {}} />
         <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={isLive} />
-        {user?.id && <RTMPFanoutPanel userId={user.id} isStreaming={state.phase === 'live'} streamId={activeRoomId} />}
-        {user?.id && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
+        {(user && user.id) && <RTMPFanoutPanel userId={user.id} isStreaming={state.phase === 'live'} streamId={activeRoomId} />}
+        {(user && user.id) && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />

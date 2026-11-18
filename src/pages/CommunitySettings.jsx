@@ -43,12 +43,12 @@ function Toggle({ checked, onChange }) {
 }
 
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
-const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+var lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
 function Section({ title, desc, icon: Icon, accent, children }) {
   return (
@@ -63,45 +63,45 @@ function Section({ title, desc, icon: Icon, accent, children }) {
   );
 }
 
-const CATEGORIES = [
+var CATEGORIES = [
   'Gaming', 'Music', 'Talk Show', 'Fitness', 'Art', 'Cooking',
   'Tech', 'Sports', 'Education', 'Entertainment', 'News', 'Other',
 ];
 
-const TAG_OPTIONS = [
+var TAG_OPTIONS = [
   '18+', 'Family Friendly', 'Competitive', 'Chill', 'Educational',
   'Roleplay', 'Charity', 'Amateur', 'Professional', 'Local',
 ];
 
 export default function CommunitySettingsPage() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const urlParams = new URLSearchParams(window.location.search);
-  const communityId = urlParams.get('id');
-  const queryClient = useQueryClient();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var urlParams = new URLSearchParams(window.location.search);
+  var communityId = urlParams.get('id');
+  var queryClient = useQueryClient();
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [rules, setRules] = useState('');
-  const [isPublic, setIsPublic] = useState(true);
-  const [requireApproval, setRequireApproval] = useState(false);
-  const [category, setCategory] = useState('');
-  const [tags, setTags] = useState([]);
-  const [bannerUrl, setBannerUrl] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
-  const [copiedInvite, setCopiedInvite] = useState(false);
-  const [showDanger, setShowDanger] = useState(false);
+  var [name, setName] = useState('');
+  var [description, setDescription] = useState('');
+  var [rules, setRules] = useState('');
+  var [isPublic, setIsPublic] = useState(true);
+  var [requireApproval, setRequireApproval] = useState(false);
+  var [category, setCategory] = useState('');
+  var [tags, setTags] = useState([]);
+  var [bannerUrl, setBannerUrl] = useState('');
+  var [avatarUrl, setAvatarUrl] = useState('');
+  var [copiedInvite, setCopiedInvite] = useState(false);
+  var [showDanger, setShowDanger] = useState(false);
 
-  const { data: community, isLoading } = useQuery({
+  var { data: community, isLoading } = useQuery({
     queryKey: ['community-settings', communityId],
     queryFn: () => base44.entities.Community.filter({ id: communityId }).then(c => c[0]),
     enabled: !!communityId,
   });
 
-  const { data: memberCount = 0 } = useQuery({
+  var { data: memberCount = 0 } = useQuery({
     queryKey: ['community-member-count', communityId],
     queryFn: async () => {
-      const members = await base44.entities.CommunityMember.filter({ community_id: communityId });
-      return members?.length || 0;
+      var members = await base44.entities.CommunityMember.filter({ community_id: communityId });
+      return (members && members.length) || 0;
     },
     enabled: !!communityId,
   });
@@ -111,8 +111,8 @@ export default function CommunitySettingsPage() {
       setName(community.name || '');
       setDescription(community.description || '');
       setRules(community.rules || '');
-      setIsPublic(community.is_public ?? true);
-      setRequireApproval(community.require_approval ?? false);
+      setIsPublic(community.is_public || true);
+      setRequireApproval(community.require_approval || false);
       setCategory(community.category || '');
       setTags(community.tags || []);
       setBannerUrl(community.banner_url || '');
@@ -120,36 +120,36 @@ export default function CommunitySettingsPage() {
     }
   }, [community]);
 
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const updateMutation = useMutation({
+  var updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Community.update(communityId, data),
     onSuccess: () => {
       toast.success('Community settings saved!');
       queryClient.invalidateQueries({ queryKey: ['community-settings'] });
       queryClient.invalidateQueries({ queryKey: ['search-communities'] });
-      if (currentUser?.id) {
+      if ((currentUser && currentUser.id)) {
         base44.entities.Activity.create({
           user_id: currentUser.id,
           type: 'milestone',
-          title: `Updated community settings: ${community?.name || 'Community'}`,
+          title: `Updated community settings: ${(community && community.name) || 'Community'}`,
         }).catch(() => {});
       }
     },
     onError: () => toast.error('Failed to save community settings.'),
   });
 
-  const handleSave = () => {
+  var handleSave = () => {
     if (!name.trim()) { toast.error('Community name is required'); return; }
     updateMutation.mutate({ name, description, rules, is_public: isPublic, require_approval: requireApproval, category, tags, banner_url: bannerUrl, avatar_url: avatarUrl });
   };
 
-  const toggleTag = (tag) => {
+  var toggleTag = (tag) => {
     setTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
   };
 
-  const copyInviteLink = () => {
-    const link = `${window.location.origin}${createPageUrl('Community')}?id=${communityId}`;
+  var copyInviteLink = () => {
+    var link = `${window.location.origin}${createPageUrl('Community')}?id=${communityId}`;
     navigator.clipboard.writeText(link).then(() => {
       setCopiedInvite(true);
       setTimeout(() => setCopiedInvite(false), 2500);
@@ -175,7 +175,7 @@ export default function CommunitySettingsPage() {
           <Settings className="w-5 h-5" style={{ color: GOLD }} />
           <div>
             <h1 className="text-xl font-black text-white leading-none" style={T}>Community Settings</h1>
-            {community?.name && <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{community.name} · {memberCount} members</p>}
+            {(community && community.name) && <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{community.name} · {memberCount} members</p>}
           </div>
         </div>
         <button onClick={handleSave} disabled={updateMutation.isPending}
@@ -330,9 +330,9 @@ export default function CommunitySettingsPage() {
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SpotlightBanner communityId={communityId} isAdmin={true} />
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -341,7 +341,7 @@ export default function CommunitySettingsPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

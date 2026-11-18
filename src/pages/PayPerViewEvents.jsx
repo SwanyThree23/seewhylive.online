@@ -31,28 +31,28 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const BG   = '#080B18';
-const BG2  = '#0D0A08';
-const GOLD = '#D4AF37';
-const CRIM = '#800020';
-const AMB  = '#D4854A';
-const GRN  = '#6DBF7E';
-const FONT = 'Barlow Condensed, sans-serif';
-const MONO = 'Space Mono, monospace';
+var BG   = '#080B18';
+var BG2  = '#0D0A08';
+var GOLD = '#D4AF37';
+var CRIM = '#800020';
+var AMB  = '#D4854A';
+var GRN  = '#6DBF7E';
+var FONT = 'Barlow Condensed, sans-serif';
+var MONO = 'Space Mono, monospace';
 
-const STATUS_COLORS = {
+var STATUS_COLORS = {
   upcoming: { bg: `${GOLD}18`, border: `${GOLD}35`, text: GOLD },
   live:     { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.4)', text: '#EF4444' },
   ended:    { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', text: 'rgba(255,255,255,0.35)' },
 };
 
-const CREATOR_SHARE = 0.90;
+var CREATOR_SHARE = 0.90;
 
 function EventCard({ event, user, myEventIds, onPurchase, purchasing }) {
-  const hasAccess  = myEventIds.includes(event.id);
-  const statusC    = STATUS_COLORS[event.status] || STATUS_COLORS.upcoming;
-  const isSoldOut  = event.max_participants && event.current_participants >= event.max_participants;
-  const payout     = Math.floor((event.revenue || 0) * CREATOR_SHARE);
+  var hasAccess  = myEventIds.includes(event.id);
+  var statusC    = STATUS_COLORS[event.status] || STATUS_COLORS.upcoming;
+  var isSoldOut  = event.max_participants && event.current_participants >= event.max_participants;
+  var payout     = Math.floor((event.revenue || 0) * CREATOR_SHARE);
 
   return (
     <motion.div
@@ -137,10 +137,10 @@ function EventCard({ event, user, myEventIds, onPurchase, purchasing }) {
 }
 
 function CreateEventForm({ onSuccess }) {
-  const [form, setForm] = useState({ title: '', description: '', price: '', event_date: '', duration_minutes: 60, max_participants: '' });
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [form, setForm] = useState({ title: '', description: '', price: '', event_date: '', duration_minutes: 60, max_participants: '' });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const createMutation = useMutation({
+  var createMutation = useMutation({
     mutationFn: async () => {
       if (!form.title || !form.price || !form.event_date) throw new Error('Fill in required fields');
       return base44.entities.PayPerViewEvent.create({
@@ -151,7 +151,7 @@ function CreateEventForm({ onSuccess }) {
         duration_minutes: parseInt(form.duration_minutes) || 60,
         max_participants: form.max_participants ? parseInt(form.max_participants) : null,
         status: 'upcoming',
-        creator_id: user?.id,
+        creator_id: (user && user.id),
         current_participants: 0,
         revenue: 0,
         access_type: 'single_event',
@@ -159,25 +159,25 @@ function CreateEventForm({ onSuccess }) {
     },
     onSuccess: (event) => {
       toast.success('PPV event created!');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'stream_scheduled',
-          title: `Created PPV event: ${event?.title || 'Event'}`,
-          amount: event?.price,
+          title: `Created PPV event: ${(event && event.title) || 'Event'}`,
+          amount: (event && event.price),
         }).catch(() => {});
       }
-      onSuccess?.();
+      if (onSuccess) onSuccess();
     },
     onError: (e) => toast.error(e.message),
   });
 
-  const inp = (field) => ({
+  var inp = (field) => ({
     value: form[field],
     onChange: (e) => setForm(f => ({ ...f, [field]: e.target.value })),
   });
 
-  const fieldStyle = {
+  var fieldStyle = {
     background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.2)',
     borderRadius: 10, padding: '10px 14px', color: '#fff', outline: 'none',
     fontFamily: FONT, fontSize: 14, width: '100%',
@@ -243,27 +243,27 @@ function CreateEventForm({ onSuccess }) {
 }
 
 export default function PayPerViewEventsPage() {
-  const [tab, setTab]         = useState('browse');
-  const [filter, setFilter]   = useState('all');
-  const [purchasing, setPurchasing] = useState(null);
-  const queryClient = useQueryClient();
+  var [tab, setTab]         = useState('browse');
+  var [filter, setFilter]   = useState('all');
+  var [purchasing, setPurchasing] = useState(null);
+  var queryClient = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: events = [], isLoading } = useQuery({
+  var { data: events = [], isLoading } = useQuery({
     queryKey: ['ppv-events', filter],
     queryFn: async () => {
       if (filter === 'all') return base44.entities.PayPerViewEvent.filter({}, '-event_date', 20);
@@ -272,19 +272,19 @@ export default function PayPerViewEventsPage() {
     refetchInterval: 30000,
   });
 
-  const { data: myAccess = [] } = useQuery({
-    queryKey: ['my-ppv-access', user?.id],
+  var { data: myAccess = [] } = useQuery({
+    queryKey: ['my-ppv-access', (user && user.id)],
     queryFn: () => base44.entities.PayPerViewAccess.filter({ user_id: user.id }),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
-  const myEventIds = myAccess.map(a => a.event_id);
+  var myEventIds = myAccess.map(a => a.event_id);
 
   async function handlePurchase(event) {
     if (!user) { toast.error('Sign in to purchase'); return; }
     setPurchasing(event.id);
     try {
-      const txn = await base44.entities.Transaction.create({
+      var txn = await base44.entities.Transaction.create({
         type: 'ppv',
         amount: Math.floor(event.price * 100) / 100,
         from_user_id: user.id,
@@ -311,10 +311,10 @@ export default function PayPerViewEventsPage() {
     }
   }
 
-  const totalRevenue   = events.filter(e => e.creator_id === user?.id).reduce((s, e) => s + (e.revenue || 0), 0);
-  const creatorEarning = Math.floor(totalRevenue * CREATOR_SHARE * 100) / 100;
-  const liveEvents     = events.filter(e => e.status === 'live');
-  const filtered       = filter === 'all' ? events : events.filter(e => e.status === filter);
+  var totalRevenue   = events.filter(e => e.creator_id === (user && user.id)).reduce((s, e) => s + (e.revenue || 0), 0);
+  var creatorEarning = Math.floor(totalRevenue * CREATOR_SHARE * 100) / 100;
+  var liveEvents     = events.filter(e => e.status === 'live');
+  var filtered       = filter === 'all' ? events : events.filter(e => e.status === filter);
 
   return (
     <div className="min-h-screen pb-24" style={{ background: BG }}>
@@ -442,7 +442,7 @@ export default function PayPerViewEventsPage() {
         {/* Create event tab */}
         {tab === 'create' && (
           <>
-            {user?.id && creatorEarning > 0 && (
+            {(user && user.id) && creatorEarning > 0 && (
               <div className="mb-5 p-4 rounded-xl flex items-center gap-3"
                 style={{ background: `${GRN}12`, border: `1px solid ${GRN}25` }}>
                 <BarChart3 className="w-5 h-5 shrink-0" style={{ color: GRN }} />
@@ -461,14 +461,14 @@ export default function PayPerViewEventsPage() {
           </>
         )}
 
-        {user?.id && (
+        {(user && user.id) && (
           <div className="mt-6 rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="font-black text-sm text-white mb-3" style={{ fontFamily: FONT }}>Payment Methods</p>
             <PaymentMethodSelector creatorId={user.id} roomId={activeRoomId} onPaymentComplete={() => {}} />
           </div>
         )}
 
-        {user?.id && (
+        {(user && user.id) && (
           <div className="mt-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
             <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
@@ -494,18 +494,18 @@ export default function PayPerViewEventsPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
           <PayPerViewCard event={null} onPurchase={() => {}} />
-          <PayPerViewManager userId={user?.id} />
-          <VirtualGoodsStore creatorId={user?.id} userId={user?.id} />
+          <PayPerViewManager userId={(user && user.id)} />
+          <VirtualGoodsStore creatorId={(user && user.id)} userId={(user && user.id)} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
-          <LiveAuctionWidget creatorId={user?.id} roomId={activeRoomId} isCreator={false} currentUser={user} />
+          <LiveAuctionWidget creatorId={(user && user.id)} roomId={activeRoomId} isCreator={false} currentUser={user} />
           <MonetizationDashboard roomId={activeRoomId} />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="ppv" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -513,7 +513,7 @@ export default function PayPerViewEventsPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

@@ -14,12 +14,12 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
-const BG    = '#080B18';
-const GOLD  = '#D4AF37';
-const CRIM  = '#800020';
-const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG    = '#080B18';
+var GOLD  = '#D4AF37';
+var CRIM  = '#800020';
+var T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TOOLS = [
+var TOOLS = [
   {
     label: 'Go Live',
     desc: 'One-click broadcast launch',
@@ -156,17 +156,17 @@ const TOOLS = [
 ];
 
 export default function StudioHub() {
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG, ...T }}>
@@ -212,7 +212,7 @@ export default function StudioHub() {
       {/* Tool grid */}
       <div className="grid grid-cols-2 gap-3 px-4 pt-5" style={{ maxWidth: 640, margin: '0 auto' }}>
         {TOOLS.map((tool, i) => {
-          const Icon = tool.icon;
+          var Icon = tool.icon;
           return (
             <motion.div
               key={tool.page}
@@ -243,7 +243,7 @@ export default function StudioHub() {
       {/* Engagement widgets */}
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 640, margin: '0 auto' }}>
         <StreamGoals isHost={true} />
-        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="studio" viewerCount={0} />
         <OnlineUsersGrid compact maxVisible={8} />
       </div>

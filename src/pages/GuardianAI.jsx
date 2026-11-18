@@ -21,25 +21,25 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 import ModerationToast, { useModerationToasts } from '../components/shared/ModerationToast';
-const BG    = '#080B18';
-const BG2   = '#0D0A08';
-const BG3   = '#13100A';
-const GOLD  = '#D4AF37';
-const GOLDD = '#8A6F2E';
-const SLATE = '#2A2010';
-const TEXT  = '#F0E8D4';
-const TEXTD = '#C4B596';
-const TEXTM = '#8A7A62';
-const GREEN = '#6DBF7E';
-const WARN  = '#D4AF37';
-const ORANGE= '#D4854A';
-const RED   = '#E74C3C';
-const PILL  = 999;
+var BG    = '#080B18';
+var BG2   = '#0D0A08';
+var BG3   = '#13100A';
+var GOLD  = '#D4AF37';
+var GOLDD = '#8A6F2E';
+var SLATE = '#2A2010';
+var TEXT  = '#F0E8D4';
+var TEXTD = '#C4B596';
+var TEXTM = '#8A7A62';
+var GREEN = '#6DBF7E';
+var WARN  = '#D4AF37';
+var ORANGE= '#D4854A';
+var RED   = '#E74C3C';
+var PILL  = 999;
 
-const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO = { fontFamily: 'Space Mono, monospace' };
+var T    = { fontFamily: 'Barlow Condensed, sans-serif' };
+var MONO = { fontFamily: 'Space Mono, monospace' };
 
-const ACTION_CONFIG = {
+var ACTION_CONFIG = {
   ALLOWED: { color: GREEN,  label: 'ALLOWED' },
   MUTED:   { color: ORANGE, label: 'MUTED'   },
   BANNED:  { color: RED,    label: 'BANNED'  },
@@ -85,31 +85,31 @@ function StatCard({ label, value, color = GOLD, icon: Icon }) {
 }
 
 export default function GuardianAI() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['guardian-active-room', user?.id],
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['guardian-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const queryClient = useQueryClient();
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var queryClient = useQueryClient();
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const roomId = activeRoomId;
-  const [flagT,  setFlagT]  = useState(50);
-  const [muteT,  setMuteT]  = useState(75);
-  const [banT,   setBanT]   = useState(95);
-  const [scanning, setScanning] = useState(false);
-  const [scanStep, setScanStep]  = useState('');
-  const [activeTab, setActiveTab] = useState('log');
-  const [thresholdSaved, setThresholdSaved] = useState(false);
-  const logEndRef = useRef(null);
-  const { toasts: modToasts, push: pushModToast } = useModerationToasts();
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var roomId = activeRoomId;
+  var [flagT,  setFlagT]  = useState(50);
+  var [muteT,  setMuteT]  = useState(75);
+  var [banT,   setBanT]   = useState(95);
+  var [scanning, setScanning] = useState(false);
+  var [scanStep, setScanStep]  = useState('');
+  var [activeTab, setActiveTab] = useState('log');
+  var [thresholdSaved, setThresholdSaved] = useState(false);
+  var logEndRef = useRef(null);
+  var { toasts: modToasts, push: pushModToast } = useModerationToasts();
 
   function handleThresholdChange(key, value) {
     if (key === 'flagT') setFlagT(value);
@@ -118,43 +118,43 @@ export default function GuardianAI() {
     setThresholdSaved(false);
   }
 
-  const { data: moderations = [], isLoading } = useQuery({
+  var { data: moderations = [], isLoading } = useQuery({
     queryKey: ['guardian-moderations'],
     queryFn: () => base44.entities.ContentModeration.list('-created_date', 60),
     refetchInterval: 15000,
   });
 
   useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    logEndRef.(current && current.scrollIntoView({ behavior: 'smooth' });
   }, [moderations]);
 
-  const displayLog = moderations.map(m => ({
+  var displayLog = moderations.map(m => ({
     time: new Date(m.created_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-    user: m.content_id?.slice(0, 12) || 'unknown',
+    user: m.(content_id && content_id.slice(0, 12) || 'unknown',
     msg:  m.ai_explanation || m.violation_type || '—',
-    risk: m.ai_confidence ?? 0,
+    risk: m.ai_confidence || 0,
     action: m.action_taken === 'none' ? 'ALLOWED'
           : m.action_taken === 'flagged' ? 'FLAGGED'
-          : m.action_taken?.toUpperCase() || 'FLAGGED',
+          : m.(action_taken && action_taken.toUpperCase() || 'FLAGGED',
   }));
 
-  const violationCount = displayLog.filter(e => e.action !== 'ALLOWED').length;
-  const allowedCount   = displayLog.filter(e => e.action === 'ALLOWED').length;
-  const banCount       = displayLog.filter(e => e.action === 'BANNED').length;
+  var violationCount = displayLog.filter(e => e.action !== 'ALLOWED').length;
+  var allowedCount   = displayLog.filter(e => e.action === 'ALLOWED').length;
+  var banCount       = displayLog.filter(e => e.action === 'BANNED').length;
 
   async function runScan() {
     setScanning(true);
     setScanStep('Fetching recent messages…');
     try {
-      const messages = await base44.entities.Message.list('-created_date', 40);
+      var messages = await base44.entities.Message.list('-created_date', 40);
       if (!messages.length) { toast.info('No messages to scan.'); setScanning(false); setScanStep(''); return; }
 
       setScanStep('Running Guardian AI analysis…');
-      const scannedIds = new Set(moderations.map(m => m.content_id));
-      const unscanned  = messages.filter(m => !scannedIds.has(m.id));
+      var scannedIds = new Set(moderations.map(m => m.content_id));
+      var unscanned  = messages.filter(m => !scannedIds.has(m.id));
       if (!unscanned.length) { toast.info('All recent messages already scanned.'); setScanning(false); setScanStep(''); return; }
 
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are Guardian AI, a real-time content moderation system for SeeWhy LIVE streams. Analyze each message and return risk scores.\n\nMessages:\n${unscanned.map(m => `ID:${m.id} User:${m.user_name || 'anon'} Msg:"${m.content}"`).join('\n')}\n\nReturn JSON with "results" array. For each message: id (string), violation_type ("spam"/"harassment"/"hate_speech"/"inappropriate"/"safe"), ai_confidence (0-1 float), ai_explanation (string, null if safe).`,
         response_json_schema: {
           type: 'object',
@@ -176,9 +176,9 @@ export default function GuardianAI() {
       });
 
       setScanStep('Logging results…');
-      const scanResults = result?.results || [];
+      var scanResults = (result && result.results) || [];
       await Promise.all(scanResults.map(r => {
-        const action = r.violation_type !== 'safe'
+        var action = r.violation_type !== 'safe'
           ? (r.ai_confidence >= banT / 100 ? 'banned' : r.ai_confidence >= muteT / 100 ? 'muted' : 'flagged')
           : 'none';
         return Promise.all([
@@ -190,7 +190,7 @@ export default function GuardianAI() {
             ai_explanation:  r.ai_explanation || null,
             action_taken:    action,
           }),
-          base44.entities.GuardianLog?.create({
+          base44.entities.(GuardianLog && GuardianLog.create({
             user_id:       r.user_id || null,
             message:       r.content || r.text || '',
             toxicity_score: Math.round((r.ai_confidence || 0) * 100),
@@ -200,11 +200,11 @@ export default function GuardianAI() {
         ]);
       }));
 
-      const violations = scanResults.filter(r => r.violation_type !== 'safe').length;
+      var violations = scanResults.filter(r => r.violation_type !== 'safe').length;
       scanResults.forEach(function(r) {
         if (r.violation_type !== 'safe') {
           var msg = messages.find(function(m) { return m.id === r.id; });
-          var target = msg?.user_name || 'User';
+          var target = (msg && msg.user_name) || 'User';
           var actionType = r.ai_confidence >= banT / 100 ? 'ban' : r.ai_confidence >= muteT / 100 ? 'mute' : 'flag';
           pushModToast({ type: actionType, target: target, message: r.ai_explanation });
         }
@@ -352,8 +352,8 @@ export default function GuardianAI() {
                 No moderation events yet — click SCAN NOW to analyze recent messages
               </div>
             ) : displayLog.map((e, i) => {
-              const cfg = ACTION_CONFIG[e.action] || ACTION_CONFIG.FLAGGED;
-              const riskPct = Math.floor(e.risk * 100);
+              var cfg = ACTION_CONFIG[e.action] || ACTION_CONFIG.FLAGGED;
+              var riskPct = Math.floor(e.risk * 100);
               return (
                 <div key={i} style={{
                   background: BG3, border: `1px solid ${e.action === 'ALLOWED' ? SLATE : cfg.color + '33'}`,
@@ -389,9 +389,9 @@ export default function GuardianAI() {
                 VIOLATION BREAKDOWN
               </div>
               {['spam', 'harassment', 'hate_speech', 'inappropriate'].map(type => {
-                const count = moderations.filter(m => m.violation_type === type).length;
-                const pct   = moderations.length ? Math.round((count / moderations.length) * 100) : 0;
-                const color = type === 'hate_speech' ? RED : type === 'harassment' ? ORANGE : type === 'spam' ? WARN : GOLD;
+                var count = moderations.filter(m => m.violation_type === type).length;
+                var pct   = moderations.length ? Math.round((count / moderations.length) * 100) : 0;
+                var color = type === 'hate_speech' ? RED : type === 'harassment' ? ORANGE : type === 'spam' ? WARN : GOLD;
                 return (
                   <div key={type} style={{ marginBottom: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -427,20 +427,20 @@ export default function GuardianAI() {
         @keyframes spin  { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
       `}</style>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="ai" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="ai" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.viewer_count || 0} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <BackgroundCustomizer />
       <ModerationToast toasts={modToasts} />
     </div>

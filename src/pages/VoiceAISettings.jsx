@@ -15,24 +15,24 @@ import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const BG    = '#080B18';
-const BG2   = '#0D0A08';
-const BG3   = '#13100A';
-const GOLD  = '#D4AF37';
-const GOLDD = '#8A6F2E';
-const SLATE = '#2A2010';
-const TEXT  = '#F0E8D4';
-const TEXTD = '#C4B596';
-const TEXTM = '#8A7A62';
-const GREEN = '#6DBF7E';
-const PILL  = 999;
-const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO  = { fontFamily: 'Space Mono, monospace' };
+var BG    = '#080B18';
+var BG2   = '#0D0A08';
+var BG3   = '#13100A';
+var GOLD  = '#D4AF37';
+var GOLDD = '#8A6F2E';
+var SLATE = '#2A2010';
+var TEXT  = '#F0E8D4';
+var TEXTD = '#C4B596';
+var TEXTM = '#8A7A62';
+var GREEN = '#6DBF7E';
+var PILL  = 999;
+var T     = { fontFamily: 'Barlow Condensed, sans-serif' };
+var MONO  = { fontFamily: 'Space Mono, monospace' };
 
-const LS_KEY = 'seewhy_voice_settings';
-const DEFAULTS = { enabled: true, autoSpeak: true, voice: 'nova', volume: 0.8, speed: 1.0 };
+var LS_KEY = 'seewhy_voice_settings';
+var DEFAULTS = { enabled: true, autoSpeak: true, voice: 'nova', volume: 0.8, speed: 1.0 };
 
-const VOICES = [
+var VOICES = [
   { id: 'nova',    label: 'Nova',    desc: 'Warm & clear — default' },
   { id: 'alloy',   label: 'Alloy',   desc: 'Neutral & balanced' },
   { id: 'echo',    label: 'Echo',    desc: 'Deep & resonant' },
@@ -63,27 +63,27 @@ function Toggle({ value, onChange }) {
 }
 
 export default function VoiceAISettings() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const [vs, setVs] = useState(load);
-  const [saved, setSaved] = useState(false);
-  const [showZEGOSettings, setShowZEGOSettings] = useState(false);
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var [vs, setVs] = useState(load);
+  var [saved, setSaved] = useState(false);
+  var [showZEGOSettings, setShowZEGOSettings] = useState(false);
 
-  const update = useCallback((key, val) => {
+  var update = useCallback((key, val) => {
     setVs(prev => {
-      const next = { ...prev, [key]: val };
+      var next = { ...prev, [key]: val };
       localStorage.setItem(LS_KEY, JSON.stringify(next));
       return next;
     });
@@ -97,7 +97,7 @@ export default function VoiceAISettings() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ input: "SeeWhy LIVE — Voice AI ready. Let's go!", voice: vs.voice, speed: vs.speed }),
     }).then(r => r.blob()).then(b => {
-      const a = new Audio(URL.createObjectURL(b));
+      var a = new Audio(URL.createObjectURL(b));
       a.volume = vs.volume;
       a.play();
     }).catch(() => {});
@@ -222,7 +222,7 @@ export default function VoiceAISettings() {
 
         {/* Alert + feed integration */}
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <AlertConfig creatorId={user?.id} />
+          <AlertConfig creatorId={(user && user.id)} />
           <AnnouncementFeed communityId={userCommunityId} />
         </div>
 

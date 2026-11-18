@@ -34,79 +34,79 @@ import InteractivePollingSystem from '../components/live/InteractivePollingSyste
 import ShareModal from '../components/live/ShareModal';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ShareToSocial from '../components/social/ShareToSocial';
-const G = '#FFB800';
-const BG = '#03030A';
-const CRIMSON = '#FF1564';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var G = '#FFB800';
+var BG = '#03030A';
+var CRIMSON = '#FF1564';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function CommunityPage() {
-  const qc = useQueryClient();
-  const communityIdParam = new URLSearchParams(window.location.search).get('id');
+  var qc = useQueryClient();
+  var communityIdParam = new URLSearchParams(window.location.search).get('id');
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: community, isLoading } = useQuery({
-    queryKey: ['userCommunity', user?.id],
+  var { data: community, isLoading } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
     queryFn: async () => {
       if (communityIdParam) {
-        const list = await base44.entities.Community.filter({ id: communityIdParam });
+        var list = await base44.entities.Community.filter({ id: communityIdParam });
         return list?.[0] || null;
       }
-      if (!user?.id) return null;
-      const owned = await base44.entities.Community.filter({ creator_id: user.id }, '-created_date', 1);
+      if (!(user && user.id)) return null;
+      var owned = await base44.entities.Community.filter({ creator_id: user.id }, '-created_date', 1);
       if (owned?.[0]) return owned[0];
-      const memberships = await base44.entities.CommunityMember.filter({ user_id: user.id }, '-joined_date', 1);
+      var memberships = await base44.entities.CommunityMember.filter({ user_id: user.id }, '-joined_date', 1);
       if (memberships?.[0]?.community_id) {
-        const joined = await base44.entities.Community.filter({ id: memberships[0].community_id });
+        var joined = await base44.entities.Community.filter({ id: memberships[0].community_id });
         return joined?.[0] || null;
       }
       return null;
     },
-    enabled: !!communityIdParam || !!user?.id,
+    enabled: !!communityIdParam || !!(user && user.id),
   });
 
-  const { data: membership } = useQuery({
-    queryKey: ['my-membership', community?.id, user?.id],
+  var { data: membership } = useQuery({
+    queryKey: ['my-membership', (community && community.id), (user && user.id)],
     queryFn: () => base44.entities.CommunityMember.filter({ community_id: community.id, user_id: user.id }).then(r => r[0]),
-    enabled: !!community?.id && !!user?.id,
+    enabled: !!(community && community.id) && !!(user && user.id),
   });
 
-  const { data: memberCount = 0 } = useQuery({
-    queryKey: ['community-member-count-page', community?.id],
+  var { data: memberCount = 0 } = useQuery({
+    queryKey: ['community-member-count-page', (community && community.id)],
     queryFn: async () => {
-      const members = await base44.entities.CommunityMember.filter({ community_id: community.id });
-      return members?.length || 0;
+      var members = await base44.entities.CommunityMember.filter({ community_id: community.id });
+      return (members && members.length) || 0;
     },
-    enabled: !!community?.id,
+    enabled: !!(community && community.id),
   });
 
-  const { data: liveRooms = [] } = useQuery({
-    queryKey: ['community-live-rooms', community?.id],
+  var { data: liveRooms = [] } = useQuery({
+    queryKey: ['community-live-rooms', (community && community.id)],
     queryFn: () => base44.entities.Room.filter({ community_id: community.id, status: 'live' }, '-viewer_count', 10),
-    enabled: !!community?.id,
+    enabled: !!(community && community.id),
     refetchInterval: 20000,
   });
 
-  const joinMut = useMutation({
+  var joinMut = useMutation({
     mutationFn: () => base44.entities.CommunityMember.create({ community_id: community.id, user_id: user.id, role: 'member', joined_date: new Date().toISOString() }),
     // Optimistic: flip to "member" and bump the count before the server confirms
     onMutate: async () => {
-      const membershipKey = ['my-membership', community?.id, user?.id];
-      const countKey = ['community-member-count-page', community?.id];
+      var membershipKey = ['my-membership', (community && community.id), (user && user.id)];
+      var countKey = ['community-member-count-page', (community && community.id)];
       await qc.cancelQueries({ queryKey: membershipKey });
       await qc.cancelQueries({ queryKey: countKey });
-      const prevMembership = qc.getQueryData(membershipKey);
-      const prevCount = qc.getQueryData(countKey);
-      qc.setQueryData(membershipKey, { id: '__optimistic__', community_id: community?.id, user_id: user?.id, role: 'member' });
+      var prevMembership = qc.getQueryData(membershipKey);
+      var prevCount = qc.getQueryData(countKey);
+      qc.setQueryData(membershipKey, { id: '__optimistic__', community_id: (community && community.id), user_id: (user && user.id), role: 'member' });
       qc.setQueryData(countKey, (n) => (typeof n === 'number' ? n + 1 : 1));
       return { prevMembership, prevCount, membershipKey, countKey };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prevMembership !== undefined) qc.setQueryData(ctx.membershipKey, ctx.prevMembership);
-      if (ctx?.prevCount !== undefined) qc.setQueryData(ctx.countKey, ctx.prevCount);
+      if ((ctx && ctx.prevMembership) !== undefined) qc.setQueryData(ctx.membershipKey, ctx.prevMembership);
+      if ((ctx && ctx.prevCount) !== undefined) qc.setQueryData(ctx.countKey, ctx.prevCount);
       toast.error('Action failed.');
     },
     onSuccess: () => {
@@ -122,29 +122,29 @@ export default function CommunityPage() {
     },
   });
 
-  const leaveMut = useMutation({
+  var leaveMut = useMutation({
     mutationFn: () => base44.entities.CommunityMember.delete(membership.id),
     onSuccess: () => { toast.success('Left community'); qc.invalidateQueries({ queryKey: ['my-membership'] }); qc.invalidateQueries({ queryKey: ['community-member-count-page'] }); },
     onError: () => toast.error('Action failed.'),
   });
 
-  const isMember = !!membership;
-  const isAdmin = membership?.role === 'admin' || membership?.role === 'owner';
-  const isOwner = membership?.role === 'owner' || community?.creator_id === user?.id;
+  var isMember = !!membership;
+  var isAdmin = (membership && membership.role) === 'admin' || (membership && membership.role) === 'owner';
+  var isOwner = (membership && membership.role) === 'owner' || (community && community.creator_id) === (user && user.id);
 
-  const [showCreatePoll, setShowCreatePoll] = useState(false);
-  const [activeTab, setActiveTab] = useState('feed');
+  var [showCreatePoll, setShowCreatePoll] = useState(false);
+  var [activeTab, setActiveTab] = useState('feed');
 
-  const TABS = [
+  var TABS = [
     { id: 'feed',      label: 'Feed',      icon: MessageSquare },
     { id: 'spotlight', label: 'Spotlight', icon: Globe         },
     { id: 'rooms',     label: 'Live',      icon: Radio         },
   ];
 
-  const { data: polls = [] } = useQuery({
-    queryKey: ['community-polls', community?.id],
+  var { data: polls = [] } = useQuery({
+    queryKey: ['community-polls', (community && community.id)],
     queryFn: () => base44.entities.Poll.filter({ community_id: community.id }, '-created_date', 10),
-    enabled: !!community?.id,
+    enabled: !!(community && community.id),
     refetchInterval: 30000,
   });
 
@@ -187,7 +187,7 @@ export default function CommunityPage() {
           {/* Avatar */}
           <div className="w-20 h-20 rounded-2xl shrink-0 flex items-center justify-center font-black text-3xl"
             style={{ background: community.avatar_url ? undefined : `linear-gradient(135deg, ${CRIMSON}, ${G})`, backgroundImage: community.avatar_url ? `url(${community.avatar_url})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', border: '3px solid rgba(255,184,0,0.3)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)', color: '#fff', ...T }}>
-            {!community.avatar_url && (community.name?.charAt(0) || '?')}
+            {!community.avatar_url && (community.(name && name.charAt(0) || '?')}
           </div>
 
           <div className="flex-1 sm:pt-10 min-w-0">
@@ -212,7 +212,7 @@ export default function CommunityPage() {
               <span className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
                 <strong style={{ color: G }}>{memberCount}</strong> members
               </span>
-              {community.tags?.slice(0, 3).map(tag => (
+              {community.(tags && tags.slice(0, 3).map(tag => (
                 <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full"
                   style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', ...T }}>{tag}</span>
               ))}
@@ -256,8 +256,8 @@ export default function CommunityPage() {
         {/* Tabs */}
         <div className="flex border-b mb-6 overflow-x-auto scrollbar-hide" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
           {TABS.map(tab => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
+            var Icon = tab.icon;
+            var active = activeTab === tab.id;
             return (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className="flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all shrink-0"
@@ -356,24 +356,24 @@ export default function CommunityPage() {
         </AnimatePresence>
       </div>
 
-      {community?.id && (
+      {(community && community.id) && (
         <CreatePollModal isOpen={showCreatePoll} onClose={() => setShowCreatePoll(false)} communityId={community.id} />
       )}
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {community?.id && <InteractivePollingSystem communityId={community.id} userId={user?.id} isHost={isOwner} />}
-        {community?.id && <UnifiedChat roomId={community.id} currentUser={user} isHost={isOwner} />}
-        <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title={community?.name || 'Community'} />
+        {(community && community.id) && <InteractivePollingSystem communityId={community.id} userId={(user && user.id)} isHost={isOwner} />}
+        {(community && community.id) && <UnifiedChat roomId={community.id} currentUser={user} isHost={isOwner} />}
+        <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title={(community && community.name) || 'Community'} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <CollaborationMatcher currentUserId={user?.id} />
-        <ShareToSocial content={{ url: window.location.href, title: community?.name ? `Join "${community.name}" community on SeeWhy LIVE!` : 'Join our community on SeeWhy LIVE!' }} />
+        <CollaborationMatcher currentUserId={(user && user.id)} />
+        <ShareToSocial content={{ url: window.location.href, title: (community && community.name) ? `Join "${community.name}" community on SeeWhy LIVE!` : 'Join our community on SeeWhy LIVE!' }} />
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="community" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SpotlightBanner communityId={community?.id || null} isAdmin={isAdmin} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
+      <SpotlightBanner communityId={(community && community.id) || null} isAdmin={isAdmin} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -381,16 +381,16 @@ export default function CommunityPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
-      <OnlinePresence userId={user?.id || null} />
+      <OnlinePresence userId={(user && user.id) || null} />
 
       <CreatePollModal
         isOpen={showCreatePoll}
         onClose={() => setShowCreatePoll(false)}
-        communityId={community?.id}
+        communityId={(community && community.id)}
       />
     </div>
   );

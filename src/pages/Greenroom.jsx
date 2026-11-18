@@ -158,20 +158,20 @@ import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import AuraPanel from '../components/live/AuraPanel';
 import LivePoll from '../components/live/LivePoll';
-const GOLD = '#D4AF37';
-const BURGUNDY = '#800020';
+var GOLD = '#D4AF37';
+var BURGUNDY = '#800020';
 
-const DEST_COLORS = {
+var DEST_COLORS = {
   room:        { label: 'ROOM',        bg: 'rgba(212,175,55,0.15)',  color: GOLD,      border: 'rgba(212,175,55,0.35)' },
   panel:       { label: 'PANEL',       bg: 'rgba(212,133,74,0.15)', color: '#D4854A', border: 'rgba(212,133,74,0.35)' },
   watch_party: { label: 'WATCH PARTY', bg: 'rgba(128,0,32,0.15)',   color: '#C0395A', border: 'rgba(128,0,32,0.35)' },
   new_room:    { label: 'NEW ROOM',    bg: 'rgba(201,168,76,0.12)', color: GOLD,      border: 'rgba(201,168,76,0.3)' },
 };
 
-const ROLES = ['audience', 'speaker', 'guest', 'co-host'];
+var ROLES = ['audience', 'speaker', 'guest', 'co-host'];
 
 function PermissionPill({ label, status }) {
-  const cfg = {
+  var cfg = {
     granted: { color: '#6DBF7E', border: 'rgba(109,191,126,0.3)', icon: '✓' },
     denied:  { color: '#FF4444', border: 'rgba(255,68,68,0.3)',  icon: '✗' },
     prompt:  { color: '#D4AF37', border: 'rgba(212,175,55,0.3)',  icon: '…' },
@@ -186,20 +186,20 @@ function PermissionPill({ label, status }) {
 }
 
 function WaitingRoom({ waitlistEntry, onCancel }) {
-  const [elapsed, setElapsed] = useState(0);
-  const qc = useQueryClient();
-  const navigate = useNavigate();
+  var [elapsed, setElapsed] = useState(0);
+  var qc = useQueryClient();
+  var navigate = useNavigate();
 
   useEffect(() => {
-    const iv = setInterval(() => setElapsed(e => e + 1), 1000);
+    var iv = setInterval(() => setElapsed(e => e + 1), 1000);
     return () => clearInterval(iv);
   }, []);
 
   // Poll for admission
-  const { data: entry } = useQuery({
-    queryKey: ['greenroom-wl-status', waitlistEntry?.id],
+  var { data: entry } = useQuery({
+    queryKey: ['greenroom-wl-status', (waitlistEntry && waitlistEntry.id)],
     queryFn: () => base44.entities.GreenroomWaitlist.filter({ id: waitlistEntry.id }).then(r => r[0]),
-    enabled: !!waitlistEntry?.id,
+    enabled: !!(waitlistEntry && waitlistEntry.id),
     refetchInterval: 2000,
   });
 
@@ -207,22 +207,22 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
     if (!entry) return;
     if (entry.status === 'admitted') {
       toast.success('You\'ve been admitted!');
-      const roomId = new URLSearchParams(window.location.search).get('room_id');
+      var roomId = new URLSearchParams(window.location.search).get('room_id');
       navigate(`/LiveRoom?id=${roomId}`);
     }
     if (entry.status === 'denied') {
       toast.error('The host isn\'t admitting new guests right now');
     }
-  }, [entry?.status]);
+  }, [(entry && entry.status)]);
 
-  const cancelMut = useMutation({
+  var cancelMut = useMutation({
     mutationFn: () => base44.entities.GreenroomWaitlist.update(waitlistEntry.id, { status: 'cancelled' }),
     onError: () => toast.error('Failed to cancel. Please try again.'),
     onSuccess: () => onCancel(),
   });
 
-  const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-  const isDenied = entry?.status === 'denied';
+  var fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  var isDenied = (entry && entry.status) === 'denied';
 
   if (isDenied) {
     return (
@@ -233,7 +233,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
         <div>
           <h3 className="font-black text-lg uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>Not Admitted</h3>
           <p className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>The host isn't admitting new guests right now.</p>
-          {entry?.deny_reason && <p className="text-[11px] mt-1 italic" style={{ color: 'rgba(255,255,255,0.3)' }}>"{entry.deny_reason}"</p>}
+          {(entry && entry.deny_reason) && <p className="text-[11px] mt-1 italic" style={{ color: 'rgba(255,255,255,0.3)' }}>"{entry.deny_reason}"</p>}
         </div>
         <Link to="/Discover">
           <button className="px-6 py-2 rounded-xl font-black uppercase text-[11px]"
@@ -260,7 +260,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
         <div className="absolute inset-2 rounded-full overflow-hidden">
           <div className="w-full h-full flex items-center justify-center font-black text-xl"
             style={{ background: BURGUNDY, color: GOLD }}>
-            {(waitlistEntry?.user_name || 'U')[0]}
+            {((waitlistEntry && waitlistEntry.user_name) || 'U')[0]}
           </div>
         </div>
       </div>
@@ -274,7 +274,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
       </div>
 
       <div className="flex items-center gap-4">
-        {waitlistEntry?.position && (
+        {(waitlistEntry && waitlistEntry.position) && (
           <div className="px-3 py-2 rounded-xl text-center"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <div className="font-black text-xl" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -292,7 +292,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
         </div>
       </div>
 
-      {waitlistEntry?.join_message && (
+      {(waitlistEntry && waitlistEntry.join_message) && (
         <p className="text-[11px] italic px-4 py-2 rounded-xl"
           style={{ color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
           "{waitlistEntry.join_message}"
@@ -309,94 +309,94 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
 }
 
 export default function GreenroomPage() {
-  const navigate = useNavigate();
-  const params = new URLSearchParams(window.location.search);
-  const roomId = params.get('room_id');
-  const destType = params.get('destination_type') || 'room'; // room | panel | watch_party | new_room
+  var navigate = useNavigate();
+  var params = new URLSearchParams(window.location.search);
+  var roomId = params.get('room_id');
+  var destType = params.get('destination_type') || 'room'; // room | panel | watch_party | new_room
 
-  const qc = useQueryClient();
-  const [deviceState, setDeviceState] = useState({ cameraOn: false, micOn: false, networkQuality: 3, isSim: false });
-  const [previewStream, setPreviewStream] = useState(null);
-  const [displayName, setDisplayName] = useState('');
-  const [roleRequested, setRoleRequested] = useState('audience');
-  const [joinMessage, setJoinMessage] = useState('');
-  const [settingsOpen, setSettingsOpen] = useState(true);
-  const [videoQuality, setVideoQuality] = useState('720p');
-  const [echoCancel, setEchoCancel] = useState(true);
-  const [noiseCancel, setNoiseCancel] = useState(true);
-  const [bgBlur, setBgBlur] = useState(false);
-  const [bypassDeviceCheck, setBypassDeviceCheck] = useState(false);
-  const [permissions, setPermissions] = useState({ camera: 'prompt', mic: 'prompt', speaker: 'granted' });
-  const [waitlistEntry, setWaitlistEntry] = useState(null);
-  const [newRoomTitle, setNewRoomTitle] = useState('');
-  const [newRoomCategory, setNewRoomCategory] = useState('other');
-  const [isSharing, setIsSharing] = useState(false);
-  const screenStreamRef = useRef(null);
-  const _applyShareStream = (stream) => { screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
-  const handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
-  const handleStopShare = () => { screenStreamRef.current?.getTracks().forEach(t => t.stop()); screenStreamRef.current = null; setIsSharing(false); };
-  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
-  const [activeScene, setActiveScene] = useState('main');
-  const [selectedBitrate, setSelectedBitrate] = useState('auto');
-  const [showTippingModal, setShowTippingModal] = useState(false);
-  const [showEvmux, setShowEvmux] = useState(false);
-  const [showViewerControls, setShowViewerControls] = useState(false);
-  const [showGiftShop, setShowGiftShop] = useState(false);
-  const [showWhisperPanel, setShowWhisperPanel] = useState(false);
-  const [showSwanPanel, setShowSwanPanel] = useState(false);
-  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
-  const [showModerationAppeal, setShowModerationAppeal] = useState(false);
-  const [showClipCreator, setShowClipCreator] = useState(false);
-  const [pollTick, setPollTick] = useState(0);
-  const [raidTick, setRaidTick] = useState(0);
-  const [reactEmoji, setReactEmoji] = useState(null);
+  var qc = useQueryClient();
+  var [deviceState, setDeviceState] = useState({ cameraOn: false, micOn: false, networkQuality: 3, isSim: false });
+  var [previewStream, setPreviewStream] = useState(null);
+  var [displayName, setDisplayName] = useState('');
+  var [roleRequested, setRoleRequested] = useState('audience');
+  var [joinMessage, setJoinMessage] = useState('');
+  var [settingsOpen, setSettingsOpen] = useState(true);
+  var [videoQuality, setVideoQuality] = useState('720p');
+  var [echoCancel, setEchoCancel] = useState(true);
+  var [noiseCancel, setNoiseCancel] = useState(true);
+  var [bgBlur, setBgBlur] = useState(false);
+  var [bypassDeviceCheck, setBypassDeviceCheck] = useState(false);
+  var [permissions, setPermissions] = useState({ camera: 'prompt', mic: 'prompt', speaker: 'granted' });
+  var [waitlistEntry, setWaitlistEntry] = useState(null);
+  var [newRoomTitle, setNewRoomTitle] = useState('');
+  var [newRoomCategory, setNewRoomCategory] = useState('other');
+  var [isSharing, setIsSharing] = useState(false);
+  var screenStreamRef = useRef(null);
+  var _applyShareStream = (stream) => { screenStreamRef.current = stream; var vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  var handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
+  var handleStopShare = () => { screenStreamRef.(current && current.getTracks().forEach(t => t.stop()); screenStreamRef.current = null; setIsSharing(false); };
+  var [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  var [activeScene, setActiveScene] = useState('main');
+  var [selectedBitrate, setSelectedBitrate] = useState('auto');
+  var [showTippingModal, setShowTippingModal] = useState(false);
+  var [showEvmux, setShowEvmux] = useState(false);
+  var [showViewerControls, setShowViewerControls] = useState(false);
+  var [showGiftShop, setShowGiftShop] = useState(false);
+  var [showWhisperPanel, setShowWhisperPanel] = useState(false);
+  var [showSwanPanel, setShowSwanPanel] = useState(false);
+  var [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  var [showModerationAppeal, setShowModerationAppeal] = useState(false);
+  var [showClipCreator, setShowClipCreator] = useState(false);
+  var [pollTick, setPollTick] = useState(0);
+  var [raidTick, setRaidTick] = useState(0);
+  var [reactEmoji, setReactEmoji] = useState(null);
 
-  const [elapsed, setElapsed] = useState(0);
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: room } = useQuery({
+  var [elapsed, setElapsed] = useState(0);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: room } = useQuery({
     queryKey: ['greenroom-target', roomId],
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId && destType !== 'new_room',
   });
-  const { data: participants = [] } = useQuery({
+  var { data: participants = [] } = useQuery({
     queryKey: ['greenroomParticipants', roomId],
     queryFn: () => base44.entities.RoomParticipant.filter({ room_id: roomId }),
     enabled: !!roomId,
     refetchInterval: 10000,
   });
 
-  const { data: activePoll } = useQuery({
+  var { data: activePoll } = useQuery({
     queryKey: ['active-poll', roomId],
     queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(r => r[0] || null),
     enabled: !!roomId,
     refetchInterval: 5000,
   });
 
-  const subCount = useSubscriptionCount(room?.host_id || user?.id);
+  var subCount = useSubscriptionCount((room && room.host_id) || (user && user.id));
 
   useEffect(() => {
-    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    var iv = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(iv);
   }, []);
-  const [peakViewers, setPeakViewers] = useState(0);
+  var [peakViewers, setPeakViewers] = useState(0);
   useEffect(() => { setPeakViewers(prev => Math.max(prev, participants.length)); }, [participants.length]);
-  const [deviceRetryKey, setDeviceRetryKey] = useState(0);
-  const [busViewerCount, setBusViewerCount] = useState(0);
-  const [tipTotal, setTipTotal] = useState(0);
-  const [lastChatMsg, setLastChatMsg] = useState(null);
-  const [lastChatMsgObj, setLastChatMsgObj] = useState(null);
+  var [deviceRetryKey, setDeviceRetryKey] = useState(0);
+  var [busViewerCount, setBusViewerCount] = useState(0);
+  var [tipTotal, setTipTotal] = useState(0);
+  var [lastChatMsg, setLastChatMsg] = useState(null);
+  var [lastChatMsgObj, setLastChatMsgObj] = useState(null);
   useVoiceAgentRuntime({ chatMessage: lastChatMsgObj });
 
   useEffect(() => {
-    if (user?.full_name) setDisplayName(user.full_name);
-  }, [user?.full_name]);
+    if ((user && user.full_name)) setDisplayName(user.full_name);
+  }, [(user && user.full_name)]);
 
   // Check permissions
   useEffect(() => {
-    const check = async () => {
+    var check = async () => {
       if (!navigator.permissions) return;
-      const cam = await navigator.permissions.query({ name: 'camera' }).catch(() => ({ state: 'prompt' }));
-      const mic = await navigator.permissions.query({ name: 'microphone' }).catch(() => ({ state: 'prompt' }));
+      var cam = await navigator.permissions.query({ name: 'camera' }).catch(() => ({ state: 'prompt' }));
+      var mic = await navigator.permissions.query({ name: 'microphone' }).catch(() => ({ state: 'prompt' }));
       setPermissions(p => ({ ...p, camera: cam.state, mic: mic.state }));
     };
     check();
@@ -407,14 +407,14 @@ export default function GreenroomPage() {
     if (deviceState.micOn) setPermissions(p => ({ ...p, mic: 'granted' }));
   }, [deviceState.cameraOn, deviceState.micOn]);
 
-  const deviceCheckPassed = (deviceState.cameraOn || deviceState.micOn) || bypassDeviceCheck;
-  const destCfg = DEST_COLORS[destType] || DEST_COLORS.room;
-  const isHost = room?.host_id === user?.id || destType === 'new_room' || (!roomId && (destType === 'room' || destType === 'panel'));
+  var deviceCheckPassed = (deviceState.cameraOn || deviceState.micOn) || bypassDeviceCheck;
+  var destCfg = DEST_COLORS[destType] || DEST_COLORS.room;
+  var isHost = (room && room.host_id) === (user && user.id) || destType === 'new_room' || (!roomId && (destType === 'room' || destType === 'panel'));
 
-  const readyMut = useMutation({
+  var readyMut = useMutation({
     mutationFn: async () => {
       // Create/upsert GreenroomSession
-      const sessionData = {
+      var sessionData = {
         user_id: user.id,
         user_name: displayName || user.full_name || user.email,
         room_id: roomId || '',
@@ -431,11 +431,11 @@ export default function GreenroomPage() {
         ready_at: new Date().toISOString(),
         display_name_override: displayName,
       };
-      let session;
+      var session;
       try { session = await base44.entities.GreenroomSession.create(sessionData); } catch { session = { id: null }; }
 
       if (destType === 'new_room') {
-        const newRoom = await base44.entities.Room.create({
+        var newRoom = await base44.entities.Room.create({
           title: newRoomTitle || 'New Room',
           type: 'video',
           host_id: user.id,
@@ -451,12 +451,12 @@ export default function GreenroomPage() {
       }
 
       // room or panel — create waitlist entry
-      const existingWL = await base44.entities.GreenroomWaitlist.filter({ room_id: roomId, user_id: user.id, status: 'waiting' });
-      let wlEntry;
+      var existingWL = await base44.entities.GreenroomWaitlist.filter({ room_id: roomId, user_id: user.id, status: 'waiting' });
+      var wlEntry;
       if (existingWL.length > 0) {
         wlEntry = existingWL[0];
       } else {
-        const allWaiting = await base44.entities.GreenroomWaitlist.filter({ room_id: roomId, status: 'waiting' });
+        var allWaiting = await base44.entities.GreenroomWaitlist.filter({ room_id: roomId, status: 'waiting' });
         wlEntry = await base44.entities.GreenroomWaitlist.create({
           room_id: roomId,
           user_id: user.id,
@@ -466,7 +466,7 @@ export default function GreenroomPage() {
           join_message: joinMessage,
           status: 'waiting',
           position: allWaiting.length + 1,
-          greenroom_session_id: session?.id || '',
+          greenroom_session_id: (session && session.id) || '',
           notified_at: new Date().toISOString(),
         });
       }
@@ -482,7 +482,7 @@ export default function GreenroomPage() {
     onError: () => toast.error('Something went wrong — please try again'),
   });
 
-  const hostReadyMut = useMutation({
+  var hostReadyMut = useMutation({
     mutationFn: async () => {
       await base44.entities.GreenroomSession.create({
         user_id: user.id,
@@ -524,9 +524,9 @@ export default function GreenroomPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
-      {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={room?.host_id || user?.id} onClose={() => setShowSwanPanel(false)} />}
+      {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={(room && room.host_id) || (user && user.id)} onClose={() => setShowSwanPanel(false)} />}
       <NetworkQualityBanner quality={['offline','poor','fair','good','excellent'][deviceState.networkQuality] || 'good'} />
-      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={room?.host_id || user?.id} onOpenPanel={() => setShowSwanPanel(true)} />}
+      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={(room && room.host_id) || (user && user.id)} onOpenPanel={() => setShowSwanPanel(true)} />}
       {/* ── FANBASE-STYLE HEADER ── */}
       <div className="sticky top-0 z-30" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-2 px-3 h-12">
@@ -790,12 +790,12 @@ export default function GreenroomPage() {
             </label>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
-              <ZEGOStreamHealthCard roomId={room?.id || null} />
+              <ZEGOStreamHealthCard roomId={(room && room.id) || null} />
               {isHost && <StreamGoals isHost={true} />}
-              <EnhancedAudioMixer roomId={room?.id || null} isHost={isHost} />
-              <PanelMusicPlayer roomId={room?.id || null} isHost={isHost} />
-              <PrivatePanel roomId={room?.id || null} currentUser={user} isHost={isHost} />
-              {isHost && <GreenroomWaitlistPanel roomId={room?.id || null} currentUser={user} onAdmit={() => {}} />}
+              <EnhancedAudioMixer roomId={(room && room.id) || null} isHost={isHost} />
+              <PanelMusicPlayer roomId={(room && room.id) || null} isHost={isHost} />
+              <PrivatePanel roomId={(room && room.id) || null} currentUser={user} isHost={isHost} />
+              {isHost && <GreenroomWaitlistPanel roomId={(room && room.id) || null} currentUser={user} onAdmit={() => {}} />}
               <OnlineUsersGrid compact maxVisible={10} />
               <ContentRecommendations />
               <CollaborationMatcher />
@@ -804,52 +804,52 @@ export default function GreenroomPage() {
         </div>
       </div>
       <SwanAIRecommendations roomId={roomId} currentLayout="greenroom" viewerCount={participants.length} />
-      <MilestoneAlerts userId={user?.id} roomId={roomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={roomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {user && <ZEGOConfigPanel user={user} />}
       {roomId && isHost && <ZEGOStreamHealthCard roomId={roomId} />}
       <BackgroundCustomizer />
-      {isHost && roomId && <StreamerGoalsWidget creatorId={room?.host_id || user?.id} roomId={roomId} isCreator={isHost} embedded={true} />}
+      {isHost && roomId && <StreamerGoalsWidget creatorId={(room && room.host_id) || (user && user.id)} roomId={roomId} isCreator={isHost} embedded={true} />}
       {isHost && roomId && <PayPerViewManager roomId={roomId} />}
       {isHost && roomId && <MonetizationDashboard roomId={roomId} />}
       {roomId && <GiftShopTray roomId={roomId} currentUser={user} />}
       {roomId && <GiftLeaderboard roomId={roomId} />}
-      {isHost && <SubscriptionManager creatorId={room?.host_id || user?.id} />}
-      {roomId && <TipAlert roomId={roomId} recipientId={room?.host_id || user?.id} />}
-      {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: room?.host_id }} roomId={roomId} />}
-      {roomId && <LiveAuctionWidget creatorId={room?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
+      {isHost && <SubscriptionManager creatorId={(room && room.host_id) || (user && user.id)} />}
+      {roomId && <TipAlert roomId={roomId} recipientId={(room && room.host_id) || (user && user.id)} />}
+      {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: (room && room.host_id) }} roomId={roomId} />}
+      {roomId && <LiveAuctionWidget creatorId={(room && room.host_id) || (user && user.id)} roomId={roomId} isCreator={isHost} currentUser={user} />}
       <MerchWidget />
       <NotificationBell />
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}
       {isHost && roomId && <CollaborativeWhiteboard roomId={roomId} />}
-      {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={room?.host_id || user?.id} roomId={roomId} isHost={isHost} />}
-      {isHost && roomId && <RedemptionQueue creatorId={room?.host_id || user?.id} roomId={roomId} />}
-      {roomId && <RewardShop creatorId={room?.host_id || user?.id} roomId={roomId} currentUser={user} />}
-      {!isHost && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={room?.host_id || user?.id} compact={true} />}
+      {roomId && (user && user.id) && <PointsEarnWidget userId={user.id} creatorId={(room && room.host_id) || (user && user.id)} roomId={roomId} isHost={isHost} />}
+      {isHost && roomId && <RedemptionQueue creatorId={(room && room.host_id) || (user && user.id)} roomId={roomId} />}
+      {roomId && <RewardShop creatorId={(room && room.host_id) || (user && user.id)} roomId={roomId} currentUser={user} />}
+      {!isHost && (user && user.id) && <ViewerLoyaltyCard userId={user.id} creatorId={(room && room.host_id) || (user && user.id)} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
       {isHost && <StreamingPresets onApply={() => {}} />}
-      {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Greenroom'} viewerCount={participants.length} />}
+      {roomId && <EmbedPlayer roomId={roomId} creatorName={(user && user.full_name) || ''} streamTitle={(room && room.title) || 'Greenroom'} viewerCount={participants.length} />}
       <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
-      {isHost && user?.id && <RecordingManager userId={user.id} />}
+      {isHost && (user && user.id) && <RecordingManager userId={user.id} />}
       {isHost && <OBSBridge />}
       <ZEGOMobileAppBanner />
       {isHost && roomId && <AutomatedClipGenerator streamSession={{room_id: roomId}} isLive={roomId != null} />}
       {roomId && <InteractivePollWidget roomId={roomId} isHost={isHost} />}
-      {isHost && <StreamMetadataEditor initialTitle={room?.title || 'Greenroom'} initialCategory={'entertainment'} />}
+      {isHost && <StreamMetadataEditor initialTitle={(room && room.title) || 'Greenroom'} initialCategory={'entertainment'} />}
       {isHost && <StreamerMonetizationCenter />}
-      {!isHost && showGiftShop && roomId && <AnimatedGiftShop recipientId={room?.host_id || user?.id} roomId={roomId} onClose={() => setShowGiftShop(false)} />}
-      {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
-      {isHost && <SoundAlertsManager creatorId={room?.host_id || user?.id} />}
-      <ShareToSocial content={{ title: room?.title || 'Green Room on SeeWhy LIVE', url: window.location.href }} />
-      {isHost && roomId && user?.id && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
+      {!isHost && showGiftShop && roomId && <AnimatedGiftShop recipientId={(room && room.host_id) || (user && user.id)} roomId={roomId} onClose={() => setShowGiftShop(false)} />}
+      {isHost && (user && user.id) && <VirtualGoodsStore userId={user.id} />}
+      {isHost && <SoundAlertsManager creatorId={(room && room.host_id) || (user && user.id)} />}
+      <ShareToSocial content={{ title: (room && room.title) || 'Green Room on SeeWhy LIVE', url: window.location.href }} />
+      {isHost && roomId && (user && user.id) && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
       {isHost && <BroadcastAnalyticsDashboard streamSession={room || null} isLive={roomId != null} />}
       {isHost && roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
       {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
       <StreamHealthDashboard isLive={roomId != null} />
-      {!isHost && roomId && <QuickTip recipientId={room?.host_id || user?.id} recipientName={''} onTipSent={(amount) => setTipTotal(t => t + Math.floor(amount || 0))} />}
+      {!isHost && roomId && <QuickTip recipientId={(room && room.host_id) || (user && user.id)} recipientName={''} onTipSent={(amount) => setTipTotal(t => t + Math.floor(amount || 0))} />}
       {isHost && <LowerThirdsBanner onBannerChange={(b) => { if (roomId) base44.entities.Room.update(roomId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
       {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
@@ -857,51 +857,51 @@ export default function GreenroomPage() {
       {isHost && roomId && <RaidPanelButton room={room} currentUser={user} isHost={isHost} triggerOpen={raidTick} />}
       {roomId && <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={participants.length} />}
       {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
-      {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={participants.length} elapsedSeconds={elapsed} />}
+      {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={(room && room.title) || ''} viewerCount={participants.length} elapsedSeconds={elapsed} />}
       {isHost && <ChatModeration collapsed={true} />}
       <BrandChyron />
-      {!isHost && showWhisperPanel && roomId && user?.id && <WhisperPanel roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} onClose={() => setShowWhisperPanel(false)} />}
-      {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={room?.host_id || user?.id} />}
+      {!isHost && showWhisperPanel && roomId && (user && user.id) && <WhisperPanel roomId={roomId} currentUser={user} recipientId={(room && room.host_id) || (user && user.id)} recipientName={''} onClose={() => setShowWhisperPanel(false)} />}
+      {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={(room && room.host_id) || (user && user.id)} />}
       {showViewerControls && roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
-      {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={room?.host_id || user?.id} currentUser={user} isHost={isHost} />}
+      {roomId && (user && user.id) && <VirtualCurrencyTips roomId={roomId} creatorId={(room && room.host_id) || (user && user.id)} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
-      {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
-      {isHost && roomId && user?.id && showClipCreator && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={room?.title || ''} onClose={() => setShowClipCreator(false)} />}
-      {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
-      {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} triggerOpen={pollTick} />}
-      {!isHost && roomId && room?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={room.host_id} />}
+      {isHost && roomId && (user && user.id) && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={(room && room.title) || ''} elapsedSeconds={elapsed} currentUser={user} />}
+      {isHost && roomId && (user && user.id) && showClipCreator && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={(room && room.title) || ''} onClose={() => setShowClipCreator(false)} />}
+      {isHost && roomId && (user && user.id) && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
+      {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={(user && user.id)} isHost={isHost} triggerOpen={pollTick} />}
+      {!isHost && roomId && (room && room.host_id) && <GiftTray roomId={roomId} currentUser={user} recipientId={room.host_id} />}
       {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={(b) => { if (roomId) base44.entities.Room.update(roomId, b).catch(() => {}); }} isHost={true} />}
       <HostAlertCenter />
       {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={participants.length} />}
-      {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}
-      {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} />}
-      {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {isHost && <LocalVideoTile stream={previewStream} audioEnabled={deviceState.micOn} videoEnabled={deviceState.cameraOn} userName={user?.full_name || ''} isHost={isHost} />}
+      {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={(room && room.host_id) || (user && user.id)} isHost={isHost} />}
+      {roomId && (user && user.id) && <SuperChatBar roomId={roomId} currentUser={user} recipientId={(room && room.host_id) || (user && user.id)} recipientName={''} />}
+      {(user && user.id) && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
+      {isHost && <LocalVideoTile stream={previewStream} audioEnabled={deviceState.micOn} videoEnabled={deviceState.cameraOn} userName={(user && user.full_name) || ''} isHost={isHost} />}
       {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={!deviceState.micOn} isVideoOff={!deviceState.cameraOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onVideoToggle={() => setDeviceState(prev => ({ ...prev, cameraOn: !prev.cameraOn }))} />}
       {isHost && <AudioPanel micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} participants={participants} />}
       {isHost && <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={isHost} position={'bottom-left'} />}
-      {isHost && <StripeConnectButton creatorId={room?.host_id || user?.id} />}
-      {!isHost && user?.id && <StripeSubscribeButton creatorId={room?.host_id || user?.id} creatorName={''} currentUserId={user.id} />}
-      {<SubscriptionTiers communityId={null} userId={user?.id} />}
+      {isHost && <StripeConnectButton creatorId={(room && room.host_id) || (user && user.id)} />}
+      {!isHost && (user && user.id) && <StripeSubscribeButton creatorId={(room && room.host_id) || (user && user.id)} creatorName={''} currentUserId={user.id} />}
+      {<SubscriptionTiers communityId={null} userId={(user && user.id)} />}
       {room && <WatchPartyAnalytics party={room} members={participants} pollCount={0} reactionCount={0} />}
-      {roomId && user?.id && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={user?.full_name || ''} onJoined={() => toast.success('Joined stream successfully!')} />}
-      {roomId && <PaymentMethodSelector creatorId={room?.host_id || user?.id} roomId={roomId} onPaymentComplete={() => toast.success('Payment complete!')} />}
-      {isHost && <CreatorTierManager creatorId={room?.host_id || user?.id} />}
-      {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
-      {user?.id && <LoyaltyBadge userId={user.id} creatorId={room?.host_id || user?.id} />}
+      {roomId && (user && user.id) && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={(user && user.full_name) || ''} onJoined={() => toast.success('Joined stream successfully!')} />}
+      {roomId && <PaymentMethodSelector creatorId={(room && room.host_id) || (user && user.id)} roomId={roomId} onPaymentComplete={() => toast.success('Payment complete!')} />}
+      {isHost && <CreatorTierManager creatorId={(room && room.host_id) || (user && user.id)} />}
+      {(user && user.id) && <TierBadge tier={null} size={'sm'} showName={false} />}
+      {(user && user.id) && <LoyaltyBadge userId={user.id} creatorId={(room && room.host_id) || (user && user.id)} />}
       {roomId && isHost && <GuestInviteGenerator roomId={roomId} isHost={isHost} />}
-      {roomId && <GuestGrid participants={participants} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
+      {roomId && <GuestGrid participants={participants} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={(user && user.id)} />}
       {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={room} micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseCancel(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCancel(s.echoCancellation); }} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { if (isHost && roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(() => {}); }} />
       <YouTubeDiscovery />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       {showGlobalSearch && <GlobalSearch onClose={() => setShowGlobalSearch(false)} />}
       {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => toast.success('Content unlocked!')} />}
-      <PaywallGate isHost={isHost} streamTitle={room?.title || ''} onUnlock={() => {}} isUnlocked={true} />
-      {roomId && <SubscriptionGate creatorId={room?.host_id || user?.id} roomId={roomId} />}
+      <PaywallGate isHost={isHost} streamTitle={(room && room.title) || ''} onUnlock={() => {}} isUnlocked={true} />
+      {roomId && <SubscriptionGate creatorId={(room && room.host_id) || (user && user.id)} roomId={roomId} />}
       {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => setShowModerationAppeal(false)} />}
-      {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
+      {isHost && (user && user.id) && <GuestDestinationsPanel participantUserId={user.id} guestName={(user && user.full_name) || ''} />}
       {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => toast.success('Permissions updated')} />}
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
@@ -909,12 +909,12 @@ export default function GreenroomPage() {
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
-      {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={activePoll} isHost={isHost} />}
+      {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={(user && user.id)} activePoll={activePoll} isHost={isHost} />}
       {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => isHost && hostReadyMut.mutate()} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
-      {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={msg => { if (msg?.content) { setLastChatMsg(msg.content); setLastChatMsgObj(msg); } }} />}
-      {roomId && <TippingOverlay roomId={roomId} creatorId={room?.host_id || user?.id} isVisible={true} />}
+      {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={(user && user.full_name) || ''} room={room} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor((msg && msg.tip_amount) || 0))} onMessageReceived={msg => { if ((msg && msg.content)) { setLastChatMsg(msg.content); setLastChatMsgObj(msg); } }} />}
+      {roomId && <TippingOverlay roomId={roomId} creatorId={(room && room.host_id) || (user && user.id)} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => toast.success('AI persona configured!')} />}
       {isHost && <AudioMixer micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} />}
@@ -922,19 +922,19 @@ export default function GreenroomPage() {
       {isHost && <ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}
-      {roomId && user?.id && <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user?.full_name || ''} userRole={isHost ? 'host' : 'viewer'} />}
+      {roomId && (user && user.id) && <EnhancedStreamChat roomId={roomId} userId={user.id} userName={(user && user.full_name) || ''} userRole={isHost ? 'host' : 'viewer'} />}
       <GlobalChatWidget />
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
       {roomId && <MobileStreamControls micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} roomId={roomId} />}
-      {user?.id && <PointsNotification userId={user.id} />}
-      {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={room?.host_id || user?.id} />}
+      {(user && user.id) && <PointsNotification userId={user.id} />}
+      {roomId && (user && user.id) && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={(room && room.host_id) || (user && user.id)} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
-      {roomId && <BattleMode roomId={roomId} isHost={isHost} hostName={user?.full_name || ''} />}
+      {roomId && <BattleMode roomId={roomId} isHost={isHost} hostName={(user && user.full_name) || ''} />}
       {isHost && <BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
-      {isHost && user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
-      {isHost && <GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
+      {isHost && (user && user.id) && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {isHost && <GuestStreamMonitor guestName={(user && user.full_name) || ''} isStreaming={roomId != null} />}
       {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -942,7 +942,7 @@ export default function GreenroomPage() {
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={Math.max(busViewerCount, participants.length)} />
       <ViewerCount count={Math.max(busViewerCount, participants.length)} peakViewers={peakViewers} />
-      <AuraPanel roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={participants.length} isLive={roomId != null} userTier="free" />
+      <AuraPanel roomId={roomId} isHost={isHost} streamTitle={(room && room.title) || ''} viewerCount={participants.length} isLive={roomId != null} userTier="free" />
       {isHost && roomId && <LivePoll roomId={roomId} isHost={isHost} />}
       {roomId && user && <RoomReactionOverlay roomId={roomId} currentUser={user} triggerReact={reactEmoji} />}
     </div>

@@ -25,18 +25,18 @@ import {
 } from 'lucide-react';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
-const BG      = '#0E0C09';
-const BG2     = 'rgba(14,12,9,0.95)';
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
-const AMBER   = '#D4854A';
-const ROSE    = '#C0395A';
-const GREEN   = '#6DBF7E';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG      = '#0E0C09';
+var BG2     = 'rgba(14,12,9,0.95)';
+var GOLD    = '#D4AF37';
+var CRIMSON = '#800020';
+var PINK    = '#C0392B';
+var AMBER   = '#D4854A';
+var ROSE    = '#C0395A';
+var GREEN   = '#6DBF7E';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Shared input style ─────────────────────────────────────────────────────────
-const inp = {
+var inp = {
   width: '100%',
   padding: '12px 16px',
   background: 'rgba(14,12,9,0.85)',
@@ -50,7 +50,7 @@ const inp = {
 };
 
 // ── Style tag categories ──────────────────────────────────────────────────────
-const STYLE_CATEGORIES = [
+var STYLE_CATEGORIES = [
   {
     label: 'Genre',
     color: AMBER,
@@ -75,7 +75,7 @@ const STYLE_CATEGORIES = [
 
 // ── Genre → color mapping for album art (earth-tone palette only) ────────────
 function tagColor(tags) {
-  const map = {
+  var map = {
     'trap':     `linear-gradient(135deg, #1a0000, ${CRIMSON})`,
     'lo-fi':    `linear-gradient(135deg, #1a1000, ${GOLD})`,
     'gospel':   `linear-gradient(135deg, #1a0a00, #E8A030)`,
@@ -89,15 +89,15 @@ function tagColor(tags) {
     'drill':    `linear-gradient(135deg, #1a0000, #A01010)`,
     'pop':      `linear-gradient(135deg, #1a0008, ${ROSE})`,
   };
-  for (const t of (tags || [])) {
-    const k = t.toLowerCase();
+  for (var t of (tags || [])) {
+    var k = t.toLowerCase();
     if (map[k]) return map[k];
   }
   return `linear-gradient(135deg, #100d00, ${CRIMSON})`;
 }
 
 // ── Trending styles data ──────────────────────────────────────────────────────
-const TRENDING = [
+var TRENDING = [
   { emoji: '🌑', label: 'Dark Trap', style: 'trap, 808, dark, hype', count: '128 tracks' },
   { emoji: '🎧', label: 'Lo-Fi Chill', style: 'lo-fi, piano, chill, ambient', count: '214 tracks' },
   { emoji: '🎺', label: 'Gospel Vibes', style: 'gospel, choir, uplifting, piano', count: '73 tracks' },
@@ -107,7 +107,7 @@ const TRENDING = [
 ];
 
 // ── Initial mock library ──────────────────────────────────────────────────────
-const INITIAL_TRACKS = [
+var INITIAL_TRACKS = [
   {
     id: 't1',
     title: 'Midnight Trap Session',
@@ -159,7 +159,7 @@ const INITIAL_TRACKS = [
 ];
 
 // ── Advanced generation options ───────────────────────────────────────────────
-const VOCAL_TYPES = [
+var VOCAL_TYPES = [
   { id: 'auto',        label: 'Auto',        color: GOLD },
   { id: 'male-rap',    label: 'Male Rap',    color: AMBER },
   { id: 'female-rnb',  label: 'Female R&B',  color: PINK },
@@ -168,24 +168,24 @@ const VOCAL_TYPES = [
   { id: 'auto-tune',   label: 'Auto-Tune',   color: '#4A8A7A' },
 ];
 
-const MASTER_PRESETS = [
+var MASTER_PRESETS = [
   { id: 'radio',   label: 'Radio',   color: GOLD },
   { id: 'club',    label: 'Club',    color: PINK },
   { id: 'youtube', label: 'YouTube', color: '#FF0000' },
   { id: 'lo-fi',   label: 'Lo-Fi',   color: ROSE },
 ];
 
-const DURATIONS = [
+var DURATIONS = [
   { s: 30,  label: '30s' },
   { s: 60,  label: '1m' },
   { s: 120, label: '2m' },
   { s: 180, label: '3m' },
 ];
 
-const KEYS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+var KEYS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 
 // ── Generation status messages ────────────────────────────────────────────────
-const GEN_STEPS = [
+var GEN_STEPS = [
   'Analyzing style tags…',
   'Composing lyrics…',
   'Arranging instrumentation…',
@@ -196,7 +196,7 @@ const GEN_STEPS = [
 
 // ── WaveformVisualizer ────────────────────────────────────────────────────────
 function WaveformVisualizer({ playing, color = GOLD, bars = 28, height = 36 }) {
-  const heights = useRef(
+  var heights = useRef(
     Array.from({ length: bars }, () => 4 + Math.random() * 24)
   );
   return (
@@ -251,20 +251,20 @@ function StyleChip({ label, color, active, onClick, onRemove }) {
 
 // ── MiniScrubber ──────────────────────────────────────────────────────────────
 function MiniScrubber({ isPlaying, duration }) {
-  const [progress, setProgress] = useState(0);
-  const rafRef = useRef(null);
-  const startRef = useRef(null);
-  const [totalSecs] = useState(() => {
-    const [m, s] = (duration || '2:00').split(':').map(Number);
+  var [progress, setProgress] = useState(0);
+  var rafRef = useRef(null);
+  var startRef = useRef(null);
+  var [totalSecs] = useState(() => {
+    var [m, s] = (duration || '2:00').split(':').map(Number);
     return m * 60 + (s || 0);
   });
 
   useEffect(() => {
     if (!isPlaying) { cancelAnimationFrame(rafRef.current); return; }
     startRef.current = Date.now() - progress * totalSecs * 10;
-    const tick = () => {
-      const elapsed = (Date.now() - startRef.current) / 1000;
-      const pct = Math.min(1, elapsed / totalSecs);
+    var tick = () => {
+      var elapsed = (Date.now() - startRef.current) / 1000;
+      var pct = Math.min(1, elapsed / totalSecs);
       setProgress(pct);
       if (pct < 1) rafRef.current = requestAnimationFrame(tick);
     };
@@ -272,8 +272,8 @@ function MiniScrubber({ isPlaying, duration }) {
     return () => cancelAnimationFrame(rafRef.current);
   }, [isPlaying]);
 
-  const fmtTime = (p) => {
-    const s = Math.floor(p * totalSecs);
+  var fmtTime = (p) => {
+    var s = Math.floor(p * totalSecs);
     return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
   };
 
@@ -284,8 +284,8 @@ function MiniScrubber({ isPlaying, duration }) {
         <div
           style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2, cursor: 'pointer', position: 'relative' }}
           onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const p = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            var rect = e.currentTarget.getBoundingClientRect();
+            var p = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
             setProgress(p);
             if (isPlaying) startRef.current = Date.now() - p * totalSecs * 1000;
           }}
@@ -303,12 +303,12 @@ function MiniScrubber({ isPlaying, duration }) {
 
 // ── TrackCard ─────────────────────────────────────────────────────────────────
 function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onRemix, onAddToStream }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [lyricsOpen, setLyricsOpen] = useState(false);
-  const [editingLyrics, setEditingLyrics] = useState(false);
-  const [lyricsText, setLyricsText] = useState(track.lyrics || '');
-  const [copiedLyrics, setCopiedLyrics] = useState(false);
-  const menuRef = useRef(null);
+  var [menuOpen, setMenuOpen] = useState(false);
+  var [lyricsOpen, setLyricsOpen] = useState(false);
+  var [editingLyrics, setEditingLyrics] = useState(false);
+  var [lyricsText, setLyricsText] = useState(track.lyrics || '');
+  var [copiedLyrics, setCopiedLyrics] = useState(false);
+  var menuRef = useRef(null);
 
   // close menu on outside click
   useEffect(() => {
@@ -320,7 +320,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
     return () => document.removeEventListener('mousedown', handler);
   }, [menuOpen]);
 
-  const artGradient = tagColor(track.tags);
+  var artGradient = tagColor(track.tags);
 
   return (
     <motion.div
@@ -582,7 +582,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
                   whiteSpace: 'pre-wrap', wordBreak: 'break-word',
                 }}>
                   {lyricsText.split('\n').map((line, i) => {
-                    const isTag = /^\[.+\]$/.test(line.trim());
+                    var isTag = /^\[.+\]$/.test(line.trim());
                     return (
                       <span key={i} style={{ display: 'block', color: isTag ? GOLD : 'rgba(255,255,255,0.7)', fontWeight: isTag ? 800 : 400 }}>
                         {line || ' '}
@@ -601,8 +601,8 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
 
 // ── ContinuePanel ─────────────────────────────────────────────────────────────
 function ContinuePanel({ track, onClose, onGenerate }) {
-  const [startTime, setStartTime] = useState(track.duration);
-  const [desc, setDesc] = useState('');
+  var [startTime, setStartTime] = useState(track.duration);
+  var [desc, setDesc] = useState('');
 
   return (
     <motion.div
@@ -688,49 +688,49 @@ function Toast({ message, visible }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AIMusic() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   // Form state
-  const [description, setDescription] = useState('');
-  const [styleInput, setStyleInput] = useState('');
-  const [titleInput, setTitleInput] = useState('');
-  const [instrumental, setInstrumental] = useState(false);
+  var [description, setDescription] = useState('');
+  var [styleInput, setStyleInput] = useState('');
+  var [titleInput, setTitleInput] = useState('');
+  var [instrumental, setInstrumental] = useState(false);
 
   // Advanced options
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [bpm, setBpm] = useState(120);
-  const [keyNote, setKeyNote] = useState('C');
-  const [keyScale, setKeyScale] = useState('major');
-  const [duration, setDuration] = useState(120);
-  const [vocalType, setVocalType] = useState('auto');
-  const [masterPreset, setMasterPreset] = useState('radio');
+  var [showAdvanced, setShowAdvanced] = useState(false);
+  var [bpm, setBpm] = useState(120);
+  var [keyNote, setKeyNote] = useState('C');
+  var [keyScale, setKeyScale] = useState('major');
+  var [duration, setDuration] = useState(120);
+  var [vocalType, setVocalType] = useState('auto');
+  var [masterPreset, setMasterPreset] = useState('radio');
 
   // Library filters
-  const [libFilter, setLibFilter] = useState('all'); // all | liked | streamready
-  const [libSearch, setLibSearch] = useState('');
+  var [libFilter, setLibFilter] = useState('all'); // all | liked | streamready
+  var [libSearch, setLibSearch] = useState('');
 
   // Generation state
-  const [generating, setGenerating] = useState(false);
-  const [genStep, setGenStep] = useState(0);
-  const genTimerRef = useRef(null);
+  var [generating, setGenerating] = useState(false);
+  var [genStep, setGenStep] = useState(0);
+  var genTimerRef = useRef(null);
 
   // Library
-  const [tracks, setTracks] = useState(INITIAL_TRACKS);
-  const [playingId, setPlayingId] = useState(null);
+  var [tracks, setTracks] = useState(INITIAL_TRACKS);
+  var [playingId, setPlayingId] = useState(null);
 
   // Continue panel
-  const [continueTrack, setContinueTrack] = useState(null);
+  var [continueTrack, setContinueTrack] = useState(null);
 
   // Toast
-  const [toast, setToast] = useState({ visible: false, message: '' });
+  var [toast, setToast] = useState({ visible: false, message: '' });
 
   // Mobile tabs
-  const [mobileTab, setMobileTab] = useState('create'); // 'create' | 'library' | 'trending'
+  var [mobileTab, setMobileTab] = useState('create'); // 'create' | 'library' | 'trending'
 
   // Active style tag category filter
-  const [activeCategory, setActiveCategory] = useState(0);
+  var [activeCategory, setActiveCategory] = useState(0);
 
   // Parsed style tags (comma-separated from styleInput)
-  const parsedTags = styleInput
+  var parsedTags = styleInput
     .split(',')
     .map(t => t.trim().toLowerCase())
     .filter(Boolean);
@@ -738,7 +738,7 @@ export default function AIMusic() {
   // Cycling gen steps
   useEffect(() => {
     if (!generating) { setGenStep(0); return; }
-    let step = 0;
+    var step = 0;
     genTimerRef.current = setInterval(() => {
       step = (step + 1) % GEN_STEPS.length;
       setGenStep(step);
@@ -752,26 +752,26 @@ export default function AIMusic() {
   }
 
   function handleAddStyleTag(tag) {
-    const lower = tag.toLowerCase();
+    var lower = tag.toLowerCase();
     if (parsedTags.includes(lower)) return;
     setStyleInput(prev => prev ? prev + ', ' + lower : lower);
   }
 
   function handleRemoveStyleTag(tag) {
-    const newTags = parsedTags.filter(t => t !== tag.toLowerCase());
+    var newTags = parsedTags.filter(t => t !== tag.toLowerCase());
     setStyleInput(newTags.join(', '));
   }
 
   async function handleCreate(forceInstrumental = false) {
     if (generating) return;
     setGenerating(true);
-    const isInstrumental = forceInstrumental || instrumental;
-    const tags = parsedTags.length > 0 ? parsedTags : ['chill'];
-    const styleDesc = tags.join(', ');
-    const promptText = description || `${styleDesc} background music${isInstrumental ? '' : ' with lyrics'}`;
+    var isInstrumental = forceInstrumental || instrumental;
+    var tags = parsedTags.length > 0 ? parsedTags : ['chill'];
+    var styleDesc = tags.join(', ');
+    var promptText = description || `${styleDesc} background music${isInstrumental ? '' : ' with lyrics'}`;
 
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an AI music producer for SeeWhy LIVE, a live streaming platform. Generate a complete original track.
 Style: ${styleDesc}
 Description: ${promptText}
@@ -791,9 +791,9 @@ Return ONLY valid JSON (no markdown, no backticks):
 }`,
       });
 
-      let data;
+      var data;
       try {
-        const cleaned = (result || '').replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+        var cleaned = (result || '').replace(/```json?\n?/g, '').replace(/```/g, '').trim();
         data = JSON.parse(cleaned);
       } catch (_) {
         data = {
@@ -820,7 +820,7 @@ Return ONLY valid JSON (no markdown, no backticks):
       setMobileTab('library');
       showToast('🎵 AI track generated!');
     } catch (_) {
-      const newTrack = {
+      var newTrack = {
         id: `t${Date.now()}`,
         title: titleInput || tags[0].charAt(0).toUpperCase() + tags[0].slice(1) + ' — AI Track',
         tags: tags.slice(0, 6),
@@ -838,8 +838,8 @@ Return ONLY valid JSON (no markdown, no backticks):
   }
 
   function generateFallbackLyrics(tags) {
-    const mood = tags.find(t => ['dark','chill','hype','uplifting','romantic','aggressive'].includes(t)) || 'chill';
-    const genre = tags[0] || 'music';
+    var mood = tags.find(t => ['dark','chill','hype','uplifting','romantic','aggressive'].includes(t)) || 'chill';
+    var genre = tags[0] || 'music';
     return `[Verse 1]\nRiding the ${mood} wave, ${genre} in my veins\nSeeWhy LIVE is where the magic remains\nEvery beat a story, every note a dream\n\n[Chorus]\n${genre.toUpperCase()}, can you feel it tonight\nThe music takes over, everything feels right\nLive on the stream, hearts locked in the flow\n\n[Verse 2]\nChat moving fast, the energy is real\nAI composing what the soul demands\n\n[Outro]\nFade into the ${mood} night\nThis music carries us just right`;
   }
 
@@ -847,7 +847,7 @@ Return ONLY valid JSON (no markdown, no backticks):
     setContinueTrack(null);
     setGenerating(true);
     setTimeout(() => {
-      const newTrack = {
+      var newTrack = {
         ...track,
         id: `t${Date.now()}`,
         title: track.title + ' (Continued)',
@@ -887,16 +887,16 @@ Return ONLY valid JSON (no markdown, no backticks):
 
   function handleAddToStream(track) {
     base44.auth.me().then(u => {
-      const existing = u.stream_queue || [];
+      var existing = u.stream_queue || [];
       if (!existing.some(t => t.id === track.id)) {
-        const updated = [...existing, { id: track.id, title: track.title, tags: track.tags, duration: track.duration, emoji: track.emoji, streamReady: track.streamReady }];
+        var updated = [...existing, { id: track.id, title: track.title, tags: track.tags, duration: track.duration, emoji: track.emoji, streamReady: track.streamReady }];
         base44.auth.updateMe({ stream_queue: updated }).catch(() => {});
       }
     }).catch(() => {});
     showToast(`📡 "${track.title}" added to stream queue!`);
   }
 
-  const filteredTracks = tracks.filter(t => {
+  var filteredTracks = tracks.filter(t => {
     if (libFilter === 'liked' && !t.liked) return false;
     if (libFilter === 'streamready' && !t.streamReady) return false;
     if (libSearch && !t.title.toLowerCase().includes(libSearch.toLowerCase()) && !t.tags.some(tag => tag.includes(libSearch.toLowerCase()))) return false;
@@ -1285,7 +1285,7 @@ Return ONLY valid JSON (no markdown, no backticks):
             {/* Tag chips */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {STYLE_CATEGORIES[activeCategory].tags.map(tag => {
-                const isActive = parsedTags.includes(tag.toLowerCase());
+                var isActive = parsedTags.includes(tag.toLowerCase());
                 return (
                   <StyleChip
                     key={tag}
@@ -1518,9 +1518,9 @@ Return ONLY valid JSON (no markdown, no backticks):
       {/* ── Toast ── */}
       <Toast message={toast.message} visible={toast.visible} />
       <SwanAIRecommendations roomId={null} currentLayout="ai" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -1528,7 +1528,7 @@ Return ONLY valid JSON (no markdown, no backticks):
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
