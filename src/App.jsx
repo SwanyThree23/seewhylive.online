@@ -40,7 +40,7 @@ const NO_LAYOUT_PAGES = new Set([
   'EmbedPage', 'AuraAI', 'SwanyBotPage', 'TranscriptionStudio',
   'Register', 'ForgotPassword', 'ResetPassword',
   'GreenRoomPreFlight', 'UnifiedRoom', 'SVSArena', 'GoLiveStudio',
-  'OAuthConsent', 'Mfa',
+  'OAuthConsent', 'Mfa', 'StudioDSP',
 ]);
 
 // Auth pages handled as explicit public routes — excluded from the pagesConfig loop
