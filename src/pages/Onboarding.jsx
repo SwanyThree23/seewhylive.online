@@ -461,7 +461,7 @@ function Step6({ user, onDone, setStep }) {
         {done && (
         <div>
           <div style={{ fontSize:48, marginBottom:8 }}>✅</div>
-          <div style={{ fontFamily:'Barlow Condensed', fontSize:18, color:C.volt }}>TEST STREAM COMPLETE!</div>
+          <div style={{ fontFamily:'Barlow Condensed', fontSize:18, color:C.gold }}>TEST STREAM COMPLETE!</div>
           <div style={{ fontSize:12, color:C.gray, marginTop:4 }}>Your streaming setup is working perfectly.</div>
         </div>
       )}
@@ -651,57 +651,4 @@ export default function OnboardingPage() {
     </div>
   );
 
-  return (
-    <div style={{ minHeight: '100vh', background: C.obs, fontFamily: FONT }}>
-      {/* Gold accent top bar */}
-      <div style={{ height: 3, background: 'linear-gradient(90deg, #800020, #D4AF37, #6DBF7E, #D4AF37)' }} />
-
-      {/* Header */}
-      <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(212,175,55,0.1)', background: 'rgba(8,11,24,0.98)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 16 }}>📡</span>
-          <span style={{ fontFamily: FONT, fontSize: 13, color: C.gold, letterSpacing: '0.12em', fontWeight: 900 }}>SEEWHY LIVE — CREATOR SETUP</span>
-        </div>
-        <a href="/Home" style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,0.3)', textDecoration: 'none', letterSpacing: '0.06em' }}>
-          Skip for now →
-        </a>
-      </div>
-
-      {/* Main card — scrollable, responsive width */}
-      <div style={{ maxWidth: 540, margin: '0 auto', padding: '16px 0 40px' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ background: 'rgba(8,11,24,0.97)', borderRadius: 16, border: '1px solid rgba(212,175,55,0.12)', overflow: 'hidden', margin: '0 12px' }}
-        >
-          <ProgressBar step={step} onboarding={onboarding} />
-          <AnimatePresence mode="wait">
-            <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
-              {step === 1 && <Step1 onboarding={onboarding} user={user} onDone={handleDone} setStep={setStep} />}
-              {step === 2 && <Step2 onboarding={onboarding} onDone={handleDone} setStep={setStep} />}
-              {step === 3 && <Step3 onboarding={onboarding} onDone={handleDone} setStep={setStep} />}
-              {step === 4 && <Step4 user={user} onDone={handleDone} setStep={setStep} />}
-              {step === 5 && <Step5 user={user} onDone={handleDone} setStep={setStep} />}
-              {step === 6 && <Step6 user={user} onDone={handleDone} setStep={setStep} />}
-              {step === 7 && <Step7 onDone={handleDone} setStep={setStep} />}
-            </motion.div>
-          </AnimatePresence>
-        </motion.div>
-      </div>
-
-      <OnboardingFlow isOpen={flowOpen} onClose={() => setFlowOpen(false)} />
-      {(user && user.id) && <MilestoneAlerts creatorId={user.id} />}
-      <SwanyBotContextEnhancer userId={(user && user.id) || null} conversationId={(user && user.id) ? `conv_${user.id}` : null} onContextReady={() => {}} />
-      <QuickTip recipientId={null} recipientName="" onTipSent={() => {}} />
-      <SelectSheet label="" value="" options={[]} onChange={() => {}} />
-      <div style={{ padding: '0 0 16px' }}>
-        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-        <OnlineUsersGrid compact maxVisible={12} />
-        <ContentRecommendations />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <CollaborationMatcher />
-        <StreamGoals isHost={true} />
-      </div>
-    </div>
-  );
 }
