@@ -195,6 +195,14 @@ export default function CreatorDashboardPage() {
       border: 'rgba(255,21,100,0.3)',
       iconColor: '#FF2040',
     },
+    {
+      icon: Zap,
+      label: 'Micro Drama',
+      href: createPageUrl('EpisodeCreatorStudio'),
+      gradient: 'linear-gradient(135deg, rgba(123,45,139,0.2), rgba(123,45,139,0.05))',
+      border: 'rgba(123,45,139,0.4)',
+      iconColor: '#B066CC',
+    },
   ];
 
   return (
@@ -271,6 +279,29 @@ export default function CreatorDashboardPage() {
                 </div>
               </Link>
             ))}
+          </div>
+        </motion.div>
+
+        {/* ── Studio Launch Pad ── */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <p className="text-[10px] uppercase tracking-widest font-black mb-3"
+            style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Content Studios</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+            {[
+              { emoji: '🎵', label: 'AI Music',        sub: 'Generate & stream beats', page: 'AIMusic',          color: '#C9A84C' },
+              { emoji: '🎙',  label: 'Podcast Studio',  sub: 'Live co-host recording',  page: 'PodcastStudio',    color: '#00A8E8' },
+              { emoji: '🎬', label: 'Micro Drama',     sub: 'Episode creator tools',   page: 'EpisodeCreatorStudio', color: '#7B2D8B' },
+            ].map(function(s) {
+              return (
+                <Link key={s.page} to={createPageUrl(s.page)} style={{ textDecoration: 'none' }}>
+                  <div style={{ padding: '12px 10px', borderRadius: 14, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center', cursor: 'pointer' }}>
+                    <div style={{ fontSize: 22, marginBottom: 6 }}>{s.emoji}</div>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, color: '#F0E8D4', margin: '0 0 3px' }}>{s.label}</p>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.3 }}>{s.sub}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </motion.div>
 
