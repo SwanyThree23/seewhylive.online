@@ -166,10 +166,10 @@ function FlywheelDiagram({ activeStage, onStageClick }) {
           transition={{ duration: 0.3 }}
         >
           <p style={{ color: G, fontSize: 13, fontWeight: 900, margin: 0, ...T }}>
-            {FLYWHEEL_STAGES.find(s => s.id === activeStage)?.label || 'FLYWHEEL'}
+            {(function(){ var _fs = FLYWHEEL_STAGES.find(function(s){ return s.id === activeStage; }); return _fs ? _fs.label : null; })() || 'FLYWHEEL'}
           </p>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, margin: '2px 0 0', maxWidth: 80, lineHeight: 1.3, ...T }}>
-            {FLYWHEEL_STAGES.find(s => s.id === activeStage)?.desc}
+            {(function(){ var _fs = FLYWHEEL_STAGES.find(function(s){ return s.id === activeStage; }); return _fs ? _fs.desc : null; })()}
           </p>
         </motion.div>
       </div>

@@ -12,17 +12,17 @@ import AuthLayout from "@/components/AuthLayout";
 // Do not change the fetch calls, headers, or the `ctx` handle handling — styling
 // and copy are safe to edit.
 export default function OAuthConsent() {
-  const ctx = new URLSearchParams(window.location.search).get("ctx");
-  const [info, setInfo] = useState(null);
-  const [checking, setChecking] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [decided, setDecided] = useState("");
-  const [error, setError] = useState("");
-  const [reconnect, setReconnect] = useState("");
+  var ctx = new URLSearchParams(window.location.search).get("ctx");
+  var [info, setInfo] = useState(null);
+  var [checking, setChecking] = useState(true);
+  var [submitting, setSubmitting] = useState(false);
+  var [decided, setDecided] = useState("");
+  var [error, setError] = useState("");
+  var [reconnect, setReconnect] = useState("");
 
   useEffect(() => {
     (async () => {
-      let redirecting = false;
+      var redirecting = false;
       try {
         if (!ctx) {
           setError("This authorization link is invalid or has expired.");
@@ -34,9 +34,9 @@ export default function OAuthConsent() {
         // bearer token) so the server can list the granted tools for a
         // signed-in user — the same auth the approve/deny call sends; without
         // it the display request is anonymous and shows no tools.
-        const infoHeaders = {};
+        var infoHeaders = {};
         if (appParams.token) infoHeaders.Authorization = "Bearer " + appParams.token;
-        const res = await fetch(
+        var res = await fetch(
           `/api/apps/${appParams.appId}/mcp/consent-info?handle=${encodeURIComponent(ctx)}`,
           { credentials: "include", headers: infoHeaders },
         );
@@ -44,7 +44,7 @@ export default function OAuthConsent() {
           setError("This authorization link is invalid or has expired.");
           return;
         }
-        const data = await res.json();
+        var data = await res.json();
         // Gate on the server's auth result, NOT base44.auth.isAuthenticated():
         // the SDK check runs the bearer path, so a cookie-only session (platform
         // login/SSO, or a private app with a stale localStorage token) would read
@@ -62,9 +62,9 @@ export default function OAuthConsent() {
           // link (app_base_url, access_token, …) would ride through the login
           // round-trip and app-params.js would persist them into the freshly
           // authenticated session.
-          const returnTo =
+          var returnTo =
             window.location.pathname + "?ctx=" + encodeURIComponent(ctx);
-          const encoded = encodeURIComponent(returnTo);
+          var encoded = encodeURIComponent(returnTo);
           redirecting = true; // keep the spinner while the browser navigates
           window.location.href =
             (data.login_path || "/login") + "?returnTo=" + encoded + "&from_url=" + encoded;
@@ -79,15 +79,15 @@ export default function OAuthConsent() {
     })();
   }, [ctx]);
 
-  const respond = async (action) => {
+  var respond = async (action) => {
     setSubmitting(true);
     setError("");
     try {
-      const headers = { "Content-Type": "application/json" };
+      var headers = { "Content-Type": "application/json" };
       // Cookie-backed sessions carry no token; sending "Bearer null" would
       // shadow the valid cookie, so add the header only when a token exists.
       if (appParams.token) headers.Authorization = "Bearer " + appParams.token;
-      const res = await fetch(`/api/apps/${appParams.appId}/mcp/authorize-grant`, {
+      var res = await fetch(`/api/apps/${appParams.appId}/mcp/authorize-grant`, {
         method: "POST",
         credentials: "include",
         headers,
@@ -100,8 +100,8 @@ export default function OAuthConsent() {
         // redirect the initial signed-out path uses — so they can return and
         // approve the still-valid handle.
         if (res.status === 401) {
-          const returnTo = window.location.pathname + "?ctx=" + encodeURIComponent(ctx);
-          const encoded = encodeURIComponent(returnTo);
+          var returnTo = window.location.pathname + "?ctx=" + encodeURIComponent(ctx);
+          var encoded = encodeURIComponent(returnTo);
           window.location.href =
             ((info && info.login_path) || "/login") + "?returnTo=" + encoded + "&from_url=" + encoded;
           return;
@@ -111,7 +111,7 @@ export default function OAuthConsent() {
         // gone; 400 malformed/handle already used), so retrying can only 404.
         // Show a terminal reconnect state, not an impossible "try again".
         if ([400, 403, 404, 409].includes(res.status)) {
-          let detail = "";
+          var detail = "";
           try { detail = (await res.json()).detail; } catch (_) { /* keep default */ }
           setReconnect(detail || "This authorization can no longer be completed. Reconnect from your AI client to try again.");
           setSubmitting(false);
@@ -119,7 +119,7 @@ export default function OAuthConsent() {
         }
         throw new Error("Could not complete authorization. Please try again.");
       }
-      const data = await res.json();
+      var data = await res.json();
       window.location.href = data.redirect_url;
       if (!/^https?:/i.test(data.redirect_url)) {
         // Custom-scheme redirect (native AI clients, e.g. cursor://): browsers
@@ -145,8 +145,8 @@ export default function OAuthConsent() {
     );
   }
 
-  const client = (info && info.client_name) || "An AI client";
-  const appName = (info && info.app_name) || "this app";
+  var client = (info && info.client_name) || "An AI client";
+  var appName = (info && info.app_name) || "this app";
 
   if (decided) {
     return (
@@ -184,7 +184,7 @@ export default function OAuthConsent() {
     );
   }
 
-  const tools = Array.isArray(info.tools) ? info.tools : [];
+  var tools = Array.isArray(info.tools) ? info.tools : [];
 
   return (
     <AuthLayout

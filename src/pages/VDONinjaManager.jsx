@@ -105,7 +105,7 @@ function GuestCard({ guest, roomId, onRemove, onUpdate }) {
         <Video style={{ width: 14, height: 14, color: GOLD, flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: 13, fontWeight: 800, color: '#fff', ...T }}>{guest.name || 'Unnamed Guest'}</p>
-          <p style={{ fontSize: 10, color: DIM, ...T }}>{GUEST_ROLES.find(r => r.id === guest.role)?.label || 'Guest'} · {QUALITY_PRESETS.find(q => q.id === guest.quality)?.label || '720p'}</p>
+          <p style={{ fontSize: 10, color: DIM, ...T }}>{(function(){ var _gr = GUEST_ROLES.find(function(r){ return r.id === guest.role; }); return _gr ? _gr.label : null; })() || 'Guest'} · {(function(){ var _qp = QUALITY_PRESETS.find(function(q){ return q.id === guest.quality; }); return _qp ? _qp.label : null; })() || '720p'}</p>
         </div>
         <button onClick={() => copy(guestLink)} title="Copy guest link" style={{ padding: '5px 10px', borderRadius: 6, background: `${GOLD}15`, border: `1px solid ${GOLD}35`, color: GOLD, cursor: 'pointer', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, ...T }}>
           <Copy style={{ width: 11, height: 11 }} /> Guest Link

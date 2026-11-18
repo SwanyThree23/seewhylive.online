@@ -329,8 +329,8 @@ function SVSPanel() {
           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${C.slate2}` }}>
             <span style={{ color: C.textD, fontSize: 13 }}>{j}</span>
             <div style={{ display: 'flex', gap: 6 }}>
-              <Badge label={`${s1}: ${judgeScores[i]?.s1 || 0}`} color={C.state1} />
-              <Badge label={`${s2}: ${judgeScores[i]?.s2 || 0}`} color={C.state2} />
+              <Badge label={(s1 + ': ' + ((judgeScores[i] && judgeScores[i].s1) || 0))} color={C.state1} />
+              <Badge label={(s2 + ': ' + ((judgeScores[i] && judgeScores[i].s2) || 0))} color={C.state2} />
             </div>
           </div>
         ))}
@@ -1379,7 +1379,7 @@ export default function SeeWhyLIVEv37() {
       {/* Panel Content */}
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px' }}>
         <div style={{ color: C.textM, fontSize: 11, marginBottom: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
-          {TABS.find(t => t.id === activeTab)?.label}
+          {(function(){ var _t = TABS.find(function(t){ return t.id === activeTab; }); return _t ? _t.label : null; })()}
         </div>
         {panelMap[activeTab]}
       </div>

@@ -77,7 +77,7 @@ export default function RecordingsLibrary() {
         since.setDate(since.getDate() - Number(dateRange));
         query.recorded_at = { $gte: since.toISOString() };
       }
-      var sortValue = SORTS.find(s => s.id === sort)?.value || '-recorded_at';
+      var sortValue = (SORTS.find(s => s.id === sort) && SORTS.find(s => s.id === sort).value) || '-recorded_at';
       var res = await base44.entities.StreamRecording.filter(query, { sort: sortValue, limit: 60 });
       return res.items || res || [];
     },

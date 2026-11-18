@@ -128,7 +128,7 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
     <div className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-black uppercase" style={{ color: GOLD, ...T }}>
-          {ELEMENT_TYPES.find(t => t.id === element.type)?.label}
+          {ELEMENT_TYPES.find(t => t.id === element.type) && ELEMENT_TYPES.find(t => t.id === element.type).label}
         </p>
         <button onClick={onRemove} className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
           style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', ...T }}>Remove</button>

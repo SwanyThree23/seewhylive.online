@@ -80,7 +80,7 @@ function OctCamTile({ stream, label, isLocal }) {
             className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-white/30 text-[10px]">
-            {(label && label.charAt)(0)?.toUpperCase()}
+            {label && label.charAt(0).toUpperCase()}
           </div>
         )}
         {isLocal && (
@@ -382,7 +382,7 @@ export default function PKBattlePage() {
   var addVote = function(side, pts, combo) {
     var multiplier = combo || 1;
     var totalPts = pts * multiplier;
-    var emoji = GIFTS.find(function(g) { return g.pts === pts; })?.emoji || '🎁';
+    var emoji = (GIFTS.find(function(g) { return g.pts === pts; }) && GIFTS.find(function(g) { return g.pts === pts; }).emoji) || '🎁';
     var id = ++giftIdRef.current;
     setFlyingGifts(function(p) { return [...p, { id, emoji, side }]; });
     setTimeout(function() { setFlyingGifts(function(p) { return p.filter(function(g) { return g.id !== id; }); }); }, 1600);
@@ -450,7 +450,7 @@ export default function PKBattlePage() {
       setTimeLeft(remaining);
       if (remaining === 0) {
         clearInterval(timerRef.current);
-        var w = leftVotes >= rightVotes ? ((battle && battle.title)?.split(' vs ')[0] || 'Left') : ((battle && battle.title)?.split(' vs ')[1] || 'Right');
+        var w = leftVotes >= rightVotes ? ((battle && battle.title && battle.title.split(' vs ')[0]) || 'Left') : ((battle && battle.title && battle.title.split(' vs ')[1]) || 'Right');
         setWinner(w);
         setPkRound(function(r) { return r + 1; });
         base44.entities.LiveAuction.update(battleId, { status: 'ended' });
@@ -463,7 +463,7 @@ export default function PKBattlePage() {
 
   var copyLink = () => { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Battle link copied!')).catch(() => toast.error('Copy failed.')); };
 
-  var names = (battle && battle.title)?.split(' vs ') || [leftName || 'Left', rightName || 'Right'];
+  var names = (battle && battle.title && battle.title.split(' vs ')) || [leftName || 'Left', rightName || 'Right'];
   var [bLeftName, bRightName] = names;
   var bLeftStream = leftStream;
   var bRightStream = rightStream;
@@ -480,8 +480,8 @@ export default function PKBattlePage() {
   var leaveRoomBattleRef = useRef(leaveRoomBattle);
   useEffect(() => { announceJoinBattleRef.current = announceJoinBattle; }, [announceJoinBattle]);
   useEffect(() => { leaveRoomBattleRef.current = leaveRoomBattle; }, [leaveRoomBattle]);
-  useEffect(() => { if (!(user && user.id) || !battleId) return; announceJoinBattleRef.current?.(user.id); }, [(user && user.id), battleId]);  
-  useEffect(() => () => leaveRoomBattleRef.current?.(), []);
+  useEffect(function() { if (!(user && user.id) || !battleId) return; if (announceJoinBattleRef.current) announceJoinBattleRef.current(user.id); }, [(user && user.id), battleId]);
+  useEffect(function() { return function() { if (leaveRoomBattleRef.current) leaveRoomBattleRef.current(); }; }, []);
 
   var [activeBattlePc, setActiveBattlePc] = useState(null);
   useEffect(() => {
@@ -710,7 +710,7 @@ export default function PKBattlePage() {
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3">
                 <div className="w-20 h-20 rounded-full bg-[#D4AF37]/20 border-2 border-[#D4AF37]/40 flex items-center justify-center text-4xl font-black text-[#D4AF37]">
-                  {(bLeftName && bLeftName.charAt)(0)?.toUpperCase()}
+                  {bLeftName && bLeftName.charAt(0).toUpperCase()}
                 </div>
                 <p className="text-2xl font-black text-white">{bLeftName}</p>
                 <span style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Left Creator</span>
@@ -757,7 +757,7 @@ export default function PKBattlePage() {
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3">
                 <div className="w-20 h-20 rounded-full bg-red-700/40 border-2 border-red-500/60 flex items-center justify-center text-4xl font-black text-red-300">
-                  {(bRightName && bRightName.charAt)(0)?.toUpperCase()}
+                  {bRightName && bRightName.charAt(0).toUpperCase()}
                 </div>
                 <p className="text-2xl font-black text-white">{bRightName}</p>
                 <span style={{ background: 'rgba(185,28,28,0.5)', color: '#fecaca', border: '1px solid rgba(192,57,43,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Right Creator</span>

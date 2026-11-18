@@ -235,7 +235,7 @@ function BracketView({ matches, wlMap = {} }) {
                           <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 18, color: '#fff', lineHeight: 1 }}>
                             {sA ? sA.name : 'TBD'}
                           </div>
-                          {sA && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{(wlMap[m.teamA]?.w || sA.record.w)}W–{(wlMap[m.teamA]?.l || sA.record.l)}L</div>}
+                          {sA && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{((wlMap[m.teamA] && wlMap[m.teamA].w) || sA.record.w)}W–{((wlMap[m.teamA] && wlMap[m.teamA].l) || sA.record.l)}L</div>}
                         </div>
                       </div>
                       <div style={{ textAlign: 'center', flexShrink: 0 }}>
@@ -254,7 +254,7 @@ function BracketView({ matches, wlMap = {} }) {
                           <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 18, color: '#fff', lineHeight: 1 }}>
                             {sB ? sB.name : 'TBD'}
                           </div>
-                          {sB && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{(wlMap[m.teamB]?.w || sB.record.w)}W–{(wlMap[m.teamB]?.l || sB.record.l)}L</div>}
+                          {sB && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{((wlMap[m.teamB] && wlMap[m.teamB].w) || sB.record.w)}W–{((wlMap[m.teamB] && wlMap[m.teamB].l) || sB.record.l)}L</div>}
                         </div>
                         <StateCircle stateId={m.teamB} size={40} />
                       </div>
@@ -289,7 +289,7 @@ function RostersView({ wlMap = {} }) {
             <StateCircle stateId={s.id} size={44} />
             <div>
               <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 20, color: '#fff', lineHeight: 1 }}>{s.name}</div>
-              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700 }}>{(wlMap[s.id]?.w || s.record.w)}W – {(wlMap[s.id]?.l || s.record.l)}L · {s.pts} PTS</div>
+              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700 }}>{((wlMap[s.id] && wlMap[s.id].w) || s.record.w)}W – {((wlMap[s.id] && wlMap[s.id].l) || s.record.l)}L · {s.pts} PTS</div>
             </div>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
@@ -464,7 +464,7 @@ function StandingsView({ wlMap = {} }) {
             <StateCircle stateId={s.id} size={36} />
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 17, color: '#fff', lineHeight: 1 }}>{s.name}</div>
-              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700, marginTop: 2 }}>{(wlMap[s.id]?.w || s.record.w)}W – {(wlMap[s.id]?.l || s.record.l)}L</div>
+              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700, marginTop: 2 }}>{((wlMap[s.id] && wlMap[s.id].w) || s.record.w)}W – {((wlMap[s.id] && wlMap[s.id].l) || s.record.l)}L</div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 20, color: isFirst ? GOLD : '#fff' }}>{s.pts}</div>

@@ -8,15 +8,15 @@ import { Lock, Loader2, AlertTriangle } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 
 export default function ResetPassword() {
-  const [searchParams] = useSearchParams();
-  const resetToken = searchParams.get("token");
+  var [searchParams] = useSearchParams();
+  var resetToken = searchParams.get("token");
 
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  var [newPassword, setNewPassword] = useState("");
+  var [confirmPassword, setConfirmPassword] = useState("");
+  var [error, setError] = useState("");
+  var [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  var handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (newPassword !== confirmPassword) {
