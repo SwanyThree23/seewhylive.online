@@ -58,6 +58,8 @@ var TYPE_CONFIG = {
   milestone:           { icon: TrendingUp,     color: GREEN,    label: 'Milestone',        emoji: '🎯' },
   stream_scheduled:    { icon: Calendar,       color: GOLD,     label: 'Stream Scheduled', emoji: '📅' },
   ppv_purchase:        { icon: Eye,            color: GOLD,     label: 'PPV Purchase',     emoji: '🎬' },
+  episode_watch:       { icon: Eye,            color: '#7B2D8B', label: 'Episode Watched',  emoji: '🎬' },
+  series_complete:     { icon: Trophy,         color: '#B066CC', label: 'Series Complete',  emoji: '🏆' },
 };
 
 var FILTERS = [
@@ -65,7 +67,8 @@ var FILTERS = [
   { id: 'streams', label: 'Streams',   types: ['room_created', 'room_joined', 'room_ended'] },
   { id: 'money',   label: 'Earnings',  types: ['tip_sent', 'tip_received', 'gift_sent', 'gift_received', 'subscription', 'ppv_purchase'] },
   { id: 'social',  label: 'Social',    types: ['follow', 'community_joined', 'raid_sent', 'raid_received', 'message'] },
-  { id: 'achieve', label: 'Milestones', types: ['challenge_completed', 'badge_earned', 'milestone', 'clip_created'] },
+  { id: 'achieve', label: 'Milestones', types: ['challenge_completed', 'badge_earned', 'milestone', 'clip_created', 'series_complete'] },
+  { id: 'episodes', label: 'Episodes', types: ['episode_watch', 'series_complete'] },
 ];
 
 function fmtRelative(dateStr) {
@@ -361,10 +364,12 @@ export default function ActivityPage() {
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
           {[
-            { label: '🏠 Home',          href: 'Home'           },
-            { label: '📊 Dashboard',     href: 'Dashboard'      },
-            { label: '👤 Profile',       href: 'Profile'        },
-            { label: '🔔 Notifications', href: 'Notifications'  },
+            { label: '🏠 Home',          href: 'Home'                  },
+            { label: '📊 Dashboard',     href: 'Dashboard'             },
+            { label: '🎬 Micro Drama',   href: 'EpisodeSeries'         },
+            { label: '🎵 AI Music',      href: 'AIMusic'               },
+            { label: '👤 Profile',       href: 'Profile'               },
+            { label: '🔔 Notifications', href: 'Notifications'         },
           ].map(item => (
             <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
               <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(255,184,0,0.07)', border: '1px solid rgba(255,184,0,0.2)', color: '#FFB800', cursor: 'pointer' }}>{item.label}</span>

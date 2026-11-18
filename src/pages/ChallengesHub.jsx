@@ -408,11 +408,43 @@ export default function ChallengesHubPage() {
           <PointsEarnWidget userId={(user && user.id)} />
         </div>
 
+        {/* Studio Challenges */}
+        <div style={{ marginBottom: 12, borderRadius: 14, border: '1px solid rgba(123,45,139,0.25)', background: 'rgba(8,11,24,0.95)', overflow: 'hidden' }}>
+          <div style={{ padding: '12px 14px' }}>
+            <p style={{ fontSize: 10, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(176,102,204,0.7)', marginBottom: 10 }}>🎬 Studio Challenges</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              {[
+                { emoji: '🎬', title: 'Binge Challenge', sub: 'Watch 3 episodes', pts: '150 pts', color: '#7B2D8B', page: 'EpisodeSeries' },
+                { emoji: '🎵', title: 'Live Music Fan', sub: 'Attend AI music session', pts: '75 pts', color: '#C9A84C', page: 'AIMusic' },
+                { emoji: '🎙', title: 'Podcast Listener', sub: 'Full podcast watch', pts: '60 pts', color: '#00A8E8', page: 'PodcastStudio' },
+              ].map(function(c) {
+                return (
+                  <Link key={c.page} to={createPageUrl(c.page)} style={{ textDecoration: 'none' }}>
+                    <div style={{ borderRadius: 10, padding: '10px 8px', background: c.color + '0f', border: '1px solid ' + c.color + '28', textAlign: 'center', cursor: 'pointer' }}>
+                      <div style={{ fontSize: 20, marginBottom: 4 }}>{c.emoji}</div>
+                      <p style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', lineHeight: 1.2 }}>{c.title}</p>
+                      <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', margin: '3px 0', fontFamily: 'Barlow Condensed, sans-serif' }}>{c.sub}</p>
+                      <span style={{ fontSize: 9, fontWeight: 900, fontFamily: 'Orbitron, monospace', color: c.color }}>{c.pts}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+            <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ textDecoration: 'none' }}>
+              <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 10, background: 'rgba(123,45,139,0.1)', border: '1px solid rgba(123,45,139,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <p style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.7)' }}>🎥 Create your own drama challenge</p>
+                <span style={{ fontSize: 10, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: '#B066CC' }}>Studio →</span>
+              </div>
+            </Link>
+          </div>
+        </div>
+
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
           {[
             { label: '🏆 Leaderboard',       href: 'Leaderboard'    },
             { label: '⚔️ PK Battles',        href: 'PKBattle'       },
             { label: '🗺 State vs State',    href: 'StateVsState'   },
+            { label: '🎬 Micro Drama',       href: 'EpisodeSeries'  },
             { label: '👥 Communities',       href: 'Communities'    },
           ].map(item => (
             <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
