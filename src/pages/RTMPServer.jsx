@@ -1,10 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
-function cryptoHex(len) {
-  var l = len === undefined ? 16 : len;
-  var arr = crypto.getRandomValues(new Uint8Array(Math.ceil(l / 2)));
-  return Array.from(arr, function(b) { return b.toString(16).padStart(2, '0'); }).join('').slice(0, l);
-}
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -21,7 +15,7 @@ import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
-import WebhookHooks from '../components/live/WebhookHooks';
+import OutboundWebhooks from '../components/live/OutboundWebhooks';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
@@ -40,6 +34,12 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 
+function cryptoHex(len) {
+  var l = len === undefined ? 16 : len;
+  var arr = crypto.getRandomValues(new Uint8Array(Math.ceil(l / 2)));
+  return Array.from(arr, function(b) { return b.toString(16).padStart(2, '0'); }).join('').slice(0, l);
+}
+
 var PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
   { name: 'Streamlabs', logo: '🎮', url: 'https://streamlabs.com', port: 1935, protocol: 'RTMP' },
@@ -49,18 +49,30 @@ var PLATFORMS = [
   { name: 'Ecamm Live', logo: '🍎', url: 'https://ecamm.com', port: 1935, protocol: 'RTMP' },
 ];
 
-function CopyField({ label, value, mono = true, secret = false }) {
+function CopyField(props) {
+  var label = props.label;
+  var value = props.value;
+  var mono = props.mono !== undefined ? props.mono : true;
+  var secret = props.secret !== undefined ? props.secret : false;
   var [shown, setShown] = useState(!secret);
-  var copy = () => { navigator.clipboard.writeText(value).then(() => toast.success(`${label} copied!`)).catch(() => toast.error('Copy failed.')); };
+
+  function copy() {
+    navigator.clipboard.writeText(value).then(function() {
+      toast.success(label + ' copied!');
+    }).catch(function() {
+      toast.error('Copy failed.');
+    });
+  }
+
   return (
     <div className="space-y-1">
       <label className="text-[11px] text-white/40 uppercase tracking-wider font-semibold">{label}</label>
       <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-lg px-3 py-2">
-        <code className={`flex-1 text-sm ${mono ? 'font-mono' : ''} text-white/80 truncate`}>
+        <code className={'flex-1 text-sm ' + (mono ? 'font-mono' : '') + ' text-white/80 truncate'}>
           {shown ? value : '•'.repeat(Math.min(value.length, 32))}
         </code>
         {secret && (
-          <button onClick={() => setShown(s => !s)} className="text-white/30 hover:text-white/60 shrink-0">
+          <button onClick={function() { setShown(!shown); }} className="text-white/30 hover:text-white/60 shrink-0">
             {shown ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         )}
@@ -74,62 +86,55 @@ function CopyField({ label, value, mono = true, secret = false }) {
 
 export default function RTMPServer() {
   var qc = useQueryClient();
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  var { data: activeRoom } = useQuery({
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data;
+  var activeRoomQuery = useQuery({
     queryKey: ['rtmpserver-active-room', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    queryFn: function() {
+      return base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(function(r) { return r[0] || null; });
+    },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = activeRoomQuery.data;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var [regenerating, setRegenerating] = useState(false);
   var [streamKey, setStreamKey] = useState('');
   var [activeTab, setActiveTab] = useState('setup');
-  var [evmuxKey, setEvmuxKey] = useState(() => {
-    try { return localStorage.getItem('swl_evmux_key') || ''; } catch { return ''; }
-  });
+
+  function getEvmuxKeyInitial() {
+    try { return localStorage.getItem('swl_evmux_key') || ''; } catch (_e) { return ''; }
+  }
+  var [evmuxKey, setEvmuxKey] = useState(getEvmuxKeyInitial);
   var [evmuxSaved, setEvmuxSaved] = useState(false);
 
-  // Load stream key from user profile; generate and save if missing
-  useEffect(() => {
+  useEffect(function() {
     if (!user) return;
     if (user.stream_key) {
       setStreamKey(user.stream_key);
     } else {
-      var newKey = `sk_live_${cryptoHex(24)}`;
+      var newKey = 'sk_live_' + cryptoHex(24);
       setStreamKey(newKey);
-      base44.auth.updateMe({ stream_key: newKey }).catch(() => {});
-    }
-  }, [(user && user.id)]);
-
-  // Load stream key from user profile; generate and save if missing
-  useEffect(() => {
-    if (!user) return;
-    if (user.stream_key) {
-      setStreamKey(user.stream_key);
-    } else {
-      var newKey = `sk_live_${cryptoHex(24)}`;
-      setStreamKey(newKey);
-      base44.auth.updateMe({ stream_key: newKey }).catch(() => {});
+      base44.auth.updateMe({ stream_key: newKey }).catch(function() {});
     }
   }, [(user && user.id)]);
 
   var RTMP_SERVER = 'rtmp://ingest.seewhy.live/live';
   var SRT_SERVER = 'srt://ingest.seewhy.live:9710';
-  var PLAYBACK_URL = `https://cdn.seewhy.live/hls/${streamKey}/index.m3u8`;
+  var PLAYBACK_URL = 'https://cdn.seewhy.live/hls/' + streamKey + '/index.m3u8';
 
-  var regenerateKey = async () => {
+  function regenerateKey() {
     setRegenerating(true);
-    var newKey = `sk_live_${cryptoHex(24)}`;
+    var newKey = 'sk_live_' + cryptoHex(24);
     setStreamKey(newKey);
-    try {
-      await base44.auth.updateMe({ stream_key: newKey });
+    base44.auth.updateMe({ stream_key: newKey }).then(function() {
       toast.success('Stream key regenerated');
-    } catch {
+      setRegenerating(false);
+    }).catch(function() {
       toast.error('Failed to save new key');
-    }
-    setRegenerating(false);
-  };
+      setRegenerating(false);
+    });
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#0d1020] text-white">
@@ -157,19 +162,21 @@ export default function RTMPServer() {
         </div>
         {/* Tabs */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-0 flex gap-1">
-          {['setup', 'evmux', 'stats', 'software'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 text-xs font-semibold capitalize border-b-2 transition-all ${
-                activeTab === tab
-                  ? 'border-[#d4af37] text-[#d4af37]'
-                  : 'border-transparent text-white/40 hover:text-white/60'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+          {['setup', 'evmux', 'stats', 'software'].map(function(tab) {
+            return (
+              <button
+                key={tab}
+                onClick={function() { setActiveTab(tab); }}
+                className={'px-4 py-2 text-xs font-semibold capitalize border-b-2 transition-all ' + (
+                  activeTab === tab
+                    ? 'border-[#d4af37] text-[#d4af37]'
+                    : 'border-transparent text-white/40 hover:text-white/60'
+                )}
+              >
+                {tab}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -178,7 +185,6 @@ export default function RTMPServer() {
         {/* SETUP TAB */}
         {activeTab === 'setup' && (
           <div className="space-y-6">
-            {/* Alert */}
             <div className="flex items-start gap-3 bg-[#d4af37]/10 border border-[#d4af37]/30 rounded-xl p-4">
               <Lock className="w-4 h-4 text-[#d4af37] mt-0.5 shrink-0" />
               <div>
@@ -188,7 +194,6 @@ export default function RTMPServer() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Ingest settings */}
               <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                 <div className="flex items-center gap-2 mb-1">
                   <Radio className="w-4 h-4 text-[#d4af37]" />
@@ -204,13 +209,13 @@ export default function RTMPServer() {
                       disabled={regenerating}
                       className="flex items-center gap-1 text-[10px] text-white/40 hover:text-white/60"
                     >
-                      <RefreshCw className={`w-3 h-3 ${regenerating ? 'animate-spin' : ''}`} />
+                      <RefreshCw className={'w-3 h-3 ' + (regenerating ? 'animate-spin' : '')} />
                       Regenerate
                     </button>
                   </div>
                   <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-lg px-3 py-2">
                     <code className="flex-1 text-sm font-mono text-white/80 truncate">{'•'.repeat(24)}</code>
-                    <button onClick={() => { navigator.clipboard.writeText(streamKey).then(() => toast.success('Stream key copied!')).catch(() => toast.error('Copy failed.')); }} className="text-[#d4af37]/60 hover:text-[#d4af37]">
+                    <button onClick={function() { navigator.clipboard.writeText(streamKey).then(function() { toast.success('Stream key copied!'); }).catch(function() { toast.error('Copy failed.'); }); }} className="text-[#d4af37]/60 hover:text-[#d4af37]">
                       <Copy className="w-4 h-4" />
                     </button>
                   </div>
@@ -218,7 +223,6 @@ export default function RTMPServer() {
                 </div>
               </div>
 
-              {/* SRT / Playback */}
               <div className="space-y-4">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
@@ -239,7 +243,6 @@ export default function RTMPServer() {
               </div>
             </div>
 
-            {/* Recommended settings */}
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h2 className="font-bold text-sm mb-4 flex items-center gap-2"><Zap className="w-4 h-4 text-[#d4af37]" /> Recommended Encoder Settings</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -252,12 +255,14 @@ export default function RTMPServer() {
                   { label: 'Audio Codec', value: 'AAC' },
                   { label: 'Audio Bitrate', value: '160 kbps' },
                   { label: 'Audio Rate', value: '44.1 kHz' },
-                ].map(s => (
-                  <div key={s.label} className="bg-black/30 rounded-lg p-3">
-                    <p className="text-[10px] text-white/40 uppercase">{s.label}</p>
-                    <p className="text-sm font-semibold text-white mt-0.5">{s.value}</p>
-                  </div>
-                ))}
+                ].map(function(s) {
+                  return (
+                    <div key={s.label} className="bg-black/30 rounded-lg p-3">
+                      <p className="text-[10px] text-white/40 uppercase">{s.label}</p>
+                      <p className="text-sm font-semibold text-white mt-0.5">{s.value}</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -266,7 +271,62 @@ export default function RTMPServer() {
         {/* EVMUX TAB */}
         {activeTab === 'evmux' && (
           <div className="space-y-6">
-            {/* Intro */}
+
+            {/* Receive EvMux or Chatter into SeeWhy */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Radio className="w-4 h-4 text-[#C9A84C]" />
+                <h2 className="font-bold text-sm">Receive EvMux or Chatter into SeeWhy</h2>
+                <span style={{ background: 'rgba(201,168,76,0.15)', color: '#C9A84C', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>INGEST</span>
+              </div>
+              <p className="text-xs text-white/50">
+                Use this when EvMux or Chatter is your production switcher and you want to push your final mixed output into SeeWhy for live distribution and monetization.
+                Paste SeeWhy's ingest URL and stream key into EvMux's <strong style={{ color: 'rgba(255,255,255,0.7)' }}>Destinations → Custom RTMP</strong> or Chatter's <strong style={{ color: 'rgba(255,255,255,0.7)' }}>RTMP Output</strong> settings.
+              </p>
+              <CopyField label="SeeWhy RTMP Ingest URL" value={RTMP_SERVER} />
+              <CopyField label="SeeWhy Stream Key" value={streamKey} secret />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-black/30 rounded-xl p-4 space-y-2">
+                  <p className="text-xs font-bold text-white/60 uppercase tracking-wider">EvMux Setup</p>
+                  <ol className="space-y-1">
+                    {[
+                      'Open your EvMux Channel → Destinations → + Add Destination',
+                      'Choose "Custom RTMP"',
+                      'Paste the SeeWhy RTMP Ingest URL as the RTMP URL',
+                      'Paste your SeeWhy Stream Key as the Stream Key',
+                      'Save — EvMux will push your output directly into SeeWhy',
+                    ].map(function(step, i) {
+                      return (
+                        <li key={i} className="flex items-start gap-3 text-xs text-white/70">
+                          <span className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold" style={{ background: 'rgba(201,168,76,0.15)', color: '#C9A84C' }}>{i + 1}</span>
+                          {step}
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
+                <div className="bg-black/30 rounded-xl p-4 space-y-2">
+                  <p className="text-xs font-bold text-white/60 uppercase tracking-wider">Chatter Setup</p>
+                  <ol className="space-y-1">
+                    {[
+                      'In Chatter, go to Settings → RTMP Output',
+                      'Paste the SeeWhy RTMP Ingest URL as the Server',
+                      'Paste your SeeWhy Stream Key as the Key',
+                      'Enable Output and start your Chatter session',
+                    ].map(function(step, i) {
+                      return (
+                        <li key={i} className="flex items-start gap-3 text-xs text-white/70">
+                          <span className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold" style={{ background: 'rgba(201,168,76,0.15)', color: '#C9A84C' }}>{i + 1}</span>
+                          {step}
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            {/* EVMux push intro */}
             <div className="flex items-start gap-3 bg-purple-900/20 border border-purple-500/30 rounded-xl p-4">
               <Layers className="w-4 h-4 text-purple-400 mt-0.5 shrink-0" />
               <div>
@@ -276,7 +336,6 @@ export default function RTMPServer() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Push ingest */}
               <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                 <div className="flex items-center gap-2 mb-1">
                   <Radio className="w-4 h-4 text-purple-400" />
@@ -290,13 +349,13 @@ export default function RTMPServer() {
                     <input
                       type="text"
                       value={evmuxKey}
-                      onChange={e => setEvmuxKey(e.target.value)}
+                      onChange={function(e) { setEvmuxKey(e.target.value); }}
                       placeholder="Paste your EVMux push key here…"
                       className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white/80 outline-none"
                     />
                     <button
-                      onClick={() => {
-                        try { localStorage.setItem('swl_evmux_key', evmuxKey); setEvmuxSaved(true); setTimeout(() => setEvmuxSaved(false), 2000); } catch {}
+                      onClick={function() {
+                        try { localStorage.setItem('swl_evmux_key', evmuxKey); setEvmuxSaved(true); setTimeout(function() { setEvmuxSaved(false); }, 2000); } catch (_e) {}
                         toast.success('EVMux key saved.');
                       }}
                       className="px-3 py-2 rounded-lg text-xs font-bold"
@@ -307,10 +366,9 @@ export default function RTMPServer() {
                   </div>
                   <p className="text-[10px] text-white/25">Find this in your EVMux dashboard → Channels → Push Key</p>
                 </div>
-                {evmuxKey && <CopyField label="Full Ingest String (OBS)" value={`rtmp://live.evmux.com/live/${evmuxKey}`} secret />}
+                {evmuxKey && <CopyField label="Full Ingest String (OBS)" value={'rtmp://live.evmux.com/live/' + evmuxKey} secret />}
               </div>
 
-              {/* Pull / playback */}
               <div className="space-y-4">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
@@ -318,17 +376,16 @@ export default function RTMPServer() {
                     <h2 className="font-bold text-sm">Playback / Pull URLs</h2>
                   </div>
                   {[
-                    { label: 'HLS (ABR)',  value: evmuxKey ? `https://cdn.evmux.com/hls/${evmuxKey}/index.m3u8` : 'Add push key above to generate' },
-                    { label: 'DASH',       value: evmuxKey ? `https://cdn.evmux.com/dash/${evmuxKey}/manifest.mpd` : '—' },
-                    { label: 'RTMP Pull',  value: evmuxKey ? `rtmp://pull.evmux.com/live/${evmuxKey}` : '—' },
-                  ].map(u => (
-                    <CopyField key={u.label} label={u.label} value={u.value} />
-                  ))}
+                    { label: 'HLS (ABR)',  value: evmuxKey ? 'https://cdn.evmux.com/hls/' + evmuxKey + '/index.m3u8' : 'Add push key above to generate' },
+                    { label: 'DASH',       value: evmuxKey ? 'https://cdn.evmux.com/dash/' + evmuxKey + '/manifest.mpd' : '—' },
+                    { label: 'RTMP Pull',  value: evmuxKey ? 'rtmp://pull.evmux.com/live/' + evmuxKey : '—' },
+                  ].map(function(u) {
+                    return <CopyField key={u.label} label={u.label} value={u.value} />;
+                  })}
                 </div>
               </div>
             </div>
 
-            {/* Multi-bitrate ladder */}
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h2 className="font-bold text-sm mb-4 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-purple-400" /> Adaptive Bitrate Ladder
@@ -337,33 +394,34 @@ export default function RTMPServer() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="text-white/30 border-b border-white/10">
-                      {['Quality', 'Resolution', 'Video Bitrate', 'Audio', 'Frame Rate'].map(h => (
-                        <th key={h} className="text-left py-2 pr-4 font-semibold uppercase tracking-wider">{h}</th>
-                      ))}
+                      {['Quality', 'Resolution', 'Video Bitrate', 'Audio', 'Frame Rate'].map(function(h) {
+                        return <th key={h} className="text-left py-2 pr-4 font-semibold uppercase tracking-wider">{h}</th>;
+                      })}
                     </tr>
                   </thead>
                   <tbody className="text-white/70">
                     {[
-                      { q: '1080p',   res: '1920×1080', vbr: '5500 kbps',  audio: '192 kbps', fps: '60' },
-                      { q: '720p',    res: '1280×720',  vbr: '3000 kbps',  audio: '128 kbps', fps: '60' },
-                      { q: '480p',    res: '854×480',   vbr: '1200 kbps',  audio: '128 kbps', fps: '30' },
-                      { q: '360p',    res: '640×360',   vbr: '600 kbps',   audio: '96 kbps',  fps: '30' },
-                    ].map(r => (
-                      <tr key={r.q} className="border-b border-white/5">
-                        <td className="py-2 pr-4 font-bold" style={{ color: r.q === '1080p' ? '#a78bfa' : undefined }}>{r.q}</td>
-                        <td className="py-2 pr-4 font-mono">{r.res}</td>
-                        <td className="py-2 pr-4">{r.vbr}</td>
-                        <td className="py-2 pr-4">{r.audio}</td>
-                        <td className="py-2 pr-4">{r.fps} fps</td>
-                      </tr>
-                    ))}
+                      { q: '1080p', res: '1920×1080', vbr: '5500 kbps', audio: '192 kbps', fps: '60' },
+                      { q: '720p',  res: '1280×720',  vbr: '3000 kbps', audio: '128 kbps', fps: '60' },
+                      { q: '480p',  res: '854×480',   vbr: '1200 kbps', audio: '128 kbps', fps: '30' },
+                      { q: '360p',  res: '640×360',   vbr: '600 kbps',  audio: '96 kbps',  fps: '30' },
+                    ].map(function(r) {
+                      return (
+                        <tr key={r.q} className="border-b border-white/5">
+                          <td className="py-2 pr-4 font-bold" style={{ color: r.q === '1080p' ? '#a78bfa' : undefined }}>{r.q}</td>
+                          <td className="py-2 pr-4 font-mono">{r.res}</td>
+                          <td className="py-2 pr-4">{r.vbr}</td>
+                          <td className="py-2 pr-4">{r.audio}</td>
+                          <td className="py-2 pr-4">{r.fps} fps</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
               <p className="text-[11px] text-white/30 mt-3">EVMux auto-transcodes from your 1080p source. Push at 6000+ kbps for best results. Ingest must be H.264 + AAC.</p>
             </div>
 
-            {/* OBS EVMux setup */}
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h2 className="font-bold text-sm mb-4 flex items-center gap-2">
                 <span className="text-xl">🎬</span> OBS → EVMux Quick Setup
@@ -378,12 +436,14 @@ export default function RTMPServer() {
                   'Set encoder to x264, bitrate ≥ 5500 kbps, keyframe 2s',
                   'Click Apply & OK, then Start Streaming',
                   'Embed the HLS playback URL on your SeeWhy LIVE page',
-                ].map((step, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-white/70">
-                    <span className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold" style={{ background: 'rgba(139,92,246,0.2)', color: '#a78bfa' }}>{i + 1}</span>
-                    {step}
-                  </li>
-                ))}
+                ].map(function(step, i) {
+                  return (
+                    <li key={i} className="flex items-start gap-3 text-sm text-white/70">
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold" style={{ background: 'rgba(139,92,246,0.2)', color: '#a78bfa' }}>{i + 1}</span>
+                      {step}
+                    </li>
+                  );
+                })}
               </ol>
             </div>
           </div>
@@ -398,13 +458,15 @@ export default function RTMPServer() {
                 { label: 'Uptime', value: '—', color: 'text-white', icon: '⏱' },
                 { label: 'Bitrate', value: '—', color: 'text-white', icon: '📡' },
                 { label: 'Viewers', value: '0', color: 'text-white', icon: '👁' },
-              ].map(s => (
-                <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
-                  <div className="text-2xl mb-1">{s.icon}</div>
-                  <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
-                  <p className="text-[11px] text-white/40 uppercase mt-1">{s.label}</p>
-                </div>
-              ))}
+              ].map(function(s) {
+                return (
+                  <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                    <div className="text-2xl mb-1">{s.icon}</div>
+                    <p className={'text-xl font-black ' + s.color}>{s.value}</p>
+                    <p className="text-[11px] text-white/40 uppercase mt-1">{s.label}</p>
+                  </div>
+                );
+              })}
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <div className="flex items-center gap-2 mb-3">
@@ -426,38 +488,39 @@ export default function RTMPServer() {
           <div className="space-y-6">
             <p className="text-white/50 text-sm">Configure these streaming applications to broadcast to SeeWhy LIVE using your stream key.</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {PLATFORMS.map(p => (
-                <motion.a
-                  key={p.name}
-                  href={p.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ y: -3 }}
-                  className="block bg-white/5 border border-white/10 rounded-xl p-5 hover:border-[#d4af37]/30 transition-all group"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="text-3xl">{p.logo}</div>
-                    <div>
-                      <h3 className="font-bold text-white">{p.name}</h3>
-                      <p className="text-[11px] text-white/40">{p.protocol} · Port {p.port}</p>
+              {PLATFORMS.map(function(p) {
+                return (
+                  <motion.a
+                    key={p.name}
+                    href={p.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ y: -3 }}
+                    className="block bg-white/5 border border-white/10 rounded-xl p-5 hover:border-[#d4af37]/30 transition-all group"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="text-3xl">{p.logo}</div>
+                      <div>
+                        <h3 className="font-bold text-white">{p.name}</h3>
+                        <p className="text-[11px] text-white/40">{p.protocol} · Port {p.port}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-1.5 text-[11px] text-white/40">
-                    <div className="flex gap-2"><span className="text-white/30 w-16 shrink-0">Server</span><code className="text-white/60">{RTMP_SERVER}</code></div>
-                    <div className="flex gap-2"><span className="text-white/30 w-16 shrink-0">Key</span><code className="text-white/60">Your stream key ↑</code></div>
-                  </div>
-                  <div className="mt-3 flex items-center gap-1 text-[#d4af37]/50 group-hover:text-[#d4af37] text-[11px] font-semibold transition-colors">
-                    <Globe className="w-3 h-3" /> Download {p.name} →
-                  </div>
-                </motion.a>
-              ))}
+                    <div className="space-y-1.5 text-[11px] text-white/40">
+                      <div className="flex gap-2"><span className="text-white/30 w-16 shrink-0">Server</span><code className="text-white/60">{RTMP_SERVER}</code></div>
+                      <div className="flex gap-2"><span className="text-white/30 w-16 shrink-0">Key</span><code className="text-white/60">Your stream key ↑</code></div>
+                    </div>
+                    <div className="mt-3 flex items-center gap-1 text-[#d4af37]/50 group-hover:text-[#d4af37] text-[11px] font-semibold transition-colors">
+                      <Globe className="w-3 h-3" /> Download {p.name} →
+                    </div>
+                  </motion.a>
+                );
+              })}
             </div>
             <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <ZEGOStreamHealthCard roomId={activeRoomId} />
               <ZEGOConfigPanel user={user} />
             </div>
 
-            {/* OBS step-by-step */}
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h2 className="font-bold text-sm mb-4 flex items-center gap-2">
                 <span className="text-xl">🎬</span> OBS Studio Quick Setup
@@ -466,16 +529,18 @@ export default function RTMPServer() {
                 {[
                   'Open OBS → Settings → Stream',
                   'Set Service to "Custom..."',
-                  `Set Server to: ${RTMP_SERVER}`,
+                  'Set Server to: ' + RTMP_SERVER,
                   'Paste your Stream Key (copied from Setup tab)',
                   'Click Apply & OK',
-                  'Click "Start Streaming" — you\'re live on SeeWhy!',
-                ].map((step, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-white/70">
-                    <span className="w-5 h-5 rounded-full bg-[#d4af37]/20 text-[#d4af37] text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-                    {step}
-                  </li>
-                ))}
+                  "Click \"Start Streaming\" — you're live on SeeWhy!",
+                ].map(function(step, i) {
+                  return (
+                    <li key={i} className="flex items-start gap-3 text-sm text-white/70">
+                      <span className="w-5 h-5 rounded-full bg-[#d4af37]/20 text-[#d4af37] text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                      {step}
+                    </li>
+                  );
+                })}
               </ol>
             </div>
           </div>
@@ -484,7 +549,7 @@ export default function RTMPServer() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
           <StreamHealthDashboard isLive={!!activeRoomId} />
           <CoStreamPanel roomId={activeRoomId} />
-          <WebhookHooks roomId={activeRoomId} userId={(user && user.id)} isHost={true} />
+          <OutboundWebhooks isHost={true} />
           <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
           <GuestRTMPPanel participantId={null} userId={(user && user.id)} />
           {(user && user.id) && <RTMPFanoutPanel userId={user.id} isStreaming={!!activeRoom} streamId={activeRoomId} />}
