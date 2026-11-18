@@ -143,6 +143,7 @@ const DeviceManager            = lazy(() => import('./pages/DeviceManager'));
 const RecordingsLibrary        = lazy(() => import('./pages/RecordingsLibrary'));
 const OAuthConsent             = lazy(() => import('./pages/OAuthConsent'));
 const Mfa                      = lazy(() => import('./pages/Mfa'));
+const EpisodeCreatorStudio     = lazy(() => import('./pages/EpisodeCreatorStudio'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -279,6 +280,7 @@ export const PAGES = {
     "DeviceManager": DeviceManager,
     "OAuthConsent": OAuthConsent,
     "Mfa": Mfa,
+    "EpisodeCreatorStudio": EpisodeCreatorStudio,
 }
 
 export const pagesConfig = {
