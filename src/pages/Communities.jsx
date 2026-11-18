@@ -333,6 +333,37 @@ export default function CommunitiesPage() {
           </div>
         )}
 
+        {/* Studio Communities */}
+        <div style={{ marginBottom: 12, borderRadius: 14, border: '1px solid rgba(123,45,139,0.22)', background: 'rgba(8,11,24,0.95)', padding: '12px 14px' }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(176,102,204,0.7)', marginBottom: 10 }}>🎬 Studio Communities</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              { emoji: '🎬', label: 'Micro Drama Community', sub: 'Fan votes & episode drops', color: '#7B2D8B', page: 'EpisodeSeries' },
+              { emoji: '🎵', label: 'AI Music Fans', sub: 'Live sessions & beat drops', color: '#C9A84C', page: 'AIMusic' },
+              { emoji: '🎙', label: 'Podcast Listeners', sub: 'Episodes, clips & live Q&A', color: '#00A8E8', page: 'PodcastStudio' },
+            ].map(function(c) {
+              return (
+                <Link key={c.page} to={createPageUrl(c.page)} style={{ textDecoration: 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px', borderRadius: 10, background: c.color + '0a', border: '1px solid ' + c.color + '25', cursor: 'pointer' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: c.color + '18', border: '1px solid ' + c.color + '30', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{c.emoji}</div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 900, color: '#fff', lineHeight: 1.2 }}>{c.label}</p>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 1 }}>{c.sub}</p>
+                    </div>
+                    <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, color: c.color }}>Join →</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ textDecoration: 'none' }}>
+            <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 10, background: 'rgba(123,45,139,0.1)', border: '1px solid rgba(123,45,139,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, color: 'rgba(255,255,255,0.65)' }}>🎥 Start your own series community</p>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, color: '#B066CC' }}>Creator Studio →</span>
+            </div>
+          </Link>
+        </div>
+
         <div style={{ padding: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <OnlineUsersGrid compact maxVisible={12} />
           <PollCard poll={null} />
