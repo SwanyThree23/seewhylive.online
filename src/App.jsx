@@ -40,7 +40,7 @@ const NO_LAYOUT_PAGES = new Set([
   'EmbedPage', 'AuraAI', 'SwanyBotPage', 'TranscriptionStudio',
   'Register', 'ForgotPassword', 'ResetPassword',
   'GreenRoomPreFlight', 'UnifiedRoom', 'SVSArena', 'GoLiveStudio',
-  'OAuthConsent', 'Mfa', 'StudioDSP',
+  'OAuthConsent', 'Mfa', 'StudioDSP', 'EpisodeSeries',
 ]);
 
 // Auth pages handled as explicit public routes — excluded from the pagesConfig loop
@@ -94,7 +94,8 @@ const AuthenticatedApp = () => {
         ))}
         {/* Lowercase / short-path aliases */}
         <Route path="/messages"    element={<LayoutWrapper currentPageName="Messages"><Pages.Messages /></LayoutWrapper>} />
-        <Route path="/onboarding"  element={<Pages.Onboarding />} />
+        <Route path="/onboarding"    element={<Pages.Onboarding />} />
+        <Route path="/episode-series" element={<Pages.EpisodeSeries />} />
         <Route path="/clips"       element={<LayoutWrapper currentPageName="ClipsLibrary"><Pages.ClipsLibrary /></LayoutWrapper>} />
         <Route path="/moments/:id" element={<MomentDetail />} />
         <Route path="/newsletter"  element={<LayoutWrapper currentPageName="NewsletterHub"><Pages.NewsletterHub /></LayoutWrapper>} />

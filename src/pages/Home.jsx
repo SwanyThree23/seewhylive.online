@@ -445,7 +445,7 @@ function EpisodePreviewSection() {
         <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)' }}>
           🎬 Featured Micro Drama
         </span>
-        <Link to={createPageUrl('AIHub')} style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.55)', textDecoration: 'none' }}>
+        <Link to={createPageUrl('EpisodeSeries')} style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.55)', textDecoration: 'none' }}>
           All Series →
         </Link>
       </div>
@@ -495,7 +495,7 @@ function EpisodePreviewSection() {
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: '0 0 16px', lineHeight: 1.5 }}>{activeEp.hook} Watch the full episode to find out what happens next in this gripping series.</p>
               <div style={{ display: 'flex', gap: 10 }}>
                 <Link
-                  to={createPageUrl('AIHub')}
+                  to={createPageUrl('EpisodeSeries')}
                   style={{ flex: 1, padding: '10px 0', borderRadius: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, letterSpacing: '0.06em', textAlign: 'center', background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.4)', color: '#C9A84C', textDecoration: 'none', display: 'block' }}
                 >
                   Watch Full Episode
