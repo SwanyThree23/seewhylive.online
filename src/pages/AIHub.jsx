@@ -324,6 +324,29 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
         </div>
       </div>
 
+      {/* ── Live Panel Co-Stream banner ── */}
+      <div style={{ maxWidth: 640, margin: '0 auto 0', padding: '0 16px 4px' }}>
+        <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,26,60,0.2)', background: 'linear-gradient(90deg,rgba(255,26,60,0.07),rgba(201,168,76,0.05))' }}>
+          <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 200 }}>
+              <span style={{ fontSize: 20 }}>📡</span>
+              <div>
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4', margin: 0, letterSpacing: '0.04em' }}>AI + Live Panel Co-Stream</p>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Run your AI tools live — music, moderation, co-host — while streaming with up to 20 creators on stage.</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <Link to={createPageUrl('GoLive')} style={{ textDecoration: 'none', padding: '7px 16px', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', background: 'linear-gradient(90deg,#FF1A3C,#C9A84C)', color: '#000' }}>
+                🔴 Go Live Now
+              </Link>
+              <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ textDecoration: 'none', padding: '7px 14px', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
+                🎬 Micro Drama
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── Cards container ── */}
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
