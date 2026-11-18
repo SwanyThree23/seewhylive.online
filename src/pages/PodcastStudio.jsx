@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MobileSelect } from '@/components/ui/MobileSelect';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import AudioMixer from '../components/live/AudioMixer';
@@ -817,6 +818,29 @@ export default function PodcastStudio() {
         <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.5 }}>
           AI-powered podcast creation · NotebookLM-style
         </p>
+      </div>
+
+      {/* ── Live Podcast Co-Stream banner ── */}
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 16px 14px' }}>
+        <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,168,232,0.25)', background: 'linear-gradient(90deg,rgba(0,168,232,0.08),rgba(201,168,76,0.05))' }}>
+          <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 200 }}>
+              <span style={{ fontSize: 20 }}>🎙</span>
+              <div>
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4', margin: 0, letterSpacing: '0.04em' }}>Live Podcast Co-Stream</p>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Record your episode then go live with up to 20 co-hosts — fans watch and react in real time.</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <Link to={createPageUrl('GoLive')} style={{ textDecoration: 'none', padding: '7px 16px', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', background: 'linear-gradient(90deg,#FF1A3C,#C9A84C)', color: '#000' }}>
+                🔴 Go Live Now
+              </Link>
+              <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none', padding: '7px 14px', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
+                AI Hub
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Tab bar */}

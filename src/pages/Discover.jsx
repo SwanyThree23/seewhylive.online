@@ -89,7 +89,7 @@ export default function DiscoverPage() {
   var [search, setSearch] = useState('');
   var [debouncedSearch, setDebouncedSearch] = useState('');
   var [genre, setGenre] = useState('All');
-  var [tab, setTab] = useState('live'); // live | scheduled | communities | creators
+  var [tab, setTab] = useState('live'); // live | scheduled | communities | creators | episodes
   var debounceRef = useRef(null);
   var queryClient = useQueryClient();
   var { data: userCommunity } = useQuery({
@@ -249,6 +249,10 @@ export default function DiscoverPage() {
             { emoji: '🕊️', label: 'Tribute Wall',   sub: 'Honor Legends',  page: 'TributeWall',     color: '#8B6F47' },
             { emoji: '🎬', label: 'VOD Library',     sub: 'Past Streams',   page: 'VODLibrary',      color: '#FF8C00' },
             { emoji: '🎟️', label: 'PPV Events',      sub: 'Pay-Per-View',   page: 'PayPerViewEvents',color: '#8B6F00' },
+            { emoji: '🎬', label: 'Micro Drama',     sub: 'Episode Series', page: 'EpisodeSeries',   color: '#7B2D8B' },
+            { emoji: '🎵', label: 'AI Music',        sub: 'Live Studio',    page: 'AIMusic',          color: '#C9A84C' },
+            { emoji: '🎙', label: 'Podcast Studio',  sub: 'Co-Stream Live', page: 'PodcastStudio',    color: '#00A8E8' },
+            { emoji: '🤖', label: 'AI Hub',          sub: 'All AI Tools',   page: 'AIHub',            color: '#00F5FF' },
           ].map(item => (
             <Link key={item.page} to={createPageUrl(item.page)} style={{ textDecoration: 'none', flexShrink: 0 }}>
               <div style={{ width: 96, padding: '8px 6px', background: item.color + '12', border: `1px solid ${item.color}28`, borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
@@ -275,6 +279,7 @@ export default function DiscoverPage() {
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
               { id: 'moments', label: 'Moments', icon: Clapperboard },
+              { id: 'episodes', label: 'Episodes', icon: Clapperboard },
             ].map(t => {
               var Icon = t.icon;
               return (
@@ -389,6 +394,38 @@ export default function DiscoverPage() {
           {tab === 'moments' && (
             <motion.div key="moments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               <MomentsFeed currentUserId={(user && user.id)} followingIds={followingIds} />
+            </motion.div>
+          )}
+
+          {tab === 'episodes' && (
+            <motion.div key="episodes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                {[
+                  { emoji: '👑', title: 'Shadow Reign',  genre: 'Thriller',  color: '#7B2D8B', ep: 4, desc: 'A power struggle inside a secret dynasty that runs an entire city.' },
+                  { emoji: '🌆', title: 'Street Code',   genre: 'Drama',     color: '#1A3A5C', ep: 3, desc: 'Two brothers navigate loyalty and survival in a city that never forgives.' },
+                  { emoji: '🤖', title: 'Cyber Hearts',  genre: 'Sci-Fi',    color: '#0D3D2B', ep: 2, desc: 'An AI entity discovers what it means to love in a world that fears it.' },
+                  { emoji: '🎭', title: 'Block Party',   genre: 'Comedy',    color: '#5C1A1A', ep: 5, desc: 'A Brooklyn block erupts when a reality show picks their street as its set.' },
+                ].map(function(s) {
+                  return (
+                    <Link key={s.title} to={createPageUrl('EpisodeSeries')} style={{ textDecoration: 'none' }}>
+                      <div style={{ borderRadius: 14, overflow: 'hidden', background: 'linear-gradient(135deg,' + s.color + '44,rgba(0,0,0,0.5))', border: '1px solid ' + s.color + '44', cursor: 'pointer' }}>
+                        <div style={{ padding: '20px 14px 10px', textAlign: 'center', fontSize: 32 }}>{s.emoji}</div>
+                        <div style={{ padding: '0 12px 14px' }}>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4', margin: '0 0 3px' }}>{s.title}</p>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: s.color, margin: '0 0 5px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{s.genre}</p>
+                          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: '0 0 8px', lineHeight: 1.4 }}>{s.desc}</p>
+                          <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>{s.ep} episodes</span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+              <div style={{ marginTop: 16, textAlign: 'center' }}>
+                <Link to={createPageUrl('EpisodeSeries')} style={{ textDecoration: 'none', display: 'inline-block', padding: '10px 24px', borderRadius: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, letterSpacing: '0.08em', background: 'rgba(123,45,139,0.15)', border: '1px solid rgba(123,45,139,0.4)', color: '#F0E8D4' }}>
+                  View All Series →
+                </Link>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
