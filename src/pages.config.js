@@ -61,6 +61,7 @@ const StageCleanup        = lazy(() => import('./pages/StageCleanup'));
 const VODLibrary          = lazy(() => import('./pages/VODLibrary'));
 const PKBattlePage        = lazy(() => import('./pages/PKBattlePage'));
 const RTMPServer          = lazy(() => import('./pages/RTMPServer'));
+const StudioDSP           = lazy(() => import('./pages/StudioDSP'));
 const LiveBattles         = lazy(() => import('./pages/LiveBattles'));
 const AdminDashboard      = lazy(() => import('./pages/AdminDashboard'));
 const Leaderboard         = lazy(() => import('./pages/Leaderboard'));
@@ -195,6 +196,7 @@ export const PAGES = {
     "VODLibrary": VODLibrary,
     "PKBattlePage": PKBattlePage,
     "RTMPServer": RTMPServer,
+    "StudioDSP": StudioDSP,
     "LiveBattles": LiveBattles,
     "AdminDashboard": AdminDashboard,
     "Leaderboard": Leaderboard,
