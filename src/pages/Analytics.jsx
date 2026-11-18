@@ -397,10 +397,12 @@ export default function AnalyticsPage() {
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16, paddingBottom: 24 }}>
           {[
-            { label: '📈 Advanced Analytics', href: 'AdvancedAnalytics' },
-            { label: '📊 Stream Analytics',  href: 'StreamAnalytics'   },
-            { label: '💰 Monetization',      href: 'Monetization'      },
-            { label: '📤 Export Data',       href: 'DataExport'        },
+            { label: '📈 Advanced Analytics', href: 'AdvancedAnalytics'    },
+            { label: '📊 Stream Analytics',  href: 'StreamAnalytics'       },
+            { label: '💰 Monetization',      href: 'Monetization'          },
+            { label: '🎬 Micro Drama',       href: 'EpisodeCreatorStudio'  },
+            { label: '🎵 AI Music',          href: 'AIMusic'               },
+            { label: '📤 Export Data',       href: 'DataExport'            },
           ].map(item => (
             <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
               <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
