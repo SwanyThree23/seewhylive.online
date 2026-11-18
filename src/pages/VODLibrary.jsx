@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Film, Scissors, Archive, BookOpen, Sparkles, Play, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import VODLibraryComponent from '@/components/vod/VODLibrary';
 import RecordingManager from '../components/content/RecordingManager';
 import ChapterEditor from '../components/vod/ChapterEditor';
@@ -241,6 +243,36 @@ export default function VODLibraryPage() {
           </div>
         )}
       </div>
+      {/* Studio VODs */}
+      <div style={{ padding: '0 16px 16px' }}>
+        <div style={{ borderRadius: 14, border: '1px solid rgba(123,45,139,0.22)', background: 'rgba(8,11,24,0.95)', padding: '12px 14px' }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(176,102,204,0.7)', marginBottom: 10 }}>🎬 Studio VODs</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 10 }}>
+            {[
+              { emoji: '🎬', label: 'Micro Drama', sub: 'Episode archive', color: '#7B2D8B', page: 'EpisodeSeries' },
+              { emoji: '🎵', label: 'AI Music', sub: 'Session recordings', color: '#C9A84C', page: 'AIMusic' },
+              { emoji: '🎙', label: 'Podcast', sub: 'Full episodes', color: '#00A8E8', page: 'PodcastStudio' },
+            ].map(function(s) {
+              return (
+                <Link key={s.page} to={createPageUrl(s.page)} style={{ textDecoration: 'none' }}>
+                  <div style={{ borderRadius: 10, padding: '10px 8px', background: s.color + '0f', border: '1px solid ' + s.color + '28', textAlign: 'center', cursor: 'pointer' }}>
+                    <div style={{ fontSize: 20, marginBottom: 4 }}>{s.emoji}</div>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, color: '#fff', lineHeight: 1.2 }}>{s.label}</p>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{s.sub}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ textDecoration: 'none' }}>
+            <div style={{ padding: '8px 12px', borderRadius: 10, background: 'rgba(123,45,139,0.1)', border: '1px solid rgba(123,45,139,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, color: 'rgba(255,255,255,0.65)' }}>🎥 Create your own drama series</p>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, color: '#B066CC' }}>Creator Studio →</span>
+            </div>
+          </Link>
+        </div>
+      </div>
+
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="vod" viewerCount={0} />
       <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
       {(user && user.id) && <AlertConfig creatorId={user.id} />}

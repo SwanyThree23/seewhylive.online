@@ -471,6 +471,37 @@ export default function LeaderboardPage() {
         )}
       </div>
 
+      {/* Studio Series Leaderboard */}
+      <div className="max-w-4xl mx-auto px-4 mt-4">
+        <div style={{ borderRadius: 14, border: '1px solid rgba(123,45,139,0.25)', background: 'rgba(8,11,24,0.95)', padding: '12px 14px', marginBottom: 16 }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(176,102,204,0.7)', marginBottom: 10 }}>🎬 Studio Series Top Fans</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 10 }}>
+            {[
+              { emoji: '👑', rank: '#1', name: 'DramaKing_X', pts: '4,200', color: '#7B2D8B', page: 'EpisodeSeries' },
+              { emoji: '🎵', rank: '#1', name: 'BeatLover22', pts: '3,800', color: '#C9A84C', page: 'AIMusic' },
+              { emoji: '🎙', rank: '#1', name: 'PodHeadz', pts: '2,900', color: '#00A8E8', page: 'PodcastStudio' },
+            ].map(function(s) {
+              return (
+                <Link key={s.page} to={createPageUrl(s.page)} style={{ textDecoration: 'none' }}>
+                  <div style={{ borderRadius: 10, padding: '10px 8px', background: s.color + '0f', border: '1px solid ' + s.color + '28', textAlign: 'center', cursor: 'pointer' }}>
+                    <div style={{ fontSize: 18, marginBottom: 2 }}>{s.emoji}</div>
+                    <p style={{ fontFamily: 'Orbitron, monospace', fontSize: 9, color: s.color, marginBottom: 2 }}>{s.rank} FAN</p>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, color: '#fff', lineHeight: 1.2 }}>{s.name}</p>
+                    <p style={{ fontFamily: 'Orbitron, monospace', fontSize: 9, color: s.color, marginTop: 2 }}>{s.pts} pts</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ textDecoration: 'none' }}>
+            <div style={{ padding: '8px 12px', borderRadius: 10, background: 'rgba(123,45,139,0.1)', border: '1px solid rgba(123,45,139,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, color: 'rgba(255,255,255,0.65)' }}>🎥 Start your series — build your own fan leaderboard</p>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, color: '#B066CC' }}>Studio →</span>
+            </div>
+          </Link>
+        </div>
+      </div>
+
       {/* Social Leaderboard (engagement-based) */}
       <div className="max-w-4xl mx-auto px-4 pb-8 mt-4">
         <SocialLeaderboard />
