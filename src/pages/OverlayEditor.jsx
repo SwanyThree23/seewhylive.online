@@ -19,33 +19,33 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import CreatorBridge from '../components/social/CreatorBridge';
-const G = '#D4AF37';
-const GOLD = '#D4AF37';
-const BG = '#0A0710';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var G = '#D4AF37';
+var GOLD = '#D4AF37';
+var BG = '#0A0710';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function OverlayEditorPage() {
-  const [activeTab, setActiveTab] = useState('theme');
+  var [activeTab, setActiveTab] = useState('theme');
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  var roomId = new URLSearchParams(window.location.search).get('room_id');
 
-  const { data: liveRoom } = useQuery({
-    queryKey: ['my-live-room-overlay', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }, '-created_date', 1).then(r => r?.[0]),
-    enabled: !!user?.id,
+  var { data: liveRoom } = useQuery({
+    queryKey: ['my-live-room-overlay', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }, '-created_date', 1).then(r => (r && r[0])),
+    enabled: !!(user && user.id),
   });
 
-  const { data: activeRoom } = useQuery({
-    queryKey: ['overlayeditor-active-room', user?.id],
+  var { data: activeRoom } = useQuery({
+    queryKey: ['overlayeditor-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -68,20 +68,20 @@ export default function OverlayEditorPage() {
           </span>
         )}
       </div>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="overlay" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="overlay" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.peak_viewers) || 0} />
       <BackgroundCustomizer />
     </div>
   );

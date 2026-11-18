@@ -7,30 +7,30 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
-const BG    = '#07050A';
-const GOLD  = '#C9A84C';
-const BURG  = '#6B1F2A';
-const GREEN = '#6DBF7E';
-const DIM   = 'rgba(255,255,255,0.45)';
-const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG    = '#07050A';
+var GOLD  = '#C9A84C';
+var BURG  = '#6B1F2A';
+var GREEN = '#6DBF7E';
+var DIM   = 'rgba(255,255,255,0.45)';
+var T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const BASE = 'https://vdo.ninja';
+var BASE = 'https://vdo.ninja';
 
-const GUEST_ROLES = [
+var GUEST_ROLES = [
   { id: 'guest',    label: 'Guest (Camera)',    desc: 'Standard video/audio guest' },
   { id: 'director', label: 'Director',          desc: 'Control room — no camera shown' },
   { id: 'view',     label: 'Viewer Only',       desc: 'Watch-only, no camera access' },
   { id: 'push',     label: 'Push (Screenshare)', desc: 'Share screen as source' },
 ];
 
-const QUALITY_PRESETS = [
+var QUALITY_PRESETS = [
   { id: 'low',    label: '480p Low',    videoWidth: 640,  videoHeight: 480,  bitrate: 500  },
   { id: 'medium', label: '720p Medium', videoWidth: 1280, videoHeight: 720,  bitrate: 2000 },
   { id: 'high',   label: '1080p High',  videoWidth: 1920, videoHeight: 1080, bitrate: 4000 },
   { id: 'ultra',  label: '4K Ultra',   videoWidth: 3840, videoHeight: 2160, bitrate: 8000 },
 ];
 
-const STORAGE_KEY = 'swl_vdo_sessions';
+var STORAGE_KEY = 'swl_vdo_sessions';
 
 function loadSessions() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
@@ -44,9 +44,9 @@ function randomId(len = 6) {
 }
 
 function buildGuestLink(roomId, options = {}) {
-  const params = new URLSearchParams();
+  var params = new URLSearchParams();
   if (options.quality) {
-    const q = QUALITY_PRESETS.find(p => p.id === options.quality);
+    var q = QUALITY_PRESETS.find(p => p.id === options.quality);
     if (q) {
       params.set('width', q.videoWidth);
       params.set('height', q.videoHeight);
@@ -61,16 +61,16 @@ function buildGuestLink(roomId, options = {}) {
   if (options.label) params.set('label', encodeURIComponent(options.label));
   if (options.muted) params.set('muted', '1');
 
-  const paramStr = params.toString();
-  const base = `${BASE}/?push=${roomId}`;
+  var paramStr = params.toString();
+  var base = `${BASE}/?push=${roomId}`;
   return paramStr ? `${base}&${paramStr}` : base;
 }
 
 function buildViewLink(roomId, options = {}) {
-  const params = new URLSearchParams();
+  var params = new URLSearchParams();
   if (options.label) params.set('label', encodeURIComponent(options.label));
-  const paramStr = params.toString();
-  const base = `${BASE}/?view=${roomId}`;
+  var paramStr = params.toString();
+  var base = `${BASE}/?view=${roomId}`;
   return paramStr ? `${base}&${paramStr}` : base;
 }
 
@@ -82,7 +82,7 @@ function buildRoomLink(roomId) {
   return `${BASE}/?room=${roomId}`;
 }
 
-const inp = {
+var inp = {
   width: '100%', padding: '8px 12px', borderRadius: 8,
   background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(201,168,76,0.22)',
   color: 'rgba(255,255,255,0.9)', fontSize: 13, fontFamily: 'Barlow Condensed, sans-serif',
@@ -90,9 +90,9 @@ const inp = {
 };
 
 function GuestCard({ guest, roomId, onRemove, onUpdate }) {
-  const [showOptions, setShowOptions] = useState(false);
-  const guestLink = buildGuestLink(roomId, { quality: guest.quality, label: guest.name, muted: guest.muted, noAudio: guest.noAudio, effects: guest.effects });
-  const viewLink = buildViewLink(guest.streamId || roomId, { label: guest.name });
+  var [showOptions, setShowOptions] = useState(false);
+  var guestLink = buildGuestLink(roomId, { quality: guest.quality, label: guest.name, muted: guest.muted, noAudio: guest.noAudio, effects: guest.effects });
+  var viewLink = buildViewLink(guest.streamId || roomId, { label: guest.name });
 
   function copy(url) {
     navigator.clipboard.writeText(url).then(() => toast.success('Link copied!')).catch(() => {});
@@ -174,25 +174,25 @@ function GuestCard({ guest, roomId, onRemove, onUpdate }) {
 }
 
 export default function VDONinjaManager() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [sessions, setSessions] = useState(loadSessions);
-  const [activeSessionId, setActiveSessionId] = useState(null);
-  const [newSessionName, setNewSessionName] = useState('');
-  const [customRoomId, setCustomRoomId] = useState('');
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [sessions, setSessions] = useState(loadSessions);
+  var [activeSessionId, setActiveSessionId] = useState(null);
+  var [newSessionName, setNewSessionName] = useState('');
+  var [customRoomId, setCustomRoomId] = useState('');
 
-  const activeSession = sessions.find(s => s.id === activeSessionId);
+  var activeSession = sessions.find(s => s.id === activeSessionId);
 
   function createSession() {
-    const name = newSessionName.trim() || `Session ${sessions.length + 1}`;
-    const roomId = customRoomId.trim() || randomId(8);
-    const session = {
+    var name = newSessionName.trim() || `Session ${sessions.length + 1}`;
+    var roomId = customRoomId.trim() || randomId(8);
+    var session = {
       id: Date.now().toString(36),
       name,
       roomId,
       guests: [],
       createdAt: Date.now(),
     };
-    const updated = [...sessions, session];
+    var updated = [...sessions, session];
     setSessions(updated);
     saveSessions(updated);
     setActiveSessionId(session.id);
@@ -202,7 +202,7 @@ export default function VDONinjaManager() {
   }
 
   function deleteSession(id) {
-    const updated = sessions.filter(s => s.id !== id);
+    var updated = sessions.filter(s => s.id !== id);
     setSessions(updated);
     saveSessions(updated);
     if (activeSessionId === id) setActiveSessionId(null);
@@ -210,9 +210,9 @@ export default function VDONinjaManager() {
 
   function addGuest() {
     if (!activeSession) return;
-    const guest = {
+    var guest = {
       id: Date.now().toString(36),
-      name: `Guest ${(activeSession.guests?.length || 0) + 1}`,
+      name: `Guest ${(activeSession.(guests && guests.length) || 0) + 1}`,
       role: 'guest',
       quality: 'medium',
       streamId: randomId(6),
@@ -227,20 +227,20 @@ export default function VDONinjaManager() {
   }
 
   function updateSession(id, patch) {
-    const updated = sessions.map(s => s.id === id ? { ...s, ...patch } : s);
+    var updated = sessions.map(s => s.id === id ? { ...s, ...patch } : s);
     setSessions(updated);
     saveSessions(updated);
   }
 
   function updateGuest(guestId, guestPatch) {
     if (!activeSession) return;
-    const guests = activeSession.guests.map(g => g.id === guestId ? { ...g, ...guestPatch } : g);
+    var guests = activeSession.guests.map(g => g.id === guestId ? { ...g, ...guestPatch } : g);
     updateSession(activeSessionId, { guests });
   }
 
   function removeGuest(guestId) {
     if (!activeSession) return;
-    const guests = activeSession.guests.filter(g => g.id !== guestId);
+    var guests = activeSession.guests.filter(g => g.id !== guestId);
     updateSession(activeSessionId, { guests });
   }
 
@@ -291,7 +291,7 @@ export default function VDONinjaManager() {
             }}>
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 12, fontWeight: 800, color: activeSessionId === s.id ? GOLD : '#fff', ...T }}>{s.name}</p>
-                <p style={{ fontSize: 9, color: DIM, ...T }}>Room: {s.roomId} · {s.guests?.length || 0} guests</p>
+                <p style={{ fontSize: 9, color: DIM, ...T }}>Room: {s.roomId} · {s.(guests && guests.length) || 0} guests</p>
               </div>
               <button onClick={e => { e.stopPropagation(); deleteSession(s.id); }} style={{ padding: '3px 5px', borderRadius: 5, background: 'rgba(107,31,42,0.08)', border: '1px solid rgba(107,31,42,0.15)', color: BURG, cursor: 'pointer' }}>
                 <Trash2 style={{ width: 10, height: 10 }} />
@@ -347,12 +347,12 @@ export default function VDONinjaManager() {
 
               {/* Guest slots */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {activeSession.guests?.length === 0 && (
+                {activeSession.(guests && guests.length) === 0 && (
                   <div style={{ textAlign: 'center', padding: '30px 0', color: 'rgba(255,255,255,0.2)', fontSize: 12, ...T }}>
                     No guest slots yet. Hit <strong style={{ color: GOLD }}>Add Guest</strong> to create one.
                   </div>
                 )}
-                {activeSession.guests?.map(guest => (
+                {activeSession.(guests && guests.map)(guest => (
                   <GuestCard key={guest.id} guest={guest} roomId={activeSession.roomId}
                     onRemove={() => removeGuest(guest.id)}
                     onUpdate={g => updateGuest(guest.id, g)} />

@@ -18,21 +18,21 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 
-const BG   = '#080B18';
-const BG2  = '#0D1022';
-const BG3  = '#13182C';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const BLUE  = '#D4854A';
-const RED2  = '#C62828';
-const TEAL  = '#6DBF7E';
-const CYAN  = '#D4AF37';
-const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG   = '#080B18';
+var BG2  = '#0D1022';
+var BG3  = '#13182C';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var BLUE  = '#D4854A';
+var RED2  = '#C62828';
+var TEAL  = '#6DBF7E';
+var CYAN  = '#D4AF37';
+var T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const SVS_BRACKET_ID = 'svs_bracket_v1';
-const SVS_MATCH_ID   = 'svs_sf1_live';
+var SVS_BRACKET_ID = 'svs_bracket_v1';
+var SVS_MATCH_ID   = 'svs_sf1_live';
 
-const STATES_DATA = [
+var STATES_DATA = [
   {
     id: 'wa', name: 'Washington', abbr: 'WA', color: BLUE,
     record: { w: 4, l: 1 }, pts: 1820,
@@ -65,7 +65,7 @@ const STATES_DATA = [
   },
 ];
 
-const BRACKET_MATCHES = [
+var BRACKET_MATCHES = [
   {
     id: 'qf1', round: 'QF', status: 'complete',
     teamA: 'wa', teamB: 'ny', scoreA: 7, scoreB: 3,
@@ -92,7 +92,7 @@ const BRACKET_MATCHES = [
   },
 ];
 
-const INITIAL_PLAYS = [
+var INITIAL_PLAYS = [
   { time: '12:04', player: 'K. Daniels', action: 'Double domino block', pts: 4 },
   { time: '10:58', player: 'O. Smith', action: 'Spinner chain play', pts: 3 },
   { time: '9:33', player: 'T. Brooks', action: 'Closing hand sweep', pts: 2 },
@@ -136,7 +136,7 @@ function Tag({ label, color }) {
 }
 
 function Btn({ label, icon, onClick, variant = 'gold', size = 'md', disabled = false, style = {} }) {
-  const base = {
+  var base = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: 6,
@@ -152,7 +152,7 @@ function Btn({ label, icon, onClick, variant = 'gold', size = 'md', disabled = f
     fontSize: size === 'sm' ? 11 : size === 'lg' ? 15 : 13,
     padding: size === 'sm' ? '5px 12px' : size === 'lg' ? '11px 24px' : '8px 16px',
   };
-  const variants = {
+  var variants = {
     gold: { background: GOLD, color: '#000' },
     ghost: { background: 'transparent', color: GOLD, border: `1px solid ${GOLD}66` },
     ruby: { background: CRIMSON, color: '#fff' },
@@ -170,7 +170,7 @@ function Btn({ label, icon, onClick, variant = 'gold', size = 'md', disabled = f
 }
 
 function StateCircle({ stateId, size = 36 }) {
-  const s = STATES_DATA.find(x => x.id === stateId);
+  var s = STATES_DATA.find(x => x.id === stateId);
   if (!s) return (
     <div style={{
       width: size, height: size, borderRadius: '50%',
@@ -202,11 +202,11 @@ function getState(id) {
 }
 
 function BracketView({ matches, wlMap = {} }) {
-  const rounds = ['QF', 'SF', 'FINAL'];
+  var rounds = ['QF', 'SF', 'FINAL'];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {rounds.map(round => {
-        const rMatches = matches.filter(m => m.round === round);
+        var rMatches = matches.filter(m => m.round === round);
         return (
           <div key={round}>
             <div style={{ ...T, fontSize: 11, fontWeight: 700, color: GOLD, letterSpacing: '0.12em', marginBottom: 8 }}>
@@ -214,10 +214,10 @@ function BracketView({ matches, wlMap = {} }) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {rMatches.map(m => {
-                const isLive = m.status === 'live';
-                const isDone = m.status === 'complete';
-                const sA = getState(m.teamA);
-                const sB = getState(m.teamB);
+                var isLive = m.status === 'live';
+                var isDone = m.status === 'complete';
+                var sA = getState(m.teamA);
+                var sB = getState(m.teamB);
                 return (
                   <GCard key={m.id} glow={isLive}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
@@ -235,7 +235,7 @@ function BracketView({ matches, wlMap = {} }) {
                           <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 18, color: '#fff', lineHeight: 1 }}>
                             {sA ? sA.name : 'TBD'}
                           </div>
-                          {sA && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{(wlMap[m.teamA]?.w ?? sA.record.w)}W–{(wlMap[m.teamA]?.l ?? sA.record.l)}L</div>}
+                          {sA && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{(wlMap[m.teamA]?.w || sA.record.w)}W–{(wlMap[m.teamA]?.l || sA.record.l)}L</div>}
                         </div>
                       </div>
                       <div style={{ textAlign: 'center', flexShrink: 0 }}>
@@ -254,7 +254,7 @@ function BracketView({ matches, wlMap = {} }) {
                           <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 18, color: '#fff', lineHeight: 1 }}>
                             {sB ? sB.name : 'TBD'}
                           </div>
-                          {sB && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{(wlMap[m.teamB]?.w ?? sB.record.w)}W–{(wlMap[m.teamB]?.l ?? sB.record.l)}L</div>}
+                          {sB && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{(wlMap[m.teamB]?.w || sB.record.w)}W–{(wlMap[m.teamB]?.l || sB.record.l)}L</div>}
                         </div>
                         <StateCircle stateId={m.teamB} size={40} />
                       </div>
@@ -289,7 +289,7 @@ function RostersView({ wlMap = {} }) {
             <StateCircle stateId={s.id} size={44} />
             <div>
               <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 20, color: '#fff', lineHeight: 1 }}>{s.name}</div>
-              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700 }}>{(wlMap[s.id]?.w ?? s.record.w)}W – {(wlMap[s.id]?.l ?? s.record.l)}L · {s.pts} PTS</div>
+              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700 }}>{(wlMap[s.id]?.w || s.record.w)}W – {(wlMap[s.id]?.l || s.record.l)}L · {s.pts} PTS</div>
             </div>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
@@ -314,11 +314,11 @@ function RostersView({ wlMap = {} }) {
 }
 
 function LiveMatchView() {
-  const qc = useQueryClient();
-  const wa = getState('wa');
-  const fl = getState('fl');
+  var qc = useQueryClient();
+  var wa = getState('wa');
+  var fl = getState('fl');
 
-  const { data: matchRec } = useQuery({
+  var { data: matchRec } = useQuery({
     queryKey: ['svs-live-match'],
     queryFn: () => base44.entities.PKBattle.filter({ room_id: SVS_MATCH_ID }, '-created_date', 1),
     select: data => data[0] || null,
@@ -326,41 +326,41 @@ function LiveMatchView() {
   });
 
   useEffect(() => {
-    const unsub = base44.entities.PKBattle.subscribe(e => {
-      if (e.data?.room_id === SVS_MATCH_ID) qc.invalidateQueries({ queryKey: ['svs-live-match'] });
+    var unsub = base44.entities.PKBattle.subscribe(e => {
+      if (e.(data && data.room_id) === SVS_MATCH_ID) qc.invalidateQueries({ queryKey: ['svs-live-match'] });
     });
     return unsub;
   }, [qc]);
 
-  const scoreWa = matchRec?.creator_tips ?? 4;
-  const scoreFl = matchRec?.challenger_tips ?? 3;
+  var scoreWa = (matchRec && matchRec.creator_tips) || 4;
+  var scoreFl = (matchRec && matchRec.challenger_tips) || 3;
 
-  const { data: playMsgs = [] } = useQuery({
+  var { data: playMsgs = [] } = useQuery({
     queryKey: ['svs-play-log'],
     queryFn: () => base44.entities.Message.filter({ room_id: SVS_MATCH_ID, type: 'play_log' }, '-created_date', 20),
     refetchInterval: 20000,
   });
 
   useEffect(() => {
-    const unsub = base44.entities.Message.subscribe(e => {
-      if (e.data?.room_id === SVS_MATCH_ID) qc.invalidateQueries({ queryKey: ['svs-play-log'] });
+    var unsub = base44.entities.Message.subscribe(e => {
+      if (e.(data && data.room_id) === SVS_MATCH_ID) qc.invalidateQueries({ queryKey: ['svs-play-log'] });
     });
     return unsub;
   }, [qc]);
 
-  const addGameMut = useMutation({
+  var addGameMut = useMutation({
     mutationFn: async (side) => {
-      const newWa = scoreWa + (side === 'wa' ? 1 : 0);
-      const newFl = scoreFl + (side === 'fl' ? 1 : 0);
-      const payload = { creator_tips: newWa, challenger_tips: newFl, status: 'live' };
+      var newWa = scoreWa + (side === 'wa' ? 1 : 0);
+      var newFl = scoreFl + (side === 'fl' ? 1 : 0);
+      var payload = { creator_tips: newWa, challenger_tips: newFl, status: 'live' };
       if (matchRec) return base44.entities.PKBattle.update(matchRec.id, payload);
       return base44.entities.PKBattle.create({ room_id: SVS_MATCH_ID, creator_name: 'wa', challenger_name: 'fl', ...payload });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['svs-live-match'] }),
   });
 
-  const PLAY_PLAYERS = ['K. Daniels', 'O. Smith', 'T. Brooks', 'V. Brown'];
-  const addPlayMut = useMutation({
+  var PLAY_PLAYERS = ['K. Daniels', 'O. Smith', 'T. Brooks', 'V. Brown'];
+  var addPlayMut = useMutation({
     mutationFn: () => base44.entities.Message.create({
       room_id: SVS_MATCH_ID,
       type: 'play_log',
@@ -370,9 +370,9 @@ function LiveMatchView() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['svs-play-log'] }),
   });
 
-  const plays = playMsgs.length > 0
+  var plays = playMsgs.length > 0
     ? playMsgs.map(p => {
-        const m = p.content.match(/^(.*?)\s*\(\+(\d+)\)$/);
+        var m = p.content.match(/^(.*?)\s*\(\+(\d+)\)$/);
         return {
           id: p.id,
           time: new Date(p.created_at).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }),
@@ -437,11 +437,11 @@ function LiveMatchView() {
 }
 
 function StandingsView({ wlMap = {} }) {
-  const sorted = [...STATES_DATA].sort((a, b) => b.pts - a.pts);
+  var sorted = [...STATES_DATA].sort((a, b) => b.pts - a.pts);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {sorted.map((s, i) => {
-        const isFirst = i === 0;
+        var isFirst = i === 0;
         return (
           <div key={s.id} style={{
             display: 'flex',
@@ -464,7 +464,7 @@ function StandingsView({ wlMap = {} }) {
             <StateCircle stateId={s.id} size={36} />
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 17, color: '#fff', lineHeight: 1 }}>{s.name}</div>
-              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700, marginTop: 2 }}>{(wlMap[s.id]?.w ?? s.record.w)}W – {(wlMap[s.id]?.l ?? s.record.l)}L</div>
+              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700, marginTop: 2 }}>{(wlMap[s.id]?.w || s.record.w)}W – {(wlMap[s.id]?.l || s.record.l)}L</div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 20, color: isFirst ? GOLD : '#fff' }}>{s.pts}</div>
@@ -477,7 +477,7 @@ function StandingsView({ wlMap = {} }) {
   );
 }
 
-const ROUND_RULES = [
+var ROUND_RULES = [
   { rule: 'Win a round (opponent blocked)',   pts: '+1 Match Point' },
   { rule: 'Domino out (all tiles played)',    pts: '+2 Match Points' },
   { rule: 'Shut-out win (opponent scores 0)', pts: '+3 Match Points' },
@@ -487,22 +487,22 @@ const ROUND_RULES = [
 ];
 
 function JudgesView() {
-  const [rounds, setRounds] = useState([
+  var [rounds, setRounds] = useState([
     { round: 1, home: '', away: '', notes: '', locked: false },
     { round: 2, home: '', away: '', notes: '', locked: false },
     { round: 3, home: '', away: '', notes: '', locked: false },
     { round: 4, home: '', away: '', notes: '', locked: false },
     { round: 5, home: '', away: '', notes: '', locked: false },
   ]);
-  const [ruling, setRuling] = useState('');
-  const [rulingLog, setRulingLog] = useState([]);
-  const [matchPaused, setMatchPaused] = useState(false);
-  const [disputeOpen, setDisputeOpen] = useState(false);
-  const [timerSecs, setTimerSecs] = useState(480);
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [checkDone, setCheckDone] = useState(Array(6).fill(false));
-  const [copiedRuling, setCopiedRuling] = useState(false);
-  const intervalRef = useRef(null);
+  var [ruling, setRuling] = useState('');
+  var [rulingLog, setRulingLog] = useState([]);
+  var [matchPaused, setMatchPaused] = useState(false);
+  var [disputeOpen, setDisputeOpen] = useState(false);
+  var [timerSecs, setTimerSecs] = useState(480);
+  var [timerRunning, setTimerRunning] = useState(false);
+  var [checkDone, setCheckDone] = useState(Array(6).fill(false));
+  var [copiedRuling, setCopiedRuling] = useState(false);
+  var intervalRef = useRef(null);
 
   useEffect(() => {
     if (timerRunning && timerSecs > 0) {
@@ -514,11 +514,11 @@ function JudgesView() {
     return () => clearInterval(intervalRef.current);
   }, [timerRunning, timerSecs]);
 
-  const timerColor = timerSecs <= 30 ? RED2 : timerSecs <= 60 ? GOLD : TEAL;
-  const timerDisplay = `${Math.floor(timerSecs / 60)}:${String(timerSecs % 60).padStart(2, '0')}`;
+  var timerColor = timerSecs <= 30 ? RED2 : timerSecs <= 60 ? GOLD : TEAL;
+  var timerDisplay = `${Math.floor(timerSecs / 60)}:${String(timerSecs % 60).padStart(2, '0')}`;
 
   function lockRound(i) {
-    const r = rounds[i];
+    var r = rounds[i];
     if (!r.home.trim() || !r.away.trim()) return;
     setRounds(prev => prev.map((x, idx) => idx === i ? { ...x, locked: true } : x));
   }
@@ -536,11 +536,11 @@ function JudgesView() {
     });
   }
 
-  const lockedCount = rounds.filter(r => r.locked).length;
-  const homeTotal = rounds.filter(r => r.locked).reduce((s, r) => s + (parseInt(r.home) || 0), 0);
-  const awayTotal = rounds.filter(r => r.locked).reduce((s, r) => s + (parseInt(r.away) || 0), 0);
+  var lockedCount = rounds.filter(r => r.locked).length;
+  var homeTotal = rounds.filter(r => r.locked).reduce((s, r) => s + (parseInt(r.home) || 0), 0);
+  var awayTotal = rounds.filter(r => r.locked).reduce((s, r) => s + (parseInt(r.away) || 0), 0);
 
-  const preCheckSteps = [
+  var preCheckSteps = [
     'Confirm judge credentials active (role = judge)',
     'Verify active match ID loaded in scorecard',
     'Sync with both state captains before tip-off',
@@ -549,7 +549,7 @@ function JudgesView() {
     'Acknowledge match rules with both teams',
   ];
 
-  const inputStyle = {
+  var inputStyle = {
     width: '100%',
     background: BG3,
     border: `1px solid rgba(255,255,255,0.12)`,
@@ -801,65 +801,65 @@ function JudgesView() {
   );
 }
 
-const TABS = ['BRACKET', 'ROSTERS', 'LIVE MATCH', 'STANDINGS', 'JUDGES'];
+var TABS = ['BRACKET', 'ROSTERS', 'LIVE MATCH', 'STANDINGS', 'JUDGES'];
 
 export default function StateVsState() {
-  const qc = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [tab, setTab] = useState('BRACKET');
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  var qc = useQueryClient();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [tab, setTab] = useState('BRACKET');
+  var roomId = new URLSearchParams(window.location.search).get('room_id');
 
-  const { data: bracketRecords = [] } = useQuery({
+  var { data: bracketRecords = [] } = useQuery({
     queryKey: ['svs-bracket-records'],
     queryFn: () => base44.entities.PKBattle.filter({ room_id: SVS_BRACKET_ID }, '-created_date', 20),
     refetchInterval: 30000,
   });
 
   useEffect(() => {
-    const unsub = base44.entities.PKBattle.subscribe(e => {
-      if (e.data?.room_id === SVS_BRACKET_ID) qc.invalidateQueries({ queryKey: ['svs-bracket-records'] });
+    var unsub = base44.entities.PKBattle.subscribe(e => {
+      if (e.(data && data.room_id) === SVS_BRACKET_ID) qc.invalidateQueries({ queryKey: ['svs-bracket-records'] });
     });
     return unsub;
   }, [qc]);
 
-  const matches = useMemo(() => {
+  var matches = useMemo(() => {
     if (!bracketRecords.length) return BRACKET_MATCHES;
-    const map = {};
+    var map = {};
     bracketRecords.forEach(r => { map[`${r.creator_name}:${r.challenger_name}`] = r; });
     return BRACKET_MATCHES.map(m => {
-      const hit = map[`${m.teamA}:${m.teamB}`];
+      var hit = map[`${m.teamA}:${m.teamB}`];
       if (!hit) return m;
       return {
         ...m,
-        scoreA: hit.creator_tips ?? m.scoreA,
-        scoreB: hit.challenger_tips ?? m.scoreB,
+        scoreA: hit.creator_tips || m.scoreA,
+        scoreB: hit.challenger_tips || m.scoreB,
         status: hit.status === 'ended' ? 'complete' : hit.status === 'live' ? 'live' : m.status,
       };
     });
   }, [bracketRecords]);
 
-  const wlMap = useMemo(() => {
+  var wlMap = useMemo(() => {
     if (!bracketRecords.length) {
-      const fallback = {};
+      var fallback = {};
       STATES_DATA.forEach(s => { fallback[s.id] = { ...s.record }; });
       return fallback;
     }
-    const map = {};
+    var map = {};
     STATES_DATA.forEach(s => { map[s.id] = { w: 0, l: 0 }; });
     matches.filter(m => m.status === 'complete').forEach(m => {
-      const aWon = m.scoreA > m.scoreB;
+      var aWon = m.scoreA > m.scoreB;
       if (map[m.teamA] !== undefined) map[m.teamA][aWon ? 'w' : 'l']++;
       if (map[m.teamB] !== undefined) map[m.teamB][aWon ? 'l' : 'w']++;
     });
     return map;
   }, [matches, bracketRecords.length]);
 
-  const { data: svsBattles = [] } = useQuery({
+  var { data: svsBattles = [] } = useQuery({
     queryKey: ['svsActiveBattles'],
     queryFn: () => base44.entities.PKBattle.filter({ status: 'live' }, '-created_date', 5),
     refetchInterval: 15000,
   });
-  const activeBattle = svsBattles[0] || null;
+  var activeBattle = svsBattles[0] || null;
 
   return (
     <div style={{ minHeight: '100vh', background: BG, padding: '16px 16px 96px', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -909,7 +909,7 @@ export default function StateVsState() {
         scrollbarWidth: 'none',
       }}>
         {TABS.map(t => {
-          const active = tab === t;
+          var active = tab === t;
           return (
             <button
               key={t}
@@ -945,7 +945,7 @@ export default function StateVsState() {
 
       <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
         <LeaderboardPanel roomId={roomId} />
-        <PKBattleProgress battleId={activeBattle?.id || null} />
+        <PKBattleProgress battleId={(activeBattle && activeBattle.id) || null} />
       </div>
 
       {/* Cross-navigation footer */}
@@ -971,15 +971,15 @@ export default function StateVsState() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <BattleMode roomId={roomId} hostId={user?.id} isHost={true} />
+        <BattleMode roomId={roomId} hostId={(user && user.id)} isHost={true} />
         <SocialLeaderboard roomId={roomId} />
         <GiftShopTray roomId={roomId} currentUser={user} />
         <BattleScoreboard roomId={roomId} />
         <TournamentBracket />
-        <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
+        <EngagementBadgesDisplay roomId={roomId} userId={(user && user.id)} creatorId={(user && user.id)} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <MilestoneAlerts userId={(user && user.id)} roomId={roomId} />
         <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
       </div>
     </div>

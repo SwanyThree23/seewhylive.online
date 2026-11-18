@@ -32,12 +32,12 @@ import StreamerMonetizationCenter from '../components/monetization/StreamerMonet
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import ViewerCount from '../components/live/ViewerCount';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
-const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+var lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
 function DarkCard({ title, desc, children, style = {} }) {
   return (
@@ -54,68 +54,68 @@ function DarkCard({ title, desc, children, style = {} }) {
 }
 
 export default function NewsletterPage() {
-  const queryClient = useQueryClient();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [previewText, setPreviewText] = useState('');
-  const [generating, setGenerating] = useState(false);
-  const [selectedCommunity, setSelectedCommunity] = useState('');
+  var queryClient = useQueryClient();
+  var [title, setTitle] = useState('');
+  var [content, setContent] = useState('');
+  var [previewText, setPreviewText] = useState('');
+  var [generating, setGenerating] = useState(false);
+  var [selectedCommunity, setSelectedCommunity] = useState('');
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: communities = [] } = useQuery({
-    queryKey: ['userCommunities', user?.id],
+  var { data: communities = [] } = useQuery({
+    queryKey: ['userCommunities', (user && user.id)],
     queryFn: async () => {
-      const memberships = await base44.entities.CommunityMember.filter({ user_id: user?.id, role: { $in: ['owner', 'admin'] } });
-      const ids = memberships.map(m => m.community_id);
+      var memberships = await base44.entities.CommunityMember.filter({ user_id: (user && user.id), role: { $in: ['owner', 'admin'] } });
+      var ids = memberships.map(m => m.community_id);
       if (ids.length === 0) return [];
       return await base44.entities.Community.filter({ id: { $in: ids } });
     },
     enabled: !!user,
   });
 
-  const { data: newsletters = [] } = useQuery({
+  var { data: newsletters = [] } = useQuery({
     queryKey: ['newsletters', selectedCommunity],
     queryFn: () => base44.entities.Newsletter.filter({ community_id: selectedCommunity }, '-created_date'),
     enabled: !!selectedCommunity,
   });
 
-  const createMutation = useMutation({
+  var createMutation = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create(data),
     onSuccess: (newsletter) => {
       toast.success('Newsletter created!');
       queryClient.invalidateQueries({ queryKey: ['newsletters'] });
       setTitle(''); setContent(''); setPreviewText('');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
-          title: `Published newsletter: ${newsletter?.title || 'Newsletter'}`,
+          title: `Published newsletter: ${(newsletter && newsletter.title) || 'Newsletter'}`,
         }).catch(() => {});
       }
     },
     onError: () => toast.error('Action failed.'),
   });
 
-  const generateWithAI = async () => {
+  var generateWithAI = async () => {
     if (!selectedCommunity) { toast.error('Please select a community first'); return; }
     setGenerating(true);
     try {
-      const rooms = await base44.entities.Room.filter({ community_id: selectedCommunity, status: 'ended' }, '-ended_at', 5);
-      const result = await base44.integrations.Core.InvokeLLM({
+      var rooms = await base44.entities.Room.filter({ community_id: selectedCommunity, status: 'ended' }, '-ended_at', 5);
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `Create an engaging newsletter for a streaming community. Include:\n1. A catchy subject line\n2. Summary of recent live streams (${rooms.length} streams)\n3. Community highlights\n4. Call-to-action to join upcoming streams\n\nKeep it professional, engaging, and under 500 words.`,
         response_json_schema: { type: 'object', properties: { subject: { type: 'string' }, preview: { type: 'string' }, content: { type: 'string' } } }
       });
@@ -130,15 +130,15 @@ export default function NewsletterPage() {
     }
   };
 
-  const handleSave = () => {
+  var handleSave = () => {
     if (!selectedCommunity) { toast.error('Please select a community'); return; }
     if (!title || !content) { toast.error('Title and content are required'); return; }
     createMutation.mutate({ community_id: selectedCommunity, title, content, preview_text: previewText, status: 'draft', source_type: generating ? 'ai_generated' : 'manual' });
   };
 
-  const sentCount = newsletters.filter(n => n.status === 'sent').length;
-  const draftCount = newsletters.filter(n => n.status === 'draft').length;
-  const avgOpenRate = newsletters.length > 0 ? (newsletters.reduce((a, n) => a + (n.open_rate || 0), 0) / newsletters.length).toFixed(1) : 0;
+  var sentCount = newsletters.filter(n => n.status === 'sent').length;
+  var draftCount = newsletters.filter(n => n.status === 'draft').length;
+  var avgOpenRate = newsletters.length > 0 ? (newsletters.reduce((a, n) => a + (n.open_rate || 0), 0) / newsletters.length).toFixed(1) : 0;
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -245,11 +245,11 @@ export default function NewsletterPage() {
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ShareToSocial content={{ url: window.location.href, title: 'Newsletter — SeeWhy LIVE' }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
-          <EarningsBreakdown creatorId={user?.id} />
-          <AudienceInsights creatorId={user?.id} />
+          <EarningsBreakdown creatorId={(user && user.id)} />
+          <AudienceInsights creatorId={(user && user.id)} />
           <ContentRecommendations />
           <FollowButton targetUserId={null} targetUserName="" />
-          <MilestoneAlerts creatorId={user?.id} />
+          <MilestoneAlerts creatorId={(user && user.id)} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
@@ -268,13 +268,13 @@ export default function NewsletterPage() {
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />
           <ChallengeLeaderboard challengeId={null} />
-          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+          <AnnouncementPanel communityId={userCommunityId} userId={(user && user.id)} />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -282,7 +282,7 @@ export default function NewsletterPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

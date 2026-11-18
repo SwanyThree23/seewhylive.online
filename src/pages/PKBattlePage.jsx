@@ -54,10 +54,10 @@ import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import BattleArenaManager from '../components/live/BattleArenaManager';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
-const BATTLE_DURATION = 180;
-const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+var BATTLE_DURATION = 180;
+var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
-const GIFTS = [
+var GIFTS = [
   { emoji: '🌹', label: 'Rose', pts: 1 },
   { emoji: '🍰', label: 'Cake', pts: 5 },
   { emoji: '💎', label: 'Diamond', pts: 10 },
@@ -69,7 +69,7 @@ const GIFTS = [
 ];
 
 function OctCamTile({ stream, label, isLocal }) {
-  const ref = useRef(null);
+  var ref = useRef(null);
   useEffect(() => { if (ref.current) ref.current.srcObject = stream || null; }, [stream]);
   return (
     <div className="relative shrink-0" style={{ width: 56, height: 56 }}>
@@ -80,7 +80,7 @@ function OctCamTile({ stream, label, isLocal }) {
             className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-white/30 text-[10px]">
-            {label?.charAt(0)?.toUpperCase()}
+            {(label && label.charAt)(0)?.toUpperCase()}
           </div>
         )}
         {isLocal && (
@@ -175,8 +175,8 @@ function OnFireBadge({ show }) {
 }
 
 function ScoreBar({ leftVotes, rightVotes, leftName, rightName }) {
-  const total = leftVotes + rightVotes || 1;
-  const leftPct = Math.round((leftVotes / total) * 100);
+  var total = leftVotes + rightVotes || 1;
+  var leftPct = Math.round((leftVotes / total) * 100);
   return (
     <div className="w-full px-4">
       <div className="flex items-center justify-between text-[11px] text-white/60 mb-1">
@@ -283,52 +283,52 @@ function WinnerOverlay({ winner, onClose }) {
 }
 
 export default function PKBattlePage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const battleId = searchParams.get('id');
-  const qc = useQueryClient();
-  const navigate = useNavigate();
+  var [searchParams, setSearchParams] = useSearchParams();
+  var battleId = searchParams.get('id');
+  var qc = useQueryClient();
+  var navigate = useNavigate();
 
-  const [leftName, setLeftName] = useState('');
-  const [rightName, setRightName] = useState('');
-  const [leftStream, setLeftStream] = useState('');
-  const [rightStream, setRightStream] = useState('');
-  const [duration, setDuration] = useState(BATTLE_DURATION);
+  var [leftName, setLeftName] = useState('');
+  var [rightName, setRightName] = useState('');
+  var [leftStream, setLeftStream] = useState('');
+  var [rightStream, setRightStream] = useState('');
+  var [duration, setDuration] = useState(BATTLE_DURATION);
 
-  const [timeLeft, setTimeLeft] = useState(BATTLE_DURATION);
-  const [leftVotes, setLeftVotes] = useState(0);
-  const [rightVotes, setRightVotes] = useState(0);
-  const [flyingGifts, setFlyingGifts] = useState([]);
-  const [winner, setWinner] = useState(null);
-  const [countdown, setCountdown] = useState(null);
-  const [countdownDone, setCountdownDone] = useState(false);
-  const [leftCombo, setLeftCombo] = useState(0);
-  const [rightCombo, setRightCombo] = useState(0);
-  const [leftOnFire, setLeftOnFire] = useState(false);
-  const [rightOnFire, setRightOnFire] = useState(false);
-  const [showChat, setShowChat] = useState(false);
-  const isMobile = useIsMobile();
-  const [pkRound, setPkRound] = useState(1);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [leftSupporters, setLeftSupporters] = useState(new Set());
-  const [rightSupporters, setRightSupporters] = useState(new Set());
+  var [timeLeft, setTimeLeft] = useState(BATTLE_DURATION);
+  var [leftVotes, setLeftVotes] = useState(0);
+  var [rightVotes, setRightVotes] = useState(0);
+  var [flyingGifts, setFlyingGifts] = useState([]);
+  var [winner, setWinner] = useState(null);
+  var [countdown, setCountdown] = useState(null);
+  var [countdownDone, setCountdownDone] = useState(false);
+  var [leftCombo, setLeftCombo] = useState(0);
+  var [rightCombo, setRightCombo] = useState(0);
+  var [leftOnFire, setLeftOnFire] = useState(false);
+  var [rightOnFire, setRightOnFire] = useState(false);
+  var [showChat, setShowChat] = useState(false);
+  var isMobile = useIsMobile();
+  var [pkRound, setPkRound] = useState(1);
+  var [showInviteModal, setShowInviteModal] = useState(false);
+  var [leftSupporters, setLeftSupporters] = useState(new Set());
+  var [rightSupporters, setRightSupporters] = useState(new Set());
 
-  const timerRef = useRef(null);
-  const giftIdRef = useRef(0);
-  const leftLastGiftRef = useRef(0);
-  const rightLastGiftRef = useRef(0);
-  const leftComboTimerRef = useRef(null);
-  const rightComboTimerRef = useRef(null);
-  const leftVelocityRef = useRef([]);
-  const rightVelocityRef = useRef([]);
-  const leftFireTimerRef = useRef(null);
-  const rightFireTimerRef = useRef(null);
-  const countdownStartedRef = useRef(false);
-  const battleDurationRef = useRef(BATTLE_DURATION);
+  var timerRef = useRef(null);
+  var giftIdRef = useRef(0);
+  var leftLastGiftRef = useRef(0);
+  var rightLastGiftRef = useRef(0);
+  var leftComboTimerRef = useRef(null);
+  var rightComboTimerRef = useRef(null);
+  var leftVelocityRef = useRef([]);
+  var rightVelocityRef = useRef([]);
+  var leftFireTimerRef = useRef(null);
+  var rightFireTimerRef = useRef(null);
+  var countdownStartedRef = useRef(false);
+  var battleDurationRef = useRef(BATTLE_DURATION);
 
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const { data: battle } = useQuery({
+  var { data: battle } = useQuery({
     queryKey: ['pk-battle', battleId],
     queryFn: () => base44.entities.LiveAuction.filter({ id: battleId }).then(r => r[0]),
     enabled: !!battleId,
@@ -337,7 +337,7 @@ export default function PKBattlePage() {
 
   useEffect(() => {
     if (!battleId) return;
-    const unsub = base44.entities.LiveAuction.subscribe((event) => {
+    var unsub = base44.entities.LiveAuction.subscribe((event) => {
       if (event.id !== battleId) return;
       if (event.data) {
         setLeftVotes(event.data.current_bid || 0);
@@ -359,11 +359,11 @@ export default function PKBattlePage() {
       var t3 = setTimeout(function() { setCountdown(null); setCountdownDone(true); }, 3000);
       return function() { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
     }
-  }, [battle?.status, battle?.ends_at]);
+  }, [(battle && battle.status), (battle && battle.ends_at)]);
 
-  const createBattle = useMutation({
+  var createBattle = useMutation({
     mutationFn: () => base44.entities.LiveAuction.create({
-      creator_id: user?.id,
+      creator_id: (user && user.id),
       title: `${leftName} vs ${rightName}`,
       auction_type: 'experience',
       starting_bid: 0,
@@ -387,7 +387,7 @@ export default function PKBattlePage() {
     setFlyingGifts(function(p) { return [...p, { id, emoji, side }]; });
     setTimeout(function() { setFlyingGifts(function(p) { return p.filter(function(g) { return g.id !== id; }); }); }, 1600);
 
-    var uid = user?.id || ('anon_' + id);
+    var uid = (user && user.id) || ('anon_' + id);
     if (side === 'left') {
       setLeftSupporters(function(prev) { var next = new Set(prev); next.add(uid); return next; });
     } else {
@@ -444,13 +444,13 @@ export default function PKBattlePage() {
 
   useEffect(() => {
     if (!battleId || !battle || battle.status !== 'active') return;
-    const endsAt = battle ? new Date(battle.ends_at).getTime() : Date.now() + duration * 1000;
-    const tick = () => {
-      const remaining = Math.max(0, Math.floor((endsAt - Date.now()) / 1000));
+    var endsAt = battle ? new Date(battle.ends_at).getTime() : Date.now() + duration * 1000;
+    var tick = () => {
+      var remaining = Math.max(0, Math.floor((endsAt - Date.now()) / 1000));
       setTimeLeft(remaining);
       if (remaining === 0) {
         clearInterval(timerRef.current);
-        const w = leftVotes >= rightVotes ? (battle?.title?.split(' vs ')[0] || 'Left') : (battle?.title?.split(' vs ')[1] || 'Right');
+        var w = leftVotes >= rightVotes ? ((battle && battle.title)?.split(' vs ')[0] || 'Left') : ((battle && battle.title)?.split(' vs ')[1] || 'Right');
         setWinner(w);
         setPkRound(function(r) { return r + 1; });
         base44.entities.LiveAuction.update(battleId, { status: 'ended' });
@@ -459,58 +459,58 @@ export default function PKBattlePage() {
     tick();
     timerRef.current = setInterval(tick, 1000);
     return () => clearInterval(timerRef.current);
-  }, [battleId, battle?.status]);
+  }, [battleId, (battle && battle.status)]);
 
-  const copyLink = () => { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Battle link copied!')).catch(() => toast.error('Copy failed.')); };
+  var copyLink = () => { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Battle link copied!')).catch(() => toast.error('Copy failed.')); };
 
-  const names = battle?.title?.split(' vs ') || [leftName || 'Left', rightName || 'Right'];
-  const [bLeftName, bRightName] = names;
-  const bLeftStream = leftStream;
-  const bRightStream = rightStream;
+  var names = (battle && battle.title)?.split(' vs ') || [leftName || 'Left', rightName || 'Right'];
+  var [bLeftName, bRightName] = names;
+  var bLeftStream = leftStream;
+  var bRightStream = rightStream;
 
-  const prefCamPK = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
-  const prefMicPK = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  const [activeCamId, setActiveCamId] = useState(prefCamPK);
-  const [activeMicId, setActiveMicId] = useState(prefMicPK);
-  const { localStream: localCamStream, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: activeCamId, audioDeviceId: activeMicId });
-  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
-  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
-  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds, announceJoin: announceJoinBattle, leaveRoom: leaveRoomBattle, peersRef: battlePeersRef } = useWebRTCPeers(battleId, localCamStream);
-  const announceJoinBattleRef = useRef(announceJoinBattle);
-  const leaveRoomBattleRef = useRef(leaveRoomBattle);
+  var prefCamPK = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  var prefMicPK = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  var [activeCamId, setActiveCamId] = useState(prefCamPK);
+  var [activeMicId, setActiveMicId] = useState(prefMicPK);
+  var { localStream: localCamStream, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: activeCamId, audioDeviceId: activeMicId });
+  var handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
+  var handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  var { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds, announceJoin: announceJoinBattle, leaveRoom: leaveRoomBattle, peersRef: battlePeersRef } = useWebRTCPeers(battleId, localCamStream);
+  var announceJoinBattleRef = useRef(announceJoinBattle);
+  var leaveRoomBattleRef = useRef(leaveRoomBattle);
   useEffect(() => { announceJoinBattleRef.current = announceJoinBattle; }, [announceJoinBattle]);
   useEffect(() => { leaveRoomBattleRef.current = leaveRoomBattle; }, [leaveRoomBattle]);
-  useEffect(() => { if (!user?.id || !battleId) return; announceJoinBattleRef.current?.(user.id); }, [user?.id, battleId]);  
+  useEffect(() => { if (!(user && user.id) || !battleId) return; announceJoinBattleRef.current?.(user.id); }, [(user && user.id), battleId]);  
   useEffect(() => () => leaveRoomBattleRef.current?.(), []);
 
-  const [activeBattlePc, setActiveBattlePc] = useState(null);
+  var [activeBattlePc, setActiveBattlePc] = useState(null);
   useEffect(() => {
-    const entries = Array.from(battlePeersRef.current.entries());
-    const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    var entries = Array.from(battlePeersRef.current.entries());
+    var connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
     setActiveBattlePc(connected ? connected[1].pc : null);
   }, [battleRemoteStreams]);  
-  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeBattlePc, 5000);
+  var { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeBattlePc, 5000);
 
-  const [peakViewers, setPeakViewers] = useState(0);
+  var [peakViewers, setPeakViewers] = useState(0);
   useEffect(() => { setPeakViewers(prev => Math.max(prev, battleRemoteStreams.size)); }, [battleRemoteStreams.size]);
-  const subCount = useSubscriptionCount(user?.id);
-  const [activeScene, setActiveScene] = useState('main');
-  const [selectedBitrate, setSelectedBitrate] = useState('auto');
+  var subCount = useSubscriptionCount((user && user.id));
+  var [activeScene, setActiveScene] = useState('main');
+  var [selectedBitrate, setSelectedBitrate] = useState('auto');
 
-  const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
-  const { extractClipBlobUrl } = useVODRecording({ streamId: battleId || '', creatorId: user?.id || '', title: battle?.title || 'PK Battle', stream: localCamStream });
-  const [pkChatMessages, setPkChatMessages] = useState([]);
-  const [pkHypeLevel, setPkHypeLevel] = useState(0);
-  const [showPKCamSettings, setShowPKCamSettings] = useState(false);
-  const isHostBattle = !!(user?.id && battle?.creator_id === user?.id);
+  var { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
+  var { extractClipBlobUrl } = useVODRecording({ streamId: battleId || '', creatorId: (user && user.id) || '', title: (battle && battle.title) || 'PK Battle', stream: localCamStream });
+  var [pkChatMessages, setPkChatMessages] = useState([]);
+  var [pkHypeLevel, setPkHypeLevel] = useState(0);
+  var [showPKCamSettings, setShowPKCamSettings] = useState(false);
+  var isHostBattle = !!((user && user.id) && (battle && battle.creator_id) === (user && user.id));
   useHighlightDetector({ partyId: battleId, roomId: battleId, isHost: isHostBattle, user, messages: pkChatMessages, hypeLevel: pkHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
   useVoiceAgentRuntime({ chatMessage: pkChatMessages[pkChatMessages.length - 1] || null });
 
-  const [leftCaptureStream, setLeftCaptureStream] = useState(null);
-  const [rightCaptureStream, setRightCaptureStream] = useState(null);
+  var [leftCaptureStream, setLeftCaptureStream] = useState(null);
+  var [rightCaptureStream, setRightCaptureStream] = useState(null);
   useEffect(() => () => {
-    leftCaptureStream?.getTracks().forEach(t => t.stop());
-    rightCaptureStream?.getTracks().forEach(t => t.stop());
+    (leftCaptureStream && leftCaptureStream.getTracks)().forEach(t => t.stop());
+    (rightCaptureStream && rightCaptureStream.getTracks)().forEach(t => t.stop());
   }, []);  
 
   if (!battleId) {
@@ -595,23 +595,23 @@ export default function PKBattlePage() {
     );
   }
 
-  const battleCompositorSlots = [
+  var battleCompositorSlots = [
     { stream: leftCaptureStream, label: bLeftName },
     { stream: rightCaptureStream, label: bRightName },
     { stream: localCamStream, label: 'You', speaking: battleLocalSpeaking },
     ...Array.from(battleRemoteStreams.entries()).map(([peerId, stream]) => ({
       stream,
-      label: battlePeerUserIds?.get(peerId) || 'Viewer',
+      label: (battlePeerUserIds && battlePeerUserIds.get)(peerId) || 'Viewer',
     })),
   ];
-  const battleOverlay = {
-    title: battle?.title || `${bLeftName} vs ${bRightName}`,
+  var battleOverlay = {
+    title: (battle && battle.title) || `${bLeftName} vs ${bRightName}`,
     battleData: { leftScore: leftVotes, rightScore: rightVotes, timeLeft, leftName: bLeftName, rightName: bRightName },
   };
 
-  const handleBattleScreenCapture = async () => {
-    const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
-    const videoTrack = stream.getVideoTracks()[0];
+  var handleBattleScreenCapture = async () => {
+    var stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
+    var videoTrack = stream.getVideoTracks()[0];
     if (!leftCaptureStream) {
       if (videoTrack) videoTrack.onended = () => setLeftCaptureStream(null);
       setLeftCaptureStream(stream);
@@ -673,11 +673,11 @@ export default function PKBattlePage() {
         </Link>
         <div className="flex items-center gap-2 flex-1">
           <Swords className="w-4 h-4 text-[#d4af37]" />
-          <span className="font-bold text-sm text-white truncate">{battle?.title || 'PK Battle'}</span>
-          {battle?.status === 'active' && (
+          <span className="font-bold text-sm text-white truncate">{(battle && battle.title) || 'PK Battle'}</span>
+          {(battle && battle.status) === 'active' && (
             <span style={{ background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }} className="animate-pulse">LIVE</span>
           )}
-          {battle?.status === 'ended' && (
+          {(battle && battle.status) === 'ended' && (
             <span style={{ background: '#4b5563', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>ENDED</span>
           )}
         </div>
@@ -689,16 +689,16 @@ export default function PKBattlePage() {
         </button>
         <ShareButtons
           url={window.location.href}
-          title={`Watch this PK Battle: ${battle?.title || 'Live Battle'}`}
+          title={`Watch this PK Battle: ${(battle && battle.title) || 'Live Battle'}`}
           className="[&_button]:text-white/40 [&_button:hover]:text-white"
         />
         <CompositorOverlay
           layout="battle"
           slots={battleCompositorSlots}
           overlayConfig={battleOverlay}
-          userId={user?.id}
+          userId={(user && user.id)}
           onScreenCapture={handleBattleScreenCapture}
-          isHost={!!(user?.id && battle?.creator_id === user?.id)}
+          isHost={!!((user && user.id) && (battle && battle.creator_id) === (user && user.id))}
         />
       </div>
 
@@ -710,7 +710,7 @@ export default function PKBattlePage() {
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3">
                 <div className="w-20 h-20 rounded-full bg-[#D4AF37]/20 border-2 border-[#D4AF37]/40 flex items-center justify-center text-4xl font-black text-[#D4AF37]">
-                  {bLeftName?.charAt(0)?.toUpperCase()}
+                  {(bLeftName && bLeftName.charAt)(0)?.toUpperCase()}
                 </div>
                 <p className="text-2xl font-black text-white">{bLeftName}</p>
                 <span style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Left Creator</span>
@@ -757,7 +757,7 @@ export default function PKBattlePage() {
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3">
                 <div className="w-20 h-20 rounded-full bg-red-700/40 border-2 border-red-500/60 flex items-center justify-center text-4xl font-black text-red-300">
-                  {bRightName?.charAt(0)?.toUpperCase()}
+                  {(bRightName && bRightName.charAt)(0)?.toUpperCase()}
                 </div>
                 <p className="text-2xl font-black text-white">{bRightName}</p>
                 <span style={{ background: 'rgba(185,28,28,0.5)', color: '#fecaca', border: '1px solid rgba(192,57,43,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Right Creator</span>
@@ -792,7 +792,7 @@ export default function PKBattlePage() {
       <AudienceCameraStrip
         localStream={localCamStream}
         remoteStreams={battleRemoteStreams}
-        currentUserId={user?.id}
+        currentUserId={(user && user.id)}
       />
 
       <div className="shrink-0 flex items-center gap-3 px-4 py-2"
@@ -855,15 +855,15 @@ export default function PKBattlePage() {
         )}
       </AnimatePresence>
       <SwanAIRecommendations roomId={battleId} currentLayout="battle" viewerCount={battleRemoteStreams.size} />
-      <MilestoneAlerts userId={user?.id} roomId={battleId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {battleId && <BattleMode roomId={battleId} isHost={!!(user?.id && battle?.creator_id === user?.id)} hostName={user?.full_name || ''} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={battleId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
+      {battleId && <BattleMode roomId={battleId} isHost={!!((user && user.id) && (battle && battle.creator_id) === (user && user.id))} hostName={(user && user.full_name) || ''} />}
       {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
-      {user?.id && <CameraDeviceSelector compact currentVideoId={activeCamId} currentAudioId={activeMicId} onVideoChange={handleCamChange} onAudioChange={handleMicChange} />}
-      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
-      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={battle?.status === 'active'} />}
-      {battleId && <TranscriptionPanel recordingUrl={''} roomTitle={battle?.title || ''} />}
+      {(user && user.id) && <CameraDeviceSelector compact currentVideoId={activeCamId} currentAudioId={activeMicId} onVideoChange={handleCamChange} onAudioChange={handleMicChange} />}
+      {(user && user.id) && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {<GuestStreamMonitor guestName={(user && user.full_name) || ''} isStreaming={(battle && battle.status) === 'active'} />}
+      {battleId && <TranscriptionPanel recordingUrl={''} roomTitle={(battle && battle.title) || ''} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -871,7 +871,7 @@ export default function PKBattlePage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={subCount} currentViewers={battleRemoteStreams.size} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={battleId} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={battleId} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={battleRemoteStreams.size} peakViewers={peakViewers} />
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />

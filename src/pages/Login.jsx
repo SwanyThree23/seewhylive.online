@@ -4,26 +4,26 @@ import { appParams } from '@/lib/app-params';
 import { Radio } from 'lucide-react';
 import { isSafeUrl } from '@/lib/security';
 
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const GOLD = '#C9A84C';
-const BG = '#0E0C09';
-const CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD = '#C9A84C';
+var BG = '#0E0C09';
+var CRIMSON = '#800020';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [mode, setMode] = useState('login'); // 'login' | 'register'
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
+  var [email, setEmail] = useState('');
+  var [password, setPassword] = useState('');
+  var [mode, setMode] = useState('login'); // 'login' | 'register'
+  var [error, setError] = useState('');
+  var [loading, setLoading] = useState(false);
+  var [resetSent, setResetSent] = useState(false);
+  var [resetLoading, setResetLoading] = useState(false);
 
   // from_url param — where to redirect after successful login
   // Reject any auth-path from_url to prevent infinite redirect loops
-  const params = new URLSearchParams(window.location.search);
-  const rawFromUrl = params.get('from_url') || appParams.fromUrl || '/';
+  var params = new URLSearchParams(window.location.search);
+  var rawFromUrl = params.get('from_url') || appParams.fromUrl || '/';
   // Block auth loops AND external/javascript: URLs — only allow same-origin paths
-  const fromUrl = (() => {
+  var fromUrl = (() => {
     if (/\/(api\/apps\/auth|login)/i.test(rawFromUrl)) return '/';
     if (rawFromUrl.startsWith('/')) return rawFromUrl; // relative path — always safe
     if (isSafeUrl(rawFromUrl) && new URL(rawFromUrl).origin === window.location.origin) return rawFromUrl;
@@ -33,14 +33,14 @@ export default function Login() {
   // If an access_token lands in the URL (OAuth callback), the SDK already
   // stored it via app-params; just navigate home.
   useEffect(() => {
-    const token = new URLSearchParams(window.location.search).get('access_token');
+    var token = new URLSearchParams(window.location.search).get('access_token');
     if (token) {
       base44.auth.setToken(token);
       window.location.href = fromUrl;
     }
   }, []);
 
-  const handleSubmit = async (e) => {
+  var handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -53,29 +53,29 @@ export default function Login() {
       }
       window.location.href = fromUrl;
     } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || 'Something went wrong — check your credentials.');
+      setError((err && err.response && err.response.data && err.response.data.detail) || (err && err.message) || 'Something went wrong — check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogle = () => {
+  var handleGoogle = () => {
     base44.auth.loginWithProvider('google', fromUrl);
   };
 
-  const handleMicrosoft = () => {
+  var handleMicrosoft = () => {
     base44.auth.loginWithProvider('microsoft', fromUrl);
   };
 
-  const handleFacebook = () => {
+  var handleFacebook = () => {
     base44.auth.loginWithProvider('facebook', fromUrl);
   };
 
-  const handleApple = () => {
+  var handleApple = () => {
     base44.auth.loginWithProvider('apple', fromUrl);
   };
 
-  const handleForgotPassword = async () => {
+  var handleForgotPassword = async () => {
     if (!email) {
       setError('Enter your email address above, then click "Forgot password?"');
       return;
@@ -86,7 +86,7 @@ export default function Login() {
       await base44.auth.resetPasswordRequest(email);
       setResetSent(true);
     } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || 'Could not send reset email.');
+      setError((err && err.response && err.response.data && err.response.data.detail) || (err && err.message) || 'Could not send reset email.');
     } finally {
       setResetLoading(false);
     }

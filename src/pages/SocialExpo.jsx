@@ -33,15 +33,15 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 
-const G       = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
-const TEAL    = '#D4854A';
-const BG      = '#080B18';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var G       = '#D4AF37';
+var CRIMSON = '#800020';
+var PINK    = '#C0392B';
+var TEAL    = '#D4854A';
+var BG      = '#080B18';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ─── Platform integrations ─────────────────────────────────────────────── */
-const PLATFORMS = [
+var PLATFORMS = [
   { name: 'Fanbase',   color: '#C0392B', icon: Heart,   desc: 'Fan economy & creator tipping' },
   { name: 'Clubhouse', color: '#D4AF37', icon: Mic,     desc: 'Live audio rooms & stages' },
   { name: 'Discord',   color: '#D4854A', icon: Users,   desc: 'Community servers & events' },
@@ -51,7 +51,7 @@ const PLATFORMS = [
 ];
 
 /* ─── Sponsorship tiers ──────────────────────────────────────────────────── */
-const SPONSOR_TIERS = [
+var SPONSOR_TIERS = [
   {
     id: 'community',
     label: 'Community Spotlight',
@@ -98,7 +98,7 @@ const SPONSOR_TIERS = [
 ];
 
 /* ─── Social Lights lineup ────────────────────────────────────────────────── */
-const SOCIAL_LIGHTS = [
+var SOCIAL_LIGHTS = [
   { role: 'Host', name: 'Domino Entertainment', color: PINK,    icon: Radio },
   { role: 'Co-Host', name: 'SeeWhy LIVE',        color: G,      icon: Tv2 },
   { role: 'Guest Spotlight', name: 'A.I. Verse Podcast', color: TEAL, icon: Mic },
@@ -106,25 +106,25 @@ const SOCIAL_LIGHTS = [
 ];
 
 /* ─── Ticket tiers ───────────────────────────────────────────────────────── */
-const TICKET_TIERS = [
+var TICKET_TIERS = [
   { label: 'General Admission', price: 0.99, color: '#6b7280', desc: 'Access to main stage events' },
   { label: 'VIP Access',        price: 2.99, color: G,         desc: 'Premium seats + backstage chat' },
   { label: 'All-Access Pass',   price: 4.99, color: PINK,      desc: 'Every session + replay archive' },
 ];
 
 /* ─── Domino videos (filtered from FEATURED_VIDEOS) ─────────────────────── */
-const DOMINO_VIDEOS = FEATURED_VIDEOS.filter(v => v.channelId === 'dominoentertainment');
+var DOMINO_VIDEOS = FEATURED_VIDEOS.filter(v => v.channelId === 'dominoentertainment');
 
 export default function SocialExpo() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const [activeTab, setActiveTab] = useState('overview');
-  const [sponsorToast, setSponsorToast] = useState('');
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var [activeTab, setActiveTab] = useState('overview');
+  var [sponsorToast, setSponsorToast] = useState('');
 
   function handleSponsorInquiry(tierLabel, price) {
     var subject = encodeURIComponent(`SeeWhy LIVE Sponsorship Inquiry — ${tierLabel} ($${price}/event)`);
@@ -135,7 +135,7 @@ export default function SocialExpo() {
     setTimeout(() => setSponsorToast(''), 2500);
   }
 
-  const tabs = [
+  var tabs = [
     { id: 'overview',    label: 'Overview',    icon: Globe },
     { id: 'events',      label: 'Events',      icon: Calendar },
     { id: 'platforms',   label: 'Platforms',   icon: Share2 },
@@ -223,7 +223,7 @@ export default function SocialExpo() {
               { label: '10% Affiliate', icon: Percent, color: '#D4854A' },
               { label: '90% Creator Split', icon: DollarSign, color: '#6DBF7E' },
             ].map((s, i) => {
-              const Icon = s.icon;
+              var Icon = s.icon;
               return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 14px', borderRadius: 8,
                   background: `${s.color}10`, border: `1px solid ${s.color}28` }}>
@@ -242,8 +242,8 @@ export default function SocialExpo() {
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px', overflowX: 'auto',
           display: 'flex', gap: 4, scrollbarWidth: 'none' }}>
           {tabs.map(tab => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
+            var Icon = tab.icon;
+            var active = activeTab === tab.id;
             return (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '14px 16px',
@@ -324,8 +324,8 @@ export default function SocialExpo() {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
                     {DOMINO_VIDEOS.map((video, i) => {
-                      const ytUrl = `https://www.youtube.com/watch?v=${video.id}`;
-                      const wpUrl = `${createPageUrl('WatchParty')}?videoUrl=${encodeURIComponent(ytUrl)}&title=${encodeURIComponent(video.title + ' — Watch Party')}`;
+                      var ytUrl = `https://www.youtube.com/watch?v=${video.id}`;
+                      var wpUrl = `${createPageUrl('WatchParty')}?videoUrl=${encodeURIComponent(ytUrl)}&title=${encodeURIComponent(video.title + ' — Watch Party')}`;
                       return (
                         <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
                           <div style={{ borderRadius: 14, overflow: 'hidden', background: 'rgba(8,11,24,0.9)',
@@ -508,7 +508,7 @@ export default function SocialExpo() {
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 40 }}>
                 {PLATFORMS.map((p, i) => {
-                  const Icon = p.icon;
+                  var Icon = p.icon;
                   return (
                     <motion.div key={p.name} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.06 }}
                       style={{ padding: 20, borderRadius: 16, background: `${p.color}08`,
@@ -589,7 +589,7 @@ export default function SocialExpo() {
                     { icon: Radio, label: 'Live + Cross-Platform Simulcast' },
                     { icon: Award, label: 'Community Nomination Open' },
                   ].map((item, i) => {
-                    const Icon = item.icon;
+                    var Icon = item.icon;
                     return (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px',
                         borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -605,7 +605,7 @@ export default function SocialExpo() {
               <h3 style={{ fontSize: 16, fontWeight: 900, color: '#fff', margin: '0 0 14px', ...T }}>Show Lineup</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
                 {SOCIAL_LIGHTS.map((slot, i) => {
-                  const Icon = slot.icon;
+                  var Icon = slot.icon;
                   return (
                     <motion.div key={i} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.07 }}
                       style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderRadius: 12,
@@ -665,7 +665,7 @@ export default function SocialExpo() {
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 36 }}>
                 {SPONSOR_TIERS.map((tier, i) => {
-                  const Icon = tier.icon;
+                  var Icon = tier.icon;
                   return (
                     <motion.div key={tier.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
                       style={{ padding: 22, borderRadius: 18, background: `${tier.color}08`,
@@ -830,13 +830,13 @@ export default function SocialExpo() {
           <OnlineUsersGrid compact maxVisible={10} />
           <StreamGoals isHost={true} />
           <ChallengeLeaderboard challengeId={null} />
-          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+          <AnnouncementPanel communityId={userCommunityId} userId={(user && user.id)} />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -844,7 +844,7 @@ export default function SocialExpo() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

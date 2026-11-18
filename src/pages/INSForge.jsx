@@ -19,19 +19,19 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 
-const BG     = '#080B18';
-const BG2    = '#0D1022';
-const BG3    = '#13182C';
-const GOLD   = '#D4AF37';
-const CRIMSON= '#800020';
-const AMBER  = '#D4854A';
-const CYAN   = '#4A8A7A';
-const PURPLE = '#7B5DA6';
-const BLUE   = '#5B7FA6';
-const RED2   = '#C62828';
-const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG     = '#080B18';
+var BG2    = '#0D1022';
+var BG3    = '#13182C';
+var GOLD   = '#D4AF37';
+var CRIMSON= '#800020';
+var AMBER  = '#D4854A';
+var CYAN   = '#4A8A7A';
+var PURPLE = '#7B5DA6';
+var BLUE   = '#5B7FA6';
+var RED2   = '#C62828';
+var T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const QUICK_PROMPTS = {
+var QUICK_PROMPTS = {
   svs_bracket:      ['WA vs TX State Championship — Sunday at Jamar\'s Sports Bar', 'Southeast Regional Final — FL vs GA — Double Elimination', 'National Qualifier — Opening Round — 8 States competing'],
   tribute_card:     ['Big Bone Earl — WA legend, 1958–2021, 4× Regional Champion', 'Mama Joyce Thompson — GA Queen, 1962–2023, 30-year teaching legacy', 'Fast Hands Rodriguez — TX speed record holder, ESPN feature'],
   stream_overlay:   ['SeeWhy LIVE tournament — gold & crimson domino theme', 'Podcast interview — dual speakers, Barlow Condensed headlines', 'LIVE NOW alert lower-third — breaking broadcast style'],
@@ -40,7 +40,7 @@ const QUICK_PROMPTS = {
   tournament_flyer: ['State vs State WA Classic — July 4 at Jamar\'s Sports Bar, Des Moines WA', 'Open Invitational — $2,500 prize pool — all states welcome', 'Tribute Gaming Event — Big Bone Earl Memorial Fund'],
 };
 
-const FORGE_TYPES = [
+var FORGE_TYPES = [
   { id: 'svs_bracket',     label: 'SVS Bracket Graphic',      icon: '⚔️', color: BLUE },
   { id: 'tribute_card',    label: 'Tribute Memorial Card',     icon: '🕊️', color: '#800020' },
   { id: 'stream_overlay',  label: 'Stream Overlay Pack',       icon: '🎥', color: GOLD },
@@ -49,7 +49,7 @@ const FORGE_TYPES = [
   { id: 'tournament_flyer',label: 'Tournament Flyer',          icon: '🏆', color: AMBER },
 ];
 
-const GEN_STEPS = [
+var GEN_STEPS = [
   'Analyzing brand tokens…',
   'Crafting headline copy…',
   'Selecting color palette…',
@@ -79,51 +79,51 @@ function Swatch({ hex }) {
 }
 
 export default function INSForge() {
-  const qc = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { invoke: invokeAI, hasKey: hasOpenRouterKey } = useOpenRouter();
-  const [selected, setSelected] = useState(null);
-  const [prompt, setPrompt] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [genStep, setGenStep] = useState(0);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [copied, setCopied] = useState(false);
-  const [briefSaved, setBriefSaved] = useState(false);
+  var qc = useQueryClient();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { invoke: invokeAI, hasKey: hasOpenRouterKey } = useOpenRouter();
+  var [selected, setSelected] = useState(null);
+  var [prompt, setPrompt] = useState('');
+  var [loading, setLoading] = useState(false);
+  var [genStep, setGenStep] = useState(0);
+  var [result, setResult] = useState(null);
+  var [error, setError] = useState(null);
+  var [copied, setCopied] = useState(false);
+  var [briefSaved, setBriefSaved] = useState(false);
 
-  const { data: recentBriefs = [] } = useQuery({
-    queryKey: ['insforge-briefs', user?.id],
+  var { data: recentBriefs = [] } = useQuery({
+    queryKey: ['insforge-briefs', (user && user.id)],
     queryFn: () => base44.entities.Activity.filter({ user_id: user.id, type: 'brief_generated' }, '-created_at', 5),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
-  const { data: currentUser } = useQuery({
+  var { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', currentUser?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: currentUser?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!currentUser?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (currentUser && currentUser.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (currentUser && currentUser.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(currentUser && currentUser.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', currentUser?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
-    enabled: !!currentUser?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (currentUser && currentUser.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (currentUser && currentUser.id) }).then(r => r[0] || null),
+    enabled: !!(currentUser && currentUser.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
   function copyBrief() {
     if (!result) return;
-    const text = [
-      `ASSET: ${result.title || selected?.label}`,
+    var text = [
+      `ASSET: ${result.title || (selected && selected.label)}`,
       `HEADLINE: ${result.headline}`,
       result.subline ? `SUBLINE: ${result.subline}` : '',
-      result.copy_lines?.length ? `COPY:\n${result.copy_lines.map(l => `  • ${l}`).join('\n')}` : '',
+      (result.copy_lines && result.copy_lines.length) ? `COPY:\n${result.copy_lines.map(l => `  • ${l}`).join('\n')}` : '',
       result.layout_notes ? `LAYOUT: ${result.layout_notes}` : '',
-      result.color_palette?.length ? `PALETTE: ${result.color_palette.join(', ')}` : '',
+      (result.color_palette && result.color_palette.length) ? `PALETTE: ${result.color_palette.join(', ')}` : '',
       result.cta ? `CTA: ${result.cta}` : '',
       result.dimensions ? `SIZE: ${result.dimensions}` : '',
     ].filter(Boolean).join('\n');
@@ -135,16 +135,16 @@ export default function INSForge() {
     setLoading(true);
     setResult(null);
     setError(null);
-    let stepInterval;
+    var stepInterval;
 
     try {
-      let step = 0;
+      var step = 0;
       stepInterval = setInterval(() => {
         step = (step + 1) % GEN_STEPS.length;
         setGenStep(step);
       }, 480);
 
-      const rawText = await invokeAI({
+      var rawText = await invokeAI({
         prompt: `Asset Type: ${selected.label}
 Creative Brief: "${prompt}"
 Brand Context: SeeWhy LIVE — dark backgrounds (#080B18), gold (#D4AF37) accents, crimson (#800020) brand, Barlow Condensed / Bebas Neue display fonts, broadcast & domino culture aesthetic.
@@ -167,7 +167,7 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
       });
 
       clearInterval(stepInterval);
-      const parsed = typeof rawText === 'string' ? JSON.parse(rawText) : rawText;
+      var parsed = typeof rawText === 'string' ? JSON.parse(rawText) : rawText;
       setResult(parsed);
     } catch (e) {
       clearInterval(stepInterval);
@@ -208,7 +208,7 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 18 }}>
         {FORGE_TYPES.map(t => {
-          const active = selected && selected.id === t.id;
+          var active = selected && selected.id === t.id;
           return (
             <div key={t.id} onClick={() => { setSelected(active ? null : t); setResult(null); setError(null); }}
               style={{
@@ -380,9 +380,9 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
 
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={copyBrief} style={{
-              flex: 1, padding: '12px 0', borderRadius: 10, border: `1px solid ${selected?.color || GOLD}44`,
-              background: copied ? `${selected?.color || GOLD}18` : 'rgba(255,255,255,0.04)',
-              color: copied ? selected?.color || GOLD : 'rgba(255,255,255,0.5)',
+              flex: 1, padding: '12px 0', borderRadius: 10, border: `1px solid ${(selected && selected.color) || GOLD}44`,
+              background: copied ? `${(selected && selected.color) || GOLD}18` : 'rgba(255,255,255,0.04)',
+              color: copied ? (selected && selected.color) || GOLD : 'rgba(255,255,255,0.5)',
               ...T, fontSize: 13, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase',
               cursor: 'pointer', transition: 'all .2s',
             }}>
@@ -407,9 +407,9 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
         </div>
       )}
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -417,7 +417,7 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

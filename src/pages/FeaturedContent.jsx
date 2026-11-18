@@ -27,7 +27,7 @@ import ShopDashboard from '../components/merch/ShopDashboard';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 
-const CHANNELS = [
+var CHANNELS = [
   {
     id: 'domino',
     name: 'Domino Entertainment',
@@ -72,7 +72,7 @@ const CHANNELS = [
   },
 ];
 
-const FEATURED_VIDEOS = [
+var FEATURED_VIDEOS = [
   {
     id: 'domino-demo',
     title: 'Domino Entertainment — Featured Demo',
@@ -86,7 +86,7 @@ const FEATURED_VIDEOS = [
 ];
 
 function YouTubeEmbed({ videoId, title }) {
-  const [playing, setPlaying] = useState(false);
+  var [playing, setPlaying] = useState(false);
 
   if (!playing) {
     return (
@@ -126,21 +126,21 @@ function YouTubeEmbed({ videoId, title }) {
 }
 
 export default function FeaturedContent() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [activeChannel, setActiveChannel] = useState(null);
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [activeChannel, setActiveChannel] = useState(null);
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const { data: activeRoom } = useQuery({
-    queryKey: ['featured-active-room', user?.id],
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var { data: activeRoom } = useQuery({
+    queryKey: ['featured-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
   return (
     <div className="min-h-screen py-8 px-4" style={{ background: '#080B18' }}>
@@ -257,11 +257,11 @@ export default function FeaturedContent() {
 
         <SpotlightSection communityId={userCommunityId} currentUser={user} />
         <YouTubeDiscovery />
-        <ContentRecommendations userId={user?.id} />
+        <ContentRecommendations userId={(user && user.id)} />
         <CollaborationMatcher />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
           <ViewerCount count={0} peakViewers={0} />
-          <LoveHearts roomId={activeRoomId} currentUser={user} creatorId={user?.id} />
+          <LoveHearts roomId={activeRoomId} currentUser={user} creatorId={(user && user.id)} />
           <EmbedPlayer roomId={activeRoomId} streamTitle="Featured Stream" viewerCount={0} />
         </div>
 
@@ -275,13 +275,13 @@ export default function FeaturedContent() {
           <OnlineUsersGrid compact maxVisible={10} />
           <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
           <StreamGoals isHost={true} />
-          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+          <AnnouncementPanel communityId={userCommunityId} userId={(user && user.id)} />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -289,7 +289,7 @@ export default function FeaturedContent() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

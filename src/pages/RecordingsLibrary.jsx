@@ -4,20 +4,20 @@ import { base44 } from '@/api/base44Client';
 import RecordingTrimEditor from '@/components/recordings/RecordingTrimEditor';
 import { Loader2, Scissors, Calendar, Eye, Clock, ArrowUpDown, Filter } from 'lucide-react';
 
-const C = {
+var C = {
   bg: '#03030A', surface: '#07070F', card: '#0B0B18', cardHi: '#10101E',
   line: '#16162A', text: '#F0F0FF', muted: '#5A5A7A', gold: '#FFB800', accent: '#FF1564', green: '#00FF88',
 };
-const FONT = 'Barlow Condensed, sans-serif';
+var FONT = 'Barlow Condensed, sans-serif';
 
-const DATE_RANGES = [
+var DATE_RANGES = [
   { id: 'all', label: 'All time' },
   { id: '7', label: 'Last 7 days' },
   { id: '30', label: 'Last 30 days' },
   { id: '90', label: 'Last 90 days' },
 ];
 
-const SORTS = [
+var SORTS = [
   { id: 'newest', label: 'Newest first', value: '-recorded_at' },
   { id: 'oldest', label: 'Oldest first', value: 'recorded_at' },
   { id: 'longest', label: 'Longest first', value: '-duration_seconds' },
@@ -25,7 +25,7 @@ const SORTS = [
 ];
 
 function fmtDuration(sec) {
-  const s = Math.max(0, Math.round(sec || 0));
+  var s = Math.max(0, Math.round(sec || 0));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
@@ -48,42 +48,42 @@ function SelectRow({ icon: Icon, value, onChange, options, label }) {
 }
 
 export default function RecordingsLibrary() {
-  const [dateRange, setDateRange] = useState('all');
-  const [category, setCategory] = useState('all');
-  const [sort, setSort] = useState('newest');
-  const [editing, setEditing] = useState(null);
-  const qc = useQueryClient();
+  var [dateRange, setDateRange] = useState('all');
+  var [category, setCategory] = useState('all');
+  var [sort, setSort] = useState('newest');
+  var [editing, setEditing] = useState(null);
+  var qc = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const { data: categories = [] } = useQuery({
-    queryKey: ['recording-categories', user?.id],
-    enabled: !!user?.id,
+  var { data: categories = [] } = useQuery({
+    queryKey: ['recording-categories', (user && user.id)],
+    enabled: !!(user && user.id),
     queryFn: async () => {
-      const res = await base44.entities.StreamRecording.filter({ creator_id: user.id }, { limit: 200 });
-      const list = res.items || res || [];
+      var res = await base44.entities.StreamRecording.filter({ creator_id: user.id }, { limit: 200 });
+      var list = res.items || res || [];
       return [...new Set(list.map(r => r.category).filter(Boolean))];
     },
   });
 
-  const { data: recordings = [], isLoading } = useQuery({
-    queryKey: ['recordings', user?.id, dateRange, category, sort],
-    enabled: !!user?.id,
+  var { data: recordings = [], isLoading } = useQuery({
+    queryKey: ['recordings', (user && user.id), dateRange, category, sort],
+    enabled: !!(user && user.id),
     queryFn: async () => {
-      const query = { creator_id: user.id };
+      var query = { creator_id: user.id };
       if (category !== 'all') query.category = category;
       if (dateRange !== 'all') {
-        const since = new Date();
+        var since = new Date();
         since.setDate(since.getDate() - Number(dateRange));
         query.recorded_at = { $gte: since.toISOString() };
       }
-      const sortValue = SORTS.find(s => s.id === sort)?.value || '-recorded_at';
-      const res = await base44.entities.StreamRecording.filter(query, { sort: sortValue, limit: 60 });
+      var sortValue = SORTS.find(s => s.id === sort)?.value || '-recorded_at';
+      var res = await base44.entities.StreamRecording.filter(query, { sort: sortValue, limit: 60 });
       return res.items || res || [];
     },
   });
 
-  const categoryOptions = useMemo(
+  var categoryOptions = useMemo(
     () => [{ id: 'all', label: 'All categories' }, ...categories.map(c => ({ id: c, label: c }))],
     [categories],
   );

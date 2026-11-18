@@ -34,12 +34,12 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import RoomReactionOverlay from '../components/live/RoomReactionOverlay';
 import CreatorBridge from '../components/social/CreatorBridge';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TABS = [
+var TABS = [
   { id: 'following', label: 'Following' },
   { id: 'activity', label: 'My Activity' },
   { id: 'discover', label: 'Discover' },
@@ -65,57 +65,57 @@ function StatTile({ label, value, icon: Icon, color }) {
 }
 
 export default function ViewerDashboard() {
-  const qc = useQueryClient();
-  const [activeTab, setActiveTab] = useState('following');
-  const [notifFilter, setNotifFilter] = useState('all');
-  const [reactEmoji, setReactEmoji] = useState(null);
+  var qc = useQueryClient();
+  var [activeTab, setActiveTab] = useState('following');
+  var [notifFilter, setNotifFilter] = useState('all');
+  var [reactEmoji, setReactEmoji] = useState(null);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const { data: liveRooms = [] } = useQuery({
+  var { data: liveRooms = [] } = useQuery({
     queryKey: ['all-live-rooms'],
     queryFn: () => base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 20),
     refetchInterval: 15000,
   });
 
-  const { data: scheduledRooms = [] } = useQuery({
+  var { data: scheduledRooms = [] } = useQuery({
     queryKey: ['upcoming-rooms'],
     queryFn: () => base44.entities.Room.filter({ status: 'scheduled' }, 'scheduled_start', 10),
   });
 
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['notifications', user?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: user?.id }, '-created_date', 50),
+  var { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', (user && user.id)],
+    queryFn: () => base44.entities.Notification.filter({ user_id: (user && user.id) }, '-created_date', 50),
     enabled: !!user,
   });
 
-  const { data: mySubscriptions = [] } = useQuery({
-    queryKey: ['my-subs', user?.id],
-    queryFn: () => base44.entities.Subscription.filter({ user_id: user?.id, status: 'active' }),
+  var { data: mySubscriptions = [] } = useQuery({
+    queryKey: ['my-subs', (user && user.id)],
+    queryFn: () => base44.entities.Subscription.filter({ user_id: (user && user.id), status: 'active' }),
     enabled: !!user,
     refetchInterval: 30000,
   });
 
-  const { data: myClips = [] } = useQuery({
-    queryKey: ['my-clips', user?.id],
-    queryFn: () => base44.entities.StreamClip.filter({ clipped_by_id: user?.id }, '-created_date', 10),
+  var { data: myClips = [] } = useQuery({
+    queryKey: ['my-clips', (user && user.id)],
+    queryFn: () => base44.entities.StreamClip.filter({ clipped_by_id: (user && user.id) }, '-created_date', 10),
     enabled: !!user,
   });
 
-  const { data: recentVODs = [] } = useQuery({
+  var { data: recentVODs = [] } = useQuery({
     queryKey: ['recent-vods'],
     queryFn: () => base44.entities.StreamRecording.list('-recorded_at', 12),
   });
 
   useEffect(() => {
-    const unsub = base44.entities.Room.subscribe(() => {
+    var unsub = base44.entities.Room.subscribe(() => {
       qc.invalidateQueries({ queryKey: ['all-live-rooms'] });
     });
     return unsub;
@@ -123,37 +123,37 @@ export default function ViewerDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    const unsub = base44.entities.Notification.subscribe((event) => {
-      if (event.data?.user_id === user.id) {
+    var unsub = base44.entities.Notification.subscribe((event) => {
+      if (event.(data && data.user_id) === user.id) {
         qc.invalidateQueries({ queryKey: ['notifications', user.id] });
       }
     });
     return unsub;
   }, [user, qc]);
 
-  const markAllRead = useMutation({
+  var markAllRead = useMutation({
     mutationFn: () => Promise.all(notifications.filter(n => !n.is_read).map(n => base44.entities.Notification.update(n.id, { is_read: true }))),
     onError: () => toast.error('Failed to mark notifications as read.'),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
-  const filteredNotifs = notifFilter === 'all' ? notifications : notifications.filter(n => {
+  var unreadCount = notifications.filter(n => !n.is_read).length;
+  var filteredNotifs = notifFilter === 'all' ? notifications : notifications.filter(n => {
     if (notifFilter === 'live') return n.type === 'room_invite';
     if (notifFilter === 'tips') return n.type === 'tip';
     if (notifFilter === 'system') return n.type === 'announcement' || n.type === 'moderation';
     return true;
   });
 
-  const getCountdown = (dateStr) => {
-    const diff = new Date(dateStr) - new Date();
+  var getCountdown = (dateStr) => {
+    var diff = new Date(dateStr) - new Date();
     if (diff <= 0) return 'Starting now';
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
+    var h = Math.floor(diff / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
     return h > 0 ? `in ${h}h ${m}m` : `in ${m}m`;
   };
 
-  const initials = function(title) { return (title && title.charAt(0) && title.charAt(0).toUpperCase()) || '?'; };
+  var initials = function(title) { return (title && title.charAt(0) && title.charAt(0).toUpperCase()) || '?'; };
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -162,7 +162,7 @@ export default function ViewerDashboard() {
         style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         <div>
           <h1 className="text-xl font-black text-white" style={T}>Your Feed</h1>
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Welcome back, {user?.full_name || 'Viewer'}</p>
+          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Welcome back, {(user && user.full_name) || 'Viewer'}</p>
         </div>
         {unreadCount > 0 && (
           <span className="px-2.5 py-1 rounded-full text-[10px] font-black" style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
@@ -174,8 +174,8 @@ export default function ViewerDashboard() {
       {/* Tab bar */}
       <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(8,11,24,0.8)' }}>
         {TABS.map(tab => {
-          const label = tab.id === 'notifications' && unreadCount > 0 ? `${tab.label} (${unreadCount})` : tab.label;
-          const active = activeTab === tab.id;
+          var label = tab.id === 'notifications' && unreadCount > 0 ? `${tab.label} (${unreadCount})` : tab.label;
+          var active = activeTab === tab.id;
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className="flex-1 py-2.5 text-[11px] font-black uppercase border-b-2 transition-all"
@@ -279,7 +279,7 @@ export default function ViewerDashboard() {
         {/* MY ACTIVITY */}
         {activeTab === 'activity' && (
           <>
-            {user?.id && (
+            {(user && user.id) && (
               <ViewerLoyaltyCard userId={user.id} />
             )}
             <LeaderboardPanel roomId={activeRoomId} />
@@ -417,19 +417,19 @@ export default function ViewerDashboard() {
 
         {/* Analytics + milestone panel */}
         <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {user?.id && <MilestoneAlerts creatorId={user.id} />}
+          {(user && user.id) && <MilestoneAlerts creatorId={user.id} />}
           <PartyAnalyticsDashboard partyId={null} isHost={false} />
-          <QuickPollLauncher roomId={activeRoomId} hostId={user?.id} isHost={true} />
+          <QuickPollLauncher roomId={activeRoomId} hostId={(user && user.id)} isHost={true} />
           <LivePollWidget roomId={activeRoomId} currentUser={user} isHost={true} />
           <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => {}} roomId={activeRoomId} />
           {activeRoomId && user && <RoomReactionOverlay roomId={activeRoomId} currentUser={user} triggerReact={reactEmoji} />}
-          {user?.id && <SubscriptionGate creatorId={user?.id} roomId={activeRoomId} />}
+          {(user && user.id) && <SubscriptionGate creatorId={(user && user.id)} roomId={activeRoomId} />}
         </div>
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="viewer" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -437,7 +437,7 @@ export default function ViewerDashboard() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={activeRoomId} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={activeRoomId} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

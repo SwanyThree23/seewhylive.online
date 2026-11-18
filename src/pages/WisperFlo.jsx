@@ -14,14 +14,14 @@ import StreamGoals from '../components/live/StreamGoals';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 
-const GUARDIAN_FLAG_THRESHOLD = 0.50;
+var GUARDIAN_FLAG_THRESHOLD = 0.50;
 
-const LANG_FLAGS = {
+var LANG_FLAGS = {
   en: '🇺🇸', es: '🇪🇸', fr: '🇫🇷', pt: '🇧🇷', ja: '🇯🇵', ko: '🇰🇷', zh: '🇨🇳',
 };
-const LANG_LABELS = { en: 'English', es: 'Español', fr: 'Français', pt: 'Português', ja: '日本語', ko: '한국어', zh: '中文' };
+var LANG_LABELS = { en: 'English', es: 'Español', fr: 'Français', pt: 'Português', ja: '日本語', ko: '한국어', zh: '中文' };
 
-const SLOW_MODE_OPTIONS = [
+var SLOW_MODE_OPTIONS = [
   { label: 'Off', value: 0 },
   { label: '3s', value: 3 },
   { label: '5s', value: 5 },
@@ -29,10 +29,10 @@ const SLOW_MODE_OPTIONS = [
   { label: '30s', value: 30 },
 ];
 
-const GEM_EMOTES = ['💎', '🔥', '👑', '🚀', '❤️', '🌊', '⚡', '🏆'];
+var GEM_EMOTES = ['💎', '🔥', '👑', '🚀', '❤️', '🌊', '⚡', '🏆'];
 
 
-const initState = {
+var initState = {
   input: '',
   slowMode: 0,
   lastSent: 0,
@@ -124,15 +124,15 @@ function MsgBubble({ msg, isHost, pinned, expanded, onExpand, onPin, onGem, gemC
 }
 
 export default function WisperFlo({ roomId, isHost, currentUser }) {
-  const [state, dispatch] = useReducer(reducer, initState);
-  const qc = useQueryClient();
-  const bottomRef = useRef(null);
-  const inputRef = useRef(null);
+  var [state, dispatch] = useReducer(reducer, initState);
+  var qc = useQueryClient();
+  var bottomRef = useRef(null);
+  var inputRef = useRef(null);
 
   var uid = currentUser && currentUser.id;
   var resolvedRoomId = roomId || 'wisperflo-demo';
 
-  const { data: dbMessages } = useQuery({
+  var { data: dbMessages } = useQuery({
     queryKey: ['wisperflo-msgs', resolvedRoomId],
     queryFn: () => base44.entities.Message.filter({ room_id: resolvedRoomId }, '-created_date', 60).then(r => r.reverse()).catch(() => []),
     refetchInterval: 4000,
@@ -302,10 +302,10 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
       <WhisperPanel roomId={roomId} currentUser={currentUser} />
       <AggregatedChat roomId={roomId} currentUser={currentUser} isHost={isHost} onMessagesChange={() => {}} />
       <GiftAnimation event={null} onDone={() => {}} />
-      <EnhancedStreamChat roomId={roomId} userId={currentUser?.id} userName={currentUser?.full_name} userRole={null} />
+      <EnhancedStreamChat roomId={roomId} userId={(currentUser && currentUser.id)} userName={(currentUser && currentUser.full_name)} userRole={null} />
       <OnlineUsersGrid compact maxVisible={12} />
       <ContentRecommendations />
-      <EnhancedPollingSystem roomId={roomId} hostId={currentUser?.id} isHost={isHost} />
+      <EnhancedPollingSystem roomId={roomId} hostId={(currentUser && currentUser.id)} isHost={isHost} />
       <CollaborationMatcher />
       <ShareToSocial content={{ title: 'WisperFlo Chat', url: window.location.href }} />
       <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} communityId={null} />

@@ -22,11 +22,11 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 
-const G = '#D4AF37';
-const BG = '#080B18';
-const PANEL = '#0D1022';
+var G = '#D4AF37';
+var BG = '#080B18';
+var PANEL = '#0D1022';
 
-const FEATURES = [
+var FEATURES = [
   {
     id: 'guest_destinations',
     title: 'Guest Destinations',
@@ -129,9 +129,9 @@ const FEATURES = [
 ];
 
 export default function PlatformShowcase() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [selected, setSelected] = useState(0);
-  const feature = FEATURES[selected];
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [selected, setSelected] = useState(0);
+  var feature = FEATURES[selected];
 
   return (
     <div className="min-h-screen" style={{ background: BG }}>
@@ -300,9 +300,9 @@ export default function PlatformShowcase() {
         </motion.div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -310,7 +310,7 @@ export default function PlatformShowcase() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

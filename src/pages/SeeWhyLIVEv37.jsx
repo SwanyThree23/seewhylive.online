@@ -21,7 +21,7 @@ import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
-const C = {
+var C = {
   bg:      '#07050A',
   bg2:     '#0D0A08',
   bg3:     '#13100A',
@@ -121,7 +121,7 @@ function Btn({ children, onClick, color, disabled, small, style }) {
 }
 
 function Input({ value, onChange, placeholder, type, style, rows }) {
-  const common = {
+  var common = {
     background: C.bg2,
     border: `1px solid ${C.slate}`,
     borderRadius: 6,
@@ -170,12 +170,12 @@ function toast(msg, setToastFn) {
 
 // ── STAGE PANEL ────────────────────────────────────────────────────────────
 function StagePanel() {
-  const [live, setLive] = useState(false);
-  const [viewers, setViewers] = useState(0);
-  const [health, setHealth] = useState(null);
-  const [roomName, setRoomName] = useState('');
-  const [toastMsg, setToastMsg] = useState('');
-  const timerRef = useRef(null);
+  var [live, setLive] = useState(false);
+  var [viewers, setViewers] = useState(0);
+  var [health, setHealth] = useState(null);
+  var [roomName, setRoomName] = useState('');
+  var [toastMsg, setToastMsg] = useState('');
+  var timerRef = useRef(null);
 
   function startStream() {
     if (!roomName.trim()) { toast('Enter a room name', setToastMsg); return; }
@@ -195,7 +195,7 @@ function StagePanel() {
 
   useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
 
-  const metrics = [
+  var metrics = [
     { label: 'Viewers', val: viewers, color: C.gold },
     { label: 'Bitrate', val: health ? `${health.bitrate}kbps` : '—', color: C.teal },
     { label: 'FPS', val: health ? health.fps : '—', color: C.green },
@@ -257,22 +257,22 @@ function StagePanel() {
 
 // ── STATE VS STATE PANEL ───────────────────────────────────────────────────
 function SVSPanel() {
-  const STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
-  const [s1, setS1] = useState('NY');
-  const [s2, setS2] = useState('TX');
-  const [scores, setScores] = useState({ s1: 0, s2: 0 });
-  const [judges, setJudges] = useState(['Judge A','Judge B','Judge C']);
-  const [judgeScores] = useState(() => ['Judge A','Judge B','Judge C'].map(() => ({ s1: 0, s2: 0 })));
-  const [toastMsg, setToastMsg] = useState('');
+  var STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
+  var [s1, setS1] = useState('NY');
+  var [s2, setS2] = useState('TX');
+  var [scores, setScores] = useState({ s1: 0, s2: 0 });
+  var [judges, setJudges] = useState(['Judge A','Judge B','Judge C']);
+  var [judgeScores] = useState(() => ['Judge A','Judge B','Judge C'].map(() => ({ s1: 0, s2: 0 })));
+  var [toastMsg, setToastMsg] = useState('');
 
   function vote(side) {
     setScores(prev => ({ ...prev, [side]: prev[side] + 1 }));
     toast(`+1 for ${side === 's1' ? s1 : s2}`, setToastMsg);
   }
 
-  const total = scores.s1 + scores.s2 || 1;
-  const pct1 = Math.floor((scores.s1 / total) * 100);
-  const pct2 = 100 - pct1;
+  var total = scores.s1 + scores.s2 || 1;
+  var pct1 = Math.floor((scores.s1 / total) * 100);
+  var pct2 = 100 - pct1;
 
   return (
     <div>
@@ -329,8 +329,8 @@ function SVSPanel() {
           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${C.slate2}` }}>
             <span style={{ color: C.textD, fontSize: 13 }}>{j}</span>
             <div style={{ display: 'flex', gap: 6 }}>
-              <Badge label={`${s1}: ${judgeScores[i]?.s1 ?? 0}`} color={C.state1} />
-              <Badge label={`${s2}: ${judgeScores[i]?.s2 ?? 0}`} color={C.state2} />
+              <Badge label={`${s1}: ${judgeScores[i]?.s1 || 0}`} color={C.state1} />
+              <Badge label={`${s2}: ${judgeScores[i]?.s2 || 0}`} color={C.state2} />
             </div>
           </div>
         ))}
@@ -341,21 +341,21 @@ function SVSPanel() {
 
 // ── TRIBUTE PANEL ──────────────────────────────────────────────────────────
 function TributePanel() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [tributes, setTributes] = useState([]);
-  const [name, setName] = useState('');
-  const [msg, setMsg] = useState('');
-  const [era, setEra] = useState('');
-  const [toastMsg, setToastMsg] = useState('');
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [tributes, setTributes] = useState([]);
+  var [name, setName] = useState('');
+  var [msg, setMsg] = useState('');
+  var [era, setEra] = useState('');
+  var [toastMsg, setToastMsg] = useState('');
 
   useEffect(() => {
-    if (user?.v37_tributes) setTributes(user.v37_tributes);
-  }, [user?.id]);
+    if ((user && user.v37_tributes)) setTributes(user.v37_tributes);
+  }, [(user && user.id)]);
 
   function addTribute() {
     if (!name.trim()) { toast('Enter a name', setToastMsg); return; }
-    const t = { id: Date.now(), name: name.trim(), msg: msg.trim(), era: era.trim(), at: new Date().toLocaleDateString() };
-    const updated = [t, ...tributes].slice(0, 30);
+    var t = { id: Date.now(), name: name.trim(), msg: msg.trim(), era: era.trim(), at: new Date().toLocaleDateString() };
+    var updated = [t, ...tributes].slice(0, 30);
     setTributes(updated);
     base44.auth.updateMe({ v37_tributes: updated }).catch(() => {});
     setName(''); setMsg(''); setEra('');
@@ -363,7 +363,7 @@ function TributePanel() {
   }
 
   function removeTribute(id) {
-    const updated = tributes.filter(t => t.id !== id);
+    var updated = tributes.filter(t => t.id !== id);
     setTributes(updated);
     base44.auth.updateMe({ v37_tributes: updated }).catch(() => {});
   }
@@ -400,22 +400,22 @@ function TributePanel() {
 
 // ── PODCAST PANEL ─────────────────────────────────────────────────────────
 function PodcastPanel() {
-  const [tab, setTab] = useState('create');
-  const [topic, setTopic] = useState('');
-  const [hosts, setHosts] = useState('');
-  const [sources, setSources] = useState([]);
-  const [srcInput, setSrcInput] = useState('');
-  const [ep, setEp] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [toastMsg, setToastMsg] = useState('');
-  const { data: podUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [nlmUrl, setNlmUrl] = useState('');
-  const [nlmLabel, setNlmLabel] = useState('');
-  const [nlmSources, setNlmSources] = useState([]);
+  var [tab, setTab] = useState('create');
+  var [topic, setTopic] = useState('');
+  var [hosts, setHosts] = useState('');
+  var [sources, setSources] = useState([]);
+  var [srcInput, setSrcInput] = useState('');
+  var [ep, setEp] = useState(null);
+  var [loading, setLoading] = useState(false);
+  var [toastMsg, setToastMsg] = useState('');
+  var { data: podUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [nlmUrl, setNlmUrl] = useState('');
+  var [nlmLabel, setNlmLabel] = useState('');
+  var [nlmSources, setNlmSources] = useState([]);
 
   useEffect(() => {
-    if (podUser?.v37_nlm_sources) setNlmSources(podUser.v37_nlm_sources);
-  }, [podUser?.id]);
+    if ((podUser && podUser.v37_nlm_sources)) setNlmSources(podUser.v37_nlm_sources);
+  }, [(podUser && podUser.id)]);
 
   function addSource() {
     if (!srcInput.trim() || sources.length >= 5) return;
@@ -425,11 +425,11 @@ function PodcastPanel() {
 
   function addNlm() {
     if (!nlmUrl.trim() || !nlmUrl.includes('notebooklm.google.com')) { toast('Need a notebooklm.google.com URL', setToastMsg); return; }
-    const m = nlmUrl.match(/\/notebook\/([^/?#]+)(?:\/artifact\/([^/?#]+))?/);
+    var m = nlmUrl.match(/\/notebook\/([^/?#]+)(?:\/artifact\/([^/?#]+))?/);
     if (!m) { toast('Cannot parse NLM URL', setToastMsg); return; }
-    const label = nlmLabel.trim() || `NLM ${nlmSources.length + 1}`;
-    const src = { id: Date.now(), label, url: nlmUrl.trim(), notebookId: m[1], artifactId: m[2] || null, at: new Date().toISOString() };
-    const updated = [src, ...nlmSources].slice(0, 20);
+    var label = nlmLabel.trim() || `NLM ${nlmSources.length + 1}`;
+    var src = { id: Date.now(), label, url: nlmUrl.trim(), notebookId: m[1], artifactId: m[2] || null, at: new Date().toISOString() };
+    var updated = [src, ...nlmSources].slice(0, 20);
     setNlmSources(updated);
     base44.auth.updateMe({ v37_nlm_sources: updated }).catch(() => {});
     setNlmUrl(''); setNlmLabel('');
@@ -440,9 +440,9 @@ function PodcastPanel() {
     if (!topic.trim()) { toast('Enter a topic', setToastMsg); return; }
     setLoading(true);
     try {
-      const srcCtx = sources.map(s => `- ${s.label}: ${s.content}`).join('\n');
-      const nlmCtx = nlmSources.slice(0, 3).map(s => `- ${s.label} [${s.notebookId.slice(0,8)}...]`).join('\n');
-      const result = await base44.integrations.Core.InvokeLLM({
+      var srcCtx = sources.map(s => `- ${s.label}: ${s.content}`).join('\n');
+      var nlmCtx = nlmSources.slice(0, 3).map(s => `- ${s.label} [${s.notebookId.slice(0,8)}...]`).join('\n');
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `SeeWhy LIVE AI Podcast Producer.\nTopic: "${topic}"\nHosts: ${hosts || 'Co-hosts TBD'}\nSources:\n${srcCtx}\nNotebookLM References:\n${nlmCtx}\nPlatform: SeeWhy LIVE — domino culture, State vs State, 90/10 creator split.\nGenerate a complete podcast episode outline with title, tagline, 4-6 segments, cold open, and call to action.`,
         response_json_schema: {
           type: 'object',
@@ -525,7 +525,7 @@ function PodcastPanel() {
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <a href={isSafeUrl(s.url) ? s.url : undefined} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
-                  <button aria-label="Remove news source" onClick={() => { const u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); base44.auth.updateMe({ v37_nlm_sources: u }).catch(() => {}); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
+                  <button aria-label="Remove news source" onClick={() => { var u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); base44.auth.updateMe({ v37_nlm_sources: u }).catch(() => {}); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
                 </div>
               </div>
             </Card>
@@ -573,22 +573,22 @@ function PodcastPanel() {
 
 // ── MUSIC PANEL ────────────────────────────────────────────────────────────
 function MusicPanel() {
-  const [prompt, setPrompt] = useState('');
-  const [genre, setGenre] = useState('Hip-Hop');
-  const [bpm, setBpm] = useState('95');
-  const [keyV, setKeyV] = useState('C Minor');
-  const [track, setTrack] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [toastMsg, setToastMsg] = useState('');
+  var [prompt, setPrompt] = useState('');
+  var [genre, setGenre] = useState('Hip-Hop');
+  var [bpm, setBpm] = useState('95');
+  var [keyV, setKeyV] = useState('C Minor');
+  var [track, setTrack] = useState(null);
+  var [loading, setLoading] = useState(false);
+  var [toastMsg, setToastMsg] = useState('');
 
-  const GENRES = ['Hip-Hop','R&B','Trap','Drill','Afrobeats','Gospel','Soul','Jazz','Electronic','Lo-Fi'];
-  const KEYS = ['C Major','C Minor','D Major','D Minor','E Major','E Minor','F Major','F Minor','G Major','G Minor','A Major','A Minor','B Major','B Minor'];
+  var GENRES = ['Hip-Hop','R&B','Trap','Drill','Afrobeats','Gospel','Soul','Jazz','Electronic','Lo-Fi'];
+  var KEYS = ['C Major','C Minor','D Major','D Minor','E Major','E Minor','F Major','F Minor','G Major','G Minor','A Major','A Minor','B Major','B Minor'];
 
   async function gen() {
     if (!prompt.trim()) { toast('Describe your track concept', setToastMsg); return; }
     setLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `SeeWhy LIVE AI Music Director.\nConcept: "${prompt}"\nGenre: ${genre} | BPM: ${bpm} | Key: ${keyV}\nCreate a detailed track arrangement with sections, hooks, and mix tips for a broadcast performance.`,
         response_json_schema: {
           type: 'object',
@@ -700,7 +700,7 @@ function MusicPanel() {
 
 // ── PLATFORMS PANEL ────────────────────────────────────────────────────────
 function PlatformsPanel() {
-  const PLATFORMS = [
+  var PLATFORMS = [
     { name: 'YouTube Live', color: '#FF0000', icon: '▶' },
     { name: 'Facebook Live', color: '#1877F2', icon: 'f' },
     { name: 'Instagram Live', color: '#E4405F', icon: '📸' },
@@ -710,9 +710,9 @@ function PlatformsPanel() {
     { name: 'Kick', color: '#53FC18', icon: '🎯' },
     { name: 'LinkedIn Live', color: '#0A66C2', icon: 'in' },
   ];
-  const [active, setActive] = useState({});
-  const [keys, setKeys] = useState({});
-  const [toastMsg, setToastMsg] = useState('');
+  var [active, setActive] = useState({});
+  var [keys, setKeys] = useState({});
+  var [toastMsg, setToastMsg] = useState('');
 
   function toggle(name) {
     setActive(prev => ({ ...prev, [name]: !prev[name] }));
@@ -769,16 +769,16 @@ function PlatformsPanel() {
 
 // ── WATCH PARTY PANEL ──────────────────────────────────────────────────────
 function WatchPartyPanel() {
-  const [url, setUrl] = useState('');
-  const [partyId, setPartyId] = useState('');
-  const [guests, setGuests] = useState([]);
-  const [chat, setChat] = useState([]);
-  const [chatInput, setChatInput] = useState('');
-  const [toastMsg, setToastMsg] = useState('');
+  var [url, setUrl] = useState('');
+  var [partyId, setPartyId] = useState('');
+  var [guests, setGuests] = useState([]);
+  var [chat, setChat] = useState([]);
+  var [chatInput, setChatInput] = useState('');
+  var [toastMsg, setToastMsg] = useState('');
 
   function createParty() {
     if (!url.trim()) { toast('Enter a video URL', setToastMsg); return; }
-    const arr = crypto.getRandomValues(new Uint8Array(4));
+    var arr = crypto.getRandomValues(new Uint8Array(4));
     setPartyId(`PARTY-${Array.from(arr, b => b.toString(16).padStart(2,'0')).join('').slice(0,6).toUpperCase()}`);
     setGuests(['Host (You)', 'Guest1', 'Guest2']);
     setChat([{ user: 'System', msg: 'Watch party started! Share the party ID with friends.' }]);
@@ -844,7 +844,7 @@ function WatchPartyPanel() {
 
 // ── ANALYTICS PANEL ────────────────────────────────────────────────────────
 function AnalyticsPanel() {
-  const stats = [
+  var stats = [
     { label: 'Total Views', val: '24,817', delta: '+12%', color: C.gold },
     { label: 'Watch Time (hrs)', val: '3,402', delta: '+8%', color: C.teal },
     { label: 'Followers', val: '1,284', delta: '+22%', color: C.green },
@@ -853,7 +853,7 @@ function AnalyticsPanel() {
     { label: 'Chat Messages', val: '18,440', delta: '+17%', color: C.blue },
   ];
 
-  const topContent = [
+  var topContent = [
     { title: 'NY vs TX — Domino Championship', views: '8,412', rev: '$214' },
     { title: 'Friday Night Cypher Live', views: '4,200', rev: '$98' },
     { title: 'Culture Talk w/ Joyce AI', views: '3,100', rev: '$74' },
@@ -893,14 +893,14 @@ function AnalyticsPanel() {
 
 // ── MONETIZE PANEL ─────────────────────────────────────────────────────────
 function MonetizePanel() {
-  const CREATOR_SHARE = 0.90;
-  const PLATFORM_FEE = 0.10;
+  var CREATOR_SHARE = 0.90;
+  var PLATFORM_FEE = 0.10;
 
-  const [gross, setGross] = useState('0');
-  const creatorEarnings = Math.floor(parseFloat(gross || '0') * CREATOR_SHARE * 100) / 100;
-  const platformFee = Math.floor(parseFloat(gross || '0') * PLATFORM_FEE * 100) / 100;
+  var [gross, setGross] = useState('0');
+  var creatorEarnings = Math.floor(parseFloat(gross || '0') * CREATOR_SHARE * 100) / 100;
+  var platformFee = Math.floor(parseFloat(gross || '0') * PLATFORM_FEE * 100) / 100;
 
-  const streams = [
+  var streams = [
     { name: 'Subscriptions', icon: '🔒', amount: '$412.00', color: C.gold },
     { name: 'Tips & Gifts', icon: '🎁', amount: '$234.50', color: C.amber },
     { name: 'PPV Events', icon: '🎟', amount: '$180.00', color: C.ruby },
@@ -956,14 +956,14 @@ function MonetizePanel() {
 
 // ── GUARDIAN AI PANEL ──────────────────────────────────────────────────────
 function GuardianPanel() {
-  const [rules, setRules] = useState([
+  var [rules, setRules] = useState([
     { id: 1, text: 'Block hate speech and slurs', active: true, level: 'high' },
     { id: 2, text: 'Flag violent content for review', active: true, level: 'high' },
     { id: 3, text: 'Warn on excessive profanity', active: true, level: 'medium' },
     { id: 4, text: 'Detect spam patterns', active: true, level: 'medium' },
     { id: 5, text: 'Auto-mute repeat offenders', active: false, level: 'low' },
   ]);
-  const [flagged, setFlagged] = useState([
+  var [flagged, setFlagged] = useState([
     { id: 1, user: 'user_329', msg: 'Message flagged for review', reason: 'Potential hate speech', time: '2m ago' },
     { id: 2, user: 'user_441', msg: 'Excessive spam detected', reason: 'Spam pattern', time: '8m ago' },
   ]);
@@ -972,7 +972,7 @@ function GuardianPanel() {
     setRules(prev => prev.map(r => r.id === id ? { ...r, active: !r.active } : r));
   }
 
-  const levelColor = { high: C.red, medium: C.warn, low: C.teal };
+  var levelColor = { high: C.red, medium: C.warn, low: C.teal };
 
   return (
     <div>
@@ -1029,7 +1029,7 @@ function GuardianPanel() {
 
 // ── INS FORGE PANEL ────────────────────────────────────────────────────────
 function InsForgePanel() {
-  const ASSETS = [
+  var ASSETS = [
     { id: 'thumb', label: 'Thumbnail', icon: '🖼' },
     { id: 'banner', label: 'Stream Banner', icon: '🎨' },
     { id: 'endcard', label: 'End Card', icon: '🎬' },
@@ -1037,17 +1037,17 @@ function InsForgePanel() {
     { id: 'social', label: 'Social Post', icon: '📱' },
     { id: 'promo', label: 'Promo Card', icon: '🎟' },
   ];
-  const [sel, setSel] = useState(ASSETS[0]);
-  const [prompt, setPrompt] = useState('');
-  const [res, setRes] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [toastMsg, setToastMsg] = useState('');
+  var [sel, setSel] = useState(ASSETS[0]);
+  var [prompt, setPrompt] = useState('');
+  var [res, setRes] = useState(null);
+  var [loading, setLoading] = useState(false);
+  var [toastMsg, setToastMsg] = useState('');
 
   async function gen() {
     if (!prompt.trim()) { toast('Describe your asset concept', setToastMsg); return; }
     setLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `SeeWhy LIVE INS Forge — Content Asset Generator.\nAsset Type: ${sel.label}\nConcept: "${prompt}"\nBrand: Dark background (#0E0C09), gold (#C9A84C) accents, Bebas Neue font, broadcast aesthetic, domino culture.\nGenerate complete copy, layout instructions, and dimensions for this asset.`,
         response_json_schema: {
           type: 'object',
@@ -1126,31 +1126,31 @@ function InsForgePanel() {
 
 // ── JOYCE AI PANEL ─────────────────────────────────────────────────────────
 function JoyceAIPanel() {
-  const SYS_PROMPT = `You are Joyce AI — SeeWhy LIVE's intelligent creator assistant. You are an expert in streaming, domino culture, State vs State competition format, content creation, monetization, and the African American broadcasting community. You speak directly, knowledgeably, and with cultural fluency. The platform gives creators 90% revenue, uses earth-tone dark design, and celebrates domino culture as a competitive sport and cultural art form.`;
+  var SYS_PROMPT = `You are Joyce AI — SeeWhy LIVE's intelligent creator assistant. You are an expert in streaming, domino culture, State vs State competition format, content creation, monetization, and the African American broadcasting community. You speak directly, knowledgeably, and with cultural fluency. The platform gives creators 90% revenue, uses earth-tone dark design, and celebrates domino culture as a competitive sport and cultural art form.`;
 
-  const [msgs, setMsgs] = useState([
+  var [msgs, setMsgs] = useState([
     { r: 'assistant', c: "Hey! I'm Joyce AI — your SeeWhy LIVE creator assistant. Ask me anything about streaming, content strategy, monetization, or domino culture." },
   ]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const endRef = useRef(null);
+  var [input, setInput] = useState('');
+  var [loading, setLoading] = useState(false);
+  var endRef = useRef(null);
 
   useEffect(() => {
     if (endRef.current) endRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [msgs]);
 
   async function send() {
-    const q = input.trim();
+    var q = input.trim();
     if (!q) return;
     setMsgs(prev => [...prev, { r: 'user', c: q }]);
     setInput('');
     setLoading(true);
     try {
-      const history = msgs.slice(-8).map(m => `${m.r === 'user' ? 'USER' : 'JOYCE AI'}: ${m.c}`).join('\n');
-      const result = await base44.integrations.Core.InvokeLLM({
+      var history = msgs.slice(-8).map(m => `${m.r === 'user' ? 'USER' : 'JOYCE AI'}: ${m.c}`).join('\n');
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `${SYS_PROMPT}\n\nConversation:\n${history}\nUSER: ${q}\n\nRespond as Joyce AI in 2-4 sentences, direct and helpful.`,
       });
-      const reply = typeof result === 'string' ? result : (result.response || result.text || result.content || JSON.stringify(result));
+      var reply = typeof result === 'string' ? result : (result.response || result.text || result.content || JSON.stringify(result));
       setMsgs(prev => [...prev, { r: 'assistant', c: reply }]);
     } catch (e) {
       setMsgs(prev => [...prev, { r: 'assistant', c: 'Having trouble connecting right now — try again in a moment.' }]);
@@ -1215,11 +1215,11 @@ function JoyceAIPanel() {
 
 // ── SETTINGS PANEL ─────────────────────────────────────────────────────────
 function SettingsPanel() {
-  const [handle, setHandle] = useState('');
-  const [bio, setBio] = useState('');
-  const [email, setEmail] = useState('');
-  const [notifs, setNotifs] = useState({ email: true, push: true, subs: true, tips: true });
-  const [saved, setSaved] = useState(false);
+  var [handle, setHandle] = useState('');
+  var [bio, setBio] = useState('');
+  var [email, setEmail] = useState('');
+  var [notifs, setNotifs] = useState({ email: true, push: true, subs: true, tips: true });
+  var [saved, setSaved] = useState(false);
 
   async function save() {
     try {
@@ -1282,7 +1282,7 @@ function SettingsPanel() {
 
 // ── MAIN COMPONENT ─────────────────────────────────────────────────────────
 
-const TABS = [
+var TABS = [
   { id: 'stage',    label: '📡 Stage' },
   { id: 'svs',      label: '⚔️ SVS' },
   { id: 'tribute',  label: '🕊 Tribute' },
@@ -1299,25 +1299,25 @@ const TABS = [
 ];
 
 export default function SeeWhyLIVEv37() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const roomId = activeRoomId;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var roomId = activeRoomId;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const [activeTab, setActiveTab] = useState('stage');
-  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var [activeTab, setActiveTab] = useState('stage');
+  var [showActivitySidebar, setShowActivitySidebar] = useState(false);
 
-  const panelMap = {
+  var panelMap = {
     stage:     <StagePanel />,
     svs:       <SVSPanel />,
     tribute:   <TributePanel />,
@@ -1385,10 +1385,10 @@ export default function SeeWhyLIVEv37() {
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentUser={user} isHost={true} />
       <SwanyBotWidget />
-      <SwanyBotEnhanced userId={user?.id || null} conversationId={null} onContextReady={() => {}} />
-      <StreamGoals hostId={user?.id || null} roomId={activeRoomId} isHost={true} />
+      <SwanyBotEnhanced userId={(user && user.id) || null} conversationId={null} onContextReady={() => {}} />
+      <StreamGoals hostId={(user && user.id) || null} roomId={activeRoomId} isHost={true} />
       <ViewerCount roomId={activeRoomId} />
-      <NotificationHub userId={user?.id || null} roomId={activeRoomId} />
+      <NotificationHub userId={(user && user.id) || null} roomId={activeRoomId} />
       <BroadcastAnalyticsDashboard roomId={activeRoomId} isHost={true} />
       <ShareToSocial content={{ url: window.location.href, title: activeRoomId ? 'Join my live stream on SeeWhy LIVE!' : 'SeeWhy LIVE' }} />
       <StreamHealthDashboard roomId={activeRoomId} isHost={true} />

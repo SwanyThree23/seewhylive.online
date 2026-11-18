@@ -42,12 +42,12 @@ import ViewerCount from '../components/live/ViewerCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const CHART_THEME = {
+var CHART_THEME = {
   cartesian: { stroke: 'rgba(255,255,255,0.06)' },
   tick: { fill: 'rgba(255,255,255,0.35)', fontSize: 10 },
   tooltip: { contentStyle: { background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 }, cursor: { fill: 'rgba(212,175,55,0.06)' } },
@@ -80,44 +80,45 @@ function DarkCard({ title, children }) {
   );
 }
 
-const BG2 = 'rgba(8,11,24,0.9)';
-const TABS = ['overview', 'users', 'rooms', 'reports', 'revenue', 'security', 'audit'];
+var BG2 = 'rgba(8,11,24,0.9)';
+var TABS = ['overview', 'users', 'rooms', 'reports', 'revenue', 'security', 'audit'];
 
 export default function AdminDashboard() {
-  const qc = useQueryClient();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [userSearch, setUserSearch] = useState('');
-  const [roomFilter, setRoomFilter] = useState('all');
-  const [bannedIPs, setBannedIPs] = useState([]);
-  const [newBanIP, setNewBanIP] = useState('');
-  const [banReason, setBanReason] = useState('');
-  const [suspensions, setSuspensions] = useState([]);
-  const [suspendUser, setSuspendUser] = useState('');
-  const [suspendDuration, setSuspendDuration] = useState('24h');
-  const [auditLog, setAuditLog] = useState([
+  var qc = useQueryClient();
+  var [activeTab, setActiveTab] = useState('overview');
+  var [userSearch, setUserSearch] = useState('');
+  var [roomFilter, setRoomFilter] = useState('all');
+  var [bannedIPs, setBannedIPs] = useState([]);
+  var [newBanIP, setNewBanIP] = useState('');
+  var [banReason, setBanReason] = useState('');
+  var [suspensions, setSuspensions] = useState([]);
+  var [suspendUser, setSuspendUser] = useState('');
+  var [suspendDuration, setSuspendDuration] = useState('24h');
+  var [auditLog, setAuditLog] = useState([
     { icon: '🛡️', action: 'Guardian AI enabled for all rooms', time: 'Jun 1, 7:00 PM', color: '#6DBF7E', severity: 'info' },
     { icon: '📋', action: 'Reports dashboard accessed', time: 'Jun 1, 6:45 PM', color: '#D4AF37', severity: 'low' },
     { icon: '⚙️', action: 'Rate limits verified — all healthy', time: 'Jun 1, 6:30 PM', color: '#6DBF7E', severity: 'info' },
   ]);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
-  const isAdminOrOwner = user && (user.role === 'admin' || user.role === 'owner');
-  const { data: allUsers = [], isLoading: loadingUsers } = useQuery({ queryKey: ['adminUsers'], queryFn: () => base44.entities.User.list('-created_date', 200), enabled: !!isAdminOrOwner });
-  const { data: allRooms = [] } = useQuery({ queryKey: ['adminRooms'], queryFn: () => base44.entities.Room.list('-created_date', 100), enabled: !!isAdminOrOwner });
-  const { data: transactions = [] } = useQuery({ queryKey: ['adminTransactions'], queryFn: () => base44.entities.Transaction.list('-created_date', 200), enabled: !!isAdminOrOwner });
-  const { data: reports = [] } = useQuery({ queryKey: ['adminReports'], queryFn: () => base44.entities.Report.list('-created_date', 50), enabled: !!isAdminOrOwner });
-  const { data: messages = [] } = useQuery({ queryKey: ['adminMessages'], queryFn: () => base44.entities.Message.list('-created_date', 500), enabled: !!isAdminOrOwner });
-  const { data: communities = [] } = useQuery({ queryKey: ['adminCommunities'], queryFn: () => base44.entities.Community.list('-member_count', 50), enabled: !!isAdminOrOwner });
-  const firstCommunityId = communities[0]?.id || null;
-  const activeAdminRoomId = allRooms.find(r => r.status === 'live')?.id || null;
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var roomId = new URLSearchParams(window.location.search).get('room_id');
+  var isAdminOrOwner = user && (user.role === 'admin' || user.role === 'owner');
+  var { data: allUsers = [], isLoading: loadingUsers } = useQuery({ queryKey: ['adminUsers'], queryFn: () => base44.entities.User.list('-created_date', 200), enabled: !!isAdminOrOwner });
+  var { data: allRooms = [] } = useQuery({ queryKey: ['adminRooms'], queryFn: () => base44.entities.Room.list('-created_date', 100), enabled: !!isAdminOrOwner });
+  var { data: transactions = [] } = useQuery({ queryKey: ['adminTransactions'], queryFn: () => base44.entities.Transaction.list('-created_date', 200), enabled: !!isAdminOrOwner });
+  var { data: reports = [] } = useQuery({ queryKey: ['adminReports'], queryFn: () => base44.entities.Report.list('-created_date', 50), enabled: !!isAdminOrOwner });
+  var { data: messages = [] } = useQuery({ queryKey: ['adminMessages'], queryFn: () => base44.entities.Message.list('-created_date', 500), enabled: !!isAdminOrOwner });
+  var { data: communities = [] } = useQuery({ queryKey: ['adminCommunities'], queryFn: () => base44.entities.Community.list('-member_count', 50), enabled: !!isAdminOrOwner });
+  var firstCommunityId = (communities[0] && communities[0].id) || null;
+  var _liveRoom = allRooms.find(function(r) { return r.status === 'live'; });
+  var activeAdminRoomId = (_liveRoom && _liveRoom.id) || null;
 
-  const changeRoleMutation = useMutation({
+  var changeRoleMutation = useMutation({
     mutationFn: ({ userId, role }) => base44.entities.User.update(userId, { role }),
     onSuccess: () => { toast.success('Role updated'); qc.invalidateQueries({ queryKey: ['adminUsers'] }); },
     onError: () => toast.error('Action failed.'),
   });
-  const endRoomMutation = useMutation({
+  var endRoomMutation = useMutation({
     mutationFn: (roomId) => base44.entities.Room.update(roomId, { status: 'ended', ended_at: new Date().toISOString() }),
     onSuccess: () => { toast.success('Room ended'); qc.invalidateQueries({ queryKey: ['adminRooms'] }); },
     onError: () => toast.error('Action failed.'),
@@ -133,25 +134,25 @@ export default function AdminDashboard() {
     </div>
   );
 
-  const totalRevenue = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
-  const liveRooms = allRooms.filter(r => r.status === 'live');
-  const pendingReports = reports.filter(r => r.status === 'pending');
-  const todayUsers = allUsers.filter(u => new Date(u.created_date).toDateString() === new Date().toDateString());
+  var totalRevenue = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
+  var liveRooms = allRooms.filter(r => r.status === 'live');
+  var pendingReports = reports.filter(r => r.status === 'pending');
+  var todayUsers = allUsers.filter(u => new Date(u.created_date).toDateString() === new Date().toDateString());
 
-  const userGrowthData = Object.entries(allUsers.reduce((acc, u) => {
-    const m = new Date(u.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
+  var userGrowthData = Object.entries(allUsers.reduce((acc, u) => {
+    var m = new Date(u.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
     acc[m] = (acc[m] || 0) + 1; return acc;
   }, {})).slice(-8).map(([month, count]) => ({ month, count }));
 
-  const revenueChartData = Object.entries(transactions.reduce((acc, t) => {
-    const m = new Date(t.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
+  var revenueChartData = Object.entries(transactions.reduce((acc, t) => {
+    var m = new Date(t.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
     acc[m] = (acc[m] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0); return acc;
   }, {})).slice(-8).map(([month, revenue]) => ({ month, revenue }));
 
-  const filteredUsers = allUsers.filter(u => !userSearch || u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) || u.email?.toLowerCase().includes(userSearch.toLowerCase()));
-  const filteredRooms = roomFilter === 'all' ? allRooms : allRooms.filter(r => r.status === roomFilter);
+  var filteredUsers = allUsers.filter(u => !userSearch || (u.full_name && u.full_name.toLowerCase().includes(userSearch.toLowerCase())) || (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase())));
+  var filteredRooms = roomFilter === 'all' ? allRooms : allRooms.filter(r => r.status === roomFilter);
 
-  const roomStatusStyle = (status) => ({
+  var roomStatusStyle = (status) => ({
     live:      { bg: 'rgba(192,57,43,0.12)', border: 'rgba(192,57,43,0.35)', color: '#C0392B' },
     scheduled: { bg: 'rgba(74,138,122,0.1)',   border: 'rgba(74,138,122,0.3)',   color: '#4A8A7A' },
     ended:     { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' },
@@ -301,7 +302,7 @@ export default function AdminDashboard() {
                         style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shrink-0" style={{ background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`, color: '#fff', ...T }}>
-                            {u.full_name?.charAt(0) || u.email?.charAt(0) || '?'}
+                            {u.(full_name && full_name.charAt)(0) || u.(email && email.charAt)(0) || '?'}
                           </div>
                           <div>
                             <p className="font-black text-xs text-white" style={T}>{u.full_name || 'No name'}</p>
@@ -310,7 +311,7 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: u.role === 'admin' ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${u.role === 'admin' ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.1)'}`, color: u.role === 'admin' ? GOLD : 'rgba(255,255,255,0.4)' }}>{u.role}</span>
-                          {u.id !== user?.id && (
+                          {u.id !== (user && user.id) && (
                             <div style={{ display: 'flex', gap: 3 }}>
                               {['user', 'admin'].map(r => (
                                 <button key={r} onClick={() => changeRoleMutation.mutate({ userId: u.id, role: r })}
@@ -346,7 +347,7 @@ export default function AdminDashboard() {
             <DarkCard title="">
               <div className="max-h-[600px] overflow-y-auto space-y-1">
                 {filteredRooms.map(room => {
-                  const ss = roomStatusStyle(room.status);
+                  var ss = roomStatusStyle(room.status);
                   return (
                     <div key={room.id} className="flex items-center justify-between px-3 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
                       <div>
@@ -396,7 +397,7 @@ export default function AdminDashboard() {
                     {report.status === 'pending' && (
                       <button className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] shrink-0"
                         style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', cursor: 'pointer', ...T }}
-                        onClick={async () => { try { await base44.entities.Report.update(report.id, { status: 'resolved', reviewed_by: user?.id, reviewed_at: new Date().toISOString() }); qc.invalidateQueries({ queryKey: ['adminReports'] }); toast.success('Report resolved'); } catch { toast.error('Failed to resolve report.'); } }}>
+                        onClick={async () => { try { await base44.entities.Report.update(report.id, { status: 'resolved', reviewed_by: (user && user.id), reviewed_at: new Date().toISOString() }); qc.invalidateQueries({ queryKey: ['adminReports'] }); toast.success('Report resolved'); } catch { toast.error('Failed to resolve report.'); } }}>
                         Resolve
                       </button>
                     )}
@@ -409,11 +410,11 @@ export default function AdminDashboard() {
 
         {activeTab === 'reports' && (
           <div className="mt-4">
-            <ReportsManager communityId={firstCommunityId} userId={user?.id} />
+            <ReportsManager communityId={firstCommunityId} userId={(user && user.id)} />
           </div>
         )}
 
-        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={activeAdminRoomId} communityId={firstCommunityId} moderatorId={user.id} />}
+        {(user && user.id) && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={activeAdminRoomId} communityId={firstCommunityId} moderatorId={user.id} />}
 
         {/* SECURITY */}
         {activeTab === 'security' && (
@@ -610,18 +611,18 @@ export default function AdminDashboard() {
           <ChallengeAnalytics communityId={firstCommunityId} />
           <ReferralConfig communityId={firstCommunityId} />
           <PerformanceDashboard roomId={activeAdminRoomId} sessionId={activeAdminRoomId} />
-          <AnnouncementScheduler communityId={firstCommunityId} userId={user?.id} />
+          <AnnouncementScheduler communityId={firstCommunityId} userId={(user && user.id)} />
           <SpotlightBanner communityId={firstCommunityId} isAdmin={true} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
           <StreamHealthDashboard roomId={activeAdminRoomId} isHost={true} />
-          <AnnouncementPanel communityId={firstCommunityId} userId={user?.id} />
+          <AnnouncementPanel communityId={firstCommunityId} userId={(user && user.id)} />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="admin" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -629,7 +630,7 @@ export default function AdminDashboard() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

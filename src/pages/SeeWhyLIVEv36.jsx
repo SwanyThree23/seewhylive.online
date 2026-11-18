@@ -23,7 +23,7 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
-const C = {
+var C = {
   bg:      "#07050A",
   bg2:     "#0D0A08",
   bg3:     "#13100A",
@@ -53,21 +53,21 @@ const C = {
   state2:  "#C0392B",
 };
 
-const F = {
+var F = {
   display: "'Bebas Neue', 'Impact', sans-serif",
   mono:    "'Space Mono', monospace",
   body:    "'DM Sans', sans-serif",
   serif:   "'Playfair Display', serif",
 };
 
-const R = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, pill: 999 };
+var R = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, pill: 999 };
 
-const CREATOR_SHARE = 0.90;
-const PLATFORM_FEE  = 0.10;
-const MAX_GUESTS    = 20;
+var CREATOR_SHARE = 0.90;
+var PLATFORM_FEE  = 0.10;
+var MAX_GUESTS    = 20;
 
 // ─── GLOBAL CSS ───────────────────────────────────────────────────────────────
-const GLOBAL_CSS = `
+var GLOBAL_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{background:${C.bg};color:${C.text};font-family:${F.body};overflow-x:hidden;min-height:100vh;}
@@ -96,7 +96,7 @@ input[type=range]{cursor:pointer;}
 `;
 
 // ─── NAV TABS ─────────────────────────────────────────────────────────────────
-const TABS = [
+var TABS = [
   { id:"stage",      label:"STAGE",         icon:"🎥" },
   { id:"svs",        label:"STATE VS STATE", icon:"⚔️" },
   { id:"tribute",    label:"TRIBUTE",        icon:"🕊️" },
@@ -115,7 +115,7 @@ const TABS = [
 // ─── MICRO COMPONENTS ────────────────────────────────────────────────────────
 
 function Btn({ label, icon, onClick, variant="gold", size="md", disabled, style }) {
-  const variants = {
+  var variants = {
     gold:    `linear-gradient(135deg,${C.gold},${C.goldD})`,
     ghost:   "transparent",
     ruby:    `linear-gradient(135deg,${C.ruby},${C.rubyL})`,
@@ -127,13 +127,13 @@ function Btn({ label, icon, onClick, variant="gold", size="md", disabled, style 
     purple:  `linear-gradient(135deg,${C.purple},#800020)`,
     orange:  `linear-gradient(135deg,${C.orange},#E55100)`,
   };
-  const colors = {
+  var colors = {
     gold:"#07050A",ghost:C.gold,ruby:C.text,slate:C.textD,
     tribute:C.text,state:C.text,cyan:"#07050A",green:"#07050A",
     purple:C.text,orange:C.text,
   };
-  const pads = { sm:"6px 12px", md:"10px 18px", lg:"14px 28px" };
-  const fonts = { sm:11, md:13, lg:15 };
+  var pads = { sm:"6px 12px", md:"10px 18px", lg:"14px 28px" };
+  var fonts = { sm:11, md:13, lg:15 };
   return (
     <button onClick={onClick} disabled={disabled} style={{
       background: variants[variant] || variants.gold,
@@ -225,7 +225,7 @@ function SectionHeader({ title, sub, color }) {
 
 // ─── OCTA CELL ────────────────────────────────────────────────────────────────
 function OctaCell({ slot, user, isHost, isLive, isMuted, onClick }) {
-  const empty = !user;
+  var empty = !user;
   return (
     <div onClick={()=>!empty && onClick && onClick(slot)} style={{
       position:"relative", aspectRatio:"1",
@@ -258,29 +258,29 @@ function OctaCell({ slot, user, isHost, isLive, isMuted, onClick }) {
 
 // ─── STAGE PANEL ─────────────────────────────────────────────────────────────
 function StagePanel() {
-  const [streams] = useState([]);
-  const [chat, setChat] = useState([
+  var [streams] = useState([]);
+  var [chat, setChat] = useState([
     {user:"CaliBonesOG",msg:"Let's DOMINO! 🎯",time:"8:42PM",badge:"gold"},
     {user:"JoyceAI",msg:"Stream is live — 90% to creator always 🔥",time:"8:42PM",badge:"ai"},
     {user:"VibeNBones",msg:"State vs State TONIGHT! WA vs CA 🔥",time:"8:43PM",badge:"gold"},
   ]);
-  const [chatMsg, setChatMsg] = useState("");
-  const [lang, setLang] = useState("EN");
-  const [tipOpen, setTipOpen] = useState(false);
-  const [tipAmt, setTipAmt] = useState("5");
-  const [isLive, setIsLive] = useState(true);
-  const chatRef = useRef(null);
-  const LANGS = ["EN","ES","FR","PT","ZH","AR","HI","SW","RU","DE","JA","KO"];
+  var [chatMsg, setChatMsg] = useState("");
+  var [lang, setLang] = useState("EN");
+  var [tipOpen, setTipOpen] = useState(false);
+  var [tipAmt, setTipAmt] = useState("5");
+  var [isLive, setIsLive] = useState(true);
+  var chatRef = useRef(null);
+  var LANGS = ["EN","ES","FR","PT","ZH","AR","HI","SW","RU","DE","JA","KO"];
 
   function sendChat() {
     if (!chatMsg.trim()) return;
-    const now = new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+    var now = new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
     setChat(c=>[...c,{user:"You",msg:chatMsg,time:now,badge:null}]);
     setChatMsg("");
     setTimeout(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight;},50);
   }
 
-  const liveCount = streams.filter(Boolean).length;
+  var liveCount = streams.filter(Boolean).length;
 
   return (
     <div style={{display:"flex",flexDirection:"column",gap:14}} className="fade-up">
@@ -304,7 +304,7 @@ function StagePanel() {
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:5}}>
         {Array.from({length:MAX_GUESTS},(_,i)=>{
-          const u = streams[i]||null;
+          var u = streams[i]||null;
           return (
             <OctaCell key={i} slot={i} user={u}
               isHost={u && u.id==="host"} isLive={u&&u.live} isMuted={u&&u.muted}/>
@@ -369,7 +369,7 @@ function StagePanel() {
 }
 
 // ─── STATE VS STATE ───────────────────────────────────────────────────────────
-const STATES_DATA = [
+var STATES_DATA = [
   {id:"WA",name:"Washington",color:C.state1,record:{w:3,l:0},pts:210,players:["SwanyThree23","CaliBonesKing","King Domino","West Side Bone","Pacific Shuffle"]},
   {id:"CA",name:"California",color:"#1B5E20",record:{w:2,l:1},pts:178,players:["West Coast Bone","SunsetSlayer","Bay Bone","LA King","Valley Boss"]},
   {id:"TX",name:"Texas",color:"#B71C1C",record:{w:2,l:1},pts:165,players:["Lone Star Domino","Houston Hustle","Dallas King","Rio Bone","Alamo Ace"]},
@@ -378,7 +378,7 @@ const STATES_DATA = [
   {id:"GA",name:"Georgia",color:"#BF360C",record:{w:0,l:3},pts:88,players:["ATL Domino","Peach State Bone","Savannah Slide","Augusta Ace","Macon Masher"]},
 ];
 
-const BRACKET_MATCHES = [
+var BRACKET_MATCHES = [
   {id:1,s1:"WA",s2:"CA",score1:3,score2:1,status:"complete",round:"QF"},
   {id:2,s1:"TX",s2:"FL",score1:2,score2:3,status:"complete",round:"QF"},
   {id:3,s1:"NY",s2:"GA",score1:2,score2:1,status:"complete",round:"QF"},
@@ -388,9 +388,9 @@ const BRACKET_MATCHES = [
 ];
 
 function SVSPanel() {
-  const [view, setView] = useState("bracket");
-  const [liveScore, setLiveScore] = useState({s1:1,s2:0});
-  const [playLog, setPlayLog] = useState([
+  var [view, setView] = useState("bracket");
+  var [liveScore, setLiveScore] = useState({s1:1,s2:0});
+  var [playLog, setPlayLog] = useState([
     {time:"9:04",player:"SwanyThree23",action:"Double-Six opener 🎯",pts:6},
     {time:"9:03",player:"Sunshine Bone",action:"Block attempt — failed",pts:0},
     {time:"9:02",player:"CaliBonesKing",action:"7-0 DOMINO! 🏆",pts:7},
@@ -428,8 +428,8 @@ function SVSPanel() {
       {view==="bracket" && (
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {BRACKET_MATCHES.map(m=>{
-            const s1=getState(m.s1), s2=getState(m.s2);
-            const isLiveM = m.status==="live";
+            var s1=getState(m.s1), s2=getState(m.s2);
+            var isLiveM = m.status==="live";
             return (
               <GCard key={m.id} state style={{border:`1px solid ${isLiveM?C.gold+"99":C.slate}`,animation:isLiveM?"glowGold 2s ease infinite":"none"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
@@ -557,7 +557,7 @@ function SVSPanel() {
 }
 
 // ─── TRIBUTE PANEL ────────────────────────────────────────────────────────────
-const LEGENDS = [
+var LEGENDS = [
   {id:1,name:"Big Bone Earl",years:"1958–2021",state:"WA",photo:"🎯",color:C.tribute,
     bio:"Pioneer of Pacific Northwest domino culture. Won the Regional 7-0 Championship 4 consecutive times. Founded the Seattle Domino Society in 1994.",
     achievements:["4× Regional Champion","Founder: Seattle Domino Society","Mentored 200+ players","Hall of Fame 2019"]},
@@ -570,18 +570,18 @@ const LEGENDS = [
 ];
 
 function TributePanel() {
-  const [selected, setSelected] = useState(null);
-  const [tributeMsg, setTributeMsg] = useState("");
-  const [messages, setMessages] = useState([
+  var [selected, setSelected] = useState(null);
+  var [tributeMsg, setTributeMsg] = useState("");
+  var [messages, setMessages] = useState([
     {legendId:1,author:"CaliBonesOG",msg:"Big Bone Earl — REST EASY LEGEND. You built this whole culture 🙏",time:"2 days ago"},
     {legendId:2,author:"SwanyThree23",msg:"Mama Joyce your tournaments gave us all a home. We carry you forward ❤️",time:"1 week ago"},
     {legendId:3,author:"VibeNBones",msg:"Fast Hands was the reason I got serious about domino. GOAT forever ⚡",time:"3 days ago"},
   ]);
-  const [eventOpen, setEventOpen] = useState(false);
+  var [eventOpen, setEventOpen] = useState(false);
 
   function postTribute() {
     if (!tributeMsg.trim() || !selected) return;
-    const now = new Date().toLocaleDateString();
+    var now = new Date().toLocaleDateString();
     setMessages(m=>[...m,{legendId:selected.id,author:"You",msg:tributeMsg,time:now}]);
     setTributeMsg("");
   }
@@ -626,7 +626,7 @@ function TributePanel() {
       )}
 
       {LEGENDS.map(leg=>{
-        const isOpen = selected && selected.id===leg.id;
+        var isOpen = selected && selected.id===leg.id;
         return (
           <GCard key={leg.id} tribute style={{cursor:"pointer",border:`1px solid ${leg.color}55`}}
             onClick={()=>setSelected(isOpen?null:leg)}>
@@ -676,24 +676,24 @@ function TributePanel() {
 }
 
 // ─── AI PODCAST STUDIO ───────────────────────────────────────────────────────
-const INITIAL_EPISODES = [
+var INITIAL_EPISODES = [
   {id:1,title:"Domino Culture: Past to Present",duration:"34:12",plays:2140,published:true,hosts:["JoyceAI","SwanyBot"]},
   {id:2,title:"State vs State — WA vs CA Deep Dive",duration:"28:45",plays:1890,published:true,hosts:["JoyceAI"]},
   {id:3,title:"Fallen Legends: Big Bone Earl Tribute",duration:"45:00",plays:3200,published:true,hosts:["SwanyBot","GuardianAI"]},
 ];
 
 function PodcastPanel() {
-  const [tab, setTab] = useState("create");
-  const [topic, setTopic] = useState("");
-  const [hosts, setHosts] = useState(["JoyceAI","SwanyBot"]);
-  const [sources, setSources] = useState([
+  var [tab, setTab] = useState("create");
+  var [topic, setTopic] = useState("");
+  var [hosts, setHosts] = useState(["JoyceAI","SwanyBot"]);
+  var [sources, setSources] = useState([
     {id:1,text:"SeeWhy LIVE Tournament Archive 2025–2026",type:"text"},
     {id:2,text:"Washington Classic Results — 7 Rock 5/150 Double Elimination",type:"text"},
   ]);
-  const [sourceInput, setSourceInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [episode, setEpisode] = useState(null);
-  const [episodes, setEpisodes] = useState(INITIAL_EPISODES);
+  var [sourceInput, setSourceInput] = useState("");
+  var [loading, setLoading] = useState(false);
+  var [episode, setEpisode] = useState(null);
+  var [episodes, setEpisodes] = useState(INITIAL_EPISODES);
 
   function addSource() {
     if (!sourceInput.trim()) return;
@@ -705,7 +705,7 @@ function PodcastPanel() {
     if (!topic.trim()) return;
     setLoading(true); setEpisode(null);
     try {
-      const data = await base44.integrations.Core.InvokeLLM({
+      var data = await base44.integrations.Core.InvokeLLM({
         prompt: `You are the SeeWhy LIVE AI Podcast Producer. Create a complete podcast episode outline.\n\nTopic: "${topic}"\nAI Hosts: ${hosts.join(" and ")}\nSource Material: ${sources.map(s=>s.text).join("; ")||"General domino culture knowledge"}\nPlatform: SeeWhy LIVE by SwanyThree EntTech`,
         response_json_schema: {
           type:"object",
@@ -735,7 +735,7 @@ function PodcastPanel() {
     setLoading(false);
   }
 
-  const HOST_OPTIONS = ["JoyceAI","SwanyBot","GuardianAI","Custom Host"];
+  var HOST_OPTIONS = ["JoyceAI","SwanyBot","GuardianAI","Custom Host"];
 
   return (
     <div style={{display:"flex",flexDirection:"column",gap:14}} className="fade-up">
@@ -778,7 +778,7 @@ function PodcastPanel() {
                   <div style={{fontFamily:F.display,fontSize:20,color:C.gold,lineHeight:1.1}}>{episode.title}</div>
                   <div style={{fontSize:12,color:C.textD,fontStyle:"italic",marginTop:4}}>{episode.tagline}</div>
                 </div>
-                <Tag label={episode.duration||"??"} color={C.cyan}/>
+                <Tag label={episode.duration||" || "} color={C.cyan}/>
               </div>
               {episode.topics && <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>{episode.topics.map(t=><Tag key={t} label={t} color={C.gold}/>)}</div>}
               {episode.cold_open && (
@@ -899,21 +899,21 @@ function PodcastPanel() {
 }
 
 // ─── AI MUSIC STUDIO PRO ──────────────────────────────────────────────────────
-const GENRES = ["Trap","R&B","Afrobeats","Bounce","Drill","Soul","Jazz Fusion","Lo-Fi","Gospel","Reggaeton","Domino Beat","Neo-Soul"];
-const KEYS_LIST = ["C Major","C Minor","D Major","D Minor","F Major","F Minor","G Major","G Minor","A Minor","Bb Major","E Minor","B Minor"];
+var GENRES = ["Trap","R&B","Afrobeats","Bounce","Drill","Soul","Jazz Fusion","Lo-Fi","Gospel","Reggaeton","Domino Beat","Neo-Soul"];
+var KEYS_LIST = ["C Major","C Minor","D Major","D Minor","F Major","F Minor","G Major","G Minor","A Minor","Bb Major","E Minor","B Minor"];
 
 function MusicStudioPanel() {
-  const [tab, setTab] = useState("generate");
-  const [prompt, setPrompt] = useState("");
-  const [genre, setGenre] = useState("Trap");
-  const [bpm, setBpm] = useState(140);
-  const [keyVal, setKeyVal] = useState("C Minor");
-  const [loading, setLoading] = useState(false);
-  const [track, setTrack] = useState(null);
-  const [playing, setPlaying] = useState(false);
-  const [stems, setStems] = useState({Drums:true,Bass:true,Melody:true,Vocals:false,FX:false,"808s":true});
-  const [royalty, setRoyalty] = useState(85);
-  const [library] = useState([
+  var [tab, setTab] = useState("generate");
+  var [prompt, setPrompt] = useState("");
+  var [genre, setGenre] = useState("Trap");
+  var [bpm, setBpm] = useState(140);
+  var [keyVal, setKeyVal] = useState("C Minor");
+  var [loading, setLoading] = useState(false);
+  var [track, setTrack] = useState(null);
+  var [playing, setPlaying] = useState(false);
+  var [stems, setStems] = useState({Drums:true,Bass:true,Melody:true,Vocals:false,FX:false,"808s":true});
+  var [royalty, setRoyalty] = useState(85);
+  var [library] = useState([
     {title:"SeeWhy Anthem v2",genre:"Trap",bpm:142,status:"published"},
     {title:"Bone Roll Bounce",genre:"Bounce",bpm:120,status:"draft"},
     {title:"Tribute to Earl",genre:"Soul",bpm:88,status:"published"},
@@ -925,7 +925,7 @@ function MusicStudioPanel() {
     if (!prompt.trim()) return;
     setLoading(true); setTrack(null);
     try {
-      const data = await base44.integrations.Core.InvokeLLM({
+      var data = await base44.integrations.Core.InvokeLLM({
         prompt: `You are SeeWhy LIVE AI Music Director. Generate a complete music production brief.\n\nConcept: "${prompt}"\nGenre: ${genre} | BPM: ${bpm} | Key: ${keyVal}\nActive Stems: ${Object.entries(stems).filter(([,v])=>v).map(([k])=>k).join(", ")}`,
         response_json_schema: {
           type:"object",
@@ -955,7 +955,7 @@ function MusicStudioPanel() {
     setLoading(false);
   }
 
-  const STEM_COLORS = {Drums:C.red,Bass:C.gold,Melody:C.cyan,Vocals:C.purple,FX:C.teal,"808s":"#D4854A"};
+  var STEM_COLORS = {Drums:C.red,Bass:C.gold,Melody:C.cyan,Vocals:C.purple,FX:C.teal,"808s":"#D4854A"};
 
   return (
     <div style={{display:"flex",flexDirection:"column",gap:14}} className="fade-up">
@@ -1166,7 +1166,7 @@ function MusicStudioPanel() {
 }
 
 // ─── MULTI-PLATFORM PANEL ─────────────────────────────────────────────────────
-const PLATFORM_LIST = [
+var PLATFORM_LIST = [
   {id:"youtube",  name:"YouTube",    icon:"▶", connected:true,  live:true,  viewers:1240, color:"#FF0000"},
   {id:"twitch",   name:"Twitch",     icon:"📺",connected:true,  live:true,  viewers:890,  color:"#9146FF"},
   {id:"fanbase",  name:"Fanbase",    icon:"⭐",connected:true,  live:false, viewers:0,    color:"#D4854A", webhook:true},
@@ -1178,27 +1178,27 @@ const PLATFORM_LIST = [
 ];
 
 function PlatformsPanel() {
-  const [tab, setTab] = useState("fanout");
-  const [platforms, setPlatforms] = useState(PLATFORM_LIST);
-  const [webhookLog, setWebhookLog] = useState([
+  var [tab, setTab] = useState("fanout");
+  var [platforms, setPlatforms] = useState(PLATFORM_LIST);
+  var [webhookLog, setWebhookLog] = useState([
     {time:"9:04PM",platform:"Fanbase",event:"tip_received",data:"$10.00 from FanUser99",status:"processed"},
     {time:"9:03PM",platform:"YouTube",event:"superchat",data:"$25.00 — DominoKing44",status:"received"},
     {time:"9:02PM",platform:"Fanbase",event:"new_subscriber",data:"user_8821 subscribed",status:"processed"},
     {time:"9:01PM",platform:"Twitch",event:"sub_gift",data:"WestBoneSlayer gifted 5 subs",status:"received"},
   ]);
-  const [vcOverlays, setVcOverlays] = useState({
+  var [vcOverlays, setVcOverlays] = useState({
     "SVS Scoreboard":true,"Tribute Banner":false,"Tip Alerts":true,"Domino Play Log":false,
     "Chat Overlay":true,"Viewer Count":true,"Gold Tick Badges":false,"RTMP Status":true,
   });
-  const [activeScene, setActiveScene] = useState("Main Stage");
-  const totalViewers = platforms.filter(p=>p.live).reduce((a,p)=>a+p.viewers,0);
+  var [activeScene, setActiveScene] = useState("Main Stage");
+  var totalViewers = platforms.filter(p=>p.live).reduce((a,p)=>a+p.viewers,0);
 
   function togglePlatform(id) {
     setPlatforms(ps=>ps.map(p=>p.id===id?{...p,live:!p.live,viewers:0}:p));
   }
 
-  const SCENES = ["Main Stage","State vs State Matchup","Tribute Memorial","Podcast Booth","Music Studio","Watch Party","Intermission","Outro Slate"];
-  const VC_EFFECTS = ["Gold Confetti 🎊","State Flag AR","Domino Particles ♟️","Fire Ring 🔥","Tribute Candles 🕯️","Epic Intro Slate","Victory Flash ⚡","AI Scene Cut 🎬"];
+  var SCENES = ["Main Stage","State vs State Matchup","Tribute Memorial","Podcast Booth","Music Studio","Watch Party","Intermission","Outro Slate"];
+  var VC_EFFECTS = ["Gold Confetti 🎊","State Flag AR","Domino Particles ♟️","Fire Ring 🔥","Tribute Candles 🕯️","Epic Intro Slate","Victory Flash ⚡","AI Scene Cut 🎬"];
 
   return (
     <div style={{display:"flex",flexDirection:"column",gap:14}} className="fade-up">
@@ -1413,15 +1413,15 @@ function PlatformsPanel() {
 
 // ─── WATCH PARTY ─────────────────────────────────────────────────────────────
 function WatchPartyPanel() {
-  const [active, setActive] = useState(false);
-  const [sync, setSync] = useState("host");
-  const [reaction, setReaction] = useState(null);
-  const [partyChat, setPartyChat] = useState([
+  var [active, setActive] = useState(false);
+  var [sync, setSync] = useState("host");
+  var [reaction, setReaction] = useState(null);
+  var [partyChat, setPartyChat] = useState([
     {user:"CaliBonesOG",msg:"LET'S GOOO STATE VS STATE 🎯",reaction:"🔥"},
     {user:"JoyceAI",msg:"Watch Party synced — 90% stays with creator 💰",reaction:null},
     {user:"VibeNBones",msg:"WA about to run this 🏆",reaction:"👑"},
   ]);
-  const [partyMsg, setPartyMsg] = useState("");
+  var [partyMsg, setPartyMsg] = useState("");
 
   function triggerReaction(r) {
     setReaction(r);
@@ -1452,7 +1452,7 @@ function WatchPartyPanel() {
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:4,maxWidth:260,margin:"0 auto"}}>
           {Array.from({length:10},(_,i)=>{
-            const u = null;
+            var u = null;
             return (
               <div key={i} style={{aspectRatio:"1",background:u?C.slateL:C.bg2,borderRadius:R.sm,
                 display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,
@@ -1517,7 +1517,7 @@ function WatchPartyPanel() {
 
 // ─── ANALYTICS ────────────────────────────────────────────────────────────────
 function AnalyticsPanel() {
-  const revenue = 9840;
+  var revenue = 9840;
   return (
     <div style={{display:"flex",flexDirection:"column",gap:14}} className="fade-up">
       <SectionHeader title="ANALYTICS" sub="REVENUE · VIEWS · ENGAGEMENT"/>
@@ -1587,8 +1587,8 @@ function AnalyticsPanel() {
 
 // ─── MONETIZE ─────────────────────────────────────────────────────────────────
 function MonetizePanel() {
-  const [subPrice, setSubPrice] = useState("9.99");
-  const [ppvPrice, setPpvPrice] = useState("4.99");
+  var [subPrice, setSubPrice] = useState("9.99");
+  var [ppvPrice, setPpvPrice] = useState("4.99");
   return (
     <div style={{display:"flex",flexDirection:"column",gap:14}} className="fade-up">
       <SectionHeader title="MONETIZE" sub="90/10 CREATOR-FIRST PLATFORM"/>
@@ -1630,10 +1630,10 @@ function MonetizePanel() {
 
 // ─── GUARDIAN AI ──────────────────────────────────────────────────────────────
 function GuardianPanel() {
-  const [flagT, setFlagT] = useState(50);
-  const [muteT, setMuteT] = useState(75);
-  const [banT, setBanT] = useState(95);
-  const [events] = useState([
+  var [flagT, setFlagT] = useState(50);
+  var [muteT, setMuteT] = useState(75);
+  var [banT, setBanT] = useState(95);
+  var [events] = useState([
     {time:"9:04PM",user:"anon_2931",msg:"spam spam spam",risk:.82,action:"MUTED"},
     {time:"9:03PM",user:"viewer_445",msg:"Great stream! WA is dominating 🔥",risk:.04,action:"ALLOWED"},
     {time:"9:02PM",user:"troll_99",msg:"[content removed]",risk:.97,action:"BANNED"},
@@ -1679,7 +1679,7 @@ function GuardianPanel() {
 }
 
 // ─── INS FORGE ────────────────────────────────────────────────────────────────
-const FORGE_TYPES = [
+var FORGE_TYPES = [
   {id:"svs_bracket",label:"SVS Bracket Graphic",icon:"⚔️",color:C.state1},
   {id:"tribute_card",label:"Tribute Memorial Card",icon:"🕊️",color:C.tribute},
   {id:"stream_overlay",label:"Stream Overlay Pack",icon:"🎥",color:C.gold},
@@ -1689,16 +1689,16 @@ const FORGE_TYPES = [
 ];
 
 function InsForgePanel() {
-  const [selected, setSelected] = useState(null);
-  const [prompt, setPrompt] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  var [selected, setSelected] = useState(null);
+  var [prompt, setPrompt] = useState("");
+  var [loading, setLoading] = useState(false);
+  var [result, setResult] = useState(null);
 
   async function generate() {
     if (!selected || !prompt.trim()) return;
     setLoading(true); setResult(null);
     try {
-      const data = await base44.integrations.Core.InvokeLLM({
+      var data = await base44.integrations.Core.InvokeLLM({
         prompt: `You are the SeeWhy LIVE INS Forge — a creative asset generator for SwanyThree EntTech.\n\nAsset Type: ${selected.label}\nConcept: "${prompt}"\nBrand: SeeWhy LIVE — dark backgrounds, gold (#C9A84C) accents, Bebas Neue display, broadcast aesthetic`,
         response_json_schema: {
           type:"object",
@@ -1819,9 +1819,9 @@ function InsForgePanel() {
 }
 
 // ─── JOYCE AI PANEL ──────────────────────────────────────────────────────────
-const JOYCE_SYSTEM = `You are Joyce AI, the intelligent co-host for SeeWhy LIVE powered by SwanyThree EntTech LLC. You help streamers run domino tournaments, tribute events, AI podcast sessions, music studio sessions, and multi-platform broadcasts. You know the SeeWhy LIVE platform deeply: 90/10 creator revenue split, State vs State domino competitions, Fallen/Passed Player Tribute events, Joyce AI co-host features, INS Forge creative tools, and Guardian AI moderation. Keep responses concise, broadcast-ready, and energetic. Use the creator's brand voice. Never reveal API keys or internal configs.`;
+var JOYCE_SYSTEM = `You are Joyce AI, the intelligent co-host for SeeWhy LIVE powered by SwanyThree EntTech LLC. You help streamers run domino tournaments, tribute events, AI podcast sessions, music studio sessions, and multi-platform broadcasts. You know the SeeWhy LIVE platform deeply: 90/10 creator revenue split, State vs State domino competitions, Fallen/Passed Player Tribute events, Joyce AI co-host features, INS Forge creative tools, and Guardian AI moderation. Keep responses concise, broadcast-ready, and energetic. Use the creator's brand voice. Never reveal API keys or internal configs.`;
 
-const JOYCE_QUICK = [
+var JOYCE_QUICK = [
   {label:"🎯 Start SVS",prompt:"Help me open a State vs State domino tournament. What should I announce to viewers?"},
   {label:"🕊️ Tribute Intro",prompt:"Write a respectful 30-second tribute introduction for a fallen domino legend."},
   {label:"💰 Revenue Check",prompt:"Remind me how the 90/10 revenue split works on SeeWhy LIVE and how I can maximize my earnings tonight."},
@@ -1831,27 +1831,27 @@ const JOYCE_QUICK = [
 ];
 
 function JoyceAIPanel() {
-  const [messages, setMessages] = useState([
+  var [messages, setMessages] = useState([
     {role:"assistant",text:"Hey! I'm Joyce AI — your SeeWhy LIVE co-host. Ask me anything about running your stream, the tournament, tributes, or revenue. Let's make this broadcast fire! 🔥"},
   ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const chatRef = useRef(null);
+  var [input, setInput] = useState("");
+  var [loading, setLoading] = useState(false);
+  var chatRef = useRef(null);
 
   useEffect(()=>{
     if(chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   },[messages]);
 
   async function send(text) {
-    const userText = text || input.trim();
+    var userText = text || input.trim();
     if (!userText || loading) return;
     setInput("");
-    const newMessages = [...messages, {role:"user", text:userText}];
+    var newMessages = [...messages, {role:"user", text:userText}];
     setMessages(newMessages);
     setLoading(true);
     try {
-      const history = newMessages.map(m=>m.role+": "+m.text).join("\n");
-      const res = await base44.integrations.Core.InvokeLLM({
+      var history = newMessages.map(m=>m.role+": "+m.text).join("\n");
+      var res = await base44.integrations.Core.InvokeLLM({
         prompt: JOYCE_SYSTEM + "\n\nConversation so far:\n" + history + "\n\nRespond as Joyce AI in 1-3 sentences. Be direct and broadcast-ready."
       });
       setMessages(m=>[...m,{role:"assistant",text:res||"Let's keep it moving — what do you need?"}]);
@@ -1914,13 +1914,13 @@ function JoyceAIPanel() {
 
 // ─── SETTINGS PANEL ──────────────────────────────────────────────────────────
 function SettingsPanel() {
-  const [streamKey, setStreamKey] = useState("swl_•••••••••••••••");
-  const [rtmpUrl, setRtmpUrl] = useState("rtmp://live.seewhylive.online/stream");
-  const [displayName, setDisplayName] = useState("SwanyThree");
-  const [bio, setBio] = useState("SwanyThree EntTech LLC · Creator-First Broadcast Platform");
-  const [notifs, setNotifs] = useState({tips:true,joins:true,raids:false,milestones:true});
-  const [showKey, setShowKey] = useState(false);
-  const [saved, setSaved] = useState(false);
+  var [streamKey, setStreamKey] = useState("swl_•••••••••••••••");
+  var [rtmpUrl, setRtmpUrl] = useState("rtmp://live.seewhylive.online/stream");
+  var [displayName, setDisplayName] = useState("SwanyThree");
+  var [bio, setBio] = useState("SwanyThree EntTech LLC · Creator-First Broadcast Platform");
+  var [notifs, setNotifs] = useState({tips:true,joins:true,raids:false,milestones:true});
+  var [showKey, setShowKey] = useState(false);
+  var [saved, setSaved] = useState(false);
 
   function save() {
     setSaved(true);
@@ -2019,7 +2019,7 @@ function SettingsPanel() {
 }
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
-const PANEL_MAP = {
+var PANEL_MAP = {
   stage:      <StagePanel/>,
   svs:        <SVSPanel/>,
   tribute:    <TributePanel/>,
@@ -2035,25 +2035,25 @@ const PANEL_MAP = {
   settings:   <SettingsPanel/>,
 };
 
-const BOTTOM_NAV = ["stage","svs","tribute","podcast","watchparty"];
+var BOTTOM_NAV = ["stage","svs","tribute","podcast","watchparty"];
 
 export default function SeeWhyLIVEv36() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const roomId = activeRoomId;
-  const [activeTab, setActiveTab] = useState("stage");
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [isLive] = useState(true);
-  const { localStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var roomId = activeRoomId;
+  var [activeTab, setActiveTab] = useState("stage");
+  var [drawerOpen, setDrawerOpen] = useState(false);
+  var [isLive] = useState(true);
+  var { localStream } = useLocalMedia({ audio: true, video: true });
+  var { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
 
-  const currentTab = TABS.find(t=>t.id===activeTab)||TABS[0];
+  var currentTab = TABS.find(t=>t.id===activeTab)||TABS[0];
 
   function navTo(id) {
     setActiveTab(id);
@@ -2145,9 +2145,9 @@ export default function SeeWhyLIVEv36() {
           display:"flex",zIndex:90,
         }}>
           {BOTTOM_NAV.map(id=>{
-            const tab = TABS.find(t=>t.id===id);
+            var tab = TABS.find(t=>t.id===id);
             if(!tab) return null;
-            const active = activeTab===id;
+            var active = activeTab===id;
             return (
               <button key={id} onClick={()=>navTo(id)} style={{
                 flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,
@@ -2174,11 +2174,11 @@ export default function SeeWhyLIVEv36() {
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <BroadcastAnalyticsDashboard streamSession={activeRoom || null} isLive={!!activeRoomId} />
-        <AudienceInsights creatorId={user?.id} />
-        <SubscriptionManager creatorId={user?.id} />
+        <AudienceInsights creatorId={(user && user.id)} />
+        <SubscriptionManager creatorId={(user && user.id)} />
         <InteractivePollingSystem roomId={activeRoomId} isHost={true} currentUser={user} />
-        <VirtualGoodsStore userId={user?.id} />
-        <EarningsBreakdown creatorId={user?.id} />
+        <VirtualGoodsStore userId={(user && user.id)} />
+        <EarningsBreakdown creatorId={(user && user.id)} />
         <OnlineUsersGrid compact maxVisible={12} />
         <ContentRecommendations />
         <CollaborationMatcher />

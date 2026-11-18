@@ -23,62 +23,62 @@ import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function GuestJoin() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('room') || urlParams.get('id');
-  const inviteToken = urlParams.get('token');
+  var urlParams = new URLSearchParams(window.location.search);
+  var roomId = urlParams.get('room') || urlParams.get('id');
+  var inviteToken = urlParams.get('token');
 
-  const [ageVerified, setAgeVerified] = useState(() => { const a = getStoredAge(); return a !== null && a >= 18; });
-  const [name, setName] = useState('');
-  const [participantId, setParticipantId] = useState(null);
-  const [status, setStatus] = useState('idle');
-  const [readyState, setReadyState] = useState(false);
-  const [waitingTooLong, setWaitingTooLong] = useState(false);
+  var [ageVerified, setAgeVerified] = useState(() => { var a = getStoredAge(); return a !== null && a >= 18; });
+  var [name, setName] = useState('');
+  var [participantId, setParticipantId] = useState(null);
+  var [status, setStatus] = useState('idle');
+  var [readyState, setReadyState] = useState(false);
+  var [waitingTooLong, setWaitingTooLong] = useState(false);
 
   // Real local camera via singleton cache — permission granted here carries
   // forward into LiveRoom without a second getUserMedia prompt.
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true });
+  var { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true });
 
-  const { data: room } = useQuery({
+  var { data: room } = useQuery({
     queryKey: ['guestRoom', roomId],
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId,
     retry: 2,
   });
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me().catch(() => null),
   });
 
   useEffect(() => {
-    if (user?.full_name && !name) setName(user.full_name);
+    if ((user && user.full_name) && !name) setName(user.full_name);
   }, [user]);
 
   useEffect(() => {
     if (!participantId) return;
-    const unsub = base44.entities.Participant.subscribe((event) => {
-      if (event.id !== participantId && event.data?.id !== participantId) return;
-      const newStatus = event.data?.status;
+    var unsub = base44.entities.Participant.subscribe((event) => {
+      if (event.id !== participantId && event.(data && data.id) !== participantId) return;
+      var newStatus = event.(data && data.status);
       if (newStatus === 'admitted') { setStatus('admitted'); toast.success("🎙️ You've been admitted to the stage!"); }
       else if (newStatus === 'rejected') { setStatus('rejected'); toast.error('You were removed from the queue'); }
     });
-    const waitTimeout = setTimeout(() => setWaitingTooLong(true), 5 * 60 * 1000);
+    var waitTimeout = setTimeout(() => setWaitingTooLong(true), 5 * 60 * 1000);
     return () => { unsub(); clearTimeout(waitTimeout); };
   }, [participantId]);
 
-  const joinMutation = useMutation({
+  var joinMutation = useMutation({
     mutationFn: async () => {
       if (!name.trim()) throw new Error('Please enter your name');
       return base44.entities.Participant.create({
         room_id: roomId,
-        user_id: user?.id || `guest_${Date.now()}`,
+        user_id: (user && user.id) || `guest_${Date.now()}`,
         user_name: name.trim(),
-        user_avatar: user?.avatar_url || '',
+        user_avatar: (user && user.avatar_url) || '',
         role: 'guest',
         status: 'waiting',
         is_audio_enabled: true,
@@ -90,7 +90,7 @@ export default function GuestJoin() {
     onError: () => toast.error('Failed to join. Please try again.'),
   });
 
-  const toggleReadyMutation = useMutation({
+  var toggleReadyMutation = useMutation({
     mutationFn: async (ready) => {
       if (!participantId) return;
       return base44.entities.Participant.update(participantId, { status: ready ? 'ready' : 'waiting' });
@@ -116,7 +116,7 @@ export default function GuestJoin() {
     );
   }
 
-  const card = { background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 20 };
+  var card = { background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 20 };
 
   // Age gate — required for all entry paths
   if (!ageVerified) {
@@ -338,8 +338,8 @@ export default function GuestJoin() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
           <GuestConnector roomId={roomId || null} roomName="SeeWhy Studio" />
           <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
-          <VdoNinjaGuestLink roomId={roomId || null} guestName={user?.full_name || 'Guest'} />
-          <OctagonalVideoWindow stream={localStream} label={user?.full_name || 'You'} isHost={false} isMuted={false} />
+          <VdoNinjaGuestLink roomId={roomId || null} guestName={(user && user.full_name) || 'Guest'} />
+          <OctagonalVideoWindow stream={localStream} label={(user && user.full_name) || 'You'} isHost={false} isMuted={false} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
           <StreamGoals isHost={false} />

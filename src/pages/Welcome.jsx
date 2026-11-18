@@ -16,40 +16,40 @@ import StreamGoals from '../components/live/StreamGoals';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
-const G = '#D4AF37';
-const BG = '#080B18';
+var G = '#D4AF37';
+var BG = '#080B18';
 
 export default function WelcomePage() {
-  const navigate = useNavigate();
-  const { data: user } = useQuery({
+  var navigate = useNavigate();
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: liveCount } = useQuery({
+  var { data: liveCount } = useQuery({
     queryKey: ['welcomeLiveCount'],
     queryFn: async () => {
-      const rooms = await base44.entities.Room.filter({ status: 'live' });
-      return rooms?.length || 0;
+      var rooms = await base44.entities.Room.filter({ status: 'live' });
+      return (rooms && rooms.length) || 0;
     },
   });
 
   // Redirect logged-in users to home
   React.useEffect(() => {
-    if (user?.id) {
+    if ((user && user.id)) {
       navigate('/Home');
     }
   }, [user]);
@@ -207,7 +207,7 @@ export default function WelcomePage() {
         <FeaturedContentSection />
         <ZEGOMobileAppBanner />
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-        <ContentRecommendations userId={user?.id} />
+        <ContentRecommendations userId={(user && user.id)} />
         <OnlineUsersGrid compact maxVisible={10} />
         {!user && <OnboardingFlow onComplete={() => {}} />}
       </div>
@@ -222,7 +222,7 @@ export default function WelcomePage() {
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         <CollaborationMatcher />
         <StreamGoals isHost={true} />
-        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+        <AnnouncementPanel communityId={userCommunityId} userId={(user && user.id)} />
         <ChallengeLeaderboard challengeId={null} />
       </div>
     </div>

@@ -43,28 +43,28 @@ function usePullToRefresh(onRefresh) {
 }
 
 
-const GOLD    = '#FFB800';
-const CRIMSON = '#FF1564';
-const OCT     = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD    = '#FFB800';
+var CRIMSON = '#FF1564';
+var OCT     = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const CATEGORIES = ['all','music','gaming','tech','education','business','entertainment','sports','lifestyle'];
+var CATEGORIES = ['all','music','gaming','tech','education','business','entertainment','sports','lifestyle'];
 
 export default function CommunitiesPage() {
-  const [searchQuery, setSearchQuery]           = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [activeTab, setActiveTab]               = useState('discover');
-  const queryClient = useQueryClient();
+  var [searchQuery, setSearchQuery]           = useState('');
+  var [selectedCategory, setSelectedCategory] = useState('all');
+  var [activeTab, setActiveTab]               = useState('discover');
+  var queryClient = useQueryClient();
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
     async function() { await queryClient.invalidateQueries(); }
   );
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: allCommunities = [], isLoading } = useQuery({
+  var { data: allCommunities = [], isLoading } = useQuery({
     queryKey: ['communities', selectedCategory],
     queryFn: async () => {
       if (selectedCategory === 'all') return base44.entities.Community.list('-member_count', 50);
@@ -72,7 +72,7 @@ export default function CommunitiesPage() {
     },
   });
 
-  const { data: myMemberships = [] } = useQuery({
+  var { data: myMemberships = [] } = useQuery({
     queryKey: ['myMemberships'],
     queryFn: async () => {
       if (!user) return [];
@@ -81,15 +81,15 @@ export default function CommunitiesPage() {
     enabled: !!user,
   });
 
-  const joinCommunityMutation = useMutation({
+  var joinCommunityMutation = useMutation({
     mutationFn: async (communityId) => {
-      const existing = myMemberships.find(m => m.community_id === communityId);
+      var existing = myMemberships.find(m => m.community_id === communityId);
       if (existing) { toast.info('Already a member'); return; }
       await base44.entities.CommunityMember.create({
         community_id: communityId, user_id: user.id,
         role: 'member', joined_at: new Date().toISOString(),
       });
-      const community = allCommunities.find(c => c.id === communityId);
+      var community = allCommunities.find(c => c.id === communityId);
       if (community) {
         await base44.entities.Community.update(communityId, { member_count: (community.member_count || 0) + 1 });
       }
@@ -97,11 +97,11 @@ export default function CommunitiesPage() {
     onMutate: async (communityId) => {
       await queryClient.cancelQueries({ queryKey: ['myMemberships'] });
       await queryClient.cancelQueries({ queryKey: ['communities', selectedCategory] });
-      const prevMemberships = queryClient.getQueryData(['myMemberships']);
-      const prevCommunities = queryClient.getQueryData(['communities', selectedCategory]);
+      var prevMemberships = queryClient.getQueryData(['myMemberships']);
+      var prevCommunities = queryClient.getQueryData(['communities', selectedCategory]);
       queryClient.setQueryData(['myMemberships'], (old = []) => [
         ...old,
-        { community_id: communityId, user_id: user?.id, role: 'member', joined_at: new Date().toISOString() },
+        { community_id: communityId, user_id: (user && user.id), role: 'member', joined_at: new Date().toISOString() },
       ]);
       queryClient.setQueryData(['communities', selectedCategory], (old = []) =>
         old.map(c => c.id === communityId ? { ...c, member_count: (c.member_count || 0) + 1 } : c)
@@ -109,31 +109,31 @@ export default function CommunitiesPage() {
       return { prevMemberships, prevCommunities };
     },
     onError: (_err, _communityId, ctx) => {
-      if (ctx?.prevMemberships) queryClient.setQueryData(['myMemberships'], ctx.prevMemberships);
-      if (ctx?.prevCommunities) queryClient.setQueryData(['communities', selectedCategory], ctx.prevCommunities);
+      if ((ctx && ctx.prevMemberships)) queryClient.setQueryData(['myMemberships'], ctx.prevMemberships);
+      if ((ctx && ctx.prevCommunities)) queryClient.setQueryData(['communities', selectedCategory], ctx.prevCommunities);
       toast.error('Failed to join community');
     },
     onSuccess: (_data, communityId) => {
       queryClient.invalidateQueries({ queryKey: ['myMemberships'] });
       queryClient.invalidateQueries({ queryKey: ['communities'] });
       toast.success('Joined community!');
-      if (user?.id) {
-        const community = allCommunities.find(c => c.id === communityId);
+      if ((user && user.id)) {
+        var community = allCommunities.find(c => c.id === communityId);
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'community_joined',
-          title: `Joined community: ${community?.name || 'Community'}`,
+          title: `Joined community: ${(community && community.name) || 'Community'}`,
         }).catch(() => {});
       }
     },
   });
 
-  const q        = searchQuery.toLowerCase();
-  const filtered = allCommunities.filter(c =>
-    !q || c.name?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)
+  var q        = searchQuery.toLowerCase();
+  var filtered = allCommunities.filter(c =>
+    !q || (c.name && c.name.toLowerCase().includes(q)) || (c.description && c.description.toLowerCase().includes(q))
   );
-  const trending = filtered.slice(0, 12);
-  const mine     = filtered.filter(c => myMemberships.some(m => m.community_id === c.id));
+  var trending = filtered.slice(0, 12);
+  var mine     = filtered.filter(c => myMemberships.some(m => m.community_id === c.id));
 
   return (
     <div className="min-h-screen pb-10" style={{ background: '#03030A' }}
@@ -305,7 +305,7 @@ export default function CommunitiesPage() {
         )}
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <SpotlightBanner communityId={mine[0]?.id || null} isAdmin={false} />
+          <SpotlightBanner communityId={(mine[0] && mine[0].id) || null} isAdmin={false} />
           <DiscussionFeed communityId="discover" />
         </div>
 
@@ -337,8 +337,8 @@ export default function CommunitiesPage() {
           <OnlineUsersGrid compact maxVisible={12} />
           <PollCard poll={null} />
           <RaidPanelButton room={null} currentUser={user} isHost={false} />
-          <AnnouncementPanel communityId={mine[0]?.id || null} userId={user?.id} />
-          <SpotlightSection communityId={mine[0]?.id || null} />
+          <AnnouncementPanel communityId={(mine[0] && mine[0].id) || null} userId={(user && user.id)} />
+          <SpotlightSection communityId={(mine[0] && mine[0].id) || null} />
           <ContentRecommendations />
           <CollaborationMatcher />
         </div>

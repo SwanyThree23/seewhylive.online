@@ -334,7 +334,7 @@ export default function GreenroomPage() {
   var screenStreamRef = useRef(null);
   var _applyShareStream = (stream) => { screenStreamRef.current = stream; var vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
   var handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
-  var handleStopShare = () => { screenStreamRef.(current && current.getTracks().forEach(t => t.stop()); screenStreamRef.current = null; setIsSharing(false); };
+  var handleStopShare = () => { if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); } screenStreamRef.current = null; setIsSharing(false); };
   var [showActivitySidebar, setShowActivitySidebar] = useState(false);
   var [activeScene, setActiveScene] = useState('main');
   var [selectedBitrate, setSelectedBitrate] = useState('auto');

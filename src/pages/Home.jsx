@@ -5,9 +5,9 @@ import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 // ── Secondary panels are code-split into their own chunks ──────────────────
 // They ride along only when needed, so the Home screen paints fast on mobile
 // WebViews instead of waiting on the whole studio/monetization bundle.
-const ActivitySidebar              = lazy(() => import('../components/shared/ActivitySidebar'));
-const QuickActionPanel             = lazy(() => import('../components/shared/QuickActionPanel'));
-const SwanAIRecommendations        = lazy(() => import('../components/live/SwanAIRecommendations'));
+var ActivitySidebar              = lazy(() => import('../components/shared/ActivitySidebar'));
+var QuickActionPanel             = lazy(() => import('../components/shared/QuickActionPanel'));
+var SwanAIRecommendations        = lazy(() => import('../components/live/SwanAIRecommendations'));
 import GridLines from '../components/home/GridLines';
 import NebulaBg from '../components/home/NebulaBg';
 import StarField from '../components/home/StarField';
@@ -21,20 +21,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FeaturedContentSection from '../components/home/FeaturedContent';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
-const MilestoneAlerts              = lazy(() => import('../components/creator/MilestoneAlerts'));
-const AlertConfig                  = lazy(() => import('../components/live/AlertConfig'));
-const ShopDashboard                = lazy(() => import('../components/merch/ShopDashboard'));
-const BackgroundCustomizer         = lazy(() => import('../components/settings/BackgroundCustomizer'));
-const StreamGoals                  = lazy(() => import('../components/live/StreamGoals'));
-const StreamerMonetizationCenter   = lazy(() => import('../components/monetization/StreamerMonetizationCenter'));
-const RewardShop                   = lazy(() => import('../components/loyalty/RewardShop'));
-const HostAlertCenter              = lazy(() => import('../components/live/HostAlertCenter'));
-const ViewerCount                  = lazy(() => import('../components/live/ViewerCount'));
+var MilestoneAlerts              = lazy(() => import('../components/creator/MilestoneAlerts'));
+var AlertConfig                  = lazy(() => import('../components/live/AlertConfig'));
+var ShopDashboard                = lazy(() => import('../components/merch/ShopDashboard'));
+var BackgroundCustomizer         = lazy(() => import('../components/settings/BackgroundCustomizer'));
+var StreamGoals                  = lazy(() => import('../components/live/StreamGoals'));
+var StreamerMonetizationCenter   = lazy(() => import('../components/monetization/StreamerMonetizationCenter'));
+var RewardShop                   = lazy(() => import('../components/loyalty/RewardShop'));
+var HostAlertCenter              = lazy(() => import('../components/live/HostAlertCenter'));
+var ViewerCount                  = lazy(() => import('../components/live/ViewerCount'));
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-const CollaborationMatcher         = lazy(() => import('../components/social/CollaborationMatcher'));
-const CreatorBridge                = lazy(() => import('../components/social/CreatorBridge'));
-const OnboardingFlow               = lazy(() => import('../components/onboarding/OnboardingFlow'));
-const OnlinePresence               = lazy(() => import('../components/shared/OnlinePresence'));
+var CollaborationMatcher         = lazy(() => import('../components/social/CollaborationMatcher'));
+var CreatorBridge                = lazy(() => import('../components/social/CreatorBridge'));
+var OnboardingFlow               = lazy(() => import('../components/onboarding/OnboardingFlow'));
+var OnlinePresence               = lazy(() => import('../components/shared/OnlinePresence'));
 import PullToRefresh from '../components/shared/PullToRefresh';
 
 // ── OCT clip-path constant ─────────────────────────────────────────────────
@@ -733,7 +733,7 @@ function applyFilter(rooms, filter) {
 
 // ── Home page ──────────────────────────────────────────────────────────────
 export default function Home() {
-  const navigate = useNavigate();
+  var navigate = useNavigate();
   var [activeFilter, setActiveFilter] = useState('All');
   var [showQuickAction, setShowQuickAction] = useState(false);
   var [activityOpen, setActivityOpen] = useState(false);
@@ -766,15 +766,15 @@ export default function Home() {
   });
 
   var { data: onboarding } = useQuery({
-    queryKey: ['onboarding-check', user?.id],
+    queryKey: ['onboarding-check', (user && user.id)],
     queryFn: async function() {
       var list = await base44.entities.CreatorOnboarding.filter({ user_id: user.id });
       return list[0] || null;
     },
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     staleTime: 60000,
   });
-  var showOnboardingBanner = user?.id && onboarding !== undefined && (!onboarding || !onboarding.step_1_profile);
+  var showOnboardingBanner = (user && user.id) && onboarding !== undefined && (!onboarding || !onboarding.step_1_profile);
 
   return (
     <div
@@ -1013,7 +1013,7 @@ export default function Home() {
               {/* AI recommendations when no live rooms */}
               <div className="mt-4 w-full">
                 <Suspense fallback={null}>
-                  <SwanAIRecommendations roomId={liveRooms[0]?.id || null} currentLayout="grid" viewerCount={0} />
+                  <SwanAIRecommendations roomId={(liveRooms[0] && liveRooms[0].id) || null} currentLayout="grid" viewerCount={0} />
                 </Suspense>
               </div>
             </motion.div>
@@ -1023,9 +1023,9 @@ export default function Home() {
       )}
       <Suspense fallback={null}>
         <SwanAIRecommendations roomId={null} currentLayout="home" viewerCount={0} />
-        <MilestoneAlerts userId={user?.id} roomId={null} />
-        {user?.id && <AlertConfig creatorId={user.id} />}
-        {user?.id && <ShopDashboard creatorId={user.id} />}
+        <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+        {(user && user.id) && <AlertConfig creatorId={user.id} />}
+        {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       </Suspense>
       <GridLines />
       <NebulaBg />
@@ -1045,11 +1045,11 @@ export default function Home() {
       </Suspense>
       <NotificationBell />
       <Suspense fallback={null}>
-        <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+        <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />
         <HostAlertCenter />
         <ViewerCount count={0} peakViewers={0} />
         <BackgroundCustomizer />
-        <OnlinePresence userId={user?.id || null} />
+        <OnlinePresence userId={(user && user.id) || null} />
       </Suspense>
       </PullToRefresh>
     </div>

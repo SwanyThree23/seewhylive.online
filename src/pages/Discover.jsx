@@ -35,10 +35,10 @@ import CreatorBridge from '../components/social/CreatorBridge';
 import MomentsFeed from '../components/live/MomentsFeed';
 import PullToRefresh from '../components/shared/PullToRefresh';
 
-const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
+var GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
-const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#FF2040', Gaming: '#FFB800', Talk: '#00F5FF', Education: '#00FF88', Tech: '#00F5FF', Art: '#FF6B8A', Fitness: '#FF8C00', IRL: '#FFB800' };
+var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+var CAT_COLOR = { Music: '#FF2040', Gaming: '#FFB800', Talk: '#00F5FF', Education: '#00FF88', Tech: '#00F5FF', Art: '#FF6B8A', Fitness: '#FF8C00', IRL: '#FFB800' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
@@ -85,19 +85,19 @@ function FanbaseRoomCard({ room }) {
 }
 
 export default function DiscoverPage() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [genre, setGenre] = useState('All');
-  const [tab, setTab] = useState('live'); // live | scheduled | communities | creators
-  const debounceRef = useRef(null);
-  const queryClient = useQueryClient();
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [search, setSearch] = useState('');
+  var [debouncedSearch, setDebouncedSearch] = useState('');
+  var [genre, setGenre] = useState('All');
+  var [tab, setTab] = useState('live'); // live | scheduled | communities | creators
+  var debounceRef = useRef(null);
+  var queryClient = useQueryClient();
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
   // 300ms debounce
   useEffect(() => {
@@ -106,37 +106,37 @@ export default function DiscoverPage() {
     return () => clearTimeout(debounceRef.current);
   }, [search]);
 
-  const { data: liveRooms = [], isLoading: loadingLive } = useQuery({
+  var { data: liveRooms = [], isLoading: loadingLive } = useQuery({
     queryKey: ['discover-live'],
     queryFn: () => base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 30),
     refetchInterval: 10000,
   });
 
-  const { data: scheduledRooms = [] } = useQuery({
+  var { data: scheduledRooms = [] } = useQuery({
     queryKey: ['discover-scheduled'],
     queryFn: () => base44.entities.Room.filter({ status: 'scheduled' }, 'scheduled_start', 20),
     refetchInterval: 30000,
   });
 
-  const { data: communities = [] } = useQuery({
+  var { data: communities = [] } = useQuery({
     queryKey: ['discover-communities'],
     queryFn: () => base44.entities.Community.list('-member_count', 24),
   });
 
-  const { data: creators = [] } = useQuery({
+  var { data: creators = [] } = useQuery({
     queryKey: ['discover-creators'],
     queryFn: () => base44.entities.CreatorProfile.list('-follower_count', 20),
   });
 
-  const { data: followingList = [] } = useQuery({
-    queryKey: ['following', user?.id],
+  var { data: followingList = [] } = useQuery({
+    queryKey: ['following', (user && user.id)],
     queryFn: () => base44.entities.Follow.filter({ follower_id: user.id }, '-created_date', 200),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     staleTime: 60000,
   });
-  const followingIds = followingList.map(f => f.following_id).filter(Boolean);
+  var followingIds = followingList.map(f => f.following_id).filter(Boolean);
 
-  const totalViewers = liveRooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
+  var totalViewers = liveRooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
 
   var filterRooms = function(rooms) {
     return rooms.filter(function(r) {
@@ -150,15 +150,15 @@ export default function DiscoverPage() {
   };
 
   // Live Home: real-time ranked discovery via socket push, falls back to DB sort
-  const { trending: liveHomeTrending, connectedViaSocket: liveHomeSocketOn } = useLiveHomeRanking({ fallbackRooms: liveRooms });
+  var { trending: liveHomeTrending, connectedViaSocket: liveHomeSocketOn } = useLiveHomeRanking({ fallbackRooms: liveRooms });
 
   // Merge socket scores into DB room objects for the trending cards
-  const trending = liveHomeTrending
+  var trending = liveHomeTrending
     .slice(0, 3)
     .map(t => t.dbRoom || liveRooms.find(r => r.id === t.roomId))
     .filter(Boolean);
 
-  const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
+  var filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
 
   return (
     <div className="min-h-screen bg-[#03030A] text-white" style={{ overscrollBehavior: 'contain' }}>
@@ -276,7 +276,7 @@ export default function DiscoverPage() {
               { id: 'creators', label: 'Creators', icon: Star },
               { id: 'moments', label: 'Moments', icon: Clapperboard },
             ].map(t => {
-              const Icon = t.icon;
+              var Icon = t.icon;
               return (
                 <button key={t.id} onClick={() => setTab(t.id)}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
@@ -388,7 +388,7 @@ export default function DiscoverPage() {
 
           {tab === 'moments' && (
             <motion.div key="moments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <MomentsFeed currentUserId={user?.id} followingIds={followingIds} />
+              <MomentsFeed currentUserId={(user && user.id)} followingIds={followingIds} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -403,7 +403,7 @@ export default function DiscoverPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
           <ShareToSocial content={{ title: 'Discover on SeeWhy LIVE', url: window.location.href }} />
           <StreamGoals isHost={true} />
-          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+          <AnnouncementPanel communityId={userCommunityId} userId={(user && user.id)} />
           <ChallengeLeaderboard challengeId={null} />
         </div>
       </div>
@@ -413,7 +413,7 @@ export default function DiscoverPage() {
 }
 
 function TrendingCard({ room, rank }) {
-  const rankColors = ['#FFB800', '#FFB800', '#FF8C00'];
+  var rankColors = ['#FFB800', '#FFB800', '#FF8C00'];
   return (
     <Link to={`${createPageUrl('LiveRoom')}?id=${room.id}`}>
       <motion.div
@@ -472,8 +472,9 @@ function ScheduledRow({ room }) {
 }
 
 function CreatorCard({ creator }) {
-  const isLive = creator.is_live;
-  const initials = creator.display_name?.charAt(0)?.toUpperCase() || '?';
+  var isLive = creator.is_live;
+  var _dn = creator && creator.display_name;
+  var initials = (_dn && _dn.charAt(0) && _dn.charAt(0).toUpperCase()) || '?';
   return (
     <Link to={`${createPageUrl('PublicProfile')}?id=${creator.user_id}`}>
       <motion.div whileTap={{ scale: 0.97 }}
@@ -508,7 +509,7 @@ function CreatorCard({ creator }) {
 }
 
 function EmptyState({ icon: Icon, title, desc }) {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   return (
     <div className="text-center py-20">
       <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.12)' }}>
@@ -517,9 +518,9 @@ function EmptyState({ icon: Icon, title, desc }) {
       <h3 className="text-lg font-black text-white/60 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{title}</h3>
       <p className="text-sm text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{desc}</p>
       <SwanAIRecommendations roomId={null} currentLayout="discover" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -527,7 +528,7 @@ function EmptyState({ icon: Icon, title, desc }) {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

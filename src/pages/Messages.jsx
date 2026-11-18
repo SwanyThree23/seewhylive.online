@@ -21,12 +21,12 @@ import StreamerMonetizationCenter from '../components/monetization/StreamerMonet
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import ViewerCount from '../components/live/ViewerCount';
 
-const GOLD    = "#FFB800";
-const CRIMSON = "#FF1564";
-const PINK    = "#FF2040";
-const CYAN    = "#00F5FF";
-const OCT     = "polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)";
-const T       = { fontFamily: "Barlow Condensed, sans-serif" };
+var GOLD    = "#FFB800";
+var CRIMSON = "#FF1564";
+var PINK    = "#FF2040";
+var CYAN    = "#00F5FF";
+var OCT     = "polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)";
+var T       = { fontFamily: "Barlow Condensed, sans-serif" };
 
 function initials(name) {
   if (!name) return "?";
@@ -45,7 +45,7 @@ function fmtTime(ts) {
 }
 
 export default function Messages() {
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  var roomId = new URLSearchParams(window.location.search).get('room_id');
   var [user, setUser] = useState(null);
   var [selectedThread, setSelectedThread] = useState(null);
   var [input, setInput] = useState("");
@@ -63,23 +63,23 @@ export default function Messages() {
   }, []);
 
   var { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  var userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
   var { data: allMessages = [] } = useQuery({
-    queryKey: ["all-dms", user?.id],
+    queryKey: ["all-dms", (user && user.id)],
     queryFn: () => base44.entities.DirectMessage.list("-created_date", 200),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 5000,
   });
 
   var { data: onlineRecords = [] } = useQuery({
     queryKey: ["presence-online"],
     queryFn: () => base44.entities.OnlinePresence.filter({ is_online: true }),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 15000,
   });
 
@@ -87,18 +87,18 @@ export default function Messages() {
 
   // Build threads grouped by conversation partner
   var myMessages = allMessages.filter(m =>
-    m.sender_id === user?.id || m.recipient_id === user?.id
+    m.sender_id === (user && user.id) || m.recipient_id === (user && user.id)
   );
 
   var threadMap = {};
   myMessages.forEach(m => {
-    var partnerId = m.sender_id === user?.id ? m.recipient_id : m.sender_id;
-    var partnerName = m.sender_id === user?.id ? m.recipient_name : m.sender_name;
+    var partnerId = m.sender_id === (user && user.id) ? m.recipient_id : m.sender_id;
+    var partnerName = m.sender_id === (user && user.id) ? m.recipient_name : m.sender_name;
     if (!threadMap[partnerId]) {
       threadMap[partnerId] = { partnerId, partnerName, messages: [], unread: 0 };
     }
     threadMap[partnerId].messages.push(m);
-    if (m.recipient_id === user?.id && !m.read_at) {
+    if (m.recipient_id === (user && user.id) && !m.read_at) {
       threadMap[partnerId].unread++;
     }
   });
@@ -116,32 +116,32 @@ export default function Messages() {
 
   var sendMutation = useMutation({
     mutationFn: (content) => base44.entities.DirectMessage.create({
-      sender_id: user?.id, sender_name: user?.full_name || "Me",
-      recipient_id: selectedThread, recipient_name: currentThread?.partnerName || "User",
+      sender_id: (user && user.id), sender_name: (user && user.full_name) || "Me",
+      recipient_id: selectedThread, recipient_name: (currentThread && currentThread.partnerName) || "User",
       content, is_whisper: false,
     }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["all-dms", user?.id] }); setInput(""); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["all-dms", (user && user.id)] }); setInput(""); },
     onError: () => toast.error('Action failed.'),
   });
 
   var markReadMutation = useMutation({
     mutationFn: (msgId) => base44.entities.DirectMessage.update(msgId, { read_at: new Date().toISOString(), is_read: true }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["all-dms", user?.id] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["all-dms", (user && user.id)] }),
     onError: () => toast.error('Action failed.'),
   });
 
   var composeMutation = useMutation({
     mutationFn: () => base44.entities.DirectMessage.create({
-      sender_id: user?.id, sender_name: user?.full_name || "Me",
+      sender_id: (user && user.id), sender_name: (user && user.full_name) || "Me",
       recipient_id: composeName.trim(), recipient_name: composeName.trim(),
       content: composeMsg.trim(), is_whisper: false,
     }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["all-dms", user?.id] });
+      qc.invalidateQueries({ queryKey: ["all-dms", (user && user.id)] });
       setShowCompose(false);
       setComposeName("");
       setComposeMsg("");
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
@@ -165,7 +165,7 @@ export default function Messages() {
     if (msgRef.current) msgRef.current.scrollTop = msgRef.current.scrollHeight;
     if (currentThread) {
       currentThread.messages
-        .filter(m => m.recipient_id === user?.id && !m.read_at)
+        .filter(m => m.recipient_id === (user && user.id) && !m.read_at)
         .forEach(m => markReadMutation.mutate(m.id));
     }
   }, [threadMessages.length, selectedThread]);
@@ -283,20 +283,20 @@ export default function Messages() {
                           {t.partnerName}
                         </span>
                         <span className="text-[11px] ml-2 shrink-0" style={{ color: "rgba(255,255,255,0.25)", ...T }}>
-                          {fmtTime(last?.created_date)}
+                          {fmtTime((last && last.created_date))}
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        {last?.is_whisper && <span style={{ fontSize: 10 }}>🤫</span>}
+                        {(last && last.is_whisper) && <span style={{ fontSize: 10 }}>🤫</span>}
                         <span
                           className="text-[11px] truncate"
                           style={{
                             color: t.unread > 0 ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.35)",
                             fontWeight: t.unread > 0 ? 700 : 400,
-                            fontStyle: last?.is_whisper ? "italic" : "normal",
+                            fontStyle: (last && last.is_whisper) ? "italic" : "normal",
                             ...T,
                           }}>
-                          {last?.content || ""}
+                          {(last && last.content) || ""}
                         </span>
                       </div>
                     </div>
@@ -344,7 +344,7 @@ export default function Messages() {
             <div ref={msgRef} className="flex-1 overflow-y-auto px-4 py-3"
               style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {threadMessages.map(m => {
-                var isMe = m.sender_id === user?.id;
+                var isMe = m.sender_id === (user && user.id);
                 var isWhisper = m.is_whisper;
                 var isGiftNotif = m.type === "gift_notification";
                 var reaction = msgReactions.get(m.id);
@@ -531,9 +531,9 @@ export default function Messages() {
         </div>
       )}
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -541,7 +541,7 @@ export default function Messages() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

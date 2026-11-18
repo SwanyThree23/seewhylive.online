@@ -30,11 +30,11 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 
-const GOLD    = '#FFB800';
-const CRIMSON = '#FF1564';
-const PINK    = '#FF2040';
-const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD    = '#FFB800';
+var CRIMSON = '#FF1564';
+var PINK    = '#FF2040';
+var OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ── primitives ─────────────────────────────────────────────────────── */
 
@@ -96,76 +96,76 @@ function StatTile({ label, value, icon: Icon, color = GOLD }) {
   );
 }
 
-const TABS = ['Overview', 'Streams', 'Clips', 'About', 'Settings'];
+var TABS = ['Overview', 'Streams', 'Clips', 'About', 'Settings'];
 
 /* ── main page ──────────────────────────────────────────────────────── */
 
 export default function ProfilePage() {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room_id');
-  const queryClient   = useQueryClient();
-  const navigate      = useNavigate();
-  const [showCreatorSetup, setShowCreatorSetup] = useState(false);
-  const [isEditing, setIsEditing]         = useState(false);
-  const [bio, setBio]                     = useState('');
-  const [displayName, setDisplayName]     = useState('');
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [activeTab, setActiveTab]         = useState('Overview');
-  const [setupOpen, setSetupOpen]         = useState(false);
-  const fileRef = useRef();
+  var [searchParams] = useSearchParams();
+  var roomId = searchParams.get('room_id');
+  var queryClient   = useQueryClient();
+  var navigate      = useNavigate();
+  var [showCreatorSetup, setShowCreatorSetup] = useState(false);
+  var [isEditing, setIsEditing]         = useState(false);
+  var [bio, setBio]                     = useState('');
+  var [displayName, setDisplayName]     = useState('');
+  var [uploadingAvatar, setUploadingAvatar] = useState(false);
+  var [activeTab, setActiveTab]         = useState('Overview');
+  var [setupOpen, setSetupOpen]         = useState(false);
+  var fileRef = useRef();
 
   /* ── queries ── */
-  const { data: user, isLoading } = useQuery({
+  var { data: user, isLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const isOnline = !!activeRoom;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var isOnline = !!activeRoom;
 
-  const { data: referrals = [] } = useQuery({
-    queryKey: ['userReferrals', user?.id],
-    queryFn: () => base44.entities.Referral.filter({ referrer_id: user?.id }),
+  var { data: referrals = [] } = useQuery({
+    queryKey: ['userReferrals', (user && user.id)],
+    queryFn: () => base44.entities.Referral.filter({ referrer_id: (user && user.id) }),
     enabled: !!user,
   });
 
-  const { data: subscriptions = [] } = useQuery({
-    queryKey: ['userSubscriptions', user?.id],
-    queryFn: () => base44.entities.Subscription.filter({ user_id: user?.id, status: 'active' }),
+  var { data: subscriptions = [] } = useQuery({
+    queryKey: ['userSubscriptions', (user && user.id)],
+    queryFn: () => base44.entities.Subscription.filter({ user_id: (user && user.id), status: 'active' }),
     enabled: !!user,
   });
 
-  const { data: inventory = [] } = useQuery({
-    queryKey: ['userInventory', user?.id],
-    queryFn: () => base44.entities.UserInventory.filter({ user_id: user?.id }),
+  var { data: inventory = [] } = useQuery({
+    queryKey: ['userInventory', (user && user.id)],
+    queryFn: () => base44.entities.UserInventory.filter({ user_id: (user && user.id) }),
     enabled: !!user,
   });
 
-  const { data: myRooms = [] } = useQuery({
-    queryKey: ['myRooms', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+  var { data: myRooms = [] } = useQuery({
+    queryKey: ['myRooms', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id) }, '-created_date', 10),
+    enabled: !!(user && user.id),
   });
 
-  const { data: myClips = [] } = useQuery({
-    queryKey: ['myClips', user?.id],
-    queryFn: () => base44.entities.StreamClip.filter({ creator_id: user?.id }, '-created_date', 12),
-    enabled: !!user?.id,
+  var { data: myClips = [] } = useQuery({
+    queryKey: ['myClips', (user && user.id)],
+    queryFn: () => base44.entities.StreamClip.filter({ creator_id: (user && user.id) }, '-created_date', 12),
+    enabled: !!(user && user.id),
   });
 
   /* ── mutations ── */
-  const updateProfileMutation = useMutation({
+  var updateProfileMutation = useMutation({
     mutationFn: async (data) => base44.auth.updateMe(data),
     onSuccess: () => {
       toast.success('Profile updated!');
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setIsEditing(false);
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
@@ -175,12 +175,12 @@ export default function ProfilePage() {
     },
     onError: () => toast.error('Action failed.'),
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
   useEffect(() => {
     if (user) {
@@ -189,12 +189,12 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const handleAvatarUpload = async (e) => {
-    const file = e.target.files?.[0];
+  var handleAvatarUpload = async (e) => {
+    var file = (e.target.files && e.target.files[0]);
     if (!file) return;
     setUploadingAvatar(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      var { file_url } = await base44.integrations.Core.UploadFile({ file });
       await base44.auth.updateMe({ avatar_url: file_url });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       toast.success('Avatar updated!');
@@ -215,19 +215,19 @@ export default function ProfilePage() {
     );
   }
 
-  const handleShare = () => {
+  var handleShare = () => {
     if (navigator.share) {
-      navigator.share({ title: user?.full_name, url: window.location.href }).catch(() => {});
+      navigator.share({ title: (user && user.full_name), url: window.location.href }).catch(() => {});
     } else {
       navigator.clipboard.writeText(window.location.href).then(() => toast.success('Profile link copied!')).catch(() => toast.error('Copy failed.'));
     }
   };
 
-  const completedReferrals = referrals.filter(r => r.status === 'completed').length;
-  const initials = (user?.full_name || user?.email || '?')[0].toUpperCase();
+  var completedReferrals = referrals.filter(r => r.status === 'completed').length;
+  var initials = ((user && user.full_name) || (user && user.email) || '?')[0].toUpperCase();
 
   /* ── activity items (derived from available data) ── */
-  const activityItems = [
+  var activityItems = [
     subscriptions.length > 0 && {
       id: 'subs',
       icon: TrendingUp,
@@ -254,7 +254,7 @@ export default function ProfilePage() {
       icon: Star,
       color: GOLD,
       desc: 'Joined SeeWhy LIVE',
-      time: user?.created_date ? new Date(user.created_date).toLocaleDateString() : 'Member',
+      time: (user && user.created_date) ? new Date(user.created_date).toLocaleDateString() : 'Member',
     },
   ].filter(Boolean);
 
@@ -281,8 +281,8 @@ export default function ProfilePage() {
 
         <div className="relative max-w-4xl mx-auto px-6 pt-8 pb-6 flex items-end gap-5">
           {/* octagonal avatar with camera upload */}
-          <div onClick={() => fileRef.current?.click()}>
-            <OctAvatar size={80} src={user?.avatar_url} initials={initials} uploading={uploadingAvatar} onClick={() => {}} />
+          <div onClick={() => fileRef.(current && current.click)()}>
+            <OctAvatar size={80} src={(user && user.avatar_url)} initials={initials} uploading={uploadingAvatar} onClick={() => {}} />
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
 
@@ -290,11 +290,11 @@ export default function ProfilePage() {
             <div className="flex items-start justify-between gap-2 flex-wrap">
               <div>
                 <h2 className="font-black text-2xl text-white leading-none" style={T}>
-                  {user?.full_name || 'Anonymous'}
+                  {(user && user.full_name) || 'Anonymous'}
                 </h2>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <p className="flex items-center gap-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                    <Mail className="w-3 h-3" />{user?.email}
+                    <Mail className="w-3 h-3" />{(user && user.email)}
                   </p>
                   {isOnline && (
                     <span className="flex items-center gap-1 text-[10px] font-black"
@@ -307,8 +307,8 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="px-2 py-0.5 rounded-md font-black uppercase text-[11px]"
-                  style={{ background: user?.role === 'admin' ? 'rgba(255,21,100,0.25)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,184,0,0.25)', color: GOLD, ...T }}>
-                  {user?.role || 'member'}
+                  style={{ background: (user && user.role) === 'admin' ? 'rgba(255,21,100,0.25)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,184,0,0.25)', color: GOLD, ...T }}>
+                  {(user && user.role) || 'member'}
                 </span>
                 <button
                   onClick={handleShare}
@@ -371,7 +371,7 @@ export default function ProfilePage() {
 
         {/* ── stats row ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatTile label="Followers"   value={user?.followers_count || user?.points || 0} icon={User}       color={GOLD} />
+          <StatTile label="Followers"   value={(user && user.followers_count) || (user && user.points) || 0} icon={User}       color={GOLD} />
           <StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#FFB800" />
           <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#FFB800" />
           <StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#00FF88" />
@@ -380,7 +380,7 @@ export default function ProfilePage() {
         {/* ── section tabs ── */}
         <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
           {TABS.map(tab => {
-            const active = activeTab === tab;
+            var active = activeTab === tab;
             return (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className="relative shrink-0 px-4 py-2 rounded-full font-black text-[11px] uppercase transition-all"
@@ -440,7 +440,7 @@ export default function ProfilePage() {
                   { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#FFB800' },
                   { label: 'Creator Setup',      href: null,                             icon: Star,       color: GOLD, onClick: () => setSetupOpen(true) },
                 ].map(item => {
-                  const inner = (
+                  var inner = (
                     <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110 cursor-pointer"
                       style={{ background: `${item.color}08`, border: `1px solid ${item.color}18` }}>
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
@@ -459,7 +459,7 @@ export default function ProfilePage() {
           </>
         )}
 
-        {activeTab === 'Overview' && user?.id && (
+        {activeTab === 'Overview' && (user && user.id) && (
           <MySubscriptions userId={user.id} />
         )}
 
@@ -479,7 +479,7 @@ export default function ProfilePage() {
             ) : (
               <div className="p-3 space-y-2">
                 {myRooms.slice(0, 10).map(room => {
-                  const isLive = room.status === 'live';
+                  var isLive = room.status === 'live';
                   return (
                     <div key={room.id}
                       onClick={() => navigate(createPageUrl('LiveRoom') + '?id=' + room.id)}
@@ -571,16 +571,16 @@ export default function ProfilePage() {
               <div>
                 <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Bio</p>
                 <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
-                  {user?.bio || 'No bio yet.'}
+                  {(user && user.bio) || 'No bio yet.'}
                 </p>
               </div>
               <div>
                 <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Email</p>
                 <p className="text-sm flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                  <Mail className="w-3.5 h-3.5" style={{ color: GOLD }} />{user?.email}
+                  <Mail className="w-3.5 h-3.5" style={{ color: GOLD }} />{(user && user.email)}
                 </p>
               </div>
-              {user?.badges && user.badges.length > 0 && (
+              {(user && user.badges) && user.badges.length > 0 && (
                 <div>
                   <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Badges</p>
                   <div className="flex flex-wrap gap-2">
@@ -617,7 +617,7 @@ export default function ProfilePage() {
           </DarkCard>
         )}
 
-        {activeTab === 'Settings' && user?.id && (
+        {activeTab === 'Settings' && (user && user.id) && (
           <div className="mb-3">
             <PayoutMethodSettings user={user} />
           </div>
@@ -657,9 +657,9 @@ export default function ProfilePage() {
 
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="profile" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -668,7 +668,7 @@ export default function ProfilePage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
