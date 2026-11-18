@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import { createPageUrl } from '../utils';
 import { useQuery } from '@tanstack/react-query';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -942,6 +944,9 @@ Return ONLY valid JSON (no markdown, no backticks):
             <Zap size={10} style={{ verticalAlign: 'middle', marginRight: 4 }} />
             AI Studio
           </span>
+          <Link to={createPageUrl('GoLive')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 999, background: 'rgba(255,26,60,0.12)', border: '1px solid rgba(255,26,60,0.35)', color: '#FF1A3C', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            🔴 Co-Stream
+          </Link>
         </div>
       </div>
 
@@ -970,6 +975,29 @@ Return ONLY valid JSON (no markdown, no backticks):
             <tab.icon size={13} /> {tab.label}
           </button>
         ))}
+      </div>
+
+      {/* ── Live Co-Stream feature banner ── */}
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '12px 16px 0' }}>
+        <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,26,60,0.2)', background: 'linear-gradient(90deg,rgba(255,26,60,0.08),rgba(201,168,76,0.06))' }}>
+          <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 220 }}>
+              <span style={{ fontSize: 20 }}>🎙</span>
+              <div>
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4', margin: 0, letterSpacing: '0.04em' }}>Live Music Co-Stream</p>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: 0 }}>Generate beats live, then co-host with up to 20 creators on stage — fans react in real time.</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <Link to={createPageUrl('GoLive')} style={{ textDecoration: 'none', padding: '7px 16px', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', background: 'linear-gradient(90deg,#FF1A3C,#C9A84C)', color: '#000' }}>
+                🔴 Go Live Now
+              </Link>
+              <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none', padding: '7px 14px', borderRadius: 8, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}>
+                AI Hub
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ── Two-column desktop layout ── */}

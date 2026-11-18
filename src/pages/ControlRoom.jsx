@@ -595,6 +595,7 @@ export default function ControlRoomPage() {
           { label: '📝 Captions',     page: 'TranscriptionStudio',  color: 'rgba(74,124,89,0.12)'  },
           { label: '🎚️ Studio DSP',  page: 'StudioDSP',            color: 'rgba(201,168,76,0.12)' },
           { label: '🎬 Micro Drama', page: 'EpisodeSeries',         color: 'rgba(123,45,139,0.12)' },
+          { label: '🎥 Creator Studio', page: 'EpisodeCreatorStudio', color: 'rgba(123,45,139,0.08)' },
         ].map(t => (
           <Link key={t.page} to={createPageUrl(t.page)} style={{ textDecoration: 'none' }}>
             <button className="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg"
