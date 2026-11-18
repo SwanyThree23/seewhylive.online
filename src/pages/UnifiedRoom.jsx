@@ -150,7 +150,7 @@ export default function UnifiedRoom() {
             {participants.slice(0, 6).map(p => (
               <div key={`other-${p.id}`} className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
-                {p.(name && name.charA)t(0).toUpperCase()}
+                {(p.name && p.name.charAt(0).toUpperCase()) || '?'}
               </div>
             ))}
           </div>
