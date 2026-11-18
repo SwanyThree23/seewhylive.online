@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -18,10 +18,21 @@ export default function Register() {
   var [loading, setLoading] = useState(false);
   var [showOtp, setShowOtp] = useState(false);
   var [otpCode, setOtpCode] = useState("");
+  var [username, setUsername] = useState("");
+  var [usernameStatus, setUsernameStatus] = useState(null);
+  var debounceRef = useRef(null);
 
   var handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!username.trim() || username.trim().length < 3) {
+      setError("Username must be at least 3 characters");
+      return;
+    }
+    if (usernameStatus === 'taken') {
+      setError("That username is already taken");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -36,6 +47,20 @@ export default function Register() {
       setLoading(false);
     }
   };
+
+  function handleUsernameChange(val) {
+    var clean = val.toLowerCase().replace(/[^a-z0-9_]/g, '');
+    setUsername(clean);
+    setUsernameStatus(clean.length > 2 ? 'checking' : null);
+    if (debounceRef.current) { clearTimeout(debounceRef.current); }
+    if (clean.length < 3) return;
+    debounceRef.current = setTimeout(function() {
+      fetch('/api/check-username?username=' + encodeURIComponent(clean))
+        .then(function(r) { return r.json(); })
+        .then(function(data) { setUsernameStatus(data.available ? 'available' : 'taken'); })
+        .catch(function() { setUsernameStatus(null); });
+    }, 500);
+  }
 
   var handleVerify = async () => {
     setError("");
@@ -136,6 +161,16 @@ export default function Register() {
     );
   }
 
+  var pwChecks = {
+    len: password.length >= 8,
+    upper: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+  };
+  var pwScore = (pwChecks.len ? 1 : 0) + (pwChecks.upper ? 1 : 0) + (pwChecks.number ? 1 : 0) + (pwChecks.special ? 1 : 0);
+  var pwBarColor = pwScore <= 1 ? '#EF4444' : pwScore === 2 ? '#F59E0B' : pwScore === 3 ? '#EAB308' : '#22C55E';
+  var pwLabel = pwScore === 0 ? '' : pwScore <= 1 ? 'Weak' : pwScore === 2 ? 'Fair' : pwScore === 3 ? 'Good' : 'Strong';
+
   return (
     <AuthLayout
       icon={UserPlus}
@@ -219,6 +254,34 @@ export default function Register() {
           </div>
         </div>
         <div className="space-y-2">
+          <Label htmlFor="username">Username</Label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium select-none" aria-hidden="true">@</span>
+            <Input
+              id="username"
+              type="text"
+              autoComplete="username"
+              placeholder="yourcreatorname"
+              value={username}
+              onChange={function(e) { handleUsernameChange(e.target.value); }}
+              className="pl-7 h-12 pr-28"
+              required
+              minLength={3}
+              maxLength={30}
+            />
+            {usernameStatus === 'checking' && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">checking…</span>
+            )}
+            {usernameStatus === 'available' && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-green-500">✓ Available</span>
+            )}
+            {usernameStatus === 'taken' && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-destructive">✗ Taken</span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">Lowercase letters, numbers, and underscores only.</p>
+        </div>
+        <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
@@ -233,6 +296,45 @@ export default function Register() {
               required
             />
           </div>
+          {password.length > 0 && (
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1 flex-1">
+                  {[1, 2, 3, 4].map(function(n) {
+                    return (
+                      <div
+                        key={n}
+                        className="h-1.5 flex-1 rounded-full transition-all duration-300"
+                        style={{ background: n <= pwScore ? pwBarColor : 'rgba(0,0,0,0.1)' }}
+                      />
+                    );
+                  })}
+                </div>
+                {pwLabel && (
+                  <span className="text-xs font-semibold" style={{ color: pwBarColor, minWidth: 40 }}>{pwLabel}</span>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                {[
+                  { key: 'len',     label: '8+ characters' },
+                  { key: 'upper',   label: 'Uppercase letter' },
+                  { key: 'number',  label: 'Number' },
+                  { key: 'special', label: 'Special character' },
+                ].map(function(req) {
+                  return (
+                    <span
+                      key={req.key}
+                      className="flex items-center gap-1 text-xs transition-colors duration-200"
+                      style={{ color: pwChecks[req.key] ? '#22C55E' : undefined }}
+                    >
+                      <span className="font-bold">{pwChecks[req.key] ? '✓' : '○'}</span>
+                      {req.label}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirm">Confirm Password</Label>
