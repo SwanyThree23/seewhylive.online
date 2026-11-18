@@ -65,7 +65,7 @@ export default function EmbedPlayer() {
     if (!roomId || roomId === 'live') return;
     function fetchViewers() {
       base44.entities.Room.filter({ id: roomId })
-        .then(function(rooms) { if ((rooms && rooms[0])?.viewer_count != null) setViewers(rooms[0].viewer_count); })
+        .then(function(rooms) { if (rooms && rooms[0] && rooms[0].viewer_count != null) setViewers(rooms[0].viewer_count); })
         .catch(function() {});
     }
     fetchViewers();

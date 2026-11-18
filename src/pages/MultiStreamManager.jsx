@@ -300,7 +300,7 @@ export default function MultiStreamManager() {
                   <div className="flex gap-3">
                     <Input
                       value={newLabel} onChange={(e) => setNewLabel(e.target.value)}
-                      placeholder={`Label (e.g., My ${PLATFORMS.find(p => p.id === selectedPlatform)?.label} Stream)`}
+                      placeholder={`Label (e.g., My ${(PLATFORMS.find(function(p) { return p.id === selectedPlatform; }) || {}).label || ''} Stream)`}
                       className="bg-white/5 border-white/20 text-white placeholder:text-white/30"
                       onKeyDown={(e) => e.key === 'Enter' && addDestination()}
                     />
@@ -348,7 +348,7 @@ export default function MultiStreamManager() {
                           className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
                           style={{ background: `${(platform && platform.color)}30`, border: `1px solid ${(platform && platform.color)}40` }}
                         >
-                          {(platform && platform.label)?.charAt(0)}
+                          {(platform && platform.label) ? (platform.label).charAt(0) : ''}
                         </div>
 
                         {/* Info */}

@@ -1444,7 +1444,7 @@ function TranscriptionPanel() {
           ))}
         </div>
         <Btn onClick={doTranslate} disabled={translating}>
-          {translating ? '⏳ Translating…' : `🌐 Translate to ${LANGS.find(l => l.code === targetLang)?.label}`}
+          {translating ? '⏳ Translating…' : '🌐 Translate to ' + (function(){ var _l = LANGS.find(function(l){ return l.code === targetLang; }); return _l ? _l.label : ''; })()}
         </Btn>
         {translated && (
           <div style={{ marginTop: 12, background: C.bg2, borderRadius: 8, padding: 12, borderLeft: `3px solid ${C.amber}` }}>
@@ -2170,7 +2170,7 @@ export default function SeeWhyLIVEv41() {
       {/* Panel Content */}
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px' }}>
         <div style={{ color: C.textM, fontSize: 11, marginBottom: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
-          {TABS.find(t => t.id === activeTab)?.label}
+          {(function(){ var _t = TABS.find(function(t){ return t.id === activeTab; }); return _t ? _t.label : ''; })()}
         </div>
         {panelMap[activeTab]}
       </div>

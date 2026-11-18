@@ -179,7 +179,7 @@ export default function GoLiveStudio() {
     if (state.phase !== 'live' || !activeRoomId) return;
     function syncViewers() {
       base44.entities.Room.filter({ id: activeRoomId }).then(rooms => {
-        var count = rooms[0]?.viewer_count || 0;
+        var count = (rooms[0] && rooms[0].viewer_count) || 0;
         dispatch({ type: 'UPDATE_HEALTH', payload: { viewerCount: count } });
       }).catch(() => {});
     }

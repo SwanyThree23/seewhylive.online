@@ -519,7 +519,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
         {track.streamReady && (
           <motion.button
             whileTap={{ scale: 0.94 }}
-            onClick={() => onAddToStream?.(track)}
+            onClick={function() { if (onAddToStream) onAddToStream(track); }}
             style={{
               ...T, display: 'flex', alignItems: 'center', gap: 5,
               padding: '5px 12px', borderRadius: 999, fontSize: 11, fontWeight: 800,

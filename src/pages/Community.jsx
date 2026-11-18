@@ -53,15 +53,15 @@ export default function CommunityPage() {
     queryFn: async () => {
       if (communityIdParam) {
         var list = await base44.entities.Community.filter({ id: communityIdParam });
-        return list?.[0] || null;
+        return (list && list[0]) || null;
       }
       if (!(user && user.id)) return null;
       var owned = await base44.entities.Community.filter({ creator_id: user.id }, '-created_date', 1);
-      if (owned?.[0]) return owned[0];
+      if (owned && owned[0]) return owned[0];
       var memberships = await base44.entities.CommunityMember.filter({ user_id: user.id }, '-joined_date', 1);
-      if (memberships?.[0]?.community_id) {
+      if (memberships && memberships[0] && memberships[0].community_id) {
         var joined = await base44.entities.Community.filter({ id: memberships[0].community_id });
-        return joined?.[0] || null;
+        return (joined && joined[0]) || null;
       }
       return null;
     },

@@ -67,7 +67,8 @@ export default function LinkInBio() {
       var viewers = 0;
       try {
         var agg = await base44.entities.GemTransaction.aggregate({ query: { recipient_id: id }, sum: ['usd_value'] });
-        tips = Math.round((agg && agg.rows)?.[0]?.sum_usd_value || 0);
+        var _aggRow = (agg && agg.rows) && (agg.rows)[0];
+        tips = Math.round((_aggRow && _aggRow.sum_usd_value) || 0);
       } catch (e) { /* tips stat is best-effort */ }
       try {
         var topRes = await base44.entities.Room.filter({ host_id: id }, { sort: '-viewer_count', limit: 1 });
@@ -99,7 +100,7 @@ export default function LinkInBio() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  var links = SOCIALS.filter(s => (profile && profile.social_links)?.[s.key]);
+  var links = SOCIALS.filter(function(s) { var sl = profile && profile.social_links; return sl && sl[s.key]; });
 
   if (loading) {
     return (

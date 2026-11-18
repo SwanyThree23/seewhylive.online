@@ -469,7 +469,7 @@ export default function WebsiteGenerator() {
 
   function selectCategory(cat) {
     setCategory(cat);
-    var first = TEMPLATES[cat]?.[0];
+    var first = (TEMPLATES[cat] && TEMPLATES[cat][0]);
     if (first) setTemplateId(first.id);
   }
 
@@ -688,15 +688,15 @@ function startVoiceCall(){
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
-              <label style={{ fontSize: 11, color: DIM, ...T }}>{(selectedTemplate && selectedTemplate.fields)?.[0] || 'Name'}</label>
+              <label style={{ fontSize: 11, color: DIM, ...T }}>{((selectedTemplate && selectedTemplate.fields) ? selectedTemplate.fields[0] : null) || 'Name'}</label>
               <input value={formData.name} onChange={e => setField('name', e.target.value)}
-                placeholder={(selectedTemplate && selectedTemplate.fields)?.[0] || 'Brand / Creator Name'}
+                placeholder={((selectedTemplate && selectedTemplate.fields) ? selectedTemplate.fields[0] : null) || 'Brand / Creator Name'}
                 style={inp} />
             </div>
             <div>
-              <label style={{ fontSize: 11, color: DIM, ...T }}>{(selectedTemplate && selectedTemplate.fields)?.[1] || 'Tagline'}</label>
+              <label style={{ fontSize: 11, color: DIM, ...T }}>{((selectedTemplate && selectedTemplate.fields) ? selectedTemplate.fields[1] : null) || 'Tagline'}</label>
               <input value={formData.tagline} onChange={e => setField('tagline', e.target.value)}
-                placeholder={(selectedTemplate && selectedTemplate.fields)?.[1] || 'Tagline or key phrase'}
+                placeholder={((selectedTemplate && selectedTemplate.fields) ? selectedTemplate.fields[1] : null) || 'Tagline or key phrase'}
                 style={inp} />
             </div>
           </div>
@@ -704,7 +704,7 @@ function startVoiceCall(){
           <div>
             <label style={{ fontSize: 11, color: DIM, ...T }}>Additional Context (optional — location, hours, pricing, features)</label>
             <textarea value={formData.context} onChange={e => setField('context', e.target.value)}
-              placeholder={`E.g., "${(selectedTemplate && selectedTemplate.fields)?.[2] || 'Located in Austin TX, est. 2020, 5-star rated'}, ${(selectedTemplate && selectedTemplate.fields)?.[3] || 'contact@example.com'}"`}
+              placeholder={'E.g., "' + (((selectedTemplate && selectedTemplate.fields) ? selectedTemplate.fields[2] : null) || 'Located in Austin TX, est. 2020, 5-star rated') + ', ' + (((selectedTemplate && selectedTemplate.fields) ? selectedTemplate.fields[3] : null) || 'contact@example.com') + '"'}
               rows={2}
               style={{ ...inp, resize: 'vertical', lineHeight: 1.5 }} />
           </div>
