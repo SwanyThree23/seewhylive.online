@@ -33,13 +33,13 @@ import ViewerCount from '../components/live/ViewerCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const GREEN = '#6DBF7E';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var GREEN = '#6DBF7E';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TABS = [
+var TABS = [
   { id: 'analytics',     label: 'Analytics',     icon: TrendingUp },
   { id: 'members',       label: 'Members',        icon: Users },
   { id: 'reports',       label: 'Reports',        icon: Flag },
@@ -47,18 +47,18 @@ const TABS = [
   { id: 'referrals',     label: 'Referrals',      icon: Shield },
 ];
 
-const ROLE_CONFIG = {
+var ROLE_CONFIG = {
   owner:  { color: GOLD,    label: 'Owner',  icon: Crown },
   admin:  { color: '#D4854A', label: 'Admin',  icon: Shield },
   member: { color: 'rgba(255,255,255,0.35)', label: 'Member', icon: Users },
 };
 
 function MemberRow({ member, currentUserId, onRoleChange, onRemove }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const cfg = ROLE_CONFIG[member.role] || ROLE_CONFIG.member;
-  const Icon = cfg.icon;
-  const isOwner = member.role === 'owner';
-  const isSelf = member.user_id === currentUserId;
+  var [menuOpen, setMenuOpen] = useState(false);
+  var cfg = ROLE_CONFIG[member.role] || ROLE_CONFIG.member;
+  var Icon = cfg.icon;
+  var isOwner = member.role === 'owner';
+  var isSelf = member.user_id === currentUserId;
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -67,7 +67,7 @@ function MemberRow({ member, currentUserId, onRoleChange, onRemove }) {
         {(member.display_name || member.user_id || '?').charAt(0).toUpperCase()}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-black text-sm text-white truncate" style={T}>{member.display_name || member.username || member.user_id?.slice(0, 8)}</p>
+        <p className="font-black text-sm text-white truncate" style={T}>{member.display_name || member.username || member.(user_id && user_id.slice)(0, 8)}</p>
         <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
           Joined {member.joined_date ? new Date(member.joined_date).toLocaleDateString() : 'recently'}
         </p>
@@ -116,17 +116,17 @@ function MemberRow({ member, currentUserId, onRoleChange, onRemove }) {
 }
 
 function MembersTab({ communityId, currentUserId }) {
-  const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
-  const qc = useQueryClient();
+  var [search, setSearch] = useState('');
+  var [roleFilter, setRoleFilter] = useState('all');
+  var qc = useQueryClient();
 
-  const { data: members = [], isLoading } = useQuery({
+  var { data: members = [], isLoading } = useQuery({
     queryKey: ['community-members-admin', communityId],
     queryFn: () => base44.entities.CommunityMember.filter({ community_id: communityId }, '-joined_date', 200),
     enabled: !!communityId,
   });
 
-  const updateRoleMut = useMutation({
+  var updateRoleMut = useMutation({
     mutationFn: ({ id, role }) => base44.entities.CommunityMember.update(id, { role }),
     onSuccess: (_, { role }) => {
       toast.success('Role updated');
@@ -142,24 +142,24 @@ function MembersTab({ communityId, currentUserId }) {
     onError: () => toast.error('Action failed.'),
   });
 
-  const removeMut = useMutation({
+  var removeMut = useMutation({
     mutationFn: (id) => base44.entities.CommunityMember.delete(id),
     onSuccess: () => { toast.success('Member removed'); qc.invalidateQueries({ queryKey: ['community-members-admin'] }); },
     onError: () => toast.error('Action failed.'),
   });
 
-  const filtered = members.filter(m => {
+  var filtered = members.filter(m => {
     if (roleFilter !== 'all' && m.role !== roleFilter) return false;
     if (search) {
-      const s = search.toLowerCase();
+      var s = search.toLowerCase();
       return (m.display_name || '').toLowerCase().includes(s) || (m.username || '').toLowerCase().includes(s) || (m.user_id || '').toLowerCase().includes(s);
     }
     return true;
   });
 
-  const ownerCount = members.filter(m => m.role === 'owner').length;
-  const adminCount = members.filter(m => m.role === 'admin').length;
-  const memberCount = members.filter(m => m.role === 'member').length;
+  var ownerCount = members.filter(m => m.role === 'owner').length;
+  var adminCount = members.filter(m => m.role === 'admin').length;
+  var memberCount = members.filter(m => m.role === 'member').length;
 
   return (
     <div className="space-y-4">
@@ -222,23 +222,23 @@ function MembersTab({ communityId, currentUserId }) {
 }
 
 export default function CommunityAdminPage() {
-  const [activeTab, setActiveTab] = useState('analytics');
-  const [searchParams] = useSearchParams();
-  const communityId = searchParams.get('id');
+  var [activeTab, setActiveTab] = useState('analytics');
+  var [searchParams] = useSearchParams();
+  var communityId = searchParams.get('id');
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: community } = useQuery({
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: community } = useQuery({
     queryKey: ['community', communityId],
     queryFn: () => base44.entities.Community.filter({ id: communityId }).then(c => c[0]),
     enabled: !!communityId,
   });
-  const { data: membership } = useQuery({
-    queryKey: ['membership', communityId, user?.id],
-    queryFn: () => base44.entities.CommunityMember.filter({ community_id: communityId, user_id: user?.id }).then(m => m[0]),
+  var { data: membership } = useQuery({
+    queryKey: ['membership', communityId, (user && user.id)],
+    queryFn: () => base44.entities.CommunityMember.filter({ community_id: communityId, user_id: (user && user.id) }).then(m => m[0]),
     enabled: !!communityId && !!user,
   });
 
-  const isAdmin = membership?.role === 'admin' || membership?.role === 'owner';
+  var isAdmin = (membership && membership.role) === 'admin' || (membership && membership.role) === 'owner';
 
   if (!isAdmin) return (
     <div className="min-h-screen flex items-center justify-center text-center px-4" style={{ background: BG }}>
@@ -260,7 +260,7 @@ export default function CommunityAdminPage() {
               <Settings className="w-5 h-5" style={{ color: GOLD }} />
               <div>
                 <h1 className="text-xl font-black text-white leading-none" style={T}>Community Admin</h1>
-                {community?.name && <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{community.name}</p>}
+                {(community && community.name) && <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{community.name}</p>}
               </div>
             </div>
             <Link to={createPageUrl('CommunitySettings') + `?id=${communityId}`}>
@@ -273,8 +273,8 @@ export default function CommunityAdminPage() {
           {/* Tab bar */}
           <div className="flex overflow-x-auto scrollbar-hide border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
             {TABS.map(tab => {
-              const Icon = tab.icon;
-              const active = activeTab === tab.id;
+              var Icon = tab.icon;
+              var active = activeTab === tab.id;
               return (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                   className="flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all shrink-0"
@@ -289,9 +289,9 @@ export default function CommunityAdminPage() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
         {activeTab === 'analytics' && <ChallengeAnalytics communityId={communityId} />}
-        {activeTab === 'members' && <MembersTab communityId={communityId} currentUserId={user?.id} />}
-        {activeTab === 'reports' && <ReportsManager communityId={communityId} userId={user?.id} />}
-        {activeTab === 'announcements' && <AnnouncementScheduler communityId={communityId} userId={user?.id} />}
+        {activeTab === 'members' && <MembersTab communityId={communityId} currentUserId={(user && user.id)} />}
+        {activeTab === 'reports' && <ReportsManager communityId={communityId} userId={(user && user.id)} />}
+        {activeTab === 'announcements' && <AnnouncementScheduler communityId={communityId} userId={(user && user.id)} />}
         {activeTab === 'referrals' && <ReferralConfig communityId={communityId} />}
 
         <div style={{ marginTop: 16, marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -316,13 +316,13 @@ export default function CommunityAdminPage() {
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
           <StreamHealthDashboard roomId={communityId} isHost={true} />
-          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={communityId} communityId={communityId} moderatorId={user?.id} />
+          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={communityId} communityId={communityId} moderatorId={(user && user.id)} />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SpotlightBanner communityId={communityId} isAdmin={true} />
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -331,7 +331,7 @@ export default function CommunityAdminPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

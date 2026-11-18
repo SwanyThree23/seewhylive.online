@@ -17,40 +17,40 @@ import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-const BG    = '#080B18';
-const BG2   = '#0D0A08';
-const BG3   = '#111218';
-const GOLD  = '#D4AF37';
-const GREEN = '#6DBF7E';
-const RED   = '#EF4444';
-const SLATE = '#2A2010';
-const TEXT  = '#F0E8D4';
-const TEXTM = '#8A7A62';
-const FONT  = 'Barlow Condensed, sans-serif';
-const MONO  = { fontFamily: 'Space Mono, monospace' };
+var BG    = '#080B18';
+var BG2   = '#0D0A08';
+var BG3   = '#111218';
+var GOLD  = '#D4AF37';
+var GREEN = '#6DBF7E';
+var RED   = '#EF4444';
+var SLATE = '#2A2010';
+var TEXT  = '#F0E8D4';
+var TEXTM = '#8A7A62';
+var FONT  = 'Barlow Condensed, sans-serif';
+var MONO  = { fontFamily: 'Space Mono, monospace' };
 
-const RTMP_INGEST = 'rtmp://ingest.seewhylive.online:1935/live';
+var RTMP_INGEST = 'rtmp://ingest.seewhylive.online:1935/live';
 
 function cryptoRandB36(len) {
-  const arr = new Uint8Array(len * 2);
+  var arr = new Uint8Array(len * 2);
   crypto.getRandomValues(arr);
   return Array.from(arr, b => (b % 36).toString(36)).join('').slice(0, len);
 }
 
 function genToken() {
-  const rand = () => cryptoRandB36(8);
-  const user = localStorage.getItem('seewhy_user_id') || 'sw_' + rand();
-  const session = Date.now();
+  var rand = () => cryptoRandB36(8);
+  var user = localStorage.getItem('seewhy_user_id') || 'sw_' + rand();
+  var session = Date.now();
   return `${user}?session=${session}`;
 }
 
 function genVDOLink() {
-  const push = cryptoRandB36(12);
+  var push = cryptoRandB36(12);
   return `https://vdo.ninja/?push=${push}&quality=4k`;
 }
 
 function genStreamKey(userId) {
-  const id = userId || 'sw_' + cryptoRandB36(16);
+  var id = userId || 'sw_' + cryptoRandB36(16);
   return `SW_${id.toUpperCase().replace(/[^A-Z0-9]/g, 'X').slice(0, 8)}_${cryptoRandB36(8).toUpperCase()}`;
 }
 
@@ -88,7 +88,7 @@ function TestRow({ icon, label, status, onTest }) {
 }
 
 function CopyBtn({ value }) {
-  const [copied, setCopied] = useState(false);
+  var [copied, setCopied] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
       style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? GREEN : TEXTM, padding: 4 }}>
@@ -98,39 +98,39 @@ function CopyBtn({ value }) {
 }
 
 export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const navigate = useNavigate();
-  const [tests, setTests] = useState({ mic: 'idle', camera: 'idle', network: 'idle' });
-  const [streamKey]  = useState(() => genStreamKey());
-  const [vdoLink]    = useState(() => genVDOLink());
-  const [token, setToken] = useState('');
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var navigate = useNavigate();
+  var [tests, setTests] = useState({ mic: 'idle', camera: 'idle', network: 'idle' });
+  var [streamKey]  = useState(() => genStreamKey());
+  var [vdoLink]    = useState(() => genVDOLink());
+  var [token, setToken] = useState('');
 
   useEffect(() => {
-    setToken(genToken(user?.id));
-  }, [user?.id]);
-  const activeRoomId = new URLSearchParams(window.location.search).get('room_id');
-  const [showKey, setShowKey] = useState(false);
-  const [previewMicOn, setPreviewMicOn] = useState(true);
-  const [previewVideoOn, setPreviewVideoOn] = useState(true);
-  const streamRef = useRef(null);
+    setToken(genToken((user && user.id)));
+  }, [(user && user.id)]);
+  var activeRoomId = new URLSearchParams(window.location.search).get('room_id');
+  var [showKey, setShowKey] = useState(false);
+  var [previewMicOn, setPreviewMicOn] = useState(true);
+  var [previewVideoOn, setPreviewVideoOn] = useState(true);
+  var streamRef = useRef(null);
 
-  const allReady = tests.mic === 'ready' && tests.camera === 'ready' && tests.network === 'ready';
+  var allReady = tests.mic === 'ready' && tests.camera === 'ready' && tests.network === 'ready';
 
-  const runTest = useCallback(async (type) => {
+  var runTest = useCallback(async (type) => {
     setTests(t => ({ ...t, [type]: 'testing' }));
     try {
       if (type === 'mic') {
-        const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+        var s = await navigator.mediaDevices.getUserMedia({ audio: true });
         s.getTracks().forEach(t => t.stop());
         setTests(t => ({ ...t, mic: 'ready' }));
       } else if (type === 'camera') {
-        const s = await navigator.mediaDevices.getUserMedia({ video: true });
+        var s = await navigator.mediaDevices.getUserMedia({ video: true });
         streamRef.current = s;
         s.getTracks().forEach(t => t.stop());
         setTests(t => ({ ...t, camera: 'ready' }));
       } else if (type === 'network') {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
+        var controller = new AbortController();
+        var timeout = setTimeout(() => controller.abort(), 5000);
         try {
           await fetch('https://www.google.com/generate_204', { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
           setTests(t => ({ ...t, network: 'ready' }));
@@ -152,7 +152,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
     }
   }
 
-  const content = (
+  var content = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>

@@ -36,13 +36,13 @@ import {
   MessageSquare, Star, Crown, Zap
 } from 'lucide-react';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const COLORS = [GOLD, CRIMSON, '#D4AF37', '#C9A84C', '#6DBF7E'];
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var COLORS = [GOLD, CRIMSON, '#D4AF37', '#C9A84C', '#6DBF7E'];
 
-const CHART_THEME = {
+var CHART_THEME = {
   cartesian: { stroke: 'rgba(255,255,255,0.06)' },
   tick: { fill: 'rgba(255,255,255,0.35)', fontSize: 10 },
   tooltip: { contentStyle: { background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 }, cursor: { fill: 'rgba(212,175,55,0.06)' } },
@@ -75,76 +75,76 @@ function DarkCard({ title, desc, children }) {
   );
 }
 
-const TABS = ['revenue', 'rooms', 'engagement', 'platform'];
+var TABS = ['revenue', 'rooms', 'engagement', 'platform'];
 
 export default function AnalyticsPage() {
-  const [activeTab, setActiveTab] = useState('revenue');
+  var [activeTab, setActiveTab] = useState('revenue');
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room_id');
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [searchParams] = useSearchParams();
+  var roomId = searchParams.get('room_id');
 
-  const { data: rooms = [] } = useQuery({
-    queryKey: ['analyticsRooms', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id }),
+  var { data: rooms = [] } = useQuery({
+    queryKey: ['analyticsRooms', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id) }),
     enabled: !!user,
   });
-  const { data: transactions = [] } = useQuery({
-    queryKey: ['analyticsTransactions', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
+  var { data: transactions = [] } = useQuery({
+    queryKey: ['analyticsTransactions', (user && user.id)],
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: (user && user.id) }, '-created_date', 100),
     enabled: !!user,
   });
-  const { data: subscriptions = [] } = useQuery({
-    queryKey: ['analyticsSubscriptions', user?.id],
-    queryFn: () => base44.entities.Subscription.filter({ creator_id: user?.id }),
+  var { data: subscriptions = [] } = useQuery({
+    queryKey: ['analyticsSubscriptions', (user && user.id)],
+    queryFn: () => base44.entities.Subscription.filter({ creator_id: (user && user.id) }),
     enabled: !!user,
   });
-  const { data: messages = [] } = useQuery({
+  var { data: messages = [] } = useQuery({
     queryKey: ['analyticsMessages'],
     queryFn: () => base44.entities.Message.list('-created_date', 200),
   });
-  const { data: allUsers = [] } = useQuery({
+  var { data: allUsers = [] } = useQuery({
     queryKey: ['analyticsAllUsers'],
     queryFn: () => base44.entities.User.list('-created_date', 200),
-    enabled: user?.role === 'admin',
+    enabled: (user && user.role) === 'admin',
   });
 
-  const totalViews = rooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
-  const totalRevenue = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
-  const avgViewers = rooms.length > 0 ? (totalViews / rooms.length).toFixed(0) : 0;
-  const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
-  const liveRooms = rooms.filter(r => r.status === 'live').length;
+  var totalViews = rooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
+  var totalRevenue = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
+  var avgViewers = rooms.length > 0 ? (totalViews / rooms.length).toFixed(0) : 0;
+  var activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
+  var liveRooms = rooms.filter(r => r.status === 'live').length;
 
-  const statusGroups = rooms.reduce((acc, r) => { acc[r.status] = (acc[r.status] || 0) + 1; return acc; }, {});
-  const statusPieData = Object.entries(statusGroups).map(([name, value]) => ({ name, value }));
+  var statusGroups = rooms.reduce((acc, r) => { acc[r.status] = (acc[r.status] || 0) + 1; return acc; }, {});
+  var statusPieData = Object.entries(statusGroups).map(([name, value]) => ({ name, value }));
 
-  const revenueByMonth = transactions.reduce((acc, t) => {
-    const month = new Date(t.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
+  var revenueByMonth = transactions.reduce((acc, t) => {
+    var month = new Date(t.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
     acc[month] = (acc[month] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
-  const revenueChartData = Object.entries(revenueByMonth).slice(-6).map(([month, revenue]) => ({ month, revenue }));
+  var revenueChartData = Object.entries(revenueByMonth).slice(-6).map(([month, revenue]) => ({ month, revenue }));
 
-  const categoryGroups = rooms.reduce((acc, r) => {
-    const cat = r.tags?.[0] || 'other';
+  var categoryGroups = rooms.reduce((acc, r) => {
+    var cat = r.tags?.[0] || 'other';
     acc[cat] = (acc[cat] || 0) + 1;
     return acc;
   }, {});
-  const categoryData = Object.entries(categoryGroups).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([name, count]) => ({ name, count }));
+  var categoryData = Object.entries(categoryGroups).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([name, count]) => ({ name, count }));
 
-  const topRooms = [...rooms].sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0)).slice(0, 8).map(r => ({ name: r.title.slice(0, 20), viewers: r.viewer_count || 0 }));
+  var topRooms = [...rooms].sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0)).slice(0, 8).map(r => ({ name: r.title.slice(0, 20), viewers: r.viewer_count || 0 }));
 
-  const userGrowth = allUsers.reduce((acc, u) => {
-    const month = new Date(u.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
+  var userGrowth = allUsers.reduce((acc, u) => {
+    var month = new Date(u.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
     acc[month] = (acc[month] || 0) + 1;
     return acc;
   }, {});
-  const userGrowthData = Object.entries(userGrowth).slice(-6).map(([month, count]) => ({ month, count }));
+  var userGrowthData = Object.entries(userGrowth).slice(-6).map(([month, count]) => ({ month, count }));
 
-  const isAdmin = user?.role === 'admin';
-  const visibleTabs = isAdmin ? TABS : TABS.filter(t => t !== 'platform');
+  var isAdmin = (user && user.role) === 'admin';
+  var visibleTabs = isAdmin ? TABS : TABS.filter(t => t !== 'platform');
 
-  const emptyState = (msg) => (
+  var emptyState = (msg) => (
     <div className="h-48 flex items-center justify-center text-sm" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>{msg}</div>
   );
 
@@ -231,8 +231,8 @@ export default function AnalyticsPage() {
                   { status: 'cancelled', color: '#C0392B', bg: 'rgba(192,57,43,0.06)' },
                   { status: 'expired', color: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.03)' },
                 ].map(({ status, color, bg }) => {
-                  const count = subscriptions.filter(s => s.status === status).length;
-                  const revenue = subscriptions.filter(s => s.status === status).reduce((s, sub) => s + (sub.price || 0), 0);
+                  var count = subscriptions.filter(s => s.status === status).length;
+                  var revenue = subscriptions.filter(s => s.status === status).reduce((s, sub) => s + (sub.price || 0), 0);
                   return (
                     <div key={status} className="rounded-xl p-4" style={{ background: bg, border: `1px solid ${color}22` }}>
                       <p className="text-2xl font-black" style={{ color, fontFamily: 'Orbitron, monospace' }}>{count}</p>
@@ -314,7 +314,7 @@ export default function AnalyticsPage() {
                 {[
                   { label: 'Total Messages', value: messages.length },
                   { label: 'Unique Chatters', value: new Set(messages.map(m => m.user_id)).size },
-                  { label: 'Avg Message Length', value: `${messages.length > 0 ? Math.round(messages.reduce((s, m) => s + (m.content?.length || 0), 0) / messages.length) : 0} chars` },
+                  { label: 'Avg Message Length', value: `${messages.length > 0 ? Math.round(messages.reduce((s, m) => s + (m.(content && content.length) || 0), 0) / messages.length) : 0} chars` },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-center justify-between p-3 rounded-xl"
                     style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -392,7 +392,7 @@ export default function AnalyticsPage() {
           <LeaderboardPanel roomId={rooms[0]?.id || null} />
           <ShareToSocial content={{ title: 'SeeWhy LIVE Analytics', url: window.location.href }} />
           <AudienceInsights />
-          <StreamerMonetizationCenter userId={user?.id} />
+          <StreamerMonetizationCenter userId={(user && user.id)} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16, paddingBottom: 24 }}>
@@ -411,13 +411,13 @@ export default function AnalyticsPage() {
           <OnlineUsersGrid compact maxVisible={8} />
           <CollaborationMatcher />
           <ContentRecommendations />
-          <EarningsBreakdown userId={user?.id} />
+          <EarningsBreakdown userId={(user && user.id)} />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={totalViews} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <AIHighlightGenerator recording={null} />
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -426,7 +426,7 @@ export default function AnalyticsPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={subscriptions.length} currentViewers={totalViews} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={totalViews} peakViewers={totalViews} />
       <BackgroundCustomizer />

@@ -32,13 +32,13 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
-const BG    = '#080B18';
-const GOLD  = '#D4AF37';
-const PINK    = '#C0392B';
-const GREEN = '#6DBF7E';
-const FONT  = 'Barlow Condensed, sans-serif';
+var BG    = '#080B18';
+var GOLD  = '#D4AF37';
+var PINK    = '#C0392B';
+var GREEN = '#6DBF7E';
+var FONT  = 'Barlow Condensed, sans-serif';
 
-const DEFAULT_TIERS = [
+var DEFAULT_TIERS = [
   {
     id: 'fan',
     name: 'Fan',
@@ -71,7 +71,7 @@ const DEFAULT_TIERS = [
   },
 ];
 
-const FEATURE_LABELS = [
+var FEATURE_LABELS = [
   { key: 'has_early_access',    label: 'Early access to streams' },
   { key: 'has_exclusive_rooms', label: 'Subscriber-only rooms' },
   { key: 'has_custom_badge',    label: 'Custom badge in chat' },
@@ -81,7 +81,7 @@ const FEATURE_LABELS = [
 ];
 
 function TierCard({ tier, isCurrentTier, onSubscribe, onCancel, loading, isDefault }) {
-  const perks = isDefault
+  var perks = isDefault
     ? tier.perks
     : [
         ...FEATURE_LABELS.filter(f => tier[f.key]).map(f => f.label),
@@ -224,19 +224,19 @@ function TierCard({ tier, isCurrentTier, onSubscribe, onCancel, loading, isDefau
 }
 
 function CreatorView({ user }) {
-  const qc = useQueryClient();
-  const { data: tiers = [] } = useQuery({
+  var qc = useQueryClient();
+  var { data: tiers = [] } = useQuery({
     queryKey: ['myTiers', user.id],
     queryFn: () => base44.entities.SubscriptionTier.filter({ creator_id: user.id, is_active: true }, 'sort_order', 20),
     enabled: !!user.id,
   });
-  const { data: subs = [] } = useQuery({
+  var { data: subs = [] } = useQuery({
     queryKey: ['mySubs', user.id],
     queryFn: () => base44.entities.Subscription.filter({ creator_id: user.id, status: 'active' }),
     enabled: !!user.id,
   });
 
-  const revenue = subs.reduce((sum, s) => sum + (s.price || 0), 0);
+  var revenue = subs.reduce((sum, s) => sum + (s.price || 0), 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -313,33 +313,33 @@ function CreatorView({ user }) {
 }
 
 function SubscriberView({ user, creatorId, creatorName }) {
-  const qc = useQueryClient();
+  var qc = useQueryClient();
 
-  const { data: tiers = [], isLoading } = useQuery({
+  var { data: tiers = [], isLoading } = useQuery({
     queryKey: ['creatorTiers', creatorId],
     queryFn: () => base44.entities.SubscriptionTier.filter({ creator_id: creatorId, is_active: true }, 'sort_order', 20),
     enabled: !!creatorId,
   });
-  const { data: userSubs = [] } = useQuery({
-    queryKey: ['userSubs', user?.id, creatorId],
-    queryFn: () => base44.entities.Subscription.filter({ user_id: user?.id, creator_id: creatorId }),
-    enabled: !!user?.id && !!creatorId,
+  var { data: userSubs = [] } = useQuery({
+    queryKey: ['userSubs', (user && user.id), creatorId],
+    queryFn: () => base44.entities.Subscription.filter({ user_id: (user && user.id), creator_id: creatorId }),
+    enabled: !!(user && user.id) && !!creatorId,
   });
 
-  const currentSub = userSubs.find(s => s.status === 'active');
-  const [loadingId, setLoadingId] = useState(null);
+  var currentSub = userSubs.find(s => s.status === 'active');
+  var [loadingId, setLoadingId] = useState(null);
 
-  const displayTiers = tiers.length > 0 ? tiers : DEFAULT_TIERS;
-  const usingDefaults = tiers.length === 0;
+  var displayTiers = tiers.length > 0 ? tiers : DEFAULT_TIERS;
+  var usingDefaults = tiers.length === 0;
 
   async function handleSubscribe(tier) {
-    if (!user?.id) { toast.error('Sign in to subscribe'); return; }
+    if (!(user && user.id)) { toast.error('Sign in to subscribe'); return; }
     setLoadingId(tier.id);
     try {
-      const now = new Date();
-      const end = new Date();
+      var now = new Date();
+      var end = new Date();
       end.setMonth(end.getMonth() + 1);
-      const perks = usingDefaults
+      var perks = usingDefaults
         ? tier.perks
         : [...FEATURE_LABELS.filter(f => tier[f.key]).map(f => f.label), ...(tier.benefits || [])];
 
@@ -410,7 +410,7 @@ function SubscriberView({ user, creatorId, creatorName }) {
     );
   }
 
-  const highlightIdx = Math.floor(displayTiers.length / 2);
+  var highlightIdx = Math.floor(displayTiers.length / 2);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -450,7 +450,7 @@ function SubscriberView({ user, creatorId, creatorName }) {
         <TierCard
           key={tier.id}
           tier={{ ...tier, popular: idx === highlightIdx || tier.is_featured }}
-          isCurrentTier={currentSub?.tier_id === tier.id && currentSub?.status === 'active'}
+          isCurrentTier={(currentSub && currentSub.tier_id) === tier.id && (currentSub && currentSub.status) === 'active'}
           onSubscribe={() => handleSubscribe(tier)}
           onCancel={() => handleCancel(currentSub)}
           loading={loadingId === tier.id}
@@ -462,15 +462,15 @@ function SubscriberView({ user, creatorId, creatorName }) {
 }
 
 function MySubscriptionsView({ user }) {
-  const qc = useQueryClient();
-  const { data: subs = [], isLoading } = useQuery({
-    queryKey: ['myAllSubs', user?.id],
-    queryFn: () => base44.entities.Subscription.filter({ user_id: user?.id }),
-    enabled: !!user?.id,
+  var qc = useQueryClient();
+  var { data: subs = [], isLoading } = useQuery({
+    queryKey: ['myAllSubs', (user && user.id)],
+    queryFn: () => base44.entities.Subscription.filter({ user_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
 
-  const active = subs.filter(s => s.status === 'active');
-  const past   = subs.filter(s => s.status !== 'active');
+  var active = subs.filter(s => s.status === 'active');
+  var past   = subs.filter(s => s.status !== 'active');
 
   if (isLoading) return <div style={{ textAlign: 'center', padding: 40, color: 'rgba(255,255,255,0.3)', fontFamily: FONT }}>Loading…</div>;
 
@@ -553,22 +553,22 @@ function MySubscriptionsView({ user }) {
 }
 
 export default function CreatorSubscriptionsPage() {
-  const [searchParams] = useSearchParams();
-  const creatorParam = searchParams.get('creator');
+  var [searchParams] = useSearchParams();
+  var creatorParam = searchParams.get('creator');
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const isCreator = !creatorParam && (user?.role === 'admin' || user?.role === 'creator' || true);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var isCreator = !creatorParam && ((user && user.role) === 'admin' || (user && user.role) === 'creator' || true);
 
-  const TABS = [
+  var TABS = [
     ...(isCreator && !creatorParam ? [{ id: 'creator', label: 'My Creator Page', icon: <Settings style={{ width: 13, height: 13 }} /> }] : []),
     { id: 'subscribe', label: creatorParam ? 'Subscribe' : 'Preview My Tiers', icon: <Star style={{ width: 13, height: 13 }} /> },
     { id: 'my', label: 'My Subscriptions', icon: <Users style={{ width: 13, height: 13 }} /> },
   ];
 
-  const [tab, setTab] = useState(creatorParam ? 'subscribe' : (isCreator ? 'creator' : 'my'));
+  var [tab, setTab] = useState(creatorParam ? 'subscribe' : (isCreator ? 'creator' : 'my'));
 
-  const targetCreatorId   = creatorParam || user?.id;
-  const targetCreatorName = creatorParam ? 'Creator' : (user?.full_name || user?.email || 'You');
+  var targetCreatorId   = creatorParam || (user && user.id);
+  var targetCreatorName = creatorParam ? 'Creator' : ((user && user.full_name) || (user && user.email) || 'You');
 
   return (
     <div style={{ minHeight: '100vh', background: BG, fontFamily: FONT }}>
@@ -643,7 +643,7 @@ export default function CreatorSubscriptionsPage() {
           )}
         </AnimatePresence>
 
-        {user?.id && (
+        {(user && user.id) && (
           <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
             <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={targetCreatorId} isHighlighted={false} />
@@ -660,9 +660,9 @@ export default function CreatorSubscriptionsPage() {
         )}
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -670,7 +670,7 @@ export default function CreatorSubscriptionsPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

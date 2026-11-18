@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 function cryptoHex(len = 16) {
-  const arr = crypto.getRandomValues(new Uint8Array(Math.ceil(len / 2)));
+  var arr = crypto.getRandomValues(new Uint8Array(Math.ceil(len / 2)));
   return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, len);
 }
 import { base44 } from '@/api/base44Client';
@@ -39,7 +39,7 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 
-const PLATFORMS = [
+var PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
   { name: 'Streamlabs', logo: '🎮', url: 'https://streamlabs.com', port: 1935, protocol: 'RTMP' },
   { name: 'XSplit', logo: '📺', url: 'https://xsplit.com', port: 1935, protocol: 'RTMP' },
@@ -49,8 +49,8 @@ const PLATFORMS = [
 ];
 
 function CopyField({ label, value, mono = true, secret = false }) {
-  const [shown, setShown] = useState(!secret);
-  const copy = () => { navigator.clipboard.writeText(value).then(() => toast.success(`${label} copied!`)).catch(() => toast.error('Copy failed.')); };
+  var [shown, setShown] = useState(!secret);
+  var copy = () => { navigator.clipboard.writeText(value).then(() => toast.success(`${label} copied!`)).catch(() => toast.error('Copy failed.')); };
   return (
     <div className="space-y-1">
       <label className="text-[11px] text-white/40 uppercase tracking-wider font-semibold">{label}</label>
@@ -72,22 +72,22 @@ function CopyField({ label, value, mono = true, secret = false }) {
 }
 
 export default function RTMPServer() {
-  const qc = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['rtmpserver-active-room', user?.id],
+  var qc = useQueryClient();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['rtmpserver-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const [regenerating, setRegenerating] = useState(false);
-  const [streamKey, setStreamKey] = useState('');
-  const [activeTab, setActiveTab] = useState('setup');
-  const [evmuxKey, setEvmuxKey] = useState(() => {
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var [regenerating, setRegenerating] = useState(false);
+  var [streamKey, setStreamKey] = useState('');
+  var [activeTab, setActiveTab] = useState('setup');
+  var [evmuxKey, setEvmuxKey] = useState(() => {
     try { return localStorage.getItem('swl_evmux_key') || ''; } catch { return ''; }
   });
-  const [evmuxSaved, setEvmuxSaved] = useState(false);
+  var [evmuxSaved, setEvmuxSaved] = useState(false);
 
   // Load stream key from user profile; generate and save if missing
   useEffect(() => {
@@ -95,11 +95,11 @@ export default function RTMPServer() {
     if (user.stream_key) {
       setStreamKey(user.stream_key);
     } else {
-      const newKey = `sk_live_${cryptoHex(24)}`;
+      var newKey = `sk_live_${cryptoHex(24)}`;
       setStreamKey(newKey);
       base44.auth.updateMe({ stream_key: newKey }).catch(() => {});
     }
-  }, [user?.id]);
+  }, [(user && user.id)]);
 
   // Load stream key from user profile; generate and save if missing
   useEffect(() => {
@@ -107,19 +107,19 @@ export default function RTMPServer() {
     if (user.stream_key) {
       setStreamKey(user.stream_key);
     } else {
-      const newKey = `sk_live_${cryptoHex(24)}`;
+      var newKey = `sk_live_${cryptoHex(24)}`;
       setStreamKey(newKey);
       base44.auth.updateMe({ stream_key: newKey }).catch(() => {});
     }
-  }, [user?.id]);
+  }, [(user && user.id)]);
 
-  const RTMP_SERVER = 'rtmp://ingest.seewhy.live/live';
-  const SRT_SERVER = 'srt://ingest.seewhy.live:9710';
-  const PLAYBACK_URL = `https://cdn.seewhy.live/hls/${streamKey}/index.m3u8`;
+  var RTMP_SERVER = 'rtmp://ingest.seewhy.live/live';
+  var SRT_SERVER = 'srt://ingest.seewhy.live:9710';
+  var PLAYBACK_URL = `https://cdn.seewhy.live/hls/${streamKey}/index.m3u8`;
 
-  const regenerateKey = async () => {
+  var regenerateKey = async () => {
     setRegenerating(true);
-    const newKey = `sk_live_${cryptoHex(24)}`;
+    var newKey = `sk_live_${cryptoHex(24)}`;
     setStreamKey(newKey);
     try {
       await base44.auth.updateMe({ stream_key: newKey });
@@ -483,30 +483,30 @@ export default function RTMPServer() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
           <StreamHealthDashboard isLive={!!activeRoomId} />
           <CoStreamPanel roomId={activeRoomId} />
-          <WebhookHooks roomId={activeRoomId} userId={user?.id} isHost={true} />
+          <WebhookHooks roomId={activeRoomId} userId={(user && user.id)} isHost={true} />
           <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
-          <GuestRTMPPanel participantId={null} userId={user?.id} />
-          {user?.id && <RTMPFanoutPanel userId={user.id} isStreaming={!!activeRoom} streamId={activeRoomId} />}
-          {user?.id && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
+          <GuestRTMPPanel participantId={null} userId={(user && user.id)} />
+          {(user && user.id) && <RTMPFanoutPanel userId={user.id} isStreaming={!!activeRoom} streamId={activeRoomId} />}
+          {(user && user.id) && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
           <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
         </div>
       </div>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="rtmp" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="rtmp" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.peak_viewers) || 0} />
       <BackgroundCustomizer />
     </div>
   );

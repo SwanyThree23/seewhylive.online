@@ -254,7 +254,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'room_created',
-          title: `PK Battle challenge sent to ${b?.challenger_name || 'challenger'}`,
+          title: `PK Battle challenge sent to ${(b && b.challenger_name) || 'challenger'}`,
         }).catch(() => {});
       }
     },
@@ -510,7 +510,7 @@ function ScoreboardTab({ battle, user, onBattleUpdate }) {
     );
   }
 
-  var ytVidId = battleVideo?.type === 'youtube' ? getYouTubeId(battleVideo.url) : null;
+  var ytVidId = (battleVideo && battleVideo.type) === 'youtube' ? getYouTubeId(battleVideo.url) : null;
 
   return (
     <div className="space-y-4">
@@ -662,8 +662,8 @@ var TABS = [
 ];
 
 export default function PKBattleManager() {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room_id');
+  var [searchParams] = useSearchParams();
+  var roomId = searchParams.get('room_id');
   var [activeTab, setActiveTab] = useState('invitations');
   var [selectedBattle, setSelectedBattle] = useState(null);
   var [showWinner, setShowWinner] = useState(false);
@@ -676,12 +676,12 @@ export default function PKBattleManager() {
   });
 
   var { data: activeRoom } = useQuery({
-    queryKey: ['pkbattlemgr-active-room', user?.id],
+    queryKey: ['pkbattlemgr-active-room', (user && user.id)],
     queryFn: function() { return base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(function(r) { return r[0] || null; }); },
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  var activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
   var { data: battles = [] } = useQuery({
     queryKey: ['pk-battles'],
@@ -848,9 +848,9 @@ export default function PKBattleManager() {
         </AnimatePresence>
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="battle" viewerCount={activeBattleCount} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -858,7 +858,7 @@ export default function PKBattleManager() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeBattleCount} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={currentBattle?.id || null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={(currentBattle && currentBattle.id) || null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={activeBattleCount} peakViewers={activeBattleCount} />
       <BackgroundCustomizer />

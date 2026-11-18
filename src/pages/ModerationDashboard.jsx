@@ -31,10 +31,10 @@ import RewardShop from '../components/loyalty/RewardShop';
 import ViewerCount from '../components/live/ViewerCount';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
-const GOLD = '#D4AF37';
-const BURGUNDY = '#800020';
+var GOLD = '#D4AF37';
+var BURGUNDY = '#800020';
 
-const VIOLATION_STYLES = {
+var VIOLATION_STYLES = {
   harassment:    { color: '#D4854A', bg: 'rgba(212,133,74,0.12)',  border: 'rgba(212,133,74,0.3)' },
   spam:          { color: '#D4AF37', bg: 'rgba(212,175,55,0.12)',  border: 'rgba(212,175,55,0.3)' },
   hate_speech:   { color: '#C0392B', bg: 'rgba(192,57,43,0.12)',  border: 'rgba(192,57,43,0.3)' },
@@ -42,7 +42,7 @@ const VIOLATION_STYLES = {
   safe:          { color: '#6DBF7E', bg: 'rgba(109,191,126,0.08)',   border: 'rgba(109,191,126,0.2)' },
 };
 
-const PRIORITY_STYLES = {
+var PRIORITY_STYLES = {
   urgent: { color: '#C0392B', label: 'URGENT' },
   high:   { color: '#D4854A', label: 'HIGH' },
   medium: { color: GOLD,       label: 'MEDIUM' },
@@ -66,7 +66,7 @@ function StatCard({ icon: Icon, label, value, color = GOLD }) {
 }
 
 function FlaggedItem({ mod, onAction, user }) {
-  const vStyle = VIOLATION_STYLES[mod.violation_type] || VIOLATION_STYLES.inappropriate;
+  var vStyle = VIOLATION_STYLES[mod.violation_type] || VIOLATION_STYLES.inappropriate;
   return (
     <div className="rounded-xl p-3 space-y-2"
       style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${vStyle.border}` }}>
@@ -74,11 +74,11 @@ function FlaggedItem({ mod, onAction, user }) {
         <div className="flex flex-wrap gap-1.5 items-center">
           <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
             style={{ background: vStyle.bg, color: vStyle.color, border: `1px solid ${vStyle.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {mod.content_type?.toUpperCase()}
+            {mod.(content_type && content_type.toUpperCase)()}
           </span>
           <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
             style={{ background: vStyle.bg, color: vStyle.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {mod.violation_type?.replace('_', ' ')}
+            {mod.(violation_type && violation_type.replace)('_', ' ')}
           </span>
           {mod.auto_detected && (
             <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
@@ -140,7 +140,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
           <span className="text-[11px] font-bold text-white">{entry.target_user_name || entry.target_user_id}</span>
         </div>
         {entry.reason && <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{entry.reason}</p>}
-        {entry.keywords_matched?.length > 0 && (
+        {entry.(keywords_matched && keywords_matched.length) > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
             {entry.keywords_matched.map((kw, i) => (
               <span key={i} className="text-[7px] px-1 py-0.5 rounded"
@@ -171,7 +171,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
 }
 
 function ReportItem({ report, onAction, user }) {
-  const pri = PRIORITY_STYLES[report.priority] || PRIORITY_STYLES.medium;
+  var pri = PRIORITY_STYLES[report.priority] || PRIORITY_STYLES.medium;
   return (
     <div className="rounded-xl p-3 space-y-2"
       style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${pri.color}25` }}>
@@ -206,51 +206,51 @@ function ReportItem({ report, onAction, user }) {
 }
 
 export default function ModerationDashboardPage() {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room_id');
-  const [activeTab, setActiveTab] = useState('flagged');
-  const qc = useQueryClient();
+  var [searchParams] = useSearchParams();
+  var roomId = searchParams.get('room_id');
+  var [activeTab, setActiveTab] = useState('flagged');
+  var qc = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const { data: moderations = [] } = useQuery({
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var { data: moderations = [] } = useQuery({
     queryKey: ['mod-content'],
     queryFn: () => base44.entities.ContentModeration.list('-created_date', 100),
     refetchInterval: 10000,
   });
-  const { data: chatMods = [] } = useQuery({
+  var { data: chatMods = [] } = useQuery({
     queryKey: ['chat-mods', roomId],
     queryFn: () => roomId
       ? base44.entities.ChatModeration.filter({ room_id: roomId }, '-created_date', 50)
       : base44.entities.ChatModeration.list('-created_date', 50),
     refetchInterval: 5000,
   });
-  const { data: reports = [] } = useQuery({
+  var { data: reports = [] } = useQuery({
     queryKey: ['reports'],
     queryFn: () => base44.entities.Report.filter({ status: 'pending' }, '-created_date', 30),
     refetchInterval: 10000,
   });
 
-  const reviewMut = useMutation({
+  var reviewMut = useMutation({
     mutationFn: ({ id, action }) => {
-      const updates = action === 'none_safe'
-        ? { action_taken: 'none', violation_type: 'safe', reviewed_by: user?.email, reviewed_at: new Date().toISOString() }
-        : { action_taken: action, reviewed_by: user?.email, reviewed_at: new Date().toISOString() };
+      var updates = action === 'none_safe'
+        ? { action_taken: 'none', violation_type: 'safe', reviewed_by: (user && user.email), reviewed_at: new Date().toISOString() }
+        : { action_taken: action, reviewed_by: (user && user.email), reviewed_at: new Date().toISOString() };
       return base44.entities.ContentModeration.update(id, updates);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['mod-content'] }); toast.success('Action taken'); },
     onError: () => toast.error('Action failed.'),
   });
 
-  const chatActionMut = useMutation({
+  var chatActionMut = useMutation({
     mutationFn: ({ entry, action, timeout }) => base44.entities.ChatModeration.create({
       room_id: entry.room_id || roomId,
-      moderator_id: user?.id,
+      moderator_id: (user && user.id),
       target_user_id: entry.target_user_id,
       target_user_name: entry.target_user_name,
       action_type: action,
@@ -262,24 +262,24 @@ export default function ModerationDashboardPage() {
     onError: () => toast.error('Action failed.'),
   });
 
-  const reportMut = useMutation({
+  var reportMut = useMutation({
     mutationFn: ({ id, action }) => base44.entities.Report.update(id, {
       status: action,
-      reviewed_by: user?.id,
+      reviewed_by: (user && user.id),
       updated_date: new Date().toISOString(),
     }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['reports'] }); toast.success('Report updated'); },
     onError: () => toast.error('Action failed.'),
   });
 
-  const flagged = moderations.filter(m => m.action_taken === 'flagged' || (m.violation_type !== 'safe' && !m.reviewed_by));
-  const today = new Date().toDateString();
-  const todayFlags = moderations.filter(m => new Date(m.created_date).toDateString() === today);
-  const autoDetected = moderations.filter(m => m.auto_detected);
-  const humanOverrides = moderations.filter(m => m.reviewed_by && m.override_decision === 'reversed');
-  const avgConf = flagged.length > 0 ? flagged.reduce((a, m) => a + (m.ai_confidence || 0), 0) / flagged.length : 0;
+  var flagged = moderations.filter(m => m.action_taken === 'flagged' || (m.violation_type !== 'safe' && !m.reviewed_by));
+  var today = new Date().toDateString();
+  var todayFlags = moderations.filter(m => new Date(m.created_date).toDateString() === today);
+  var autoDetected = moderations.filter(m => m.auto_detected);
+  var humanOverrides = moderations.filter(m => m.reviewed_by && m.override_decision === 'reversed');
+  var avgConf = flagged.length > 0 ? flagged.reduce((a, m) => a + (m.ai_confidence || 0), 0) / flagged.length : 0;
 
-  const TABS = [
+  var TABS = [
     { id: 'flagged',  label: `🚩 Flagged (${flagged.length})` },
     { id: 'chat',     label: `💬 Chat Mod (${chatMods.length})` },
     { id: 'reports',  label: `📋 Reports (${reports.length})` },
@@ -380,7 +380,7 @@ export default function ModerationDashboardPage() {
         )}
 
         <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
-        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={userCommunityId} moderatorId={user.id} />}
+        {(user && user.id) && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={userCommunityId} moderatorId={user.id} />}
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
           {[
@@ -396,19 +396,19 @@ export default function ModerationDashboardPage() {
 
         <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <AIModeration roomId={roomId} isHost={true} />
-          <HostAlertCenter roomId={roomId} hostId={user?.id} />
-          <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={roomId} reporterId={user?.id} />
+          <HostAlertCenter roomId={roomId} hostId={(user && user.id)} />
+          <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={roomId} reporterId={(user && user.id)} />
           <OnlineUsersGrid compact maxVisible={8} />
           <StreamHealthDashboard roomId={roomId} isHost={true} />
-          <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
-          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+          <EngagementBadgesDisplay roomId={roomId} userId={(user && user.id)} creatorId={(user && user.id)} />
+          <AnnouncementPanel communityId={userCommunityId} userId={(user && user.id)} />
           <CollaborationMatcher />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -416,7 +416,7 @@ export default function ModerationDashboardPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

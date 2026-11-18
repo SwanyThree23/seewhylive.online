@@ -12,14 +12,14 @@ import StreamerMonetizationCenter from '../components/monetization/StreamerMonet
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import NativeSelect from '../components/ui/NativeSelect';
 
-const BG      = '#080B18';
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const GREEN   = '#6DBF7E';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG      = '#080B18';
+var GOLD    = '#D4AF37';
+var CRIMSON = '#800020';
+var GREEN   = '#6DBF7E';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'];
-const STATUS_COLOR = {
+var SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'];
+var STATUS_COLOR = {
   pending:   { bg: 'rgba(212,175,55,0.12)',  border: 'rgba(212,175,55,0.3)',   color: GOLD    },
   confirmed: { bg: 'rgba(74,138,122,0.1)',     border: 'rgba(74,138,122,0.3)',    color: '#4A8A7A' },
   shipped:   { bg: 'rgba(123,93,166,0.1)',   border: 'rgba(123,93,166,0.3)', color: '#7B5DA6' },
@@ -29,18 +29,18 @@ const STATUS_COLOR = {
 
 /* ── Fan: Product Sheet ───────────────────────────────────── */
 function ProductSheet({ item, onClose, user }) {
-  const [size, setSize]     = useState('');
-  const [qty, setQty]       = useState(1);
-  const [success, setSuccess] = useState(false);
-  const queryClient         = useQueryClient();
+  var [size, setSize]     = useState('');
+  var [qty, setQty]       = useState(1);
+  var [success, setSuccess] = useState(false);
+  var queryClient         = useQueryClient();
 
-  const totalUsd    = Math.floor(item.price_usd * qty * 100) / 100;
-  const creatorGets = Math.floor(item.price_usd * qty * 90) / 100;
+  var totalUsd    = Math.floor(item.price_usd * qty * 100) / 100;
+  var creatorGets = Math.floor(item.price_usd * qty * 90) / 100;
 
-  const orderMutation = useMutation({
+  var orderMutation = useMutation({
     mutationFn: () => base44.entities.MerchandiseOrder.create({
-      buyer_id: user?.id,
-      buyer_name: user?.full_name || user?.email || 'Fan',
+      buyer_id: (user && user.id),
+      buyer_name: (user && user.full_name) || (user && user.email) || 'Fan',
       creator_id: item.creator_id,
       item_id: item.id,
       item_name: item.name,
@@ -100,7 +100,7 @@ function ProductSheet({ item, onClose, user }) {
             </div>
 
             {/* Sizes */}
-            {item.sizes_available?.length > 0 && (
+            {item.(sizes_available && sizes_available.length) > 0 && (
               <div>
                 <p className="text-[10px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Size</p>
                 <div className="flex gap-2 flex-wrap">
@@ -156,18 +156,18 @@ function ProductSheet({ item, onClose, user }) {
 
 /* ── Creator: Add Item Form ───────────────────────────────── */
 function AddItemModal({ creatorId, onClose }) {
-  const queryClient = useQueryClient();
-  const [form, setForm] = useState({ name: '', price_usd: '', description: '', sizes_available: [] });
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  var queryClient = useQueryClient();
+  var [form, setForm] = useState({ name: '', price_usd: '', description: '', sizes_available: [] });
+  var set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-  const toggleSize = (s) => setForm(f => ({
+  var toggleSize = (s) => setForm(f => ({
     ...f,
     sizes_available: f.sizes_available.includes(s)
       ? f.sizes_available.filter(x => x !== s)
       : [...f.sizes_available, s],
   }));
 
-  const addMutation = useMutation({
+  var addMutation = useMutation({
     mutationFn: () => base44.entities.MerchandiseItem.create({
       ...form,
       creator_id: creatorId,
@@ -245,55 +245,55 @@ function AddItemModal({ creatorId, onClose }) {
 
 /* ── Main Page ────────────────────────────────────────────── */
 export default function MerchStorePage() {
-  const urlParams     = new URLSearchParams(window.location.search);
-  const creatorParam  = urlParams.get('id');
-  const [activeTab, setActiveTab] = useState('store');
-  const [selected, setSelected]   = useState(null);
-  const [showAdd, setShowAdd]     = useState(false);
+  var urlParams     = new URLSearchParams(window.location.search);
+  var creatorParam  = urlParams.get('id');
+  var [activeTab, setActiveTab] = useState('store');
+  var [selected, setSelected]   = useState(null);
+  var [showAdd, setShowAdd]     = useState(false);
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  const targetCreatorId = creatorParam || user?.id;
-  const isOwnStore      = !creatorParam || creatorParam === user?.id;
+  var targetCreatorId = creatorParam || (user && user.id);
+  var isOwnStore      = !creatorParam || creatorParam === (user && user.id);
 
-  const { data: items = [], isLoading } = useQuery({
+  var { data: items = [], isLoading } = useQuery({
     queryKey: ['merch-items', targetCreatorId],
     queryFn: () => base44.entities.MerchandiseItem.filter({ creator_id: targetCreatorId, is_active: true }),
     enabled: !!targetCreatorId,
   });
 
-  const { data: allItems = [] } = useQuery({
+  var { data: allItems = [] } = useQuery({
     queryKey: ['merch-all-items', targetCreatorId],
     queryFn: () => base44.entities.MerchandiseItem.filter({ creator_id: targetCreatorId }),
     enabled: !!targetCreatorId && isOwnStore,
   });
 
-  const { data: orders = [] } = useQuery({
+  var { data: orders = [] } = useQuery({
     queryKey: ['merch-orders', targetCreatorId],
     queryFn: () => base44.entities.MerchandiseOrder.filter({ creator_id: targetCreatorId }, '-created_date', 50),
     enabled: !!targetCreatorId && isOwnStore,
   });
 
-  const queryClient = useQueryClient();
+  var queryClient = useQueryClient();
 
-  const toggleItemMutation = useMutation({
+  var toggleItemMutation = useMutation({
     mutationFn: ({ id, field, val }) => base44.entities.MerchandiseItem.update(id, { [field]: val }),
     onSuccess: () => queryClient.invalidateQueries(['merch-all-items', targetCreatorId]),
   });
 
-  const updateOrderMutation = useMutation({
+  var updateOrderMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.MerchandiseOrder.update(id, { status }),
     onSuccess: () => queryClient.invalidateQueries(['merch-orders', targetCreatorId]),
   });
 
-  const totalRevenue = orders.filter(o => o.status !== 'cancelled' && o.status !== 'refunded')
+  var totalRevenue = orders.filter(o => o.status !== 'cancelled' && o.status !== 'refunded')
     .reduce((s, o) => s + (o.creator_payout || 0), 0);
-  const totalSold    = allItems.reduce((s, i) => s + (i.times_sold || 0), 0);
+  var totalSold    = allItems.reduce((s, i) => s + (i.times_sold || 0), 0);
 
-  const TABS = isOwnStore
+  var TABS = isOwnStore
     ? [
         { id: 'store',     label: 'Public Store', icon: ShoppingBag },
         { id: 'manage',    label: 'Manage Items', icon: Package },
@@ -478,7 +478,7 @@ export default function MerchStorePage() {
                 <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No orders yet</p>
               </div>
             ) : orders.map(order => {
-              const sc = STATUS_COLOR[order.status] || STATUS_COLOR.pending;
+              var sc = STATUS_COLOR[order.status] || STATUS_COLOR.pending;
               return (
                 <div key={order.id} className="p-4 rounded-xl"
                   style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -490,8 +490,8 @@ export default function MerchStorePage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-black text-base" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${order.total_usd?.toFixed(2)}</p>
-                      <p className="text-[10px]" style={{ color: GREEN, ...T }}>+${order.creator_payout?.toFixed(2)} yours</p>
+                      <p className="font-black text-base" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${order.(total_usd && total_usd.toFixed)(2)}</p>
+                      <p className="text-[10px]" style={{ color: GREEN, ...T }}>+${order.(creator_payout && creator_payout.toFixed)(2)} yours</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -537,7 +537,7 @@ export default function MerchStorePage() {
       </AnimatePresence>
       <SwanyBotWidget />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <StreamerMonetizationCenter />
       <SwanAIRecommendations roomId={null} currentLayout='merch' viewerCount={0} />
     </div>
