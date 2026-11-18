@@ -591,6 +591,10 @@ app.use('/', publicPreviewRoutes);
 var n8nRouter = require('./n8nWebhooks');
 app.use('/api/n8n', n8nRouter);
 
+var outboundWebhooksRouter = require('./routes/outboundWebhooks');
+app.use('/api/outbound-webhooks', outboundWebhooksRouter);
+var webhookService = require('./services/webhookService');
+
 // ─── Socket.io ────────────────────────────────────────────────────────────
 var io = new Server(server, {
   cors: {
@@ -2875,6 +2879,16 @@ io.on('connection', function(socket) {
           if (guestId && !String(guestId).startsWith('anon')) {
             io.to('user:' + guestId).emit('user-sync', { event: 'device_joined', roomId: roomId, socketId: socket.id, deviceCount: ackPayload.myDeviceCount });
           }
+          // Fire outbound webhook for user.joined (guests only, not host, not anon)
+          try {
+            var _ujRoom = rooms.get(roomId);
+            var _ujHostId = _ujRoom && _ujRoom.hostUserId;
+            if (_ujHostId && guestId && !String(guestId).startsWith('anon') && socket.data.role !== 'host') {
+              webhookService.fireWebhooks(_ujHostId, socket.data.tenantId || '', 'user.joined', {
+                roomId: roomId, userId: guestId, username: socket.data.username || guestId, role: socket.data.role,
+              });
+            }
+          } catch (_whUj) {}
         })
         .catch(function(err) {
           logger.error('[join-room] mediasoup setup failed: ' + err.message);
@@ -4175,6 +4189,17 @@ io.on('connection', function(socket) {
     if (!_hrMap) { _hrMap = new Map(); roomRaisedHands.set(roomId, _hrMap); }
     _hrMap.set(guestId, { username: username, ts: _hrTs });
     io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: _hrTs });
+
+    // Fire outbound webhook for hand.raised — notify host's subscribers
+    try {
+      var _hrRoom = rooms.get(roomId);
+      var _hrHostId = _hrRoom && _hrRoom.hostUserId;
+      if (_hrHostId) {
+        webhookService.fireWebhooks(_hrHostId, socket.data.tenantId || '', 'hand.raised', {
+          roomId: roomId, guestId: guestId, username: username, ts: _hrTs,
+        });
+      }
+    } catch (_whHr) {}
   });
 
   // ── hand-lower ─────────────────────────────────────────────────────────
@@ -5726,6 +5751,15 @@ io.on('connection', function(socket) {
 
     if (ack) ack({ started: true });
 
+    // Fire outbound webhooks for room.started
+    if (!wasAlreadyLive) {
+      try {
+        webhookService.fireWebhooks(socket.data.userId, socket.data.tenantId || '', 'room.started', {
+          roomId: roomId, streamTitle: room.streamTitle || '', ts: now,
+        });
+      } catch (_whErr) {}
+    }
+
     // Referral: track lives for referred creators — unlock after 3 lives in 30 days
     if (!wasAlreadyLive) {
       try {
@@ -6234,6 +6268,13 @@ io.on('connection', function(socket) {
       peakViewers: _rcPeak, sessionRevenueCents: _rcRevenue,
       topGifters: _rcTop, clipCount: _rcClips, superChatCount: _rcSc,
     });
+
+    // Fire outbound webhooks for room.ended
+    try {
+      webhookService.fireWebhooks(socket.data.userId, socket.data.tenantId || '', 'room.ended', {
+        roomId: roomId, ts: now, peakViewers: _rcPeak, sessionRevenueCents: _rcRevenue,
+      });
+    } catch (_whErr2) {}
 
     // Auto-trigger AURA stream end wrap-up
     var peak = peakViewers.get(roomId) || 0;
