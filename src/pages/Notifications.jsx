@@ -1,10 +1,11 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, Check, Trash2, Gift, Users, Radio, Trophy, Megaphone } from 'lucide-react';
+import { Bell, Check, Trash2, Gift, Users, Radio, Trophy, Megaphone, Clapperboard } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import PullToRefresh from '../components/shared/PullToRefresh';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
@@ -215,6 +216,40 @@ export default function NotificationsPage() {
             })}
           </div>
         )}
+
+        {/* ── New Episodes & Studios ── */}
+        <div style={{ marginTop: 16, borderRadius: 14, border: '1px solid rgba(123,45,139,0.25)', background: 'rgba(7,7,15,0.9)', overflow: 'hidden' }}>
+          <div style={{ padding: '12px 14px 4px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <Clapperboard className="w-4 h-4" style={{ color: '#B066CC' }} />
+              <p style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(176,102,204,0.8)' }}>New Episodes &amp; Studios</p>
+            </div>
+            {[
+              { emoji: '🎬', title: 'Shadow Reign — Ep 5 Out Now', sub: 'New episode dropped · watch before it trends', color: '#7B2D8B', page: 'EpisodeSeries' },
+              { emoji: '🎵', title: 'AI Music Live Tonight', sub: 'Catch the live beat session at 8 PM', color: '#C9A84C', page: 'AIMusic' },
+              { emoji: '🎙', title: 'Street Code Podcast Live', sub: 'Live recording session starting soon', color: '#00A8E8', page: 'PodcastStudio' },
+            ].map(function(item) {
+              return (
+                <Link key={item.page + item.title} to={createPageUrl(item.page)} style={{ textDecoration: 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: item.color + '18', border: '1px solid ' + item.color + '30', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{item.emoji}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 12, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', lineHeight: 1.2 }}>{item.title}</p>
+                      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{item.sub}</p>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: item.color, flexShrink: 0 }}>View →</span>
+                  </div>
+                </Link>
+              );
+            })}
+            <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ textDecoration: 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0 6px' }}>
+                <p style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.5)' }}>🎥 Start your own series</p>
+                <span style={{ fontSize: 10, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: '#B066CC' }}>Creator Studio →</span>
+              </div>
+            </Link>
+          </div>
+        </div>
 
         {(user && user.id) && (
           <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>

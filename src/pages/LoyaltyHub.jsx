@@ -294,6 +294,39 @@ export default function LoyaltyHubPage() {
                     <LoyaltyCard loyalty={l} />
                   </div>
                 ))}
+
+                {/* Episode & Studio Rewards */}
+                <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(123,45,139,0.25)' }}>
+                  <p className="text-[10px] font-black uppercase mb-3" style={{ color: 'rgba(176,102,204,0.7)', ...T }}>🎬 Episode &amp; Studio Rewards</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    {[
+                      { emoji: '🎬', label: 'Micro Drama', sub: 'Watch all episodes', pts: '+50 pts', color: '#7B2D8B', page: 'EpisodeSeries' },
+                      { emoji: '🎵', label: 'AI Music Live', sub: 'Tune in for a session', pts: '+30 pts', color: '#C9A84C', page: 'AIMusic' },
+                      { emoji: '🎙', label: 'Podcast Live', sub: 'Full episode watch', pts: '+25 pts', color: '#00A8E8', page: 'PodcastStudio' },
+                      { emoji: '🏆', label: 'Series Binge', sub: 'Complete a full series', pts: '+200 pts', color: '#D4AF37', page: 'EpisodeSeries' },
+                    ].map(function(item) {
+                      return (
+                        <Link key={item.page + item.label} to={createPageUrl(item.page)} style={{ textDecoration: 'none' }}>
+                          <div className="rounded-xl p-3 h-full" style={{ background: 'rgba(13,10,28,0.8)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}>
+                            <div className="text-xl mb-1">{item.emoji}</div>
+                            <p className="font-black text-[11px] text-white leading-tight" style={T}>{item.label}</p>
+                            <p className="text-[9px] mt-0.5 mb-1.5" style={{ color: CREAM + '35' }}>{item.sub}</p>
+                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: item.color + '18', border: '1px solid ' + item.color + '35', color: item.color, fontFamily: 'Orbitron, monospace' }}>{item.pts}</span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                  <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ textDecoration: 'none' }}>
+                    <div className="mt-3 rounded-xl p-3 flex items-center justify-between" style={{ background: 'rgba(123,45,139,0.1)', border: '1px solid rgba(123,45,139,0.3)' }}>
+                      <div>
+                        <p className="font-black text-[11px] text-white" style={T}>🎥 Creator Studio</p>
+                        <p className="text-[9px] mt-0.5" style={{ color: CREAM + '40' }}>Plan your Micro Drama series</p>
+                      </div>
+                      <span className="font-black text-[10px] px-3 py-1 rounded-lg" style={{ background: 'rgba(123,45,139,0.25)', color: '#B066CC', border: '1px solid rgba(123,45,139,0.4)', ...T }}>Open →</span>
+                    </div>
+                  </Link>
+                </div>
               </div>
             )}
 
@@ -415,6 +448,8 @@ export default function LoyaltyHubPage() {
             { label: '🏆 Loyalty Program', href: 'LoyaltyProgram' },
             { label: '🛍 Reward Shop',     href: 'RewardShop'    },
             { label: '🎁 Gift Shop',       href: 'Home'          },
+            { label: '🎬 Micro Drama',     href: 'EpisodeSeries' },
+            { label: '🎵 AI Music',        href: 'AIMusic'       },
             { label: '🔴 Go Live',         href: 'GoLive'        },
           ].map(item => (
             <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>

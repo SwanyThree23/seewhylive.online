@@ -297,11 +297,38 @@ export default function ContentCalendarPage() {
         {user && <PreStreamCountdown room={activeRoom || null} currentUser={user} onGoLive={() => {}} />}
       </div>
 
+      {/* Studio Quick-Start */}
+      <div style={{ padding: '0 16px 8px' }}>
+        <div style={{ borderRadius: 14, border: '1px solid rgba(201,168,76,0.18)', background: 'rgba(8,11,24,0.95)' }}>
+          <div style={{ padding: '12px 14px 6px' }}>
+            <p style={{ fontSize: 10, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(212,175,55,0.6)', marginBottom: 10 }}>📽 Studio Content</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, paddingBottom: 12 }}>
+              {[
+                { emoji: '🎬', label: 'Micro Drama', sub: 'Episode planner', color: '#7B2D8B', page: 'EpisodeCreatorStudio' },
+                { emoji: '🎵', label: 'AI Music', sub: 'Generate & schedule', color: '#C9A84C', page: 'AIMusic' },
+                { emoji: '🎙', label: 'Podcast', sub: 'Record & release', color: '#00A8E8', page: 'PodcastStudio' },
+              ].map(function(s) {
+                return (
+                  <Link key={s.page} to={createPageUrl(s.page)} style={{ textDecoration: 'none' }}>
+                    <div style={{ borderRadius: 10, padding: '10px 8px', background: s.color + '0f', border: '1px solid ' + s.color + '28', textAlign: 'center', cursor: 'pointer' }}>
+                      <div style={{ fontSize: 20, marginBottom: 4 }}>{s.emoji}</div>
+                      <p style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', lineHeight: 1.1 }}>{s.label}</p>
+                      <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', marginTop: 2, fontFamily: 'Barlow Condensed, sans-serif' }}>{s.sub}</p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
         {[
           { label: '📅 Stream Scheduler', href: 'StreamScheduler' },
           { label: '📰 Newsletter Hub',   href: 'NewsletterHub'   },
           { label: '📊 Analytics',        href: 'Analytics'       },
+          { label: '🎬 Micro Drama',      href: 'EpisodeCreatorStudio' },
           { label: '🔴 Go Live',          href: 'GoLive'          },
         ].map(item => (
           <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
