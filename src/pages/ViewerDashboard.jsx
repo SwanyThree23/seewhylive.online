@@ -41,8 +41,8 @@ var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 var TABS = [
   { id: 'following', label: 'Following' },
-  { id: 'activity', label: 'My Activity' },
-  { id: 'discover', label: 'Discover' },
+  { id: 'episodes', label: 'Episodes' },
+  { id: 'activity', label: 'Activity' },
   { id: 'notifications', label: 'Alerts' },
 ];
 
@@ -363,6 +363,64 @@ export default function ViewerDashboard() {
                 </Link>
               </motion.div>
             ))}
+          </div>
+        )}
+
+        {/* EPISODES */}
+        {activeTab === 'episodes' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-black text-white text-sm flex items-center gap-2" style={T}>🎬 Micro Drama Series</h2>
+              <Link to={createPageUrl('EpisodeSeries')} style={{ textDecoration: 'none', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, color: GOLD, letterSpacing: '0.08em' }}>
+                All Series →
+              </Link>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
+              {[
+                { emoji: '👑', title: 'Shadow Reign',  genre: 'Thriller',  color: '#7B2D8B', ep: 4, next: '48h' },
+                { emoji: '🌆', title: 'Street Code',   genre: 'Drama',     color: '#1A3A5C', ep: 3, next: '72h' },
+                { emoji: '🤖', title: 'Cyber Hearts',  genre: 'Sci-Fi',    color: '#0D3D2B', ep: 2, next: '5d' },
+                { emoji: '🎭', title: 'Block Party',   genre: 'Comedy',    color: '#5C1A1A', ep: 5, next: '3d' },
+              ].map(function(s) {
+                return (
+                  <Link key={s.title} to={createPageUrl('EpisodeSeries')} style={{ textDecoration: 'none' }}>
+                    <DarkTile style={{ padding: 14, border: '1px solid ' + s.color + '33', cursor: 'pointer' }}>
+                      <div style={{ fontSize: 24, textAlign: 'center', marginBottom: 8 }}>{s.emoji}</div>
+                      <p className="font-black text-white text-xs text-center truncate" style={T}>{s.title}</p>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: s.color, textAlign: 'center', margin: '2px 0 6px', letterSpacing: '0.07em', textTransform: 'uppercase' }}>{s.genre}</p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        <span>{s.ep} eps</span>
+                        <span style={{ color: GOLD }}>Next: {s.next}</span>
+                      </div>
+                    </DarkTile>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div style={{ marginTop: 4 }}>
+              <h2 className="font-black text-white text-sm flex items-center gap-2 mb-3" style={T}>🎵 AI Music &amp; 🎙 Podcasts</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[
+                  { emoji: '🎵', label: 'AI Music Studio',  sub: 'Generate and stream AI beats',      page: 'AIMusic',      color: '#C9A84C' },
+                  { emoji: '🎙', label: 'Podcast Studio',   sub: 'Live co-host recording & playback', page: 'PodcastStudio', color: '#00A8E8' },
+                  { emoji: '🤖', label: 'AI Hub',           sub: 'All creator AI tools in one place', page: 'AIHub',         color: '#00F5FF' },
+                ].map(function(item) {
+                  return (
+                    <Link key={item.page} to={createPageUrl(item.page)} style={{ textDecoration: 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', borderRadius: 12, background: item.color + '0D', border: '1px solid ' + item.color + '28', cursor: 'pointer' }}>
+                        <span style={{ fontSize: 20 }}>{item.emoji}</span>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4', margin: 0 }}>{item.label}</p>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{item.sub}</p>
+                        </div>
+                        <span style={{ color: item.color, fontSize: 16 }}>›</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 

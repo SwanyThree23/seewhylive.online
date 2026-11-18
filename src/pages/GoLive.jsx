@@ -227,6 +227,39 @@ var FORMATS = [
   },
 ];
 
+var STUDIO_FORMATS = [
+  {
+    id: 'music-live',
+    emoji: '🎵',
+    title: 'AI Music Live',
+    subtitle: 'Generate AI beats live. Co-stream with other artists.',
+    features: ['🎵 AI Beats', '📡 Co-Stream', '🎁 Gifts', '👥 Panel'],
+    color: '#C9A84C',
+    dest: 'BroadcastStudio',
+    studioPage: 'AIMusic',
+  },
+  {
+    id: 'podcast-live',
+    emoji: '🎙',
+    title: 'Live Podcast',
+    subtitle: 'Record your episode with live audience and co-hosts.',
+    features: ['🎙 Recording', '📡 Co-Host', '💬 Chat', '🎁 Gifts'],
+    color: '#00A8E8',
+    dest: 'BroadcastStudio',
+    studioPage: 'PodcastStudio',
+  },
+  {
+    id: 'drama-live',
+    emoji: '🎬',
+    title: 'Micro Drama Live',
+    subtitle: 'Stream a live episode. Fans vote on the next chapter.',
+    features: ['🎬 Episode', '🗳️ Fan Vote', '📡 Co-Stream', '🎁 Gifts'],
+    color: '#7B2D8B',
+    dest: 'BroadcastStudio',
+    studioPage: 'EpisodeCreatorStudio',
+  },
+];
+
 var CATEGORIES = [
   'Talk Show', 'Music', 'Gaming', 'Education', 'Sports',
   'Comedy', 'News', 'Creative', 'Travel', 'Tech', 'Spiritual', 'Health',
@@ -867,6 +900,35 @@ export default function GoLive() {
             </p>
 
             {FORMATS.map(fmt => <FormatCard key={fmt.id} fmt={fmt} onSelect={selectFormat} />)}
+
+            {/* ── Creator Studios ── */}
+            <div style={{ marginTop: 4 }}>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 8 }}>
+                Creator Studios
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {STUDIO_FORMATS.map(function(fmt) {
+                  return (
+                    <motion.button key={fmt.id} whileTap={{ scale: 0.97 }} onClick={function() { selectFormat(fmt); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 14px', borderRadius: 14, background: fmt.color + '10', border: '1px solid ' + fmt.color + '30', cursor: 'pointer', textAlign: 'left' }}>
+                      <div style={{ width: 42, height: 42, borderRadius: 10, background: fmt.color + '20', border: '1px solid ' + fmt.color + '35', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
+                        {fmt.emoji}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontFamily: FONT, fontWeight: 900, fontSize: 15, color: '#fff', margin: 0 }}>{fmt.title}</p>
+                        <p style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>{fmt.subtitle}</p>
+                        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 5 }}>
+                          {fmt.features.map(function(f) {
+                            return <span key={f} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 99, background: fmt.color + '15', color: fmt.color, fontFamily: FONT, fontWeight: 700 }}>{f}</span>;
+                          })}
+                        </div>
+                      </div>
+                      <ChevronRight style={{ width: 16, height: 16, color: fmt.color, flexShrink: 0 }} />
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </div>
 
             <div style={{ marginTop: 8, borderRadius: 16, padding: '14px 16px', background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.12)' }}>
               <Link to={createPageUrl('GreenroomEnhanced')} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
