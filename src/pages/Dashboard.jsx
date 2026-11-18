@@ -251,6 +251,33 @@ function OverviewTab({ user }) {
           </Link>
         ))}
       </div>
+
+      {/* Creator Studios */}
+      <div className="rounded-2xl p-4" style={{ border: '1px solid rgba(123,45,139,0.22)', background: 'rgba(13,6,24,0.5)' }}>
+        <p className="text-[11px] font-black uppercase tracking-widest mb-3" style={{ color: 'rgba(176,102,204,0.7)', ...T }}>Creator Studios</p>
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          {[
+            { emoji: '🎬', label: 'Micro Drama', sub: 'Episode creator', href: 'EpisodeCreatorStudio', color: '#7B2D8B' },
+            { emoji: '🎵', label: 'AI Music', sub: 'Beat & vocal studio', href: 'AIMusic', color: '#00A8E8' },
+            { emoji: '🎙️', label: 'Podcast Studio', sub: 'AI-assisted pods', href: 'PodcastStudio', color: '#B066CC' },
+          ].map(function(s) {
+            return (
+              <Link key={s.href} to={createPageUrl(s.href)} style={{ textDecoration: 'none' }}>
+                <div className="rounded-xl p-3 cursor-pointer" style={{ border: '1px solid rgba(123,45,139,0.18)', background: 'rgba(255,255,255,0.03)' }}>
+                  <div className="text-xl mb-1">{s.emoji}</div>
+                  <div className="text-[11px] font-black uppercase" style={{ color: s.color, ...T, letterSpacing: '0.06em' }}>{s.label}</div>
+                  <div className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>{s.sub}</div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+        <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ textDecoration: 'none' }}>
+          <div className="rounded-xl px-3 py-2 text-center text-[11px] font-black uppercase" style={{ background: 'rgba(123,45,139,0.1)', border: '1px solid rgba(123,45,139,0.3)', color: '#B066CC', ...T, letterSpacing: '0.08em', cursor: 'pointer' }}>
+            🎬 Launch Episode Creator Studio →
+          </div>
+        </Link>
+      </div>
     </div>
   );
 }
