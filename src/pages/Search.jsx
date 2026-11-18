@@ -40,6 +40,14 @@ var TABS = [
   { id: 'creators',    label: 'Creators',    icon: User },
   { id: 'communities', label: 'Communities', icon: Users },
   { id: 'challenges',  label: 'Challenges',  icon: Trophy },
+  { id: 'episodes',   label: 'Series',      icon: Trophy },
+];
+
+var DRAMA_SERIES = [
+  { emoji: '👑', title: 'Shadow Reign',  genre: 'Thriller', color: '#7B2D8B', eps: 4,  keywords: ['shadow', 'reign', 'thriller', 'dynasty', 'power'] },
+  { emoji: '🌆', title: 'Street Code',   genre: 'Drama',    color: '#1A3A5C', eps: 3,  keywords: ['street', 'code', 'drama', 'brooklyn', 'loyalty'] },
+  { emoji: '🤖', title: 'Cyber Hearts',  genre: 'Sci-Fi',   color: '#0D3D2B', eps: 2,  keywords: ['cyber', 'hearts', 'ai', 'scifi', 'love', 'robot'] },
+  { emoji: '🎭', title: 'Block Party',   genre: 'Comedy',   color: '#5C1A1A', eps: 5,  keywords: ['block', 'party', 'comedy', 'brooklyn', 'reality'] },
 ];
 
 function useDebounce(value, delay = 300) {
@@ -173,12 +181,20 @@ export default function SearchPage() {
   var filteredChallenges  = q ? filter(challenges, ['title', 'description']) : challenges;
   var filteredCreators    = q ? filter(creators, ['full_name', 'username', 'category', 'bio']) : creators;
 
+  var filteredSeries = q
+    ? DRAMA_SERIES.filter(function(s) {
+        return s.title.toLowerCase().includes(q) || s.genre.toLowerCase().includes(q) ||
+          s.keywords.some(function(k) { return k.includes(q); });
+      })
+    : DRAMA_SERIES;
+
   var counts = {
     live: filteredLive.length,
     rooms: filteredRooms.length,
     creators: filteredCreators.length,
     communities: filteredCommunities.length,
     challenges: filteredChallenges.length,
+    episodes: filteredSeries.length,
   };
 
   function saveSearch(term) {
@@ -366,6 +382,43 @@ export default function SearchPage() {
             : <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredChallenges.map(ch => <ChallengeCard key={ch.id} challenge={ch} />)}
               </div>
+        )}
+
+        {/* Series / Episodes tab */}
+        {activeTab === 'episodes' && (
+          <div>
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>
+              🎬 Micro Drama Series
+            </p>
+            {filteredSeries.length === 0
+              ? <EmptyState icon={Trophy} label="No series found" sublabel="Try searching thriller, drama, sci-fi, or comedy" />
+              : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 12 }}>
+                  {filteredSeries.map(function(s) {
+                    return (
+                      <Link key={s.title} to={createPageUrl('EpisodeSeries')} style={{ textDecoration: 'none' }}>
+                        <div style={{ borderRadius: 14, background: s.color + '22', border: '1px solid ' + s.color + '44', padding: '16px 14px', cursor: 'pointer' }}>
+                          <div style={{ fontSize: 28, textAlign: 'center', marginBottom: 10 }}>{s.emoji}</div>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 14, color: '#F0E8D4', margin: '0 0 3px', textAlign: 'center' }}>{s.title}</p>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: s.color, textAlign: 'center', margin: '0 0 8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{s.genre}</p>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                            <span>{s.eps} episodes</span>
+                            <span style={{ color: s.color }}>Watch →</span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+            }
+            <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <Link to={createPageUrl('EpisodeSeries')} style={{ textDecoration: 'none', padding: '9px 20px', borderRadius: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', background: 'rgba(123,45,139,0.15)', border: '1px solid rgba(123,45,139,0.4)', color: '#F0E8D4' }}>
+                View All Series
+              </Link>
+              <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ textDecoration: 'none', padding: '9px 20px', borderRadius: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', background: 'rgba(255,26,60,0.1)', border: '1px solid rgba(255,26,60,0.3)', color: '#F0E8D4' }}>
+                🎥 Creator Studio
+              </Link>
+            </div>
+          </div>
         )}
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />

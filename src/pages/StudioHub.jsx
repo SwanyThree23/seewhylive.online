@@ -153,6 +153,27 @@ var TOOLS = [
     color: '#4A8A7A',
     page: 'VDONinjaManager',
   },
+  {
+    label: 'AI Music Studio',
+    desc: 'Generate beats & co-stream live',
+    icon: Zap,
+    color: '#C9A84C',
+    page: 'AIMusic',
+  },
+  {
+    label: 'Micro Drama',
+    desc: 'Episode creator tools & viewer polls',
+    icon: Video,
+    color: '#7B2D8B',
+    page: 'EpisodeCreatorStudio',
+  },
+  {
+    label: 'Episode Series',
+    desc: 'Viewer-side drama & advisory votes',
+    icon: Video,
+    color: '#5B2D8B',
+    page: 'EpisodeSeries',
+  },
 ];
 
 export default function StudioHub() {

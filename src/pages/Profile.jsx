@@ -96,7 +96,7 @@ function StatTile({ label, value, icon: Icon, color = GOLD }) {
   );
 }
 
-var TABS = ['Overview', 'Streams', 'Clips', 'About', 'Settings'];
+var TABS = ['Overview', 'Streams', 'Studios', 'Clips', 'About', 'Settings'];
 
 /* ── main page ──────────────────────────────────────────────────────── */
 
@@ -515,6 +515,36 @@ export default function ProfilePage() {
                 })}
               </div>
             )}
+          </DarkCard>
+        )}
+
+        {activeTab === 'Studios' && (
+          <DarkCard>
+            <div className="p-5 space-y-4">
+              <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Creator Studios</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1,1fr)', gap: 10 }}>
+                {[
+                  { emoji: '🎵', label: 'AI Music Studio',      sub: 'Generate AI beats and co-stream live with your audience',       page: 'AIMusic',              color: '#C9A84C' },
+                  { emoji: '🎙', label: 'Podcast Studio',        sub: 'Record AI-assisted podcast episodes with live co-hosts',         page: 'PodcastStudio',        color: '#00A8E8' },
+                  { emoji: '🎬', label: 'Micro Drama Creator',   sub: 'Write your story bible, plan episodes, and distribute to fans',  page: 'EpisodeCreatorStudio', color: '#7B2D8B' },
+                  { emoji: '🤖', label: 'AI Hub',                sub: 'All AI tools in one place — music, moderation, co-host AI',      page: 'AIHub',                color: '#00F5FF' },
+                  { emoji: '📡', label: 'Go Live',               sub: 'Launch a panel, battle, podcast, or watch party in one click',   page: 'GoLive',               color: '#FF1A3C' },
+                ].map(function(item) {
+                  return (
+                    <Link key={item.page} to={createPageUrl(item.page)} style={{ textDecoration: 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 12, background: item.color + '0D', border: '1px solid ' + item.color + '28', cursor: 'pointer', transition: 'border-color 0.15s' }}>
+                        <span style={{ fontSize: 24, flexShrink: 0 }}>{item.emoji}</span>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 14, color: '#F0E8D4', margin: 0 }}>{item.label}</p>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.4 }}>{item.sub}</p>
+                        </div>
+                        <span style={{ color: item.color, fontSize: 18, fontFamily: 'Barlow Condensed, sans-serif' }}>›</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </DarkCard>
         )}
 
