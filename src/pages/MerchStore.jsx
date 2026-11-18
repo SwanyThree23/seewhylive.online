@@ -203,13 +203,14 @@ function AddItemModal({ creatorId, onClose }) {
 
         <div className="p-5 space-y-4">
           {[
-            { key: 'name',        label: 'Item Name',   ph: 'e.g. Vintage Hoodie' },
-            { key: 'price_usd',   label: 'Price (USD)', ph: '29.99' },
-            { key: 'description', label: 'Description', ph: 'Optional description…' },
-          ].map(({ key, label, ph }) => (
+            { key: 'name',        label: 'Item Name',   ph: 'e.g. Vintage Hoodie',    max: 100 },
+            { key: 'price_usd',   label: 'Price (USD)', ph: '29.99',                  max: 10 },
+            { key: 'description', label: 'Description', ph: 'Optional description…',  max: 300 },
+          ].map(({ key, label, ph, max }) => (
             <div key={key}>
               <p className="text-[10px] font-black uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>{label}</p>
               <input value={form[key]} onChange={e => set(key, e.target.value)} placeholder={ph}
+                maxLength={max}
                 className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}
               />

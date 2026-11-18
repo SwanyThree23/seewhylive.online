@@ -99,13 +99,14 @@ function GoldBtn({ onClick, children, disabled }) {
   );
 }
 
-function InputField({ placeholder, value, onChange, type = 'text' }) {
+function InputField({ placeholder, value, onChange, type = 'text', maxLength }) {
   return (
     <input
       type={type}
       placeholder={placeholder}
       value={value}
       onChange={onChange}
+      maxLength={maxLength}
       className="w-full h-10 px-3 rounded-xl text-sm text-white outline-none"
       style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', ...T }}
     />
@@ -539,7 +540,7 @@ export default function VaultPro() {
 
                 {showProtectContent && (
                   <Modal title="Protect Content" onClose={() => setShowProtectContent(false)}>
-                    <InputField placeholder="Content title…" value={newContentTitle} onChange={e => setNewContentTitle(e.target.value)} />
+                    <InputField placeholder="Content title…" value={newContentTitle} onChange={e => setNewContentTitle(e.target.value)} maxLength={150} />
                     <textarea
                       placeholder="Description (optional)…"
                       value={newContentDesc}
@@ -547,6 +548,7 @@ export default function VaultPro() {
                       rows={3}
                       className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none resize-none"
                       style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', ...T }}
+                      maxLength={500}
                     />
                     <GoldBtn onClick={handleProtectContent} disabled={isLoading || !newContentTitle.trim()}>
                       {isLoading ? 'Encrypting…' : '🔒 Encrypt & Protect'}

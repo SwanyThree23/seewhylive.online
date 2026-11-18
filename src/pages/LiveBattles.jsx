@@ -32,7 +32,7 @@ const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function BattleCard({ battle, index }) {
-  const names = battle.title?.split(' vs ') || ['?', '?'];
+  const names = (battle.title && battle.title.split(' vs ')) || ['?', '?'];
   const [leftName, rightName] = names;
   const leftVotes = battle.current_bid || 0;
   const rightVotes = battle.bid_count || 0;
@@ -85,7 +85,7 @@ function BattleCard({ battle, index }) {
           <div className="flex-1 text-center">
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-[#D4AF37] mx-auto mb-1"
               style={{ background: 'rgba(212,175,55,0.15)', border: '2px solid rgba(212,175,55,0.4)' }}>
-              {leftName?.charAt(0)?.toUpperCase()}
+              {leftName && leftName.charAt(0) && leftName.charAt(0).toUpperCase()}
             </div>
             <p className="text-sm font-bold text-white truncate" style={T}>{leftName}</p>
             <p className="text-lg font-black font-mono" style={{ color: '#D4AF37' }}>{leftVotes.toLocaleString()}</p>
@@ -97,7 +97,7 @@ function BattleCard({ battle, index }) {
           <div className="flex-1 text-center">
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black mx-auto mb-1"
               style={{ background: 'rgba(192,57,43,0.15)', border: '2px solid rgba(192,57,43,0.4)', color: '#C0392B' }}>
-              {rightName?.charAt(0)?.toUpperCase()}
+              {rightName && rightName.charAt(0) && rightName.charAt(0).toUpperCase()}
             </div>
             <p className="text-sm font-bold text-white truncate" style={T}>{rightName}</p>
             <p className="text-lg font-black font-mono" style={{ color: '#C0392B' }}>{rightVotes.toLocaleString()}</p>
@@ -135,7 +135,7 @@ export default function LiveBattles() {
   });
 
   const activeBattle = battles.find(b => b.status === 'active') || null;
-  const roomId = activeBattle?.id || null;
+  const roomId = (activeBattle && activeBattle.id) || null;
 
   return (
     <div className="min-h-screen text-white pb-10"
@@ -224,13 +224,13 @@ export default function LiveBattles() {
         )}
       </div>
       <SwanAIRecommendations roomId={roomId} currentLayout="battles" viewerCount={battles.length} />
-      <MilestoneAlerts userId={user?.id} roomId={roomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {roomId && <BattleMode roomId={roomId} isHost={true} hostName={user?.full_name || ''} />}
+      <MilestoneAlerts userId={user && user.id} roomId={roomId} />
+      {user && user.id && <AlertConfig creatorId={user.id} />}
+      {user && user.id && <ShopDashboard creatorId={user.id} />}
+      {roomId && <BattleMode roomId={roomId} isHost={true} hostName={(user && user.full_name) || ''} />}
       {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
-      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
-      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
+      {user && user.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {<GuestStreamMonitor guestName={(user && user.full_name) || ''} isStreaming={roomId != null} />}
       {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -239,7 +239,7 @@ export default function LiveBattles() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={battles.length} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={roomId} currentUser={user} />
+      <RewardShop creatorId={user && user.id} roomId={roomId} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={battles.length} peakViewers={battles.length} />
       <BackgroundCustomizer />
