@@ -726,6 +726,32 @@ export default function MonetizationPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Studio Revenue Streams */}
+              <div style={{ borderRadius: 14, padding: '14px', background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(123,45,139,0.22)' }}>
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(176,102,204,0.7)', marginBottom: 10 }}>🎬 Studio Revenue Streams</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {[
+                    { emoji: '🎬', label: 'Micro Drama', sub: 'Tip per episode + viewer votes', split: '90%', color: '#7B2D8B', href: 'EpisodeCreatorStudio' },
+                    { emoji: '🎵', label: 'AI Music Live', sub: 'Tips + music purchase revenue', split: '70%', color: '#D4AF37', href: 'AIMusic' },
+                    { emoji: '🎙', label: 'Podcast Studio', sub: 'PPV episode access + tips', split: '90%', color: '#00A8E8', href: 'PodcastStudio' },
+                    { emoji: '📺', label: 'Episode Series', sub: 'Viewer engagement rewards', split: '90%', color: '#B066CC', href: 'EpisodeSeries' },
+                  ].map(function(item) {
+                    return (
+                      <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+                        <div style={{ borderRadius: 10, padding: '10px 12px', background: item.color + '0C', border: '1px solid ' + item.color + '25', cursor: 'pointer' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <span style={{ fontSize: 16 }}>{item.emoji}</span>
+                            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, padding: '2px 6px', borderRadius: 99, background: item.color + '18', color: item.color }}>{item.split}</span>
+                          </div>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 900, color: '#fff', marginBottom: 2 }}>{item.label}</p>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{item.sub}</p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             </motion.div>
           )}
 

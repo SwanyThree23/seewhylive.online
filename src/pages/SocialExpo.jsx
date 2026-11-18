@@ -816,6 +816,28 @@ export default function SocialExpo() {
 
         </AnimatePresence>
 
+        {/* Studio Content Creators */}
+        <div style={{ margin: '0 16px 16px', borderRadius: 14, padding: '14px', background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(123,45,139,0.22)' }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(176,102,204,0.7)', marginBottom: 10 }}>🎬 Studio Content on Social Expo</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            {[
+              { emoji: '🎬', label: 'Micro Drama', sub: 'Episode drops', color: '#7B2D8B', href: 'EpisodeSeries' },
+              { emoji: '🎵', label: 'AI Music', sub: 'Live sessions', color: '#D4AF37', href: 'AIMusic' },
+              { emoji: '🎙', label: 'Podcast', sub: 'Full episodes', color: '#00A8E8', href: 'PodcastStudio' },
+            ].map(function(item) {
+              return (
+                <a key={item.href} href={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+                  <div style={{ borderRadius: 10, padding: '10px 8px', textAlign: 'center', background: item.color + '0D', border: '1px solid ' + item.color + '28', cursor: 'pointer' }}>
+                    <div style={{ fontSize: 20, marginBottom: 4 }}>{item.emoji}</div>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, color: item.color }}>{item.label}</p>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{item.sub}</p>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Collaboration opportunities */}
         <div style={{ padding: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <FeaturedContentSection />
