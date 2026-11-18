@@ -309,7 +309,7 @@ export default function CreatorChannel() {
 
         {/* About */}
         {activeTab === 'about' && (
-          <div className="pb-16">
+          <div className="pb-16 space-y-4">
             <div className="rounded-2xl p-6 space-y-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
               <div>
                 <p className="text-xs font-black uppercase mb-2" style={{ color: GOLD, ...T }}>About</p>
@@ -324,6 +324,27 @@ export default function CreatorChannel() {
                   <p className="text-[10px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>Total Hours</p>
                   <p className="text-sm font-black text-white mt-1" style={{ fontFamily: 'Orbitron, monospace' }}>{Math.round((profile && profile.total_hours_streamed) || 0)}h</p>
                 </div>
+              </div>
+            </div>
+
+            {/* Studios */}
+            <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(123,45,139,0.25)' }}>
+              <p className="text-[10px] font-black uppercase mb-3" style={{ color: 'rgba(176,102,204,0.7)', ...T }}>🎬 Content Studios</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+                {[
+                  { emoji: '🎬', label: 'Micro Drama', color: '#7B2D8B', page: 'EpisodeCreatorStudio' },
+                  { emoji: '🎵', label: 'AI Music', color: '#C9A84C', page: 'AIMusic' },
+                  { emoji: '🎙', label: 'Podcast', color: '#00A8E8', page: 'PodcastStudio' },
+                ].map(function(s) {
+                  return (
+                    <Link key={s.page} to={createPageUrl(s.page)} style={{ textDecoration: 'none' }}>
+                      <div style={{ borderRadius: 10, padding: '10px 8px', background: s.color + '0f', border: '1px solid ' + s.color + '28', textAlign: 'center', cursor: 'pointer' }}>
+                        <div style={{ fontSize: 20, marginBottom: 4 }}>{s.emoji}</div>
+                        <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, color: '#fff' }}>{s.label}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
