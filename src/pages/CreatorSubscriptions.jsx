@@ -659,6 +659,29 @@ export default function CreatorSubscriptionsPage() {
           </div>
         )}
       </div>
+      <div style={{ maxWidth: 640, margin: '8px auto 0', padding: '0 16px 16px' }}>
+        <div style={{ borderRadius: 14, padding: '14px', background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(123,45,139,0.22)' }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(176,102,204,0.7)', marginBottom: 10 }}>🎬 Studio Subscription Perks</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {[
+              { emoji: '🎬', label: 'Micro Drama Access', sub: 'Early episode drops for subscribers', color: '#7B2D8B', href: 'EpisodeSeries' },
+              { emoji: '🎵', label: 'AI Music Backstage', sub: 'Exclusive session recordings', color: '#D4AF37', href: 'AIMusic' },
+              { emoji: '🎙', label: 'Podcast Subscriber Feed', sub: 'Early access to full episodes', color: '#00A8E8', href: 'PodcastStudio' },
+              { emoji: '🏆', label: 'Create Your Studio', sub: 'Build your own episode series', color: '#B066CC', href: 'EpisodeCreatorStudio' },
+            ].map(function(item) {
+              return (
+                <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+                  <div style={{ borderRadius: 10, padding: '10px 12px', background: item.color + '0C', border: '1px solid ' + item.color + '25', cursor: 'pointer' }}>
+                    <div style={{ fontSize: 18, marginBottom: 4 }}>{item.emoji}</div>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 900, color: '#fff', marginBottom: 2 }}>{item.label}</p>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{item.sub}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
       <MilestoneAlerts userId={(user && user.id)} roomId={null} />
       {(user && user.id) && <AlertConfig creatorId={user.id} />}

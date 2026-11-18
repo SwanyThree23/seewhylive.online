@@ -4,6 +4,8 @@ import {
   Layers, Grid3X3, Monitor, Maximize, PictureInPicture2,
   Layout, Plus, Check, Star, Trash2, Edit3,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -771,6 +773,28 @@ export default function SceneTemplates() {
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+      </div>
+      <div style={{ maxWidth: 640, margin: '16px auto 0', padding: '0 16px' }}>
+        <div style={{ borderRadius: 14, padding: '14px', background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(123,45,139,0.22)', marginBottom: 16 }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(176,102,204,0.7)', marginBottom: 10 }}>🎬 Studio Scene Presets</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            {[
+              { emoji: '🎬', label: 'Drama Scene', sub: 'Micro Drama layouts', color: '#7B2D8B', href: 'EpisodeCreatorStudio' },
+              { emoji: '🎵', label: 'Music Stage', sub: 'AI Music sessions', color: '#D4AF37', href: 'AIMusic' },
+              { emoji: '🎙', label: 'Podcast Set', sub: 'Podcast recording', color: '#00A8E8', href: 'PodcastStudio' },
+            ].map(function(item) {
+              return (
+                <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+                  <div style={{ borderRadius: 10, padding: '10px 8px', textAlign: 'center', background: item.color + '0D', border: '1px solid ' + item.color + '28', cursor: 'pointer' }}>
+                    <div style={{ fontSize: 20, marginBottom: 4 }}>{item.emoji}</div>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, color: item.color }}>{item.label}</p>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{item.sub}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="overlay" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
