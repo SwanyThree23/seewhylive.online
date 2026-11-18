@@ -35,12 +35,12 @@ import SubscriptionCard from '../components/monetization/SubscriptionCard';
 import TierEditor from '../components/subscriptions/TierEditor';
 import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 
-const GOLD = '#D4AF37';
-const BURGUNDY = '#800020';
-const CREAM = '#F5E6D3';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD = '#D4AF37';
+var BURGUNDY = '#800020';
+var CREAM = '#F5E6D3';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TIER_MAP = {
+var TIER_MAP = {
   bronze:   { color: '#CD7F32', label: 'Bronze',   min: 0 },
   silver:   { color: '#C0C0C0', label: 'Silver',   min: 500 },
   gold:     { color: '#D4AF37', label: 'Gold',     min: 1500 },
@@ -57,15 +57,15 @@ function tierFromPoints(pts) {
 }
 
 function nextTierPoints(pts) {
-  const tiers = [500, 1500, 5000, 15000];
+  var tiers = [500, 1500, 5000, 15000];
   return tiers.find(t => t > pts) || null;
 }
 
 function LoyaltyCard({ loyalty, isMain = false }) {
-  const tier = tierFromPoints(loyalty?.loyalty_points || 0);
-  const tc = TIER_MAP[tier];
-  const next = nextTierPoints(loyalty?.loyalty_points || 0);
-  const progress = next ? Math.min(100, ((loyalty?.loyalty_points || 0) / next) * 100) : 100;
+  var tier = tierFromPoints((loyalty && loyalty.loyalty_points) || 0);
+  var tc = TIER_MAP[tier];
+  var next = nextTierPoints((loyalty && loyalty.loyalty_points) || 0);
+  var progress = next ? Math.min(100, (((loyalty && loyalty.loyalty_points) || 0) / next) * 100) : 100;
 
   return (
     <div className="rounded-2xl p-5 space-y-4"
@@ -83,7 +83,7 @@ function LoyaltyCard({ loyalty, isMain = false }) {
         </div>
         <div className="text-right">
           <p className="font-black text-2xl leading-none" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
-            {(loyalty?.loyalty_points || 0).toLocaleString()}
+            {((loyalty && loyalty.loyalty_points) || 0).toLocaleString()}
           </p>
           <p className="text-[11px]" style={{ color: CREAM + '40', ...T }}>POINTS</p>
         </div>
@@ -92,7 +92,7 @@ function LoyaltyCard({ loyalty, isMain = false }) {
       {next && (
         <div>
           <div className="flex justify-between text-[11px] mb-1">
-            <span style={{ color: CREAM + '40' }}>{(loyalty?.loyalty_points || 0)} / {next}</span>
+            <span style={{ color: CREAM + '40' }}>{((loyalty && loyalty.loyalty_points) || 0)} / {next}</span>
             <span style={{ color: tc.color }}>{Math.round(progress)}% to next tier</span>
           </div>
           <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
@@ -106,7 +106,7 @@ function LoyaltyCard({ loyalty, isMain = false }) {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <Flame className="w-3.5 h-3.5" style={{ color: '#D4854A' }} />
-            <span className="font-black text-sm" style={{ color: '#D4854A' }}>{loyalty?.streak_days || 0}</span>
+            <span className="font-black text-sm" style={{ color: '#D4854A' }}>{(loyalty && loyalty.streak_days) || 0}</span>
             <span className="text-[11px]" style={{ color: CREAM + '40' }}>day streak</span>
           </div>
         </div>
@@ -116,13 +116,13 @@ function LoyaltyCard({ loyalty, isMain = false }) {
 }
 
 function PointsBreakdownRow({ vp }) {
-  const [expanded, setExpanded] = useState(false);
+  var [expanded, setExpanded] = useState(false);
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
       <button className="w-full flex items-center justify-between px-4 py-3" onClick={() => setExpanded(e => !e)}>
         <div className="flex items-center gap-2">
           <Star className="w-3.5 h-3.5" style={{ color: GOLD }} />
-          <span className="text-[11px] font-bold text-white">{vp.room_id?.slice(0, 16) || 'Room'}</span>
+          <span className="text-[11px] font-bold text-white">{vp.(room_id && room_id.slice)(0, 16) || 'Room'}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="font-black text-sm" style={{ color: GOLD }}>{(vp.points || 0).toLocaleString()} pts</span>
@@ -156,54 +156,54 @@ function PointsBreakdownRow({ vp }) {
 }
 
 export default function LoyaltyHubPage() {
-  const [activeTab, setActiveTab] = useState('my_card');
-  const [showTierEditor, setShowTierEditor] = useState(false);
-  const [editingTier, setEditingTier] = useState(null);
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var [activeTab, setActiveTab] = useState('my_card');
+  var [showTierEditor, setShowTierEditor] = useState(false);
+  var [editingTier, setEditingTier] = useState(null);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const { data: myLoyalties = [] } = useQuery({
-    queryKey: ['lh-loyalties', user?.id],
-    queryFn: () => base44.entities.ViewerLoyalty.filter({ user_id: user?.id }),
-    enabled: !!user?.id,
+  var { data: myLoyalties = [] } = useQuery({
+    queryKey: ['lh-loyalties', (user && user.id)],
+    queryFn: () => base44.entities.ViewerLoyalty.filter({ user_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
-  const { data: viewerPoints = [] } = useQuery({
-    queryKey: ['lh-points', user?.id],
-    queryFn: () => base44.entities.ViewerPoints.filter({ user_id: user?.id }),
-    enabled: !!user?.id,
+  var { data: viewerPoints = [] } = useQuery({
+    queryKey: ['lh-points', (user && user.id)],
+    queryFn: () => base44.entities.ViewerPoints.filter({ user_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
-  const { data: allRewards = [] } = useQuery({
+  var { data: allRewards = [] } = useQuery({
     queryKey: ['lh-rewards'],
     queryFn: () => base44.entities.LoyaltyReward.list('points_required', 30),
   });
-  const { data: leaderboard = [] } = useQuery({
+  var { data: leaderboard = [] } = useQuery({
     queryKey: ['lh-leaderboard'],
     queryFn: () => base44.entities.ViewerLoyalty.list('-loyalty_points', 10),
   });
 
-  const qc = useQueryClient();
-  const mainLoyalty = myLoyalties[0];
-  const totalPoints = myLoyalties.reduce((s, l) => s + (l.loyalty_points || 0), 0);
-  const totalWatchTime = viewerPoints.reduce((s, v) => s + (v.watch_minutes || 0), 0);
+  var qc = useQueryClient();
+  var mainLoyalty = myLoyalties[0];
+  var totalPoints = myLoyalties.reduce((s, l) => s + (l.loyalty_points || 0), 0);
+  var totalWatchTime = viewerPoints.reduce((s, v) => s + (v.watch_minutes || 0), 0);
 
-  const redeemMutation = useMutation({
+  var redeemMutation = useMutation({
     mutationFn: async (reward) => {
-      if (!mainLoyalty?.id) throw new Error('No loyalty record found');
-      const newPoints = (mainLoyalty.loyalty_points || 0) - reward.points_required;
+      if (!(mainLoyalty && mainLoyalty.id)) throw new Error('No loyalty record found');
+      var newPoints = (mainLoyalty.loyalty_points || 0) - reward.points_required;
       if (newPoints < 0) throw new Error('Insufficient points');
       await base44.entities.ViewerLoyalty.update(mainLoyalty.id, { loyalty_points: newPoints });
       return reward;
     },
     onSuccess: (reward) => {
       toast.success(`Redeemed: ${reward.name}!`);
-      qc.invalidateQueries({ queryKey: ['lh-loyalties', user?.id] });
-      if (user?.id) {
+      qc.invalidateQueries({ queryKey: ['lh-loyalties', (user && user.id)] });
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'loyalty_redemption',
@@ -215,7 +215,7 @@ export default function LoyaltyHubPage() {
     onError: (e) => toast.error(e.message || 'Redemption failed'),
   });
 
-  const TABS = [
+  var TABS = [
     { id: 'my_card',   label: '🃏 My Card' },
     { id: 'rewards',   label: '🎁 Rewards' },
     { id: 'points',    label: '⭐ Points' },
@@ -224,7 +224,7 @@ export default function LoyaltyHubPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
-      {user?.id && mainLoyalty?.creator_id && (
+      {(user && user.id) && (mainLoyalty && mainLoyalty.creator_id) && (
         <PointsEarnWidget userId={user.id} creatorId={mainLoyalty.creator_id} roomId={activeRoomId} isHost={false} />
       )}
       <div className="px-4 md:px-6 py-4" style={{ background: 'rgba(8,11,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
@@ -283,14 +283,14 @@ export default function LoyaltyHubPage() {
                 </div>
 
                 {/* Enhanced loyalty card for primary creator */}
-                {user?.id && mainLoyalty?.creator_id && (
+                {(user && user.id) && (mainLoyalty && mainLoyalty.creator_id) && (
                   <ViewerLoyaltyCard userId={user.id} creatorId={mainLoyalty.creator_id} />
                 )}
 
                 {/* Creator tabs */}
                 {myLoyalties.slice(1).map(l => (
                   <div key={l.id} className="rounded-xl p-3" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                    <p className="text-[11px] mb-2" style={{ color: CREAM + '40' }}>Creator: {l.creator_id?.slice(0,12)}</p>
+                    <p className="text-[11px] mb-2" style={{ color: CREAM + '40' }}>Creator: {l.(creator_id && creator_id.slice)(0,12)}</p>
                     <LoyaltyCard loyalty={l} />
                   </div>
                 ))}
@@ -300,19 +300,19 @@ export default function LoyaltyHubPage() {
             {activeTab === 'rewards' && (
               <div className="space-y-4">
                 {/* Reward Shop */}
-                {user?.id && mainLoyalty?.creator_id && (
+                {(user && user.id) && (mainLoyalty && mainLoyalty.creator_id) && (
                   <RewardShop creatorId={mainLoyalty.creator_id} roomId={activeRoomId} currentUser={user} />
                 )}
 
                 {/* Redemption Queue */}
-                {user?.id && mainLoyalty?.creator_id && (
+                {(user && user.id) && (mainLoyalty && mainLoyalty.creator_id) && (
                   <RedemptionQueue creatorId={mainLoyalty.creator_id} />
                 )}
 
                 {allRewards.length === 0
                   ? <p className="text-center py-8 text-[11px]" style={{ color: CREAM + '30' }}>No rewards available</p>
                   : allRewards.map((r, i) => {
-                    const canRedeem = totalPoints >= r.points_required;
+                    var canRedeem = totalPoints >= r.points_required;
                     return (
                       <div key={r.id} className="rounded-xl p-3 flex items-center gap-3"
                         style={{ background: 'rgba(8,11,24,0.9)', border: canRedeem ? `1px solid ${GOLD}35` : '1px solid rgba(255,255,255,0.07)' }}>
@@ -369,13 +369,13 @@ export default function LoyaltyHubPage() {
 
             {activeTab === 'leaderboard' && (
               <div className="space-y-4">
-                {mainLoyalty?.creator_id && (
+                {(mainLoyalty && mainLoyalty.creator_id) && (
                   <RealtimeLeaderboard creatorId={mainLoyalty.creator_id} roomId={activeRoomId} />
                 )}
                 <div className="space-y-1.5">
                 {leaderboard.map((l, i) => {
-                  const tier = tierFromPoints(l.loyalty_points || 0);
-                  const tc = TIER_MAP[tier];
+                  var tier = tierFromPoints(l.loyalty_points || 0);
+                  var tc = TIER_MAP[tier];
                   return (
                     <div key={l.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
                       style={{ background: i < 3 ? `${tc.color}08` : 'rgba(8,11,24,0.9)', border: i < 3 ? `1px solid ${tc.color}25` : '1px solid rgba(255,255,255,0.07)' }}>
@@ -384,7 +384,7 @@ export default function LoyaltyHubPage() {
                         {i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-bold text-[11px] text-white">{l.user_id?.slice(0, 12) || 'Anonymous'}</p>
+                        <p className="font-bold text-[11px] text-white">{l.(user_id && user_id.slice)(0, 12) || 'Anonymous'}</p>
                         <span className="text-[7px] px-1 py-0.5 rounded font-black uppercase" style={{ background: `${tc.color}15`, color: tc.color }}>{tc.label}</span>
                       </div>
                       <div className="text-right">
@@ -402,9 +402,9 @@ export default function LoyaltyHubPage() {
         </AnimatePresence>
 
         <div style={{ padding: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <RewardShopEditor creatorId={user?.id} />
-          <LiveAuctionWidget creatorId={user?.id} roomId={activeRoomId} isCreator={!!user?.id} currentUser={user} />
-          <VirtualGoodsStore userId={user?.id} />
+          <RewardShopEditor creatorId={(user && user.id)} />
+          <LiveAuctionWidget creatorId={(user && user.id)} roomId={activeRoomId} isCreator={!!(user && user.id)} currentUser={user} />
+          <VirtualGoodsStore userId={(user && user.id)} />
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />
           <ContentRecommendations />
@@ -424,13 +424,13 @@ export default function LoyaltyHubPage() {
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="loyalty" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
-      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
-      <RewardShopEditor creatorId={user?.id} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
+      {(user && user.id) && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={(user && user.id)} isSubscribed={false} />}
+      {(user && user.id) && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={(user && user.id)} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
+      <RewardShopEditor creatorId={(user && user.id)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -438,7 +438,7 @@ export default function LoyaltyHubPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

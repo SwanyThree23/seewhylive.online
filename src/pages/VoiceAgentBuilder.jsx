@@ -6,13 +6,13 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useOpenRouter } from '../hooks/useOpenRouter';
 
-const BG   = '#07050A';
-const GOLD = '#C9A84C';
-const BURG = '#6B1F2A';
-const DIM  = 'rgba(255,255,255,0.45)';
-const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG   = '#07050A';
+var GOLD = '#C9A84C';
+var BURG = '#6B1F2A';
+var DIM  = 'rgba(255,255,255,0.45)';
+var T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const EL_VOICES = [
+var EL_VOICES = [
   { id: 'rachel',  label: 'Rachel',  desc: 'Calm, professional' },
   { id: 'domi',    label: 'Domi',    desc: 'Strong, confident' },
   { id: 'bella',   label: 'Bella',   desc: 'Soft, warm' },
@@ -24,7 +24,7 @@ const EL_VOICES = [
   { id: 'sam',     label: 'Sam',     desc: 'Raspy, strong' },
 ];
 
-const TRIGGER_TYPES = [
+var TRIGGER_TYPES = [
   { id: 'chat_command', label: 'Chat Command',    ex: '!ask, !voice, !host' },
   { id: 'sub_event',    label: 'New Subscriber',  ex: 'Fires when someone subscribes' },
   { id: 'tip_event',    label: 'Tip / Donation',  ex: 'Fires when a tip arrives' },
@@ -33,7 +33,7 @@ const TRIGGER_TYPES = [
   { id: 'manual',       label: 'Manual / API',    ex: 'Triggered externally' },
 ];
 
-const INDUSTRY_TEMPLATES = [
+var INDUSTRY_TEMPLATES = [
   {
     id: 'streaming',
     label: 'Streaming Host',
@@ -151,10 +151,10 @@ const INDUSTRY_TEMPLATES = [
   },
 ];
 
-const ANALYTICS_KEY  = 'swl_vab_analytics';
-const STORAGE_KEY    = 'swl_voice_agents';
+var ANALYTICS_KEY  = 'swl_vab_analytics';
+var STORAGE_KEY    = 'swl_voice_agents';
 
-const SIM_DIALOGUES = {
+var SIM_DIALOGUES = {
   streaming:    ['Can you hype up the stream?', 'What\'s the sub count?', 'Someone just tipped $50'],
   healthcare:   ['I need to schedule an appointment', 'What are your hours?', 'Do you accept Blue Cross?'],
   realestate:   ['Can I see that listing?', 'What\'s the home worth?', 'I want to schedule a showing'],
@@ -179,7 +179,7 @@ function loadAnalytics() {
 }
 function recordTrigger(agentId) {
   try {
-    const a = loadAnalytics();
+    var a = loadAnalytics();
     a.total = (a.total || 0) + 1;
     a.byAgent[agentId] = (a.byAgent[agentId] || 0) + 1;
     localStorage.setItem(ANALYTICS_KEY, JSON.stringify(a));
@@ -238,23 +238,23 @@ function TriggerRow({ trigger, onChange, onRemove }) {
 }
 
 export default function VoiceAgentBuilder() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { invoke: invokeAI, loading: aiLoading } = useOpenRouter();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { invoke: invokeAI, loading: aiLoading } = useOpenRouter();
 
-  const [agents, setAgents]         = useState(loadAgents);
-  const [editingId, setEditingId]   = useState(null);
-  const [draft, setDraft]           = useState(null);
-  const [tab, setTab]               = useState('agents');   // agents | templates | analytics
-  const [testText, setTestText]     = useState('');
-  const [testing, setTesting]       = useState(false);
-  const [simMessages, setSimMessages] = useState([]);
-  const [simInput, setSimInput]     = useState('');
-  const [simRunning, setSimRunning] = useState(false);
-  const audioRef = useRef(null);
-  const analytics = loadAnalytics();
+  var [agents, setAgents]         = useState(loadAgents);
+  var [editingId, setEditingId]   = useState(null);
+  var [draft, setDraft]           = useState(null);
+  var [tab, setTab]               = useState('agents');   // agents | templates | analytics
+  var [testText, setTestText]     = useState('');
+  var [testing, setTesting]       = useState(false);
+  var [simMessages, setSimMessages] = useState([]);
+  var [simInput, setSimInput]     = useState('');
+  var [simRunning, setSimRunning] = useState(false);
+  var audioRef = useRef(null);
+  var analytics = loadAnalytics();
 
   function applyTemplate(tpl) {
-    const agent = blankAgent();
+    var agent = blankAgent();
     agent.name       = tpl.label + ' Agent';
     agent.industry   = tpl.id;
     agent.personality = tpl.personality.replace('{name}', tpl.label + ' Agent');
@@ -266,7 +266,7 @@ export default function VoiceAgentBuilder() {
   }
 
   function startNew() {
-    const a = blankAgent();
+    var a = blankAgent();
     setDraft(a);
     setEditingId(a.id);
   }
@@ -280,7 +280,7 @@ export default function VoiceAgentBuilder() {
     if (!draft) return;
     if (!draft.name.trim())        { toast.error('Agent needs a name.'); return; }
     if (!draft.personality.trim()) { toast.error('Add a personality prompt.'); return; }
-    const updated = agents.find(a => a.id === draft.id)
+    var updated = agents.find(a => a.id === draft.id)
       ? agents.map(a => a.id === draft.id ? draft : a)
       : [...agents, draft];
     setAgents(updated);
@@ -291,7 +291,7 @@ export default function VoiceAgentBuilder() {
   }
 
   function deleteAgent(id) {
-    const updated = agents.filter(a => a.id !== id);
+    var updated = agents.filter(a => a.id !== id);
     setAgents(updated);
     saveAgents(updated);
     if (editingId === id) { setDraft(null); setEditingId(null); }
@@ -299,7 +299,7 @@ export default function VoiceAgentBuilder() {
   }
 
   function toggleActive(id) {
-    const updated = agents.map(a => a.id === id ? { ...a, active: !a.active } : a);
+    var updated = agents.map(a => a.id === id ? { ...a, active: !a.active } : a);
     setAgents(updated);
     saveAgents(updated);
   }
@@ -315,20 +315,20 @@ export default function VoiceAgentBuilder() {
   }
 
   async function testVoice() {
-    const elKey = getElKey();
+    var elKey = getElKey();
     if (!elKey) { toast.error('Add your ElevenLabs API key in Settings → API Keys first.'); return; }
-    const text = testText.trim() || (draft?.personality ? draft.personality.slice(0, 150) : 'Hello, I am your AI voice agent for SeeWhy LIVE.');
-    const voiceId = draft?.voiceId || 'rachel';
+    var text = testText.trim() || ((draft && draft.personality) ? draft.personality.slice(0, 150) : 'Hello, I am your AI voice agent for SeeWhy LIVE.');
+    var voiceId = (draft && draft.voiceId) || 'rachel';
     setTesting(true);
     try {
-      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      var res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
         method: 'POST',
         headers: { 'xi-api-key': elKey, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
         body: JSON.stringify({ text, model_id: 'eleven_monolingual_v1', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
       });
       if (!res.ok) throw new Error(`ElevenLabs ${res.status}`);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      var blob = await res.blob();
+      var url = URL.createObjectURL(blob);
       if (audioRef.current) { audioRef.current.src = url; audioRef.current.play(); }
       toast.success('Playing preview…');
     } catch (e) {
@@ -340,28 +340,28 @@ export default function VoiceAgentBuilder() {
 
   async function sendSimMessage(text) {
     if (!text.trim() || simRunning) return;
-    const userMsg = text.trim();
+    var userMsg = text.trim();
     setSimMessages(m => [...m, { role: 'user', text: userMsg }]);
     setSimInput('');
     setSimRunning(true);
     try {
-      const personality = draft?.personality || 'You are a helpful AI assistant.';
-      const reply = await invokeAI({
+      var personality = (draft && draft.personality) || 'You are a helpful AI assistant.';
+      var reply = await invokeAI({
         prompt: userMsg,
         systemPrompt: personality + '\n\nRespond in 1–2 sentences max, in character. Never break character.',
         maxTokens: 120,
       });
       setSimMessages(m => [...m, { role: 'agent', text: reply.trim() }]);
-      if (draft?.id) recordTrigger(draft.id);
-      if (draft?.voiceId && getElKey()) {
-        const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${draft.voiceId}`, {
+      if ((draft && draft.id)) recordTrigger(draft.id);
+      if ((draft && draft.voiceId) && getElKey()) {
+        var res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${draft.voiceId}`, {
           method: 'POST',
           headers: { 'xi-api-key': getElKey(), 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
           body: JSON.stringify({ text: reply.trim(), model_id: 'eleven_monolingual_v1', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
         });
         if (res.ok) {
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
+          var blob = await res.blob();
+          var url = URL.createObjectURL(blob);
           if (audioRef.current) { audioRef.current.src = url; audioRef.current.play(); }
         }
       }
@@ -373,12 +373,12 @@ export default function VoiceAgentBuilder() {
   }
 
   async function generatePersonality() {
-    if (!draft?.name?.trim()) { toast.error('Name the agent first.'); return; }
-    const industry = INDUSTRY_TEMPLATES.find(t => t.id === draft.industry);
+    if (!(draft && draft.name && draft.name.trim())) { toast.error('Name the agent first.'); return; }
+    var industry = INDUSTRY_TEMPLATES.find(t => t.id === draft.industry);
     try {
-      const text = await invokeAI({
-        prompt: `Write a concise AI voice agent personality prompt for "${draft.name}", a ${industry?.label || 'streaming'} assistant on SeeWhy LIVE.
-Industry focus: ${industry?.desc || 'live streaming'}
+      var text = await invokeAI({
+        prompt: `Write a concise AI voice agent personality prompt for "${draft.name}", a ${(industry && industry.label) || 'streaming'} assistant on SeeWhy LIVE.
+Industry focus: ${(industry && industry.desc) || 'live streaming'}
 Requirements: 80 words max, conversational, stays in character, no fluff.
 Output only the personality text, no labels or headers.`,
         maxTokens: 200,
@@ -390,9 +390,9 @@ Output only the personality text, no labels or headers.`,
     }
   }
 
-  const hasElKey  = !!getElKey();
-  const hasOrKey  = !!getOrKey();
-  const simStarters = SIM_DIALOGUES[draft?.industry] || SIM_DIALOGUES.streaming;
+  var hasElKey  = !!getElKey();
+  var hasOrKey  = !!getOrKey();
+  var simStarters = SIM_DIALOGUES[(draft && draft.industry)] || SIM_DIALOGUES.streaming;
 
   return (
     <div style={{ minHeight: '100vh', background: BG, ...T, paddingBottom: 60 }}>
@@ -449,7 +449,7 @@ Output only the personality text, no labels or headers.`,
                   <p style={{ fontSize: 13, fontWeight: 800, color: '#fff', ...T }}>{tpl.label}</p>
                   <p style={{ fontSize: 11, color: DIM, ...T, marginTop: 3 }}>{tpl.desc}</p>
                   <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 6, ...T }}>
-                    {tpl.triggers?.length || 0} triggers pre-built
+                    {tpl.(triggers && triggers.length) || 0} triggers pre-built
                   </p>
                 </div>
                 <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
@@ -471,8 +471,8 @@ Output only the personality text, no labels or headers.`,
               <p style={{ fontSize: 11, color: DIM, ...T }}>total triggers fired (local session)</p>
             </div>
             {agents.map(agent => {
-              const count = analytics.byAgent[agent.id] || 0;
-              const pct   = analytics.total ? Math.round((count / analytics.total) * 100) : 0;
+              var count = analytics.byAgent[agent.id] || 0;
+              var pct   = analytics.total ? Math.round((count / analytics.total) * 100) : 0;
               return (
                 <div key={agent.id} style={{ borderRadius: 10, padding: '11px 14px', background: 'rgba(13,6,24,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
@@ -503,11 +503,11 @@ Output only the personality text, no labels or headers.`,
               <div key={agent.id} style={{ borderRadius: 12, background: 'rgba(13,6,24,0.8)', border: `1px solid ${editingId === agent.id ? GOLD + '40' : 'rgba(255,255,255,0.07)'}`, overflow: 'hidden' }}>
                 <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: agent.active ? '#6DBF7E' : 'rgba(255,255,255,0.2)' }} />
-                  <span style={{ fontSize: 18 }}>{INDUSTRY_TEMPLATES.find(t => t.id === agent.industry)?.icon || '🤖'}</span>
+                  <span style={{ fontSize: 18 }}>{(function(){ var _it = INDUSTRY_TEMPLATES.find(function(t){ return t.id === agent.industry; }); return _it ? _it.icon : null; })() || '🤖'}</span>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 13, fontWeight: 800, color: '#fff', ...T }}>{agent.name}</p>
                     <p style={{ fontSize: 10, color: DIM, ...T }}>
-                      {agent.triggers?.length || 0} trigger{agent.triggers?.length !== 1 ? 's' : ''} · {EL_VOICES.find(v => v.id === agent.voiceId)?.label || agent.voiceId}
+                      {agent.(triggers && triggers.length) || 0} trigger{agent.(triggers && triggers.length) !== 1 ? 's' : ''} · {EL_VOICES.find(v => v.id === agent.voiceId)?.label || agent.voiceId}
                       {agent.webhookUrl ? ' · webhook' : ''}
                       {agent.bookingUrl ? ' · booking' : ''}
                     </p>
@@ -592,7 +592,7 @@ Output only the personality text, no labels or headers.`,
                     {(draft.triggers || []).map((tr, i) => (
                       <TriggerRow key={i} trigger={tr} onChange={t => updateTrigger(i, t)} onRemove={() => removeTrigger(i)} />
                     ))}
-                    {!draft.triggers?.length && <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', ...T }}>No triggers — add one above.</p>}
+                    {!draft.(triggers && triggers.length) && <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', ...T }}>No triggers — add one above.</p>}
                   </div>
 
                   {/* Webhook */}

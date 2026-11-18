@@ -13,20 +13,20 @@ import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
-const CREATOR_SPLIT = 0.90;
-const STRIPE_ACCOUNT_ID = 'acct_1Svbvv2N0KWn0OQu';
+var CREATOR_SPLIT = 0.90;
+var STRIPE_ACCOUNT_ID = 'acct_1Svbvv2N0KWn0OQu';
 
 function creatorCut(gross) { return Math.floor(gross * CREATOR_SPLIT); }
 function platformFee(gross) { return gross - creatorCut(gross); }
 
 
-const LAYERS = [
+var LAYERS = [
   { id: 'db', label: 'DB Trigger', desc: 'creator_cut = FLOOR(gross * 0.90) enforced at insert', color: '#6DBF7E', icon: Shield },
   { id: 'api', label: 'API Middleware', desc: 'processPaymentWithPlatformCut() validates split before write', color: '#d4af37', icon: Lock },
   { id: 'stripe', label: 'Stripe Fee', desc: 'application_fee_amount = FLOOR(gross * 0.10) in cents', color: '#C0392B', icon: CreditCard },
 ];
 
-const initState = {
+var initState = {
   tab: 'overview',
   requestingPayout: false,
   payoutSuccess: false,
@@ -72,22 +72,22 @@ function StatusBadge({ status }) {
 }
 
 export default function PayoutCenter() {
-  const [state, dispatch] = useReducer(reducer, initState);
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var [state, dispatch] = useReducer(reducer, initState);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const { data: payouts } = useQuery({
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var { data: payouts } = useQuery({
     queryKey: ['payout-records'],
     queryFn: () => base44.entities.PayoutRecord.filter({ creator_id: user && user.id }).catch(() => []),
     enabled: !!(user && user.id),
@@ -294,15 +294,15 @@ export default function PayoutCenter() {
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <RevenueDashboard userId={user?.id} />
-        <StreamerGoalsWidget creatorId={user?.id} roomId={activeRoomId} isCreator={true} embedded={true} />
-        <SubscriptionManager creatorId={user?.id} />
-        <StripeConnectButton creatorId={user?.id} />
-        <EarningsBreakdown creatorId={user?.id} />
+        <RevenueDashboard userId={(user && user.id)} />
+        <StreamerGoalsWidget creatorId={(user && user.id)} roomId={activeRoomId} isCreator={true} embedded={true} />
+        <SubscriptionManager creatorId={(user && user.id)} />
+        <StripeConnectButton creatorId={(user && user.id)} />
+        <EarningsBreakdown creatorId={(user && user.id)} />
         <MonetizationDashboard roomId={activeRoomId} />
-        <LiveAuctionWidget creatorId={user?.id} roomId={activeRoomId} isCreator={true} currentUser={user} />
-        <VirtualGoodsStore userId={user?.id} />
-        <StripeSubscribeButton creatorId={user?.id} creatorName={user?.full_name || ''} currentUserId={user?.id} />
+        <LiveAuctionWidget creatorId={(user && user.id)} roomId={activeRoomId} isCreator={true} currentUser={user} />
+        <VirtualGoodsStore userId={(user && user.id)} />
+        <StripeSubscribeButton creatorId={(user && user.id)} creatorName={(user && user.full_name) || ''} currentUserId={(user && user.id)} />
         <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>

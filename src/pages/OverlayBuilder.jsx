@@ -23,12 +23,12 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const GOLD = '#D4AF37';
-const BURGUNDY = '#800020';
-const CREAM = '#F5E6D3';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD = '#D4AF37';
+var BURGUNDY = '#800020';
+var CREAM = '#F5E6D3';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const ELEMENT_TYPES = [
+var ELEMENT_TYPES = [
   { id: 'stream_info',    label: 'Stream Info',     icon: '📡', desc: 'Title + viewer count' },
   { id: 'goal_bar',       label: 'Goal Bar',        icon: '🎯', desc: 'Streamer goal progress' },
   { id: 'recent_events',  label: 'Recent Events',   icon: '📨', desc: 'Tips, subs, gift feed' },
@@ -37,14 +37,14 @@ const ELEMENT_TYPES = [
   { id: 'alert_box',      label: 'Alert Box',       icon: '🔔', desc: 'Sub/tip alerts' },
 ];
 
-const PRESETS = {
+var PRESETS = {
   Gaming:    [{ type: 'stream_info', x: 2, y: 2, w: 30, h: 8 }, { type: 'goal_bar', x: 2, y: 85, w: 40, h: 8 }, { type: 'chat_overlay', x: 75, y: 20, w: 23, h: 60 }, { type: 'alert_box', x: 30, y: 2, w: 40, h: 10 }],
   Podcast:   [{ type: 'branding', x: 40, y: 85, w: 20, h: 10 }, { type: 'recent_events', x: 75, y: 5, w: 23, h: 50 }],
   TalkShow:  [{ type: 'stream_info', x: 2, y: 2, w: 25, h: 8 }, { type: 'recent_events', x: 2, y: 70, w: 30, h: 22 }, { type: 'branding', x: 80, y: 90, w: 18, h: 8 }],
   Tournament:[{ type: 'stream_info', x: 35, y: 1, w: 30, h: 8 }, { type: 'goal_bar', x: 2, y: 90, w: 96, h: 7 }, { type: 'alert_box', x: 30, y: 10, w: 40, h: 12 }, { type: 'chat_overlay', x: 75, y: 25, w: 23, h: 65 }],
 };
 
-const DEFAULT_CONFIG = {
+var DEFAULT_CONFIG = {
   stream_info:   { showTitle: true, showViewers: true, textColor: '#FFFFFF', bgOpacity: 0.7 },
   goal_bar:      { goalId: '', fillColor: GOLD, labelText: 'Goal', height: 8 },
   recent_events: { maxItems: 5, showTips: true, showSubs: true, showGifts: true, fontSize: 12 },
@@ -54,7 +54,7 @@ const DEFAULT_CONFIG = {
 };
 
 function ElementOnCanvas({ el, selected, onClick }) {
-  const type = ELEMENT_TYPES.find(t => t.id === el.type);
+  var type = ELEMENT_TYPES.find(t => t.id === el.type);
   return (
     <div
       onClick={onClick}
@@ -68,8 +68,8 @@ function ElementOnCanvas({ el, selected, onClick }) {
         boxShadow: selected ? `0 0 16px rgba(212,175,55,0.25)` : undefined,
       }}>
       <div className="text-center pointer-events-none">
-        <div className="text-lg leading-none">{type?.icon}</div>
-        <div className="text-[7px] font-black uppercase mt-0.5" style={{ color: GOLD, ...T }}>{type?.label}</div>
+        <div className="text-lg leading-none">{(type && type.icon)}</div>
+        <div className="text-[7px] font-black uppercase mt-0.5" style={{ color: GOLD, ...T }}>{(type && type.label)}</div>
       </div>
     </div>
   );
@@ -83,8 +83,8 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
     </div>
   );
 
-  const cfg = element.config || DEFAULT_CONFIG[element.type] || {};
-  const field = (key, label, type = 'text', opts = []) => (
+  var cfg = element.config || DEFAULT_CONFIG[element.type] || {};
+  var field = (key, label, type = 'text', opts = []) => (
     <div key={key}>
       <label className="text-[11px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>{label}</label>
       {type === 'bool'
@@ -113,7 +113,7 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
     </div>
   );
 
-  const fieldsByType = {
+  var fieldsByType = {
     stream_info:   [['showTitle','Show Title','bool'],['showViewers','Show Viewers','bool'],['textColor','Text Color'],['bgOpacity','BG Opacity','number']],
     goal_bar:      [['goalId','Goal',  'select', goals.map(g => g.id).concat([''])],['fillColor','Fill Color'],['labelText','Label'],['height','Height px','number']],
     recent_events: [['maxItems','Max Items','number'],['showTips','Show Tips','bool'],['showSubs','Show Subs','bool'],['showGifts','Show Gifts','bool'],['fontSize','Font Size','number']],
@@ -122,7 +122,7 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
     alert_box:     [['triggerType','Trigger','select',['tip','subscription','gift']],['animStyle','Animation','select',['slide','bounce','fade']],['sound','Sound','select',['cash_register','fanfare','chime','coin']]],
   };
 
-  const fields = fieldsByType[element.type] || [];
+  var fields = fieldsByType[element.type] || [];
 
   return (
     <div className="p-4 space-y-3">
@@ -151,41 +151,41 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
 }
 
 export default function OverlayBuilderPage() {
-  const [elements, setElements] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [layoutName, setLayoutName] = useState('My Overlay');
-  const [selectedLayout, setSelectedLayout] = useState(null);
-  const qc = useQueryClient();
+  var [elements, setElements] = useState([]);
+  var [selected, setSelected] = useState(null);
+  var [layoutName, setLayoutName] = useState('My Overlay');
+  var [selectedLayout, setSelectedLayout] = useState(null);
+  var qc = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['overlaybuilder-active-room', user?.id],
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['overlaybuilder-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: layouts = [] } = useQuery({
-    queryKey: ['overlay-layouts', user?.id],
-    queryFn: () => base44.entities.OverlayLayout.filter({ creator_id: user?.id }),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: layouts = [] } = useQuery({
+    queryKey: ['overlay-layouts', (user && user.id)],
+    queryFn: () => base44.entities.OverlayLayout.filter({ creator_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
-  const { data: goals = [] } = useQuery({
-    queryKey: ['overlay-goals', user?.id],
-    queryFn: () => base44.entities.StreamerGoal.filter({ creator_id: user?.id, status: 'active' }),
-    enabled: !!user?.id,
+  var { data: goals = [] } = useQuery({
+    queryKey: ['overlay-goals', (user && user.id)],
+    queryFn: () => base44.entities.StreamerGoal.filter({ creator_id: (user && user.id), status: 'active' }),
+    enabled: !!(user && user.id),
   });
 
   useEffect(() => {
     if (selectedLayout) {
-      const layout = layouts.find(l => l.id === selectedLayout);
+      var layout = layouts.find(l => l.id === selectedLayout);
       if (layout) { setElements(layout.elements || []); setLayoutName(layout.name || ''); }
     }
   }, [selectedLayout, layouts]);
 
-  const saveMut = useMutation({
+  var saveMut = useMutation({
     mutationFn: () => {
-      const data = { name: layoutName, elements, creator_id: user?.id, is_active: false };
+      var data = { name: layoutName, elements, creator_id: (user && user.id), is_active: false };
       if (selectedLayout) return base44.entities.OverlayLayout.update(selectedLayout, data);
       return base44.entities.OverlayLayout.create(data);
     },
@@ -193,7 +193,7 @@ export default function OverlayBuilderPage() {
       qc.invalidateQueries({ queryKey: ['overlay-layouts'] });
       if (!selectedLayout) setSelectedLayout(result.id);
       toast.success('Overlay saved!');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
@@ -203,7 +203,7 @@ export default function OverlayBuilderPage() {
     },
     onError: () => toast.error('Action failed.'),
   });
-  const toggleActiveMut = useMutation({
+  var toggleActiveMut = useMutation({
     mutationFn: async (id) => {
       await Promise.all(layouts.map(l => base44.entities.OverlayLayout.update(l.id, { is_active: l.id === id })));
     },
@@ -211,26 +211,26 @@ export default function OverlayBuilderPage() {
     onError: () => toast.error('Action failed.'),
   });
 
-  const addElement = (type) => {
+  var addElement = (type) => {
     setElements(prev => [...prev, { id: Date.now(), type, x: 5, y: 5, w: 25, h: 12, config: { ...DEFAULT_CONFIG[type] } }]);
   };
-  const updateElement = (id, patch) => {
+  var updateElement = (id, patch) => {
     setElements(prev => prev.map(el => el.id === id ? { ...el, ...patch } : el));
   };
-  const removeElement = (id) => {
+  var removeElement = (id) => {
     setElements(prev => prev.filter(el => el.id !== id));
     if (selected === id) setSelected(null);
   };
-  const applyPreset = (presetName) => {
-    const preset = PRESETS[presetName];
+  var applyPreset = (presetName) => {
+    var preset = PRESETS[presetName];
     if (!preset) return;
     setElements(preset.map((p, i) => ({ ...p, id: Date.now() + i, config: { ...DEFAULT_CONFIG[p.type] } })));
     setSelected(null);
   };
 
-  const activeLayout = layouts.find(l => l.is_active);
-  const selectedEl = elements.find(el => el.id === selected);
-  const obsUrl = `https://seewhylive.online/overlay/live?creator_id=${user?.id}&layout_id=${selectedLayout || 'NEW'}`;
+  var activeLayout = layouts.find(l => l.is_active);
+  var selectedEl = elements.find(el => el.id === selected);
+  var obsUrl = `https://seewhylive.online/overlay/live?creator_id=${(user && user.id)}&layout_id=${selectedLayout || 'NEW'}`;
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#080B18' }}>
@@ -277,8 +277,8 @@ export default function OverlayBuilderPage() {
           {selectedLayout && (
             <button onClick={() => toggleActiveMut.mutate(selectedLayout)}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-              style={{ background: activeLayout?.id === selectedLayout ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.06)', color: activeLayout?.id === selectedLayout ? '#6DBF7E' : CREAM + '60', border: '1px solid rgba(255,255,255,0.1)', ...T }}>
-              {activeLayout?.id === selectedLayout ? '● Active' : 'Set Active'}
+              style={{ background: (activeLayout && activeLayout.id) === selectedLayout ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.06)', color: (activeLayout && activeLayout.id) === selectedLayout ? '#6DBF7E' : CREAM + '60', border: '1px solid rgba(255,255,255,0.1)', ...T }}>
+              {(activeLayout && activeLayout.id) === selectedLayout ? '● Active' : 'Set Active'}
             </button>
           )}
           <button onClick={() => { navigator.clipboard.writeText(obsUrl).then(() => toast.success('OBS URL copied!')).catch(() => toast.error('Copy failed.')); }}
@@ -350,20 +350,20 @@ export default function OverlayBuilderPage() {
           />
         </div>
       </div>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="overlay" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="overlay" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.peak_viewers) || 0} />
       <BackgroundCustomizer />
     </div>
   );

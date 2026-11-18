@@ -6,10 +6,10 @@ import ActivityHistory from '@/components/dashboard/ActivityHistory';
 import SavedAdTemplates from '@/components/dashboard/SavedAdTemplates';
 import ChallengeProgress from '@/components/dashboard/ChallengeProgress';
 
-const G = '#FFB800';
+var G = '#FFB800';
 
 export default function MyDashboard() {
-  const { data: user, isLoading } = useQuery({
+  var { data: user, isLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
@@ -27,7 +27,7 @@ export default function MyDashboard() {
             My Dashboard
           </h1>
           <p className="text-xs text-white/40 mt-1 truncate">
-            {isLoading ? 'Loading…' : (user?.full_name || user?.email || 'Your activity at a glance')}
+            {isLoading ? 'Loading…' : ((user && user.full_name) || (user && user.email) || 'Your activity at a glance')}
           </p>
         </div>
       </div>

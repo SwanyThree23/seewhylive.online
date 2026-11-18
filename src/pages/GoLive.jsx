@@ -621,7 +621,7 @@ export default function GoLive() {
     } catch {}
   };
   var handleStopShare = () => {
-    screenStreamRef.(current && current.getTracks)().forEach(t => t.stop());
+    if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); }
     screenStreamRef.current = null;
     setIsSharing(false);
   };

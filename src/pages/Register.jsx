@@ -11,15 +11,15 @@ import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
 
 export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showOtp, setShowOtp] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
+  var [email, setEmail] = useState("");
+  var [password, setPassword] = useState("");
+  var [confirmPassword, setConfirmPassword] = useState("");
+  var [error, setError] = useState("");
+  var [loading, setLoading] = useState(false);
+  var [showOtp, setShowOtp] = useState(false);
+  var [otpCode, setOtpCode] = useState("");
 
-  const handleSubmit = async (e) => {
+  var handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (password !== confirmPassword) {
@@ -37,12 +37,12 @@ export default function Register() {
     }
   };
 
-  const handleVerify = async () => {
+  var handleVerify = async () => {
     setError("");
     setLoading(true);
     try {
-      const result = await base44.auth.verifyOtp({ email, otpCode });
-      if (result?.access_token) {
+      var result = await base44.auth.verifyOtp({ email, otpCode });
+      if ((result && result.access_token)) {
         base44.auth.setToken(result.access_token);
       }
       window.location.href = "/";
@@ -53,7 +53,7 @@ export default function Register() {
     }
   };
 
-  const handleResend = async () => {
+  var handleResend = async () => {
     setError("");
     try {
       await base44.auth.resendOtp(email);
@@ -66,19 +66,19 @@ export default function Register() {
     }
   };
 
-  const handleGoogle = () => {
+  var handleGoogle = () => {
     base44.auth.loginWithProvider("google", "/");
   };
 
-  const handleMicrosoft = () => {
+  var handleMicrosoft = () => {
     base44.auth.loginWithProvider("microsoft", "/");
   };
 
-  const handleFacebook = () => {
+  var handleFacebook = () => {
     base44.auth.loginWithProvider("facebook", "/");
   };
 
-  const handleApple = () => {
+  var handleApple = () => {
     base44.auth.loginWithProvider("apple", "/");
   };
 

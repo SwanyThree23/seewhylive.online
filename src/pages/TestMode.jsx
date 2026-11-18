@@ -25,20 +25,20 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import CreatorBridge from '../components/social/CreatorBridge';
 
-const BG     = '#080B18';
-const BG2    = '#0D1022';
-const GOLD   = '#D4AF37';
-const CRIMSON= '#800020';
-const PINK    = '#C0392B';
-const GREEN  = '#6DBF7E';
-const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+var BG     = '#080B18';
+var BG2    = '#0D1022';
+var GOLD   = '#D4AF37';
+var CRIMSON= '#800020';
+var PINK    = '#C0392B';
+var GREEN  = '#6DBF7E';
+var OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
-const PALETTE = ['#D4AF37','#C0392B','#00C8C8','#A855F7','#22D3EE','#F97316','#84CC16','#C0392B'];
-const avatarColor = n => PALETTE[(n?.charCodeAt(0) ?? 0) % PALETTE.length];
+var PALETTE = ['#D4AF37','#C0392B','#00C8C8','#A855F7','#22D3EE','#F97316','#84CC16','#C0392B'];
+var avatarColor = n => PALETTE[((n && n.charCodeAt)(0) || 0) % PALETTE.length];
 
-const ALL_NAMES = ['SwanyThree','Joyce 🦋','CaliBonesOG','Marvin','Yahawadah','Tom','Durand','Phelo','Simone','Obi','Kenya','Marcus','Tasha','DeeJay','Rakim','Zara','Kwame','Blessed','BigFacts','Nijah'];
+var ALL_NAMES = ['SwanyThree','Joyce 🦋','CaliBonesOG','Marvin','Yahawadah','Tom','Durand','Phelo','Simone','Obi','Kenya','Marcus','Tasha','DeeJay','Rakim','Zara','Kwame','Blessed','BigFacts','Nijah'];
 
-const CHAT_POOL = [
+var CHAT_POOL = [
   '🔥 Let\'s go!','This is fire 🔥','Good morning everyone!','💯💯💯',
   'Who else watching from NY?','Swany on top!','❤️❤️❤️','That was crazy!',
   'Big facts','We outside 🌍','DROP THE LINK 🔗','I just sent a gift! 🎁',
@@ -47,7 +47,7 @@ const CHAT_POOL = [
   'Bro said hold on 😂','Real talk tho fr fr','No cap this slaps',
 ];
 
-const SCENARIOS = {
+var SCENARIOS = {
   empty:  {
     label: 'Empty Room', emoji: '🕳️', status: 'waiting', viewerCount: 0,
     participants: [],
@@ -94,10 +94,10 @@ const SCENARIOS = {
 
 // ── OCT Stage Tile ─────────────────────────────────────────────────────────────
 function OctTile({ p, size = 80 }) {
-  const isHost   = p.role === 'host';
-  const isCohost = p.role === 'co-host';
-  const border   = p.speaking ? GOLD : isHost ? `${GOLD}66` : 'rgba(255,255,255,0.12)';
-  const color    = avatarColor(p.name);
+  var isHost   = p.role === 'host';
+  var isCohost = p.role === 'co-host';
+  var border   = p.speaking ? GOLD : isHost ? `${GOLD}66` : 'rgba(255,255,255,0.12)';
+  var color    = avatarColor(p.name);
   return (
     <div className="flex flex-col items-center gap-1.5">
       <div className="relative" style={{ width:size, height:size }}>
@@ -162,12 +162,12 @@ function FloatingReaction({ emoji, id, onDone }) {
 
 // ── Viewer POV panel ───────────────────────────────────────────────────────────
 function ViewerPanel({ data, chatMessages, reactions, onReact }) {
-  const chatEndRef = useRef(null);
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior:'smooth' }); }, [chatMessages]);
+  var chatEndRef = useRef(null);
+  useEffect(() => { chatEndRef.(current && current.scrollIntoView)({ behavior:'smooth' }); }, [chatMessages]);
 
-  const cols = data.participants.length <= 2 ? 2
+  var cols = data.participants.length <= 2 ? 2
     : data.participants.length <= 6 ? 3 : 4;
-  const tileSize = cols === 2 ? 90 : cols === 3 ? 72 : 60;
+  var tileSize = cols === 2 ? 90 : cols === 3 ? 72 : 60;
 
   return (
     <div className="flex flex-col h-full rounded-2xl overflow-hidden border"
@@ -194,9 +194,9 @@ function ViewerPanel({ data, chatMessages, reactions, onReact }) {
       {data.status === 'battle' && (
         <div className="px-3 py-2 shrink-0" style={{ background:'rgba(0,0,0,0.3)' }}>
           <div className="flex justify-between text-[10px] font-black mb-1">
-            <span style={{ color:GOLD }}>{data.participants[0]?.name?.split(' ')[0] ?? 'A'} {data.scoreA?.toLocaleString()}</span>
+            <span style={{ color:GOLD }}>{(data.participants[0] && data.participants[0].name && data.participants[0].name.split(' ')[0]) || 'A'} {data.scoreA && data.scoreA.toLocaleString()}</span>
             <span className="text-white/40">⚔️ PK BATTLE</span>
-            <span style={{ color:PINK }}>{data.scoreB?.toLocaleString()} {data.participants[1]?.name?.split(' ')[0] ?? 'B'}</span>
+            <span style={{ color:PINK }}>{data.scoreB && data.scoreB.toLocaleString()} {(data.participants[1] && data.participants[1].name && data.participants[1].name.split(' ')[0]) || 'B'}</span>
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background:'rgba(255,255,255,0.08)' }}>
             <motion.div className="h-full rounded-full"
@@ -264,8 +264,8 @@ function ViewerPanel({ data, chatMessages, reactions, onReact }) {
 
 // ── Creator POV panel ──────────────────────────────────────────────────────────
 function CreatorPanel({ data, chatMessages, onSendChat }) {
-  const [msg, setMsg] = useState('');
-  const stats = [
+  var [msg, setMsg] = useState('');
+  var stats = [
     { label:'Viewers', value: data.viewerCount.toLocaleString(), color:GOLD },
     { label:'On Stage', value: data.participants.length, color:'#6DBF7E' },
     { label:'Revenue', value:'$0.00', color:GREEN },
@@ -339,30 +339,30 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
 
 // ── Main TestMode page ─────────────────────────────────────────────────────────
 export default function TestMode() {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room_id');
-  const activeRoomId = roomId;
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [scenarioKey, setScenarioKey] = useState('panel');
-  const [scenarioData, setScenarioData] = useState(() => ({
+  var [searchParams] = useSearchParams();
+  var roomId = searchParams.get('room_id');
+  var activeRoomId = roomId;
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [scenarioKey, setScenarioKey] = useState('panel');
+  var [scenarioData, setScenarioData] = useState(() => ({
     ...SCENARIOS.panel,
     label: SCENARIOS.panel.label,
     viewerCount: SCENARIOS.panel.viewerCount,
     participants: [...SCENARIOS.panel.participants],
   }));
-  const [chatMessages, setChatMessages] = useState([]);
-  const [reactions, setReactions] = useState([]);
-  const [autoChat, setAutoChat] = useState(false);
-  const [autoSpeaker, setAutoSpeaker] = useState(true);
-  const [chatSpeed, setChatSpeed] = useState(2500);
-  const [viewerDrift, setViewerDrift] = useState(true);
-  const chatIdRef = useRef(0);
-  const reactionIdRef = useRef(0);
+  var [chatMessages, setChatMessages] = useState([]);
+  var [reactions, setReactions] = useState([]);
+  var [autoChat, setAutoChat] = useState(false);
+  var [autoSpeaker, setAutoSpeaker] = useState(true);
+  var [chatSpeed, setChatSpeed] = useState(2500);
+  var [viewerDrift, setViewerDrift] = useState(true);
+  var chatIdRef = useRef(0);
+  var reactionIdRef = useRef(0);
 
   // Load scenario
   function loadScenario(key) {
     setScenarioKey(key);
-    const s = SCENARIOS[key];
+    var s = SCENARIOS[key];
     setScenarioData({
       ...s,
       label: s.label,
@@ -372,7 +372,7 @@ export default function TestMode() {
   }
 
   // Add chat message
-  const addChat = useCallback((user, text) => {
+  var addChat = useCallback((user, text) => {
     setChatMessages(prev => [...prev.slice(-49), {
       id: ++chatIdRef.current, user, text,
     }]);
@@ -380,7 +380,7 @@ export default function TestMode() {
 
   // Add reaction
   function addReaction(emoji) {
-    const id = ++reactionIdRef.current;
+    var id = ++reactionIdRef.current;
     setReactions(prev => [...prev, { id, emoji }]);
     setTimeout(() => setReactions(prev => prev.filter(r => r.id !== id)), 1800);
   }
@@ -388,9 +388,9 @@ export default function TestMode() {
   // Auto-chat
   useEffect(() => {
     if (!autoChat) return;
-    const t = setInterval(() => {
-      const name = ALL_NAMES[Math.floor(Math.random() * ALL_NAMES.length)];
-      const text = CHAT_POOL[Math.floor(Math.random() * CHAT_POOL.length)];
+    var t = setInterval(() => {
+      var name = ALL_NAMES[Math.floor(Math.random() * ALL_NAMES.length)];
+      var text = CHAT_POOL[Math.floor(Math.random() * CHAT_POOL.length)];
       addChat(name, text);
       if (Math.random() < 0.2) addReaction(['❤️','🔥','💯','👑'][Math.floor(Math.random()*4)]);
     }, chatSpeed);
@@ -400,10 +400,10 @@ export default function TestMode() {
   // Auto-rotate speaker
   useEffect(() => {
     if (!autoSpeaker) return;
-    const t = setInterval(() => {
+    var t = setInterval(() => {
       setScenarioData(prev => {
         if (prev.participants.length < 2) return prev;
-        const idx = Math.floor(Math.random() * prev.participants.length);
+        var idx = Math.floor(Math.random() * prev.participants.length);
         return {
           ...prev,
           participants: prev.participants.map((p, i) => ({
@@ -418,7 +418,7 @@ export default function TestMode() {
   // Viewer count drift
   useEffect(() => {
     if (!viewerDrift || scenarioData.status === 'waiting') return;
-    const t = setInterval(() => {
+    var t = setInterval(() => {
       setScenarioData(prev => ({
         ...prev,
         viewerCount: Math.max(0, prev.viewerCount + Math.floor(Math.random() * 7) - 2),
@@ -430,7 +430,7 @@ export default function TestMode() {
   // PK score drift
   useEffect(() => {
     if (scenarioData.status !== 'battle') return;
-    const t = setInterval(() => {
+    var t = setInterval(() => {
       setScenarioData(prev => ({
         ...prev,
         scoreA: (prev.scoreA || 0) + Math.floor(Math.random() * 150),
@@ -442,10 +442,10 @@ export default function TestMode() {
 
   // Add a random participant
   function addParticipant() {
-    const existing = scenarioData.participants.map(p => p.name);
-    const available = ALL_NAMES.filter(n => !existing.includes(n));
+    var existing = scenarioData.participants.map(p => p.name);
+    var available = ALL_NAMES.filter(n => !existing.includes(n));
     if (!available.length) return;
-    const name = available[Math.floor(Math.random() * available.length)];
+    var name = available[Math.floor(Math.random() * available.length)];
     addChat('🔔 System', `${name} joined the stage`);
     setScenarioData(prev => ({
       ...prev,
@@ -458,9 +458,9 @@ export default function TestMode() {
   // Remove last participant (not host)
   function removeParticipant() {
     setScenarioData(prev => {
-      const nonHosts = prev.participants.filter(p => p.role !== 'host');
+      var nonHosts = prev.participants.filter(p => p.role !== 'host');
       if (!nonHosts.length) return prev;
-      const removed = nonHosts[nonHosts.length - 1];
+      var removed = nonHosts[nonHosts.length - 1];
       addChat('🔔 System', `${removed.name} left the stage`);
       return { ...prev, participants: prev.participants.filter(p => p.id !== removed.id) };
     });
@@ -468,9 +468,9 @@ export default function TestMode() {
 
   // Trigger a gift event
   function sendGift() {
-    const sender = ALL_NAMES[Math.floor(Math.random() * ALL_NAMES.length)];
-    const gifts = ['🌹 Rose','🎆 Fireworks','🏆 Trophy','💎 Diamond','🚀 Rocket','🎁 Gift Box'];
-    const gift = gifts[Math.floor(Math.random() * gifts.length)];
+    var sender = ALL_NAMES[Math.floor(Math.random() * ALL_NAMES.length)];
+    var gifts = ['🌹 Rose','🎆 Fireworks','🏆 Trophy','💎 Diamond','🚀 Rocket','🎁 Gift Box'];
+    var gift = gifts[Math.floor(Math.random() * gifts.length)];
     addChat(sender, `sent ${gift}!`);
     addReaction('🎁');
     setScenarioData(prev => ({ ...prev, viewerCount: prev.viewerCount + Math.floor(Math.random()*8+2) }));
@@ -478,10 +478,10 @@ export default function TestMode() {
 
   // Copy a test URL
   function copyURL(path) {
-    navigator.clipboard?.writeText(window.location.origin + path);
+    navigator.(clipboard && clipboard.writeText)(window.location.origin + path);
   }
 
-  const realPages = [
+  var realPages = [
     { label:'Home Feed',        path:'/',                    emoji:'🏠', desc:'Room discovery' },
     { label:'Live Room',        path:'/LiveRoom',            emoji:'🎙️', desc:'Viewer POV' },
     { label:'Broadcast Studio', path:'/BroadcastStudio',    emoji:'📡', desc:'Creator POV' },
@@ -706,7 +706,7 @@ export default function TestMode() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
     </div>

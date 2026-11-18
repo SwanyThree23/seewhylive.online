@@ -12,22 +12,22 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import ShareToSocial from '../components/social/ShareToSocial';
 
-const BG    = '#080B18';
-const BG2   = '#0D0A08';
-const BG3   = '#13100A';
-const GOLD  = '#D4AF37';
-const GOLDD = '#8A6F2E';
-const AMBER = '#CC7755';
-const SLATE = '#2A2010';
-const TEXT  = '#F0E8D4';
-const TEXTD = '#C4B596';
-const TEXTM = '#8A7A62';
-const GREEN = '#6DBF7E';
-const PILL  = 999;
-const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO  = { fontFamily: 'Space Mono, monospace' };
+var BG    = '#080B18';
+var BG2   = '#0D0A08';
+var BG3   = '#13100A';
+var GOLD  = '#D4AF37';
+var GOLDD = '#8A6F2E';
+var AMBER = '#CC7755';
+var SLATE = '#2A2010';
+var TEXT  = '#F0E8D4';
+var TEXTD = '#C4B596';
+var TEXTM = '#8A7A62';
+var GREEN = '#6DBF7E';
+var PILL  = 999;
+var T     = { fontFamily: 'Barlow Condensed, sans-serif' };
+var MONO  = { fontFamily: 'Space Mono, monospace' };
 
-const GLOBAL_CSS = `
+var GLOBAL_CSS = `
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 @keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.35;}}
 @keyframes swany-glow{0%,100%{box-shadow:0 0 10px ${AMBER}33;}50%{box-shadow:0 0 28px ${AMBER}88;}}
@@ -35,7 +35,7 @@ const GLOBAL_CSS = `
 .swany-glow{animation:swany-glow 2.5s ease infinite;}
 `;
 
-const SWANY_SYSTEM = `You are SwanyBot — the official domino culture AI by SwanyThree EntTech LLC on SeeWhy LIVE. You are the ultimate authority on domino strategy, State vs State tournaments, and the culture around the game.
+var SWANY_SYSTEM = `You are SwanyBot — the official domino culture AI by SwanyThree EntTech LLC on SeeWhy LIVE. You are the ultimate authority on domino strategy, State vs State tournaments, and the culture around the game.
 
 Platform: seewhylive.online. Creator keeps 90%, platform 10%.
 
@@ -49,7 +49,7 @@ Personality: Street-smart, knowledgeable, hype. You talk like someone who lives 
 
 Respond in 1-3 sentences. Be authentic and represent domino culture.`;
 
-const QUICK_ACTIONS = [
+var QUICK_ACTIONS = [
   { label: '⚔️ SVS Rules',     prompt: 'Break down the State vs State 7 Rock format rules for a new viewer.' },
   { label: '🏆 WA #1 Facts',   prompt: 'Tell me why Washington State is ranked #1 and what makes them dominant.' },
   { label: '🕊️ Tribute',       prompt: 'Share some words about the legends on the Tribute Wall.' },
@@ -65,28 +65,28 @@ function getVoiceSettings() {
   catch { return {}; }
 }
 function speakText(text) {
-  const vs = getVoiceSettings();
+  var vs = getVoiceSettings();
   if (vs.enabled === false || vs.autoSpeak === false) return;
   fetch('/api/tts', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ input: text.substring(0, 300), voice: vs.voice || 'nova', speed: vs.speed || 1.0 }),
   }).then(r => r.blob()).then(b => {
-    const a = new Audio(URL.createObjectURL(b));
+    var a = new Audio(URL.createObjectURL(b));
     a.volume = vs.volume !== undefined ? vs.volume : 0.8;
     a.play();
   }).catch(() => {});
 }
 
 function ThinkDots() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
   return (
     <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
       {[0, 1, 2].map(i => (
@@ -97,26 +97,26 @@ function ThinkDots() {
 }
 
 export default function SwanyBotPage() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const [messages, setMessages] = useState([
+  var [messages, setMessages] = useState([
     { role: 'assistant', text: "SwanyBot in the building! I'm your domino culture AI — ask me anything about State vs State, strategy, the legends, or the culture. Let's get it! 🎮🔥" },
   ]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [copiedIdx, setCopiedIdx] = useState(null);
-  const chatRef = useRef(null);
-  const inputRef = useRef(null);
+  var [input, setInput] = useState('');
+  var [loading, setLoading] = useState(false);
+  var [copiedIdx, setCopiedIdx] = useState(null);
+  var chatRef = useRef(null);
+  var inputRef = useRef(null);
 
   useEffect(() => {
-    const style = document.createElement('style');
+    var style = document.createElement('style');
     style.textContent = GLOBAL_CSS;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
@@ -134,25 +134,25 @@ export default function SwanyBotPage() {
   }
 
   async function send(text) {
-    const userText = (text || input).trim();
+    var userText = (text || input).trim();
     if (!userText || loading) return;
     setInput('');
-    const next = [...messages, { role: 'user', text: userText }];
+    var next = [...messages, { role: 'user', text: userText }];
     setMessages(next);
     setLoading(true);
     try {
-      const history = next.map(m => m.role + ': ' + m.text).join('\n');
-      const res = await base44.integrations.Core.InvokeLLM({
+      var history = next.map(m => m.role + ': ' + m.text).join('\n');
+      var res = await base44.integrations.Core.InvokeLLM({
         prompt: SWANY_SYSTEM + '\n\nConversation:\n' + history + '\n\nRespond as SwanyBot in 1-3 sentences.',
       });
-      const reply = res || "I got you — what else you need to know about the culture?";
+      var reply = res || "I got you — what else you need to know about the culture?";
       setMessages(m => [...m, { role: 'assistant', text: reply }]);
       speakText(reply);
     } catch {
       setMessages(m => [...m, { role: 'assistant', text: "Connection hiccup — ask me again. The culture never sleeps! 🎮" }]);
     }
     setLoading(false);
-    inputRef.current?.focus();
+    inputRef.(current && current.focus)();
   }
 
   function clearChat() {
@@ -268,7 +268,7 @@ export default function SwanyBotPage() {
         <div style={{ ...MONO, fontSize: 9, color: TEXTM, textAlign: 'center', marginTop: 8, letterSpacing: '0.06em' }}>
           SwanyBot · SeeWhy LIVE · SwanyThree EntTech LLC · Domino Culture AI
         </div>
-        <SwanyBotEnhanced userId={user?.id} conversationId={null} onContextReady={() => {}} />
+        <SwanyBotEnhanced userId={(user && user.id)} conversationId={null} onContextReady={() => {}} />
         <AICopilotSidebar roomId={activeRoomId} isHost={true} />
         <AIStreamSummary roomId={activeRoomId} isHost={true} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
         <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />

@@ -13,7 +13,7 @@ import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyt
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const CONTENT_TYPES = [
+var CONTENT_TYPES = [
   { id: 'social_caption', label: 'Social Caption', emoji: '📱' },
   { id: 'stream_title', label: 'Stream Title', emoji: '📺' },
   { id: 'tournament_recap', label: 'Tournament Recap', emoji: '🏆' },
@@ -24,8 +24,8 @@ const CONTENT_TYPES = [
   { id: 'twitter_thread', label: 'Twitter Thread', emoji: '🧵' },
 ];
 
-const PLATFORMS = ['instagram', 'twitter', 'tiktok', 'youtube', 'facebook', 'all'];
-const TONES = [
+var PLATFORMS = ['instagram', 'twitter', 'tiktok', 'youtube', 'facebook', 'all'];
+var TONES = [
   { id: 'hype', label: 'HYPE', color: '#C0392B' },
   { id: 'pro', label: 'PRO', color: '#d4af37' },
   { id: 'community', label: 'COMMUNITY', color: '#6DBF7E' },
@@ -33,7 +33,7 @@ const TONES = [
   { id: 'griot', label: 'GRIOT', color: '#D4854A' },
 ];
 
-const TEMPLATES = [
+var TEMPLATES = [
   { label: 'WA Classic Go Live', type: 'hype_post', tone: 'hype', platform: 'all', prompt: 'Write a hype post announcing the Washington Classic domino tournament going live on SeeWhy LIVE, hosted by SwanyThree23 at Jamar\'s Sports Bar & Grill, Des Moines WA.' },
   { label: 'PK Battle Callout', type: 'hype_post', tone: 'hype', platform: 'instagram', prompt: 'Write an aggressive but respectful PK Battle callout for a domino creator challenge on SeeWhy LIVE platform.' },
   { label: 'SVS Pride Post', type: 'social_caption', tone: 'community', platform: 'all', prompt: 'Write a State vs State pride post for the Washington Classic domino tournament representing the Pacific Northwest.' },
@@ -42,9 +42,9 @@ const TEMPLATES = [
   { label: 'Creator Bio', type: 'creator_bio', tone: 'griot', platform: 'all', prompt: 'Write a compelling creator bio for SwanyThree23 (Ladrue Swanson), founder of SeeWhy LIVE and Cali Bones domino entertainment platform.' },
 ];
 
-const STATUS_COLORS = { draft: 'rgba(255,255,255,0.4)', scheduled: '#d4af37', posted: '#6DBF7E', failed: '#ef4444' };
+var STATUS_COLORS = { draft: 'rgba(255,255,255,0.4)', scheduled: '#d4af37', posted: '#6DBF7E', failed: '#ef4444' };
 
-const initState = {
+var initState = {
   tab: 'generate',
   contentType: 'hype_post',
   platform: 'instagram',
@@ -95,35 +95,35 @@ function PillButton({ active, onClick, children, color }) {
 }
 
 export default function INSForgeStudio() {
-  const [state, dispatch] = useReducer(reducer, initState);
-  const qc = useQueryClient();
+  var [state, dispatch] = useReducer(reducer, initState);
+  var qc = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const { data: library } = useQuery({
+  var { data: library } = useQuery({
     queryKey: ['content-library', user && user.id],
     queryFn: () => base44.entities.ContentLibrary.filter({ creator_id: user && user.id }, '-created_date', 30).catch(() => []),
     enabled: !!(user && user.id),
   });
 
-  const saveContent = useMutation({
+  var saveContent = useMutation({
     mutationFn: (data) => base44.entities.ContentLibrary.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['content-library'] }),
   });
 
-  const deleteContent = useMutation({
+  var deleteContent = useMutation({
     mutationFn: (id) => base44.entities.ContentLibrary.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['content-library'] }),
   });
 
-  const scheduleContent = useMutation({
+  var scheduleContent = useMutation({
     mutationFn: ({ id, scheduledFor }) => base44.entities.ContentLibrary.update(id, { scheduled_for: scheduledFor, scheduled_status: 'scheduled' }),
     onSuccess: () => { dispatch({ type: 'SET_SCHEDULING', payload: null }); qc.invalidateQueries({ queryKey: ['content-library'] }); },
   });
@@ -397,11 +397,11 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <AICopilotSidebar roomId={activeRoomId} isHost={true} viewerCount={0} />
         <ContentRecommendations />
-        <VODLibrary creatorId={user?.id} />
+        <VODLibrary creatorId={(user && user.id)} />
         <ShareToSocial content={{ title: 'INS Forge Studio on SeeWhy LIVE', url: window.location.href }} />
         <AutomatedHighlightReels streamSession={activeRoom || null} />
         <AutomatedClipGenerator streamSession={activeRoom || null} isLive={!!activeRoomId} />
-        <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user?.id} />
+        <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={(user && user.id)} />
         <BroadcastAnalyticsDashboard streamSession={activeRoom || null} isLive={!!activeRoomId} />
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />

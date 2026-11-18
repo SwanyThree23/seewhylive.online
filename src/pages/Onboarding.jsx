@@ -16,10 +16,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
-const C = { burg: '#800020', gold: '#D4AF37', amber: '#D4854A', obs: '#080B18', gray: '#666', white: '#F5F0E8' };
-const FONT = 'Barlow Condensed, sans-serif';
+var C = { burg: '#800020', gold: '#D4AF37', amber: '#D4854A', obs: '#080B18', gray: '#666', white: '#F5F0E8' };
+var FONT = 'Barlow Condensed, sans-serif';
 
-const STEPS = [
+var STEPS = [
   { id: 1, label: 'Profile',       emoji: '🎙️', key: 'step_1_profile' },
   { id: 2, label: 'Branding',      emoji: '🎨', key: 'step_2_branding' },
   { id: 3, label: 'Streaming',     emoji: '📡', key: 'step_3_stream_key' },
@@ -29,7 +29,7 @@ const STEPS = [
   { id: 7, label: 'Payouts',       emoji: '💸', key: 'step_7_stripe' },
 ];
 
-const STEP_HERO = [
+var STEP_HERO = [
   { headline: 'Create Your Creator Identity',   sub: 'How thousands of viewers will discover you' },
   { headline: 'Define Your Brand Look',          sub: "Your channel's signature colors and style" },
   { headline: 'Set Up Your Stream',             sub: 'Connect OBS, ZEGOCLOUD, or stream in-browser' },
@@ -39,30 +39,30 @@ const STEP_HERO = [
   { headline: 'Connect Payouts',                sub: 'Start earning from day one — 90/10 split' },
 ];
 
-const CATEGORIES = ['Gaming','Talk','Tech','Music','Sports','Art','Other'];
-const AVATARS    = ['🎲','🎙','✍️','🤖','🎮','🎵'];
-const THEMES = [
+var CATEGORIES = ['Gaming','Talk','Tech','Music','Sports','Art','Other'];
+var AVATARS    = ['🎲','🎙','✍️','🤖','🎮','🎵'];
+var THEMES = [
   { name: 'Domino Noir',    primary: '#DC143C', secondary: '#D4AF37', preview: ['#1a0a0a','#DC143C','#D4AF37'] },
   { name: 'Broadcast Gold', primary: '#0D0D0D', secondary: '#D4AF37', preview: ['#0D0D0D','#1a1a1a','#D4AF37'] },
   { name: 'Broadcast Blue', primary: '#003580', secondary: '#C9A84C', preview: ['#00152b','#003580','#C9A84C'] },
   { name: 'Creator Amber',  primary: '#1a0800', secondary: '#D4854A', preview: ['#1a0800','#2a1200','#D4854A'] },
 ];
-const FONTS = [
+var FONTS = [
   { name: 'Broadcast', sample: 'Barlow Condensed + Space Mono' },
   { name: 'Clean',     sample: 'DM Sans + IBM Plex Mono' },
   { name: 'Bold',      sample: 'Bebas Neue + Share Tech Mono' },
 ];
-const DEFAULT_TIERS = [
+var DEFAULT_TIERS = [
   { name: 'Fan',       price: 4.99,  benefits: 'Exclusive chat emotes, supporter badge, ad-free viewing.' },
   { name: 'Supporter', price: 9.99,  benefits: 'Everything in Fan + priority queue, monthly shoutout, Discord access.' },
   { name: 'VIP',       price: 24.99, benefits: 'Everything in Supporter + direct DM, monthly 1-on-1, custom emote.' },
 ];
 
-const lbl = {
+var lbl = {
   display: 'block', fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,0.4)',
   letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 18,
 };
-const inp = {
+var inp = {
   width: '100%', padding: '12px 14px',
   background: 'rgba(255,255,255,0.05)',
   border: '1px solid rgba(255,255,255,0.1)',
@@ -76,8 +76,8 @@ function ProgressBar({ step, onboarding }) {
     <div style={{ padding: '14px 20px 10px', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
         {STEPS.map(s => {
-          const done   = onboarding?.[s.key];
-          const active = s.id === step;
+          var done   = onboarding?.[s.key];
+          var active = s.id === step;
           return (
             <div key={s.id} style={{ flex: 1, textAlign: 'center' }}>
               <div style={{
@@ -112,8 +112,8 @@ function ProgressBar({ step, onboarding }) {
 
 // ── Step hero header ─────────────────────────────────────────────────────────
 function StepHero({ step }) {
-  const { emoji } = STEPS[step - 1];
-  const { headline, sub } = STEP_HERO[step - 1];
+  var { emoji } = STEPS[step - 1];
+  var { headline, sub } = STEP_HERO[step - 1];
   return (
     <div style={{ padding: '24px 20px 8px', textAlign: 'center' }}>
       <div style={{
@@ -178,13 +178,13 @@ function NavButtons({ step, setStep, onSave, saving, canNext = true, onSkip }) {
 
 // ── STEP 1: Profile ──────────────────────────────────────────────
 function Step1({ onboarding, user, onDone, setStep }) {
-  const [form, setForm] = useState({ display_name: user?.full_name || '', bio: '', avatar: '🎙', category: 'Gaming' });
-  const [saving, setSaving] = useState(false);
-  const save = async () => {
+  var [form, setForm] = useState({ display_name: (user && user.full_name) || '', bio: '', avatar: '🎙', category: 'Gaming' });
+  var [saving, setSaving] = useState(false);
+  var save = async () => {
     setSaving(true);
     try {
-      const profiles = await base44.entities.CreatorProfile.filter({ user_id: user.id });
-      const data = { user_id: user.id, display_name: form.display_name, bio: form.bio, avatar_url: form.avatar, category: form.category };
+      var profiles = await base44.entities.CreatorProfile.filter({ user_id: user.id });
+      var data = { user_id: user.id, display_name: form.display_name, bio: form.bio, avatar_url: form.avatar, category: form.category };
       if (profiles.length) await base44.entities.CreatorProfile.update(profiles[0].id, data);
       else await base44.entities.CreatorProfile.create(data);
       onDone({ step_1_profile: true, current_step: 2 });
@@ -226,11 +226,11 @@ function Step1({ onboarding, user, onDone, setStep }) {
 
 // ── STEP 2: Branding ─────────────────────────────────────────────
 function Step2({ onboarding, onDone, setStep }) {
-  const [theme, setTheme] = useState(0);
-  const [font, setFont] = useState(0);
-  const [saving, setSaving] = useState(false);
-  const save = async () => { setSaving(true); onDone({ step_2_branding: true, current_step: 3 }); setSaving(false); };
-  const T = THEMES[theme];
+  var [theme, setTheme] = useState(0);
+  var [font, setFont] = useState(0);
+  var [saving, setSaving] = useState(false);
+  var save = async () => { setSaving(true); onDone({ step_2_branding: true, current_step: 3 }); setSaving(false); };
+  var T = THEMES[theme];
   return (
     <div style={{ padding: '0 20px 4px' }}>
       <StepHero step={2} />
@@ -270,19 +270,19 @@ function Step2({ onboarding, onDone, setStep }) {
 
 // ── STEP 3: Streaming Setup ──────────────────────────────────────
 function Step3({ onboarding, onDone, setStep }) {
-  const RTMP = 'rtmp://ingest.seewhy.live/live';
-  const [streamKey] = useState(() => {
-    const arr = new Uint8Array(9);
+  var RTMP = 'rtmp://ingest.seewhy.live/live';
+  var [streamKey] = useState(() => {
+    var arr = new Uint8Array(9);
     crypto.getRandomValues(arr);
     return 'sk_' + Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('').slice(0,16).toUpperCase();
   });
-  const [showKey, setShowKey] = useState(false);
-  const [zegoId, setZegoId] = useState('');
-  const [platforms, setPlatforms] = useState({ YouTube: false, TikTok: false, Facebook: false, Twitch: false, Rumble: false });
-  const [copied, setCopied] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const copy = () => { navigator.clipboard.writeText(RTMP).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {}); };
-  const save = async () => { setSaving(true); onDone({ step_3_stream_key: true, zego_configured: !!zegoId, rtmp_configured: true, current_step: 4 }); setSaving(false); };
+  var [showKey, setShowKey] = useState(false);
+  var [zegoId, setZegoId] = useState('');
+  var [platforms, setPlatforms] = useState({ YouTube: false, TikTok: false, Facebook: false, Twitch: false, Rumble: false });
+  var [copied, setCopied] = useState(false);
+  var [saving, setSaving] = useState(false);
+  var copy = () => { navigator.clipboard.writeText(RTMP).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {}); };
+  var save = async () => { setSaving(true); onDone({ step_3_stream_key: true, zego_configured: !!zegoId, rtmp_configured: true, current_step: 4 }); setSaving(false); };
   return (
     <div style={{ padding: '0 20px 4px' }}>
       <StepHero step={3} />
@@ -322,14 +322,14 @@ function Step3({ onboarding, onDone, setStep }) {
 
 // ── STEP 4: Subscription Tiers ───────────────────────────────────
 function Step4({ user, onDone, setStep }) {
-  const [tiers, setTiers] = useState(DEFAULT_TIERS.map((t, i) => ({...t, id: i})));
-  const [saving, setSaving] = useState(false);
-  const updateTier = (id, field, val) => setTiers(ts => ts.map(t => t.id === id ? {...t, [field]: val} : t));
-  const addTier = () => setTiers(ts => [...ts, { id: Date.now(), name: 'Custom', price: 14.99, benefits: '' }]);
-  const save = async () => {
+  var [tiers, setTiers] = useState(DEFAULT_TIERS.map((t, i) => ({...t, id: i})));
+  var [saving, setSaving] = useState(false);
+  var updateTier = (id, field, val) => setTiers(ts => ts.map(t => t.id === id ? {...t, [field]: val} : t));
+  var addTier = () => setTiers(ts => [...ts, { id: Date.now(), name: 'Custom', price: 14.99, benefits: '' }]);
+  var save = async () => {
     setSaving(true);
     try {
-      for (const tier of tiers) {
+      for (var tier of tiers) {
         await base44.entities.SubscriptionTier.create({ creator_id: user.id, name: tier.name, price: tier.price, description: tier.benefits });
       }
       onDone({ step_4_subscription: true, current_step: 5 });
@@ -369,9 +369,9 @@ function Step4({ user, onDone, setStep }) {
 
 // ── STEP 5: Community ────────────────────────────────────────────
 function Step5({ user, onDone, setStep }) {
-  const [form, setForm] = useState({ name: '', description: '', category: 'other', welcome_message: '' });
-  const [saving, setSaving] = useState(false);
-  const save = async () => {
+  var [form, setForm] = useState({ name: '', description: '', category: 'other', welcome_message: '' });
+  var [saving, setSaving] = useState(false);
+  var save = async () => {
     setSaving(true);
     try {
       await base44.entities.Community.create({ name: form.name, description: form.description, category: form.category, owner_id: user.id });
@@ -407,35 +407,35 @@ function Step5({ user, onDone, setStep }) {
 
 // ── STEP 6: Test Stream ──────────────────────────────────────────
 function Step6({ user, onDone, setStep }) {
-  const [started, setStarted] = useState(false);
-  const [countdown, setCountdown] = useState(30);
-  const [roomId, setRoomId] = useState(null);
-  const [done, setDone] = useState(false);
-  const [saving, setSaving] = useState(false);
+  var [started, setStarted] = useState(false);
+  var [countdown, setCountdown] = useState(30);
+  var [roomId, setRoomId] = useState(null);
+  var [done, setDone] = useState(false);
+  var [saving, setSaving] = useState(false);
   useEffect(() => {
     if (!started) return;
-    const t = setInterval(() => setCountdown(c => {
+    var t = setInterval(() => setCountdown(c => {
       if (c <= 1) { clearInterval(t); finishStream(); return 0; }
       return c - 1;
     }), 1000);
     return () => clearInterval(t);
   }, [started]);
-  const startStream = async () => {
+  var startStream = async () => {
     try {
-      const room = await base44.entities.Room.create({ title: `Test Stream — ${user?.full_name || 'Creator'}`, status: 'live', creator_id: user.id });
+      var room = await base44.entities.Room.create({ title: `Test Stream — ${(user && user.full_name) || 'Creator'}`, status: 'live', creator_id: user.id });
       setRoomId(room.id);
       setStarted(true);
     } catch {
       toast.error('Failed to start test stream.');
     }
   };
-  const finishStream = async () => {
+  var finishStream = async () => {
     try {
       if (roomId) await base44.entities.Room.update(roomId, { status: 'ended' });
     } catch {}
     setDone(true);
   };
-  const save = async () => { setSaving(true); onDone({ step_6_test_stream: true, test_stream_room_id: roomId, current_step: 7 }); setSaving(false); };
+  var save = async () => { setSaving(true); onDone({ step_6_test_stream: true, test_stream_room_id: roomId, current_step: 7 }); setSaving(false); };
   return (
     <div style={{ padding: '0 20px 4px' }}>
       <StepHero step={6} />
@@ -473,9 +473,9 @@ function Step6({ user, onDone, setStep }) {
 
 // ── STEP 7: Payouts ───────────────────────────────────────────────────────────
 function Step7({ onDone, setStep }) {
-  const [saving, setSaving] = useState(false);
-  const [complete, setComplete] = useState(false);
-  const finish = async (skipped) => {
+  var [saving, setSaving] = useState(false);
+  var [complete, setComplete] = useState(false);
+  var finish = async (skipped) => {
     setSaving(true);
     await onDone({ step_7_stripe: true, stripe_connected: !skipped, is_complete: true, completed_at: new Date().toISOString() });
     setComplete(true);
@@ -518,7 +518,7 @@ function Step7({ onDone, setStep }) {
 
 // ── Completion screen ─────────────────────────────────────────────────────────
 function CompletionScreen() {
-  const nav = useNavigate();
+  var nav = useNavigate();
   useEffect(() => {
     import('canvas-confetti').then(m => m.default({
       particleCount: 180, spread: 80,
@@ -563,33 +563,33 @@ function CompletionScreen() {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function OnboardingPage() {
-  const nav = useNavigate();
-  const qc = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var nav = useNavigate();
+  var qc = useQueryClient();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const { data: onboarding } = useQuery({
-    queryKey: ['onboarding', user?.id],
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var { data: onboarding } = useQuery({
+    queryKey: ['onboarding', (user && user.id)],
     queryFn: async () => {
-      const list = await base44.entities.CreatorOnboarding.filter({ user_id: user.id });
+      var list = await base44.entities.CreatorOnboarding.filter({ user_id: user.id });
       return list[0] || null;
     },
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
-  const [step, setStep] = useState(1);
-  const [flowOpen, setFlowOpen] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
+  var [step, setStep] = useState(1);
+  var [flowOpen, setFlowOpen] = useState(false);
+  var [showSplash, setShowSplash] = useState(true);
   useEffect(() => {
     if (onboarding) {
       setStep(onboarding.current_step || 1);
@@ -597,16 +597,16 @@ export default function OnboardingPage() {
     }
   }, [onboarding]);
 
-  const updateOnboarding = useMutation({
+  var updateOnboarding = useMutation({
     mutationFn: async (data) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      if (onboarding?.id) return base44.entities.CreatorOnboarding.update(onboarding.id, data);
+      if (!(user && user.id)) throw new Error('Not authenticated');
+      if ((onboarding && onboarding.id)) return base44.entities.CreatorOnboarding.update(onboarding.id, data);
       return base44.entities.CreatorOnboarding.create({ user_id: user.id, ...data });
     },
     onError: () => toast.error('Failed to save progress. Please try again.'),
     onSuccess: (_, data) => {
-      qc.invalidateQueries({ queryKey: ['onboarding', user?.id] });
-      if (data.is_complete && user?.id) {
+      qc.invalidateQueries({ queryKey: ['onboarding', (user && user.id)] });
+      if (data.is_complete && (user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
@@ -616,7 +616,7 @@ export default function OnboardingPage() {
     },
   });
 
-  const handleDone = async (data) => {
+  var handleDone = async (data) => {
     try {
       await updateOnboarding.mutateAsync(data);
     } catch { return; }
@@ -690,8 +690,8 @@ export default function OnboardingPage() {
       </div>
 
       <OnboardingFlow isOpen={flowOpen} onClose={() => setFlowOpen(false)} />
-      {user?.id && <MilestoneAlerts creatorId={user.id} />}
-      <SwanyBotContextEnhancer userId={user?.id || null} conversationId={user?.id ? `conv_${user.id}` : null} onContextReady={() => {}} />
+      {(user && user.id) && <MilestoneAlerts creatorId={user.id} />}
+      <SwanyBotContextEnhancer userId={(user && user.id) || null} conversationId={(user && user.id) ? `conv_${user.id}` : null} onContextReady={() => {}} />
       <QuickTip recipientId={null} recipientName="" onTipSent={() => {}} />
       <SelectSheet label="" value="" options={[]} onChange={() => {}} />
       <div style={{ padding: '0 0 16px' }}>

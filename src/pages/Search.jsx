@@ -29,12 +29,12 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const AMBER   = '#D4854A';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD    = '#D4AF37';
+var CRIMSON = '#800020';
+var AMBER   = '#D4854A';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TABS = [
+var TABS = [
   { id: 'live',        label: 'Live',        icon: Radio },
   { id: 'rooms',       label: 'Rooms',       icon: Radio },
   { id: 'creators',    label: 'Creators',    icon: User },
@@ -43,16 +43,16 @@ const TABS = [
 ];
 
 function useDebounce(value, delay = 300) {
-  const [debounced, setDebounced] = useState(value);
+  var [debounced, setDebounced] = useState(value);
   useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay);
+    var t = setTimeout(() => setDebounced(value), delay);
     return () => clearTimeout(t);
   }, [value, delay]);
   return debounced;
 }
 
 function CreatorResult({ creator }) {
-  const initials = (name) => (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  var initials = (name) => (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   return (
     <Link to={createPageUrl('CreatorPublicProfile') + `?id=${creator.id}`}>
       <div className="flex items-center gap-3 p-3 rounded-xl transition-all"
@@ -105,57 +105,57 @@ function TrendingChip({ label, onClick }) {
   );
 }
 
-const TRENDING_TAGS = ['🎵 Music', '🎮 Gaming', '💬 Talk Show', '🏋️ Fitness', '🎨 Art', '🍳 Cooking', '📱 Tech', '⚽ Sports'];
+var TRENDING_TAGS = ['🎵 Music', '🎮 Gaming', '💬 Talk Show', '🏋️ Fitness', '🎨 Art', '🍳 Cooking', '📱 Tech', '⚽ Sports'];
 
 export default function SearchPage() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [query, setQuery]     = useState('');
-  const [activeTab, setActiveTab] = useState('rooms');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [recentSearches, setRecentSearches] = useState(() => { try { return JSON.parse(localStorage.getItem('sw_recent_searches') || '[]'); } catch { return []; } });
-  const inputRef = useRef(null);
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [query, setQuery]     = useState('');
+  var [activeTab, setActiveTab] = useState('rooms');
+  var [debouncedQuery, setDebouncedQuery] = useState('');
+  var [recentSearches, setRecentSearches] = useState(() => { try { return JSON.parse(localStorage.getItem('sw_recent_searches') || '[]'); } catch { return []; } });
+  var inputRef = useRef(null);
 
-  useEffect(() => { const t = setTimeout(() => setDebouncedQuery(query), 300); return () => clearTimeout(t); }, [query]);
+  useEffect(() => { var t = setTimeout(() => setDebouncedQuery(query), 300); return () => clearTimeout(t); }, [query]);
 
-  const { data: rooms = [] } = useQuery({
+  var { data: rooms = [] } = useQuery({
     queryKey: ['search-rooms'],
     queryFn: () => base44.entities.Room.list('-created_date', 100),
   });
 
-  const { data: communities = [] } = useQuery({
+  var { data: communities = [] } = useQuery({
     queryKey: ['search-communities'],
     queryFn: () => base44.entities.Community.list('-member_count', 60),
   });
 
-  const { data: challenges = [] } = useQuery({
+  var { data: challenges = [] } = useQuery({
     queryKey: ['search-challenges'],
     queryFn: () => base44.entities.Challenge.list('-created_date', 60),
   });
 
-  const { data: creators = [] } = useQuery({
+  var { data: creators = [] } = useQuery({
     queryKey: ['search-creators'],
     queryFn: () => base44.entities.CreatorProfile.list('-follower_count', 80),
   });
 
-  const { data: currentUser } = useQuery({
+  var { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', currentUser?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: currentUser?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!currentUser?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (currentUser && currentUser.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (currentUser && currentUser.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(currentUser && currentUser.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', currentUser?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
-    enabled: !!currentUser?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (currentUser && currentUser.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (currentUser && currentUser.id) }).then(r => r[0] || null),
+    enabled: !!(currentUser && currentUser.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const liveRooms = rooms.filter(r => r.status === 'live');
+  var liveRooms = rooms.filter(r => r.status === 'live');
 
   var q = debouncedQuery.toLowerCase().trim();
 
@@ -173,7 +173,7 @@ export default function SearchPage() {
   var filteredChallenges  = q ? filter(challenges, ['title', 'description']) : challenges;
   var filteredCreators    = q ? filter(creators, ['full_name', 'username', 'category', 'bio']) : creators;
 
-  const counts = {
+  var counts = {
     live: filteredLive.length,
     rooms: filteredRooms.length,
     creators: filteredCreators.length,
@@ -183,7 +183,7 @@ export default function SearchPage() {
 
   function saveSearch(term) {
     if (!term.trim()) return;
-    const next = [term, ...recentSearches.filter(s => s !== term)].slice(0, 8);
+    var next = [term, ...recentSearches.filter(s => s !== term)].slice(0, 8);
     setRecentSearches(next);
     localStorage.setItem('sw_recent_searches', JSON.stringify(next));
   }
@@ -194,7 +194,7 @@ export default function SearchPage() {
   }
 
   function handleChipClick(tag) {
-    const clean = tag.replace(/^[^\s]+\s/, '');
+    var clean = tag.replace(/^[^\s]+\s/, '');
     setQuery(clean);
     setActiveTab('rooms');
     saveSearch(clean);
@@ -210,7 +210,7 @@ export default function SearchPage() {
     );
   }
 
-  const showSuggestions = !q;
+  var showSuggestions = !q;
 
   return (
     <div className="min-h-screen pb-20" style={{ background: '#080B18' }}>
@@ -369,9 +369,9 @@ export default function SearchPage() {
         )}
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -379,7 +379,7 @@ export default function SearchPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

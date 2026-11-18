@@ -22,18 +22,18 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 
-const CATEGORIES = [
+var CATEGORIES = [
   { id: 'gaming', label: '🎮 Gaming' }, { id: 'music', label: '🎵 Music' },
   { id: 'education', label: '📚 Education' }, { id: 'talk', label: '🎙 Talk' },
   { id: 'fitness', label: '💪 Fitness' }, { id: 'cooking', label: '🍳 Cooking' },
   { id: 'art', label: '🎨 Art' }, { id: 'tech', label: '💻 Tech' },
   { id: 'irl', label: '📍 IRL' }, { id: 'other', label: '🌟 Other' },
 ];
-const DURATIONS = [
+var DURATIONS = [
   { label: '30 min', value: 30 }, { label: '1 hr', value: 60 },
   { label: '2 hr', value: 120 }, { label: '3 hr', value: 180 }, { label: '4 hr+', value: 240 },
 ];
-const CAT_COLORS = {
+var CAT_COLORS = {
   gaming: '#7B5DA6', music: '#D4854A', education: '#60a5fa', talk: '#34d399',
   fitness: '#fb923c', cooking: '#fbbf24', art: '#C0392B', tech: '#4A8A7A',
   irl: '#6DBF7E', other: '#d4af37',
@@ -53,10 +53,10 @@ function toICSDate(d) {
 }
 
 function generateICS(s) {
-  const start = new Date(s.scheduled_start);
-  const end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
-  const url = `${window.location.origin}/${s.room_id ? 'Room/' + s.room_id : 'Discover'}`;
-  const desc = [
+  var start = new Date(s.scheduled_start);
+  var end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
+  var url = `${window.location.origin}/${s.room_id ? 'Room/' + s.room_id : 'Discover'}`;
+  var desc = [
     s.description,
     `Join on SeeWhy LIVE: ${url}`,
     `Category: ${s.category || 'General'}`,
@@ -82,8 +82,8 @@ function generateICS(s) {
 }
 
 function downloadICS(s) {
-  const blob = new Blob([generateICS(s)], { type: 'text/calendar;charset=utf-8' });
-  const a = document.createElement('a');
+  var blob = new Blob([generateICS(s)], { type: 'text/calendar;charset=utf-8' });
+  var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `${s.title.replace(/[^a-z0-9]/gi, '_')}.ics`;
   a.click();
@@ -91,11 +91,11 @@ function downloadICS(s) {
 }
 
 function getGoogleCalUrl(s) {
-  const start = new Date(s.scheduled_start);
-  const end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
-  const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  const url = `${window.location.origin}/Discover`;
-  const params = new URLSearchParams({
+  var start = new Date(s.scheduled_start);
+  var end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
+  var fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  var url = `${window.location.origin}/Discover`;
+  var params = new URLSearchParams({
     action: 'TEMPLATE',
     text: `🔴 ${s.title}`,
     dates: `${fmt(start)}/${fmt(end)}`,
@@ -106,10 +106,10 @@ function getGoogleCalUrl(s) {
 }
 
 function getOutlookUrl(s) {
-  const start = new Date(s.scheduled_start);
-  const end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
-  const url = `${window.location.origin}/Discover`;
-  const params = new URLSearchParams({
+  var start = new Date(s.scheduled_start);
+  var end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
+  var url = `${window.location.origin}/Discover`;
+  var params = new URLSearchParams({
     rru: 'addevent',
     summary: `🔴 ${s.title}`,
     dtstart: start.toISOString(),
@@ -121,7 +121,7 @@ function getOutlookUrl(s) {
 }
 
 function CalendarInviteMenu({ stream }) {
-  const [open, setOpen] = React.useState(false);
+  var [open, setOpen] = React.useState(false);
   return (
     <div className="relative">
       <button
@@ -192,75 +192,75 @@ function Toggle({ checked, onChange }) {
 }
 
 export default function StreamScheduler() {
-  const qc = useQueryClient();
-  const [viewMode, setViewMode] = useState('month');
-  const [calendarDate, setCalendarDate] = useState(new Date());
-  const [showForm, setShowForm] = useState(false);
-  const [editingStream, setEditingStream] = useState(null);
-  const [selectedDay, setSelectedDay] = useState(null);
+  var qc = useQueryClient();
+  var [viewMode, setViewMode] = useState('month');
+  var [calendarDate, setCalendarDate] = useState(new Date());
+  var [showForm, setShowForm] = useState(false);
+  var [editingStream, setEditingStream] = useState(null);
+  var [selectedDay, setSelectedDay] = useState(null);
 
-  const blankForm = {
+  var blankForm = {
     title: '', description: '', category: 'gaming',
     scheduled_start: '', estimated_duration_minutes: 60,
     is_recurring: false, recurrence: 'weekly',
     is_public: true,
   };
-  const [form, setForm] = useState(blankForm);
+  var [form, setForm] = useState(blankForm);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: streams = [] } = useQuery({
-    queryKey: ['scheduled-streams', user?.id],
-    queryFn: () => base44.entities.ScheduledStream.filter({ creator_id: user?.id }, 'scheduled_start', 50),
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: streams = [] } = useQuery({
+    queryKey: ['scheduled-streams', (user && user.id)],
+    queryFn: () => base44.entities.ScheduledStream.filter({ creator_id: (user && user.id) }, 'scheduled_start', 50),
     enabled: !!user,
   });
 
-  const createMutation = useMutation({
+  var createMutation = useMutation({
     mutationFn: (data) => base44.entities.ScheduledStream.create(data),
     onSuccess: (created) => {
       qc.invalidateQueries({ queryKey: ['scheduled-streams'] });
       setShowForm(false);
       setForm(blankForm);
       toast.success('Stream scheduled!');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'stream_scheduled',
-          title: `Scheduled: ${created?.title || 'Stream'}`,
+          title: `Scheduled: ${(created && created.title) || 'Stream'}`,
         }).catch(() => {});
       }
     },
     onError: () => toast.error('Action failed.'),
   });
-  const updateMutation = useMutation({
+  var updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.ScheduledStream.update(id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); setShowForm(false); setEditingStream(null); toast.success('Stream updated'); },
     onError: () => toast.error('Action failed.'),
   });
-  const deleteMutation = useMutation({
+  var deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.ScheduledStream.delete(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); toast.success('Stream cancelled'); },
     onError: () => toast.error('Action failed.'),
   });
 
-  const year = calendarDate.getFullYear();
-  const month = calendarDate.getMonth();
-  const daysInMonth = getDaysInMonth(year, month);
-  const firstDay = getFirstDayOfMonth(year, month);
-  const monthName = calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+  var year = calendarDate.getFullYear();
+  var month = calendarDate.getMonth();
+  var daysInMonth = getDaysInMonth(year, month);
+  var firstDay = getFirstDayOfMonth(year, month);
+  var monthName = calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-  const streamsByDay = useMemo(() => {
-    const map = {};
+  var streamsByDay = useMemo(() => {
+    var map = {};
     streams.forEach(s => {
-      const d = new Date(s.scheduled_start);
+      var d = new Date(s.scheduled_start);
       if (d.getFullYear() === year && d.getMonth() === month) {
-        const day = d.getDate();
+        var day = d.getDate();
         if (!map[day]) map[day] = [];
         map[day].push(s);
       }
@@ -268,16 +268,16 @@ export default function StreamScheduler() {
     return map;
   }, [streams, year, month]);
 
-  const upcomingStreams = streams
+  var upcomingStreams = streams
     .filter(s => new Date(s.scheduled_start) > new Date() && s.status === 'scheduled')
     .sort((a, b) => new Date(a.scheduled_start) - new Date(b.scheduled_start));
 
-  const openEdit = (stream) => {
+  var openEdit = (stream) => {
     setEditingStream(stream);
     setForm({
       title: stream.title, description: stream.description || '',
       category: stream.category || 'gaming',
-      scheduled_start: stream.scheduled_start?.slice(0, 16) || '',
+      scheduled_start: stream.(scheduled_start && scheduled_start.slice)(0, 16) || '',
       estimated_duration_minutes: stream.estimated_duration_minutes || 60,
       is_recurring: stream.is_recurring || false,
       recurrence: stream.recurrence || 'weekly',
@@ -286,25 +286,25 @@ export default function StreamScheduler() {
     setShowForm(true);
   };
 
-  const handleSave = () => {
+  var handleSave = () => {
     if (!form.title.trim() || !form.scheduled_start) return toast.error('Title and start time required');
     if (new Date(form.scheduled_start) <= new Date()) return toast.error('Scheduled time must be in the future');
-    const data = { ...form, creator_id: user?.id, scheduled_start: new Date(form.scheduled_start).toISOString() };
+    var data = { ...form, creator_id: (user && user.id), scheduled_start: new Date(form.scheduled_start).toISOString() };
     if (editingStream) updateMutation.mutate({ id: editingStream.id, data });
     else createMutation.mutate(data);
   };
 
-  const shareStream = (s) => {
-    const text = `🔴 I'm going LIVE: "${s.title}" — ${new Date(s.scheduled_start).toLocaleString()}\nJoin me at: ${window.location.origin}`;
+  var shareStream = (s) => {
+    var text = `🔴 I'm going LIVE: "${s.title}" — ${new Date(s.scheduled_start).toLocaleString()}\nJoin me at: ${window.location.origin}`;
     navigator.clipboard.writeText(text).then(() => toast.success('Announcement copied!')).catch(() => toast.error('Copy failed.'));
   };
 
-  const getCountdown = (dateStr) => {
-    const diff = new Date(dateStr) - new Date();
+  var getCountdown = (dateStr) => {
+    var diff = new Date(dateStr) - new Date();
     if (diff <= 0) return 'Starting now!';
-    const d = Math.floor(diff / 86400000);
-    const h = Math.floor((diff % 86400000) / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
+    var d = Math.floor(diff / 86400000);
+    var h = Math.floor((diff % 86400000) / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
     if (d > 0) return `${d}d ${h}h`;
     if (h > 0) return `${h}h ${m}m`;
     return `${m}m`;
@@ -365,9 +365,9 @@ export default function StreamScheduler() {
             <div className="grid grid-cols-7 gap-1">
               {Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} />)}
               {Array.from({ length: daysInMonth }).map((_, i) => {
-                const day = i + 1;
-                const isToday = new Date().getDate() === day && new Date().getMonth() === month && new Date().getFullYear() === year;
-                const dayStreams = streamsByDay[day] || [];
+                var day = i + 1;
+                var isToday = new Date().getDate() === day && new Date().getMonth() === month && new Date().getFullYear() === year;
+                var dayStreams = streamsByDay[day] || [];
                 return (
                   <motion.div
                     key={day}
@@ -448,7 +448,7 @@ export default function StreamScheduler() {
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
                         style={{ background: `${CAT_COLORS[s.category] || '#d4af37'}20`, border: `1px solid ${CAT_COLORS[s.category] || '#d4af37'}40` }}>
-                        {CATEGORIES.find(c => c.id === s.category)?.label?.charAt(0) || '🎬'}
+                        {(function() { var _cat = CATEGORIES.find(function(c) { return c.id === s.category; }); return (_cat && _cat.label && _cat.label.charAt(0)) || '🎬'; })()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -615,7 +615,7 @@ export default function StreamScheduler() {
                   <div className="flex gap-2">
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
                       style={{ background: `${CAT_COLORS[form.category] || '#d4af37'}20` }}>
-                      {CATEGORIES.find(c => c.id === form.category)?.label?.charAt(0) || '🎬'}
+                      {(function() { var _cat2 = CATEGORIES.find(function(c) { return c.id === form.category; }); return (_cat2 && _cat2.label && _cat2.label.charAt(0)) || '🎬'; })()}
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-white truncate">{form.title || 'Stream Title'}</p>
@@ -644,9 +644,9 @@ export default function StreamScheduler() {
         )}
       </AnimatePresence>
       <SwanAIRecommendations roomId={null} currentLayout="schedule" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -654,7 +654,7 @@ export default function StreamScheduler() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

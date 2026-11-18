@@ -41,14 +41,14 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 
-const G       = '#D4AF37';
-const BG      = '#080B18';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
-const TEAL    = '#D4854A';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var G       = '#D4AF37';
+var BG      = '#080B18';
+var CRIMSON = '#800020';
+var PINK    = '#C0392B';
+var TEAL    = '#D4854A';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const FLYWHEEL_STAGES = [
+var FLYWHEEL_STAGES = [
   { id: 'attract',  label: 'ATTRACT',  icon: Eye,         color: '#C0392B', desc: 'Free content hooks new viewers' },
   { id: 'engage',   label: 'ENGAGE',   icon: Heart,       color: PINK,      desc: 'Chat, reactions & live interaction' },
   { id: 'convert',  label: 'CONVERT',  icon: ArrowRight,  color: TEAL,      desc: 'Free → Subscriber upgrade' },
@@ -57,7 +57,7 @@ const FLYWHEEL_STAGES = [
   { id: 'grow',     label: 'GROW',     icon: TrendingUp,  color: CRIMSON,   desc: 'Word-of-mouth & referral flywheel' },
 ];
 
-const TIER_LADDER = [
+var TIER_LADDER = [
   { id: 'free',    label: 'Free',   price: 0,  color: '#6b7280', icon: Eye,    perks: ['Chat access', 'Watch live & VODs', 'Community feed'] },
   { id: 'bronze',  label: 'Bronze', price: 1,  color: '#C0392B', icon: Star,   perks: ['Bronze badge', 'Early chat access', 'Custom emote ×1', 'Monthly shoutout'] },
   { id: 'silver',  label: 'Silver', price: 5,  color: '#9ca3af', icon: Zap,    perks: ['Silver badge', 'Ad-free viewing', 'Custom emotes ×3', 'Backstage access', 'Priority queue'] },
@@ -65,7 +65,7 @@ const TIER_LADDER = [
   { id: 'elite',   label: 'Elite',  price: 50, color: PINK,      icon: Rocket, perks: ['Elite status', 'All Gold perks', 'Revenue share on collabs', 'Brand partnership priority', 'Direct Slack channel'] },
 ];
 
-const REVENUE_STREAMS = [
+var REVENUE_STREAMS = [
   { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, color: G,         desc: 'Monthly recurring tiers', split: '90%' },
   { id: 'tips',          label: 'Live Tips',     icon: Heart,      color: PINK,       desc: 'Real-time tip alerts',    split: '90%' },
   { id: 'ppv',           label: 'Pay-Per-View',  icon: PlayCircle, color: TEAL,       desc: 'Gated events & replays',  split: '85%' },
@@ -74,7 +74,7 @@ const REVENUE_STREAMS = [
   { id: 'ads',           label: 'Ad Revenue',    icon: BarChart3,  color: '#6DBF7E', desc: 'CPM-based display ads',    split: '65%' },
 ];
 
-const MILESTONES = [
+var MILESTONES = [
   { subs: 10,   reward: 'Bronze Creator Badge',   icon: Star,   color: '#C0392B' },
   { subs: 50,   reward: 'Verified Creator Label', icon: Shield, color: '#D4AF37' },
   { subs: 100,  reward: 'Custom Channel Banner',  icon: Award,  color: G },
@@ -84,15 +84,15 @@ const MILESTONES = [
 ];
 
 function exportCSV(transactions, subscriptions) {
-  const rows = [
+  var rows = [
     ['Type', 'Amount', 'Date', 'Description'],
     ...transactions.map(t => [t.transaction_type || 'transaction', `$${(t.creator_payout || 0).toFixed(2)}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
     ...subscriptions.map(s => ['subscription', `$${s.price || 0}/mo`, new Date(s.created_date).toLocaleDateString(), s.tier_name || '']),
   ];
-  const csv = rows.map(r => r.map(v => JSON.stringify(v)).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  var csv = rows.map(r => r.map(v => JSON.stringify(v)).join(',')).join('\n');
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
   a.href = url;
   a.download = `seewhy_revenue_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
@@ -101,7 +101,7 @@ function exportCSV(transactions, subscriptions) {
 
 /* ─── FlywheelDiagram ─────────────────────────────────────────────────── */
 function FlywheelDiagram({ activeStage, onStageClick }) {
-  const cx = 160, cy = 160, r = 110;
+  var cx = 160, cy = 160, r = 110;
   return (
     <div style={{ position: 'relative', width: 320, height: 320, flexShrink: 0 }}>
       <svg width="320" height="320" style={{ position: 'absolute', inset: 0 }}>
@@ -111,11 +111,11 @@ function FlywheelDiagram({ activeStage, onStageClick }) {
         <circle cx={cx} cy={cy} r={r - 20} fill="none" stroke="rgba(212,175,55,0.04)" strokeWidth="1" strokeDasharray="4 6" />
         {/* Connecting arcs */}
         {FLYWHEEL_STAGES.map((_, i) => {
-          const a1 = (i / FLYWHEEL_STAGES.length) * Math.PI * 2 - Math.PI / 2;
-          const a2 = ((i + 1) / FLYWHEEL_STAGES.length) * Math.PI * 2 - Math.PI / 2;
-          const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
-          const x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
-          const large = (a2 - a1) > Math.PI ? 1 : 0;
+          var a1 = (i / FLYWHEEL_STAGES.length) * Math.PI * 2 - Math.PI / 2;
+          var a2 = ((i + 1) / FLYWHEEL_STAGES.length) * Math.PI * 2 - Math.PI / 2;
+          var x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+          var x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
+          var large = (a2 - a1) > Math.PI ? 1 : 0;
           return (
             <path key={i} d={`M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`}
               fill="none" stroke={FLYWHEEL_STAGES[i].color} strokeWidth="2"
@@ -128,11 +128,11 @@ function FlywheelDiagram({ activeStage, onStageClick }) {
 
       {/* Stage nodes */}
       {FLYWHEEL_STAGES.map((stage, i) => {
-        const angle = (i / FLYWHEEL_STAGES.length) * Math.PI * 2 - Math.PI / 2;
-        const x = cx + r * Math.cos(angle) - 22;
-        const y = cy + r * Math.sin(angle) - 22;
-        const Icon = stage.icon;
-        const isActive = activeStage === stage.id;
+        var angle = (i / FLYWHEEL_STAGES.length) * Math.PI * 2 - Math.PI / 2;
+        var x = cx + r * Math.cos(angle) - 22;
+        var y = cy + r * Math.sin(angle) - 22;
+        var Icon = stage.icon;
+        var isActive = activeStage === stage.id;
         return (
           <motion.button
             key={stage.id}
@@ -179,13 +179,13 @@ function FlywheelDiagram({ activeStage, onStageClick }) {
 
 /* ─── TierLadderPanel ─────────────────────────────────────────────────── */
 function TierLadderPanel({ subCount }) {
-  const [hovered, setHovered] = useState(null);
-  const achieved = subCount || 0;
+  var [hovered, setHovered] = useState(null);
+  var achieved = subCount || 0;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {TIER_LADDER.map((tier, i) => {
-        const Icon = tier.icon;
-        const isHover = hovered === tier.id;
+        var Icon = tier.icon;
+        var isHover = hovered === tier.id;
         return (
           <motion.div
             key={tier.id}
@@ -242,14 +242,14 @@ function TierLadderPanel({ subCount }) {
 
 /* ─── RevenueStreamsPanel ─────────────────────────────────────────────── */
 function RevenueStreamsPanel({ transactions, subscriptions }) {
-  const txGross = (t) => (t.creator_payout || 0) + (t.platform_cut || 0);
-  const tipTotal  = transactions.filter(t => t.transaction_type === 'tip').reduce((s, t) => s + txGross(t), 0);
-  const ppvTotal  = transactions.filter(t => t.transaction_type === 'ppv').reduce((s, t) => s + txGross(t), 0);
-  const subTotal  = subscriptions.reduce((s, sub) => s + (sub.price || 0), 0);
-  const giftTotal = transactions.filter(t => t.transaction_type === 'gift').reduce((s, t) => s + txGross(t), 0);
-  const gross     = tipTotal + ppvTotal + subTotal + giftTotal;
+  var txGross = (t) => (t.creator_payout || 0) + (t.platform_cut || 0);
+  var tipTotal  = transactions.filter(t => t.transaction_type === 'tip').reduce((s, t) => s + txGross(t), 0);
+  var ppvTotal  = transactions.filter(t => t.transaction_type === 'ppv').reduce((s, t) => s + txGross(t), 0);
+  var subTotal  = subscriptions.reduce((s, sub) => s + (sub.price || 0), 0);
+  var giftTotal = transactions.filter(t => t.transaction_type === 'gift').reduce((s, t) => s + txGross(t), 0);
+  var gross     = tipTotal + ppvTotal + subTotal + giftTotal;
 
-  const streams = [
+  var streams = [
     { ...REVENUE_STREAMS[0], amount: subTotal },
     { ...REVENUE_STREAMS[1], amount: tipTotal },
     { ...REVENUE_STREAMS[2], amount: ppvTotal },
@@ -261,8 +261,8 @@ function RevenueStreamsPanel({ transactions, subscriptions }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
       {streams.map(stream => {
-        const Icon  = stream.icon;
-        const pct   = gross > 0 ? (stream.amount / gross) * 100 : 0;
+        var Icon  = stream.icon;
+        var pct   = gross > 0 ? (stream.amount / gross) * 100 : 0;
         return (
           <div key={stream.id} style={{
             background: 'rgba(8,11,24,0.8)', border: `1px solid ${stream.color}25`,
@@ -293,10 +293,10 @@ function RevenueStreamsPanel({ transactions, subscriptions }) {
 
 /* ─── PayoutPanel ─────────────────────────────────────────────────────── */
 function PayoutPanel({ netEarnings }) {
-  const THRESHOLD = 50;
-  const pct       = Math.min((netEarnings / THRESHOLD) * 100, 100);
-  const nextDate  = (() => {
-    const d = new Date();
+  var THRESHOLD = 50;
+  var pct       = Math.min((netEarnings / THRESHOLD) * 100, 100);
+  var nextDate  = (() => {
+    var d = new Date();
     d.setDate(d.getDate() + (15 - (d.getDate() % 15) || 15));
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   })();
@@ -350,7 +350,7 @@ function PayoutPanel({ netEarnings }) {
 
 /* ─── MilestonesPanel ─────────────────────────────────────────────────── */
 function MilestonesPanel({ subCount }) {
-  const count = subCount || 0;
+  var count = subCount || 0;
   return (
     <div style={{ background: 'rgba(8,11,24,0.8)', border: `1px solid ${PINK}20`, borderRadius: 16, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
@@ -360,9 +360,9 @@ function MilestonesPanel({ subCount }) {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {MILESTONES.map(m => {
-          const Icon      = m.icon;
-          const unlocked  = count >= m.subs;
-          const pct       = Math.min((count / m.subs) * 100, 100);
+          var Icon      = m.icon;
+          var unlocked  = count >= m.subs;
+          var pct       = Math.min((count / m.subs) * 100, 100);
           return (
             <div key={m.subs} style={{
               display: 'flex', alignItems: 'center', gap: 10,
@@ -398,13 +398,13 @@ function MilestonesPanel({ subCount }) {
 
 /* ─── ConversionFunnel ────────────────────────────────────────────────── */
 function ConversionFunnel({ totalViewers, subscribers, tips, activePPV }) {
-  const viewers  = totalViewers || 0;
-  const subs     = subscribers?.length || 0;
-  const tippers  = tips?.length || 0;
-  const ppv      = activePPV || 0;
-  const convRate = viewers > 0 ? ((subs / viewers) * 100).toFixed(1) : '0.0';
+  var viewers  = totalViewers || 0;
+  var subs     = (subscribers && subscribers.length) || 0;
+  var tippers  = (tips && tips.length) || 0;
+  var ppv      = activePPV || 0;
+  var convRate = viewers > 0 ? ((subs / viewers) * 100).toFixed(1) : '0.0';
 
-  const stages = [
+  var stages = [
     { label: 'Total Viewers',   val: viewers,  color: '#C0392B', pct: 100 },
     { label: 'Subscribers',     val: subs,     color: TEAL,      pct: viewers > 0 ? Math.min((subs / viewers) * 100, 100) : 0 },
     { label: 'Active Tippers',  val: tippers,  color: PINK,      pct: subs > 0 ? Math.min((tippers / subs) * 100, 100) : 0 },
@@ -447,18 +447,18 @@ function ConversionFunnel({ totalViewers, subscribers, tips, activePPV }) {
 
 /* ─── StreakWidget ────────────────────────────────────────────────────── */
 function StreakWidget({ transactions }) {
-  const today       = new Date();
-  const streamDays  = new Set(
+  var today       = new Date();
+  var streamDays  = new Set(
     transactions.map(t => new Date(t.created_date).toDateString())
   );
-  let streak = 0;
-  for (let i = 0; i < 30; i++) {
-    const d = new Date(today);
+  var streak = 0;
+  for (var i = 0; i < 30; i++) {
+    var d = new Date(today);
     d.setDate(d.getDate() - i);
     if (streamDays.has(d.toDateString())) streak++;
     else break;
   }
-  const bonusPct = Math.min(streak * 2, 20);
+  var bonusPct = Math.min(streak * 2, 20);
 
   return (
     <div style={{ background: 'rgba(8,11,24,0.8)', border: `1px solid ${CRIMSON}25`, borderRadius: 16, padding: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -488,7 +488,7 @@ function StreakWidget({ transactions }) {
 }
 
 /* ─── TABS ──────────────────────────────────────────────────────────────── */
-const TABS = [
+var TABS = [
   { id: 'overview',    label: 'Overview',    icon: BarChart3 },
   { id: 'streams',     label: 'Revenue',     icon: DollarSign },
   { id: 'subscribers', label: 'Subscribers', icon: Users },
@@ -500,76 +500,76 @@ const TABS = [
 
 /* ─── MAIN PAGE ─────────────────────────────────────────────────────────── */
 export default function MonetizationPage() {
-  const [tab, setTab]               = useState('overview');
-  const [flywheelStage, setStage]   = useState('attract');
-  const [showTierEditor, setShowTierEditor] = useState(false);
-  const [editingTier, setEditingTier] = useState(null);
-  const queryClient                 = useQueryClient();
+  var [tab, setTab]               = useState('overview');
+  var [flywheelStage, setStage]   = useState('attract');
+  var [showTierEditor, setShowTierEditor] = useState(false);
+  var [editingTier, setEditingTier] = useState(null);
+  var queryClient                 = useQueryClient();
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: room } = useQuery({
-    queryKey: ['userRoom', user?.id],
+  var { data: room } = useQuery({
+    queryKey: ['userRoom', (user && user.id)],
     queryFn: async () => {
-      if (!user?.id) return null;
-      const rooms = await base44.entities.Room.filter({ creator_id: user.id }, '-viewer_count', 1);
-      return rooms?.[0];
+      if (!(user && user.id)) return null;
+      var rooms = await base44.entities.Room.filter({ creator_id: user.id }, '-viewer_count', 1);
+      return (rooms && rooms[0]);
     },
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
-  const { data: transactions = [] } = useQuery({
-    queryKey: ['userEarnings', user?.id],
+  var { data: transactions = [] } = useQuery({
+    queryKey: ['userEarnings', (user && user.id)],
     queryFn: () => base44.entities.Transaction.filter({ recipient_id: user.id }),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
-  const { data: subscriptions = [] } = useQuery({
-    queryKey: ['activeSubscribers', user?.id],
+  var { data: subscriptions = [] } = useQuery({
+    queryKey: ['activeSubscribers', (user && user.id)],
     queryFn: () => base44.entities.Subscription.filter({ creator_id: user.id, status: 'active' }),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
-  const { data: tips = [] } = useQuery({
-    queryKey: ['creatorTips', user?.id],
+  var { data: tips = [] } = useQuery({
+    queryKey: ['creatorTips', (user && user.id)],
     queryFn: () => base44.entities.TipAlert.filter({ creator_id: user.id }),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
-  const { data: ppvEvents = [] } = useQuery({
-    queryKey: ['ppv-events-monetization', user?.id],
+  var { data: ppvEvents = [] } = useQuery({
+    queryKey: ['ppv-events-monetization', (user && user.id)],
     queryFn: () => base44.entities.PayPerViewEvent.filter({ creator_id: user.id }, '-event_date', 3),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
   // Revenue calculations (90/10 split)
-  const grossEarnings  = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
-  const platformFee    = grossEarnings * 0.10;
-  const processingFee  = transactions.length * 0.30 + (grossEarnings * 0.029);
-  const netEarnings    = grossEarnings - platformFee - processingFee;
-  const subCount       = subscriptions.length;
-  const tierCounts     = subscriptions.reduce((acc, s) => { acc[s.tier] = (acc[s.tier] || 0) + 1; return acc; }, {});
-  const mrr            = (tierCounts.bronze || 0) * 1 + (tierCounts.premium || 0) * 5 + (tierCounts.elite || 0) * 15;
+  var grossEarnings  = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
+  var platformFee    = grossEarnings * 0.10;
+  var processingFee  = transactions.length * 0.30 + (grossEarnings * 0.029);
+  var netEarnings    = grossEarnings - platformFee - processingFee;
+  var subCount       = subscriptions.length;
+  var tierCounts     = subscriptions.reduce((acc, s) => { acc[s.tier] = (acc[s.tier] || 0) + 1; return acc; }, {});
+  var mrr            = (tierCounts.bronze || 0) * 1 + (tierCounts.premium || 0) * 5 + (tierCounts.elite || 0) * 15;
 
   // Rotate flywheel stage automatically
   useEffect(() => {
-    const idx   = FLYWHEEL_STAGES.findIndex(s => s.id === flywheelStage);
-    const timer = setTimeout(() => {
+    var idx   = FLYWHEEL_STAGES.findIndex(s => s.id === flywheelStage);
+    var timer = setTimeout(() => {
       setStage(FLYWHEEL_STAGES[(idx + 1) % FLYWHEEL_STAGES.length].id);
     }, 3000);
     return () => clearTimeout(timer);
   }, [flywheelStage]);
 
-  const card = (children, extra = {}) => ({
+  var card = (children, extra = {}) => ({
     background: 'rgba(8,11,24,0.85)',
     border: '1px solid rgba(212,175,55,0.1)',
     borderRadius: 16,
@@ -606,8 +606,8 @@ export default function MonetizationPage() {
       {/* ── Tab Bar ── */}
       <div style={{ display: 'flex', gap: 4, padding: '12px 16px 0', overflowX: 'auto' }}>
         {TABS.map(t => {
-          const Icon    = t.icon;
-          const isActive = tab === t.id;
+          var Icon    = t.icon;
+          var isActive = tab === t.id;
           return (
             <button
               key={t.id}
@@ -655,7 +655,7 @@ export default function MonetizationPage() {
                   { label: 'Subscribers',  val: subCount,                      icon: Users,      color: PINK },
                   { label: 'Avg Tip',      val: tips.length ? `$${(tips.reduce((s, t) => s + (t.amount || 0), 0) / tips.length).toFixed(2)}` : '$0', icon: Heart, color: '#D4854A' },
                 ].map(stat => {
-                  const Icon = stat.icon;
+                  var Icon = stat.icon;
                   return (
                     <div key={stat.label} style={{ ...card(), border: `1px solid ${stat.color}25` }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
@@ -686,7 +686,7 @@ export default function MonetizationPage() {
                 </div>
                 <div style={{ flex: 1, minWidth: 240, display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <ConversionFunnel
-                    totalViewers={room?.viewer_count || 0}
+                    totalViewers={(room && room.viewer_count) || 0}
                     subscribers={subscriptions}
                     tips={tips}
                     activePPV={0}
@@ -738,7 +738,7 @@ export default function MonetizationPage() {
               </div>
 
               {/* PPV Manager */}
-              {room?.id && (
+              {(room && room.id) && (
                 <div style={card()}>
                   <p style={{ fontSize: 15, fontWeight: 700, color: TEAL, margin: '0 0 14px', ...T }}>Pay-Per-View Events</p>
                   <PayPerViewManager roomId={room.id} />
@@ -756,7 +756,7 @@ export default function MonetizationPage() {
               )}
 
               {/* Subscription Manager */}
-              {user?.id && (
+              {(user && user.id) && (
                 <div style={card()}>
                   <p style={{ fontSize: 15, fontWeight: 700, color: PINK, margin: '0 0 14px', ...T }}>Subscription Settings</p>
                   <SubscriptionManager creatorId={user.id} />
@@ -787,8 +787,8 @@ export default function MonetizationPage() {
                       { name: 'Silver', key: 'premium', price: 5,  color: '#9ca3af' },
                       { name: 'Gold',   key: 'elite',  price: 15, color: G },
                     ].map(tier => {
-                      const cnt     = tierCounts[tier.key] || 0;
-                      const tierMrr = Math.floor(cnt * tier.price * 90) / 100;
+                      var cnt     = tierCounts[tier.key] || 0;
+                      var tierMrr = Math.floor(cnt * tier.price * 90) / 100;
                       return (
                         <div key={tier.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                           <div style={{ width: 10, height: 10, borderRadius: '50%', background: tier.color, flexShrink: 0 }} />
@@ -822,9 +822,9 @@ export default function MonetizationPage() {
           {tab === 'payouts' && (
             <motion.div key="payouts" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <PayoutPanel netEarnings={netEarnings} />
-              {user?.id && <RevenueDashboard userId={user.id} />}
-              {user?.id && <StripeConnectButton creatorId={user.id} />}
-              {user?.id && <RewardShopEditor creatorId={user.id} />}
+              {(user && user.id) && <RevenueDashboard userId={user.id} />}
+              {(user && user.id) && <StripeConnectButton creatorId={user.id} />}
+              {(user && user.id) && <RewardShopEditor creatorId={user.id} />}
               <StreamerMonetizationCenter />
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <Link to={createPageUrl('MonetizationWidgets')}
@@ -835,7 +835,7 @@ export default function MonetizationPage() {
             </motion.div>
           )}
 
-          {tab === 'tiers' && user?.id && (
+          {tab === 'tiers' && (user && user.id) && (
             <motion.div key="tiers" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <CreatorTierManager creatorId={user.id} />
               <TierEditor open={showTierEditor} onClose={() => setShowTierEditor(false)} creatorId={user.id} existing={null} />
@@ -853,11 +853,11 @@ export default function MonetizationPage() {
 
           {tab === 'analytics' && (
             <motion.div key="analytics" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-              <MonetizationDashboard roomId={room?.id || null} />
+              <MonetizationDashboard roomId={(room && room.id) || null} />
             </motion.div>
           )}
 
-          {tab === 'store' && user?.id && (
+          {tab === 'store' && (user && user.id) && (
             <motion.div key="store" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-8">
               <VirtualGoodsStore userId={user.id} />
               <ShopDashboard creatorId={user.id} />
@@ -866,13 +866,13 @@ export default function MonetizationPage() {
         </AnimatePresence>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="monetize" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
-      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
-      <RewardShopEditor creatorId={user?.id} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
+      {(user && user.id) && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={(user && user.id)} isSubscribed={false} />}
+      {(user && user.id) && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={(user && user.id)} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
+      <RewardShopEditor creatorId={(user && user.id)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -880,7 +880,7 @@ export default function MonetizationPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

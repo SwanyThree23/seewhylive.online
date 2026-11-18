@@ -212,10 +212,10 @@ export default function CommunityPage() {
               <span className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
                 <strong style={{ color: G }}>{memberCount}</strong> members
               </span>
-              {community.(tags && tags.slice(0, 3).map(tag => (
+              {community.tags && community.tags.slice(0, 3).map(function(tag) { return (
                 <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full"
                   style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', ...T }}>{tag}</span>
-              ))}
+              ); })}
             </div>
           </div>
 

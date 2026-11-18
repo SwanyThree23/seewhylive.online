@@ -106,11 +106,11 @@ function CardContent({ children, className = '', style = {} }) {
 function detectType(url) { return detectVideoType(url); }
 
 function useSyncEngine({ party, isHost, onTimeSync }) {
-  const qc = useQueryClient();
-  const syncInterval = useRef(null);
+  var qc = useQueryClient();
+  var syncInterval = useRef(null);
 
-  const pushState = useCallback(async (playerState) => {
-    if (!isHost || !party?.id) return;
+  var pushState = useCallback(async (playerState) => {
+    if (!isHost || !(party && party.id)) return;
     try {
       await base44.entities.WatchParty.update(party.id, {
         playback_state: playerState.playing ? 'playing' : 'paused',
@@ -118,11 +118,11 @@ function useSyncEngine({ party, isHost, onTimeSync }) {
         updated_at_ms: Date.now(),
       });
     } catch {}
-  }, [isHost, party?.id]);
+  }, [isHost, (party && party.id)]);
 
   useEffect(() => {
-    if (!party?.id) return;
-    const unsub = base44.entities.WatchParty.subscribe((event) => {
+    if (!(party && party.id)) return;
+    var unsub = base44.entities.WatchParty.subscribe((event) => {
       if (event.id !== party.id) return;
       if (!isHost && event.data) {
         onTimeSync(event.data);
@@ -130,18 +130,18 @@ function useSyncEngine({ party, isHost, onTimeSync }) {
       qc.invalidateQueries({ queryKey: ['watchparty', party.id] });
     });
     return unsub;
-  }, [party?.id, isHost, onTimeSync, qc]);
+  }, [(party && party.id), isHost, onTimeSync, qc]);
 
   return { pushState };
 }
 
 function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
-  const iframeRef = useRef(null);
-  const playerRef = useRef(null);
+  var iframeRef = useRef(null);
+  var playerRef = useRef(null);
 
   useEffect(() => {
     if (!videoId) return;
-    const tag = document.createElement('script');
+    var tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
     document.head.appendChild(tag);
     window.onYouTubeIframeAPIReady = () => {
@@ -151,11 +151,11 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
         events: {
           onStateChange: (e) => {
             if (!isHost) return;
-            const state = e.data;
+            var state = e.data;
             if (state === window.YT.PlayerState.PLAYING || state === window.YT.PlayerState.PAUSED) {
               onStateChange({
                 playing: state === window.YT.PlayerState.PLAYING,
-                currentTime: playerRef.current?.getCurrentTime() || 0,
+                currentTime: playerRef.(current && current.getCurrentTime)() || 0,
               });
             }
           },
@@ -167,10 +167,10 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
   // Host: 5-second heartbeat so viewers always get a fresh reference point
   useEffect(() => {
     if (!isHost) return;
-    const iv = setInterval(() => {
-      if (!playerRef.current?.getPlayerState) return;
-      const state = playerRef.current.getPlayerState();
-      if (state === window.YT?.PlayerState?.PLAYING) {
+    var iv = setInterval(() => {
+      if (!playerRef.current || !playerRef.current.getPlayerState) return;
+      var state = playerRef.current.getPlayerState();
+      if (state === (window.YT && window.YT.PlayerState && window.YT.PlayerState.PLAYING)) {
         onStateChange({ playing: true, currentTime: playerRef.current.getCurrentTime() || 0 });
       }
     }, 5000);
@@ -181,19 +181,19 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
   useWatchPartySync({
     isHost,
     syncData,
-    getCurrentTime: () => playerRef.current?.getCurrentTime?.() ?? 0,
-    onSeek:  (t) => playerRef.current?.seekTo?.(t, true),
-    onPlay:  ()  => playerRef.current?.playVideo?.(),
-    onPause: ()  => playerRef.current?.pauseVideo?.(),
+    getCurrentTime: function() { return (playerRef.current && playerRef.current.getCurrentTime) ? playerRef.current.getCurrentTime() : 0; },
+    onSeek:  function(t) { if (playerRef.current && playerRef.current.seekTo) playerRef.current.seekTo(t, true); },
+    onPlay:  function() { if (playerRef.current && playerRef.current.playVideo) playerRef.current.playVideo(); },
+    onPause: function() { if (playerRef.current && playerRef.current.pauseVideo) playerRef.current.pauseVideo(); },
   });
 
   return <div ref={iframeRef} className="w-full h-full" />;
 }
 
 function DirectPlayer({ url, isHost, syncData, onStateChange }) {
-  const videoRef = useRef(null);
+  var videoRef = useRef(null);
 
-  const handleEvent = () => {
+  var handleEvent = () => {
     if (!isHost || !videoRef.current) return;
     onStateChange({
       playing: !videoRef.current.paused,
@@ -204,7 +204,7 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
   // Host: 5-second heartbeat
   useEffect(() => {
     if (!isHost) return;
-    const iv = setInterval(() => {
+    var iv = setInterval(() => {
       if (!videoRef.current || videoRef.current.paused) return;
       onStateChange({ playing: true, currentTime: videoRef.current.currentTime });
     }, 5000);
@@ -215,10 +215,10 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
   useWatchPartySync({
     isHost,
     syncData,
-    getCurrentTime: () => videoRef.current?.currentTime ?? 0,
-    onSeek:  (t) => { if (videoRef.current) videoRef.current.currentTime = t; },
-    onPlay:  ()  => videoRef.current?.play().catch(() => {}),
-    onPause: ()  => videoRef.current?.pause(),
+    getCurrentTime: function() { return (videoRef.current && videoRef.current.currentTime) || 0; },
+    onSeek:  function(t) { if (videoRef.current) videoRef.current.currentTime = t; },
+    onPlay:  function() { if (videoRef.current && videoRef.current.play) { videoRef.current.play().catch(function() {}); } },
+    onPause: function() { if (videoRef.current && videoRef.current.pause) { videoRef.current.pause(); } },
   });
 
   return (
@@ -235,7 +235,7 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
 }
 
 function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size = 52, onDoubleClick }) {
-  const vRef = useRef(null);
+  var vRef = useRef(null);
   useEffect(() => { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }} onDoubleClick={onDoubleClick}>
@@ -272,7 +272,8 @@ function MobileParticipantStrip({ members, hostId, speakingIds, remoteStreams, p
       {displayMembers.map(function(m) {
         var isHostMember = m.user_id === hostId;
         var isSpeaking = speakingIds && speakingIds.has(m.user_id);
-        var peerId = peerUserIds && Array.from(peerUserIds.entries()).find(([, uid]) => uid === m.user_id)?.[0];
+        var _pe = peerUserIds && Array.from(peerUserIds.entries()).find(function(_e) { return _e[1] === m.user_id; });
+        var peerId = _pe ? _pe[0] : undefined;
         var stream = (peerId && remoteStreams) ? remoteStreams.get(peerId) : null;
         return (
           <div key={m.id || m.user_id} className="flex flex-col items-center shrink-0 gap-0.5">
@@ -371,11 +372,11 @@ function InviteCard({ partyUrl }) {
 }
 
 function AISummaryButton({ members, elapsed, partyId }) {
-  const [loading, setLoading] = useState(false);
+  var [loading, setLoading] = useState(false);
   async function handleSummary() {
     setLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: `Summarize this watch party in 2 sentences: ${members.length} viewers, active for ${Math.round(elapsed / 60)} minutes, party ID: ${partyId}. Be concise and engaging.`,
         add_context_from_internet: false,
       });
@@ -399,68 +400,68 @@ function AISummaryButton({ members, elapsed, partyId }) {
 }
 
 export default function WatchPartyPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const partyId = searchParams.get('id');
-  const qc = useQueryClient();
+  var [searchParams, setSearchParams] = useSearchParams();
+  var partyId = searchParams.get('id');
+  var qc = useQueryClient();
 
-  const [videoUrl, setVideoUrl] = useState('');
-  const [partyTitle, setPartyTitle] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [syncData, setSyncData] = useState(null);
-  const [activePanel, setActivePanel] = useState('chat');
-  const [reactionCount, setReactionCount] = useState(0);
-  const [pollCount, setPollCount] = useState(0);
-  const [playlist, setPlaylist] = useState([]);
-  const [theaterMode, setTheaterMode] = useState(false);
-  const [showSyncWarn, setShowSyncWarn] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
-  const [tipTotal, setTipTotal] = useState(0);
-  const [peakViewers, setPeakViewers] = useState(0);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [hypeLevel, setHypeLevel] = useState(0);
-  const [activeScene, setActiveScene] = useState('main');
-  const [selectedBitrate, setSelectedBitrate] = useState(3000);
-  const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
-  const [busViewerCount, setBusViewerCount] = useState(0);
-  const directVideoRef = useRef(null);
-  const prevMemberCountRef = useRef(null);
+  var [videoUrl, setVideoUrl] = useState('');
+  var [partyTitle, setPartyTitle] = useState('');
+  var [creating, setCreating] = useState(false);
+  var [syncData, setSyncData] = useState(null);
+  var [activePanel, setActivePanel] = useState('chat');
+  var [reactionCount, setReactionCount] = useState(0);
+  var [pollCount, setPollCount] = useState(0);
+  var [playlist, setPlaylist] = useState([]);
+  var [theaterMode, setTheaterMode] = useState(false);
+  var [showSyncWarn, setShowSyncWarn] = useState(false);
+  var [elapsed, setElapsed] = useState(0);
+  var [tipTotal, setTipTotal] = useState(0);
+  var [peakViewers, setPeakViewers] = useState(0);
+  var [chatMessages, setChatMessages] = useState([]);
+  var [hypeLevel, setHypeLevel] = useState(0);
+  var [activeScene, setActiveScene] = useState('main');
+  var [selectedBitrate, setSelectedBitrate] = useState(3000);
+  var handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
+  var [busViewerCount, setBusViewerCount] = useState(0);
+  var directVideoRef = useRef(null);
+  var prevMemberCountRef = useRef(null);
 
   // AI panel state
-  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
-  const [aiPanelOpen, setAiPanelOpen] = useState(false);
-  const [showTippingModal, setShowTippingModal] = useState(false);
-  const [showEvmux, setShowEvmux] = useState(false);
-  const [showViewerControls, setShowViewerControls] = useState(false);
-  const [showGiftShop, setShowGiftShop] = useState(false);
-  const [showWhisperPanel, setShowWhisperPanel] = useState(false);
-  const [showSwanPanel, setShowSwanPanel] = useState(false);
-  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
-  const [showModerationAppeal, setShowModerationAppeal] = useState(false);
-  const [wpAriaOn, setWpAriaOn] = useState(false);
-  const [wpGuardianOn, setWpGuardianOn] = useState(true);
-  const [wpAriaMessage, setWpAriaMessage] = useState('');
-  const [wpAriaLoading, setWpAriaLoading] = useState(false);
-  const [wpDjTrack, setWpDjTrack] = useState(null);
+  var [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  var [aiPanelOpen, setAiPanelOpen] = useState(false);
+  var [showTippingModal, setShowTippingModal] = useState(false);
+  var [showEvmux, setShowEvmux] = useState(false);
+  var [showViewerControls, setShowViewerControls] = useState(false);
+  var [showGiftShop, setShowGiftShop] = useState(false);
+  var [showWhisperPanel, setShowWhisperPanel] = useState(false);
+  var [showSwanPanel, setShowSwanPanel] = useState(false);
+  var [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  var [showModerationAppeal, setShowModerationAppeal] = useState(false);
+  var [wpAriaOn, setWpAriaOn] = useState(false);
+  var [wpGuardianOn, setWpGuardianOn] = useState(true);
+  var [wpAriaMessage, setWpAriaMessage] = useState('');
+  var [wpAriaLoading, setWpAriaLoading] = useState(false);
+  var [wpDjTrack, setWpDjTrack] = useState(null);
 
   // Read DJ track from localStorage
   useEffect(() => {
     function readDjTrack() {
       try {
-        const raw = sessionStorage.getItem('seewhy_dj_track');
+        var raw = sessionStorage.getItem('seewhy_dj_track');
         setWpDjTrack(raw ? JSON.parse(raw) : null);
       } catch {
         setWpDjTrack(null);
       }
     }
     readDjTrack();
-    const iv = setInterval(readDjTrack, 4000);
+    var iv = setInterval(readDjTrack, 4000);
     return () => clearInterval(iv);
   }, []);
 
   async function generateWpAriaWelcome() {
     setWpAriaLoading(true);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
+      var result = await base44.integrations.Core.InvokeLLM({
         prompt: 'You are ARIA, an AI co-host for a live streaming platform. Generate one engaging welcome message for viewers joining a watch party. Keep it under 20 words, energetic, relevant to streaming culture. No hashtags.',
         response_json_schema: { type: 'object', properties: { message: { type: 'string' } } },
       });
@@ -472,30 +473,30 @@ export default function WatchPartyPage() {
     }
   }
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const { data: party } = useQuery({
+  var { data: party } = useQuery({
     queryKey: ['watchparty', partyId],
     queryFn: () => base44.entities.WatchParty.filter({ id: partyId }).then(r => r[0]),
     enabled: !!partyId,
     refetchInterval: 30000,
   });
 
-  const { data: members = [] } = useQuery({
+  var { data: members = [] } = useQuery({
     queryKey: ['watchparty-members', partyId],
     queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }),
     enabled: !!partyId,
   });
   useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]);  
 
-  const { data: activePoll } = useQuery({
+  var { data: activePoll } = useQuery({
     queryKey: ['active-poll', partyId],
     queryFn: () => base44.entities.Poll.filter({ room_id: partyId, status: 'active' }).then(r => r[0] || null),
     enabled: !!partyId,
     refetchInterval: 5000,
   });
 
-  const { data: activeBattle } = useQuery({
+  var { data: activeBattle } = useQuery({
     queryKey: ['pk-battle-active', partyId],
     queryFn: () => base44.entities.PKBattle.filter({ room_id: partyId, status: 'active' }).then(r => r[0] || null),
     enabled: !!partyId,
@@ -504,49 +505,49 @@ export default function WatchPartyPage() {
 
   useEffect(() => {
     if (!partyId) return;
-    const unsub = base44.entities.PKBattle.subscribe((event) => {
-      if (event.data?.room_id !== partyId) return;
+    var unsub = base44.entities.PKBattle.subscribe((event) => {
+      if (event.(data && data.room_id) !== partyId) return;
       qc.invalidateQueries({ queryKey: ['pk-battle-active', partyId] });
     });
     return unsub;
   }, [partyId, qc]);
 
-  const isHost = party?.host_id === user?.id;
-  const subCount = useSubscriptionCount(party?.host_id || user?.id);
+  var isHost = (party && party.host_id) === (user && user.id);
+  var subCount = useSubscriptionCount((party && party.host_id) || (user && user.id));
 
-  const { localStream, audioEnabled, toggleAudio, applyAudioConstraints, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom, peersRef } = useWebRTCPeers(partyId, localStream);
+  var { localStream, audioEnabled, toggleAudio, applyAudioConstraints, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
+  var { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom, peersRef } = useWebRTCPeers(partyId, localStream);
 
-  const [activeWpPc, setActiveWpPc] = useState(null);
+  var [activeWpPc, setActiveWpPc] = useState(null);
   useEffect(() => {
-    for (const { pc } of peersRef.current.values()) {
+    for (var { pc } of peersRef.current.values()) {
       if (pc.connectionState === 'connected') { setActiveWpPc(pc); return; }
     }
     setActiveWpPc(null);
   }, [peerUserIds]);
-  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeWpPc, 5000);
-  const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: party?.title || 'Watch Party', stream: localStream });
-  const [peerQuality, setPeerQuality] = useState(() => new Map());
-  const speakingSet = useMultiSpeakingSet({ localStream, localUserId: user?.id, remoteStreams, peerUserIds });
-  const [spotlightMember, setSpotlightMember] = useState(null);
+  var { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeWpPc, 5000);
+  var { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: (user && user.id) || '', title: (party && party.title) || 'Watch Party', stream: localStream });
+  var [peerQuality, setPeerQuality] = useState(() => new Map());
+  var speakingSet = useMultiSpeakingSet({ localStream, localUserId: (user && user.id), remoteStreams, peerUserIds });
+  var [spotlightMember, setSpotlightMember] = useState(null);
 
   // ── Audio controls ────────────────────────────────────────────────────────
-  const [noiseSupp, setNoiseSupp] = useState(true);
-  const [echoCan, setEchoCan] = useState(true);
-  const [autoGain, setAutoGain] = useState(true);
-  const [pttActive, setPttActive] = useState(false);
-  const pttWasEnabledRef = useRef(false);
-  const [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
-  const [wpAudioSettingsOpen, setWpAudioSettingsOpen] = useState(false);
-  const { speakers: speakerDevices } = useCameraDevices();
+  var [noiseSupp, setNoiseSupp] = useState(true);
+  var [echoCan, setEchoCan] = useState(true);
+  var [autoGain, setAutoGain] = useState(true);
+  var [pttActive, setPttActive] = useState(false);
+  var pttWasEnabledRef = useRef(false);
+  var [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  var [wpAudioSettingsOpen, setWpAudioSettingsOpen] = useState(false);
+  var { speakers: speakerDevices } = useCameraDevices();
   useHighlightDetector({ partyId, roomId: partyId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
 
-  const [screenCaptureStream, setScreenCaptureStream] = useState(null);
-  const [chatLines, setChatLines] = useState([]);
+  var [screenCaptureStream, setScreenCaptureStream] = useState(null);
+  var [chatLines, setChatLines] = useState([]);
 
-  const handleScreenCapture = async () => {
+  var handleScreenCapture = async () => {
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
+      var stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
       // Stop old stream only after successfully acquiring the new one
       if (screenCaptureStream) screenCaptureStream.getTracks().forEach(t => t.stop());
       setScreenCaptureStream(stream);
@@ -558,27 +559,27 @@ export default function WatchPartyPage() {
   };
 
   useEffect(() => () => {
-    screenCaptureStream?.getTracks().forEach(t => t.stop());
+    (screenCaptureStream && screenCaptureStream.getTracks)().forEach(t => t.stop());
   }, [screenCaptureStream]);
 
   useEffect(() => {
-    if (!partyId || !user?.id) return;
+    if (!partyId || !(user && user.id)) return;
     announceJoin(user.id);
     return leaveRTCRoom;
-  }, [partyId, user?.id]);
+  }, [partyId, (user && user.id)]);
 
-  const wpCompositorSlots = [{ stream: screenCaptureStream, label: '' }];
-  const wpOverlayConfig = {
-    title: party?.title || 'Watch Party',
-    subtitle: `${members?.length || 0} watching`,
+  var wpCompositorSlots = [{ stream: screenCaptureStream, label: '' }];
+  var wpOverlayConfig = {
+    title: (party && party.title) || 'Watch Party',
+    subtitle: `${(members && members.length) || 0} watching`,
     showLive: true,
     chatLines,
   };
 
   useEffect(() => {
     if (!partyId) return;
-    const unsub = base44.entities.WatchPartyMember.subscribe((event) => {
-      if (event.data?.party_id !== partyId) return;
+    var unsub = base44.entities.WatchPartyMember.subscribe((event) => {
+      if (event.(data && data.party_id) !== partyId) return;
       qc.invalidateQueries({ queryKey: ['watchparty-members', partyId] });
     });
     return unsub;
@@ -586,10 +587,10 @@ export default function WatchPartyPage() {
 
   useEffect(() => {
     if (!party || !user) return;
-    let mounted = true;
-    const join = async () => {
+    var mounted = true;
+    var join = async () => {
       try {
-        const existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
+        var existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
         if (!mounted) return;
         if (existing.length === 0) {
           await base44.entities.WatchPartyMember.create({
@@ -607,7 +608,7 @@ export default function WatchPartyPage() {
     };
     join();
     return () => { mounted = false; };
-  }, [party?.id, user?.id]);
+  }, [(party && party.id), (user && user.id)]);
 
   useEffect(() => {
     return () => {
@@ -620,13 +621,13 @@ export default function WatchPartyPage() {
           if (activeMembers.length > 0) {
             base44.entities.WatchParty.filter({ id: party.id }).then(([current]) => {
               if (!current) return;
-              const newCount = Math.max(0, (current.participant_count || 1) - 1);
+              var newCount = Math.max(0, (current.participant_count || 1) - 1);
               base44.entities.WatchParty.update(party.id, { participant_count: newCount }).catch(() => {});
             }).catch(() => {});
           }
         }).catch(() => {});
     };
-  }, [party?.id, user?.id]);
+  }, [(party && party.id), (user && user.id)]);
 
   useEffect(() => {
     if (prevMemberCountRef.current === null) {
@@ -634,15 +635,15 @@ export default function WatchPartyPage() {
       return;
     }
     if (members.length > prevMemberCountRef.current) {
-      const newest = members[members.length - 1];
-      toast.success(`👤 ${newest?.user_name || 'Someone'} joined!`, { duration: 2500 });
+      var newest = members[members.length - 1];
+      toast.success(`👤 ${(newest && newest.user_name) || 'Someone'} joined!`, { duration: 2500 });
     }
     prevMemberCountRef.current = members.length;
   }, [members.length]);
 
   useEffect(() => {
     if (!partyId) return;
-    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    var iv = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(iv);
   }, [partyId]);
 
@@ -663,9 +664,9 @@ export default function WatchPartyPage() {
   // Keyboard shortcuts: M = mic toggle, Space = push-to-talk
   useEffect(() => {
     if (!partyId) return;
-    const onDown = (e) => {
-      const tag = document.activeElement?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+    var onDown = (e) => {
+      var tag = document.(activeElement && activeElement.tagName);
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.(activeElement && activeElement.isContentEditable)) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleAudio(); }
       if (e.key === ' ' && !e.repeat) {
         e.preventDefault();
@@ -673,7 +674,7 @@ export default function WatchPartyPage() {
         else { pttWasEnabledRef.current = true; }
       }
     };
-    const onUp = (e) => {
+    var onUp = (e) => {
       if (e.key === ' ') {
         e.preventDefault();
         if (pttActive && !pttWasEnabledRef.current) toggleAudio();
@@ -688,8 +689,8 @@ export default function WatchPartyPage() {
 
   useEffect(() => {
     if (isHost || !partyId) return;
-    const iv = setInterval(function() {
-      var lastMs = syncData?.updated_at_ms || party?.updated_at_ms;
+    var iv = setInterval(function() {
+      var lastMs = (syncData && syncData.updated_at_ms) || (party && party.updated_at_ms);
       if (lastMs && (Date.now() - lastMs) > 8000) {
         setShowSyncWarn(true);
       } else {
@@ -699,16 +700,16 @@ export default function WatchPartyPage() {
     return function() { clearInterval(iv); };
   }, [isHost, syncData, party, partyId]);
 
-  const onTimeSync = useCallback((data) => {
+  var onTimeSync = useCallback((data) => {
     setSyncData(data);
     setShowSyncWarn(false);
   }, []);
-  const { pushState } = useSyncEngine({ party, isHost, onTimeSync });
+  var { pushState } = useSyncEngine({ party, isHost, onTimeSync });
 
-  const createMutation = useMutation({
+  var createMutation = useMutation({
     mutationFn: async () => {
-      if (!user?.id) throw new Error('auth_required');
-      const type = detectType(videoUrl);
+      if (!(user && user.id)) throw new Error('auth_required');
+      var type = detectType(videoUrl);
       return base44.entities.WatchParty.create({
         host_id: user.id,
         title: partyTitle || 'Watch Party',
@@ -722,17 +723,17 @@ export default function WatchPartyPage() {
       });
     },
     onSuccess: (p) => {
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'room_created',
-          title: `Started watch party: ${p?.title || 'Watch Party'}`,
+          title: `Started watch party: ${(p && p.title) || 'Watch Party'}`,
         }).catch(() => {});
       }
       window.location.href = `${window.location.pathname}?id=${p.id}`;
     },
     onError: (e) => {
-      if (e?.message === 'auth_required') {
+      if ((e && e.message) === 'auth_required') {
         toast.error('Please sign in to create a Watch Party');
       } else {
         toast.error('Failed to create Watch Party. Please try again.');
@@ -740,15 +741,15 @@ export default function WatchPartyPage() {
     },
   });
 
-  const endPartyMutation = useMutation({
+  var endPartyMutation = useMutation({
     mutationFn: () => base44.entities.WatchParty.update(partyId, { status: 'ended' }),
     onSuccess: () => {
       toast.success('Watch party ended');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'room_ended',
-          title: `Ended watch party: ${party?.title || 'Watch Party'}`,
+          title: `Ended watch party: ${(party && party.title) || 'Watch Party'}`,
         }).catch(() => {});
       }
       setSearchParams({});
@@ -756,12 +757,12 @@ export default function WatchPartyPage() {
     onError: () => toast.error('Failed to end watch party.'),
   });
 
-  const copyInvite = () => {
+  var copyInvite = () => {
     navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => toast.error('Copy failed.'));
   };
 
-  const changeVideo = async (source) => {
-    if (!isHost || !party?.id) return;
+  var changeVideo = async (source) => {
+    if (!isHost || !(party && party.id)) return;
     try {
       await base44.entities.WatchParty.update(party.id, {
         video_url: source.url,
@@ -785,7 +786,7 @@ export default function WatchPartyPage() {
   };
 
   // ── Active parties for lobby ───────────────────────────────────────────────
-  const { data: activeParties = [], refetch: refetchParties } = useQuery({
+  var { data: activeParties = [], refetch: refetchParties } = useQuery({
     queryKey: ['watchparties-active'],
     queryFn: () => base44.entities.WatchParty.filter({ status: 'active' }, '-participant_count', 20),
     enabled: !partyId,
@@ -795,8 +796,8 @@ export default function WatchPartyPage() {
   // Real-time lobby updates
   useEffect(() => {
     if (partyId) return;
-    const unsub = base44.entities.WatchParty.subscribe((event) => {
-      if (event.data?.status === 'active' || event.data?.status === 'ended') {
+    var unsub = base44.entities.WatchParty.subscribe((event) => {
+      if (event.(data && data.status) === 'active' || event.(data && data.status) === 'ended') {
         refetchParties();
       }
     });
@@ -925,8 +926,8 @@ export default function WatchPartyPage() {
     return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   }
 
-  const syncDrift = !isHost
-    ? Math.round(((syncData?.current_time || 0) - (directVideoRef?.current?.currentTime || 0)) * 1000)
+  var syncDrift = !isHost
+    ? Math.round((((syncData && syncData.current_time) || 0) - ((directVideoRef && directVideoRef.current && directVideoRef.current.currentTime) || 0)) * 1000)
     : 0;
 
   return (
@@ -975,7 +976,7 @@ export default function WatchPartyPage() {
             )}
             <ShareButtons
               url={window.location.href}
-              title={`Join my Watch Party: ${party?.title}`}
+              title={`Join my Watch Party: ${(party && party.title)}`}
               className="text-white [&_button]:text-white/60"
             />
             <VideoSourcePicker
@@ -997,7 +998,7 @@ export default function WatchPartyPage() {
                 layout="watchparty"
                 slots={wpCompositorSlots}
                 overlayConfig={wpOverlayConfig}
-                userId={user?.id}
+                userId={(user && user.id)}
                 onScreenCapture={handleScreenCapture}
                 isHost={isHost}
               />
@@ -1014,10 +1015,10 @@ export default function WatchPartyPage() {
         <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
           <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[11px] font-black text-white"
             style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
-            {(user?.full_name || user?.email || 'H').charAt(0).toUpperCase()}
+            {((user && user.full_name) || (user && user.email) || 'H').charAt(0).toUpperCase()}
           </div>
           <span className="text-[10px] text-white/50 truncate max-w-[80px]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {user?.full_name || 'Host'}
+            {(user && user.full_name) || 'Host'}
           </span>
           <span className="text-white/15 mx-0.5">·</span>
           <Users className="w-3 h-3 shrink-0" style={{ color: '#d4af37' }} />
@@ -1156,7 +1157,7 @@ export default function WatchPartyPage() {
         )}
       </div>
 
-      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={speakingSet} remoteStreams={remoteStreams} peerUserIds={peerUserIds} onSpotlight={(m) => setSpotlightMember(prev => prev?.user_id === m.user_id ? null : m)} />
+      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={speakingSet} remoteStreams={remoteStreams} peerUserIds={peerUserIds} onSpotlight={(m) => setSpotlightMember(prev => (prev && prev.user_id) === m.user_id ? null : m)} />
 
       <ViewerRail members={members} hostId={party.host_id} />
 
@@ -1168,7 +1169,7 @@ export default function WatchPartyPage() {
         <PartyReactionsOverlay
           partyId={partyId}
           currentUser={user}
-          currentTime={syncData?.current_time || party?.current_time || 0}
+          currentTime={(syncData && syncData.current_time) || (party && party.current_time) || 0}
         />
         <ReactionOverlay partyId={partyId} currentUser={user} />
       </div>
@@ -1413,13 +1414,13 @@ export default function WatchPartyPage() {
                   <AISummaryButton members={members} elapsed={elapsed} partyId={partyId} />
                 </div>
                 {isHost && (
-                  <HostControls isHost={isHost} party={party} onUpdate={(updates) => { if (party?.id) base44.entities.WatchParty.update(party.id, updates).catch(() => {}); }} />
+                  <HostControls isHost={isHost} party={party} onUpdate={(updates) => { if ((party && party.id)) base44.entities.WatchParty.update(party.id, updates).catch(() => {}); }} />
                 )}
                 <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
-                {party?.host_id && (
+                {(party && party.host_id) && (
                   <SuperChatBar roomId={partyId} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
                 )}
-                {party?.host_id && partyId && (
+                {(party && party.host_id) && partyId && (
                   <MerchStrip roomId={partyId} currentUser={user} hostId={party.host_id} />
                 )}
                 {members.length < 10 && (
@@ -1434,7 +1435,7 @@ export default function WatchPartyPage() {
                 isHost={isHost}
                 currentUser={user}
                 onPlayVideo={(url) => {
-                  if (isHost && party?.id) {
+                  if (isHost && (party && party.id)) {
                     base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {});
                   }
                 }}
@@ -1454,10 +1455,10 @@ export default function WatchPartyPage() {
             )}
             {activePanel === 'analytics' && (
               <div className="space-y-3">
-                {partyId && <StreamGoals roomId={partyId} isHost={isHost} creatorId={party?.host_id || user?.id} />}
+                {partyId && <StreamGoals roomId={partyId} isHost={isHost} creatorId={(party && party.host_id) || (user && user.id)} />}
                 {partyId && isHost && <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={members.length} />}
                 {partyId && isHost && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={members.length} />}
-                {partyId && isHost && user?.id && party?.host_id && (
+                {partyId && isHost && (user && user.id) && (party && party.host_id) && (
                   <PointsEarnWidget userId={user.id} creatorId={party.host_id} roomId={partyId} isHost={isHost} />
                 )}
                 <WatchPartyAnalytics
@@ -1493,7 +1494,7 @@ export default function WatchPartyPage() {
             )}
             {activePanel === 'battle' && (
               <div className="space-y-2">
-                <PKBattleHostControls partyId={partyId} hostUser={user} hostName={user?.full_name || user?.email} isHost={isHost} />
+                <PKBattleHostControls partyId={partyId} hostUser={user} hostName={(user && user.full_name) || (user && user.email)} isHost={isHost} />
                 <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
               </div>
             )}
@@ -1518,10 +1519,10 @@ export default function WatchPartyPage() {
                 members={members}
                 remoteStreams={remoteStreams}
                 onSyncEvent={(type, payload) => {
-                  if (isHost && party?.id) {
+                  if (isHost && (party && party.id)) {
                     base44.entities.WatchParty.update(party.id, {
                       playback_state: type === 'play' ? 'playing' : type === 'pause' ? 'paused' : undefined,
-                      current_time: payload?.time,
+                      current_time: (payload && payload.time),
                       updated_at_ms: Date.now(),
                     }).catch(() => {});
                   }
@@ -1534,25 +1535,25 @@ export default function WatchPartyPage() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <GiftTray roomId={partyId} currentUser={user} recipientId={party?.host_id} />
+        <GiftTray roomId={partyId} currentUser={user} recipientId={(party && party.host_id)} />
         {partyId && <GiftAnimation roomId={partyId} />}
         <ViewerControlsPanel roomId={partyId} currentUser={user} isHost={isHost} />
         <LivePollOverlay roomId={partyId} isHost={isHost} currentUser={user} />
         <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />
-        {!isHost && party?.host_id && <TipNowModal roomId={partyId} recipientId={party.host_id} isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} />}
+        {!isHost && (party && party.host_id) && <TipNowModal roomId={partyId} recipientId={party.host_id} isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} />}
         <OnlineUsersGrid roomId={partyId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher />
         <SwanAIRecommendations roomId={partyId} currentLayout="default" viewerCount={0} />
-        <MilestoneAlerts userId={user?.id} roomId={partyId} />
+        <MilestoneAlerts userId={(user && user.id)} roomId={partyId} />
         {partyId && <SuperChatRail roomId={partyId} currentUser={user} />}
-        {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={activePoll} />}
-        {isHost && user?.id && <FanoutEnginePanel members={members} isHost={isHost} roomId={partyId} />}
-        <ShareToSocial content={{ url: window.location.href, title: party?.title ? `Watching "${party.title}" on SeeWhy LIVE!` : 'Join my watch party on SeeWhy LIVE!' }} />
-        {partyId && party?.host_id && !isHost && (
+        {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={(user && user.id)} activePoll={activePoll} />}
+        {isHost && (user && user.id) && <FanoutEnginePanel members={members} isHost={isHost} roomId={partyId} />}
+        <ShareToSocial content={{ url: window.location.href, title: (party && party.title) ? `Watching "${party.title}" on SeeWhy LIVE!` : 'Join my watch party on SeeWhy LIVE!' }} />
+        {partyId && (party && party.host_id) && !isHost && (
           <LoveTap roomId={partyId} user={user} creatorId={party.host_id} creatorName={party.host_name || 'Host'} />
         )}
-        {partyId && party?.host_id && !isHost && (
+        {partyId && (party && party.host_id) && !isHost && (
           <TipWidget roomId={partyId} recipient={{ id: party.host_id, name: party.host_name || 'Host' }} currentUser={user} />
         )}
       </div>
@@ -1581,15 +1582,15 @@ export default function WatchPartyPage() {
           >
             <OctVideoCell
               member={spotlightMember}
-              isHost={spotlightMember.user_id === party?.host_id}
+              isHost={spotlightMember.user_id === (party && party.host_id)}
               isSpeaking={speakingSet.has(spotlightMember.user_id)}
               stream={(() => {
                 if (peerUserIds && remoteStreams) {
-                  for (const [peerId, uid] of peerUserIds) {
+                  for (var [peerId, uid] of peerUserIds) {
                     if (uid === spotlightMember.user_id) return remoteStreams.get(peerId) || null;
                   }
                 }
-                return spotlightMember.user_id === user?.id ? localStream : null;
+                return spotlightMember.user_id === (user && user.id) ? localStream : null;
               })()}
               size={160}
             />

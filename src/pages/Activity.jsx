@@ -30,14 +30,14 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
-const GOLD    = '#FFB800';
-const CRIMSON = '#FF1564';
-const GREEN   = '#00FF88';
-const AMBER   = '#FF8C00';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
-const BG      = '#03030A';
+var GOLD    = '#FFB800';
+var CRIMSON = '#FF1564';
+var GREEN   = '#00FF88';
+var AMBER   = '#FF8C00';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG      = '#03030A';
 
-const TYPE_CONFIG = {
+var TYPE_CONFIG = {
   room_created:        { icon: Radio,          color: CRIMSON,  label: 'Went Live',        emoji: '🔴' },
   room_joined:         { icon: Radio,          color: CRIMSON,  label: 'Joined Stream',    emoji: '📺' },
   room_ended:          { icon: Radio,          color: AMBER,    label: 'Stream Ended',     emoji: '✅' },
@@ -60,7 +60,7 @@ const TYPE_CONFIG = {
   ppv_purchase:        { icon: Eye,            color: GOLD,     label: 'PPV Purchase',     emoji: '🎬' },
 };
 
-const FILTERS = [
+var FILTERS = [
   { id: 'all',     label: 'All' },
   { id: 'streams', label: 'Streams',   types: ['room_created', 'room_joined', 'room_ended'] },
   { id: 'money',   label: 'Earnings',  types: ['tip_sent', 'tip_received', 'gift_sent', 'gift_received', 'subscription', 'ppv_purchase'] },
@@ -70,7 +70,7 @@ const FILTERS = [
 
 function fmtRelative(dateStr) {
   if (!dateStr) return '';
-  const diff = Date.now() - new Date(dateStr).getTime();
+  var diff = Date.now() - new Date(dateStr).getTime();
   if (diff < 60000)   return 'just now';
   if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
   if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
@@ -80,14 +80,14 @@ function fmtRelative(dateStr) {
 
 function fmtDate(dateStr) {
   if (!dateStr) return '';
-  const d = new Date(dateStr);
+  var d = new Date(dateStr);
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 function groupByDate(items) {
-  const groups = {};
+  var groups = {};
   items.forEach(item => {
-    const key = fmtDate(item.created_date);
+    var key = fmtDate(item.created_date);
     if (!groups[key]) groups[key] = [];
     groups[key].push(item);
   });
@@ -95,76 +95,76 @@ function groupByDate(items) {
 }
 
 export default function ActivityPage() {
-  const qc = useQueryClient();
-  const [filter, setFilter] = useState('all');
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activity-active-room', user?.id],
+  var qc = useQueryClient();
+  var [filter, setFilter] = useState('all');
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activity-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: activities = [], isLoading, refetch } = useQuery({
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: activities = [], isLoading, refetch } = useQuery({
     queryKey: ['activities'],
     queryFn: () => base44.entities.Activity.list('-created_date', 100),
   });
 
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['notifications', user?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: user?.id }, '-created_date', 50),
-    enabled: !!user?.id,
+  var { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', (user && user.id)],
+    queryFn: () => base44.entities.Notification.filter({ user_id: (user && user.id) }, '-created_date', 50),
+    enabled: !!(user && user.id),
     refetchInterval: 15000,
   });
 
   useEffect(() => {
-    if (!user?.id) return;
-    const unsub = base44.entities.Activity.subscribe(() => {
+    if (!(user && user.id)) return;
+    var unsub = base44.entities.Activity.subscribe(() => {
       qc.invalidateQueries(['activities', user.id]);
     });
     return unsub;
-  }, [user?.id, qc]);
+  }, [(user && user.id), qc]);
 
-  const markAllNotifRead = useMutation({
+  var markAllNotifRead = useMutation({
     mutationFn: () => Promise.all(
       notifications.filter(n => !n.is_read).map(n =>
         base44.entities.Notification.update(n.id, { is_read: true })
       )
     ),
-    onSuccess: () => qc.invalidateQueries(['notifications', user?.id]),
+    onSuccess: () => qc.invalidateQueries(['notifications', (user && user.id)]),
   });
 
-  const myActivities = activities.filter(a =>
-    a.user_id === user?.id || a.creator_id === user?.id || a.recipient_id === user?.id
+  var myActivities = activities.filter(a =>
+    a.user_id === (user && user.id) || a.creator_id === (user && user.id) || a.recipient_id === (user && user.id)
   );
 
-  const unreadNotifs = notifications.filter(n => !n.is_read);
+  var unreadNotifs = notifications.filter(n => !n.is_read);
 
-  const filterCfg = FILTERS.find(f => f.id === filter);
-  const filtered = myActivities.filter(a => {
-    if (filter !== 'all' && filterCfg?.types && !filterCfg.types.includes(a.type)) return false;
+  var filterCfg = FILTERS.find(f => f.id === filter);
+  var filtered = myActivities.filter(a => {
+    if (filter !== 'all' && (filterCfg && filterCfg.types) && !filterCfg.types.includes(a.type)) return false;
     return true;
   });
 
-  const grouped = groupByDate(filtered);
-  const dateKeys = Object.keys(grouped);
+  var grouped = groupByDate(filtered);
+  var dateKeys = Object.keys(grouped);
 
   // Stats summary
-  const streamsThisWeek = myActivities.filter(a => {
-    const isStream = ['room_created', 'room_ended'].includes(a.type);
-    const isRecent = Date.now() - new Date(a.created_date).getTime() < 7 * 86400000;
+  var streamsThisWeek = myActivities.filter(a => {
+    var isStream = ['room_created', 'room_ended'].includes(a.type);
+    var isRecent = Date.now() - new Date(a.created_date).getTime() < 7 * 86400000;
     return isStream && isRecent;
   }).length;
 
-  const tipsThisWeek = myActivities
+  var tipsThisWeek = myActivities
     .filter(a => a.type === 'tip_received' && Date.now() - new Date(a.created_date).getTime() < 7 * 86400000)
     .reduce((sum, a) => sum + (a.amount || 0), 0);
 
-  const badgesEarned = myActivities.filter(a => a.type === 'badge_earned').length;
-  const totalFollowers = myActivities.filter(a => a.type === 'follow').length;
+  var badgesEarned = myActivities.filter(a => a.type === 'badge_earned').length;
+  var totalFollowers = myActivities.filter(a => a.type === 'follow').length;
   return (
     <div className="min-h-screen pb-20" style={{ background: BG }}>
-      {user?.id && <MilestoneAlerts creatorId={user.id} />}
+      {(user && user.id) && <MilestoneAlerts creatorId={user.id} />}
 
       {/* Header */}
       <div className="sticky top-0 z-20 px-4 py-3"
@@ -200,7 +200,7 @@ export default function ActivityPage() {
       <div className="max-w-3xl mx-auto px-4 pt-4 space-y-5">
 
         {/* Stats row */}
-        {user?.id && (
+        {(user && user.id) && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="grid grid-cols-4 gap-2">
             {[
@@ -279,7 +279,7 @@ export default function ActivityPage() {
           <div className="flex flex-col items-center justify-center py-20">
             <ActivityIcon className="w-14 h-14 mb-3" style={{ color: 'rgba(255,255,255,0.08)' }} />
             <p className="font-black text-sm uppercase mb-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
-              {filter === 'all' ? 'No activity yet' : `No ${filterCfg?.label.toLowerCase()} activity`}
+              {filter === 'all' ? 'No activity yet' : `No ${(filterCfg && filterCfg.label).toLowerCase()} activity`}
             </p>
             {filter === 'all' && (
               <Link to={createPageUrl('GoLive')}>
@@ -303,8 +303,8 @@ export default function ActivityPage() {
                 <div className="space-y-2">
                   <AnimatePresence mode="popLayout">
                     {grouped[dateKey].map((activity, i) => {
-                      const cfg = TYPE_CONFIG[activity.type] || { icon: ActivityIcon, color: GOLD, label: activity.type, emoji: '📌' };
-                      const Icon = cfg.icon;
+                      var cfg = TYPE_CONFIG[activity.type] || { icon: ActivityIcon, color: GOLD, label: activity.type, emoji: '📌' };
+                      var Icon = cfg.icon;
                       return (
                         <motion.div key={activity.id}
                           initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
@@ -352,7 +352,7 @@ export default function ActivityPage() {
           </div>
         )}
 
-        {user?.id && (
+        {(user && user.id) && (
           <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <LeaderboardPanel roomId={activeRoomId} />
             <StreamGoals isHost={true} />
@@ -375,16 +375,16 @@ export default function ActivityPage() {
 
       <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <OnlineUsersGrid compact maxVisible={12} />
-        <OnlinePresence userId={user?.id} showLabel />
-        <PresenceDot userId={user?.id} />
-        <PointsNotification userId={user?.id} />
+        <OnlinePresence userId={(user && user.id)} showLabel />
+        <PresenceDot userId={(user && user.id)} />
+        <PointsNotification userId={(user && user.id)} />
         <CollaborationMatcher />
         <ContentRecommendations />
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -392,7 +392,7 @@ export default function ActivityPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

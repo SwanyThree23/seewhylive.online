@@ -538,7 +538,7 @@ export default function EnhancementSuite() {
       { label: 'Instagram', color: '#E1306C' },
       { label: 'Facebook',  color: '#1877F2' },
     ];
-    var counts = defs.map(d => shareActivities.filter(a => a.(title && title.toLowerCas)e().includes(d.label.toLowerCase())).length);
+    var counts = defs.map(d => shareActivities.filter(a => a.title && a.title.toLowerCase().includes(d.label.toLowerCase())).length);
     var maxCount = Math.max(...counts, 1);
     return defs.map((d, i) => ({ ...d, count: counts[i], pct: Math.round((counts[i] / maxCount) * 100) }));
   })();

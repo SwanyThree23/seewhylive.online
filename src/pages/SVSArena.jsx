@@ -14,16 +14,16 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import ShareToSocial from '../components/social/ShareToSocial';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const VENUE = "Jamar's Sports Bar & Grill, Des Moines, WA";
-const FORMAT = '7 Rock / 5-150 / Double Elimination';
+var VENUE = "Jamar's Sports Bar & Grill, Des Moines, WA";
+var FORMAT = '7 Rock / 5-150 / Double Elimination';
 
-const HISTORY = [
+var HISTORY = [
   { year: 2023, champion: 'Washington', score: '7-4', opponent: 'California', peak_viewers: 3840 },
   { year: 2024, champion: 'Washington', score: '7-6', opponent: 'Oregon', peak_viewers: 4920 },
   { year: 2025, champion: 'California', score: '7-5', opponent: 'Washington', peak_viewers: 6210 },
 ];
 
-const INIT_BRACKET = {
+var INIT_BRACKET = {
   quarterfinals: [
     { id: 'qf1', stateA: 'Washington', stateB: 'Nevada', scoreA: 0, scoreB: 0, winner: null, live: true },
     { id: 'qf2', stateA: 'California', stateB: 'Arizona', scoreA: 0, scoreB: 0, winner: null, live: false },
@@ -39,7 +39,7 @@ const INIT_BRACKET = {
   ],
 };
 
-const STATE_ROSTERS = {
+var STATE_ROSTERS = {
   Washington: [
     { name: 'SwanyThree23', role: 'CAPTAIN', gems: 8420, wins: 34 },
     { name: 'DominoKing_WA', role: 'ANCHOR', gems: 6180, wins: 28 },
@@ -54,9 +54,9 @@ const STATE_ROSTERS = {
   ],
 };
 
-const ROLE_COLORS = { CAPTAIN: '#d4af37', ANCHOR: '#C0392B', PLAYER: '#D4854A' };
+var ROLE_COLORS = { CAPTAIN: '#d4af37', ANCHOR: '#C0392B', PLAYER: '#D4854A' };
 
-const initState = {
+var initState = {
   tab: 'bracket',
   bracket: INIT_BRACKET,
   activeMatch: 'qf1',
@@ -151,26 +151,26 @@ function findActiveMatch(bracket, id) {
 }
 
 // SVS_BRACKET_ID — a stable pseudo-room-id used to store the bracket in PKBattle
-const SVS_BRACKET_ID = 'svs_arena_bracket_v1';
+var SVS_BRACKET_ID = 'svs_arena_bracket_v1';
 
 export default function SVSArena() {
-  const qc = useQueryClient();
-  const [state, dispatch] = useReducer(reducer, initState);
+  var qc = useQueryClient();
+  var [state, dispatch] = useReducer(reducer, initState);
   var activeMatch = findActiveMatch(state.bracket, state.activeMatch);
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   // ── Fetch persisted bracket from DB ──────────────────────────────────────
   // We store each match as a PKBattle record whose creator_name = stateA,
   // challenger_name = stateB, and creator_tips/challenger_tips hold the score.
-  const { data: dbMatches = [], refetch: refetchBracket } = useQuery({
+  var { data: dbMatches = [], refetch: refetchBracket } = useQuery({
     queryKey: ['svsBracket'],
     queryFn:  () => base44.entities.PKBattle.filter({ room_id: SVS_BRACKET_ID }, '-created_date', 20),
     refetchInterval: 30000,
   });
 
   useEffect(() => {
-    const unsub = base44.entities.PKBattle.subscribe(e => {
-      if (e.data?.room_id === SVS_BRACKET_ID) refetchBracket();
+    var unsub = base44.entities.PKBattle.subscribe(e => {
+      if (e.(data && data.room_id) === SVS_BRACKET_ID) refetchBracket();
     });
     return unsub;
   }, [refetchBracket]);
@@ -179,9 +179,9 @@ export default function SVSArena() {
   useEffect(() => {
     if (!dbMatches.length) return;
     // Build a map: "stateA:stateB" → { scoreA, scoreB, winner, dbId }
-    const map = {};
+    var map = {};
     dbMatches.forEach(m => {
-      const key = `${m.creator_name}:${m.challenger_name}`;
+      var key = `${m.creator_name}:${m.challenger_name}`;
       map[key] = {
         scoreA: m.creator_tips    || 0,
         scoreB: m.challenger_tips || 0,
@@ -190,10 +190,10 @@ export default function SVSArena() {
       };
     });
 
-    const hydrated = JSON.parse(JSON.stringify(INIT_BRACKET));
+    var hydrated = JSON.parse(JSON.stringify(INIT_BRACKET));
     ['quarterfinals', 'semifinals', 'finals'].forEach(round => {
       hydrated[round].forEach(match => {
-        const hit = map[`${match.stateA}:${match.stateB}`];
+        var hit = map[`${match.stateA}:${match.stateB}`];
         if (hit) {
           match.scoreA  = hit.scoreA;
           match.scoreB  = hit.scoreB;
@@ -206,12 +206,12 @@ export default function SVSArena() {
   }, [dbMatches]);
 
   // ── Persist score to DB when SCORE action fires ───────────────────────────
-  const scoreMutation = useMutation({
+  var scoreMutation = useMutation({
     mutationFn: async ({ match, newScoreA, newScoreB, hasWinner }) => {
-      const existing = dbMatches.find(
+      var existing = dbMatches.find(
         m => m.creator_name === match.stateA && m.challenger_name === match.stateB
       );
-      const payload = {
+      var payload = {
         creator_tips:    newScoreA,
         challenger_tips: newScoreB,
         status: hasWinner ? 'ended' : 'active',
@@ -230,25 +230,25 @@ export default function SVSArena() {
   });
 
   // Wrap dispatch to intercept SCORE actions
-  const dispatchWithSync = useCallback((action) => {
+  var dispatchWithSync = useCallback((action) => {
     dispatch(action);
     if (action.type !== 'SCORE') return;
 
     // Find current match to compute new scores
-    const match = findActiveMatch(state.bracket, action.matchId);
+    var match = findActiveMatch(state.bracket, action.matchId);
     if (!match) return;
-    const newScoreA = match.scoreA + (action.side === 'A' ? 1 : 0);
-    const newScoreB = match.scoreB + (action.side === 'B' ? 1 : 0);
-    const hasWinner = newScoreA >= 7 || newScoreB >= 7;
+    var newScoreA = match.scoreA + (action.side === 'A' ? 1 : 0);
+    var newScoreB = match.scoreB + (action.side === 'B' ? 1 : 0);
+    var hasWinner = newScoreA >= 7 || newScoreB >= 7;
     scoreMutation.mutate({ match, newScoreA, newScoreB, hasWinner });
   }, [state.bracket, scoreMutation]);
 
-  const { data: rawBattles = [] } = useQuery({
+  var { data: rawBattles = [] } = useQuery({
     queryKey: ['svsLiveBattles'],
     queryFn: () => base44.entities.PKBattle.filter({ status: 'live' }, '-created_date', 10),
     refetchInterval: 15000,
   });
-  const liveBattles = rawBattles;
+  var liveBattles = rawBattles;
 
   return (
     <div style={{ minHeight: '100vh', background: '#07050A', color: '#fff', fontFamily: 'Rajdhani, sans-serif' }}>
@@ -434,13 +434,13 @@ export default function SVSArena() {
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <BattleScoreboard roomId={liveBattles[0]?.id || null} />
-        <BattleMode roomId={liveBattles[0]?.id || null} isHost={false} hostName={null} participants={[]} />
-        <EngagementBadgesDisplay roomId={liveBattles[0]?.id || null} userId={user?.id} creatorId={user?.id} />
-        <SocialLeaderboard roomId={liveBattles[0]?.id || null} />
+        <BattleScoreboard roomId={(liveBattles[0] && liveBattles[0].id) || null} />
+        <BattleMode roomId={(liveBattles[0] && liveBattles[0].id) || null} isHost={false} hostName={null} participants={[]} />
+        <EngagementBadgesDisplay roomId={(liveBattles[0] && liveBattles[0].id) || null} userId={(user && user.id)} creatorId={(user && user.id)} />
+        <SocialLeaderboard roomId={(liveBattles[0] && liveBattles[0].id) || null} />
         <TournamentBracket />
         <PKBattleProgress battleId={null} />
-        <GiftShopTray roomId={liveBattles[0]?.id || null} currentUser={user} />
+        <GiftShopTray roomId={(liveBattles[0] && liveBattles[0].id) || null} currentUser={user} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />

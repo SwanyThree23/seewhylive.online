@@ -31,47 +31,47 @@ function Toggle({ checked, onChange }) {
 }
 
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
-const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+var lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
-const CATEGORIES = [
+var CATEGORIES = [
   'Gaming', 'Music', 'Talk Show', 'Fitness', 'Art', 'Cooking',
   'Tech', 'Sports', 'Education', 'Entertainment', 'News', 'Other',
 ];
 
-const TAG_OPTIONS = [
+var TAG_OPTIONS = [
   '18+', 'Family Friendly', 'Competitive', 'Chill', 'Educational',
   'Roleplay', 'Charity', 'Amateur', 'Professional', 'Local',
 ];
 
 export default function CreateCommunityPage() {
-  const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
-  const [isPublic, setIsPublic] = useState(true);
-  const [requireApproval, setRequireApproval] = useState(false);
-  const [tags, setTags] = useState([]);
-  const [tagInput, setTagInput] = useState('');
-  const [rules, setRules] = useState('');
-  const [bannerUrl, setBannerUrl] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
+  var navigate = useNavigate();
+  var [name, setName] = useState('');
+  var [description, setDescription] = useState('');
+  var [category, setCategory] = useState('');
+  var [isPublic, setIsPublic] = useState(true);
+  var [requireApproval, setRequireApproval] = useState(false);
+  var [tags, setTags] = useState([]);
+  var [tagInput, setTagInput] = useState('');
+  var [rules, setRules] = useState('');
+  var [bannerUrl, setBannerUrl] = useState('');
+  var [avatarUrl, setAvatarUrl] = useState('');
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const createMutation = useMutation({
+  var createMutation = useMutation({
     mutationFn: async (data) => {
-      const community = await base44.entities.Community.create(data);
+      var community = await base44.entities.Community.create(data);
       await base44.entities.CommunityMember.create({ community_id: community.id, user_id: user.id, role: 'owner', joined_at: new Date().toISOString() });
       await base44.entities.Activity.create({
         user_id: user.id,
@@ -85,12 +85,12 @@ export default function CreateCommunityPage() {
     onError: () => toast.error('Failed to create community'),
   });
 
-  const addTag = (tag) => {
-    const t = tag || tagInput.trim();
+  var addTag = (tag) => {
+    var t = tag || tagInput.trim();
     if (t && !tags.includes(t) && tags.length < 8) { setTags([...tags, t]); setTagInput(''); }
   };
 
-  const handleSubmit = (e) => {
+  var handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim() || !category) { toast.error('Please fill in required fields'); return; }
     createMutation.mutate({
@@ -101,7 +101,7 @@ export default function CreateCommunityPage() {
       require_approval: requireApproval,
       tags,
       rules: rules.trim(),
-      owner_id: user?.id,
+      owner_id: (user && user.id),
       member_count: 1,
       banner_url: bannerUrl.trim() || null,
       avatar_url: avatarUrl.trim() || null,
@@ -283,9 +283,9 @@ export default function CreateCommunityPage() {
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

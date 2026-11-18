@@ -7,27 +7,27 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useOpenRouter } from '../hooks/useOpenRouter';
 
-const BG   = '#07050A';
-const GOLD = '#C9A84C';
-const BURG = '#6B1F2A';
-const DIM  = 'rgba(255,255,255,0.45)';
-const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG   = '#07050A';
+var GOLD = '#C9A84C';
+var BURG = '#6B1F2A';
+var DIM  = 'rgba(255,255,255,0.45)';
+var T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const COMPRESSION_PRESETS = [
+var COMPRESSION_PRESETS = [
   { id: 'light',    label: 'Light (80%)',    ratio: 0.80, desc: 'Preserve most content, minimal compression' },
   { id: 'balanced', label: 'Balanced (60%)', ratio: 0.60, desc: 'Good for most use cases' },
   { id: 'heavy',    label: 'Heavy (40%)',    ratio: 0.40, desc: 'Aggressive — best for very long texts' },
   { id: 'extreme',  label: 'Extreme (20%)',  ratio: 0.20, desc: 'Maximum compression, key info only' },
 ];
 
-const COMPRESSION_MODES = [
+var COMPRESSION_MODES = [
   { id: 'semantic',  label: 'Semantic',  desc: 'Remove redundant meaning, preserve key concepts' },
   { id: 'extractive', label: 'Extractive', desc: 'Keep the most informative sentences verbatim' },
   { id: 'summary',   label: 'Summary',   desc: 'Rewrite as concise structured summary' },
   { id: 'keywords',  label: 'Keywords',  desc: 'Extract key terms and entities only' },
 ];
 
-const EXAMPLE_TEXTS = [
+var EXAMPLE_TEXTS = [
   {
     label: 'Stream Chat Log',
     text: `[10:32:05] viewer123: hey! great stream today, really loving the content you've been putting out lately
@@ -63,12 +63,12 @@ function countTokens(text) {
 }
 
 function estimateCost(tokens, model = 'claude-haiku') {
-  const rates = { 'claude-haiku': 0.00025, 'claude-sonnet': 0.003, 'gpt-4o-mini': 0.00015, 'gpt-4o': 0.0025 };
-  const rate = rates[model] || 0.001;
+  var rates = { 'claude-haiku': 0.00025, 'claude-sonnet': 0.003, 'gpt-4o-mini': 0.00015, 'gpt-4o': 0.0025 };
+  var rate = rates[model] || 0.001;
   return ((tokens / 1000) * rate).toFixed(4);
 }
 
-const inp = {
+var inp = {
   width: '100%', padding: '9px 12px', borderRadius: 8,
   background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(201,168,76,0.22)',
   color: 'rgba(255,255,255,0.9)', fontSize: 13, fontFamily: 'Barlow Condensed, sans-serif',
@@ -76,34 +76,34 @@ const inp = {
 };
 
 export default function LLMLinguaStudio() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { invoke: invokeAI } = useOpenRouter();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { invoke: invokeAI } = useOpenRouter();
 
-  const [inputText, setInputText] = useState('');
-  const [outputText, setOutputText] = useState('');
-  const [preset, setPreset] = useState('balanced');
-  const [mode, setMode] = useState('semantic');
-  const [instructions, setInstructions] = useState('');
-  const [compressing, setCompressing] = useState(false);
-  const [stats, setStats] = useState(null);
-  const [history, setHistory] = useState([]);
+  var [inputText, setInputText] = useState('');
+  var [outputText, setOutputText] = useState('');
+  var [preset, setPreset] = useState('balanced');
+  var [mode, setMode] = useState('semantic');
+  var [instructions, setInstructions] = useState('');
+  var [compressing, setCompressing] = useState(false);
+  var [stats, setStats] = useState(null);
+  var [history, setHistory] = useState([]);
 
-  const inputTokens = countTokens(inputText);
-  const outputTokens = countTokens(outputText);
-  const selectedPreset = COMPRESSION_PRESETS.find(p => p.id === preset);
-  const selectedMode = COMPRESSION_MODES.find(m => m.id === mode);
+  var inputTokens = countTokens(inputText);
+  var outputTokens = countTokens(outputText);
+  var selectedPreset = COMPRESSION_PRESETS.find(p => p.id === preset);
+  var selectedMode = COMPRESSION_MODES.find(m => m.id === mode);
 
   async function compress() {
     if (!inputText.trim()) { toast.error('Enter text to compress.'); return; }
     setCompressing(true);
     setOutputText('');
     setStats(null);
-    const start = Date.now();
+    var start = Date.now();
 
-    const ratioLabel = selectedPreset ? `${Math.round(selectedPreset.ratio * 100)}% of original length` : '60% of original length';
-    const modeDesc = selectedMode?.desc || 'Semantic compression';
+    var ratioLabel = selectedPreset ? `${Math.round(selectedPreset.ratio * 100)}% of original length` : '60% of original length';
+    var modeDesc = (selectedMode && selectedMode.desc) || 'Semantic compression';
 
-    const systemPrompt = `You are a text compression specialist using LLMLingua techniques.
+    var systemPrompt = `You are a text compression specialist using LLMLingua techniques.
 Your job: compress the given text to approximately ${ratioLabel}.
 Compression method: ${modeDesc}.
 Rules:
@@ -114,15 +114,15 @@ Rules:
 ${instructions ? `Additional instructions: ${instructions}` : ''}`;
 
     try {
-      const result = await invokeAI({
+      var result = await invokeAI({
         prompt: `Compress this text:\n\n${inputText}`,
         systemPrompt,
-        maxTokens: Math.max(500, Math.ceil(inputTokens * (selectedPreset?.ratio || 0.6))),
+        maxTokens: Math.max(500, Math.ceil(inputTokens * ((selectedPreset && selectedPreset.ratio) || 0.6))),
       });
-      const elapsed = ((Date.now() - start) / 1000).toFixed(2);
+      var elapsed = ((Date.now() - start) / 1000).toFixed(2);
       setOutputText(result.trim());
-      const outTokens = countTokens(result.trim());
-      const compressionRatio = ((1 - outTokens / inputTokens) * 100).toFixed(1);
+      var outTokens = countTokens(result.trim());
+      var compressionRatio = ((1 - outTokens / inputTokens) * 100).toFixed(1);
       setStats({
         inputTokens,
         outputTokens: outTokens,
@@ -147,9 +147,9 @@ ${instructions ? `Additional instructions: ${instructions}` : ''}`;
 
   function downloadOutput() {
     if (!outputText) return;
-    const blob = new Blob([outputText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    var blob = new Blob([outputText], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
     a.href = url;
     a.download = 'compressed.txt';
     a.click();
@@ -322,7 +322,7 @@ ${instructions ? `Additional instructions: ${instructions}` : ''}`;
           }}>
             {compressing
               ? <><RefreshCw style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} /> Compressing…</>
-              : <><Minimize2 style={{ width: 14, height: 14 }} /> Compress ({selectedPreset?.label})</>
+              : <><Minimize2 style={{ width: 14, height: 14 }} /> Compress ({(selectedPreset && selectedPreset.label)})</>
             }
           </button>
         </div>

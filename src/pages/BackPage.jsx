@@ -16,31 +16,31 @@ import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import { motion } from 'framer-motion';
 
 export default function BackPage() {
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showMenu, setShowMenu] = useState(false);
+  var navigate = useNavigate();
+  var [searchQuery, setSearchQuery] = useState('');
+  var [showMenu, setShowMenu] = useState(false);
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user?.id) {
+    if ((user && user.id)) {
       navigate('/Home');
     }
   }, [user]);
@@ -188,7 +188,7 @@ export default function BackPage() {
         <OnlineUsersGrid compact maxVisible={12} />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         <CollaborationMatcher />
-        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+        <AnnouncementPanel communityId={userCommunityId} userId={(user && user.id)} />
       </div>
 
       {/* Bottom Nav */}

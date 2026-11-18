@@ -28,13 +28,13 @@ import StreamerMonetizationCenter from '../components/monetization/StreamerMonet
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import ViewerCount from '../components/live/ViewerCount';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
-const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
+var inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+var lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
 function Section({ title, children }) {
   return (
@@ -46,8 +46,8 @@ function Section({ title, children }) {
 }
 
 export default function CreateRoomPage() {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  var navigate = useNavigate();
+  var [formData, setFormData] = useState({
     title: '',
     description: '',
     type: 'video',
@@ -59,40 +59,40 @@ export default function CreateRoomPage() {
     recording_enabled: false,
     community_id: '',
   });
-  const [tagInput, setTagInput] = useState('');
-  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  var [tagInput, setTagInput] = useState('');
+  var [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: communities = [] } = useQuery({
+  var { data: communities = [] } = useQuery({
     queryKey: ['myCommunities'],
     queryFn: async () => {
       if (!user) return [];
-      const memberships = await base44.entities.CommunityMember.filter({ user_id: user.id });
-      const ids = memberships.map(m => m.community_id);
+      var memberships = await base44.entities.CommunityMember.filter({ user_id: user.id });
+      var ids = memberships.map(m => m.community_id);
       if (ids.length === 0) return [];
-      const all = await base44.entities.Community.list();
+      var all = await base44.entities.Community.list();
       return all.filter(c => ids.includes(c.id));
     },
     enabled: !!user,
   });
 
-  const createRoomMutation = useMutation({
+  var createRoomMutation = useMutation({
     mutationFn: async (roomData) => {
-      const room = await base44.entities.Room.create({
+      var room = await base44.entities.Room.create({
         ...roomData,
         host_id: user.id,
         started_at: roomData.status === 'live' ? new Date().toISOString() : null,
@@ -107,7 +107,7 @@ export default function CreateRoomPage() {
     },
     onSuccess: (room) => {
       toast.success('Room created successfully!');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'room_created',
@@ -119,18 +119,18 @@ export default function CreateRoomPage() {
     onError: () => toast.error('Failed to create room. Please try again.'),
   });
 
-  const handleSubmit = (e) => {
+  var handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.title) { toast.error('Please enter a room title'); return; }
     createRoomMutation.mutate(formData);
   };
 
-  const handleThumbnailUpload = async (e) => {
-    const file = e.target.files?.[0];
+  var handleThumbnailUpload = async (e) => {
+    var file = (e.target.files && e.target.files[0]);
     if (!file) return;
     setUploadingThumbnail(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      var { file_url } = await base44.integrations.Core.UploadFile({ file });
       setFormData(prev => ({ ...prev, thumbnail_url: file_url }));
       toast.success('Thumbnail uploaded!');
     } catch {
@@ -140,14 +140,14 @@ export default function CreateRoomPage() {
     }
   };
 
-  const addTag = () => {
+  var addTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
       setFormData(prev => ({ ...prev, tags: [...prev.tags, tagInput.trim()] }));
       setTagInput('');
     }
   };
 
-  const set = (key, val) => setFormData(prev => ({ ...prev, [key]: val }));
+  var set = (key, val) => setFormData(prev => ({ ...prev, [key]: val }));
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -288,7 +288,7 @@ export default function CreateRoomPage() {
           </Section>
 
           {/* Stream readiness tools */}
-          {user?.id && (
+          {(user && user.id) && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
               <StreamGoals isHost={true} />
               <ZEGOStreamHealthCard roomId={activeRoomId} />
@@ -316,9 +316,9 @@ export default function CreateRoomPage() {
         </form>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -326,7 +326,7 @@ export default function CreateRoomPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

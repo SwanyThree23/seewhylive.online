@@ -5,13 +5,13 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
-const BG   = '#07050A';
-const GOLD = '#C9A84C';
-const BURG = '#6B1F2A';
-const DIM  = 'rgba(255,255,255,0.45)';
-const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG   = '#07050A';
+var GOLD = '#C9A84C';
+var BURG = '#6B1F2A';
+var DIM  = 'rgba(255,255,255,0.45)';
+var T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const MODELS = [
+var MODELS = [
   { id: 'anthropic/claude-haiku-4-5',           label: 'Claude Haiku 4.5',      provider: 'Anthropic',  cost: '$0.25/M',  speed: 'Ultra Fast',  ctx: '200K' },
   { id: 'anthropic/claude-sonnet-4-5',          label: 'Claude Sonnet 4.5',     provider: 'Anthropic',  cost: '$3/M',     speed: 'Fast',         ctx: '200K' },
   { id: 'anthropic/claude-opus-4-5',            label: 'Claude Opus 4.5',       provider: 'Anthropic',  cost: '$15/M',    speed: 'Slower',       ctx: '200K' },
@@ -30,9 +30,9 @@ const MODELS = [
   { id: 'x-ai/grok-3-mini-beta',               label: 'Grok 3 Mini',           provider: 'xAI',        cost: '$0.3/M',   speed: 'Fast',         ctx: '131K' },
 ];
 
-const PROVIDERS = ['All', 'Anthropic', 'OpenAI', 'Google', 'Meta', 'Mistral', 'DeepSeek', 'Cohere', 'xAI'];
+var PROVIDERS = ['All', 'Anthropic', 'OpenAI', 'Google', 'Meta', 'Mistral', 'DeepSeek', 'Cohere', 'xAI'];
 
-const PROMPT_TEMPLATES = [
+var PROMPT_TEMPLATES = [
   { label: 'Stream Recap', text: 'Write a concise highlight recap for a live stream about {topic}. Include top moments, viewer engagement, and a call to watch the VOD.' },
   { label: 'Chat Moderation', text: 'You are a live chat moderator. Review this message and decide: allow, timeout (1min), or ban. Explain briefly. Message: "{message}"' },
   { label: 'Caption Enhance', text: 'Improve this auto-generated stream caption for clarity and grammar while keeping it natural: "{caption}"' },
@@ -41,7 +41,7 @@ const PROMPT_TEMPLATES = [
   { label: 'Code Review', text: 'Review this code and provide concise, actionable feedback on correctness, performance, and readability:\n\n```\n{code}\n```' },
 ];
 
-const USAGE_KEY = 'swl_openrouter_usage';
+var USAGE_KEY = 'swl_openrouter_usage';
 
 function loadUsage() {
   try { return JSON.parse(localStorage.getItem(USAGE_KEY) || '{"total":0,"sessions":[]}'); }
@@ -55,7 +55,7 @@ function getKey() {
   try { return localStorage.getItem('swl_apikey_openrouter') || ''; } catch { return ''; }
 }
 
-const inp = {
+var inp = {
   width: '100%', padding: '9px 12px', borderRadius: 8,
   background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(201,168,76,0.22)',
   color: 'rgba(255,255,255,0.9)', fontSize: 13, fontFamily: 'Barlow Condensed, sans-serif',
@@ -63,22 +63,22 @@ const inp = {
 };
 
 export default function OpenRouterHub() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const [providerFilter, setProviderFilter] = useState('All');
-  const [selectedModels, setSelectedModels] = useState(['anthropic/claude-haiku-4-5']);
-  const [compareMode, setCompareMode] = useState(false);
-  const [prompt, setPrompt] = useState('');
-  const [systemPrompt, setSystemPrompt] = useState('You are a helpful AI assistant for SeeWhy LIVE creators.');
-  const [responses, setResponses] = useState({});
-  const [timings, setTimings] = useState({});
-  const [loading, setLoading] = useState({});
-  const [usage, setUsage] = useState(loadUsage);
-  const [showTemplates, setShowTemplates] = useState(false);
-  const [tab, setTab] = useState('chat');
-  const hasKey = !!getKey();
+  var [providerFilter, setProviderFilter] = useState('All');
+  var [selectedModels, setSelectedModels] = useState(['anthropic/claude-haiku-4-5']);
+  var [compareMode, setCompareMode] = useState(false);
+  var [prompt, setPrompt] = useState('');
+  var [systemPrompt, setSystemPrompt] = useState('You are a helpful AI assistant for SeeWhy LIVE creators.');
+  var [responses, setResponses] = useState({});
+  var [timings, setTimings] = useState({});
+  var [loading, setLoading] = useState({});
+  var [usage, setUsage] = useState(loadUsage);
+  var [showTemplates, setShowTemplates] = useState(false);
+  var [tab, setTab] = useState('chat');
+  var hasKey = !!getKey();
 
-  const filtered = providerFilter === 'All' ? MODELS : MODELS.filter(m => m.provider === providerFilter);
+  var filtered = providerFilter === 'All' ? MODELS : MODELS.filter(m => m.provider === providerFilter);
 
   function toggleModel(id) {
     if (compareMode) {
@@ -92,15 +92,15 @@ export default function OpenRouterHub() {
 
   async function runModel(modelId) {
     if (!prompt.trim()) return;
-    const key = getKey();
+    var key = getKey();
     if (!key) { toast.error('Add your OpenRouter key in Settings → API Keys.'); return; }
 
     setLoading(p => ({ ...p, [modelId]: true }));
     setResponses(p => ({ ...p, [modelId]: '' }));
-    const start = Date.now();
+    var start = Date.now();
 
     try {
-      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      var res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${key}`,
@@ -119,14 +119,15 @@ export default function OpenRouterHub() {
         }),
       });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-      const data = await res.json();
-      const text = data.choices?.[0]?.message?.content || '(no response)';
-      const elapsed = ((Date.now() - start) / 1000).toFixed(2);
+      var data = await res.json();
+      var _choice0 = data && data.choices && data.choices[0];
+      var text = (_choice0 && _choice0.message && _choice0.message.content) || '(no response)';
+      var elapsed = ((Date.now() - start) / 1000).toFixed(2);
       setResponses(p => ({ ...p, [modelId]: text }));
       setTimings(p => ({ ...p, [modelId]: elapsed }));
 
-      const tokens = data.usage?.total_tokens || 0;
-      const u = loadUsage();
+      var tokens = data.(usage && usage.total_tokens) || 0;
+      var u = loadUsage();
       u.total += tokens;
       u.sessions = [{ model: modelId, tokens, ts: Date.now() }, ...u.sessions].slice(0, 50);
       saveUsage(u);
@@ -154,7 +155,7 @@ export default function OpenRouterHub() {
     setShowTemplates(false);
   }
 
-  const model = MODELS.find(m => m.id === selectedModels[0]);
+  var model = MODELS.find(m => m.id === selectedModels[0]);
 
   return (
     <div style={{ minHeight: '100vh', background: BG, ...T, paddingBottom: 40 }}>
@@ -205,7 +206,7 @@ export default function OpenRouterHub() {
           {/* Model list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 'calc(100vh - 220px)', overflowY: 'auto' }}>
             {filtered.map(m => {
-              const isSelected = selectedModels.includes(m.id);
+              var isSelected = selectedModels.includes(m.id);
               return (
                 <button key={m.id} onClick={() => toggleModel(m.id)} style={{
                   padding: '8px 10px', borderRadius: 10, textAlign: 'left', cursor: 'pointer', ...T,
@@ -285,16 +286,16 @@ export default function OpenRouterHub() {
           {/* Responses */}
           <div style={{ display: 'grid', gridTemplateColumns: compareMode && selectedModels.length > 1 ? `repeat(${Math.min(selectedModels.length, 2)}, 1fr)` : '1fr', gap: 12 }}>
             {selectedModels.map(modelId => {
-              const m = MODELS.find(x => x.id === modelId);
-              const resp = responses[modelId];
-              const isLoading = loading[modelId];
-              const timing = timings[modelId];
+              var m = MODELS.find(x => x.id === modelId);
+              var resp = responses[modelId];
+              var isLoading = loading[modelId];
+              var timing = timings[modelId];
               return (
                 <div key={modelId} style={{ borderRadius: 12, background: 'rgba(13,6,24,0.8)', border: `1px solid ${resp ? 'rgba(201,168,76,0.18)' : 'rgba(255,255,255,0.06)'}`, overflow: 'hidden' }}>
                   <div style={{ padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: 11, fontWeight: 800, color: GOLD, ...T }}>{m?.label || modelId}</p>
-                      <p style={{ fontSize: 9, color: DIM, ...T }}>{m?.provider} · {m?.cost} · ctx {m?.ctx}</p>
+                      <p style={{ fontSize: 11, fontWeight: 800, color: GOLD, ...T }}>{(m && m.label) || modelId}</p>
+                      <p style={{ fontSize: 9, color: DIM, ...T }}>{(m && m.provider)} · {(m && m.cost)} · ctx {(m && m.ctx)}</p>
                     </div>
                     {timing && <span style={{ fontSize: 10, color: '#6DBF7E', ...T }}>⏱ {timing}s</span>}
                     {resp && (

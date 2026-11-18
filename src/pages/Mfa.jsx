@@ -10,7 +10,7 @@ import { MfaHeader, MfaNotice, MfaScreen, useAppInfo } from "@/components/MfaPar
 import { finishSignIn, resumeMfa, signInToManageMfa, signInWithProvider } from "@/lib/authMfaFlow";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
-const PROVIDERS = [
+var PROVIDERS = [
   { id: "google", flag: "enable_google_login", name: "Google" },
   { id: "microsoft", flag: "enable_microsoft_login", name: "Microsoft" },
   { id: "facebook", flag: "enable_facebook_login", name: "Facebook" },
@@ -20,17 +20,17 @@ const PROVIDERS = [
 // /mfa: finishes a Google, Microsoft, Facebook, Apple or SSO sign-in that needs a second step
 // (?mfa_code=…), and opened directly it is the two-factor authentication settings page.
 export default function Mfa() {
-  const returnTo = safeReturnTo();
-  const [challenge, setChallenge] = useState(null);
-  const [managing, setManaging] = useState(null);
-  const [resuming, setResuming] = useState(true);
-  const [error, setError] = useState(null);
+  var returnTo = safeReturnTo();
+  var [challenge, setChallenge] = useState(null);
+  var [managing, setManaging] = useState(null);
+  var [resuming, setResuming] = useState(true);
+  var [error, setError] = useState(null);
 
   useEffect(() => {
     resumeMfa()
       .then((result) => {
         // A remembered device signs in straight away; otherwise continue the second step here.
-        if (result?.access_token) return finishSignIn(result.access_token, returnTo);
+        if ((result && result.access_token)) return finishSignIn(result.access_token, returnTo);
         if (result) setChallenge(result);
         setResuming(false);
       })
@@ -55,14 +55,14 @@ export default function Mfa() {
 
 // Changing two-factor settings starts with a fresh sign-in, then a code from an enrolled method.
 function ConfirmIdentity({ returnTo, onChallenge, initialError }) {
-  const info = useAppInfo();
-  const options = info ? info.auth_config || {} : null;
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(initialError);
-  const [busy, setBusy] = useState(false);
+  var info = useAppInfo();
+  var options = info ? info.auth_config || {} : null;
+  var [email, setEmail] = useState("");
+  var [password, setPassword] = useState("");
+  var [error, setError] = useState(initialError);
+  var [busy, setBusy] = useState(false);
 
-  const submit = async (e) => {
+  var submit = async (e) => {
     e.preventDefault();
     setError(null);
     setBusy(true);
@@ -74,8 +74,8 @@ function ConfirmIdentity({ returnTo, onChallenge, initialError }) {
     }
   };
 
-  const withProvider = (provider) => signInWithProvider(provider, returnTo, { manage: true }).catch(setError);
-  const providers = options ? PROVIDERS.filter((provider) => options[provider.flag] ?? provider.id === "google") : [];
+  var withProvider = (provider) => signInWithProvider(provider, returnTo, { manage: true }).catch(setError);
+  var providers = options ? PROVIDERS.filter((provider) => options[provider.flag] || provider.id === "google") : [];
 
   return (
     <>

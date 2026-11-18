@@ -1398,7 +1398,7 @@ function TranscriptionPanel() {
   }
 
   function copyOBSOverlay() {
-    navigator.(clipboard && clipboard.writeTex)t(obsOverlayUrl).catch(() => {});
+    if (navigator.clipboard) { navigator.clipboard.writeText(obsOverlayUrl).catch(function() {}); }
     toast('OBS overlay URL copied!', setToastMsg);
   }
 
@@ -1580,7 +1580,7 @@ function RoomsPanel() {
   }
 
   function copyURL(url) {
-    navigator.(clipboard && clipboard.writeTex)t(url).catch(() => {});
+    if (navigator.clipboard) { navigator.clipboard.writeText(url).catch(function() {}); }
     toast('Copied!', setToastMsg);
   }
 
@@ -1841,7 +1841,7 @@ function ShareEmbedPanel() {
   var embedCode = '<iframe\n  src="' + watchUrl + '&embed=1"\n  width="100%" height="480"\n  frameborder="0"\n  allow="autoplay; camera; microphone"\n  allowfullscreen\n></iframe>';
 
   function copyText(text, label) {
-    navigator.(clipboard && clipboard.writeTex)t(text).catch(function() {});
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).catch(function() {}); }
     setCopied(label);
     toast(label + ' copied!', setToastMsg);
     setTimeout(function() { setCopied(''); }, 2000);

@@ -31,34 +31,34 @@ import ViewerCount from '../components/live/ViewerCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TABS = [
+var TABS = [
   { id: 'goals', label: 'Goals', icon: Target, color: GOLD },
   { id: 'alerts', label: 'Sound Alerts', icon: Bell, color: '#6DBF7E' },
   { id: 'auctions', label: 'Auctions', icon: Gavel, color: '#7B5DA6' },
 ];
 
 export default function MonetizationWidgets() {
-  const [activeTab, setActiveTab] = useState('goals');
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [activeTab, setActiveTab] = useState('goals');
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: myRooms = [] } = useQuery({
-    queryKey: ['my-live-rooms', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }, '-created_date', 5),
+  var { data: myRooms = [] } = useQuery({
+    queryKey: ['my-live-rooms', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }, '-created_date', 5),
     enabled: !!user,
   });
 
-  const activeRoom = myRooms[0];
+  var activeRoom = myRooms[0];
 
   return (
     <div className="min-h-screen pb-10 text-white" style={{ background: BG }}>
@@ -80,7 +80,7 @@ export default function MonetizationWidgets() {
           <div>
             <p className="text-sm font-black" style={{ ...T, color: '#4A8A7A' }}>Monetization Widgets</p>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Goals update in real-time, sound alerts fire during streams, and auctions let viewers bid during live sessions.
+              Goals update in real-time, sound alerts fire during streams, and auctions var viewers bid during live sessions.
               {activeRoom ? (
                 <span> Using room: <strong className="text-white">{activeRoom.title}</strong></span>
               ) : (
@@ -123,7 +123,7 @@ export default function MonetizationWidgets() {
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Goals update live and celebrate when reached with confetti</p>
             </div>
             <div className="p-5">
-              <StreamerGoalsWidget creatorId={user?.id} roomId={activeRoom?.id} isCreator={true} />
+              <StreamerGoalsWidget creatorId={(user && user.id)} roomId={(activeRoom && activeRoom.id)} isCreator={true} />
             </div>
           </div>
         )}
@@ -136,7 +136,7 @@ export default function MonetizationWidgets() {
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Alerts trigger automatically when donation thresholds are met</p>
             </div>
             <div className="p-5">
-              <SoundAlertsManager creatorId={user?.id} />
+              <SoundAlertsManager creatorId={(user && user.id)} />
             </div>
           </div>
         )}
@@ -149,33 +149,33 @@ export default function MonetizationWidgets() {
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Start real-time auctions — viewers bid live during your stream</p>
             </div>
             <div className="p-5">
-              <LiveAuctionWidget creatorId={user?.id} roomId={activeRoom?.id} isCreator={true} currentUser={user} />
+              <LiveAuctionWidget creatorId={(user && user.id)} roomId={(activeRoom && activeRoom.id)} isCreator={true} currentUser={user} />
             </div>
           </div>
         )}
 
-        {user?.id && (
+        {(user && user.id) && (
           <div className="mt-4">
             <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
           </div>
         )}
         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <AnimatedGiftShop recipientId={user?.id} roomId={activeRoom?.id || null} onClose={() => {}} />
-          <TipAlert roomId={activeRoom?.id || null} recipientId={user?.id} />
-          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={activeRoom?.id || null} communityId={null} />
+          <AnimatedGiftShop recipientId={(user && user.id)} roomId={(activeRoom && activeRoom.id) || null} onClose={() => {}} />
+          <TipAlert roomId={(activeRoom && activeRoom.id) || null} recipientId={(user && user.id)} />
+          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={(activeRoom && activeRoom.id) || null} communityId={null} />
         </div>
       </div>
 
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <MonetizationDashboard roomId={activeRoom?.id || null} />
-        <VirtualGoodsStore userId={user?.id} />
+        <MonetizationDashboard roomId={(activeRoom && activeRoom.id) || null} />
+        <VirtualGoodsStore userId={(user && user.id)} />
       </div>
-      <SwanAIRecommendations roomId={activeRoom?.id || null} currentLayout="monetize" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoom?.id || null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanAIRecommendations roomId={(activeRoom && activeRoom.id) || null} currentLayout="monetize" viewerCount={0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={(activeRoom && activeRoom.id) || null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -183,7 +183,7 @@ export default function MonetizationWidgets() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoom?.id || null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={(activeRoom && activeRoom.id) || null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

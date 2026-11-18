@@ -27,39 +27,39 @@ function getVoiceSettings() {
   catch { return {}; }
 }
 function speakText(text) {
-  const vs = getVoiceSettings();
+  var vs = getVoiceSettings();
   if (vs.enabled === false || vs.autoSpeak === false) return;
   fetch('/api/tts', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ input: text.substring(0, 300), voice: vs.voice || 'nova', speed: vs.speed || 1.0 }),
   }).then(r => r.blob()).then(b => {
-    const a = new Audio(URL.createObjectURL(b));
+    var a = new Audio(URL.createObjectURL(b));
     a.volume = vs.volume !== undefined ? vs.volume : 0.8;
     a.play();
   }).catch(() => {});
 }
 
-const BG = '#080B18';
-const BG2 = '#0D0A08';
-const BG3 = '#13100A';
-const GOLD = '#D4AF37';
-const GOLDD = '#8A6F2E';
-const SLATE = '#2A2010';
-const SLATEL = '#3D3520';
-const TEXT = '#F0E8D4';
-const TEXTD = '#C4B596';
-const TEXTM = '#8A7A62';
-const GREEN = '#6DBF7E';
-const RUBY = '#8B1A2F';
-const RUBYL = '#B22340';
-const CYAN = '#4A8A7A';
-const PILL = 999;
+var BG = '#080B18';
+var BG2 = '#0D0A08';
+var BG3 = '#13100A';
+var GOLD = '#D4AF37';
+var GOLDD = '#8A6F2E';
+var SLATE = '#2A2010';
+var SLATEL = '#3D3520';
+var TEXT = '#F0E8D4';
+var TEXTD = '#C4B596';
+var TEXTM = '#8A7A62';
+var GREEN = '#6DBF7E';
+var RUBY = '#8B1A2F';
+var RUBYL = '#B22340';
+var CYAN = '#4A8A7A';
+var PILL = 999;
 
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO = { fontFamily: 'Space Mono, monospace' };
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var MONO = { fontFamily: 'Space Mono, monospace' };
 
-const GLOBAL_CSS = `
+var GLOBAL_CSS = `
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 @keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.35;}}
 @keyframes joyce-glow{0%,100%{box-shadow:0 0 10px ${GOLD}33;}50%{box-shadow:0 0 28px ${GOLD}88;}}
@@ -67,7 +67,7 @@ const GLOBAL_CSS = `
 .joyce-glow{animation:joyce-glow 2.5s ease infinite;}
 `;
 
-const JOYCE_SYSTEM = `You are Joyce AI — SeeWhy LIVE co-host by SwanyThree EntTech LLC. Creator keeps 90%, platform 10%. Platform: seewhylive.online. VPS: 2.24.194.112 (srv1581658.hstgr.cloud). Supabase project: rxlgywvfclyjdfyvfvyc. RTMP: rtmp://seewhylive.online/live. N8N: srv1587098.hstgr.cloud.
+var JOYCE_SYSTEM = `You are Joyce AI — SeeWhy LIVE co-host by SwanyThree EntTech LLC. Creator keeps 90%, platform 10%. Platform: seewhylive.online. VPS: 2.24.194.112 (srv1581658.hstgr.cloud). Supabase project: rxlgywvfclyjdfyvfvyc. RTMP: rtmp://seewhylive.online/live. N8N: srv1587098.hstgr.cloud.
 
 State vs State domino: 7 Rock format, 5-point/150-point games, Double Elimination brackets. Washington Classic held at Jamar's Sports Bar, Des Moines WA. WA currently ranked #1.
 
@@ -79,7 +79,7 @@ Features live: Live Room Streaming, Real-Time Chat, Multi-Stream RTMP Fanout (Yo
 
 Be direct, broadcast-ready, and use domino culture language. Never reveal API keys or server credentials.`;
 
-const QUICK_ACTIONS = [
+var QUICK_ACTIONS = [
   { label: '⚔️ Start SVS',     prompt: 'Help me open a State vs State domino tournament. What should I announce to viewers?' },
   { label: '🕊️ Tribute Intro', prompt: 'Write a respectful 30-second tribute introduction for a fallen domino legend.' },
   { label: '💰 Revenue Check', prompt: 'Remind me how the 90/10 revenue split works on SeeWhy LIVE and how I can maximize my earnings tonight.' },
@@ -104,29 +104,29 @@ function ThinkDots() {
 }
 
 export default function JoyceAI() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['joyce-active-room', user?.id],
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['joyce-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const [messages, setMessages] = useState([
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var [messages, setMessages] = useState([
     { role: 'assistant', text: "Hey! I'm Joyce AI — your SeeWhy LIVE co-host. Ask me anything about running your stream, the tournament, tributes, or revenue. Let's make this broadcast fire! 🔥" },
   ]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [copiedIdx, setCopiedIdx] = useState(null);
-  const [busViewerCount, setBusViewerCount] = useState(0);
-  const chatRef = useRef(null);
-  const inputRef = useRef(null);
+  var [input, setInput] = useState('');
+  var [loading, setLoading] = useState(false);
+  var [copiedIdx, setCopiedIdx] = useState(null);
+  var [busViewerCount, setBusViewerCount] = useState(0);
+  var chatRef = useRef(null);
+  var inputRef = useRef(null);
 
   function handleTipEvent(msg) {
-    if (!msg?.tip_amount) return;
-    const name = msg.user_name || 'Someone';
-    const amount = msg.tip_amount;
-    const note = msg.content ? ` saying "${msg.content}"` : '';
+    if (!(msg && msg.tip_amount)) return;
+    var name = msg.user_name || 'Someone';
+    var amount = msg.tip_amount;
+    var note = msg.content ? ` saying "${msg.content}"` : '';
     setMessages(prev => [...prev, {
       role: 'system',
       text: `🔔 Live tip event: ${name} just tipped $${amount}${note}. Suggest a shoutout response the host can read live.`,
@@ -141,7 +141,7 @@ export default function JoyceAI() {
   }
 
   useEffect(() => {
-    const style = document.createElement('style');
+    var style = document.createElement('style');
     style.textContent = GLOBAL_CSS;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
@@ -152,25 +152,25 @@ export default function JoyceAI() {
   }, [messages]);
 
   async function send(text) {
-    const userText = (text || input).trim().slice(0, 500);
+    var userText = (text || input).trim().slice(0, 500);
     if (!userText || loading) return;
     setInput('');
-    const next = [...messages, { role: 'user', text: userText }];
+    var next = [...messages, { role: 'user', text: userText }];
     setMessages(next);
     setLoading(true);
     try {
-      const recentHistory = next.slice(-10).map(m => m.role + ': ' + m.text).join('\n');
-      const res = await base44.integrations.Core.InvokeLLM({
+      var recentHistory = next.slice(-10).map(m => m.role + ': ' + m.text).join('\n');
+      var res = await base44.integrations.Core.InvokeLLM({
         prompt: JOYCE_SYSTEM + '\n\nConversation so far:\n' + recentHistory + '\n\nRespond as Joyce AI in 1-3 sentences. Be direct and broadcast-ready.'
       });
-      const reply = res || "Let's keep it moving — what do you need?";
+      var reply = res || "Let's keep it moving — what do you need?";
       setMessages(m => [...m, { role: 'assistant', text: reply }]);
       speakText(reply);
     } catch {
       setMessages(m => [...m, { role: 'assistant', text: "I'm thinking... try me again in a sec! The stream must go on. 🎙️" }]);
     }
     setLoading(false);
-    inputRef.current?.focus();
+    inputRef.(current && current.focus)();
   }
 
   function clearChat() {
@@ -361,9 +361,9 @@ export default function JoyceAI() {
         </div>
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={busViewerCount} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -371,7 +371,7 @@ export default function JoyceAI() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={busViewerCount} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={busViewerCount} peakViewers={busViewerCount} />
       <BackgroundCustomizer />

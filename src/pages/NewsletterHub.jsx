@@ -19,9 +19,9 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 
-const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
-const STATUS_COLORS = { draft:C.gray, scheduled:'#D4AF37', sent:'#6DBF7E' };
-const TEMPLATES = {
+var C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
+var STATUS_COLORS = { draft:C.gray, scheduled:'#D4AF37', sent:'#6DBF7E' };
+var TEMPLATES = {
   stream_recap: {
     title: 'Stream Recap — [Date]',
     content: `## 🎬 Last Night's Stream Recap\n\nHey community!\n\nWhat an incredible session we had. Here are the highlights:\n\n**Peak Viewers:** [number]\n**Total Tips:** $[amount]\n**Best Moments:** [describe]\n\n## 💬 Community Highlights\n\n[Highlight top chat moments, funny moments, etc.]\n\n## 📅 Next Stream\n\nJoin us next [day] at [time] for [topic].\n\nSee you live! 🔴`,
@@ -46,7 +46,7 @@ function escapeHtml(str) {
 }
 
 function PreviewModal({ newsletter, onClose }) {
-  const rendered = escapeHtml(newsletter.content)
+  var rendered = escapeHtml(newsletter.content)
     .replace(/## (.*)/g, '<h2 style="color:#D4AF37;font-family:Barlow Condensed;font-size:20px;margin:14px 0 6px">$1</h2>')
     .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#F5F0E8">$1</strong>')
     .replace(/\*(.*?)\*/g, '<em style="color:#aaa">$1</em>')
@@ -73,35 +73,35 @@ function PreviewModal({ newsletter, onClose }) {
 }
 
 export default function NewsletterHubPage() {
-  const [tab, setTab] = useState('compose');
-  const [preview, setPreview] = useState(null);
-  const [toast, setToast] = useState('');
-  const [scheduleMode, setScheduleMode] = useState(false);
-  const [form, setForm] = useState({ title:'', content:'', preview_text:'', scheduled_for:'' });
-  const [aiTopic, setAiTopic] = useState('');
-  const [aiGenerating, setAiGenerating] = useState(false);
-  const qc = useQueryClient();
+  var [tab, setTab] = useState('compose');
+  var [preview, setPreview] = useState(null);
+  var [toast, setToast] = useState('');
+  var [scheduleMode, setScheduleMode] = useState(false);
+  var [form, setForm] = useState({ title:'', content:'', preview_text:'', scheduled_for:'' });
+  var [aiTopic, setAiTopic] = useState('');
+  var [aiGenerating, setAiGenerating] = useState(false);
+  var qc = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const activeChallengeId = null;
-  const { data: letters=[], isLoading } = useQuery({
-    queryKey: ['newsletters', user?.id],
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var activeChallengeId = null;
+  var { data: letters=[], isLoading } = useQuery({
+    queryKey: ['newsletters', (user && user.id)],
     queryFn: () => base44.entities.Newsletter.filter({ community_id: user.id }, '-created_date', 50),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
-  const saveMut = useMutation({
+  var saveMut = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create({ community_id: user.id, subscriber_count: 0, ...data }),
     onError: () => showToast.error('Failed to save newsletter.'),
     onSuccess: () => { qc.invalidateQueries({ queryKey:['newsletters'] }); showToast('Saved! ✓'); setForm({title:'',content:'',preview_text:'',scheduled_for:''}); setTab('drafts'); },
   });
-  const sendMut = useMutation({
+  var sendMut = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create({ community_id: user.id, ...data }),
     onError: () => showToast.error('Failed to send newsletter.'),
     onSuccess: (newsletter) => {
@@ -109,29 +109,29 @@ export default function NewsletterHubPage() {
       showToast('Sent! 🚀');
       setForm({title:'',content:'',preview_text:'',scheduled_for:''});
       setTab('sent');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
-          title: `Sent newsletter: ${newsletter?.title || 'Newsletter'}`,
+          title: `Sent newsletter: ${(newsletter && newsletter.title) || 'Newsletter'}`,
         }).catch(() => {});
       }
     },
   });
-  const deleteMut = useMutation({
+  var deleteMut = useMutation({
     mutationFn: (id) => base44.entities.Newsletter.delete(id),
     onError: () => showToast.error('Failed to delete newsletter.'),
     onSuccess: () => qc.invalidateQueries({ queryKey:['newsletters'] }),
   });
 
-  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2500); };
-  const applyTemplate = (key) => { setForm(f => ({...f, ...TEMPLATES[key]})); };
+  var showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2500); };
+  var applyTemplate = (key) => { setForm(f => ({...f, ...TEMPLATES[key]})); };
 
   async function aiDraft() {
     if (!aiTopic.trim() || aiGenerating) return;
     setAiGenerating(true);
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
+      var res = await base44.integrations.Core.InvokeLLM({
         prompt: `You are a newsletter writer for SeeWhy LIVE, a live-streaming platform focused on domino culture, creator economy, and community. Write an engaging newsletter about: "${aiTopic}". Use a broadcast/community voice — energetic but authentic. Include markdown formatting (## for sections, **bold** for emphasis).`,
         response_json_schema: {
           type: 'object',
@@ -151,12 +151,12 @@ export default function NewsletterHubPage() {
     setAiGenerating(false);
   }
 
-  const drafts = letters.filter(l => l.status==='draft');
-  const sent = letters.filter(l => l.status==='sent' || l.status==='scheduled');
-  const avgOpenRate = sent.length ? (sent.reduce((a,l)=>a+(l.open_rate||0),0)/sent.length).toFixed(1) : 0;
-  const best = [...sent].sort((a,b)=>(b.open_rate||0)-(a.open_rate||0))[0];
+  var drafts = letters.filter(l => l.status==='draft');
+  var sent = letters.filter(l => l.status==='sent' || l.status==='scheduled');
+  var avgOpenRate = sent.length ? (sent.reduce((a,l)=>a+(l.open_rate||0),0)/sent.length).toFixed(1) : 0;
+  var best = [...sent].sort((a,b)=>(b.open_rate||0)-(a.open_rate||0))[0];
 
-  const inp = { width:'100%', padding:'9px 12px', background:'#111', border:'1px solid #2a2a2a', borderRadius:6, color:C.white, fontSize:13, outline:'none', fontFamily:'inherit', boxSizing:'border-box', marginBottom:8 };
+  var inp = { width:'100%', padding:'9px 12px', background:'#111', border:'1px solid #2a2a2a', borderRadius:6, color:C.white, fontSize:13, outline:'none', fontFamily:'inherit', boxSizing:'border-box', marginBottom:8 };
 
   return (
     <div style={{ minHeight:'100vh', background:C.obs, color:C.white }}>
@@ -167,7 +167,7 @@ export default function NewsletterHubPage() {
         <h1 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, letterSpacing:2 }}>📧 NEWSLETTER HUB</h1>
         {/* Stats */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginTop:14, maxWidth:500 }}>
-          {[['SUBSCRIBERS', letters.reduce((a,l)=>a+(l.subscriber_count||0),0)||'—'],['AVG OPEN RATE', avgOpenRate+'%'],['BEST',best?.title?.slice(0,12)||'—']].map(([l,v])=>(
+          {[['SUBSCRIBERS', letters.reduce((a,l)=>a+(l.subscriber_count||0),0)||'—'],['AVG OPEN RATE', avgOpenRate+'%'],['BEST',(best && best.title)?.slice(0,12)||'—']].map(([l,v])=>(
             <div key={l} style={{ padding:'8px 10px', borderRadius:6, background:'rgba(212,175,55,0.05)', border:'1px solid rgba(212,175,55,0.12)' }}>
               <div style={{ fontFamily:'Barlow Condensed', fontSize:11, color:C.gray, letterSpacing:1 }}>{l}</div>
               <div style={{ fontFamily:'Barlow Condensed', fontSize:15, color:C.gold, marginTop:2 }}>{v}</div>
@@ -280,9 +280,9 @@ export default function NewsletterHubPage() {
         )}
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="newsletter" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -290,7 +290,7 @@ export default function NewsletterHubPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

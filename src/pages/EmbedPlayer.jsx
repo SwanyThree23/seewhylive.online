@@ -531,7 +531,7 @@ export default function EmbedPlayer() {
             </a>
             <button
               onClick={function() {
-                navigator.(clipboard && clipboard.writeTex)t(watchUrl).catch(function(){});
+                if (navigator.clipboard) { navigator.clipboard.writeText(watchUrl).catch(function(){}); }
                 setLinkCopied(true);
                 setTimeout(function() { setLinkCopied(false); }, 2000);
               }}

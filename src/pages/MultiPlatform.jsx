@@ -24,17 +24,17 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 
-const BG     = '#0E0C09';
-const BG2    = 'rgba(14,12,9,0.92)';
-const GOLD   = '#D4AF37';
-const CRIMSON = '#800020';
-const PINK    = '#C0392B';
-const CYAN   = '#D4854A';
-const PURPLE = '#D4854A';
-const GREEN  = '#4A9B5E';
-const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG     = '#0E0C09';
+var BG2    = 'rgba(14,12,9,0.92)';
+var GOLD   = '#D4AF37';
+var CRIMSON = '#800020';
+var PINK    = '#C0392B';
+var CYAN   = '#D4854A';
+var PURPLE = '#D4854A';
+var GREEN  = '#4A9B5E';
+var T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const PLATFORMS = [
+var PLATFORMS = [
   { id:'fanbase',  name:'Fanbase.com',         emoji:'🎭', color:GOLD,      desc:'Social audio & live streaming community. Follower sync, notifications, and content cross-posting.', features:['Follower notifications','Content cross-post','Live room sync','Gift aggregation'] },
   { id:'youtube',  name:'YouTube',              emoji:'▶️', color:'#FF0000', desc:'Stream live and upload VODs directly to your YouTube channel.', features:['Live stream via RTMP','VOD upload','Community posts','Clip sharing'] },
   { id:'twitch',   name:'Twitch',               emoji:'🟣', color:'#9146FF', desc:'Reach gaming and creative audiences with simultaneous Twitch streaming.', features:['Live stream','Clip sharing','Channel points','Raids & hosts'] },
@@ -43,16 +43,16 @@ const PLATFORMS = [
   { id:'discord',  name:'Discord',              emoji:'💬', color:'#D4854A', desc:'Send stream notifications and events to your Discord server via webhook.', features:['Go-live notifications','Clip alerts','Community events','Bot commands'] },
 ];
 
-const WEBHOOK_EVENTS = ['New Follower','New Like','New Comment','Stream Go Live','Gift Received','Milestone 100','Milestone 500','Milestone 1000'];
+var WEBHOOK_EVENTS = ['New Follower','New Like','New Comment','Stream Go Live','Gift Received','Milestone 100','Milestone 500','Milestone 1000'];
 
-const OVERLAY_PRESETS = [
+var OVERLAY_PRESETS = [
   { id:'clean',    label:'Clean',        desc:'No overlay', preview:null },
   { id:'branded',  label:'Branded',      desc:'SeeWhy LIVE watermark + name bar', preview:'branded' },
   { id:'podcast',  label:'Podcast Mode', desc:'Dual speaker with name cards', preview:'podcast' },
   { id:'panel',    label:'Panel Mode',   desc:'4-speaker grid overlay', preview:'panel' },
 ];
 
-const VIRTUAL_BGS = [
+var VIRTUAL_BGS = [
   { id:'dark',    label:'Dark Studio',   color:'#0E0C09' },
   { id:'crimson', label:'Crimson Stage', color:'#800020' },
   { id:'gold',    label:'Gold Club',     color:'#D4AF37' },
@@ -60,11 +60,11 @@ const VIRTUAL_BGS = [
 ];
 
 function formatAgo(dateStr) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
+  var diff = Date.now() - new Date(dateStr).getTime();
+  var m = Math.floor(diff / 60000);
   if (m < 1) return 'just now';
   if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
+  var h = Math.floor(m / 60);
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
 }
@@ -101,7 +101,7 @@ function Toggle({ value, onChange, color }) {
 }
 
 function ProgressBar({ value, max, color }) {
-  const pct = Math.min(100, Math.round((value / max) * 100));
+  var pct = Math.min(100, Math.round((value / max) * 100));
   return (
     <div style={{ height:6, background:'rgba(255,255,255,0.08)', borderRadius:3, overflow:'hidden' }}>
       <motion.div initial={{ width:0 }} animate={{ width:`${pct}%` }} transition={{ duration:1, ease:'easeOut' }} style={{ height:'100%', background:color, borderRadius:3 }} />
@@ -110,62 +110,62 @@ function ProgressBar({ value, max, color }) {
 }
 
 export default function MultiPlatform() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const { data: activeRoom } = useQuery({
-    queryKey: ['multiplatform-active-room', user?.id],
+  var { data: activeRoom } = useQuery({
+    queryKey: ['multiplatform-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const [tab, setTab] = useState('platforms');
+  var [tab, setTab] = useState('platforms');
 
   // Sync platform connections and webhooks from user profile
   useEffect(() => {
     if (!user) return;
     if (user.platform_connections) setConnections(user.platform_connections);
-    if (user.webhooks?.length) setWebhooks(user.webhooks);
+    if (user.(webhooks && webhooks.length)) setWebhooks(user.webhooks);
   }, [user]);
 
-  const { data: recentActivities = [] } = useQuery({
+  var { data: recentActivities = [] } = useQuery({
     queryKey: ['multiplatform-events'],
     queryFn: () => base44.entities.Activity.list('-created_date', 20),
     refetchInterval: 30000,
   });
 
-  const liveEvents = recentActivities.slice(0, 10).map(a => ({
+  var liveEvents = recentActivities.slice(0, 10).map(a => ({
     emoji: a.type === 'tip_sent' ? '🎁' : a.type === 'new_follower' ? '👤' : a.type === 'milestone' ? '🎯' : '📡',
     text:  a.title || a.type,
     ago:   a.created_date ? formatAgo(a.created_date) : '',
     color: a.type === 'tip_sent' ? GOLD : a.type === 'new_follower' ? GOLD : a.type === 'milestone' ? GREEN : CYAN,
   }));
-  const [connections, setConnections] = useState({});
-  const [connecting, setConnecting] = useState(null);
-  const [webhooks, setWebhooks] = useState([]);
-  const [webhookUrl, setWebhookUrl] = useState('');
-  const [outboundUrl, setOutboundUrl] = useState('');
-  const [selectedEvents, setSelectedEvents] = useState(['New Follower','Stream Go Live']);
-  const [addingWebhook, setAddingWebhook] = useState(false);
-  const [newWHUrl, setNewWHUrl] = useState('');
-  const [newWHEvents, setNewWHEvents] = useState([]);
-  const [testPayload, setTestPayload] = useState(null);
-  const [overlayPreset, setOverlayPreset] = useState('clean');
-  const [virtualBg, setVirtualBg] = useState('dark');
-  const [resolution, setResolution] = useState('1080p');
-  const [fps, setFps] = useState('30');
-  const [bitrate, setBitrate] = useState('auto');
-  const [camActive, setCamActive] = useState(false);
-  const [chatAgg, setChatAgg] = useState(false);
-  const [crossPost, setCrossPost] = useState(false);
-  const [giftAgg, setGiftAgg] = useState(false);
-  const [autoShout, setAutoShout] = useState(false);
-  const [shoutouts, setShoutouts] = useState(['Welcome Creator_XYZ to SeeWhy LIVE! 🎉','100 viewers milestone — you\'re amazing! 🔥','FanbaseUser just gifted you a 💎 Diamond!']);
-  const [toast, setToast] = useState('');
-  const [reactions] = useState(['🔥','❤️','🎉','💯','👏']);
-  const [customBgs, setCustomBgs] = useState([]);
-  const bgUploadRef = useRef(null);
+  var [connections, setConnections] = useState({});
+  var [connecting, setConnecting] = useState(null);
+  var [webhooks, setWebhooks] = useState([]);
+  var [webhookUrl, setWebhookUrl] = useState('');
+  var [outboundUrl, setOutboundUrl] = useState('');
+  var [selectedEvents, setSelectedEvents] = useState(['New Follower','Stream Go Live']);
+  var [addingWebhook, setAddingWebhook] = useState(false);
+  var [newWHUrl, setNewWHUrl] = useState('');
+  var [newWHEvents, setNewWHEvents] = useState([]);
+  var [testPayload, setTestPayload] = useState(null);
+  var [overlayPreset, setOverlayPreset] = useState('clean');
+  var [virtualBg, setVirtualBg] = useState('dark');
+  var [resolution, setResolution] = useState('1080p');
+  var [fps, setFps] = useState('30');
+  var [bitrate, setBitrate] = useState('auto');
+  var [camActive, setCamActive] = useState(false);
+  var [chatAgg, setChatAgg] = useState(false);
+  var [crossPost, setCrossPost] = useState(false);
+  var [giftAgg, setGiftAgg] = useState(false);
+  var [autoShout, setAutoShout] = useState(false);
+  var [shoutouts, setShoutouts] = useState(['Welcome Creator_XYZ to SeeWhy LIVE! 🎉','100 viewers milestone — you\'re amazing! 🔥','FanbaseUser just gifted you a 💎 Diamond!']);
+  var [toast, setToast] = useState('');
+  var [reactions] = useState(['🔥','❤️','🎉','💯','👏']);
+  var [customBgs, setCustomBgs] = useState([]);
+  var bgUploadRef = useRef(null);
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 3000); }
 
@@ -176,7 +176,7 @@ export default function MultiPlatform() {
 
   async function handleConnect(id) {
     setConnecting(id);
-    const updated = { ...connections, [id]: !connections[id] };
+    var updated = { ...connections, [id]: !connections[id] };
     await saveConnections(updated);
     setConnecting(null);
     showToast(updated[id] ? `✓ ${PLATFORMS.find(p=>p.id===id)?.name} connected!` : 'Platform disconnected');
@@ -192,7 +192,7 @@ export default function MultiPlatform() {
   function handleAddWebhook() {
     if (!newWHUrl.trim()) return;
     if (!newWHUrl.trim().startsWith('https://')) { showToast('Webhook URL must start with https://'); return; }
-    const wh = { id: Date.now().toString(), url: newWHUrl.trim(), events: newWHEvents, status: 'active' };
+    var wh = { id: Date.now().toString(), url: newWHUrl.trim(), events: newWHEvents, status: 'active' };
     saveWebhooks([...webhooks, wh]);
     setNewWHUrl(''); setNewWHEvents([]); setAddingWebhook(false);
     showToast('Webhook saved!');
@@ -236,21 +236,21 @@ export default function MultiPlatform() {
             {tab === 'platforms' && (
               <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
                 <MultiStreamConfig roomId={activeRoomId} isHost={true} />
-                {user?.id && (
+                {(user && user.id) && (
                   <div style={{ background:BG2, borderRadius:16, border:`1px solid ${GOLD}25`, padding:'20px 18px' }}>
                     <DestinationsManager userId={user.id} />
                   </div>
                 )}
-                {user?.id && (
+                {(user && user.id) && (
                   <RTMPFanoutPanel userId={user.id} isStreaming={!!activeRoomId} />
                 )}
-                {user?.id && (
+                {(user && user.id) && (
                   <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />
                 )}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 {PLATFORMS.map(p => {
-                  const isConn = !!connections[p.id];
-                  const isLoading = connecting === p.id;
+                  var isConn = !!connections[p.id];
+                  var isLoading = connecting === p.id;
                   return (
                     <motion.div key={p.id} style={{ background:BG2, borderRadius:16, border:`1px solid ${p.color}25`, borderLeft:`3px solid ${p.color}`, padding:'16px 14px', display:'flex', flexDirection:'column', gap:10 }}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
@@ -293,7 +293,7 @@ export default function MultiPlatform() {
                       <p style={{ ...T, fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.5)', letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:5 }}>Inbound Webhook URL</p>
                       <div style={{ display:'flex', gap:8 }}>
                         <input readOnly value="https://seewhylive.online/api/webhooks/fanbase" style={{ flex:1, padding:'10px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, color:'rgba(255,255,255,0.5)', fontSize:12, ...T, outline:'none' }} />
-                        <motion.button whileTap={{ scale:0.95 }} onClick={() => { navigator.clipboard?.writeText('https://seewhylive.online/api/webhooks/fanbase'); showToast('URL copied!'); }} style={{ padding:'0 14px', background:`${GOLD}15`, border:`1px solid ${GOLD}40`, borderRadius:10, color:GOLD, fontSize:12, fontWeight:700, cursor:'pointer', ...T }}>Copy</motion.button>
+                        <motion.button whileTap={{ scale:0.95 }} onClick={() => { navigator.(clipboard && clipboard.writeText)('https://seewhylive.online/api/webhooks/fanbase'); showToast('URL copied!'); }} style={{ padding:'0 14px', background:`${GOLD}15`, border:`1px solid ${GOLD}40`, borderRadius:10, color:GOLD, fontSize:12, fontWeight:700, cursor:'pointer', ...T }}>Copy</motion.button>
                       </div>
                     </div>
                     <div>
@@ -305,7 +305,7 @@ export default function MultiPlatform() {
                       <p style={{ ...T, fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.5)', letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:8 }}>Event Triggers</p>
                       <div style={{ display:'flex', flexWrap:'wrap', gap:7 }}>
                         {WEBHOOK_EVENTS.map(ev => {
-                          const active = selectedEvents.includes(ev);
+                          var active = selectedEvents.includes(ev);
                           return (
                             <button key={ev} onClick={() => setSelectedEvents(active ? selectedEvents.filter(e=>e!==ev) : [...selectedEvents, ev])} style={{ ...T, fontSize:11, fontWeight:700, padding:'4px 12px', borderRadius:999, border:`1px solid ${active ? GOLD+'66' : 'rgba(255,255,255,0.12)'}`, background:active ? `${GOLD}18` : 'transparent', color:active ? GOLD : 'rgba(255,255,255,0.4)', cursor:'pointer' }}>{ev}</button>
                           );
@@ -364,7 +364,7 @@ export default function MultiPlatform() {
                           <input value={newWHUrl} onChange={e => setNewWHUrl(e.target.value)} placeholder="https://your-endpoint.com/webhook" style={{ padding:'10px 12px', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, ...T, outline:'none' }} />
                           <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
                             {['Go Live','New Follower','Gift Received'].map(ev => {
-                              const active = newWHEvents.includes(ev);
+                              var active = newWHEvents.includes(ev);
                               return <button key={ev} onClick={() => setNewWHEvents(active ? newWHEvents.filter(e=>e!==ev) : [...newWHEvents, ev])} style={{ ...T, fontSize:11, padding:'3px 10px', borderRadius:999, border:`1px solid ${active ? GREEN+'66' : 'rgba(255,255,255,0.12)'}`, background:active ? `${GREEN}18` : 'transparent', color:active ? GREEN : 'rgba(255,255,255,0.4)', cursor:'pointer', fontWeight:700 }}>{ev}</button>;
                             })}
                           </div>
@@ -425,7 +425,7 @@ export default function MultiPlatform() {
                   <p style={{ ...T, fontSize:15, fontWeight:900, color:'#fff', margin:'0 0 12px' }}>Overlay Preset</p>
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
                     {OVERLAY_PRESETS.map(op => {
-                      const active = overlayPreset === op.id;
+                      var active = overlayPreset === op.id;
                       return (
                         <motion.button key={op.id} whileTap={{ scale:0.96 }} onClick={() => { setOverlayPreset(op.id); showToast(`Overlay: ${op.label}`); }} style={{ padding:'14px 12px', borderRadius:12, border:`2px solid ${active ? GOLD : 'rgba(255,255,255,0.08)'}`, background:active ? `${GOLD}10` : 'rgba(255,255,255,0.03)', cursor:'pointer', textAlign:'left' }}>
                           <p style={{ ...T, fontSize:13, fontWeight:900, color:active ? GOLD : '#fff', margin:'0 0 4px' }}>{op.label}</p>
@@ -445,11 +445,11 @@ export default function MultiPlatform() {
                     accept="image/*"
                     style={{ display:'none' }}
                     onChange={e => {
-                      const file = e.target.files?.[0];
+                      var file = (e.target.files && e.target.files[0]);
                       if (!file) return;
-                      const url = URL.createObjectURL(file);
-                      const id = `custom_${Date.now()}`;
-                      const label = file.name.replace(/\.[^.]+$/, '').slice(0, 12);
+                      var url = URL.createObjectURL(file);
+                      var id = `custom_${Date.now()}`;
+                      var label = file.name.replace(/\.[^.]+$/, '').slice(0, 12);
                       setCustomBgs(prev => [...prev, { id, label, url }]);
                       setVirtualBg(id);
                       showToast(`Background "${label}" added`);
@@ -469,7 +469,7 @@ export default function MultiPlatform() {
                         <span style={{ ...T, fontSize:10, color:virtualBg===bg.id ? GOLD : 'rgba(255,255,255,0.4)', fontWeight:700, maxWidth:60, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{bg.label}</span>
                       </motion.button>
                     ))}
-                    <motion.button whileTap={{ scale:0.95 }} onClick={() => bgUploadRef.current?.click()} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
+                    <motion.button whileTap={{ scale:0.95 }} onClick={() => bgUploadRef.(current && current.click)()} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
                       <div style={{ width:64, height:40, borderRadius:8, background:'rgba(255,255,255,0.04)', border:'2px dashed rgba(255,255,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                         <span style={{ fontSize:18 }}>+</span>
                       </div>
@@ -634,20 +634,20 @@ export default function MultiPlatform() {
       </div>
 
       <Toast message={toast} />
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.peak_viewers) || 0} />
       <BackgroundCustomizer />
     </div>
   );
