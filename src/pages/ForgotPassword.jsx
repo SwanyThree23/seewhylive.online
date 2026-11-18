@@ -8,11 +8,11 @@ import { Mail, ArrowLeft, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  var [email, setEmail] = useState("");
+  var [loading, setLoading] = useState(false);
+  var [sent, setSent] = useState(false);
 
-  const handleSubmit = async (e) => {
+  var handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {

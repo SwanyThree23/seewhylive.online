@@ -179,7 +179,7 @@ export default function MultiPlatform() {
     var updated = { ...connections, [id]: !connections[id] };
     await saveConnections(updated);
     setConnecting(null);
-    showToast(updated[id] ? `✓ ${PLATFORMS.find(p=>p.id===id)?.name} connected!` : 'Platform disconnected');
+    showToast(updated[id] ? '✓ ' + (function(){ var _p = PLATFORMS.find(function(p){ return p.id===id; }); return _p ? _p.name : ''; })() + ' connected!' : 'Platform disconnected');
   }
 
   function connectedCount() { return Object.values(connections).filter(Boolean).length; }

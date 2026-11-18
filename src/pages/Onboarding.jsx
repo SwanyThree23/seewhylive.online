@@ -76,7 +76,7 @@ function ProgressBar({ step, onboarding }) {
     <div style={{ padding: '14px 20px 10px', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
         {STEPS.map(s => {
-          var done   = onboarding?.[s.key];
+          var done   = onboarding && onboarding[s.key];
           var active = s.id === step;
           return (
             <div key={s.id} style={{ flex: 1, textAlign: 'center' }}>

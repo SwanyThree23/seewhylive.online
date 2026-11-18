@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Smartphone, Monitor, Trash2, Pencil, Check, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
-const GOLD = '#C9A84C';
-const BG   = '#0E0C09';
-const TEXT = '#F0E8D4';
-const CARD_BG = 'rgba(255,255,255,0.04)';
+var GOLD = '#C9A84C';
+var BG   = '#0E0C09';
+var TEXT = '#F0E8D4';
+var CARD_BG = 'rgba(255,255,255,0.04)';
 
 function deviceIcon(name) {
   if (!name) return Monitor;
@@ -24,11 +24,11 @@ function daysAgo(dateStr) {
 }
 
 export default function DeviceManager() {
-  const [devices, setDevices]       = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [editingId, setEditingId]   = useState(null);
-  const [editName, setEditName]     = useState('');
-  const [saving, setSaving]         = useState(false);
+  var [devices, setDevices]       = useState([]);
+  var [loading, setLoading]       = useState(true);
+  var [editingId, setEditingId]   = useState(null);
+  var [editName, setEditName]     = useState('');
+  var [saving, setSaving]         = useState(false);
 
   function fetchDevices() {
     setLoading(true);

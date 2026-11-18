@@ -9,7 +9,7 @@ import ProductAdStudio from '@/components/swanybotpro/ProductAdStudio';
 import PromptForge from '@/components/swanybotpro/PromptForge';
 import AssetLibrary from '@/components/swanybotpro/AssetLibrary';
 
-const MODULE_COMPONENTS = {
+var MODULE_COMPONENTS = {
   'video-transform': VideoTransformStudio,
   'voice-lipsync': VoiceLipSyncStudio,
   'story-music-video': StoryMusicVideoStudio,
@@ -18,13 +18,13 @@ const MODULE_COMPONENTS = {
   'asset-library': AssetLibrary,
 };
 
-const G = '#D4AF37';
-const PURPLE = '#7B5DA6';
-const BORDER = 'rgba(212,175,55,0.18)';
+var G = '#D4AF37';
+var PURPLE = '#7B5DA6';
+var BORDER = 'rgba(212,175,55,0.18)';
 
 export default function SwanyBotPro() {
-  const [activeId, setActiveId] = useState('video-transform');
-  const active = SWANYBOT_PRO_MODULES.find((m) => m.id === activeId);
+  var [activeId, setActiveId] = useState('video-transform');
+  var active = SWANYBOT_PRO_MODULES.find((m) => m.id === activeId);
 
   return (
     <div className="min-h-screen pb-16">
@@ -58,8 +58,8 @@ export default function SwanyBotPro() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-5">
           {SWANYBOT_PRO_MODULES.map((m) => {
-            const Icon = m.icon;
-            const isActive = m.id === activeId;
+            var Icon = m.icon;
+            var isActive = m.id === activeId;
             return (
               <button key={m.id} onClick={() => setActiveId(m.id)}
                 className="relative rounded-2xl p-3 text-left transition-all"
@@ -102,7 +102,7 @@ export default function SwanyBotPro() {
 
           {/* Module body */}
           {active.status === 'live' ? (
-            (() => { const Comp = MODULE_COMPONENTS[active.id] || VideoTransformStudio; return <Comp />; })()
+            (() => { var Comp = MODULE_COMPONENTS[active.id] || VideoTransformStudio; return <Comp />; })()
           ) : (
             <div className="rounded-2xl p-6" style={{ background: 'rgba(13,16,34,0.6)', border: `1px solid ${BORDER}` }}>
               <p className="text-[11px] font-black uppercase tracking-widest mb-3" style={{ color: active.accent, fontFamily: 'Barlow Condensed, sans-serif' }}>What this module will do</p>

@@ -41,7 +41,7 @@ var INDUSTRY_TEMPLATES = [
     desc: 'Hypes viewers, announces milestones, moderates chat',
     personality: `You are an energetic streaming host assistant named {name}. You hype up the audience, celebrate subscriber milestones, call out top tippers, and keep the stream energy high. You speak fast, use stream slang, and always keep it positive. When someone donates, you thank them by name with genuine excitement.`,
     triggers: [
-      { type: 'sub_event', value: '', responseTemplate: 'Welcome to the squad, {username}! The crew just got stronger — let\'s go!' },
+      { type: 'sub_event', value: '', responseTemplate: 'Welcome to the squad, {username}! The crew just got stronger — var\'s go!' },
       { type: 'tip_event', value: '', responseTemplate: 'Big shoutout to {username} for the {amount} tip! You are an absolute legend!' },
       { type: 'chat_command', value: '!hype', responseTemplate: 'The energy in here is INSANE right now! Let\'s go! Drop those hearts in the chat!' },
     ],
@@ -507,7 +507,7 @@ Output only the personality text, no labels or headers.`,
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 13, fontWeight: 800, color: '#fff', ...T }}>{agent.name}</p>
                     <p style={{ fontSize: 10, color: DIM, ...T }}>
-                      {agent.(triggers && triggers.length) || 0} trigger{agent.(triggers && triggers.length) !== 1 ? 's' : ''} · {EL_VOICES.find(v => v.id === agent.voiceId)?.label || agent.voiceId}
+                      {(agent.triggers && agent.triggers.length) || 0} trigger{(agent.triggers && agent.triggers.length) !== 1 ? 's' : ''} · {(EL_VOICES.find(v => v.id === agent.voiceId) && EL_VOICES.find(v => v.id === agent.voiceId).label) || agent.voiceId}
                       {agent.webhookUrl ? ' · webhook' : ''}
                       {agent.bookingUrl ? ' · booking' : ''}
                     </p>
@@ -606,9 +606,9 @@ Output only the personality text, no labels or headers.`,
                       placeholder="https://your-crm.com/webhook/voice-agent"
                       style={{ marginTop: 4, width: '100%', padding: '9px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.8)', fontSize: 12, fontFamily: 'monospace', outline: 'none', boxSizing: 'border-box' }}
                     />
-                    {INDUSTRY_TEMPLATES.find(t => t.id === draft.industry)?.webhookPrompt && (
+                    {(INDUSTRY_TEMPLATES.find(t => t.id === draft.industry) && INDUSTRY_TEMPLATES.find(t => t.id === draft.industry).webhookPrompt) && (
                       <p style={{ fontSize: 10, color: 'rgba(201,168,76,0.5)', marginTop: 3, ...T }}>
-                        {INDUSTRY_TEMPLATES.find(t => t.id === draft.industry)?.webhookPrompt}
+                        {INDUSTRY_TEMPLATES.find(t => t.id === draft.industry) && INDUSTRY_TEMPLATES.find(t => t.id === draft.industry).webhookPrompt}
                       </p>
                     )}
                   </div>
@@ -624,9 +624,9 @@ Output only the personality text, no labels or headers.`,
                       placeholder="https://calendly.com/yourpage"
                       style={{ marginTop: 4, width: '100%', padding: '9px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.8)', fontSize: 12, fontFamily: 'monospace', outline: 'none', boxSizing: 'border-box' }}
                     />
-                    {INDUSTRY_TEMPLATES.find(t => t.id === draft.industry)?.bookingPrompt && (
+                    {(INDUSTRY_TEMPLATES.find(t => t.id === draft.industry) && INDUSTRY_TEMPLATES.find(t => t.id === draft.industry).bookingPrompt) && (
                       <p style={{ fontSize: 10, color: 'rgba(201,168,76,0.5)', marginTop: 3, ...T }}>
-                        {INDUSTRY_TEMPLATES.find(t => t.id === draft.industry)?.bookingPrompt}
+                        {INDUSTRY_TEMPLATES.find(t => t.id === draft.industry) && INDUSTRY_TEMPLATES.find(t => t.id === draft.industry).bookingPrompt}
                       </p>
                     )}
                   </div>

@@ -167,7 +167,7 @@ export default function NewsletterHubPage() {
         <h1 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, letterSpacing:2 }}>📧 NEWSLETTER HUB</h1>
         {/* Stats */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginTop:14, maxWidth:500 }}>
-          {[['SUBSCRIBERS', letters.reduce((a,l)=>a+(l.subscriber_count||0),0)||'—'],['AVG OPEN RATE', avgOpenRate+'%'],['BEST',(best && best.title)?.slice(0,12)||'—']].map(([l,v])=>(
+          {[['SUBSCRIBERS', letters.reduce((a,l)=>a+(l.subscriber_count||0),0)||'—'],['AVG OPEN RATE', avgOpenRate+'%'],['BEST',(best && best.title && best.title.slice(0,12))||'—']].map(([l,v])=>(
             <div key={l} style={{ padding:'8px 10px', borderRadius:6, background:'rgba(212,175,55,0.05)', border:'1px solid rgba(212,175,55,0.12)' }}>
               <div style={{ fontFamily:'Barlow Condensed', fontSize:11, color:C.gray, letterSpacing:1 }}>{l}</div>
               <div style={{ fontFamily:'Barlow Condensed', fontSize:15, color:C.gold, marginTop:2 }}>{v}</div>

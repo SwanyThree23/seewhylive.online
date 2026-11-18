@@ -104,8 +104,8 @@ export default function Messages() {
   });
 
   var threads = Object.values(threadMap).sort((a, b) => {
-    var aLast = a.messages[a.messages.length - 1]?.created_date || 0;
-    var bLast = b.messages[b.messages.length - 1]?.created_date || 0;
+    var aLast = (a.messages[a.messages.length - 1] && a.messages[a.messages.length - 1].created_date) || 0;
+    var bLast = (b.messages[b.messages.length - 1] && b.messages[b.messages.length - 1].created_date) || 0;
     return new Date(bLast) - new Date(aLast);
   });
 

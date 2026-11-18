@@ -274,7 +274,7 @@ export default function RoomPage() {
   var speakingIds = isSpeaking && (user && user.id) ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
   var [activePc, setActivePc] = useState(null);
   useEffect(() => {
-    var entries = Array.from((peersRef && peersRef.current)?.entries() || []);
+    var entries = Array.from(((peersRef && peersRef.current) && peersRef.current.entries()) || []);
     var connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
     setActivePc(connected ? connected[1].pc : null);
   }, [remoteStreams]);  
@@ -346,9 +346,9 @@ export default function RoomPage() {
   useEffect(() => {
     if (!localStream || !(user && user.id) || announcedRef.current) return;
     announcedRef.current = true;
-    announceJoinRef.current?.(user.id);
+    if (announceJoinRef.current) announceJoinRef.current(user.id);
   }, [localStream, (user && user.id)]);
-  useEffect(() => { return () => leaveRoomRef.current?.(); }, []);
+  useEffect(() => { return function() { if (leaveRoomRef.current) leaveRoomRef.current(); }; }, []);
 
   var { data: room, isLoading } = useQuery({
     queryKey: ['room', roomId],
@@ -597,7 +597,8 @@ export default function RoomPage() {
   }
 
   var hostParticipant = participants.find(p => p.user_id === room.host_id);
-  var speakerName = participants.find(p => p.is_speaking)?.user_name;
+  var _speaker = participants.find(function(p) { return p.is_speaking; });
+  var speakerName = _speaker && _speaker.user_name;
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
@@ -1013,7 +1014,7 @@ export default function RoomPage() {
       {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
       {isHost && <StreamingPresets onApply={(p) => reacquireMedia({ resolution: p.resolution })} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={(user && user.full_name) || ''} streamTitle={(room && room.title) || 'Live Stream'} viewerCount={participants.length} />}
-      <LiveTranslationWidget chatMessage={chatMessages[chatMessages.length - 1]?.content || null} onTranslation={() => {}} />
+      <LiveTranslationWidget chatMessage={(chatMessages[chatMessages.length - 1] && chatMessages[chatMessages.length - 1].content) || null} onTranslation={function() {}} />
       {isHost && (user && user.id) && <RecordingManager userId={user.id} />}
       {isHost && <OBSBridge />}
       <ZEGOMobileAppBanner />
