@@ -34,57 +34,57 @@ import ViewerCount from '../components/live/ViewerCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TOOLTIP_STYLE = {
+var TOOLTIP_STYLE = {
   contentStyle: { background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 },
   cursor: { fill: 'rgba(212,175,55,0.06)' },
 };
-const TICK = { fill: 'rgba(255,255,255,0.35)', fontSize: 10 };
-const GRID = { stroke: 'rgba(255,255,255,0.06)' };
+var TICK = { fill: 'rgba(255,255,255,0.35)', fontSize: 10 };
+var GRID = { stroke: 'rgba(255,255,255,0.06)' };
 
-const TABS = ['revenue', 'engagement', 'performance', 'retention', 'insights'];
+var TABS = ['revenue', 'engagement', 'performance', 'retention', 'insights'];
 
 export default function AdvancedAnalyticsPage() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [activeTab, setActiveTab] = useState('revenue');
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var [activeTab, setActiveTab] = useState('revenue');
 
-  const { data: metrics = [] } = useQuery({
+  var { data: metrics = [] } = useQuery({
     queryKey: ['performanceMetrics'],
     queryFn: () => base44.entities.PerformanceMetric.list('-timestamp', 1000),
   });
 
-  const { data: rooms = [] } = useQuery({
+  var { data: rooms = [] } = useQuery({
     queryKey: ['allRooms'],
     queryFn: () => base44.entities.Room.list('-created_date', 100),
   });
 
-  const { data: transactions = [] } = useQuery({
+  var { data: transactions = [] } = useQuery({
     queryKey: ['allTransactions'],
     queryFn: () => base44.entities.Transaction.list('-created_date', 500),
   });
 
-  const totalRevenue = transactions.reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
-  const activeRooms = rooms.filter(r => r.status === 'live').length;
-  const totalViewers = rooms.reduce((sum, r) => sum + (r.viewer_count || 0), 0);
+  var totalRevenue = transactions.reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
+  var activeRooms = rooms.filter(r => r.status === 'live').length;
+  var totalViewers = rooms.reduce((sum, r) => sum + (r.viewer_count || 0), 0);
 
-  const engagementData = metrics.filter(m => m.metric_type === 'user_engagement').slice(0, 30).reverse()
+  var engagementData = metrics.filter(m => m.metric_type === 'user_engagement').slice(0, 30).reverse()
     .map(m => ({ date: new Date(m.timestamp).toLocaleDateString(), value: m.value }));
 
-  const revenueData = transactions.reduce((acc, t) => {
-    const date = new Date(t.created_date).toLocaleDateString();
+  var revenueData = transactions.reduce((acc, t) => {
+    var date = new Date(t.created_date).toLocaleDateString();
     acc[date] = (acc[date] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
-  const revenueChartData = Object.entries(revenueData).slice(-14).map(([date, amount]) => ({ date, amount }));
+  var revenueChartData = Object.entries(revenueData).slice(-14).map(([date, amount]) => ({ date, amount }));
 
-  const roomPerformance = rooms.filter(r => r.viewer_count > 0).slice(0, 10)
+  var roomPerformance = rooms.filter(r => r.viewer_count > 0).slice(0, 10)
     .map(r => ({ title: r.title.substring(0, 20), viewers: r.viewer_count }));
 
-  const tabLabels = { revenue: 'Revenue Trends', engagement: 'Engagement', performance: 'Room Performance', retention: 'Viewer Retention', insights: 'AI Insights' };
+  var tabLabels = { revenue: 'Revenue Trends', engagement: 'Engagement', performance: 'Room Performance', retention: 'Viewer Retention', insights: 'AI Insights' };
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -271,9 +271,9 @@ export default function AdvancedAnalyticsPage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
-          <StreamerGoalsWidget userId={user?.id} />
-          <PayPerViewManager userId={user?.id} />
-          <VirtualGoodsStore creatorId={user?.id} userId={user?.id} />
+          <StreamerGoalsWidget userId={(user && user.id)} />
+          <PayPerViewManager userId={(user && user.id)} />
+          <VirtualGoodsStore creatorId={(user && user.id)} userId={(user && user.id)} />
           <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <OnlineUsersGrid compact maxVisible={10} />
             <ContentRecommendations />
@@ -283,9 +283,9 @@ export default function AdvancedAnalyticsPage() {
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <AIHighlightGenerator recording={null} />
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -294,7 +294,7 @@ export default function AdvancedAnalyticsPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

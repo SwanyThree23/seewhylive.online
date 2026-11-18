@@ -45,76 +45,76 @@ import TopSupportersList from '@/components/dashboard/TopSupportersList';
 import StreamPerformancePanel from '@/components/dashboard/StreamPerformancePanel';
 import ClipApprovalPanel from '@/components/clips/ClipApprovalPanel';
 
-const G       = '#FFB800';
-const BG      = '#03030A';
-const CRIMSON = '#FF1564';
-const PINK    = '#FF2040';
-const GREEN   = '#00FF88';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+var G       = '#FFB800';
+var BG      = '#03030A';
+var CRIMSON = '#FF1564';
+var PINK    = '#FF2040';
+var GREEN   = '#00FF88';
+var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function fmtDuration(seconds) {
   if (!seconds) return '—';
-  const m = Math.floor(seconds / 60);
-  const h = Math.floor(m / 60);
+  var m = Math.floor(seconds / 60);
+  var h = Math.floor(m / 60);
   if (h > 0) return `${h}h ${m % 60}m`;
   return `${m}m`;
 }
 
 export default function CreatorDashboardPage() {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room_id');
-  const [timeRange, setTimeRange] = useState('7d');
-  const [showQuickAction, setShowQuickAction] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showTierEditor, setShowTierEditor] = useState(false);
-  const [editingTier, setEditingTier] = useState(null);
+  var [searchParams] = useSearchParams();
+  var roomId = searchParams.get('room_id');
+  var [timeRange, setTimeRange] = useState('7d');
+  var [showQuickAction, setShowQuickAction] = useState(false);
+  var [showOnboarding, setShowOnboarding] = useState(false);
+  var [showTierEditor, setShowTierEditor] = useState(false);
+  var [editingTier, setEditingTier] = useState(null);
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['creatordashboard-active-room', user?.id],
+  var { data: activeRoom } = useQuery({
+    queryKey: ['creatordashboard-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const { data: recentRooms = [] } = useQuery({
-    queryKey: ['creatorRooms', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id }, '-created_date', 5),
-    enabled: !!user?.id,
+  var { data: recentRooms = [] } = useQuery({
+    queryKey: ['creatorRooms', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id) }, '-created_date', 5),
+    enabled: !!(user && user.id),
   });
 
-  const activeCreatorRoom = recentRooms.find(r => r.status === 'live') || recentRooms[0] || null;
-  const activeCreatorRoomId = activeCreatorRoom?.id || null;
+  var activeCreatorRoom = recentRooms.find(r => r.status === 'live') || recentRooms[0] || null;
+  var activeCreatorRoomId = (activeCreatorRoom && activeCreatorRoom.id) || null;
 
-  const { data: creatorCommunity } = useQuery({
-    queryKey: ['creatorCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: creatorCommunity } = useQuery({
+    queryKey: ['creatorCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const creatorCommunityId = creatorCommunity?.id || null;
+  var creatorCommunityId = (creatorCommunity && creatorCommunity.id) || null;
 
-  const { data: activeSubs = [] } = useQuery({
-    queryKey: ['creatorActiveSubs', user?.id],
-    queryFn: () => base44.entities.Subscription.filter({ creator_id: user?.id, status: 'active' }),
-    enabled: !!user?.id,
+  var { data: activeSubs = [] } = useQuery({
+    queryKey: ['creatorActiveSubs', (user && user.id)],
+    queryFn: () => base44.entities.Subscription.filter({ creator_id: (user && user.id), status: 'active' }),
+    enabled: !!(user && user.id),
   });
 
-  const { data: recentTips = [] } = useQuery({
-    queryKey: ['creatorTips', user?.id],
+  var { data: recentTips = [] } = useQuery({
+    queryKey: ['creatorTips', (user && user.id)],
     queryFn: () => base44.entities.TipAlert.list('-created_date', 10),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
-  const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const tipsThisWeek = recentTips
-    .filter(t => t.creator_id === user?.id && new Date(t.created_date).getTime() > oneWeekAgo)
+  var oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  var tipsThisWeek = recentTips
+    .filter(t => t.creator_id === (user && user.id) && new Date(t.created_date).getTime() > oneWeekAgo)
     .reduce((sum, t) => sum + (t.amount_usd || 0), 0);
 
-  const quickActions = [
+  var quickActions = [
     {
       icon: Radio,
       label: 'Go Live',
@@ -211,7 +211,7 @@ export default function CreatorDashboardPage() {
               </h1>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              {user?.id && (
+              {(user && user.id) && (
                 <>
                   <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black"
                     style={{ background: `${G}12`, border: `1px solid ${G}30`, color: G, ...T }}>
@@ -274,7 +274,7 @@ export default function CreatorDashboardPage() {
           </div>
         </motion.div>
 
-        {user?.id && (
+        {(user && user.id) && (
           <>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <AnalyticsOverview creatorId={user.id} timeRange={timeRange} />
@@ -343,7 +343,7 @@ export default function CreatorDashboardPage() {
                       ) : (
                         <div className="space-y-1">
                           {recentRooms.map(room => {
-                            const isLive = room.status === 'live';
+                            var isLive = room.status === 'live';
                             return (
                               <div key={room.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
                                 style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -388,19 +388,19 @@ export default function CreatorDashboardPage() {
           </>
         )}
 
-        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        {(user && user.id) && <MilestoneAlerts creatorId={user.id} />}
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <CollaborationMatcher />
         </motion.div>
 
-        {user?.id && (
+        {(user && user.id) && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <ClipApprovalPanel creatorId={user.id} />
           </motion.div>
         )}
 
-        {user?.id && (
+        {(user && user.id) && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <VODLibrary creatorId={user.id} />
           </motion.div>
@@ -408,13 +408,13 @@ export default function CreatorDashboardPage() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-            <SwanDirectorPanel roomId={activeCreatorRoomId} hostId={user?.id} onClose={() => {}} />
+            <SwanDirectorPanel roomId={activeCreatorRoomId} hostId={(user && user.id)} onClose={() => {}} />
             <StreamEventBus roomId={activeCreatorRoomId} isHost={true} sessionId={activeCreatorRoomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
-            <StreamHighlightCapture roomId={activeCreatorRoomId} sessionId={activeCreatorRoomId} creatorId={user?.id} elapsedSeconds={0} isHost={true} />
+            <StreamHighlightCapture roomId={activeCreatorRoomId} sessionId={activeCreatorRoomId} creatorId={(user && user.id)} elapsedSeconds={0} isHost={true} />
             <ContentRecommendations />
             <OnlineUsersGrid compact maxVisible={8} />
             <ShareToSocial content={{ title: 'My Stream', url: window.location.href }} />
-            <AnnouncementPanel communityId={creatorCommunityId} userId={user?.id} />
+            <AnnouncementPanel communityId={creatorCommunityId} userId={(user && user.id)} />
           </div>
 
           <Link to={createPageUrl('ContentCalendar')}>
@@ -439,26 +439,26 @@ export default function CreatorDashboardPage() {
         </motion.div>
 
       </div>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="creator" viewerCount={activeRoom?.viewer_count || activeSubs.length} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
-      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
-      <RewardShopEditor creatorId={user?.id} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="creator" viewerCount={(activeRoom && activeRoom.viewer_count) || activeSubs.length} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
+      {(user && user.id) && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={(user && user.id)} isSubscribed={false} />}
+      {(user && user.id) && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={(user && user.id)} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
+      <RewardShopEditor creatorId={(user && user.id)} />
       <QuickActionPanel isOpen={showQuickAction} onClose={() => setShowQuickAction(false)} />
       <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={Math.floor(tipsThisWeek)} currentSubs={activeSubs.length} currentViewers={activeRoom?.viewer_count || activeSubs.length} />
+      <StreamGoals isHost={true} currentTips={Math.floor(tipsThisWeek)} currentSubs={activeSubs.length} currentViewers={(activeRoom && activeRoom.viewer_count) || activeSubs.length} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={activeRoomId} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={activeRoomId} currentUser={user} />
       <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || activeSubs.length} peakViewers={activeRoom?.peak_viewers || activeSubs.length} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || activeSubs.length} peakViewers={(activeRoom && activeRoom.peak_viewers) || activeSubs.length} />
       <BackgroundCustomizer />
     </div>
   );

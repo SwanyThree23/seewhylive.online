@@ -32,14 +32,14 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 
-const GOLD = '#D4AF37';
-const CYAN = '#C9A84C';
-const CRIMSON = '#800020';
-const GREEN = '#6DBF7E';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD = '#D4AF37';
+var CYAN = '#C9A84C';
+var CRIMSON = '#800020';
+var GREEN = '#6DBF7E';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 
-const TOOLTIP_STYLE = {
+var TOOLTIP_STYLE = {
   background: '#080B18',
   border: '1px solid rgba(212,175,55,0.2)',
   borderRadius: 8,
@@ -61,66 +61,66 @@ function ChartCard({ title, icon: Icon, children, height = 'h-64', colSpan = '' 
 }
 
 export default function StreamAnalytics() {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('id');
+  var [searchParams] = useSearchParams();
+  var roomId = searchParams.get('id');
 
-  const [mode, setMode] = useState('post');
+  var [mode, setMode] = useState('post');
 
-  const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: room }    = useQuery({
+  var { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: room }    = useQuery({
     queryKey: ['room', roomId],
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId,
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['streamanalytics-active-room', user?.id],
+  var { data: activeRoom } = useQuery({
+    queryKey: ['streamanalytics-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id && !roomId,
+    enabled: !!(user && user.id) && !roomId,
     refetchInterval: 30000,
   });
-  const effectiveRoomId = roomId || activeRoom?.id || null;
+  var effectiveRoomId = roomId || (activeRoom && activeRoom.id) || null;
 
-  const { data: roomAnalytics = [] } = useQuery({
+  var { data: roomAnalytics = [] } = useQuery({
     queryKey: ['room-analytics', roomId],
     queryFn: () => base44.entities.RoomAnalytics.filter({ room_id: roomId }, '-timestamp', 60),
     enabled: !!roomId,
   });
 
-  const { data: tipTransactions = [] } = useQuery({
-    queryKey: ['tip-transactions', user?.id, roomId],
+  var { data: tipTransactions = [] } = useQuery({
+    queryKey: ['tip-transactions', (user && user.id), roomId],
     queryFn: () => base44.entities.Transaction.filter({ to_user_id: user.id, type: 'tip' }, '-created_date', 100),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
   });
 
-  const viewerData = roomAnalytics.slice().reverse().map((a, i) => ({
+  var viewerData = roomAnalytics.slice().reverse().map((a, i) => ({
     min: i,
     viewers: a.viewer_count || 0,
     messages: a.chat_messages || 0,
   }));
 
-  const tipData = tipTransactions.map((t, i) => ({
+  var tipData = tipTransactions.map((t, i) => ({
     time: i * 4,
     amount: t.amount || 0,
-    event: t.metadata?.event || null,
+    event: t.(metadata && metadata.event) || null,
   }));
 
-  const peakViewers  = roomAnalytics.length > 0
+  var peakViewers  = roomAnalytics.length > 0
     ? Math.max(...roomAnalytics.map(a => a.peak_viewers || a.viewer_count || 0))
-    : (room?.viewer_count || 0);
-  const avgViewers   = viewerData.length > 0
+    : ((room && room.viewer_count) || 0);
+  var avgViewers   = viewerData.length > 0
     ? Math.round(viewerData.reduce((s, d) => s + d.viewers, 0) / viewerData.length)
     : 0;
-  const totalTips    = tipData.reduce((s, d) => s + (d.amount || 0), 0);
-  const totalMessages = roomAnalytics.length > 0
+  var totalTips    = tipData.reduce((s, d) => s + (d.amount || 0), 0);
+  var totalMessages = roomAnalytics.length > 0
     ? (roomAnalytics[0].chat_messages || 0)
     : viewerData.reduce((s, d) => s + d.messages, 0);
 
-  const topChatters = [];
-  const reactionData = [];
+  var topChatters = [];
+  var reactionData = [];
 
-  const exportReport = () => {
-    const lines = [
-      `Stream Report — ${room?.title || 'Stream'}`,
+  var exportReport = () => {
+    var lines = [
+      `Stream Report — ${(room && room.title) || 'Stream'}`,
       `Date: ${new Date().toLocaleDateString()}`,
       `Peak Viewers: ${peakViewers}`,
       `Average Viewers: ${avgViewers}`,
@@ -128,9 +128,9 @@ export default function StreamAnalytics() {
       `Total Messages: ${totalMessages}`,
       `Creator Revenue (90%): $${(Math.floor(totalTips * 90) / 100).toFixed(2)}`,
     ];
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
     a.href = url; a.download = 'stream-report.txt'; a.click();
     URL.revokeObjectURL(url);
   };
@@ -149,7 +149,7 @@ export default function StreamAnalytics() {
             <div>
               <h1 className="font-black text-lg text-white leading-none" style={T}>Stream Analytics</h1>
               <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
-                {room?.title || 'Stream Overview'}
+                {(room && room.title) || 'Stream Overview'}
               </p>
             </div>
           </div>
@@ -336,8 +336,8 @@ export default function StreamAnalytics() {
 
           <ChartCard title="Traffic Sources" height="h-auto">
             {(() => {
-              const total = peakViewers || 1;
-              const sources = [
+              var total = peakViewers || 1;
+              var sources = [
                 { label: 'Platform Discovery', pct: peakViewers > 0 ? 44 : 0, color: GOLD },
                 { label: 'Direct Link',         pct: peakViewers > 0 ? 31 : 0, color: CYAN },
                 { label: 'Social Media',         pct: peakViewers > 0 ? 18 : 0, color: '#6DBF7E' },
@@ -371,7 +371,7 @@ export default function StreamAnalytics() {
           <BroadcastAnalyticsDashboard />
           <PerformanceDashboard />
           <AudienceInsights />
-          <StreamerGoalsWidget userId={user?.id} />
+          <StreamerGoalsWidget userId={(user && user.id)} />
           <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         </div>
 
@@ -383,9 +383,9 @@ export default function StreamAnalytics() {
         </div>
       </div>
       <SwanAIRecommendations roomId={effectiveRoomId} currentLayout="analytics" viewerCount={avgViewers} />
-      <MilestoneAlerts userId={user?.id} roomId={effectiveRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={effectiveRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <AIHighlightGenerator recording={null} />
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -394,7 +394,7 @@ export default function StreamAnalytics() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={avgViewers} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={effectiveRoomId} currentUser={user} />
+      <RewardShop creatorId={(user && user.id)} roomId={effectiveRoomId} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={avgViewers} peakViewers={peakViewers} />
       <BackgroundCustomizer />

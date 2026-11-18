@@ -31,56 +31,56 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function downloadCSV(filename, data) {
   if (!data.length) return;
-  const headers = Object.keys(data[0]);
-  const rows = data.map(row => headers.map(h => JSON.stringify(row[h] ?? '')).join(','));
-  const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  var headers = Object.keys(data[0]);
+  var rows = data.map(row => headers.map(h => JSON.stringify(row[h] || '')).join(','));
+  var csv = [headers.join(','), ...rows].join('\n');
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
 }
 
 function downloadJSON(filename, data) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
 }
 
 function downloadPDF(title, data) {
-  const doc = new jsPDF();
+  var doc = new jsPDF();
   doc.setFontSize(16);
   doc.text(title, 14, 20);
   doc.setFontSize(9);
-  let y = 32;
+  var y = 32;
   if (!data.length) {
     doc.text('No data available.', 14, y);
   } else {
-    const headers = Object.keys(data[0]);
-    const colW = Math.min(40, Math.floor(180 / headers.length));
+    var headers = Object.keys(data[0]);
+    var colW = Math.min(40, Math.floor(180 / headers.length));
     doc.setFont(undefined, 'bold');
     headers.forEach((h, i) => doc.text(String(h).slice(0, 14), 14 + i * colW, y));
     doc.setFont(undefined, 'normal');
     y += 6;
     data.slice(0, 60).forEach(row => {
       if (y > 270) { doc.addPage(); y = 20; }
-      headers.forEach((h, i) => doc.text(String(row[h] ?? '').slice(0, 14), 14 + i * colW, y));
+      headers.forEach((h, i) => doc.text(String(row[h] || '').slice(0, 14), 14 + i * colW, y));
       y += 6;
     });
   }
   doc.save(`${title.replace(/\s+/g, '_')}.pdf`);
 }
 
-const EXPORT_SETS = [
+var EXPORT_SETS = [
   { id: 'activity', label: 'Activity History', description: 'All your platform activities and events', entity: 'Activity', filterKey: 'user_id', accentColor: '#4A8A7A' },
   { id: 'subscriptions', label: 'My Subscriptions', description: 'Your active and past creator subscriptions', entity: 'Subscription', filterKey: 'user_id', accentColor: '#D4AF37' },
   { id: 'notifications', label: 'Notifications', description: 'Your notification history', entity: 'Notification', filterKey: 'user_id', accentColor: GOLD },
@@ -88,26 +88,26 @@ const EXPORT_SETS = [
 ];
 
 export default function DataExportPage() {
-  const [loading, setLoading] = useState({});
+  var [loading, setLoading] = useState({});
 
-  const { data: user } = useQuery({
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
 
-  const handleExport = async (set, format) => {
-    const key = `${set.id}-${format}`;
+  var handleExport = async (set, format) => {
+    var key = `${set.id}-${format}`;
     setLoading(l => ({ ...l, [key]: true }));
     try {
-      const data = await base44.entities[set.entity].filter({ [set.filterKey]: user?.id });
-      const filename = `${set.label.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}`;
+      var data = await base44.entities[set.entity].filter({ [set.filterKey]: (user && user.id) });
+      var filename = `${set.label.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}`;
       if (format === 'csv') downloadCSV(`${filename}.csv`, data);
       else if (format === 'json') downloadJSON(`${filename}.json`, data);
       else if (format === 'pdf') downloadPDF(set.label, data);
@@ -150,8 +150,8 @@ export default function DataExportPage() {
                 { format: 'json', icon: FileText, label: 'JSON' },
                 { format: 'pdf', icon: FileSpreadsheet, label: 'PDF' },
               ].map(({ format, icon: Icon, label }) => {
-                const key = `${set.id}-${format}`;
-                const isLoading = loading[key];
+                var key = `${set.id}-${format}`;
+                var isLoading = loading[key];
                 return (
                   <button key={format}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black uppercase text-[10px] transition-all"
@@ -197,7 +197,7 @@ export default function DataExportPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
           <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
           <AudienceInsights />
-          <EarningsBreakdown userId={user?.id} />
+          <EarningsBreakdown userId={(user && user.id)} />
           <ShareToSocial content={{ title: 'Export Data', url: window.location.href }} />
           <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
           <OnlineUsersGrid compact maxVisible={8} />
@@ -206,9 +206,9 @@ export default function DataExportPage() {
         </div>
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -216,7 +216,7 @@ export default function DataExportPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

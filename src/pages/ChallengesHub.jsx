@@ -34,12 +34,12 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
-const GOLD = '#D4AF37';
-const BURGUNDY = '#800020';
-const CREAM = '#F5E6D3';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var GOLD = '#D4AF37';
+var BURGUNDY = '#800020';
+var CREAM = '#F5E6D3';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TYPE_COLORS = {
+var TYPE_COLORS = {
   attendance:  { color: '#C9A84C', label: 'ATTENDANCE' },
   engagement:  { color: GOLD,      label: 'ENGAGEMENT' },
   content:     { color: '#D4AF37', label: 'CONTENT' },
@@ -47,25 +47,25 @@ const TYPE_COLORS = {
 };
 
 function ChallengeCountdown({ endDate }) {
-  const [rem, setRem] = useState('');
+  var [rem, setRem] = useState('');
   useEffect(() => {
-    const tick = () => {
-      const diff = new Date(endDate).getTime() - Date.now();
+    var tick = () => {
+      var diff = new Date(endDate).getTime() - Date.now();
       if (diff <= 0) { setRem('Ended'); return; }
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
+      var d = Math.floor(diff / 86400000);
+      var h = Math.floor((diff % 86400000) / 3600000);
+      var m = Math.floor((diff % 3600000) / 60000);
       setRem(d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`);
     };
     tick();
-    const iv = setInterval(tick, 60000);
+    var iv = setInterval(tick, 60000);
     return () => clearInterval(iv);
   }, [endDate]);
   return <span>{rem}</span>;
 }
 
 function LeaderboardDrawer({ challengeId, title, open, onClose }) {
-  const { data: participants = [] } = useQuery({
+  var { data: participants = [] } = useQuery({
     queryKey: ['ch-participants', challengeId],
     queryFn: () => base44.entities.ChallengeParticipant.filter({ challenge_id: challengeId }, '-score', 20),
     enabled: open && !!challengeId,
@@ -91,7 +91,7 @@ function LeaderboardDrawer({ challengeId, title, open, onClose }) {
                   style={{ background: i < 3 ? `rgba(212,175,55,0.07)` : 'rgba(255,255,255,0.03)', border: i < 3 ? `1px solid rgba(212,175,55,0.2)` : '1px solid rgba(255,255,255,0.05)' }}>
                   <span className="w-6 text-center text-sm shrink-0">{i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}</span>
                   <div className="flex-1">
-                    <p className="text-[10px] font-bold text-white">{p.user_id?.slice(0, 12)}</p>
+                    <p className="text-[10px] font-bold text-white">{p.(user_id && user_id.slice)(0, 12)}</p>
                     <p className="text-[11px]" style={{ color: CREAM + '40' }}>{p.completed ? '✓ Completed' : `Progress: ${p.progress || 0}`}</p>
                   </div>
                   <span className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{p.score || 0}</span>
@@ -107,9 +107,9 @@ function LeaderboardDrawer({ challengeId, title, open, onClose }) {
 }
 
 function ChallengeCard({ challenge, onJoin, userId, myParticipation, showLeaderboard }) {
-  const tc = TYPE_COLORS[challenge.challenge_type?.toLowerCase()] || { color: GOLD, label: 'CHALLENGE' };
-  const progress = challenge.goal_value > 0 ? Math.min(100, Math.round((challenge.participant_count || 0) / challenge.goal_value * 100)) : 0;
-  const hasJoined = !!myParticipation;
+  var tc = TYPE_COLORS[challenge.(challenge_type && challenge_type.toLowerCase)()] || { color: GOLD, label: 'CHALLENGE' };
+  var progress = challenge.goal_value > 0 ? Math.min(100, Math.round((challenge.participant_count || 0) / challenge.goal_value * 100)) : 0;
+  var hasJoined = !!myParticipation;
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.97)', border: `1px solid ${tc.color}20` }}>
@@ -183,80 +183,80 @@ function ChallengeCard({ challenge, onJoin, userId, myParticipation, showLeaderb
 }
 
 export default function ChallengesHubPage() {
-  const [activeTab, setActiveTab] = useState('active');
-  const [lbOpen, setLbOpen] = useState(null);
-  const qc = useQueryClient();
+  var [activeTab, setActiveTab] = useState('active');
+  var [lbOpen, setLbOpen] = useState(null);
+  var qc = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  const { data: activeChallenges = [] } = useQuery({
+  var { data: activeChallenges = [] } = useQuery({
     queryKey: ['ch-active'],
     queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, 'end_date', 20),
     refetchInterval: 30000,
   });
-  const { data: upcomingChallenges = [] } = useQuery({
+  var { data: upcomingChallenges = [] } = useQuery({
     queryKey: ['ch-upcoming'],
     queryFn: () => base44.entities.Challenge.filter({ status: 'upcoming' }, 'start_date', 10),
   });
-  const { data: myParticipations = [] } = useQuery({
-    queryKey: ['ch-mine', user?.id],
-    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: user?.id }),
-    enabled: !!user?.id,
+  var { data: myParticipations = [] } = useQuery({
+    queryKey: ['ch-mine', (user && user.id)],
+    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: (user && user.id) }),
+    enabled: !!(user && user.id),
   });
 
-  const joinMut = useMutation({
+  var joinMut = useMutation({
     mutationFn: (challenge) => base44.entities.ChallengeParticipant.create({
       challenge_id: challenge.id,
-      user_id: user?.id,
+      user_id: (user && user.id),
       progress: 0,
       score: 0,
       completed: false,
     }),
     onMutate: async (challenge) => {
       await qc.cancelQueries({ queryKey: ['ch-mine'] });
-      const prev = qc.getQueryData(['ch-mine']);
+      var prev = qc.getQueryData(['ch-mine']);
       // Optimistically add a placeholder participation record so the Join button
       // flips to "Joined" immediately without waiting for the server round-trip.
       qc.setQueryData(['ch-mine'], (old = []) => [
         ...old,
-        { challenge_id: challenge.id, user_id: user?.id, progress: 0, score: 0, completed: false, id: '__optimistic__' },
+        { challenge_id: challenge.id, user_id: (user && user.id), progress: 0, score: 0, completed: false, id: '__optimistic__' },
       ]);
       return { prev };
     },
     onError: (_err, _challenge, ctx) => {
-      if (ctx?.prev !== undefined) qc.setQueryData(['ch-mine'], ctx.prev);
+      if ((ctx && ctx.prev) !== undefined) qc.setQueryData(['ch-mine'], ctx.prev);
       toast.error('Action failed.');
     },
     onSuccess: (_, challenge) => {
       qc.invalidateQueries({ queryKey: ['ch-mine'] });
       toast.success('Joined challenge!');
-      if (user?.id) {
+      if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'challenge_joined',
-          title: `Joined challenge: ${challenge?.title || 'Challenge'}`,
+          title: `Joined challenge: ${(challenge && challenge.title) || 'Challenge'}`,
         }).catch(() => {});
       }
     },
   });
 
-  const myCompleted = myParticipations.filter(p => p.completed);
-  const myActive = myParticipations.filter(p => !p.completed);
+  var myCompleted = myParticipations.filter(p => p.completed);
+  var myActive = myParticipations.filter(p => !p.completed);
 
-  const TABS = [
+  var TABS = [
     { id: 'active',    label: `⚡ Active (${activeChallenges.length})` },
     { id: 'my',        label: `📊 My Progress (${myParticipations.length})` },
     { id: 'upcoming',  label: `🗓 Upcoming` },
@@ -298,7 +298,7 @@ export default function ChallengesHubPage() {
                   : activeChallenges.map(c => (
                     <ChallengeCard key={c.id} challenge={c}
                       onJoin={(ch) => joinMut.mutate(ch)}
-                      userId={user?.id}
+                      userId={(user && user.id)}
                       myParticipation={myParticipations.find(p => p.challenge_id === c.id)}
                       showLeaderboard={() => setLbOpen(c)} />
                   ))}
@@ -310,14 +310,14 @@ export default function ChallengesHubPage() {
                 {myParticipations.length === 0
                   ? <p className="text-center py-10 text-[11px]" style={{ color: CREAM + '25' }}>You haven't joined any challenges yet</p>
                   : myParticipations.map(p => {
-                    const challenge = [...activeChallenges, ...upcomingChallenges].find(c => c.id === p.challenge_id);
-                    const goalValue = challenge?.goal_value || 100;
-                    const progress = Math.min(100, Math.round(((p.progress || 0) / goalValue) * 100));
+                    var challenge = [...activeChallenges, ...upcomingChallenges].find(c => c.id === p.challenge_id);
+                    var goalValue = (challenge && challenge.goal_value) || 100;
+                    var progress = Math.min(100, Math.round(((p.progress || 0) / goalValue) * 100));
                     return (
                       <div key={p.id} className="rounded-xl p-4 space-y-2"
                         style={{ background: 'rgba(8,11,24,0.97)', border: p.completed ? `1px solid rgba(109,191,126,0.25)` : '1px solid rgba(255,255,255,0.08)' }}>
                         <div className="flex items-center justify-between">
-                          <p className="font-bold text-[11px] text-white">{challenge?.title || `Challenge ${p.challenge_id?.slice(0,8)}`}</p>
+                          <p className="font-bold text-[11px] text-white">{(challenge && challenge.title) || `Challenge ${p.(challenge_id && challenge_id.slice)(0,8)}`}</p>
                           <div className="flex items-center gap-1.5">
                             {p.completed && (
                               <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
@@ -350,10 +350,10 @@ export default function ChallengesHubPage() {
                 {upcomingChallenges.length === 0
                   ? <p className="text-center py-10 text-[11px] col-span-2" style={{ color: CREAM + '25' }}>No upcoming challenges</p>
                   : upcomingChallenges.map(c => {
-                    const tc = TYPE_COLORS[c.challenge_type?.toLowerCase()] || { color: GOLD, label: 'CHALLENGE' };
-                    const diff = new Date(c.start_date).getTime() - Date.now();
-                    const d = Math.floor(diff / 86400000);
-                    const h = Math.floor((diff % 86400000) / 3600000);
+                    var tc = TYPE_COLORS[c.(challenge_type && challenge_type.toLowerCase)()] || { color: GOLD, label: 'CHALLENGE' };
+                    var diff = new Date(c.start_date).getTime() - Date.now();
+                    var d = Math.floor(diff / 86400000);
+                    var h = Math.floor((diff % 86400000) / 3600000);
                     return (
                       <div key={c.id} className="rounded-xl p-4 space-y-2"
                         style={{ background: 'rgba(8,11,24,0.97)', border: `1px solid ${tc.color}20` }}>
@@ -382,7 +382,7 @@ export default function ChallengesHubPage() {
                         <Check className="w-4 h-4" style={{ color: '#6DBF7E' }} />
                       </div>
                       <div className="flex-1">
-                        <p className="font-bold text-[11px] text-white">Challenge {p.challenge_id?.slice(0, 8)}</p>
+                        <p className="font-bold text-[11px] text-white">Challenge {p.(challenge_id && challenge_id.slice)(0, 8)}</p>
                         <p className="text-[11px]" style={{ color: CREAM + '40' }}>
                           Rank: {p.rank || '—'} · Completed {p.updated_date ? new Date(p.updated_date).toLocaleDateString() : ''}
                         </p>
@@ -397,15 +397,15 @@ export default function ChallengesHubPage() {
 
         <div className="mt-4 space-y-4">
           <LeaderboardPanel roomId={activeRoomId} />
-          {user?.id && <LoyaltyBadge userId={user.id} creatorId={user.id} />}
+          {(user && user.id) && <LoyaltyBadge userId={user.id} creatorId={user.id} />}
           <ChallengeLeaderboard challengeId={null} />
           <ChallengeAnalytics communityId={userCommunityId} />
         </div>
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+          <EngagementBadgesDisplay roomId={activeRoomId} userId={(user && user.id)} creatorId={(user && user.id)} />
           <SocialLeaderboard roomId={activeRoomId} />
-          <PointsEarnWidget userId={user?.id} />
+          <PointsEarnWidget userId={(user && user.id)} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
@@ -429,9 +429,9 @@ export default function ChallengesHubPage() {
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <MilestoneAlerts userId={(user && user.id)} roomId={null} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -439,7 +439,7 @@ export default function ChallengesHubPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

@@ -24,13 +24,13 @@ import {
   Monitor, Rss
 } from 'lucide-react';
 
-const BG    = '#0E0C09';
-const GOLD  = '#C9A84C';
-const BURG  = '#800020';
-const AMBER = '#D4854A';
-const TEXT  = '#F0E8D4';
-const MUTED = '#8A7A62';
-const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG    = '#0E0C09';
+var GOLD  = '#C9A84C';
+var BURG  = '#800020';
+var AMBER = '#D4854A';
+var TEXT  = '#F0E8D4';
+var MUTED = '#8A7A62';
+var T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Section card wrapper ────────────────────────────────────────────────────
 function Card({ children, style }) {
@@ -70,8 +70,8 @@ function Toggle({ value, onChange }) {
 
 // ── Copy button ────────────────────────────────────────────────────────────
 function CopyButton({ value }) {
-  const [copied, setCopied] = useState(false);
-  const copy = () => {
+  var [copied, setCopied] = useState(false);
+  var copy = () => {
     navigator.clipboard.writeText(value).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -113,62 +113,62 @@ function PlatformBadge({ name, icon, connected, color, onToggle }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────
 export default function MultiPlatformIntegration() {
-  const { user } = useAuth();
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var { user } = useAuth();
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const roomId = activeRoomId;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var roomId = activeRoomId;
 
   // Webhook state
-  const [webhookUrl, setWebhookUrl] = useState('');
-  const [webhookSecret, setWebhookSecret] = useState('');
-  const [webhookEvents, setWebhookEvents] = useState({
+  var [webhookUrl, setWebhookUrl] = useState('');
+  var [webhookSecret, setWebhookSecret] = useState('');
+  var [webhookEvents, setWebhookEvents] = useState({
     stream_start: true, stream_end: true, new_follower: true,
     tip_received: true, chat_message: false, viewer_milestone: true,
   });
-  const [webhookTestLoading, setWebhookTestLoading] = useState(false);
-  const [webhookTestResult, setWebhookTestResult] = useState(null);
+  var [webhookTestLoading, setWebhookTestLoading] = useState(false);
+  var [webhookTestResult, setWebhookTestResult] = useState(null);
 
   // Platform connections
-  const [platforms, setPlatforms] = useState({
+  var [platforms, setPlatforms] = useState({
     fanbase: false, youtube: false, tiktok: false,
     instagram: false, twitch: false, x: false,
   });
 
   // RTMP / Virtual Camera
-  const [rtmpDestinations, setRtmpDestinations] = useState([
+  var [rtmpDestinations, setRtmpDestinations] = useState([
     { id: 'd1', name: 'YouTube Live', url: '', key: '', enabled: false },
     { id: 'd2', name: 'Twitch',       url: 'rtmp://live.twitch.tv/live/', key: '', enabled: false },
     { id: 'd3', name: 'Facebook Live',url: 'rtmps://live-api-s.facebook.com:443/rtmp/', key: '', enabled: false },
   ]);
-  const [addingDest, setAddingDest] = useState(false);
-  const [newDest, setNewDest] = useState({ name: '', url: '', key: '' });
+  var [addingDest, setAddingDest] = useState(false);
+  var [newDest, setNewDest] = useState({ name: '', url: '', key: '' });
 
   // Virtual camera
-  const [vcamEnabled, setVcamEnabled] = useState(false);
-  const [vcamLayout, setVcamLayout] = useState('solo');
-  const [vcamBackground, setVcamBackground] = useState('blur');
-  const [vcamBranding, setVcamBranding] = useState(true);
+  var [vcamEnabled, setVcamEnabled] = useState(false);
+  var [vcamLayout, setVcamLayout] = useState('solo');
+  var [vcamBackground, setVcamBackground] = useState('blur');
+  var [vcamBranding, setVcamBranding] = useState(true);
 
   // Audience engagement
-  const [engagements, setEngagements] = useState({
+  var [engagements, setEngagements] = useState({
     autoGreet: true, followerAlerts: true, tipAlerts: true,
     milestoneAlerts: true, pollSync: true, shoutouts: false,
   });
 
   // Creator tools
-  const [scheduledPost, setScheduledPost] = useState('');
-  const [postPlatforms, setPostPlatforms] = useState({ fanbase: true, x: false, instagram: false });
-  const [postLoading, setPostLoading] = useState(false);
-  const [postSent, setPostSent] = useState(false);
+  var [scheduledPost, setScheduledPost] = useState('');
+  var [postPlatforms, setPostPlatforms] = useState({ fanbase: true, x: false, instagram: false });
+  var [postLoading, setPostLoading] = useState(false);
+  var [postSent, setPostSent] = useState(false);
 
   // API key display
-  const apiKey = user ? `sw_${user.id?.slice(0,8) || 'demo'}_live_key` : 'sw_demo_live_key';
-  const webhookEndpoint = `https://api.seewhylive.online/webhooks/${user?.id || 'demo'}`;
+  var apiKey = user ? `sw_${user.(id && id.slice)(0,8) || 'demo'}_live_key` : 'sw_demo_live_key';
+  var webhookEndpoint = `https://api.seewhylive.online/webhooks/${(user && user.id) || 'demo'}`;
 
   function toggleEvent(key) {
     setWebhookEvents(prev => ({ ...prev, [key]: !prev[key] }));
@@ -196,11 +196,11 @@ export default function MultiPlatformIntegration() {
     setWebhookTestLoading(true);
     setWebhookTestResult(null);
     try {
-      const payload = {
-        event: 'test', creator_id: user?.id, timestamp: Date.now(),
+      var payload = {
+        event: 'test', creator_id: (user && user.id), timestamp: Date.now(),
         data: { stream_title: 'Test Stream', viewer_count: 42 },
       };
-      const resp = await fetch(webhookUrl, {
+      var resp = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-SeeWhy-Secret': webhookSecret },
         body: JSON.stringify(payload),
@@ -217,7 +217,7 @@ export default function MultiPlatformIntegration() {
     if (!scheduledPost.trim()) return;
     setPostLoading(true);
     try {
-      const platforms_list = Object.entries(postPlatforms).filter(([,v]) => v).map(([k]) => k);
+      var platforms_list = Object.entries(postPlatforms).filter(([,v]) => v).map(([k]) => k);
       await base44.integrations.Core.InvokeLLM({
         prompt: `Optimize this social media post for live stream promotion on ${platforms_list.join(', ')}: "${scheduledPost}". Keep the same message but add appropriate hashtags and emojis for each platform. Respond with JSON: {"optimized": "the optimized post text"}`,
       });
@@ -614,18 +614,18 @@ export default function MultiPlatformIntegration() {
       </div>
 
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

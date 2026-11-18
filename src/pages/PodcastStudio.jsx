@@ -368,6 +368,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
           onChange={e => setTitleInput(e.target.value)}
           placeholder="e.g. Domino Social Expo: Participant Invitations"
           style={{ ...inputStyle, marginTop: 6, marginBottom: 12 }}
+          maxLength={150}
         />
 
         {/* Topic/context field */}
@@ -380,6 +381,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
           placeholder="e.g. Planning and invitations for a domino social tournament event with state teams…"
           rows={3}
           style={{ ...inputStyle, marginTop: 6, marginBottom: 14, resize: 'vertical' }}
+          maxLength={500}
         />
 
         <button

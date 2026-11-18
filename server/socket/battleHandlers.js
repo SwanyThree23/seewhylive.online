@@ -7,6 +7,7 @@
 
 const battleService = require('../services/battleService');
 const loyaltyService = require('../services/loyaltyService');
+const webhookService = require('../services/webhookService');
 
 const HEARTBEAT_MS = 5000;
 const MAX_DRIFT_MS = 300;
@@ -222,6 +223,18 @@ function startCountdown(io, battle) {
             loyaltyService.awardPoints({ userId: uid, tenantId: ended.tenant_id, points: 75, source: 'battle_tie', sourceId: ended.id }).catch(() => {});
           });
         }
+        // Fire outbound webhook for battle.result to both participants
+        try {
+          const payload = {
+            battleId: ended.id, roomId: battle.room_id,
+            winnerId: ended.winner_id || null, challengerId: ended.challenger_id,
+            defenderId: ended.defender_id,
+            challengerPoints: ended.challenger_points, defenderPoints: ended.defender_points,
+          };
+          [ended.challenger_id, ended.defender_id].filter(Boolean).forEach(uid => {
+            webhookService.fireWebhooks(uid, ended.tenant_id || '', 'battle.result', payload);
+          });
+        } catch (_whBr) {}
       } catch (err) {
         io.to(room).emit('battle:error', { message: 'Battle error' });
       }

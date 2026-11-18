@@ -29,68 +29,68 @@ import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-const BG = '#0d0618';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#0d0618';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TABS = ['live', 'videos', 'schedule', 'memberships', 'about'];
+var TABS = ['live', 'videos', 'schedule', 'memberships', 'about'];
 
 export default function CreatorChannel() {
-  const [activeTab, setActiveTab] = useState('live');
-  const urlParams = new URLSearchParams(window.location.search);
-  const userId = urlParams.get('id');
-  const qc = useQueryClient();
+  var [activeTab, setActiveTab] = useState('live');
+  var urlParams = new URLSearchParams(window.location.search);
+  var userId = urlParams.get('id');
+  var qc = useQueryClient();
 
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', currentUser?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: currentUser?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!currentUser?.id,
+  var { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (currentUser && currentUser.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (currentUser && currentUser.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(currentUser && currentUser.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const roomId = activeRoomId;
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var roomId = activeRoomId;
 
-  const { data: profile, isLoading } = useQuery({
+  var { data: profile, isLoading } = useQuery({
     queryKey: ['creator-profile', userId],
     queryFn: () => base44.entities.CreatorProfile.filter({ user_id: userId }).then(r => r[0]),
     enabled: !!userId,
   });
 
-  const { data: rooms = [] } = useQuery({
+  var { data: rooms = [] } = useQuery({
     queryKey: ['creator-rooms', userId],
     queryFn: () => base44.entities.Room.filter({ host_id: userId }, '-created_date', 20),
     enabled: !!userId,
   });
 
-  const { data: recordings = [] } = useQuery({
+  var { data: recordings = [] } = useQuery({
     queryKey: ['creator-recordings', userId],
     queryFn: () => base44.entities.StreamRecording.filter({ creator_id: userId }, '-recorded_at', 12),
     enabled: !!userId,
   });
 
-  const liveRoom = rooms.find(r => r.status === 'live');
-  const pastRooms = rooms.filter(r => r.status === 'ended');
-  const scheduledRooms = rooms.filter(r => r.status === 'scheduled');
-  const socialIcons = { twitter: Twitter, instagram: Instagram, youtube: Youtube };
+  var liveRoom = rooms.find(r => r.status === 'live');
+  var pastRooms = rooms.filter(r => r.status === 'ended');
+  var scheduledRooms = rooms.filter(r => r.status === 'scheduled');
+  var socialIcons = { twitter: Twitter, instagram: Instagram, youtube: Youtube };
 
-  const notifyMutation = useMutation({
+  var notifyMutation = useMutation({
     mutationFn: () => base44.entities.Notification.create({
-      user_id: currentUser?.id,
+      user_id: (currentUser && currentUser.id),
       type: 'room_invite',
-      title: `${profile?.display_name} went live!`,
-      message: `${profile?.display_name} is now streaming. Join now!`,
+      title: `${(profile && profile.display_name)} went live!`,
+      message: `${(profile && profile.display_name)} is now streaming. Join now!`,
     }),
     onError: () => toast.error('Failed to set reminder. Please try again.'),
     onSuccess: () => {
       toast.success('Reminder set!');
-      if (currentUser?.id) {
+      if ((currentUser && currentUser.id)) {
         base44.entities.Activity.create({
           user_id: currentUser.id,
           type: 'follow',
-          title: `Set live notification for ${profile?.display_name || 'creator'}`,
+          title: `Set live notification for ${(profile && profile.display_name) || 'creator'}`,
         }).catch(() => {});
       }
     },
@@ -102,10 +102,10 @@ export default function CreatorChannel() {
     </div>
   );
 
-  const displayName = profile?.display_name || 'Creator';
-  const bio = profile?.bio || 'Welcome to my channel!';
-  const category = profile?.category || 'other';
-  const bannerUrl = profile?.banner_url || null;
+  var displayName = (profile && profile.display_name) || 'Creator';
+  var bio = (profile && profile.bio) || 'Welcome to my channel!';
+  var category = (profile && profile.category) || 'other';
+  var bannerUrl = (profile && profile.banner_url) || null;
 
   return (
     <div className="min-h-screen text-white" style={{ background: BG }}>
@@ -131,7 +131,7 @@ export default function CreatorChannel() {
             <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
             <div className="absolute inset-[3px] flex items-center justify-center overflow-hidden"
               style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)` }}>
-              {profile?.avatar_url
+              {(profile && profile.avatar_url)
                 ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={displayName} />
                 : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{displayName.charAt(0)}</span>
               }
@@ -141,16 +141,16 @@ export default function CreatorChannel() {
           <div className="flex-1 min-w-0 pb-2">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-black text-white" style={T}>{displayName}</h1>
-              {profile?.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#4A8A7A' }} />}
+              {(profile && profile.is_verified) && <CheckCircle className="w-5 h-5" style={{ color: '#4A8A7A' }} />}
               <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase capitalize"
                 style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
                 {category}
               </span>
             </div>
             <div className="flex items-center gap-4 mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {(profile?.subscriber_count || 0).toLocaleString()} subscribers</span>
-              <span>{(profile?.follower_count || 0).toLocaleString()} followers</span>
-              <span>{Math.round(profile?.total_hours_streamed || 0)}h streamed</span>
+              <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {((profile && profile.subscriber_count) || 0).toLocaleString()} subscribers</span>
+              <span>{((profile && profile.follower_count) || 0).toLocaleString()} followers</span>
+              <span>{Math.round((profile && profile.total_hours_streamed) || 0)}h streamed</span>
             </div>
           </div>
 
@@ -181,9 +181,9 @@ export default function CreatorChannel() {
         <div className="mb-5 flex flex-col sm:flex-row gap-4 items-start">
           <p className="text-sm flex-1 max-w-2xl" style={{ color: 'rgba(255,255,255,0.6)' }}>{bio}</p>
           <div className="flex items-center gap-2 shrink-0">
-            {profile?.social_links && Object.entries(profile.social_links).map(([platform, url]) => {
-              const Icon = socialIcons[platform];
-              const safeHref = isSafeUrl(url) ? url : undefined;
+            {(profile && profile.social_links) && Object.entries(profile.social_links).map(([platform, url]) => {
+              var Icon = socialIcons[platform];
+              var safeHref = isSafeUrl(url) ? url : undefined;
               return safeHref ? (
                 <a key={platform} href={safeHref} target="_blank" rel="noopener noreferrer"
                   className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
@@ -247,7 +247,7 @@ export default function CreatorChannel() {
         {/* Schedule */}
         {activeTab === 'schedule' && (
           <div className="pb-16 space-y-3">
-            {(profile?.stream_schedule || []).map((item, i) => (
+            {((profile && profile.stream_schedule) || []).map((item, i) => (
               <div key={i} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
                   <Calendar className="w-5 h-5" style={{ color: GOLD }} />
@@ -274,7 +274,7 @@ export default function CreatorChannel() {
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase" style={{ background: 'rgba(74,138,122,0.1)', border: '1px solid rgba(74,138,122,0.2)', color: '#4A8A7A', ...T }}>Upcoming</span>
               </div>
             ))}
-            {!profile?.stream_schedule?.length && !scheduledRooms.length && (
+            {!(profile && profile.stream_schedule)?.length && !scheduledRooms.length && (
               <p className="text-center py-12" style={{ color: 'rgba(255,255,255,0.25)' }}>No upcoming streams scheduled</p>
             )}
           </div>
@@ -288,20 +288,20 @@ export default function CreatorChannel() {
               <h3 className="text-lg font-black text-white" style={T}>Support {displayName}</h3>
             </div>
             <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.5)' }}>
-              <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
+              <SubscriberTierView creatorId={userId} userId={(currentUser && currentUser.id)} />
             </div>
             <TierSubscribeCard
               tier={null}
               currentSub={null}
-              userId={currentUser?.id}
+              userId={(currentUser && currentUser.id)}
               creatorId={userId}
               isHighlighted={false}
             />
-            {currentUser?.id && (
+            {(currentUser && currentUser.id) && (
               <StripeSubscribeButton creatorId={userId} creatorName={displayName} currentUserId={currentUser.id} />
             )}
             <TierBadge tier="bronze" size="sm" showName />
-            {currentUser?.id && (
+            {(currentUser && currentUser.id) && (
               <RewardShop creatorId={userId} roomId={activeRoomId} currentUser={currentUser} />
             )}
           </div>
@@ -322,7 +322,7 @@ export default function CreatorChannel() {
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>Total Hours</p>
-                  <p className="text-sm font-black text-white mt-1" style={{ fontFamily: 'Orbitron, monospace' }}>{Math.round(profile?.total_hours_streamed || 0)}h</p>
+                  <p className="text-sm font-black text-white mt-1" style={{ fontFamily: 'Orbitron, monospace' }}>{Math.round((profile && profile.total_hours_streamed) || 0)}h</p>
                 </div>
               </div>
             </div>
@@ -342,9 +342,9 @@ export default function CreatorChannel() {
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="channel" viewerCount={0} />
-      <MilestoneAlerts userId={currentUser?.id} roomId={null} />
-      {currentUser?.id && <AlertConfig creatorId={currentUser.id} />}
-      {currentUser?.id && <ShopDashboard creatorId={currentUser.id} />}
+      <MilestoneAlerts userId={(currentUser && currentUser.id)} roomId={null} />
+      {(currentUser && currentUser.id) && <AlertConfig creatorId={currentUser.id} />}
+      {(currentUser && currentUser.id) && <ShopDashboard creatorId={currentUser.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

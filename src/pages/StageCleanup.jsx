@@ -18,13 +18,13 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const AMBER = '#D4854A';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var AMBER = '#D4854A';
+var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const AGE_OPTIONS = [
+var AGE_OPTIONS = [
   { label: '1 day', days: 1 },
   { label: '3 days', days: 3 },
   { label: '7 days', days: 7 },
@@ -33,46 +33,46 @@ const AGE_OPTIONS = [
 ];
 
 export default function StageCleanupPage() {
-  const qc = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var qc = useQueryClient();
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', (user && user.id)],
+    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const roomId = activeRoomId;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var roomId = activeRoomId;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', (user && user.id)],
+    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    enabled: !!(user && user.id),
   });
-  const userCommunityId = userCommunity?.id || null;
-  const [ageDays, setAgeDays] = useState(7);
-  const [deletedCount, setDeletedCount] = useState(0);
+  var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var [ageDays, setAgeDays] = useState(7);
+  var [deletedCount, setDeletedCount] = useState(0);
 
-  const { data: stages = [], isLoading, refetch } = useQuery({
+  var { data: stages = [], isLoading, refetch } = useQuery({
     queryKey: ['all-stages'],
     queryFn: () => base44.entities.Stage.list('-created_date', 500),
   });
 
-  const { data: rooms = [] } = useQuery({
+  var { data: rooms = [] } = useQuery({
     queryKey: ['all-rooms-cleanup'],
     queryFn: () => base44.entities.Room.list('-created_date', 500),
   });
 
-  const roomMap = Object.fromEntries(rooms.map(r => [r.id, r]));
-  const cutoff = new Date(Date.now() - ageDays * 24 * 60 * 60 * 1000);
+  var roomMap = Object.fromEntries(rooms.map(r => [r.id, r]));
+  var cutoff = new Date(Date.now() - ageDays * 24 * 60 * 60 * 1000);
 
-  const ghostStages = stages.filter(stage => {
-    const createdAt = new Date(stage.created_date);
+  var ghostStages = stages.filter(stage => {
+    var createdAt = new Date(stage.created_date);
     if (createdAt >= cutoff) return false;
-    const room = roomMap[stage.room_id];
+    var room = roomMap[stage.room_id];
     return !room || room.status === 'ended' || !stage.is_active;
   });
 
-  const deleteMutation = useMutation({
+  var deleteMutation = useMutation({
     mutationFn: async (ids) => {
       await Promise.all(ids.map(id => base44.entities.Stage.delete(id)));
       return ids.length;
@@ -85,8 +85,8 @@ export default function StageCleanupPage() {
     onError: () => toast.error('Cleanup failed. Please try again.'),
   });
 
-  const getRoomStatus = (roomId) => {
-    const room = roomMap[roomId];
+  var getRoomStatus = (roomId) => {
+    var room = roomMap[roomId];
     if (!room) return { label: 'Room Deleted', color: '#C0392B' };
     if (room.status === 'ended') return { label: 'Room Ended', color: AMBER };
     return { label: room.status, color: 'rgba(255,255,255,0.5)' };
@@ -174,9 +174,9 @@ export default function StageCleanupPage() {
         ) : (
           <div className="space-y-2">
             {ghostStages.map(stage => {
-              const { label, color } = getRoomStatus(stage.room_id);
-              const room = roomMap[stage.room_id];
-              const ageDays2 = Math.floor((Date.now() - new Date(stage.created_date)) / 86400000);
+              var { label, color } = getRoomStatus(stage.room_id);
+              var room = roomMap[stage.room_id];
+              var ageDays2 = Math.floor((Date.now() - new Date(stage.created_date)) / 86400000);
               return (
                 <div key={stage.id} className="p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,133,74,0.15)' }}>
                   <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -193,7 +193,7 @@ export default function StageCleanupPage() {
                         )}
                       </div>
                       <div className="flex gap-4 flex-wrap" style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>
-                        <span>Room: {room?.title || 'Deleted'}</span>
+                        <span>Room: {(room && room.title) || 'Deleted'}</span>
                         <span>Created: {new Date(stage.created_date).toLocaleDateString()}</span>
                         <span>Age: {ageDays2}d</span>
                       </div>
@@ -213,11 +213,11 @@ export default function StageCleanupPage() {
         )}
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <AnalyticsOverview creatorId={user?.id} timeRange="7d" />
+          <AnalyticsOverview creatorId={(user && user.id)} timeRange="7d" />
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
           <StreamingPresets onPresetSelect={() => {}} currentPreset={null} />
-          <GreenroomQueue roomId={activeRoomId} hostId={user?.id} onApprove={() => {}} />
+          <GreenroomQueue roomId={activeRoomId} hostId={(user && user.id)} onApprove={() => {}} />
           <StreamHealthDashboard isLive={!!activeRoomId} />
           <AIModeration roomId={activeRoomId} isHost={true} />
           <GreenroomWaitlistPanel roomId={activeRoomId} currentUser={user} onAdmit={() => {}} />
@@ -237,7 +237,7 @@ export default function StageCleanupPage() {
           ))}
         </div>
       </div>
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <MilestoneAlerts userId={(user && user.id)} roomId={roomId} />
         <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );

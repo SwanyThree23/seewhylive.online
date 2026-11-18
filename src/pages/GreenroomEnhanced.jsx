@@ -40,30 +40,30 @@ import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import LiveStage from '../components/live/LiveStage';
 import { useZegoToken } from '../hooks/useZegoToken';
 
-const BG = '#080B18';
-const GOLD = '#D4AF37';
-const CRIMSON = '#800020';
-const GREEN = '#6DBF7E';
+var BG = '#080B18';
+var GOLD = '#D4AF37';
+var CRIMSON = '#800020';
+var GREEN = '#6DBF7E';
 
 export default function GreenroomEnhanced() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['greenroomenhanced-active-room', user?.id],
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: activeRoom } = useQuery({
+    queryKey: ['greenroomenhanced-active-room', (user && user.id)],
     queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+    enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-  const { token: zegoToken } = useZegoToken({ roomId: activeRoomId, userId: user?.id, enabled: !!activeRoomId && !!user?.id });
-  const [cameraStream, setCameraStream] = useState(null);
-  const [isLive, setIsLive] = useState(false);
-  const [webrtcError, setWebrtcError] = useState(null);
-  const [audioLevel, setAudioLevel] = useState(0);
-  const [selectedCam, setSelectedCam] = useState(() => { try { return localStorage.getItem('swl_pref_cam') || ''; } catch { return ''; } });
-  const [selectedMic, setSelectedMic] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || ''; } catch { return ''; } });
-  const [camResolution, setCamResolution] = useState(() => { try { return localStorage.getItem('swl_pref_resolution') || '720p'; } catch { return '720p'; } });
-  const { cameras } = useCameraDevices();
-  const [checklist, setChecklist] = useState([
+  var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var { token: zegoToken } = useZegoToken({ roomId: activeRoomId, userId: (user && user.id), enabled: !!activeRoomId && !!(user && user.id) });
+  var [cameraStream, setCameraStream] = useState(null);
+  var [isLive, setIsLive] = useState(false);
+  var [webrtcError, setWebrtcError] = useState(null);
+  var [audioLevel, setAudioLevel] = useState(0);
+  var [selectedCam, setSelectedCam] = useState(() => { try { return localStorage.getItem('swl_pref_cam') || ''; } catch { return ''; } });
+  var [selectedMic, setSelectedMic] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || ''; } catch { return ''; } });
+  var [camResolution, setCamResolution] = useState(() => { try { return localStorage.getItem('swl_pref_resolution') || '720p'; } catch { return '720p'; } });
+  var { cameras } = useCameraDevices();
+  var [checklist, setChecklist] = useState([
     { id: 'cam',   label: 'Camera connected & working', done: false, auto: true },
     { id: 'mic',   label: 'Microphone working', done: false, auto: true },
     { id: 'light', label: 'Lighting looks good', done: false, auto: false },
@@ -71,35 +71,35 @@ export default function GreenroomEnhanced() {
     { id: 'title', label: 'Room title set', done: false, auto: false },
     { id: 'ready', label: 'You\'re ready to go live!', done: false, auto: false },
   ]);
-  const [countdown, setCountdown] = useState(null);
-  const [roomPin, setRoomPin] = useState('');
-  const [encryptedPin, setEncryptedPin] = useState('');
-  const videoRef = useRef(null);
-  const analyserRef = useRef(null);
-  const animFrameRef = useRef(null);
-  const countdownTimerRef = useRef(null);
-  const audioCtxRef = useRef(null);
+  var [countdown, setCountdown] = useState(null);
+  var [roomPin, setRoomPin] = useState('');
+  var [encryptedPin, setEncryptedPin] = useState('');
+  var videoRef = useRef(null);
+  var analyserRef = useRef(null);
+  var animFrameRef = useRef(null);
+  var countdownTimerRef = useRef(null);
+  var audioCtxRef = useRef(null);
 
   useEffect(() => () => clearInterval(countdownTimerRef.current), []);
 
   // Test mic level
   useEffect(() => {
-    let stream;
+    var stream;
     async function testMic() {
       try {
-        const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+        var prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
         stream = await navigator.mediaDevices.getUserMedia({ audio: prefMic ? { deviceId: { ideal: prefMic } } : true, video: false });
-        const ctx = new AudioContext();
+        var ctx = new AudioContext();
         audioCtxRef.current = ctx;
-        const source = ctx.createMediaStreamSource(stream);
-        const analyser = ctx.createAnalyser();
+        var source = ctx.createMediaStreamSource(stream);
+        var analyser = ctx.createAnalyser();
         analyser.fftSize = 256;
         source.connect(analyser);
         analyserRef.current = analyser;
-        const data = new Uint8Array(analyser.frequencyBinCount);
+        var data = new Uint8Array(analyser.frequencyBinCount);
         function tick() {
           analyser.getByteFrequencyData(data);
-          const avg = data.reduce((a, b) => a + b, 0) / data.length;
+          var avg = data.reduce((a, b) => a + b, 0) / data.length;
           setAudioLevel(Math.min(100, avg * 2.5));
           // Auto-check mic
           if (avg > 5) setChecklist(p => p.map(c => c.id === 'mic' ? { ...c, done: true } : c));
@@ -113,7 +113,7 @@ export default function GreenroomEnhanced() {
     return () => {
       if (stream) stream.getTracks().forEach(t => t.stop());
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-      audioCtxRef.current?.close();
+      audioCtxRef.(current && current.close)();
     };
   }, []);
 
@@ -128,15 +128,15 @@ export default function GreenroomEnhanced() {
     setCameraStream(stream);
   }
 
-  const RES_MAP = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } };
+  var RES_MAP = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } };
 
   async function acquireCamera(opts = {}) {
-    const camId = opts.camId ?? selectedCam;
-    const micId = opts.micId ?? selectedMic;
-    const res = RES_MAP[opts.resolution ?? camResolution] || RES_MAP['720p'];
+    var camId = opts.camId || selectedCam;
+    var micId = opts.micId || selectedMic;
+    var res = RES_MAP[opts.resolution || camResolution] || RES_MAP['720p'];
     try {
-      cameraStream?.getTracks().forEach(t => t.stop());
-      const stream = await navigator.mediaDevices.getUserMedia({
+      (cameraStream && cameraStream.getTracks)().forEach(t => t.stop());
+      var stream = await navigator.mediaDevices.getUserMedia({
         video: { ...res, ...(camId ? { deviceId: { ideal: camId } } : {}) },
         audio: false,
       });
@@ -156,15 +156,15 @@ export default function GreenroomEnhanced() {
   function handleResolutionChange(r) { setCamResolution(r); try { if (r) localStorage.setItem('swl_pref_resolution', r); } catch {} if (cameraStream) acquireCamera({ resolution: r }); }
 
   async function generatePin() {
-    const pin = (1000 + (crypto.getRandomValues(new Uint16Array(1))[0] % 9000)).toString();
+    var pin = (1000 + (crypto.getRandomValues(new Uint16Array(1))[0] % 9000)).toString();
     setRoomPin(pin);
     // Use Web Crypto to encrypt the PIN with a room-specific salt
     try {
-      const enc = new TextEncoder();
-      const key = await crypto.subtle.importKey('raw', enc.encode(pin.padEnd(16, '0').slice(0, 16)), 'AES-GCM', false, ['encrypt']);
-      const iv = crypto.getRandomValues(new Uint8Array(12));
-      const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(pin));
-      const combined = new Uint8Array(12 + encrypted.byteLength);
+      var enc = new TextEncoder();
+      var key = await crypto.subtle.importKey('raw', enc.encode(pin.padEnd(16, '0').slice(0, 16)), 'AES-GCM', false, ['encrypt']);
+      var iv = crypto.getRandomValues(new Uint8Array(12));
+      var encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(pin));
+      var combined = new Uint8Array(12 + encrypted.byteLength);
       combined.set(iv); combined.set(new Uint8Array(encrypted), 12);
       setEncryptedPin('room://' + btoa(String.fromCharCode(...combined)).slice(0, 16) + '...');
     } catch(e) { setEncryptedPin(''); }
@@ -181,8 +181,8 @@ export default function GreenroomEnhanced() {
     }, 1000);
   }
 
-  const completedCount = checklist.filter(c => c.done).length;
-  const allReady = completedCount >= 4;
+  var completedCount = checklist.filter(c => c.done).length;
+  var allReady = completedCount >= 4;
 
   return (
     <div className="min-h-screen px-4 py-6" style={{ background: BG, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -280,7 +280,7 @@ export default function GreenroomEnhanced() {
             <div className="space-y-2">
               <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(128,0,32,0.1)', border: '1px solid rgba(128,0,32,0.2)' }}>
                 <span className="text-2xl font-black tracking-widest" style={{ color: GOLD, fontFamily: 'monospace' }}>{roomPin}</span>
-                <button onClick={() => navigator.clipboard?.writeText(roomPin)} className="ml-auto text-[11px] px-2 py-1 rounded font-bold" style={{ background: 'rgba(212,175,55,0.1)', color: GOLD }}>Copy PIN</button>
+                <button onClick={() => navigator.(clipboard && clipboard.writeText)(roomPin)} className="ml-auto text-[11px] px-2 py-1 rounded font-bold" style={{ background: 'rgba(212,175,55,0.1)', color: GOLD }}>Copy PIN</button>
               </div>
               {encryptedPin && <p className="text-[11px] text-white/25 font-mono break-all">{encryptedPin}</p>}
               <p className="text-[11px] text-white/40">Share this PIN privately. Only guests with the PIN can join your room.</p>
@@ -327,7 +327,7 @@ export default function GreenroomEnhanced() {
         <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
 
         {/* Guest RTMP panel */}
-        <GuestRTMPPanel participantId={null} userId={user?.id} />
+        <GuestRTMPPanel participantId={null} userId={(user && user.id)} />
 
         {/* Guest stream monitor */}
         <GuestStreamMonitor guestName="Guest" isStreaming={isLive} />
@@ -336,13 +336,13 @@ export default function GreenroomEnhanced() {
         <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
 
         {/* Guest destinations panel */}
-        <GuestDestinationsPanel participantUserId={user?.id || null} guestName={user?.full_name || 'Guest'} />
+        <GuestDestinationsPanel participantUserId={(user && user.id) || null} guestName={(user && user.full_name) || 'Guest'} />
 
         {/* ZEGO guest approval */}
         <ZEGOGuestApprovalPanel roomId={activeRoomId} isHost={true} />
 
         {/* SFU live stage — shows when a room is active; panelists see the grid, viewers see the feed */}
-        {activeRoomId && user?.id && (
+        {activeRoomId && (user && user.id) && (
           <LiveStage
             roomId={activeRoomId}
             role="panelist"
@@ -388,20 +388,20 @@ export default function GreenroomEnhanced() {
         </div>
 
       </div>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="greenroom" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="greenroom" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
+      {(user && user.id) && <AlertConfig creatorId={user.id} />}
+      {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.peak_viewers) || 0} />
       <BackgroundCustomizer />
     </div>
   );
