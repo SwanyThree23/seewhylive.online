@@ -732,7 +732,7 @@ function VideoPostsStrip() {
         {posts.map(function(post) {
           var thumb = post.thumbnail_url || null;
           return (
-            <Link key={post.id} to={createPageUrl('Room') + '?id=' + post.id} style={{ textDecoration: 'none', flexShrink: 0 }}>
+            <Link key={post.id} to={createPageUrl('VideoViewer') + '?id=' + post.id} style={{ textDecoration: 'none', flexShrink: 0 }}>
               <motion.div whileTap={{ scale: 0.96 }} style={{ width: 126, borderRadius: 10, overflow: 'hidden', background: 'rgba(7,7,15,0.92)', border: '1px solid rgba(255,255,255,0.07)' }}>
                 <div style={{ height: 71, position: 'relative', background: 'linear-gradient(135deg, rgba(0,100,200,0.2), rgba(7,7,15,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {thumb ? (

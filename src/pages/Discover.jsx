@@ -494,7 +494,7 @@ function VideoPostsGrid() {
         {posts.map(function(post) {
           var thumb = post.thumbnail_url || null;
           return (
-            <Link key={post.id} to={createPageUrl('Room') + '?id=' + post.id} style={{ textDecoration: 'none' }}>
+            <Link key={post.id} to={createPageUrl('VideoViewer') + '?id=' + post.id} style={{ textDecoration: 'none' }}>
               <motion.div whileTap={{ scale: 0.97 }} style={{ borderRadius: 14, overflow: 'hidden', background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}>
                 <div style={{ height: 100, position: 'relative', background: 'linear-gradient(135deg, rgba(0,80,160,0.3), rgba(7,7,15,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {thumb
