@@ -619,6 +619,11 @@ var shoutBoardMap    = new Map();  // roomId → Array<{ username, msg, ts }> (u
 var badgeShowcaseMap = new Map();  // roomId → { username, badges: string[], active }
 var liveLeaderMap    = new Map();  // roomId → Array<{ username, score }> (top 5, refreshed periodically)
 var fanArtMap        = new Map();  // roomId → { username, url, caption, active }
+// Batch 67: Reaction Leaderboard / Live Quiz Timer / Guest Star Banner / Sound Wave Visualizer
+var rxnLeaderMap     = new Map();  // roomId → Map<userId, { username, count }>
+var quizTimerMap     = new Map();  // roomId → { question, timerId, endsAt, active }
+var guestStarMap     = new Map();  // roomId → { username, title, active }
+var soundWaveMap     = new Map();  // roomId → { active }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -964,6 +969,17 @@ function getJoinStateForRoom(roomId) {
   state.liveLeader = liveLeaderMap.get(roomId) || [];
   var _fa66 = fanArtMap.get(roomId);
   state.fanArt = (_fa66 && _fa66.active) ? _fa66 : null;
+  // Batch 67
+  var _rl67 = rxnLeaderMap.get(roomId);
+  if (_rl67) {
+    var _rlArr = Array.from(_rl67.values()).sort(function(a, b) { return b.count - a.count; });
+    state.rxnLeader = _rlArr.slice(0, 5);
+  } else { state.rxnLeader = []; }
+  var _qt67 = quizTimerMap.get(roomId);
+  state.quizTimer = (_qt67 && _qt67.active) ? { question: _qt67.question, endsAt: _qt67.endsAt, active: true } : null;
+  var _gs67 = guestStarMap.get(roomId);
+  state.guestStar = (_gs67 && _gs67.active) ? _gs67 : null;
+  state.soundWave = soundWaveMap.has(roomId) ? soundWaveMap.get(roomId) : null;
   return state;
 }
 
@@ -6661,6 +6677,13 @@ io.on('connection', function(socket) {
     badgeShowcaseMap.delete(roomId);
     liveLeaderMap.delete(roomId);
     fanArtMap.delete(roomId);
+    // Batch 67 cleanup
+    rxnLeaderMap.delete(roomId);
+    var _qt67c = quizTimerMap.get(roomId);
+    if (_qt67c && _qt67c.timerId) clearTimeout(_qt67c.timerId);
+    quizTimerMap.delete(roomId);
+    guestStarMap.delete(roomId);
+    soundWaveMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -8444,6 +8467,103 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     fanArtMap.delete(roomId);
     io.to(roomId).emit('fan-art-update', null);
+  });
+
+  // ── reaction-leaderboard (Batch 67) ─────────────────────────────────────
+  socket.on('rxn-leader-tap', function(data) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId || socket.id;
+    if (!roomId) return;
+    var now = Date.now();
+    var key = userId + ':rxnldr';
+    var last = reactionRainThrottle.get(key);
+    if (last && now - last < 2000) return;
+    reactionRainThrottle.set(key, now);
+    var rl = rxnLeaderMap.get(roomId);
+    if (!rl) { rl = new Map(); rxnLeaderMap.set(roomId, rl); }
+    var username = (socket.data.username || userId).slice(0, 40);
+    var entry = rl.get(userId) || { username: username, count: 0 };
+    entry.count++;
+    rl.set(userId, entry);
+    var sorted = Array.from(rl.values()).sort(function(a, b) { return b.count - a.count; });
+    io.to(roomId).emit('rxn-leader-update', sorted.slice(0, 5));
+    addEnergy(roomId, userId, username, 1);
+  });
+
+  socket.on('rxn-leader-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    rxnLeaderMap.delete(roomId);
+    io.to(roomId).emit('rxn-leader-update', []);
+  });
+
+  // ── live-quiz-timer (Batch 67) ───────────────────────────────────────────
+  socket.on('quiz-timer-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var question = (data.question || '').trim().slice(0, 120);
+    if (!question) return;
+    var secs = Math.min(120, Math.max(5, parseInt(data.secs) || 30));
+    var endsAt = Date.now() + secs * 1000;
+    var old = quizTimerMap.get(roomId);
+    if (old && old.timerId) clearTimeout(old.timerId);
+    var timerId = setTimeout(function() {
+      var cur = quizTimerMap.get(roomId);
+      if (cur) { cur.active = false; }
+      io.to(roomId).emit('quiz-timer-update', null);
+    }, secs * 1000);
+    quizTimerMap.set(roomId, { question: question, timerId: timerId, endsAt: endsAt, active: true });
+    io.to(roomId).emit('quiz-timer-update', { question: question, endsAt: endsAt, active: true });
+  });
+
+  socket.on('quiz-timer-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var cur = quizTimerMap.get(roomId);
+    if (cur && cur.timerId) clearTimeout(cur.timerId);
+    quizTimerMap.delete(roomId);
+    io.to(roomId).emit('quiz-timer-update', null);
+  });
+
+  // ── guest-star-banner (Batch 67) ────────────────────────────────────────
+  socket.on('guest-star-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var username = (data.username || '').trim().slice(0, 40);
+    var title = (data.title || 'Guest Star').trim().slice(0, 60);
+    if (!username) return;
+    var gs = { username: username, title: title, active: true };
+    guestStarMap.set(roomId, gs);
+    io.to(roomId).emit('guest-star-update', gs);
+  });
+
+  socket.on('guest-star-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    guestStarMap.delete(roomId);
+    io.to(roomId).emit('guest-star-update', null);
+  });
+
+  // ── sound-wave-visualizer (Batch 67) ─────────────────────────────────────
+  socket.on('sound-wave-on', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    soundWaveMap.set(roomId, { active: true });
+    io.to(roomId).emit('sound-wave-update', { active: true });
+  });
+
+  socket.on('sound-wave-off', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    soundWaveMap.delete(roomId);
+    io.to(roomId).emit('sound-wave-update', null);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────

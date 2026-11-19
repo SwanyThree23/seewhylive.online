@@ -385,6 +385,44 @@ function OverlayCustomLT({ lowerThirds, guestId }) {
 }
 
 // ─── Batch 59: Timer Overlay helper ───────────────────────────────────────
+function QuizTimer67({ timer }) {
+  var [secs, setSecs] = React.useState(0);
+  React.useEffect(function() {
+    if (!timer || !timer.active) { setSecs(0); return; }
+    function tick() { setSecs(Math.max(0, Math.floor((timer.endsAt - Date.now()) / 1000))); }
+    tick();
+    var id = setInterval(tick, 500);
+    return function() { clearInterval(id); };
+  }, [timer]);
+  if (!timer || !timer.active) return null;
+  return (
+    React.createElement('div', { style: { position: 'fixed', bottom: 180, left: '50%', transform: 'translateX(-50%)', zIndex: 674, background: CARD, border: '2px solid ' + GOLD, borderRadius: 14, padding: '12px 20px', textAlign: 'center', minWidth: 220, pointerEvents: 'none' } },
+      React.createElement('div', { style: { fontFamily: 'Bebas Neue', fontSize: 13, color: GOLD, letterSpacing: 2, marginBottom: 4 } }, '❓ QUIZ'),
+      React.createElement('div', { style: { fontFamily: 'Barlow Condensed', fontSize: 15, color: TEXT, marginBottom: 8 } }, timer.question),
+      React.createElement('div', { style: { fontFamily: 'Bebas Neue', fontSize: 48, color: secs <= 5 ? '#FF1A3C' : GOLD, lineHeight: 1 } }, secs + 's')
+    )
+  );
+}
+
+function SoundWave67() {
+  var [bars, setBars] = React.useState([40, 60, 80, 55, 70, 45, 65, 50, 75, 60]);
+  React.useEffect(function() {
+    var id = setInterval(function() {
+      setBars(function() {
+        return [1,2,3,4,5,6,7,8,9,10].map(function() { return 20 + Math.floor(Math.random() * 70); });
+      });
+    }, 120);
+    return function() { clearInterval(id); };
+  }, []);
+  return (
+    React.createElement('div', { style: { position: 'absolute', bottom: 70, left: '50%', transform: 'translateX(-50%)', zIndex: 638, display: 'flex', alignItems: 'flex-end', gap: 3, height: 40, pointerEvents: 'none' } },
+      bars.map(function(h, i) {
+        return React.createElement('div', { key: i, style: { width: 4, height: h + '%', background: 'rgba(201,168,76,' + (.3 + (h / 100) * .5) + ')', borderRadius: 2, transition: 'height .1s ease' } });
+      })
+    )
+  );
+}
+
 function CountdownBurst65({ burst }) {
   var [display, setDisplay] = React.useState('');
   React.useEffect(function() {
@@ -1011,6 +1049,16 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 67: Reaction Leaderboard / Live Quiz Timer / Guest Star Banner / Sound Wave ──
+  var [rxnLeader,       setRxnLeader]       = useState([]);
+  var [showRxnLeader,   setShowRxnLeader]   = useState(false);
+  var [quizTimer,       setQuizTimer]       = useState(null);
+  var [quizDraft,       setQuizDraft]       = useState({ question: '', secs: '30' });
+  var [showQuizSet,     setShowQuizSet]     = useState(false);
+  var [guestStar,       setGuestStar]       = useState(null);
+  var [guestDraft,      setGuestDraft]      = useState({ username: '', title: 'Guest Star' });
+  var [showGuestSet,    setShowGuestSet]    = useState(false);
+  var [soundWave,       setSoundWave]       = useState(null);
   // ─── Batch 66: Shout Board / Badge Showcase / Live Leaderboard Ticker / Fan Art Spotlight ──
   var [shoutBoard,       setShoutBoard]       = useState([]);
   var [shoutDraft,       setShoutDraft]       = useState('');
@@ -1332,6 +1380,10 @@ export default function LiveRoomPage({
       if (data.badgeShowcase && data.badgeShowcase.active) setBadgeShowcase(data.badgeShowcase);
       if (Array.isArray(data.liveLeader)) setLiveLeader(data.liveLeader);
       if (data.fanArt && data.fanArt.active) setFanArt(data.fanArt);
+      if (Array.isArray(data.rxnLeader)) setRxnLeader(data.rxnLeader);
+      if (data.quizTimer && data.quizTimer.active) setQuizTimer(data.quizTimer);
+      if (data.guestStar && data.guestStar.active) setGuestStar(data.guestStar);
+      if (data.soundWave && data.soundWave.active) setSoundWave(data.soundWave);
       if (socket) socket.emit('loyalty-card-get', { roomId: roomId }, function(res) {
         if (res && typeof res.stamps === 'number') setLoyaltyCard({ stamps: res.stamps, goal: res.goal || 10 });
       });
@@ -2660,6 +2712,23 @@ export default function LiveRoomPage({
       setTimeout(function() { setSuperFollowBurst(null); }, 3500);
     });
 
+    // ── Batch 67 listeners ─────────────────────────────────────────────────
+    socket.on('rxn-leader-update', function(d) {
+      setRxnLeader(Array.isArray(d) ? d : []);
+    });
+
+    socket.on('quiz-timer-update', function(d) {
+      setQuizTimer(d || null);
+    });
+
+    socket.on('guest-star-update', function(d) {
+      setGuestStar(d || null);
+    });
+
+    socket.on('sound-wave-update', function(d) {
+      setSoundWave(d || null);
+    });
+
     // ── Batch 66 listeners ─────────────────────────────────────────────────
     socket.on('shout-board-update', function(d) {
       setShoutBoard(Array.isArray(d) ? d : []);
@@ -3301,6 +3370,10 @@ export default function LiveRoomPage({
       socket.off('badge-showcase-update');
       socket.off('live-leader-update');
       socket.off('fan-art-update');
+      socket.off('rxn-leader-update');
+      socket.off('quiz-timer-update');
+      socket.off('guest-star-update');
+      socket.off('sound-wave-update');
     };
   }, [socket]);
 
@@ -5253,6 +5326,19 @@ export default function LiveRoomPage({
                 if (fanArt) { if (socket) socket.emit('fan-art-clear', { roomId: roomId }); }
                 else { setShowFanArtSet(function(s) { return !s; }); }
               }},
+              { emoji: '⚡', label: 'Rxn Board', active: showRxnLeader, onTap: function() { setShowRxnLeader(function(s) { return !s; }); } },
+              { emoji: quizTimer ? '🛑' : '❓', label: quizTimer ? 'End Quiz' : 'Quiz Timer', active: !!quizTimer || showQuizSet, onTap: function() {
+                if (quizTimer) { if (socket) socket.emit('quiz-timer-clear', { roomId: roomId }); }
+                else { setShowQuizSet(function(s) { return !s; }); }
+              }},
+              { emoji: guestStar ? '🛑' : '⭐', label: guestStar ? 'End Guest' : 'Guest Star', active: !!guestStar || showGuestSet, onTap: function() {
+                if (guestStar) { if (socket) socket.emit('guest-star-clear', { roomId: roomId }); }
+                else { setShowGuestSet(function(s) { return !s; }); }
+              }},
+              { emoji: soundWave ? '🔇' : '🔊', label: soundWave ? 'Wave Off' : 'Sound Wave', active: !!soundWave, onTap: function() {
+                if (soundWave) { if (socket) socket.emit('sound-wave-off', { roomId: roomId }); }
+                else { if (socket) socket.emit('sound-wave-on', { roomId: roomId }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -5392,6 +5478,10 @@ export default function LiveRoomPage({
               }},
               { emoji: '📣', label: 'Shout Board', active: showShoutPanel, onTap: function() { setShowShoutPanel(function(s) { return !s; }); } },
               { emoji: '🏆', label: 'Leaderboard', active: showLeader, onTap: function() { setShowLeader(function(s) { return !s; }); } },
+              { emoji: '⚡', label: 'React Board', active: showRxnLeader, onTap: function() {
+                setShowRxnLeader(function(s) { return !s; });
+                if (socket) socket.emit('rxn-leader-tap', { roomId: roomId });
+              }},
             ] : [])),
           ].map(function(tool) {
             return (
@@ -13453,6 +13543,75 @@ export default function LiveRoomPage({
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 67: Guest Star Banner ══ */}
+      {guestStar && guestStar.active && (
+        <div style={{ position: 'fixed', top: 56, left: 0, right: 0, zIndex: 673, background: 'linear-gradient(90deg,rgba(201,168,76,.18),rgba(201,168,76,.06))', borderBottom: '2px solid ' + GOLD, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 22 }}>⭐</span>
+          <div>
+            <div style={{ fontFamily: 'Bebas Neue', fontSize: 20, color: GOLD, letterSpacing: 1 }}>{guestStar.username}</div>
+            <div style={{ fontFamily: 'Barlow Condensed', fontSize: 13, color: TEXT, opacity: .8 }}>{guestStar.title}</div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 67: Live Quiz Timer overlay ══ */}
+      {quizTimer && quizTimer.active && (
+        React.createElement(QuizTimer67, { timer: quizTimer })
+      )}
+
+      {/* ══ Batch 67: Reaction Leaderboard panel ══ */}
+      {showRxnLeader && rxnLeader.length > 0 && (
+        <div style={{ position: 'fixed', bottom: 185, right: 12, zIndex: 662, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 12, minWidth: 160 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 14, color: GOLD, marginBottom: 6, letterSpacing: 1 }}>⚡ REACTION BOARD</div>
+          {rxnLeader.map(function(entry, i) {
+            return <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+              <span style={{ fontFamily: 'Bebas Neue', fontSize: 16, color: i === 0 ? GOLD : TEXT, width: 20, textAlign: 'center' }}>{i + 1}</span>
+              <span style={{ fontFamily: 'Barlow Condensed', fontSize: 14, color: TEXT, flex: 1 }}>{entry.username}</span>
+              <span style={{ fontFamily: 'DM Mono', fontSize: 11, color: GOLD }}>{entry.count}</span>
+            </div>;
+          })}
+        </div>
+      )}
+
+      {/* ══ Batch 67: Sound Wave visualizer ══ */}
+      {soundWave && soundWave.active && (
+        React.createElement(SoundWave67, {})
+      )}
+
+      {/* ══ Batch 67: Quiz Timer Set panel (host) ══ */}
+      {showQuizSet && role === 'host' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 18, color: GOLD, marginBottom: 10 }}>❓ Live Quiz Timer</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input value={quizDraft.question} onChange={function(e) { setQuizDraft(Object.assign({}, quizDraft, { question: e.target.value })); }} placeholder="Question (max 120 chars)" maxLength={120} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <input type="number" min="5" max="120" value={quizDraft.secs} onChange={function(e) { setQuizDraft(Object.assign({}, quizDraft, { secs: e.target.value })); }} placeholder="Seconds (5–120)" style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'DM Mono', fontSize: 13 }} />
+            <button onClick={function() {
+              var q = quizDraft.question.trim();
+              if (!q) return;
+              if (socket) socket.emit('quiz-timer-set', { roomId: roomId, question: q, secs: parseInt(quizDraft.secs) || 30 });
+              setShowQuizSet(false);
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '8px', fontFamily: 'Bebas Neue', fontSize: 16, cursor: 'pointer' }}>Start Quiz</button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 67: Guest Star Set panel (host) ══ */}
+      {showGuestSet && role === 'host' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 18, color: GOLD, marginBottom: 10 }}>⭐ Guest Star</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input value={guestDraft.username} onChange={function(e) { setGuestDraft(Object.assign({}, guestDraft, { username: e.target.value })); }} placeholder="Guest username" maxLength={40} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <input value={guestDraft.title} onChange={function(e) { setGuestDraft(Object.assign({}, guestDraft, { title: e.target.value })); }} placeholder="Title (e.g. Guest Star, Special Guest)" maxLength={60} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <button onClick={function() {
+              var u = guestDraft.username.trim();
+              if (!u) return;
+              if (socket) socket.emit('guest-star-set', { roomId: roomId, username: u, title: guestDraft.title || 'Guest Star' });
+              setShowGuestSet(false);
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '8px', fontFamily: 'Bebas Neue', fontSize: 16, cursor: 'pointer' }}>Announce Guest</button>
           </div>
         </div>
       )}
