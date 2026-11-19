@@ -6,6 +6,8 @@ import { usePushNotifications } from './usePushNotifications.js';
 import rtcManager from './webrtc.js';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { TourModal } from './design/ui.jsx';
+import { injectMotion } from './design/theme.js';
 
 /* Always-loaded: default tab + persistent overlays */
 import LiveRoomPage from './components/LiveRoomPage.jsx';
@@ -337,6 +339,8 @@ var GiftPayConfirmModal = function(props) {
   );
 };
 
+injectMotion();
+
 export default function App() {
   var [splash, setSplash] = useState(true);
   var [activeTab, setActiveTab] = useState('room');
@@ -397,6 +401,9 @@ export default function App() {
     });
     setActiveTab('room');
   }
+  var [showTour, setShowTour] = useState(function() {
+    try { return !localStorage.getItem('sw_tour_done'); } catch(e) { return false; }
+  });
   var [showAgeGate, setShowAgeGate] = useState(function() {
     var key = (localStorage.getItem('sw_role') === 'host' || localStorage.getItem('sw_role') === 'cohost') ? 'sw_age_ok_host' : 'sw_age_ok_viewer';
     return !localStorage.getItem(key);
@@ -1495,6 +1502,18 @@ export default function App() {
   return (
     <div style={{ minHeight: '100dvh', background: '#0E0C09', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: '@keyframes tabSlideIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}' }} />
+      {showTour && !showWizard && (
+        <TourModal
+          storageKey="sw_tour_done"
+          onDone={function() { setShowTour(false); }}
+          steps={[
+            { icon: '🎙', title: 'Welcome to SeeWhy LIVE', body: 'The live streaming platform that puts creators first. 90% of every tip goes straight to you.' },
+            { icon: '📡', title: 'Go Live Instantly', body: 'Tap GO LIVE to start streaming in seconds. Invite up to 9 panel guests to your show.' },
+            { icon: '👁', title: 'Discover Creators', body: 'Browse live streams, support your favourites, and join panel rooms.' },
+            { icon: '💰', title: 'Earn Real Money', body: 'Collect tips, super chats, and direct payments from your fans — 90/10 split, always.' },
+          ]}
+        />
+      )}
       {showWizard && role === 'host' && (
         <Suspense fallback={null}>
           <GoLiveWizard
@@ -2306,7 +2325,7 @@ export default function App() {
         </Suspense>
       )}
       {activeTab !== 'room' && (
-        <MobileNavBar activeTab={activeTab} setActiveTab={function(tab) { setActiveTab(tab); if (tab === 'dms') setDmUnread(0); }} isLive={isLive} auraUnread={auraUnread} dmUnread={dmUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
+        <MobileNavBar activeTab={activeTab} setActiveTab={function(tab) { setActiveTab(tab); if (tab === 'dms') setDmUnread(0); }} isLive={isLive} onGoLive={handleGoLive} auraUnread={auraUnread} dmUnread={dmUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
       )}
       <WelcomeAudio socket={socketRef.current} />
 

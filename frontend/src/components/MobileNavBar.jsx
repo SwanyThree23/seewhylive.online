@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { injectMotion } from '../design/theme.js';
 
 var BG     = 'rgba(14,12,9,.97)';
 var GOLD   = '#C9A84C';
@@ -9,7 +10,9 @@ var MUTED  = '#8A7A62';
 var DIM    = '#3D3020';
 var CARD   = '#241C12';
 
-var ANIM = '@keyframes navPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}} @keyframes drawerIn{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}';
+injectMotion();
+
+var ANIM = '@keyframes navPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}} @keyframes drawerIn{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}} @keyframes goLivePulse{0%,100%{box-shadow:0 -4px 20px rgba(128,0,32,.7),0 0 0 0 rgba(255,26,60,.4)}50%{box-shadow:0 -4px 28px rgba(128,0,32,.9),0 0 0 6px rgba(255,26,60,0)}}';
 
 // Primary nav: 5 items — hidden when room is active (room has its own bottom bar)
 var PRIMARY = [
@@ -51,6 +54,7 @@ export default function MobileNavBar(props) {
   var activeTab    = props.activeTab;
   var setActiveTab = props.setActiveTab;
   var isLive       = props.isLive;
+  var onGoLive     = props.onGoLive;
   var auraUnread   = props.auraUnread || 0;
   var dmUnread     = props.dmUnread   || 0;
   var onAuraClick  = props.onAuraClick;
@@ -161,28 +165,37 @@ export default function MobileNavBar(props) {
           var isMoreActive = showMore;
 
           if (isCenter) {
+            var handleCenterTap = function() {
+              if (isLive) { goTo(item.id); return; }
+              if (onGoLive) { onGoLive(); return; }
+              goTo(item.id);
+            };
             return (
-              <div key={item.id} onClick={function() { goTo(item.id); }}
+              <div key={item.id} onClick={handleCenterTap}
                 style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, cursor: 'pointer', position: 'relative', userSelect: 'none', WebkitUserSelect: 'none' }}>
                 <div style={{ position: 'relative' }}>
                   {isLive && (
                     <div style={{ position: 'absolute', inset: -5, borderRadius: '50%', border: '2px solid rgba(255,30,30,.6)', animation: 'navPulse 1.5s ease infinite', pointerEvents: 'none' }} />
                   )}
                   <div style={{
-                    width: 46, height: 46, borderRadius: '50%',
-                    background: isActive ? 'linear-gradient(135deg,#800020,#C01838)' : 'linear-gradient(135deg,#2A1A28,#3D1028)',
+                    width: 50, height: 50, borderRadius: '50%',
+                    background: isLive
+                      ? 'linear-gradient(135deg,#800020,#C01838)'
+                      : 'linear-gradient(135deg,#800020,#FF1A3C)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    marginTop: -16,
-                    boxShadow: isActive ? '0 -4px 20px rgba(128,0,32,.7)' : '0 -2px 10px rgba(0,0,0,.4)',
-                    fontSize: 22, border: '2px solid ' + (isActive ? BURG : DIM),
-                    transition: 'background .2s',
+                    marginTop: -18,
+                    boxShadow: isLive
+                      ? '0 -4px 20px rgba(128,0,32,.7)'
+                      : '0 -4px 20px rgba(255,26,60,.5), 0 -2px 8px rgba(0,0,0,.5)',
+                    fontSize: 22, border: '2px solid ' + (isLive ? BURG : RED),
+                    animation: !isLive ? 'goLivePulse 2.5s ease infinite' : 'none',
+                    transition: 'transform .15s',
                   }}>
-                    {item.icon}
+                    {isLive ? '📡' : '🎙'}
                   </div>
                 </div>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1, color: isActive ? GOLD : MUTED, display: 'flex', alignItems: 'center', gap: 2 }}>
-                  {isLive ? 'LIVE' : item.label}
-                  {isLive && <span style={{ color: RED, fontSize: 8 }}>●</span>}
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1, color: isLive ? RED : GOLD, display: 'flex', alignItems: 'center', gap: 2, fontWeight: 700 }}>
+                  {isLive ? <><span style={{ color: RED, fontSize: 8 }}>●</span> LIVE</> : 'GO LIVE'}
                 </span>
               </div>
             );
