@@ -161,7 +161,8 @@ export default function VideoViewer() {
     );
   }
 
-  var isPaywalled = room.is_exclusive && !me;
+  var isOwnVideo = me && room.host_id && me.id === room.host_id;
+  var isPaywalled = room.is_exclusive && !isOwnVideo;
   var videoUrl = room.recording_url || '';
   var progress = duration ? (currentTime / duration) * 100 : 0;
 
