@@ -3360,6 +3360,16 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('guest-cam-state', { guestId: guestId, camOff: camOff });
   });
 
+  // ── toggle-mic (self) ─────────────────────────────────────────────────
+  socket.on('toggle-mic', function(data) {
+    if (!data) return;
+    var roomId  = socket.data.roomId;
+    var guestId = socket.data.userId;
+    if (!roomId || !guestId) return;
+    var muted = !!data.muted;
+    io.to(roomId).emit('guest-mic-state', { guestId: guestId, muted: muted });
+  });
+
   // ── mute-guest ─────────────────────────────────────────────────────────
   socket.on('mute-guest', function(data) {
     if (!data) return;

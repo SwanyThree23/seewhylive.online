@@ -96,6 +96,12 @@ router.get('/creators', async function(req, res) {
   }
 });
 
+// GET /api/users/me — authenticated user's own profile (served by index.js using SQLite user_profiles).
+// This stub runs first to prevent /:username from capturing 'me' as a username.
+router.get('/me', requireAuth, function(req, res, next) {
+  return next('router');
+});
+
 // GET /api/users/:username — public profile by username (must be after all fixed-path /api/users/* routes)
 router.get('/:username', async function(req, res) {
   var username = String(req.params.username || '').trim().slice(0, 64);
