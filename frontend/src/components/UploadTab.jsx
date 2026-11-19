@@ -71,7 +71,7 @@ export default function UploadTab({ addToast, isLive }) {
     if (durationError) { addToast && addToast('Video must be 10 minutes or less', 'error'); return; }
     if (!title.trim()) { addToast && addToast('Enter a title', 'error'); return; }
     if (!ytApiKey.trim()) { setShowApiCfg(true); addToast && addToast('Configure YouTube API key first', 'error'); return; }
-    addToast && addToast('YouTube upload — coming soon', 'info');
+    // YouTube Data API upload not yet wired — button is disabled; this code path is unreachable
   }
 
   var removeHistory = function(id) {
@@ -261,8 +261,8 @@ export default function UploadTab({ addToast, isLive }) {
 
           {/* Upload + config buttons */}
           <div style={{ display: 'flex', gap: 8 }}>
-            <button disabled={!!durationError} onClick={startUpload}
-              style={{ flex: 2, padding: '10px', background: durationError ? 'rgba(255,26,60,.08)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (durationError ? 'rgba(255,26,60,.35)' : 'rgba(201,168,76,.2)'), borderRadius: 8, color: durationError ? '#FF6B81' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: durationError ? 'not-allowed' : 'default', opacity: 0.7 }}>
+            <button disabled={true}
+              style={{ flex: 2, padding: '10px', background: durationError ? 'rgba(255,26,60,.08)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (durationError ? 'rgba(255,26,60,.35)' : 'rgba(201,168,76,.12)'), borderRadius: 8, color: durationError ? '#FF6B81' : '#5A4F3A', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'not-allowed', opacity: 0.5, pointerEvents: 'none' }}>
               {durationError ? '✕ VIDEO TOO LONG' : '▶ UPLOAD TO YOUTUBE — COMING SOON'}
             </button>
             <button onClick={function() { setShowApiCfg(function(v) { return !v; }); }}

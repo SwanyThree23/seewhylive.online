@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-var RTMP_URL = 'rtmp://2.24.194.112:1935/live';
+var RTMP_URL = 'rtmp://seewhylive.online/live';
 var STREAM_KEY_PLACEHOLDER = 'seewhy-stream-key-here';
 
 var QUALITY_PRESETS = [
