@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
 var GOLD  = '#C9A84C';
@@ -7,6 +7,12 @@ var BG    = '#0E0C09';
 var CREAM = '#F0E8D4';
 var RED   = '#FF1A3C';
 var FONT  = 'Barlow Condensed, sans-serif';
+
+var API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
+
+function authHeaders() {
+  return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('auth_token') || '') };
+}
 
 var inp = {
   width: '100%', padding: '10px 12px', boxSizing: 'border-box',
@@ -106,20 +112,20 @@ function EpisodePlannerTab(props) {
   function addEpisode() {
     var nextEp = episodes.length + 1;
     setEpisodes(function(eps) {
-      return eps.concat([{ id: Date.now(), season: 1, ep: nextEp, title: '', synopsis: '', status: 'Draft', releaseDate: '' }]);
+      return eps.concat([{ _localId: Date.now(), season: 1, ep: nextEp, title: '', synopsis: '', status: 'Draft', releaseDate: '' }]);
     });
   }
 
-  function updateEpisode(id, field, val) {
+  function updateEpisode(localId, field, val) {
     setEpisodes(function(eps) {
       return eps.map(function(ep) {
-        return ep.id === id ? Object.assign({}, ep, { [field]: val }) : ep;
+        return ep._localId === localId ? Object.assign({}, ep, { [field]: val }) : ep;
       });
     });
   }
 
-  function removeEpisode(id) {
-    setEpisodes(function(eps) { return eps.filter(function(ep) { return ep.id !== id; }); });
+  function removeEpisode(localId) {
+    setEpisodes(function(eps) { return eps.filter(function(ep) { return ep._localId !== localId; }); });
   }
 
   return (
@@ -137,28 +143,28 @@ function EpisodePlannerTab(props) {
       {episodes.map(function(ep) {
         var statusColor = STATUS_COLORS[ep.status] || '#8B8B8B';
         return (
-          <div key={ep.id} style={Object.assign({}, card, { borderColor: statusColor + '33' })}>
+          <div key={ep._localId} style={Object.assign({}, card, { borderColor: statusColor + '33' })}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
               <span style={{ fontFamily: FONT, fontWeight: 900, fontSize: 12, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }}>S{ep.season}E{ep.ep}</span>
-              <input style={Object.assign({}, inp, { flex: 1, padding: '7px 10px' })} value={ep.title} onChange={function(e) { updateEpisode(ep.id, 'title', e.target.value); }} placeholder="Episode title…" />
-              <select value={ep.status} onChange={function(e) { updateEpisode(ep.id, 'status', e.target.value); }}
+              <input style={Object.assign({}, inp, { flex: 1, padding: '7px 10px' })} value={ep.title} onChange={function(e) { updateEpisode(ep._localId, 'title', e.target.value); }} placeholder="Episode title…" />
+              <select value={ep.status} onChange={function(e) { updateEpisode(ep._localId, 'status', e.target.value); }}
                 style={{ padding: '7px 10px', borderRadius: 8, background: statusColor + '22', border: '1px solid ' + statusColor + '55', color: statusColor, fontFamily: FONT, fontWeight: 900, fontSize: 11, cursor: 'pointer', outline: 'none', flexShrink: 0 }}>
                 {STATUSES.map(function(s) { return <option key={s} value={s}>{s}</option>; })}
               </select>
-              <button onClick={function() { removeEpisode(ep.id); }}
+              <button onClick={function() { removeEpisode(ep._localId); }}
                 style={{ padding: '6px 8px', borderRadius: 6, background: 'transparent', border: '1px solid rgba(255,26,60,0.2)', color: 'rgba(255,26,60,0.5)', cursor: 'pointer', fontSize: 12, flexShrink: 0 }}>
                 ✕
               </button>
             </div>
-            <textarea style={Object.assign({}, inp, { height: 60, resize: 'none', marginBottom: 8 })} value={ep.synopsis} onChange={function(e) { updateEpisode(ep.id, 'synopsis', e.target.value); }} placeholder="Episode synopsis / story beat…" />
+            <textarea style={Object.assign({}, inp, { height: 60, resize: 'none', marginBottom: 8 })} value={ep.synopsis} onChange={function(e) { updateEpisode(ep._localId, 'synopsis', e.target.value); }} placeholder="Episode synopsis / story beat…" />
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ flex: 1 }}>
                 <label style={Object.assign({}, lbl, { marginTop: 0 })}>Release Date</label>
-                <input type="date" style={inp} value={ep.releaseDate} onChange={function(e) { updateEpisode(ep.id, 'releaseDate', e.target.value); }} />
+                <input type="date" style={inp} value={ep.releaseDate} onChange={function(e) { updateEpisode(ep._localId, 'releaseDate', e.target.value); }} />
               </div>
               <div style={{ flex: 1 }}>
                 <label style={Object.assign({}, lbl, { marginTop: 0 })}>Season</label>
-                <input type="number" min="1" max="10" style={inp} value={ep.season} onChange={function(e) { updateEpisode(ep.id, 'season', Number(e.target.value)); }} />
+                <input type="number" min="1" max="10" style={inp} value={ep.season} onChange={function(e) { updateEpisode(ep._localId, 'season', Number(e.target.value)); }} />
               </div>
             </div>
           </div>
@@ -200,7 +206,7 @@ function ChecklistTab(props) {
             style={Object.assign({}, inp, { marginBottom: 16, cursor: 'pointer' })}>
             <option value="">— choose episode —</option>
             {episodes.map(function(ep) {
-              return <option key={ep.id} value={ep.id}>S{ep.season}E{ep.ep} {ep.title || '(untitled)'}</option>;
+              return <option key={ep._localId} value={ep._localId}>S{ep.season}E{ep.ep} {ep.title || '(untitled)'}</option>;
             })}
           </select>
           {epId && (
@@ -261,7 +267,7 @@ function DistributionTab(props) {
             style={Object.assign({}, inp, { marginBottom: 16, cursor: 'pointer' })}>
             <option value="">— choose episode —</option>
             {episodes.filter(function(ep) { return ep.status === 'Released' || ep.status === 'Scheduled'; }).map(function(ep) {
-              return <option key={ep.id} value={ep.id}>S{ep.season}E{ep.ep} {ep.title || '(untitled)'} [{ep.status}]</option>;
+              return <option key={ep._localId} value={ep._localId}>S{ep.season}E{ep.ep} {ep.title || '(untitled)'} [{ep.status}]</option>;
             })}
           </select>
           {!selectedEp && episodes.filter(function(ep) { return ep.status === 'Released' || ep.status === 'Scheduled'; }).length === 0 && (
@@ -294,9 +300,109 @@ function DistributionTab(props) {
 }
 
 export default function EpisodeCreatorStudio() {
+  var [searchParams] = useSearchParams();
+  var seriesIdParam = searchParams.get('seriesId');
+
   var [tab, setTab] = useState('bible');
   var [bible, setBible] = useState({ title: '', logline: '', genre: 'Drama', tone: 'Dark & Gritty', world: '', conflict: '', characters: '' });
   var [episodes, setEpisodes] = useState([]);
+  var [savedSeriesId, setSavedSeriesId] = useState(seriesIdParam || null);
+  var [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | saved | error
+
+  // Load existing series if seriesId is in URL
+  useEffect(function() {
+    if (!seriesIdParam) return;
+    fetch(API_BASE + '/episodes/series/' + seriesIdParam, { headers: authHeaders() })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.id) {
+          setBible(function(b) { return Object.assign({}, b, { title: data.title, genre: data.genre, description: data.description }); });
+          setSavedSeriesId(data.id);
+        }
+      })
+      .catch(function() {});
+    fetch(API_BASE + '/episodes/series/' + seriesIdParam + '/episodes', { headers: authHeaders() })
+      .then(function(r) { return r.json(); })
+      .then(function(rows) {
+        if (Array.isArray(rows)) {
+          setEpisodes(rows.map(function(r, i) {
+            return { _localId: r.id || (Date.now() + i), id: r.id, season: r.season, ep: r.ep_number, title: r.title, synopsis: r.script, status: r.status === 'published' ? 'Released' : 'Draft', releaseDate: '' };
+          }));
+        }
+      })
+      .catch(function() {});
+  }, [seriesIdParam]);
+
+  function handleSave() {
+    if (!bible.title.trim()) {
+      setSaveStatus('error');
+      setTimeout(function() { setSaveStatus('idle'); }, 2000);
+      return;
+    }
+    setSaveStatus('saving');
+
+    var seriesPayload = {
+      title: bible.title,
+      genre: bible.genre,
+      description: (bible.logline || '') + (bible.world ? '\n\n' + bible.world : ''),
+      emoji: '🎬',
+      color: '#7B2D8B',
+    };
+
+    var seriesPromise;
+    if (savedSeriesId) {
+      seriesPromise = fetch(API_BASE + '/episodes/series/' + savedSeriesId, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify(seriesPayload),
+      }).then(function(r) { return r.json(); });
+    } else {
+      seriesPromise = fetch(API_BASE + '/episodes/series', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(seriesPayload),
+      }).then(function(r) { return r.json(); });
+    }
+
+    seriesPromise.then(function(series) {
+      if (!series || !series.id) { setSaveStatus('error'); return; }
+      setSavedSeriesId(series.id);
+
+      // Save each episode that doesn't have a server id yet
+      var newEps = episodes.filter(function(ep) { return !ep.id; });
+      var epPromises = newEps.map(function(ep) {
+        return fetch(API_BASE + '/episodes/series/' + series.id + '/episodes', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            season: ep.season,
+            ep_number: ep.ep,
+            title: ep.title || 'Untitled Episode',
+            script: ep.synopsis || '',
+            status: ep.status === 'Released' ? 'published' : 'draft',
+            thumbnail_emoji: '🎬',
+          }),
+        }).then(function(r) { return r.json(); });
+      });
+
+      Promise.all(epPromises).then(function(savedEps) {
+        // Attach server IDs to local episode list
+        setEpisodes(function(curr) {
+          var saved = savedEps.filter(function(e) { return e && e.id; });
+          var idx = 0;
+          return curr.map(function(ep) {
+            if (!ep.id && saved[idx]) {
+              var s = saved[idx++];
+              return Object.assign({}, ep, { id: s.id });
+            }
+            return ep;
+          });
+        });
+        setSaveStatus('saved');
+        setTimeout(function() { setSaveStatus('idle'); }, 2500);
+      }).catch(function() { setSaveStatus('error'); });
+    }).catch(function() { setSaveStatus('error'); });
+  }
 
   var TABS = [
     { id: 'bible',    label: '📖 Story Bible' },
@@ -305,6 +411,11 @@ export default function EpisodeCreatorStudio() {
     { id: 'dist',     label: '📡 Distribute' },
   ];
 
+  var saveLabel = saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : saveStatus === 'error' ? '⚠ Error' : '💾 Save';
+  var saveBg    = saveStatus === 'saved' ? 'rgba(34,197,94,0.15)' : saveStatus === 'error' ? 'rgba(255,26,60,0.12)' : 'rgba(201,168,76,0.12)';
+  var saveBdr   = saveStatus === 'saved' ? 'rgba(34,197,94,0.4)'  : saveStatus === 'error' ? 'rgba(255,26,60,0.4)'  : 'rgba(201,168,76,0.3)';
+  var saveClr   = saveStatus === 'saved' ? '#22C55E'              : saveStatus === 'error' ? RED                    : GOLD;
+
   return (
     <div style={{ minHeight: '100vh', background: BG, color: CREAM, fontFamily: 'sans-serif' }}>
       {/* Top bar */}
@@ -312,6 +423,10 @@ export default function EpisodeCreatorStudio() {
         <Link to={createPageUrl('EpisodeSeries')} style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: 20, lineHeight: 1 }}>‹</Link>
         <span style={{ fontFamily: FONT, fontWeight: 900, fontSize: 14, color: GOLD, letterSpacing: '0.12em', textTransform: 'uppercase' }}>🎬 Episode Creator Studio</span>
         <div style={{ flex: 1 }} />
+        <button onClick={handleSave} disabled={saveStatus === 'saving'}
+          style={{ fontFamily: FONT, fontWeight: 900, fontSize: 10, letterSpacing: '0.08em', cursor: saveStatus === 'saving' ? 'default' : 'pointer', border: '1px solid ' + saveBdr, background: saveBg, color: saveClr, padding: '4px 10px', borderRadius: 6, transition: 'all 0.2s' }}>
+          {saveLabel}
+        </button>
         <Link to={createPageUrl('GoLive')} style={{ fontFamily: FONT, fontWeight: 900, fontSize: 10, color: RED, letterSpacing: '0.1em', textDecoration: 'none', border: '1px solid ' + RED + '55', padding: '4px 10px', borderRadius: 6 }}>
           🔴 GO LIVE
         </Link>
