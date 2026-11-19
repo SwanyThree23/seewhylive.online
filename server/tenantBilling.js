@@ -1,6 +1,7 @@
 'use strict';
 
 var db = require('./db');
+var logger = require('./lib/logger');
 var crypto = require('crypto');
 var { getStripe } = require('./stripe');
 
@@ -64,7 +65,7 @@ async function handleTenantCheckoutCompleted(session) {
   var planTier = meta.planTier;
   var subdomain = meta.desiredSubdomain;
   if (!isValidPlan(planTier) || !subdomain) {
-    console.error('[tenantBilling] webhook missing/invalid metadata', meta);
+    logger.error('[tenantBilling] webhook missing/invalid metadata', meta);
     return null;
   }
 

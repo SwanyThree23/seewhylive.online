@@ -1,6 +1,7 @@
 'use strict';
 
 var express  = require('express');
+var logger = require('../lib/logger');
 var https    = require('https');
 var fs       = require('fs');
 var os       = require('os');
@@ -49,7 +50,7 @@ var SB_HOST = (function() {
     if (!h) throw new Error('empty hostname');
     return h;
   } catch (e) {
-    console.error('[media] SUPABASE_URL ' + (process.env.SUPABASE_URL ? 'is malformed' : 'is not set') + ' — media upload will fail');
+    logger.error('[media] SUPABASE_URL ' + (process.env.SUPABASE_URL ? 'is malformed' : 'is not set') + ' — media upload will fail');
     return '';
   }
 }());

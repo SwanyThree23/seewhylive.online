@@ -106,7 +106,7 @@ async function createPPVPaymentIntent(roomId, viewerId, priceUsd, creatorStripeA
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)
     `).run(id, roomId, viewerId, paymentIntent.id, amountCents, creatorCents, platformCents, now);
   } catch (dbErr) {
-    console.error('[stripe] Failed to persist PPV unlock record:', dbErr.message);
+    logger.error('[stripe] Failed to persist PPV unlock record', { err: dbErr.message });
   }
 
   return {
@@ -184,7 +184,7 @@ async function verifyPPVPayment(paymentIntentId, roomId, viewerId) {
   try {
     db.prepare("UPDATE ppv_unlocks SET status = 'succeeded', token_issued = 1 WHERE payment_intent_id = ?").run(paymentIntentId);
   } catch (dbErr) {
-    console.error('[stripe] Failed to finalize PPV unlock status:', dbErr.message);
+    logger.error('[stripe] Failed to finalize PPV unlock status', { err: dbErr.message });
   }
 
   return { token: token };
@@ -215,13 +215,13 @@ async function handleStripeWebhook(rawBody, signature) {
         WHERE payment_intent_id = ?
       `).run(now, pi.id);
     } catch (dbErr) {
-      console.error('[stripe] Webhook DB update failed for PI ' + pi.id + ':', dbErr.message);
+      logger.error('[stripe] Webhook DB update failed', { piId: pi.id, err: dbErr.message });
     }
     var pending = _pendingGiftCallbacks.get(pi.id);
     if (pending) {
       _pendingGiftCallbacks.delete(pi.id);
       try { pending.cb(); } catch (cbErr) {
-        console.error('[stripe] Gift commit callback failed for PI ' + pi.id + ':', cbErr.message);
+        logger.error('[stripe] Gift commit callback failed', { piId: pi.id, err: cbErr.message });
       }
     }
   }
@@ -239,7 +239,7 @@ async function handleStripeWebhook(rawBody, signature) {
             .run(require('crypto').randomUUID(), txRow.user_id, -txRow.amount, 'refund', String(piId), Math.floor(Date.now() / 1000));
         }
       } catch (refundErr) {
-        console.error('[stripe] FUEL refund deduction failed for PI ' + piId + ':', refundErr.message);
+        logger.error('[stripe] FUEL refund deduction failed', { piId: piId, err: refundErr.message });
       }
     }
   }
@@ -272,7 +272,7 @@ async function handleStripeWebhook(rawBody, signature) {
           ).run(planUserId, planTier, session.subscription || null, now2, now2);
           logger.info('[stripe] platform plan activated: user=' + planUserId + ' tier=' + planTier);
         } catch (planErr) {
-          console.error('[stripe] platform_plan activation failed:', planErr.message);
+          logger.error('[stripe] platform_plan activation failed', { err: planErr.message });
         }
       }
     } else if (sessionType === 'creator_subscription') {
@@ -287,7 +287,7 @@ async function handleStripeWebhook(rawBody, signature) {
           moderation.addSubscription(subRowId, subId, creatorId, subTier, subCents, session.subscription || null);
           logger.info('[stripe] creator subscription activated: subscriber=' + subId + ' creator=' + creatorId + ' tier=' + subTier);
         } catch (subErr) {
-          console.error('[stripe] creator_subscription activation failed:', subErr.message);
+          logger.error('[stripe] creator_subscription activation failed', { err: subErr.message });
         }
       }
     } else {
@@ -295,7 +295,7 @@ async function handleStripeWebhook(rawBody, signature) {
       try {
         await tenantBilling.handleTenantCheckoutCompleted(session);
       } catch (err) {
-        console.error('[stripe] tenant provisioning failed for session ' + session.id + ':', err.message);
+        logger.error('[stripe] tenant provisioning failed', { sessionId: session.id, err: err.message });
       }
     }
   }
@@ -308,7 +308,7 @@ async function handleStripeWebhook(rawBody, signature) {
         db.exec('CREATE TABLE IF NOT EXISTS platform_subscriptions (user_id TEXT PRIMARY KEY, tier TEXT NOT NULL, stripe_subscription_id TEXT, status TEXT NOT NULL DEFAULT \'active\', created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)');
         db.prepare('UPDATE platform_subscriptions SET status = \'cancelled\', updated_at = ? WHERE stripe_subscription_id = ?')
           .run(Math.floor(Date.now() / 1000), deletedSub.id);
-      } catch (e) { console.error('[stripe] platform_plan cancel failed:', e.message); }
+      } catch (e) { logger.error('[stripe] platform_plan cancel failed', { err: e.message }); }
     }
   }
 

@@ -1,6 +1,7 @@
 'use strict';
 
 var EventEmitter = require('events');
+var logger = require('./lib/logger');
 var fs = require('fs');
 var path = require('path');
 var { v4: uuidv4 } = require('uuid');
@@ -37,7 +38,7 @@ class SwanyBot extends EventEmitter {
     try {
       fs.mkdirSync(path.dirname(this.logPath), { recursive: true });
     } catch (mkdirErr) {
-      console.warn('[SwanyBot] Could not create log directory:', mkdirErr.message);
+      logger.warn('[SwanyBot] Could not create log directory:', mkdirErr.message);
       this.logPath = path.join(require('os').tmpdir(), 'swanybot.log');
     }
 
@@ -55,7 +56,7 @@ class SwanyBot extends EventEmitter {
 
     fs.appendFile(this.logPath, entry, function(err) {
       if (err) {
-        console.error('[SwanyBot] Log write failed:', err.message);
+        logger.error('[SwanyBot] Log write failed:', err.message);
       }
     });
 
@@ -515,7 +516,7 @@ class SwanyBot extends EventEmitter {
     if (Object.prototype.hasOwnProperty.call(this.rules, ruleName)) {
       this.rules[ruleName] = enabled;
     } else {
-      console.warn('[SwanyBot] toggleRule: unknown rule "' + ruleName + '"');
+      logger.warn('[SwanyBot] toggleRule: unknown rule "' + ruleName + '"');
     }
   }
 

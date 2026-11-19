@@ -65,31 +65,32 @@ router.post('/encrypt-key', requireAuth, function (req, res) {
   try {
     res.json({ success: true, encryptedKey: encryptKey(streamKey) });
   } catch (err) {
-    console.error('encrypt-key failed', err);
+    logger.error('encrypt-key failed', { err: err.message });
     res.status(500).json({ error: 'encryption failed' });
   }
 });
 
 var PLATFORM_RE = /^[a-zA-Z0-9_-]{1,64}$/;
+var LABEL_RE = /^[^<>"]{1,80}$/;
 router.post('/add-destination', requireAuth, async function (req, res) {
   var body = req.body || {};
   if (!body.streamKey || !body.streamUrl) return res.status(400).json({ error: 'streamUrl and streamKey are required' });
   if (!isValidRtmpUrl(body.streamUrl)) return res.status(400).json({ error: 'streamUrl must start with rtmp:// or rtmps://' });
-  var safeStreamId = body.streamId ? String(body.streamId) : null;
-  if (safeStreamId && !STREAM_ID_RE.test(safeStreamId)) return res.status(400).json({ error: 'invalid streamId' });
   var safePlatform = body.platform ? String(body.platform) : null;
   if (safePlatform && !PLATFORM_RE.test(safePlatform)) return res.status(400).json({ error: 'invalid platform' });
+  var safeLabel = body.label ? String(body.label).slice(0, 80) : null;
+  if (safeLabel && !LABEL_RE.test(safeLabel)) return res.status(400).json({ error: 'invalid label' });
   var safeStreamKey = typeof body.streamKey === 'string' ? body.streamKey.slice(0, 500) : '';
   if (!safeStreamKey) return res.status(400).json({ error: 'streamKey is required' });
   try {
     var encryptedKey = encryptKey(safeStreamKey);
     var result = await db.query(
-      'INSERT INTO stream_destinations (stream_id, platform, stream_url, stream_key, status, is_enabled, user_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
-      [safeStreamId, safePlatform, body.streamUrl, encryptedKey, 'disconnected', true, req.user.id]
+      'INSERT INTO stream_destinations (platform, label, rtmp_url, stream_key_encrypted, status, is_enabled, user_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
+      [safePlatform, safeLabel, body.streamUrl, encryptedKey, 'disconnected', true, req.user.id]
     );
     res.json({ success: true, destination: result.rows[0] });
   } catch (err) {
-    console.error('add-destination failed', err);
+    logger.error('add-destination failed', { err: err.message });
     res.status(500).json({ error: 'insert failed' });
   }
 });
@@ -114,9 +115,9 @@ router.post('/start-stream', requireAuth, async function (req, res) {
       return res.status(404).json({ error: 'destination not found' });
     }
     var destination = result.rows[0];
-    var plainKey = decryptKey(destination.stream_key);
+    var plainKey = decryptKey(destination.stream_key_encrypted || destination.stream_key);
     var inputUrl = RTMP_INGEST_BASE + '/' + streamId;
-    var outputUrl = destination.stream_url.replace(/\/$/, '') + '/' + plainKey;
+    var outputUrl = (destination.rtmp_url || destination.stream_url).replace(/\/$/, '') + '/' + plainKey;
     var ffmpegProcess = spawn('ffmpeg', ['-i', inputUrl, '-c', 'copy', '-f', 'flv', outputUrl]);
 
     ffmpegProcess.stderr.on('data', function (chunk) {
@@ -132,7 +133,7 @@ router.post('/start-stream', requireAuth, async function (req, res) {
     res.json({ success: true, pid: ffmpegProcess.pid });
   } catch (err) {
     activeProcesses.delete(destinationId);
-    console.error('start-stream failed', err);
+    logger.error('start-stream failed', { err: err.message });
     res.status(500).json({ error: 'could not start stream' });
   }
 });
@@ -150,7 +151,7 @@ router.post('/stop-stream', requireAuth, async function (req, res) {
     await db.query('UPDATE stream_destinations SET status = $1 WHERE id = $2', ['disconnected', destinationId]);
     res.json({ success: true });
   } catch (err) {
-    console.error('stop-stream db update failed', err);
+    logger.error('stop-stream db update failed', { err: err.message });
     res.json({ success: true });
   }
 });

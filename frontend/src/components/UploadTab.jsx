@@ -71,7 +71,7 @@ export default function UploadTab({ addToast, isLive }) {
     if (durationError) { addToast && addToast('Video must be 10 minutes or less', 'error'); return; }
     if (!title.trim()) { addToast && addToast('Enter a title', 'error'); return; }
     if (!ytApiKey.trim()) { setShowApiCfg(true); addToast && addToast('Configure YouTube API key first', 'error'); return; }
-    addToast && addToast('YouTube upload requires backend integration — coming soon', 'error');
+    addToast && addToast('YouTube upload — coming soon', 'info');
   }
 
   var removeHistory = function(id) {
@@ -261,9 +261,9 @@ export default function UploadTab({ addToast, isLive }) {
 
           {/* Upload + config buttons */}
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={startUpload}
-              style={{ flex: 2, padding: '10px', background: durationError ? 'rgba(255,26,60,.08)' : 'linear-gradient(135deg,rgba(255,0,0,.25),rgba(192,0,0,.15))', border: '1px solid ' + (durationError ? 'rgba(255,26,60,.35)' : 'rgba(255,68,68,.4)'), borderRadius: 8, color: durationError ? '#FF6B81' : '#FF6B6B', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: durationError ? 'not-allowed' : 'pointer', opacity: durationError ? 0.6 : 1 }}>
-              {durationError ? '✕ VIDEO TOO LONG' : '▶ UPLOAD TO YOUTUBE'}
+            <button disabled={!!durationError} onClick={startUpload}
+              style={{ flex: 2, padding: '10px', background: durationError ? 'rgba(255,26,60,.08)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (durationError ? 'rgba(255,26,60,.35)' : 'rgba(201,168,76,.2)'), borderRadius: 8, color: durationError ? '#FF6B81' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: durationError ? 'not-allowed' : 'default', opacity: 0.7 }}>
+              {durationError ? '✕ VIDEO TOO LONG' : '▶ UPLOAD TO YOUTUBE — COMING SOON'}
             </button>
             <button onClick={function() { setShowApiCfg(function(v) { return !v; }); }}
               style={{ flex: 1, padding: '10px', background: showApiCfg ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (showApiCfg ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 8, color: showApiCfg ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>

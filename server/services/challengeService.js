@@ -1,6 +1,7 @@
 // server/services/challengeService.js
 'use strict';
 const db = require('../db'); // <-- verify this matches your actual db module
+var logger = require('../lib/logger');
 const loyaltyService = require('./loyaltyService');
 
 async function createChallenge({ tenantId, title, description, pointsReward, startsAt, endsAt }) {
@@ -74,7 +75,7 @@ async function completeChallenge(challengeId, userId, tenantId) {
       `DELETE FROM challenge_completions WHERE challenge_id = $1 AND user_id = $2`,
       [challengeId, userId]
     ).catch(function(delErr) {
-      console.error('[challengeService] compensating delete failed challengeId=%s userId=%s err=%s', challengeId, userId, delErr && delErr.message);
+      logger.error('[challengeService] compensating delete failed challengeId=%s userId=%s err=%s', challengeId, userId, delErr && delErr.message);
     });
     throw err;
   }

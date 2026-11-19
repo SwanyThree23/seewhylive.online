@@ -1,6 +1,7 @@
 'use strict';
 
 var express     = require('express');
+var logger = require('../lib/logger');
 var multer      = require('multer');
 var path        = require('path');
 var os          = require('os');
@@ -63,7 +64,7 @@ db.query([
   '  updated_at  TIMESTAMPTZ DEFAULT NOW()',
   ')',
 ].join('\n')).catch(function(e) {
-  console.error('[musicVideo] table init error:', e.message);
+  logger.error('[musicVideo] table init error:', e.message);
 });
 
 router.post('/submit', requireAuth, mvSubmitRateLimit, upload.single('audio'), async function(req, res) {
@@ -86,12 +87,12 @@ router.post('/submit', requireAuth, mvSubmitRateLimit, upload.single('audio'), a
     var musicVideoQueue = require('../queue/musicVideoQueue').musicVideoQueue;
     
     await musicVideoQueue.add('render', { jobId: result.rows[0].id }).catch(function(e) {
-      console.error('[musicVideo] queue enqueue failed (worker orphan-sweep will catch it):', e && e.stack || e);
+      logger.error('[musicVideo] queue enqueue failed (worker orphan-sweep will catch it):', e && e.stack || e);
     });
     res.json({ jobId: result.rows[0].id, status: 'pending' });
   } catch (e) {
     fs.unlink(req.file.path, function() {});
-    console.error('[musicVideo] submit error:', e.message);
+    logger.error('[musicVideo] submit error:', e.message);
     res.status(500).json({ error: 'Failed to queue job' });
   }
 });

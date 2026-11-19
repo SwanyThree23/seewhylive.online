@@ -1,5 +1,6 @@
 'use strict';
 var express    = require('express');
+var logger = require('../lib/logger');
 var router     = express.Router();
 var crypto     = require('crypto');
 var requireAuth = require('../middleware/auth');
@@ -22,7 +23,7 @@ router.get('/series', requireAuth, function(req, res) {
     ).all(req.user.id);
     res.json(rows);
   } catch (e) {
-    console.error('GET /api/episodes/series', e);
+    logger.error('GET /api/episodes/series', e);
     res.status(500).json({ error: 'db error' });
   }
 });
@@ -36,7 +37,7 @@ router.get('/series/:id', requireAuth, function(req, res) {
     if (!row) return res.status(404).json({ error: 'not found' });
     res.json(row);
   } catch (e) {
-    console.error('GET /api/episodes/series/:id', e);
+    logger.error('GET /api/episodes/series/:id', e);
     res.status(500).json({ error: 'db error' });
   }
 });
@@ -63,7 +64,7 @@ router.post('/series', requireAuth, function(req, res) {
     var row = db(req).prepare('SELECT * FROM ep_series WHERE id = ?').get(id);
     res.status(201).json(row);
   } catch (e) {
-    console.error('POST /api/episodes/series', e);
+    logger.error('POST /api/episodes/series', e);
     res.status(500).json({ error: 'db error' });
   }
 });
@@ -98,7 +99,7 @@ router.patch('/series/:id', requireAuth, function(req, res) {
     var row = db(req).prepare('SELECT * FROM ep_series WHERE id = ?').get(req.params.id);
     res.json(row);
   } catch (e) {
-    console.error('PATCH /api/episodes/series/:id', e);
+    logger.error('PATCH /api/episodes/series/:id', e);
     res.status(500).json({ error: 'db error' });
   }
 });
@@ -116,7 +117,7 @@ router.delete('/series/:id', requireAuth, function(req, res) {
       .run(req.params.id, req.user.id);
     res.json({ ok: true });
   } catch (e) {
-    console.error('DELETE /api/episodes/series/:id', e);
+    logger.error('DELETE /api/episodes/series/:id', e);
     res.status(500).json({ error: 'db error' });
   }
 });
@@ -136,7 +137,7 @@ router.get('/series/:seriesId/episodes', requireAuth, function(req, res) {
     ).all(req.params.seriesId);
     res.json(rows);
   } catch (e) {
-    console.error('GET episodes', e);
+    logger.error('GET episodes', e);
     res.status(500).json({ error: 'db error' });
   }
 });
@@ -176,7 +177,7 @@ router.post('/series/:seriesId/episodes', requireAuth, function(req, res) {
     var row = db(req).prepare('SELECT * FROM ep_episodes WHERE id = ?').get(id);
     res.status(201).json(row);
   } catch (e) {
-    console.error('POST episode', e);
+    logger.error('POST episode', e);
     res.status(500).json({ error: 'db error' });
   }
 });
@@ -219,7 +220,7 @@ router.patch('/:episodeId', requireAuth, function(req, res) {
     var row = db(req).prepare('SELECT * FROM ep_episodes WHERE id = ?').get(req.params.episodeId);
     res.json(row);
   } catch (e) {
-    console.error('PATCH episode', e);
+    logger.error('PATCH episode', e);
     res.status(500).json({ error: 'db error' });
   }
 });
@@ -237,7 +238,7 @@ router.delete('/:episodeId', requireAuth, function(req, res) {
       .run(Date.now(), existing.series_id);
     res.json({ ok: true });
   } catch (e) {
-    console.error('DELETE episode', e);
+    logger.error('DELETE episode', e);
     res.status(500).json({ error: 'db error' });
   }
 });

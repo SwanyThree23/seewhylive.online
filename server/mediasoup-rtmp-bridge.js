@@ -29,6 +29,7 @@ var path = require('path');
 var os = require('os');
 
 var mediasoup = require('./mediasoup');
+var logger = require('./lib/logger');
 
 // roomId -> { transport, audioConsumer, videoConsumer, ffmpegProcess, sdpPath, restartCount }
 var bridges = new Map();
@@ -202,7 +203,7 @@ async function startBridge(roomId, producerIds) {
     };
 
     ffmpegProcess.on('exit', function(code, signal) {
-      console.warn('[bridge:' + roomId + '] ffmpeg exited code=' + code + ' signal=' + signal);
+      logger.warn('[bridge] ffmpeg exited', { roomId: roomId, code: code, signal: signal });
       var current = bridges.get(roomId);
       if (!current || current.ffmpegProcess !== ffmpegProcess) return; // already replaced/stopped
       if (current.restartCount < MAX_RESTARTS) {
@@ -210,7 +211,7 @@ async function startBridge(roomId, producerIds) {
         setTimeout(function() {
           stopBridge(roomId).finally(function() {
             startBridge(roomId, producerIds).catch(function(err) {
-              console.error('[bridge:' + roomId + '] restart failed: ' + err.message);
+              logger.error('[bridge] restart failed', { roomId: roomId, err: err.message });
             });
           });
         }, 2000 * current.restartCount);

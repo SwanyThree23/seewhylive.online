@@ -142,16 +142,16 @@ var pushSubscribeRateLimit = rateLimit({
 
 // ─── Optional module loading (graceful fallback) ──────────────────────────────
 var analytics = null;
-try { analytics = require('./analytics'); } catch (e) { console.warn('[routes] analytics module unavailable'); }
+try { analytics = require('./analytics'); <x} catch (e) { logger.warn('[routes]> analytics module unavailable'); }
 
 var moderation = null;
-try { moderation = require('./moderation'); } catch (e) { console.warn('[routes] moderation module unavailable'); }
+try { moderation = require('./moderation'); <x} catch (e) { logger.warn('[routes]> moderation module unavailable'); }
 
 var search = null;
-try { search = require('./search'); } catch (e) { console.warn('[routes] search module unavailable'); }
+try { search = require('./search'); <x} catch (e) { logger.warn('[routes]> search module unavailable'); }
 
 var notifications = null;
-try { notifications = require('./notifications'); } catch (e) { console.warn('[routes] notifications module unavailable'); }
+try { notifications = require('./notifications'); <x} catch (e) { logger.warn('[routes]> notifications module unavailable'); }
 if (notifications) {
   var _vapidSubject = process.env.VAPID_SUBJECT;
   if (!_vapidSubject || !_vapidSubject.startsWith('mailto:')) {
@@ -161,13 +161,13 @@ if (notifications) {
 }
 
 var vault = null;
-try { vault = require('./vault'); } catch (e) { console.warn('[routes] vault module unavailable — stream keys will not be encrypted at rest'); }
+try { vault = require('./vault'); <x} catch (e) { logger.warn('[routes]> vault module unavailable — stream keys will not be encrypted at rest'); }
 
 var aura = null;
-try { aura = require('./aura'); } catch (e) { console.warn('[routes] aura module unavailable'); }
+try { aura = require('./aura'); <x} catch (e) { logger.warn('[routes]> aura module unavailable'); }
 
 var stripe = null;
-try { stripe = require('./stripe'); } catch (e) { console.warn('[routes] stripe module unavailable'); }
+try { stripe = require('./stripe'); <x} catch (e) { logger.warn('[routes]> stripe module unavailable'); }
 
 // ─── In-memory session state ──────────────────────────────────────────────────
 var _userProfiles = {};
@@ -1297,7 +1297,7 @@ function spawnFanout(streamId, ingestUrl, resolvedDests, restartCount) {
     // Only log errors, not progress
     var msg = data.toString();
     if (msg.includes('Error') || msg.includes('error')) {
-      console.error('[fanout:%s]', streamId, msg.trim().substring(0, 120));
+      logger.error('[fanout] ffmpeg stderr', { streamId: streamId, msg: msg.trim().substring(0, 120) });
     }
   });
 
@@ -1347,7 +1347,7 @@ router.post('/rtmp/authorize', async function(req, res) {
     if (result.rows[0].stream_key !== key) return res.status(401).json({ ok: false, error: 'unauthorized' });
     return res.status(200).json({ ok: true });
   } catch (e) {
-    console.error('[rtmp/authorize] error:', e.message);
+    logger.error('[rtmp/authorize] error', { err: e.message });
     return res.status(401).json({ ok: false, error: 'unauthorized' });
   }
 });
@@ -1366,7 +1366,7 @@ router.get('/streams/:id/ingest', requireAuth, async function(req, res) {
     var ingestUrl = 'rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + row.id + '?key=' + row.stream_key;
     return res.status(200).json({ ok: true, ingest_url: ingestUrl, stream_key: row.stream_key });
   } catch (e) {
-    console.error('[streams/ingest] error:', e.message);
+    logger.error('[streams/ingest] error', { err: e.message });
     return res.status(500).json({ ok: false, error: 'server error' });
   }
 });
@@ -1386,7 +1386,7 @@ router.post('/streams/:id/rotate-key', requireAuth, async function(req, res) {
     var ingestUrl = 'rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + req.params.id + '?key=' + newKey;
     return res.status(200).json({ ok: true, stream_key: newKey, ingest_url: ingestUrl });
   } catch (e) {
-    console.error('[streams/rotate-key] error:', e.message);
+    logger.error('[streams/rotate-key] error', { err: e.message });
     return res.status(500).json({ ok: false, error: 'server error' });
   }
 });
@@ -1413,11 +1413,11 @@ router.post('/rtmp/auth', async function(req, res) {
       [streamId]
     );
     if (result.rowCount === 0) {
-      console.warn('[rtmp/auth] unknown stream_id: ' + streamId);
+      logger.warn('[rtmp/auth] unknown stream_id', { streamId: streamId });
     }
     return res.status(200).json({ ok: true });
   } catch (e) {
-    console.error('[rtmp/auth] error:', e.message);
+    logger.error('[rtmp/auth] error', { err: e.message });
     return res.status(200).json({ ok: true });
   }
 });
@@ -1451,11 +1451,11 @@ router.post('/rtmp/done', async function(req, res) {
     // Remove stale HLS segments (streamId already validated by UUID regex above)
     require('child_process').exec(
       'rm -rf /var/www/html/hls/' + streamId,
-      function(err) { if (err) console.warn('[rtmp/done] HLS cleanup failed:', err.message); }
+      function(err) { if (err) logger.warn('[rtmp/done] HLS cleanup failed', { err: err.message }); }
     );
     return res.status(200).json({ ok: true });
   } catch (e) {
-    console.error('[rtmp/done] error:', e.message);
+    logger.error('[rtmp/done] error', { err: e.message });
     return res.status(200).json({ ok: true });
   }
 });

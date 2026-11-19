@@ -1,6 +1,7 @@
 'use strict';
 
 var { OpenAI } = require('openai');
+var logger = require('./lib/logger');
 var fs = require('fs');
 var path = require('path');
 var os = require('os');
@@ -56,20 +57,20 @@ function flushBuffer(roomId, onTranscript) {
 
   // Guard against path traversal: roomId must be safe alphanumeric characters only
   if (!/^[A-Za-z0-9_-]{1,64}$/.test(roomId)) {
-    console.error('[whisper] Unsafe roomId rejected:', roomId);
+    logger.error('[whisper] Unsafe roomId rejected:', roomId);
     return;
   }
   var tmpDir  = os.tmpdir();
   var tmpFile = path.join(tmpDir, 'seewhy-audio-' + roomId + '-' + Date.now() + '.webm');
   // Verify the resolved path is actually inside tmpdir (defense-in-depth)
   if (path.resolve(tmpFile).indexOf(path.resolve(tmpDir)) !== 0) {
-    console.error('[whisper] Path traversal attempt blocked for room:', roomId);
+    logger.error('[whisper] Path traversal attempt blocked for room:', roomId);
     return;
   }
 
   fs.writeFile(tmpFile, combined, function(writeErr) {
     if (writeErr) {
-      console.error('[whisper] Failed to write temp file for room ' + roomId + ':', writeErr.message);
+      logger.error('[whisper] Failed to write temp file for room ' + roomId + ':', writeErr.message);
       return;
     }
 
@@ -84,17 +85,17 @@ function flushBuffer(roomId, onTranscript) {
           try {
             onTranscript('[TRANSCRIPT] ' + text);
           } catch (cbErr) {
-            console.error('[whisper] onTranscript callback threw:', cbErr.message);
+            logger.error('[whisper] onTranscript callback threw:', cbErr.message);
           }
         }
       })
       .catch(function(apiErr) {
-        console.error('[whisper] Whisper API error for room ' + roomId + ':', apiErr.message);
+        logger.error('[whisper] Whisper API error for room ' + roomId + ':', apiErr.message);
       })
       .finally(function() {
         fs.unlink(tmpFile, function(unlinkErr) {
           if (unlinkErr) {
-            console.warn('[whisper] Could not delete temp file ' + tmpFile + ':', unlinkErr.message);
+            logger.warn('[whisper] Could not delete temp file ' + tmpFile + ':', unlinkErr.message);
           }
         });
       });

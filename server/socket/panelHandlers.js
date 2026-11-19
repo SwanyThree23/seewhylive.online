@@ -6,6 +6,7 @@
 
 const panelService = require('../services/panelService');
 const loyaltyService = require('../services/loyaltyService');
+var logger = require('../lib/logger');
 
 const panelKickedUsers     = new Map(); // roomId -> Set<userId> (cleared when room ends or host approves)
 const panelJoinThrottle    = new Map(); // userId -> last join timestamp
@@ -163,7 +164,7 @@ function registerPanelHandlers(io, socket, rooms) {
       var released = await panelService.releaseSlot({ roomId, userId });
       if (released > 0) io.to(roomId).emit('panel:slot_released', { roomId, userId });
     } catch (err) {
-      console.error('[panelHandlers] disconnect release error:', err);
+      logger.error('[panelHandlers] disconnect release error:', err);
     }
   });
 
@@ -251,7 +252,7 @@ function registerPanelHandlers(io, socket, rooms) {
       await panelService.setMuted({ roomId, userId: targetUserId, isMuted });
       io.to(roomId).emit('panel:slot_muted', { roomId, userId: targetUserId, isMuted });
     } catch (err) {
-      console.error('[panelHandlers] panel:mute error:', err);
+      logger.error('[panelHandlers] panel:mute error:', err);
     }
   });
 
@@ -261,7 +262,7 @@ function registerPanelHandlers(io, socket, rooms) {
       await panelService.muteAllSlots({ roomId });
       io.to(roomId).emit('panel:all_muted', { roomId });
     } catch (err) {
-      console.error('[panelHandlers] panel:mute_all error:', err);
+      logger.error('[panelHandlers] panel:mute_all error:', err);
     }
   });
 
@@ -275,7 +276,7 @@ function registerPanelHandlers(io, socket, rooms) {
       io.to(roomId).emit('panel:camera_command', { roomId: roomId, userId: targetUserId, deviceId: deviceId || null });
       if (ack) ack({ ok: true });
     } catch (err) {
-      console.error('[panelHandlers] panel:remote_camera error:', err);
+      logger.error('[panelHandlers] panel:remote_camera error:', err);
       if (ack) ack({ ok: false });
     }
   });
@@ -292,7 +293,7 @@ function registerPanelHandlers(io, socket, rooms) {
       io.to(roomId).emit('panel:background_command', { roomId: roomId, userId: targetUserId, background: background });
       if (ack) ack({ ok: true });
     } catch (err) {
-      console.error('[panelHandlers] panel:remote_background error:', err);
+      logger.error('[panelHandlers] panel:remote_background error:', err);
       if (ack) ack({ ok: false });
     }
   });
@@ -309,7 +310,7 @@ function registerPanelHandlers(io, socket, rooms) {
       panelHandThrottle.set(userId, _prNow);
       io.volatile.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: userId, raised: raised, displayName: socket.data.username || null });
     } catch (err) {
-      console.error('[panelHandlers] panel:raise_hand error:', err);
+      logger.error('[panelHandlers] panel:raise_hand error:', err);
     }
   });
 
@@ -325,7 +326,7 @@ function registerPanelHandlers(io, socket, rooms) {
       panelReactThrottle.set(userId, _preNow);
       io.volatile.to(roomId).emit('panel:reaction', { roomId: roomId, guestId: userId, emoji: emoji });
     } catch (err) {
-      console.error('[panelHandlers] panel:react error:', err);
+      logger.error('[panelHandlers] panel:react error:', err);
     }
   });
 
@@ -430,7 +431,7 @@ function registerPanelHandlers(io, socket, rooms) {
       io.to(roomId).emit('panel:stage_background_changed', { roomId: roomId, presetId: presetId });
       if (ack) ack({ ok: true });
     } catch (err) {
-      console.error('[panelHandlers] panel:set_stage_background error:', err);
+      logger.error('[panelHandlers] panel:set_stage_background error:', err);
       if (ack) ack({ ok: false, error: 'Panel error' });
     }
   });

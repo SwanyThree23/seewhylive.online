@@ -1,6 +1,7 @@
 'use strict';
 
 var axios = require('axios');
+var logger = require('./lib/logger');
 var crypto = require('crypto');
 
 function _cacheKey(text, lang) {
@@ -30,7 +31,7 @@ async function detectAndTranslate(text) {
 
   var apiKey = process.env.DEEPL_API_KEY;
   if (!apiKey) {
-    console.warn('[translation] DEEPL_API_KEY is not set; returning original text.');
+    logger.warn('[translation] DEEPL_API_KEY is not set; returning original text.');
     return { original: text, translated: text, detectedLang: 'UNK', targetLang: 'EN' };
   }
 
@@ -50,7 +51,7 @@ async function detectAndTranslate(text) {
 
     var translations = response.data.translations;
     if (!translations || translations.length === 0) {
-      console.warn('[translation] DeepL returned empty translations array.');
+      logger.warn('[translation] DeepL returned empty translations array.');
       return { original: text, translated: text, detectedLang: 'UNK', targetLang: 'EN' };
     }
 
@@ -73,10 +74,10 @@ async function detectAndTranslate(text) {
     return result;
   } catch (err) {
     if (err.response && err.response.status === 456) {
-      console.warn('[translation] DeepL quota exceeded (HTTP 456); returning original text.');
+      logger.warn('[translation] DeepL quota exceeded (HTTP 456); returning original text.');
       return { original: text, translated: text, detectedLang: 'UNK', targetLang: 'EN' };
     }
-    console.error('[translation] detectAndTranslate error:', err.message);
+    logger.error('[translation] detectAndTranslate error:', err.message);
     return { original: text, translated: text, detectedLang: 'UNK', targetLang: 'EN' };
   }
 }
@@ -129,10 +130,10 @@ async function translateTo(text, targetLang) {
     return result;
   } catch (err) {
     if (err.response && err.response.status === 456) {
-      console.warn('[translation] DeepL quota exceeded; returning original.');
+      logger.warn('[translation] DeepL quota exceeded; returning original.');
       return { translated: text, targetLang: safeLang };
     }
-    console.error('[translation] translateTo error:', err.message);
+    logger.error('[translation] translateTo error:', err.message);
     return { translated: text, targetLang: safeLang };
   }
 }

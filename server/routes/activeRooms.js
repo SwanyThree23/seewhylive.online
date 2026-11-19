@@ -1,5 +1,6 @@
 'use strict';
 var express = require('express');
+var logger = require('../lib/logger');
 var router = express.Router();
 var requireAuth = require('../middleware/auth');
 var db = require('../db');
@@ -36,7 +37,7 @@ router.get('/', async function(req, res) {
     });
     return res.json({ rooms: out });
   } catch (e) {
-    console.error('[active-rooms] read failed', e.message);
+    logger.error('[active-rooms] read failed', e.message);
     return res.json({ rooms: [] });
   }
 });
