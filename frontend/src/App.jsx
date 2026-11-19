@@ -2225,7 +2225,7 @@ export default function App() {
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>DURATION</div>
               </div>
               <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents * 0.9) / 100).toFixed(2)}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(creatorCents(streamRecap.earningsCents) / 100).toFixed(2)}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>YOUR CUT (90%)</div>
               </div>
               <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
@@ -2249,7 +2249,7 @@ export default function App() {
                   return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: i < streamRecap.topGifters.length - 1 ? 5 : 0 }}>
                       <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: '#F0E8D4' }}>{medals[i] || '·'} {g.username}</span>
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C' }}>${(Math.floor(g.totalCents * 0.9) / 100).toFixed(2)}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C' }}>${(creatorCents(g.totalCents) / 100).toFixed(2)}</span>
                     </div>
                   );
                 })}

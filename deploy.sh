@@ -70,9 +70,11 @@ echo "  ✓ Dependencies installed"
 echo "▶ Creating runtime directories..."
 mkdir -p /opt/seewhy/data
 mkdir -p /opt/seewhy/media
+mkdir -p /opt/seewhy/clips
 mkdir -p /var/log/seewhy
 mkdir -p /var/www/html/hls
 chmod 755 /var/www/html/hls
+chmod 755 /opt/seewhy/clips
 echo "  ✓ Directories ready"
 
 # ── 6a. Deploy MediaMTX config ────────────────────────────────────────────────
@@ -110,7 +112,7 @@ if pm2 describe "$PM2_APP" > /dev/null 2>&1; then
   pm2 restart "$PM2_APP" --update-env
 else
   echo "  App not in PM2 — starting fresh..."
-  pm2 start "$REPO_DIR/ecosystem.config.js"
+  pm2 start "$REPO_DIR/ecosystem.config.cjs"
 fi
 pm2 save --force
 echo "  ✓ PM2 running & saved"
