@@ -447,7 +447,10 @@ export default function App() {
   var [giftFloats, setGiftFloats] = useState([]);
   var [panelReactions, setPanelReactions] = useState([]); // [{ id, guestId, emoji, ts }]
   var [gifts, setGifts] = useState([]);
-  var [giftPayIntent, setGiftPayIntent] = useState(null); // { clientSecret, paymentIntentId } | null
+  var [giftPayIntent,        setGiftPayIntent]        = useState(null); // { clientSecret, paymentIntentId } | null
+  var [superChatPayIntent,   setSuperChatPayIntent]   = useState(null); // super-chat Stripe PI
+  var [superChatTtsPayIntent,setSuperChatTtsPayIntent] = useState(null); // super-chat:tts Stripe PI
+  var [merchPayIntent,       setMerchPayIntent]       = useState(null); // merch-order Stripe PI
 
   var socketRef      = useRef(null);
   var roleRef        = useRef(role);
@@ -763,6 +766,48 @@ export default function App() {
     socket.on('gift-payment-intent', function(data) {
       if (!data || !data.clientSecret) return;
       setGiftPayIntent({ clientSecret: data.clientSecret, paymentIntentId: data.paymentIntentId || null });
+    });
+
+    socket.on('super-chat-payment-intent', function(data) {
+      if (!data || !data.clientSecret) return;
+      setSuperChatPayIntent({ clientSecret: data.clientSecret, paymentIntentId: data.paymentIntentId || null });
+    });
+    socket.on('super-chat-error', function(data) {
+      if (!data) return;
+      addToast((data && data.message) || 'Super chat failed', 'error');
+    });
+
+    socket.on('super-chat-tts-payment-intent', function(data) {
+      if (!data || !data.clientSecret) return;
+      setSuperChatTtsPayIntent({ clientSecret: data.clientSecret, paymentIntentId: data.paymentIntentId || null });
+    });
+    socket.on('super-chat-tts-error', function(data) {
+      if (!data) return;
+      addToast((data && data.message) || 'Voice super chat failed', 'error');
+    });
+
+    socket.on('merch-order-payment-intent', function(data) {
+      if (!data || !data.clientSecret) return;
+      setMerchPayIntent({ clientSecret: data.clientSecret, paymentIntentId: data.paymentIntentId || null });
+    });
+    socket.on('merch-order-error', function(data) {
+      if (!data) return;
+      addToast((data && data.message) || 'Merch order failed', 'error');
+    });
+
+    socket.on('clip-render-done', function(data) {
+      if (!data) return;
+      addToast('Clip ready: ' + (data.label || 'clip'), 'success');
+    });
+    socket.on('clip-render-error', function(data) {
+      if (!data) return;
+      addToast((data && data.error) || 'Clip render failed', 'error');
+    });
+
+    socket.on('host:primary-changed', function(data) {
+      if (!data) return;
+      var isPrimary = data.socketId === socket.id;
+      if (isPrimary) addToast('You are now the primary host', 'success');
     });
 
     socket.on('bot-log', function(log) {
@@ -1324,6 +1369,15 @@ export default function App() {
       socket.off('panel:layout_update');
       socket.off('panel:reaction');
       socket.off('gift-payment-intent');
+      socket.off('super-chat-payment-intent');
+      socket.off('super-chat-error');
+      socket.off('super-chat-tts-payment-intent');
+      socket.off('super-chat-tts-error');
+      socket.off('merch-order-payment-intent');
+      socket.off('merch-order-error');
+      socket.off('clip-render-done');
+      socket.off('clip-render-error');
+      socket.off('host:primary-changed');
       socket.off('stage-invite');
       socket.off('stage-remove');
       socket.off('sound-fx');
@@ -2377,6 +2431,36 @@ export default function App() {
           <GiftPayConfirmModal
             clientSecret={giftPayIntent.clientSecret}
             onClose={function() { setGiftPayIntent(null); }}
+          />
+        </Elements>
+      )}
+
+      {/* Super Chat Stripe payment confirmation modal */}
+      {superChatPayIntent && (
+        <Elements stripe={stripePromise}>
+          <GiftPayConfirmModal
+            clientSecret={superChatPayIntent.clientSecret}
+            onClose={function() { setSuperChatPayIntent(null); }}
+          />
+        </Elements>
+      )}
+
+      {/* Voice Super Chat Stripe payment confirmation modal */}
+      {superChatTtsPayIntent && (
+        <Elements stripe={stripePromise}>
+          <GiftPayConfirmModal
+            clientSecret={superChatTtsPayIntent.clientSecret}
+            onClose={function() { setSuperChatTtsPayIntent(null); }}
+          />
+        </Elements>
+      )}
+
+      {/* Merch order Stripe payment confirmation modal */}
+      {merchPayIntent && (
+        <Elements stripe={stripePromise}>
+          <GiftPayConfirmModal
+            clientSecret={merchPayIntent.clientSecret}
+            onClose={function() { setMerchPayIntent(null); }}
           />
         </Elements>
       )}
