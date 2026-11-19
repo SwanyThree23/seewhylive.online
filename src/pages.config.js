@@ -52,6 +52,7 @@ const InviteUsers         = lazy(() => import('./pages/InviteUsers'));
 const BetaStatus          = lazy(() => import('./pages/BetaStatus'));
 const Payouts             = lazy(() => import('./pages/Payouts'));
 const VideoPost           = lazy(() => import('./pages/VideoPost'));
+const VideoViewer         = lazy(() => import('./pages/VideoViewer'));
 const FeaturedContent     = lazy(() => import('./pages/FeaturedContent'));
 const WatchParty          = lazy(() => import('./pages/WatchParty'));
 const PublicProfile       = lazy(() => import('./pages/PublicProfile'));
@@ -189,6 +190,7 @@ export const PAGES = {
     "BetaStatus": BetaStatus,
     "Payouts": Payouts,
     "VideoPost": VideoPost,
+    "VideoViewer": VideoViewer,
     "FeaturedContent": FeaturedContent,
     "WatchParty": WatchParty,
     "PublicProfile": PublicProfile,
