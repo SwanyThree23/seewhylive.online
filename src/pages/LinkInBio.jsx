@@ -49,6 +49,7 @@ export default function LinkInBio() {
   var [loading, setLoading] = useState(true);
   var [copied, setCopied] = useState(false);
   var [payOpen, setPayOpen] = useState(false);
+  var [payLinks, setPayLinks] = useState(null);
 
   useEffect(() => {
     var cancelled = false;
@@ -104,6 +105,15 @@ export default function LinkInBio() {
   }
 
   var links = SOCIALS.filter(function(s) { var sl = profile && profile.social_links; return sl && sl[s.key]; });
+  var PAY_PLATFORMS = [
+    { id: 'paypal',  label: 'PayPal',   emoji: '💙', urlFn: function(v) { return v.includes('paypal.me') ? v : 'https://paypal.me/' + v.replace(/^@/, ''); } },
+    { id: 'cashapp', label: 'Cash App', emoji: '💚', urlFn: function(v) { return 'https://cash.app/' + (v.startsWith('$') ? v : '$' + v); } },
+    { id: 'venmo',   label: 'Venmo',    emoji: '💙', urlFn: function(v) { return 'https://venmo.com/' + v.replace(/^@/, ''); } },
+    { id: 'zelle',   label: 'Zelle',    emoji: '💜', urlFn: function(v) { return 'https://enroll.zellepay.com/'; } },
+    { id: 'chime',   label: 'Chime',    emoji: '💚', urlFn: function(v) { return 'https://www.chime.com/'; } },
+  ];
+  var pl = (profile && profile.payment_links) || {};
+  var payLinksList = PAY_PLATFORMS.filter(function(p) { return pl[p.id] && pl[p.id].trim(); });
 
   if (loading) {
     return (
@@ -208,6 +218,34 @@ export default function LinkInBio() {
           <DollarSign className="w-4 h-4" /> Support Directly
         </button>
 
+        {/* Pay directly links */}
+        {payLinksList.length > 0 && (
+          <div className="mt-4">
+            <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ fontFamily: FONT, color: C.muted }}>Send Money Directly</p>
+            <div className="space-y-2">
+              {payLinksList.map(function(p) {
+                return (
+                  <a
+                    key={p.id}
+                    href={p.urlFn(pl[p.id])}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 px-4 rounded-2xl transition-transform active:scale-[0.99]"
+                    style={{ minHeight: 52, background: C.card, border: '1px solid ' + C.line, textDecoration: 'none' }}
+                  >
+                    <span style={{ fontSize: 20 }}>{p.emoji}</span>
+                    <div>
+                      <p className="text-sm font-black" style={{ fontFamily: FONT, color: C.text, margin: 0 }}>{p.label}</p>
+                      <p className="text-[10px]" style={{ fontFamily: FONT, color: C.muted, margin: 0 }}>{pl[p.id]}</p>
+                    </div>
+                    <span className="ml-auto text-[10px] uppercase tracking-widest" style={{ fontFamily: FONT, color: C.gold }}>Send</span>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Social links */}
         <div className="mt-4 space-y-2">
           {links.length === 0 && (
@@ -215,20 +253,23 @@ export default function LinkInBio() {
               No social links added yet.
             </p>
           )}
-          {links.map(({ key, label, icon: Icon, color }) => (
-            <a
-              key={key}
-              href={withProtocol(profile.social_links[key])}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 px-4 rounded-2xl transition-transform active:scale-[0.99]"
-              style={{ minHeight: 52, background: C.card, border: `1px solid ${C.line}` }}
-            >
-              <Icon className="w-4 h-4 shrink-0" style={{ color }} />
-              <span className="text-sm font-bold" style={{ fontFamily: FONT, color: C.text }}>{label}</span>
-              <span className="ml-auto text-[10px] uppercase tracking-widest" style={{ fontFamily: FONT, color: C.muted }}>Open</span>
-            </a>
-          ))}
+          {links.map(function(item) {
+            var key = item.key; var label = item.label; var Icon = item.icon; var color = item.color;
+            return (
+              <a
+                key={key}
+                href={withProtocol(profile.social_links[key])}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 px-4 rounded-2xl transition-transform active:scale-[0.99]"
+                style={{ minHeight: 52, background: C.card, border: '1px solid ' + C.line, textDecoration: 'none' }}
+              >
+                <Icon className="w-4 h-4 shrink-0" style={{ color }} />
+                <span className="text-sm font-bold" style={{ fontFamily: FONT, color: C.text }}>{label}</span>
+                <span className="ml-auto text-[10px] uppercase tracking-widest" style={{ fontFamily: FONT, color: C.muted }}>Open</span>
+              </a>
+            );
+          })}
         </div>
 
         {/* Share row */}
