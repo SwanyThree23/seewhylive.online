@@ -36,6 +36,7 @@ var CreatorBridge                = lazy(() => import('../components/social/Creat
 var OnboardingFlow               = lazy(() => import('../components/onboarding/OnboardingFlow'));
 var OnlinePresence               = lazy(() => import('../components/shared/OnlinePresence'));
 import PullToRefresh from '../components/shared/PullToRefresh';
+import FollowButton from '../components/shared/FollowButton';
 
 // ── OCT clip-path constant ─────────────────────────────────────────────────
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -325,9 +326,16 @@ function FanbaseRoomCard({ room, rank, rising }) {
             {room.title}
           </p>
           {room.host_name && (
-            <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,184,0,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-              {room.host_name}
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
+              <p className="text-[10px]" style={{ color: 'rgba(255,184,0,0.6)', fontFamily: 'Barlow Condensed, sans-serif', margin: 0 }}>
+                {room.host_name}
+              </p>
+              {room.host_id && (
+                <div onClick={function(e) { e.preventDefault(); e.stopPropagation(); }}>
+                  <FollowButton targetUserId={room.host_id} targetUserName={room.host_name} size="sm" />
+                </div>
+              )}
+            </div>
           )}
         </div>
 
