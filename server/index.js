@@ -628,6 +628,7 @@ app.use('/api/n8n', n8nRouter);
 var outboundWebhooksRouter = require('./routes/outboundWebhooks');
 app.use('/api/outbound-webhooks', outboundWebhooksRouter);
 var webhookService = require('./services/webhookService');
+var webhooks       = require('./lib/webhooks');
 
 // ─── Socket.io ────────────────────────────────────────────────────────────
 var io = new Server(server, {
@@ -3916,6 +3917,26 @@ io.on('connection', function(socket) {
       }
 
       swanybot.onGiftReceived(roomId, fromUser, name, valueCents);
+
+      // Outbound webhook — tip.received
+      if (valueCents > 0) {
+        try {
+          var _twRoom = rooms.get(roomId);
+          var _twHostId = _twRoom ? _twRoom.hostUserId : null;
+          if (_twHostId) {
+            webhooks.tipReceived(_twHostId, socket.data.tenantId || '', {
+              roomId:        roomId,
+              fromUser:      fromUser,
+              fromUserId:    fromUserId,
+              giftName:      name,
+              valueCents:    valueCents,
+              creatorCents:  creatorCents,
+              platformCents: platformCents,
+              ts:            ts,
+            });
+          }
+        } catch (_twErr) { logger.warn('[send-gift] tip webhook: ' + _twErr.message); }
+      }
 
       // Referral bonus — 10% of creator's earnings, paid by platform, recorded for referrer
       if (valueCents > 0) {

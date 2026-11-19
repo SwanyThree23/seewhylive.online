@@ -14,6 +14,8 @@ var ALLOWED_EVENTS = [
   'user.joined',
   'hand.raised',
   'battle.result',
+  'tip.received',
+  'clip.ready',
 ];
 
 var createLimit = rateLimit({
