@@ -1010,6 +1010,17 @@ export default function App() {
       });
     });
 
+    socket.on('guest-mic-state', function(data) {
+      if (!data || !data.guestId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid !== data.guestId) return g;
+          return Object.assign({}, g, { remoteMuted: !!data.muted });
+        });
+      });
+    });
+
     socket.on('guest-kicked', function(data) {
       if (!data || !data.guestId) return;
       setGuests(function(prev) {
@@ -1289,6 +1300,7 @@ export default function App() {
       socket.off('fanout-restarted');
       socket.off('guest-unmuted');
       socket.off('guest-cam-state');
+      socket.off('guest-mic-state');
       socket.off('guest-kicked');
       socket.off('you-were-kicked');
       socket.off('panel:invite_received');
