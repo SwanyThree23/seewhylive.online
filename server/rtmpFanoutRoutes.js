@@ -159,10 +159,40 @@ router.post('/stop-stream', requireAuth, async function (req, res) {
 router.get('/status/:destinationId', requireAuth, function (req, res) {
   var entry = activeProcesses.get(req.params.destinationId);
   if (!entry) return res.json({ live: false });
-  if (!entry.destination || (entry.destination.user_id !== req.user.id && req.user.role !== 'admin')) {
+  if (!entry.destination || (String(entry.destination.user_id) !== String(req.user.id) && req.user.role !== 'admin')) {
     return res.status(403).json({ error: 'forbidden' });
   }
-  res.json({ live: true, pid: entry.process.pid, uptimeMs: Date.now() - entry.startedAt });
+  res.json({ live: true, pid: entry.process ? entry.process.pid : null, uptimeMs: Date.now() - entry.startedAt });
+});
+
+router.get('/destinations', requireAuth, async function (req, res) {
+  try {
+    var result = await db.query(
+      'SELECT id, platform, label, rtmp_url, status, is_enabled, created_at FROM stream_destinations WHERE user_id = $1 ORDER BY created_at DESC',
+      [req.user.id]
+    );
+    res.json({ destinations: result.rows });
+  } catch (err) {
+    logger.error('list-destinations failed', { err: err.message });
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.delete('/destinations/:id', requireAuth, async function (req, res) {
+  var id = req.params.id;
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({ error: 'invalid id' });
+  if (activeProcesses.has(id)) return res.status(409).json({ error: 'destination is currently live — stop it first' });
+  try {
+    var result = await db.query(
+      'DELETE FROM stream_destinations WHERE id = $1 AND user_id = $2 RETURNING id',
+      [id, req.user.id]
+    );
+    if (result.rowCount === 0) return res.status(404).json({ error: 'not found' });
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('delete-destination failed', { err: err.message });
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 module.exports = router;
