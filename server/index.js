@@ -7198,6 +7198,67 @@ app.post('/api/webhooks/deploy', function(req, res) {
   }, 500);
 });
 
+// ─── One-time env-var setter (DEPLOY_TOKEN protected) ─────────────────────
+// Used to inject SUPABASE_DB_URL (and similar) into the VPS .env without SSH.
+// The endpoint writes the .env entry and restarts PM2 so the new value takes
+// effect on the next process startup. Remove this endpoint once the var is set.
+app.post('/api/webhooks/set-env-var', function(req, res) {
+  var token    = req.headers['x-deploy-token'] || '';
+  var expected = process.env.DEPLOY_TOKEN || '';
+  var authorized = false;
+  if (expected) {
+    var _dc2 = require('crypto');
+    var _dh2 = function(s) { return _dc2.createHash('sha256').update(String(s)).digest(); };
+    try { authorized = _dc2.timingSafeEqual(_dh2(token), _dh2(expected)); } catch (_) {}
+  }
+  if (!authorized) {
+    logger.warn('[set-env-var] unauthorized attempt from ' + req.ip);
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  var body    = req.body || {};
+  var varName = String(body.name  || '').trim();
+  var varVal  = String(body.value || '').trim();
+  // Restrict to a safe allowlist — no arbitrary env writes
+  var ALLOWED_VAR_NAMES = ['SUPABASE_DB_URL'];
+  if (!ALLOWED_VAR_NAMES.includes(varName) || !varVal) {
+    return res.status(400).json({ error: 'name must be one of: ' + ALLOWED_VAR_NAMES.join(', ') });
+  }
+  // Validate SUPABASE_DB_URL looks like a postgres URI
+  if (varName === 'SUPABASE_DB_URL' && !/^postgres(ql)?:\/\//.test(varVal)) {
+    return res.status(400).json({ error: 'value must be a postgres:// URI' });
+  }
+  var _fs2   = require('fs');
+  var _path2 = require('path');
+  var envFile = _path2.join(__dirname, '.env');
+  try {
+    var existing = '';
+    try { existing = _fs2.readFileSync(envFile, 'utf8'); } catch (_) {}
+    var lines = existing.split('\n');
+    var found = false;
+    var updated = lines.map(function(line) {
+      if (line.startsWith(varName + '=') || line.startsWith(varName + ' =')) {
+        found = true;
+        return varName + '=' + varVal;
+      }
+      return line;
+    });
+    if (!found) updated.push(varName + '=' + varVal);
+    _fs2.writeFileSync(envFile, updated.join('\n'), 'utf8');
+    logger.info('[set-env-var] wrote ' + varName + ' to .env');
+  } catch (writeErr) {
+    logger.error('[set-env-var] write failed: ' + writeErr.message);
+    return res.status(500).json({ error: 'write failed: ' + writeErr.message });
+  }
+  res.json({ ok: true, written: varName, restart_queued: true });
+  setTimeout(function() {
+    var exec = require('child_process').exec;
+    exec('pm2 restart seewhy-server --update-env && pm2 save --force', { timeout: 30000 }, function(err, stdout) {
+      if (err) { logger.error('[set-env-var] pm2 restart failed: ' + err.message); return; }
+      logger.info('[set-env-var] pm2 restart ok: ' + stdout.slice(-200));
+    });
+  }, 500);
+});
+
 // ─── Server startup ────────────────────────────────────────────────────────
 var PORT = parseInt(process.env.PORT || '3001', 10);
 
