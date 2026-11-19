@@ -234,8 +234,8 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     var onJoinRoomAck = function(data) {
       if (!data) return;
       if (data.watchParty && data.watchParty.url) setWatchPartyUrl(data.watchParty.url);
-      console.log('[RoomTab] calling rtcManager.connect', { roomId: roomId, userId: userId, role: role }); rtcManager.connect(socket, roomId, userId, role)
-        .then(function() { console.log('[RoomTab] connect() RESOLVED'); setRtcReady(true); addToast('WebRTC ready', 'success'); })
+      rtcManager.connect(socket, roomId, userId, role)
+        .then(function() { setRtcReady(true); addToast('WebRTC ready', 'success'); })
         .catch(function(e) { console.error('[RoomTab] connect() REJECTED', e); addToast('WebRTC: ' + e.message, 'error'); });
     }
     var onHandRaise = function(data) {

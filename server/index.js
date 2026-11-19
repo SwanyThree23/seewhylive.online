@@ -7263,8 +7263,12 @@ app.post('/api/webhooks/set-env-var', function(req, res) {
 var PORT = parseInt(process.env.PORT || '3001', 10);
 
 // Validate required environment variables before binding the port.
-var REQUIRED_ENVS = ['JWT_SECRET', 'SUPABASE_URL', 'SUPABASE_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'VAULT_SECRET'];
+var REQUIRED_ENVS = ['JWT_SECRET', 'SUPABASE_URL', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'VAULT_SECRET'];
 var _missingEnvs = REQUIRED_ENVS.filter(function(k) { return !process.env[k]; });
+// SUPABASE_ANON_KEY and SUPABASE_KEY are aliases; accept either
+if (!process.env.SUPABASE_ANON_KEY && !process.env.SUPABASE_KEY) {
+  _missingEnvs.push('SUPABASE_ANON_KEY (or SUPABASE_KEY)');
+}
 if (_missingEnvs.length) {
   _missingEnvs.forEach(function(k) { logger.error('Missing required env var: ' + k); });
   process.exit(1);
