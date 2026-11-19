@@ -21,6 +21,7 @@ const SwanyBotPro   = lazy(() => import('@/pages/SwanyBotPro'));
 const MyDashboard   = lazy(() => import('@/pages/MyDashboard'));
 const RecordingsLibrary = lazy(() => import('@/pages/RecordingsLibrary'));
 const LinkInBio     = lazy(() => import('@/pages/LinkInBio'));
+const PublicStreamViewer = lazy(() => import('@/pages/PublicStreamViewer'));
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -71,6 +72,9 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Public stream viewer — no auth required, outsiders can watch */}
+      <Route path="/watch" element={<PublicStreamViewer />} />
 
       {/* All app routes gated by ProtectedRoute */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
