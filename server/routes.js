@@ -203,8 +203,8 @@ router.get('/check-username', usernameCheckLimit, async function(req, res) {
   }
   try {
     var result = await db.query(
-      'SELECT 1 FROM users WHERE lower(username) = $1 LIMIT 1',
-      [username]
+      'SELECT 1 FROM users WHERE lower(username) = $1 AND tenant_id = $2 LIMIT 1',
+      [username, req.tenantId]
     );
     return res.json({ available: result.rows.length === 0 });
   } catch (err) {
@@ -811,8 +811,8 @@ router.get('/users/:username', async function(req, res) {
     var recentStreams = [];
     try {
       var _streamsRes = await db.query(
-        'SELECT id, title, peak_viewers, ended_at FROM streams WHERE creator_username = $1 AND is_live = false ORDER BY created_at DESC LIMIT 5',
-        [username]
+        'SELECT id, title, peak_viewers, ended_at FROM streams WHERE creator_username = $1 AND tenant_id = $2 AND is_live = false ORDER BY created_at DESC LIMIT 5',
+        [username, req.tenantId]
       );
       recentStreams = (_streamsRes.rows || []).map(function(r) {
         return { id: r.id, title: r.title, viewerPeak: r.peak_viewers || 0, endedAt: r.ended_at };
