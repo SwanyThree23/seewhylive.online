@@ -8,6 +8,7 @@
 
 var Stripe = require('stripe');
 var jwt = require('jsonwebtoken');
+var logger = require('./lib/logger');
 var Database = require('better-sqlite3');
 
 // Callbacks registered by socket handlers when a paid gift PaymentIntent is created.
@@ -269,7 +270,7 @@ async function handleStripeWebhook(rawBody, signature) {
             'VALUES (?, ?, ?, \'active\', ?, ?) ' +
             'ON CONFLICT(user_id) DO UPDATE SET tier = excluded.tier, stripe_subscription_id = excluded.stripe_subscription_id, status = \'active\', updated_at = excluded.updated_at'
           ).run(planUserId, planTier, session.subscription || null, now2, now2);
-          console.log('[stripe] platform plan activated: user=' + planUserId + ' tier=' + planTier);
+          logger.info('[stripe] platform plan activated: user=' + planUserId + ' tier=' + planTier);
         } catch (planErr) {
           console.error('[stripe] platform_plan activation failed:', planErr.message);
         }
@@ -284,7 +285,7 @@ async function handleStripeWebhook(rawBody, signature) {
           var moderation = require('./moderation');
           var subRowId   = require('crypto').randomUUID();
           moderation.addSubscription(subRowId, subId, creatorId, subTier, subCents, session.subscription || null);
-          console.log('[stripe] creator subscription activated: subscriber=' + subId + ' creator=' + creatorId + ' tier=' + subTier);
+          logger.info('[stripe] creator subscription activated: subscriber=' + subId + ' creator=' + creatorId + ' tier=' + subTier);
         } catch (subErr) {
           console.error('[stripe] creator_subscription activation failed:', subErr.message);
         }

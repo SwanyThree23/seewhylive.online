@@ -7,6 +7,7 @@
 
 var mediasoup = require('mediasoup');
 var os = require('os');
+var logger = require('./lib/logger');
 
 var ANNOUNCED_IP = process.env.MEDIASOUP_ANNOUNCED_IP || '2.24.194.112';
 
@@ -62,7 +63,7 @@ async function spawnWorker() {
   });
 
   worker.on('died', function(error) {
-    console.error('mediasoup Worker died, restarting in 2s:', error);
+    logger.error('[mediasoup] worker died, restarting in 2s:', error);
     var idx = workers.indexOf(worker);
     if (idx !== -1) workers.splice(idx, 1);
 
@@ -106,9 +107,9 @@ async function spawnWorker() {
     setTimeout(function() {
       spawnWorker().then(function(newWorker) {
         workers.push(newWorker);
-        console.log('mediasoup replacement Worker spawned, total workers:', workers.length);
+        logger.info('[mediasoup] replacement worker spawned, total workers:', workers.length);
       }).catch(function(err) {
-        console.error('Failed to spawn replacement Worker:', err);
+        logger.error('[mediasoup] failed to spawn replacement worker:', err);
       });
     }, 2000);
   });
@@ -124,7 +125,7 @@ async function createWorkers() {
   }
   var spawned = await Promise.all(promises);
   spawned.forEach(function(w) { workers.push(w); });
-  console.log('mediasoup Workers created:', workers.length);
+  logger.info('[mediasoup] workers created:', workers.length);
 }
 
 function pickWorker() {
@@ -239,7 +240,7 @@ function closeProducer(producerId) {
   try {
     entry.producer.close();
   } catch (err) {
-    console.error('Error closing producer:', producerId, err);
+    logger.error('[mediasoup] error closing producer:', producerId, err);
   }
   delete producers[producerId];
 }
@@ -262,7 +263,7 @@ function pauseProducer(producerId) {
   var entry = producers[producerId];
   if (!entry) return;
   entry.producer.pause().catch(function(err) {
-    console.error('Error pausing producer:', producerId, err);
+    logger.error('[mediasoup] error pausing producer:', producerId, err);
   });
 }
 
@@ -270,7 +271,7 @@ function resumeProducer(producerId) {
   var entry = producers[producerId];
   if (!entry) return;
   entry.producer.resume().catch(function(err) {
-    console.error('Error resuming producer:', producerId, err);
+    logger.error('[mediasoup] error resuming producer:', producerId, err);
   });
 }
 
@@ -528,7 +529,7 @@ function logResourceSnapshot() {
   var producerCount = Object.keys(producers).length;
   var consumerCount = Object.keys(consumers).length;
 
-  console.log('[mediasoup-monitor]', JSON.stringify({
+  logger.info('[mediasoup-monitor]', JSON.stringify({
     timestamp: new Date().toISOString(),
     workers: workers.length,
     routers: routerCount,

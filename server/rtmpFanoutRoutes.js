@@ -4,6 +4,7 @@ var crypto = require('crypto');
 var spawn = require('child_process').spawn;
 var db = require('./db');
 var requireAuth = require('./middleware/auth');
+var logger = require('./lib/logger');
 
 var router = express.Router();
 
@@ -119,7 +120,7 @@ router.post('/start-stream', requireAuth, async function (req, res) {
     var ffmpegProcess = spawn('ffmpeg', ['-i', inputUrl, '-c', 'copy', '-f', 'flv', outputUrl]);
 
     ffmpegProcess.stderr.on('data', function (chunk) {
-      console.log('[ffmpeg ' + destinationId + ']', chunk.toString().slice(0, 200));
+      logger.info('[ffmpeg ' + destinationId + ']', chunk.toString().slice(0, 200));
     });
     ffmpegProcess.on('exit', function (code) {
       activeProcesses.delete(destinationId);

@@ -10,6 +10,7 @@ var { spawn } = require('child_process');
 var EventEmitter = require('events');
 var fs = require('fs');
 var path = require('path');
+var logger = require('./lib/logger');
 
 var emitter = new EventEmitter();
 
@@ -45,7 +46,7 @@ function ensureDir(dir) {
     fs.mkdirSync(dir, { recursive: true });
   } catch (err) {
     if (err.code !== 'EEXIST') {
-      console.error('Failed to create directory', dir, err);
+      logger.error('[rtmp] failed to create directory', dir, err);
     }
   }
 }
@@ -151,7 +152,7 @@ function startFanout(roomId, hostGuestId, destinations) {
   proc.on('error', function(err) {
     var errTs = new Date().toISOString();
     logStream.write('[' + errTs + '] FFmpeg process error: ' + err.message + '\n');
-    console.error('FFmpeg error for room', roomId, err);
+    logger.error('[rtmp] FFmpeg error for room', roomId, err);
   });
 
   proc.on('exit', function(code, signal) {
@@ -164,7 +165,7 @@ function startFanout(roomId, hostGuestId, destinations) {
   }, HEALTH_INTERVAL);
 
   emitter.emit('fanout-started', { roomId: roomId, hostGuestId: hostGuestId, destinations: destinations });
-  console.log('FFmpeg fanout started for room', roomId, 'to', destinations.length, 'destinations');
+  logger.info('[rtmp] fanout started for room', roomId, 'to', destinations.length, 'destinations');
 }
 
 function healthCheck(roomId) {
@@ -182,7 +183,7 @@ function healthCheck(roomId) {
     clearInterval(entry.healthTimer);
     fanouts.delete(roomId);
     emitter.emit('fanout-failed', { roomId: roomId });
-    console.error('FFmpeg fanout permanently failed for room', roomId);
+    logger.error('[rtmp] fanout permanently failed for room', roomId);
     return;
   }
 
@@ -208,7 +209,7 @@ function healthCheck(roomId) {
 
     current.process = newProc;
     emitter.emit('fanout-restarted', { roomId: roomId, attempt: current.restartCount });
-    console.log('FFmpeg fanout restarted for room', roomId, '(attempt', current.restartCount + ')');
+    logger.info('[rtmp] fanout restarted for room', roomId, '(attempt', current.restartCount + ')');
   }, backoff);
 }
 
@@ -228,7 +229,7 @@ function stopFanout(roomId) {
       } catch (e) { /* already dead */ }
     }, 3000);
   } catch (err) {
-    console.error('Error killing FFmpeg for room', roomId, err);
+    logger.error('[rtmp] error killing FFmpeg for room', roomId, err);
   }
 
   entry.logStream.write('[' + new Date().toISOString() + '] Fanout stopped.\n');
@@ -236,7 +237,7 @@ function stopFanout(roomId) {
 
   fanouts.delete(roomId);
   emitter.emit('fanout-stopped', { roomId: roomId });
-  console.log('FFmpeg fanout stopped for room', roomId);
+  logger.info('[rtmp] fanout stopped for room', roomId);
 }
 
 function getFanoutStatus(roomId) {
