@@ -1244,6 +1244,8 @@ export default function LiveRoom() {
             isOpen={payOpen}
             onClose={() => setPayOpen(false)}
             creatorName={hostName}
+            creatorId={(party && party.host_id)}
+            isHost={isHost}
           />
         )}
           {battleOpen && (

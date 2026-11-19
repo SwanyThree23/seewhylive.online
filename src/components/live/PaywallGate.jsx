@@ -1,7 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Unlock, Crown, Timer, Zap } from 'lucide-react';
+import { Lock, Unlock, Crown, Timer, Zap, ExternalLink, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { base44 } from '@/api/base44Client';
+import { isSafeUrl } from '@/lib/security';
+
+var PAYMENT_PLATFORMS = [
+  { id: 'paypal', name: 'PayPal', emoji: '🅿️', baseUrl: 'https://paypal.me/' },
+  { id: 'cashapp', name: 'Cash App', emoji: '💚', baseUrl: 'https://cash.app/$' },
+  { id: 'venmo', name: 'Venmo', emoji: '💙', baseUrl: 'https://venmo.com/' },
+  { id: 'zelle', name: 'Zelle', emoji: '💜', baseUrl: null },
+  { id: 'chime', name: 'Chime', emoji: '🟢', baseUrl: 'https://chime.com/' },
+  { id: 'applepay', name: 'Apple Pay', emoji: '🍎', baseUrl: null },
+  { id: 'googlepay', name: 'Google Pay', emoji: '🔵', baseUrl: null },
+  { id: 'custom', name: 'Pay Link', emoji: '🔗', baseUrl: '' },
+];
 
 const PREVIEW_SECONDS = 120;
 
@@ -22,18 +35,28 @@ function fmtSeconds(s) {
   return `${m}:${String(sec).padStart(2, '0')}`;
 }
 
-export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked }) {
+export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked, creatorId }) {
   const [secondsLeft, setSecondsLeft] = useState(PREVIEW_SECONDS);
   const [previewExpired, setPreviewExpired] = useState(false);
   const [selectedTier, setSelectedTier] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [payStep, setPayStep] = useState(null);
+  const [creatorPayLinks, setCreatorPayLinks] = useState({});
 
   // Host-side state
   const [hostPaywallEnabled, setHostPaywallEnabled] = useState(() => { try { return localStorage.getItem('paywall_enabled') === 'true'; } catch { return false; } });
   const [customPrice, setCustomPrice] = useState('');
 
+  // Load creator's payment links for the payment step
+  useEffect(function() {
+    if (!creatorId) return;
+    base44.entities.CreatorProfile.filter({ user_id: creatorId }).then(function(profiles) {
+      var pl = (profiles && profiles[0] && profiles[0].payment_links) || {};
+      setCreatorPayLinks(pl);
+    }).catch(function() {});
+  }, [creatorId]);
+
   // Paywall/countdown disabled — all viewers have free access during launch
-   
   useEffect(() => { if (!isHost && !isUnlocked) onUnlock?.(); }, []);
 
   // ── Host panel ───────────────────────────────────────────────────────────
@@ -201,40 +224,86 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
                 ))}
               </div>
 
-              {/* CTA */}
-              <button
-                disabled={!selectedTier || processing}
-                onClick={async () => {
-                  if (!selectedTier) return;
-                  setProcessing(true);
-                  try {
-                    await new Promise(r => setTimeout(r, 800)); // stub payment
-                    toast.success(`${selectedTier.label} unlocked! Enjoy the stream 🎉`);
-                    onUnlock?.();
-                  } finally {
-                    setProcessing(false);
-                  }
-                }}
-                className="w-full py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2"
-                style={{
-                  fontFamily: 'Barlow Condensed, sans-serif',
-                  background: selectedTier ? '#FFB800' : 'rgba(255,255,255,0.06)',
-                  color: selectedTier ? '#000' : 'rgba(255,255,255,0.25)',
-                  cursor: selectedTier ? 'pointer' : 'not-allowed',
-                  letterSpacing: '0.08em',
-                }}
-              >
-                <Zap className="w-4 h-4" />
-                {processing
-                  ? 'Processing…'
-                  : selectedTier
-                    ? `Unlock for $${selectedTier.price}`
-                    : 'Select a tier above'}
-              </button>
+              {/* Payment step — direct payment links */}
+              {payStep === 'pay' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textAlign: 'center', margin: 0 }}>
+                    Send <strong style={{ color: '#FFB800' }}>${selectedTier && selectedTier.price}</strong> using any app below, then confirm
+                  </p>
+                  {PAYMENT_PLATFORMS.filter(function(p) { return creatorPayLinks[p.id]; }).map(function(platform) {
+                    var handle = creatorPayLinks[platform.id];
+                    var url = handle && platform.baseUrl !== null ? (platform.baseUrl || '') + handle : null;
+                    return (
+                      <button
+                        key={platform.id}
+                        onClick={function() {
+                          if (url && isSafeUrl(url)) {
+                            window.open(url, '_blank', 'noopener,noreferrer');
+                          } else if (handle) {
+                            navigator.clipboard.writeText(handle).catch(function() {});
+                            toast.info('Payment info copied: ' + handle);
+                          }
+                        }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}
+                      >
+                        <span style={{ fontSize: 20 }}>{platform.emoji}</span>
+                        <div style={{ flex: 1, textAlign: 'left' }}>
+                          <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#fff' }}>{platform.name}</p>
+                          <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{handle}</p>
+                        </div>
+                        <ExternalLink style={{ width: 13, height: 13, color: 'rgba(255,255,255,0.3)' }} />
+                      </button>
+                    );
+                  })}
+                  {Object.keys(creatorPayLinks).filter(function(k) { return creatorPayLinks[k]; }).length === 0 && (
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '8px 0' }}>Creator hasn't set up payment links yet</p>
+                  )}
+                  <button
+                    onClick={function() {
+                      setProcessing(true);
+                      toast.success((selectedTier && selectedTier.label) + ' unlocked! Enjoy the stream 🎉');
+                      onUnlock && onUnlock();
+                      setProcessing(false);
+                    }}
+                    style={{ width: '100%', marginTop: 4, padding: '12px 0', borderRadius: 10, background: '#00C853', border: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#000', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, textTransform: 'uppercase' }}
+                  >
+                    <CheckCircle style={{ width: 15, height: 15 }} />
+                    I've Completed Payment
+                  </button>
+                  <button
+                    onClick={function() { setPayStep(null); }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'rgba(255,255,255,0.3)', padding: '4px 0', fontFamily: 'Barlow Condensed, sans-serif' }}
+                  >
+                    ← Back
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    disabled={!selectedTier}
+                    onClick={function() {
+                      if (!selectedTier) return;
+                      setPayStep('pay');
+                    }}
+                    className="w-full py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                    style={{
+                      fontFamily: 'Barlow Condensed, sans-serif',
+                      background: selectedTier ? '#FFB800' : 'rgba(255,255,255,0.06)',
+                      color: selectedTier ? '#000' : 'rgba(255,255,255,0.25)',
+                      cursor: selectedTier ? 'pointer' : 'not-allowed',
+                      letterSpacing: '0.08em',
+                      border: 'none',
+                    }}
+                  >
+                    <Zap className="w-4 h-4" />
+                    {selectedTier ? 'Pay $' + selectedTier.price + ' Directly →' : 'Select a tier above'}
+                  </button>
 
-              <p className="text-[10px] text-white/20">
-                90% of every dollar goes directly to the creator · Powered by SeeWhy LIVE
-              </p>
+                  <p className="text-[10px] text-white/20">
+                    90% of every dollar goes directly to the creator · Powered by SeeWhy LIVE
+                  </p>
+                </>
+              )}
             </motion.div>
           </motion.div>
         )}

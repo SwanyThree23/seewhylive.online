@@ -15,11 +15,12 @@ const PAYMENT_PLATFORMS = [
   { id: 'custom', name: 'Custom Link', emoji: '🔗', color: 'from-amber-500 to-orange-600', baseUrl: '', placeholder: 'https://...' },
 ];
 
-export default function DirectPayments({ isOpen, onClose, creatorName }) {
+export default function DirectPayments({ isOpen, onClose, creatorName, creatorId, isHost }) {
   const [links, setLinks] = useState({});
   const [editMode, setEditMode] = useState(false);
   const [saved, setSaved] = useState({});
   const [copiedId, setCopiedId] = useState(null);
+  const [myProfileId, setMyProfileId] = useState(null);
 
   const handleCopy = (platform) => {
     const val = links[platform.id] || saved[platform.id];
@@ -32,16 +33,30 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
 
   useEffect(() => {
     if (!isOpen) return;
-    base44.auth.me().then(user => {
-      const pl = user?.payment_links || {};
-      setLinks(pl);
-      setSaved(pl);
-    }).catch(() => {});
-  }, [isOpen]);
+    if (isHost) {
+      base44.auth.me().then(function(u) {
+        return base44.entities.CreatorProfile.filter({ user_id: u.id }).then(function(profiles) {
+          if (profiles && profiles[0]) setMyProfileId(profiles[0].id);
+          var pl = (profiles && profiles[0] && profiles[0].payment_links) || u.payment_links || {};
+          setLinks(pl);
+          setSaved(pl);
+        });
+      }).catch(function() {});
+    } else if (creatorId) {
+      base44.entities.CreatorProfile.filter({ user_id: creatorId }).then(function(profiles) {
+        var pl = (profiles && profiles[0] && profiles[0].payment_links) || {};
+        setLinks(pl);
+        setSaved(pl);
+      }).catch(function() {});
+    }
+  }, [isOpen, creatorId, isHost]);
 
   const handleSave = async () => {
     try {
       await base44.auth.updateMe({ payment_links: links });
+      if (myProfileId) {
+        await base44.entities.CreatorProfile.update(myProfileId, { payment_links: links });
+      }
       setSaved(links);
       setEditMode(false);
       toast.success('Payment links saved!');
@@ -91,13 +106,15 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
               {activeLinks.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '32px 0' }}>
                   <DollarSign className="w-10 h-10" style={{ margin: '0 auto 12px', color: 'rgba(255,255,255,0.2)' }} />
-                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>No payment links configured yet</p>
-                  <button
-                    onClick={() => setEditMode(true)}
-                    style={{ marginTop: 12, padding: '6px 14px', fontSize: 12, background: '#FFB800', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Add My Links
-                  </button>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>{isHost ? 'No payment links configured yet' : 'Creator has no payment links set up yet'}</p>
+                  {isHost && (
+                    <button
+                      onClick={() => setEditMode(true)}
+                      style={{ marginTop: 12, padding: '6px 14px', fontSize: 12, background: '#FFB800', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add My Links
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -127,12 +144,14 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
                   ))}
                 </div>
               )}
-              <button
-                onClick={() => setEditMode(true)}
-                style={{ width: '100%', fontSize: 12, color: 'rgba(255,255,255,0.4)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px 0', fontFamily: 'Barlow Condensed, sans-serif' }}
-              >
-                ✏️ Edit My Payment Links
-              </button>
+              {isHost && (
+                <button
+                  onClick={() => setEditMode(true)}
+                  style={{ width: '100%', fontSize: 12, color: 'rgba(255,255,255,0.4)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px 0', fontFamily: 'Barlow Condensed, sans-serif' }}
+                >
+                  ✏️ Edit My Payment Links
+                </button>
+              )}
             </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
