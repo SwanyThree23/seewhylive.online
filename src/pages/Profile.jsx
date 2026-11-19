@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   User, Mail, Award, Star, Gift, TrendingUp, Camera, Radio,
   Settings, DollarSign, Activity, Share2, Scissors, Sparkles, Layout,
-  Download, LogOut,
+  Download, LogOut, Video,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -218,11 +218,14 @@ export default function ProfilePage() {
     );
   }
 
-  var handleShare = () => {
+  var handleShare = function() {
+    var shareUrl = (user && user.id)
+      ? window.location.origin + '/link-in-bio/' + user.id
+      : window.location.href;
     if (navigator.share) {
-      navigator.share({ title: (user && user.full_name), url: window.location.href }).catch(() => {});
+      navigator.share({ title: (user && user.full_name) || 'SeeWhy LIVE', url: shareUrl }).catch(function() {});
     } else {
-      navigator.clipboard.writeText(window.location.href).then(() => toast.success('Profile link copied!')).catch(() => toast.error('Copy failed.'));
+      navigator.clipboard.writeText(shareUrl).then(function() { toast.success('Link-in-Bio link copied!'); }).catch(function() { toast.error('Copy failed.'); });
     }
   };
 
@@ -438,8 +441,9 @@ export default function ProfilePage() {
                 {[
                   { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio,     color: PINK },
                   { label: 'Monetization',       href: createPageUrl('Monetization'),    icon: DollarSign, color: GOLD },
+                  { label: 'My Link-in-Bio',     href: (user && user.id) ? `/link-in-bio/${user.id}` : '/link-in-bio', icon: Share2,     color: '#00F5FF' },
+                  { label: 'Post Video',         href: createPageUrl('VideoPost'),       icon: Video,      color: '#7B2D8B' },
                   { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: '#8B5CF6' },
-                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#00F5FF' },
                   { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#FFB800' },
                   { label: 'Creator Setup',      href: null,                             icon: Star,       color: GOLD, onClick: () => setSetupOpen(true) },
                 ].map(item => {
