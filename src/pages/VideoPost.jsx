@@ -132,8 +132,10 @@ export default function VideoPost() {
         type: 'video',
         status: 'ended',
         is_public: !form.isPrivate,
+        is_exclusive: form.isPaywalled,
+        price_usd: form.isPaywalled ? parseFloat(form.paywallPrice) || 4.99 : null,
         recording_url: file_url,
-        tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+        tags: form.tags ? form.tags.split(',').map(function(t) { return t.trim(); }).filter(Boolean) : [],
       });
 
       var postUrl = `${window.location.origin}${createPageUrl('VideoViewer')}?id=${post.id}`;
