@@ -679,7 +679,7 @@ function MomentsStrip() {
           var thumb = clip.thumbnail_url || clip.thumbnail || null;
           var yt = !thumb ? ytIdFromUrl(clip.clip_url || '') : null;
           return (
-            <Link key={clip.id} to={createPageUrl('ClipsLibrary')} style={{ textDecoration: 'none', flexShrink: 0 }}>
+            <Link key={clip.id} to={'/moments/' + clip.id} style={{ textDecoration: 'none', flexShrink: 0 }}>
               <motion.div whileTap={{ scale: 0.96 }} style={{ width: 126, borderRadius: 10, overflow: 'hidden', background: 'rgba(7,7,15,0.92)', border: '1px solid rgba(255,184,0,0.1)' }}>
                 <div style={{ height: 71, position: 'relative', background: 'linear-gradient(135deg, rgba(255,21,100,0.3), rgba(7,7,15,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {(thumb || yt) ? (
@@ -692,6 +692,51 @@ function MomentsStrip() {
                 <div style={{ padding: '5px 7px 7px' }}>
                   <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '0.01em' }}>{clip.title || 'Moment'}</p>
                   <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0' }}>👁 {clip.view_count || 0}</p>
+                </div>
+              </motion.div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Video Posts Strip ─────────────────────────────────────────────────────
+function VideoPostsStrip() {
+  var { data: posts = [] } = useQuery({
+    queryKey: ['video-posts-strip'],
+    queryFn: function() { return base44.entities.Room.filter({ type: 'video', is_public: true }, '-created_date', 8); },
+    staleTime: 60000,
+  });
+  if (posts.length === 0) return null;
+  return (
+    <div style={{ paddingTop: 4, paddingBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 8px' }}>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)' }}>
+          🎬 Video Posts
+        </span>
+        <Link to={createPageUrl('VideoPost')} style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,184,0,0.45)', textDecoration: 'none' }}>
+          + Post Video →
+        </Link>
+      </div>
+      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {posts.map(function(post) {
+          var thumb = post.thumbnail_url || null;
+          return (
+            <Link key={post.id} to={createPageUrl('Room') + '?id=' + post.id} style={{ textDecoration: 'none', flexShrink: 0 }}>
+              <motion.div whileTap={{ scale: 0.96 }} style={{ width: 126, borderRadius: 10, overflow: 'hidden', background: 'rgba(7,7,15,0.92)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div style={{ height: 71, position: 'relative', background: 'linear-gradient(135deg, rgba(0,100,200,0.2), rgba(7,7,15,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {thumb ? (
+                    <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                  ) : (
+                    <span style={{ fontSize: 24 }}>🎬</span>
+                  )}
+                  <div style={{ position: 'absolute', top: 4, left: 4, padding: '1px 5px', borderRadius: 3, background: 'rgba(0,0,0,0.72)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 8, color: '#aaa', letterSpacing: '0.04em' }}>VIDEO</div>
+                </div>
+                <div style={{ padding: '5px 7px 7px' }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '0.01em' }}>{post.title || 'Video Post'}</p>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0' }}>👁 {post.viewer_count || 0}</p>
                 </div>
               </motion.div>
             </Link>
@@ -1071,6 +1116,9 @@ export default function Home() {
 
       {/* ── MOMENTS STRIP ── Recent clips from the creators you follow */}
       <MomentsStrip />
+
+      {/* ── VIDEO POSTS STRIP ── Short-form videos posted by creators */}
+      <VideoPostsStrip />
 
       {/* ── WASHINGTON CLASSIC 2026 HERO ── */}
       <div style={{ padding: '14px 0 10px' }}>
