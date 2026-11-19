@@ -329,8 +329,8 @@ router.get('/search', async function(req, res) {
     if (type === 'creators') {
       if (!db.isPgUp()) return res.json({ results: [] });
       var rows = await db.pool.query(
-        "SELECT id, display_name, account_type FROM users WHERE display_name ILIKE $1 AND deleted_at IS NULL LIMIT 20",
-        ['%' + q + '%']
+        "SELECT id, display_name, account_type FROM users WHERE display_name ILIKE $1 AND tenant_id = $2 AND deleted_at IS NULL LIMIT 20",
+        ['%' + q + '%', req.tenantId]
       );
       var results = rows.rows.map(function(u) {
         return { id: u.id, displayName: u.display_name || u.id.slice(0, 10), accountType: u.account_type || 'standard' };
@@ -1740,8 +1740,8 @@ router.get('/discover/live', discoverRateLimit, async function(req, res) {
     var limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 50);
     var result = await db.query(
       'SELECT id, creator_id, creator_username, title, viewer_count, peak_viewers, thumbnail_url, started_at ' +
-      'FROM streams WHERE is_live = true ORDER BY viewer_count DESC NULLS LAST LIMIT $1',
-      [limit]
+      'FROM streams WHERE is_live = true AND tenant_id = $2 ORDER BY viewer_count DESC NULLS LAST LIMIT $1',
+      [limit, req.tenantId]
     );
     var streams = (result.rows || []).map(function(r) {
       return {
