@@ -1011,6 +1011,18 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 66: Shout Board / Badge Showcase / Live Leaderboard Ticker / Fan Art Spotlight ──
+  var [shoutBoard,       setShoutBoard]       = useState([]);
+  var [shoutDraft,       setShoutDraft]       = useState('');
+  var [showShoutPanel,   setShowShoutPanel]   = useState(false);
+  var [badgeShowcase,    setBadgeShowcase]    = useState(null);
+  var [badgeDraft,       setBadgeDraft]       = useState({ username: '', badges: '' });
+  var [showBadgeSet,     setShowBadgeSet]     = useState(false);
+  var [liveLeader,       setLiveLeader]       = useState([]);
+  var [showLeader,       setShowLeader]       = useState(false);
+  var [fanArt,           setFanArt]           = useState(null);
+  var [fanArtDraft,      setFanArtDraft]      = useState({ username: '', url: '', caption: '' });
+  var [showFanArtSet,    setShowFanArtSet]    = useState(false);
   // ─── Batch 65: Spotlight Word Cloud / Heatmap Reactions / Countdown Burst / Poll Results ──
   var [spotlightWords,    setSpotlightWords]    = useState(null);
   var [showWordCloud,     setShowWordCloud]     = useState(false);
@@ -1316,6 +1328,10 @@ export default function LiveRoomPage({
       if (data.heatmap) setHeatmap(data.heatmap);
       if (data.countdownBurst && data.countdownBurst.active) setCountdownBurst(data.countdownBurst);
       if (data.pollResults && data.pollResults.active) setPollResults(data.pollResults);
+      if (Array.isArray(data.shoutBoard)) setShoutBoard(data.shoutBoard);
+      if (data.badgeShowcase && data.badgeShowcase.active) setBadgeShowcase(data.badgeShowcase);
+      if (Array.isArray(data.liveLeader)) setLiveLeader(data.liveLeader);
+      if (data.fanArt && data.fanArt.active) setFanArt(data.fanArt);
       if (socket) socket.emit('loyalty-card-get', { roomId: roomId }, function(res) {
         if (res && typeof res.stamps === 'number') setLoyaltyCard({ stamps: res.stamps, goal: res.goal || 10 });
       });
@@ -2644,6 +2660,23 @@ export default function LiveRoomPage({
       setTimeout(function() { setSuperFollowBurst(null); }, 3500);
     });
 
+    // ── Batch 66 listeners ─────────────────────────────────────────────────
+    socket.on('shout-board-update', function(d) {
+      setShoutBoard(Array.isArray(d) ? d : []);
+    });
+
+    socket.on('badge-showcase-update', function(d) {
+      setBadgeShowcase(d || null);
+    });
+
+    socket.on('live-leader-update', function(d) {
+      setLiveLeader(Array.isArray(d) ? d : []);
+    });
+
+    socket.on('fan-art-update', function(d) {
+      setFanArt(d || null);
+    });
+
     // ── Batch 65 listeners ─────────────────────────────────────────────────
     socket.on('spotlight-word-update', function(d) {
       setSpotlightWords(d || null);
@@ -3264,6 +3297,10 @@ export default function LiveRoomPage({
       socket.off('heatmap-update');
       socket.off('countdown-burst-update');
       socket.off('poll-results-update');
+      socket.off('shout-board-update');
+      socket.off('badge-showcase-update');
+      socket.off('live-leader-update');
+      socket.off('fan-art-update');
     };
   }, [socket]);
 
@@ -5203,6 +5240,19 @@ export default function LiveRoomPage({
                 if (pollResults) { if (socket) socket.emit('poll-results-clear', { roomId: roomId }); }
                 else { setShowPollSet(function(s) { return !s; }); }
               }},
+              { emoji: '📣', label: 'Shout Board', active: showShoutPanel, onTap: function() { setShowShoutPanel(function(s) { return !s; }); } },
+              { emoji: badgeShowcase ? '🛑' : '🏅', label: badgeShowcase ? 'Hide Badge' : 'Badge Showcase', active: !!badgeShowcase || showBadgeSet, onTap: function() {
+                if (badgeShowcase) { if (socket) socket.emit('badge-showcase-clear', { roomId: roomId }); }
+                else { setShowBadgeSet(function(s) { return !s; }); }
+              }},
+              { emoji: '🏆', label: 'Leaderboard', active: showLeader, onTap: function() {
+                setShowLeader(function(s) { return !s; });
+                if (socket) socket.emit('live-leader-refresh', { roomId: roomId });
+              }},
+              { emoji: fanArt ? '🛑' : '🎨', label: fanArt ? 'Hide Art' : 'Fan Art', active: !!fanArt || showFanArtSet, onTap: function() {
+                if (fanArt) { if (socket) socket.emit('fan-art-clear', { roomId: roomId }); }
+                else { setShowFanArtSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -5340,6 +5390,8 @@ export default function LiveRoomPage({
               { emoji: pollResults && myPollVote === null ? '📊' : '✅', label: pollResults ? (myPollVote !== null ? 'Voted!' : 'Vote') : 'Poll', active: pollResults !== null, onTap: function() {
                 if (pollResults && myPollVote === null) setShowPollSet(function(s) { return !s; });
               }},
+              { emoji: '📣', label: 'Shout Board', active: showShoutPanel, onTap: function() { setShowShoutPanel(function(s) { return !s; }); } },
+              { emoji: '🏆', label: 'Leaderboard', active: showLeader, onTap: function() { setShowLeader(function(s) { return !s; }); } },
             ] : [])),
           ].map(function(tool) {
             return (
@@ -13401,6 +13453,107 @@ export default function LiveRoomPage({
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 66: Fan Art Spotlight overlay ══ */}
+      {fanArt && fanArt.active && (
+        <div style={{ position: 'fixed', top: 70, right: 12, zIndex: 672, background: CARD, border: '2px solid ' + GOLD, borderRadius: 12, padding: 10, maxWidth: 160 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 12, color: GOLD, letterSpacing: 1, marginBottom: 4 }}>🎨 FAN ART</div>
+          <img src={fanArt.url} alt="fan art" style={{ width: '100%', borderRadius: 8, display: 'block' }} />
+          <div style={{ fontFamily: 'Barlow Condensed', fontSize: 11, color: TEXT, marginTop: 4, opacity: .85 }}>by {fanArt.username}</div>
+          {fanArt.caption && <div style={{ fontFamily: 'Barlow Condensed', fontSize: 11, color: TEXT, opacity: .7, marginTop: 2 }}>{fanArt.caption}</div>}
+        </div>
+      )}
+
+      {/* ══ Batch 66: Badge Showcase overlay ══ */}
+      {badgeShowcase && badgeShowcase.active && (
+        <div style={{ position: 'fixed', top: 70, left: 12, zIndex: 672, background: CARD, border: '2px solid ' + GOLD, borderRadius: 12, padding: '10px 14px', maxWidth: 220 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 12, color: GOLD, letterSpacing: 1, marginBottom: 4 }}>🏅 BADGE SHOWCASE</div>
+          <div style={{ fontFamily: 'Barlow Condensed', fontSize: 14, color: TEXT, marginBottom: 6 }}>{badgeShowcase.username}</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {badgeShowcase.badges.map(function(badge, i) {
+              return <span key={i} style={{ background: 'rgba(201,168,76,.14)', borderRadius: 20, padding: '3px 10px', fontFamily: 'DM Mono', fontSize: 11, color: GOLD }}>{badge}</span>;
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 66: Live Leaderboard Ticker ══ */}
+      {showLeader && liveLeader.length > 0 && (
+        <div style={{ position: 'fixed', bottom: 185, left: 12, right: 12, zIndex: 662, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 12 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 16, color: GOLD, marginBottom: 8, letterSpacing: 1 }}>🏆 TOP VIEWERS</div>
+          {liveLeader.map(function(entry, i) {
+            return <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <span style={{ fontFamily: 'Bebas Neue', fontSize: 20, color: i === 0 ? GOLD : TEXT, width: 24, textAlign: 'center' }}>{i + 1}</span>
+              <span style={{ fontFamily: 'Barlow Condensed', fontSize: 15, color: TEXT, flex: 1 }}>{entry.username}</span>
+              <span style={{ fontFamily: 'DM Mono', fontSize: 11, color: GOLD }}>{entry.score}</span>
+            </div>;
+          })}
+        </div>
+      )}
+
+      {/* ══ Batch 66: Shout Board overlay ══ */}
+      {shoutBoard.length > 0 && showShoutPanel && (
+        <div style={{ position: 'fixed', bottom: 185, left: 12, right: 12, zIndex: 662, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 12, maxHeight: 220, overflowY: 'auto' }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 16, color: GOLD, marginBottom: 8 }}>📣 SHOUT BOARD</div>
+          {shoutBoard.slice().reverse().map(function(shout, i) {
+            return <div key={i} style={{ marginBottom: 8 }}>
+              <span style={{ fontFamily: 'Bebas Neue', fontSize: 13, color: GOLD }}>{shout.username}: </span>
+              <span style={{ fontFamily: 'Barlow Condensed', fontSize: 14, color: TEXT }}>{shout.msg}</span>
+            </div>;
+          })}
+        </div>
+      )}
+
+      {/* ══ Batch 66: Viewer Shout input ══ */}
+      {showShoutPanel && role === 'viewer' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 12 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 16, color: GOLD, marginBottom: 8 }}>📣 Shout Board</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input value={shoutDraft} onChange={function(e) { setShoutDraft(e.target.value); }} placeholder="Your shout (max 80 chars)…" maxLength={80} style={{ flex: 1, background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <button onClick={function() {
+              var msg = shoutDraft.trim();
+              if (msg && socket) { socket.emit('shout-board-add', { roomId: roomId, msg: msg }); setShoutDraft(''); }
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '6px 14px', fontFamily: 'Bebas Neue', fontSize: 15, cursor: 'pointer' }}>Shout!</button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 66: Badge Showcase Set panel (host) ══ */}
+      {showBadgeSet && role === 'host' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 18, color: GOLD, marginBottom: 10 }}>🏅 Badge Showcase</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input value={badgeDraft.username} onChange={function(e) { setBadgeDraft(Object.assign({}, badgeDraft, { username: e.target.value })); }} placeholder="Viewer username" maxLength={40} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <input value={badgeDraft.badges} onChange={function(e) { setBadgeDraft(Object.assign({}, badgeDraft, { badges: e.target.value })); }} placeholder="Badges comma-separated (e.g. VIP, 1 Year, Top Fan)" maxLength={200} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <button onClick={function() {
+              var u = badgeDraft.username.trim();
+              var bs = badgeDraft.badges.split(',').map(function(b) { return b.trim(); }).filter(function(b) { return b.length > 0; });
+              if (!u || bs.length === 0) return;
+              if (socket) socket.emit('badge-showcase-set', { roomId: roomId, username: u, badges: bs });
+              setShowBadgeSet(false);
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '8px', fontFamily: 'Bebas Neue', fontSize: 16, cursor: 'pointer' }}>Showcase</button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 66: Fan Art Set panel (host) ══ */}
+      {showFanArtSet && role === 'host' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 18, color: GOLD, marginBottom: 10 }}>🎨 Fan Art Spotlight</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input value={fanArtDraft.username} onChange={function(e) { setFanArtDraft(Object.assign({}, fanArtDraft, { username: e.target.value })); }} placeholder="Artist username" maxLength={40} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <input value={fanArtDraft.url} onChange={function(e) { setFanArtDraft(Object.assign({}, fanArtDraft, { url: e.target.value })); }} placeholder="Image URL (https://…)" maxLength={300} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'DM Mono', fontSize: 11 }} />
+            <input value={fanArtDraft.caption} onChange={function(e) { setFanArtDraft(Object.assign({}, fanArtDraft, { caption: e.target.value })); }} placeholder="Caption (optional)" maxLength={80} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <button onClick={function() {
+              var u = fanArtDraft.username.trim();
+              var url = fanArtDraft.url.trim();
+              if (!u || !url) return;
+              if (socket) socket.emit('fan-art-set', { roomId: roomId, username: u, url: url, caption: fanArtDraft.caption.trim() });
+              setShowFanArtSet(false);
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '8px', fontFamily: 'Bebas Neue', fontSize: 16, cursor: 'pointer' }}>Spotlight Art</button>
           </div>
         </div>
       )}
