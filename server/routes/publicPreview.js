@@ -93,9 +93,9 @@ router.get('/watch/:id', previewRateLimit, async function(req, res) {
   if (!UUID_RE.test(req.params.id)) return res.status(400).send('Invalid ID');
   try {
     var result = await db.query(
-      `SELECT r.id, r.title, r.thumbnail_url, r.hls_url, r.status,
+      `SELECT r.id, r.title, r.thumbnail_url, r.playback_url, r.status,
               u.display_name AS creator_name
-       FROM rooms r JOIN users u ON u.id = r.creator_id
+       FROM streams r JOIN users u ON u.id = r.creator_id
        WHERE r.id = $1 AND r.tenant_id = $2`,
       [req.params.id, req.tenantId]
     );
@@ -108,7 +108,7 @@ router.get('/watch/:id', previewRateLimit, async function(req, res) {
       title: room.title || (room.creator_name + ' is live on ' + branding.appName),
       description: isLive ? (room.creator_name + ' is live now on ' + branding.appName + '.') : ('Watch ' + room.creator_name + ' on ' + branding.appName + '.'),
       thumbnailUrl: safeMediaUrl(room.thumbnail_url, branding.siteUrl + '/default-preview.jpg'),
-      videoUrl: safeMediaUrl(room.hls_url, null),
+      videoUrl: safeMediaUrl(room.playback_url, null),
       canonicalUrl: '/watch/' + room.id,
       isLive: isLive,
       appName: branding.appName,
@@ -123,7 +123,7 @@ router.get('/post/:id', previewRateLimit, async function(req, res) {
   if (!UUID_RE.test(req.params.id)) return res.status(400).send('Invalid ID');
   try {
     var result = await db.query(
-      `SELECT p.id, p.caption, p.thumbnail_url, p.video_url, u.display_name AS creator_name
+      `SELECT p.id, p.title AS caption, p.thumbnail_url, p.video_url, u.display_name AS creator_name
        FROM video_posts p JOIN users u ON u.id = p.creator_id
        WHERE p.id = $1 AND p.tenant_id = $2`,
       [req.params.id, req.tenantId]
