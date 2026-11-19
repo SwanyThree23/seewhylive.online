@@ -1409,7 +1409,7 @@ router.post('/rtmp/auth', async function(req, res) {
     if (!m) return res.status(200).json({ ok: true, note: 'path not a room, ignored' });
     var streamId = m[1];
     var result = await db.query(
-      "UPDATE streams SET is_live = true, status = 'live', start_time = now() WHERE id = $1 RETURNING id",
+      "UPDATE streams SET is_live = true, status = 'live', started_at = now() WHERE id = $1 RETURNING id",
       [streamId]
     );
     if (result.rowCount === 0) {
@@ -1440,7 +1440,7 @@ router.post('/rtmp/done', async function(req, res) {
     if (!m) return res.status(200).json({ ok: true });
     var streamId = m[1];
     await db.query(
-      "UPDATE streams SET is_live = false, status = 'ended', end_time = now() WHERE id = $1",
+      "UPDATE streams SET is_live = false, status = 'ended', ended_at = now() WHERE id = $1",
       [streamId]
     );
     // Notify connected clients that the RTMP feed dropped
