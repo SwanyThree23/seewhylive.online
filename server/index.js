@@ -722,6 +722,7 @@ var slowModeUserTs      = new Map();  // roomId+':'+userId → last message time
 var pinnedMessages      = new Map();  // roomId → { id, username, message, ts } | undefined
 var streamGoals         = new Map();  // roomId → { type, target, label } | undefined
 var chyronThrottle      = new Map();  // socketId → lastChyronTs ms (500ms throttle)
+var clipRenderJobs      = new Map();  // userId → active FFmpeg child process
 var overlayThrottle     = new Map();  // socketId → lastOverlayTs ms (500ms throttle)
 var bracketThrottle     = new Map();  // socketId → lastBracketTs ms (500ms throttle)
 var triviaStartThrottle = new Map();  // socketId → lastTriviaStartTs ms (2000ms throttle)
@@ -5160,6 +5161,99 @@ io.on('connection', function(socket) {
     io.to(socket.id).emit('clip-marked', { id: markerId, label: label, ts: ts });
     io.to(roomId).emit('bot-log', { event: 'clip_marker', message: 'Clip: ' + label + ' by ' + markedBy, ts: Date.now() });
     logger.info('[clip-marker] ' + label + ' by ' + markedBy + ' in ' + roomId);
+  });
+
+  // ── clip-render ────────────────────────────────────────────────────────
+  // Host or cohost can request an HLS clip be cut to an mp4 around a marker.
+  // One active FFmpeg job per user; max 90 s clip; output to /opt/seewhy/clips/.
+  socket.on('clip-render', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId || !data || !data.markerId) return;
+
+    // Guard: one active job per user
+    if (clipRenderJobs.has(userId)) {
+      socket.emit('clip-render-error', { markerId: data.markerId, error: 'A render is already in progress' });
+      return;
+    }
+
+    // Look up the marker
+    var marker;
+    try {
+      marker = db.prepare('SELECT id, room_id, ts, label FROM clip_markers WHERE id = ? AND room_id = ?').get(String(data.markerId), roomId);
+    } catch (_e) {}
+    if (!marker) {
+      socket.emit('clip-render-error', { markerId: data.markerId, error: 'Marker not found' });
+      return;
+    }
+
+    // Build FFmpeg args — start 20 s before marker, cap at 90 s
+    var hlsPath  = '/var/www/html/hls/' + roomId + '/index.m3u8';
+    var clipId   = uuidv4();
+    var outPath  = '/opt/seewhy/clips/' + clipId + '.mp4';
+    var startSec = Math.max(0, marker.ts - 20);
+    var durSec   = Math.min(90, 90);  // cap at 90 s
+    var label    = marker.label || 'clip';
+
+    var args = [
+      '-y',
+      '-ss', String(startSec),
+      '-t',  String(durSec),
+      '-i',  hlsPath,
+      '-c',  'copy',
+      '-movflags', '+faststart',
+      outPath,
+    ];
+
+    var child;
+    try {
+      child = require('child_process').spawn('ffmpeg', args, { stdio: 'ignore' });
+    } catch (spawnErr) {
+      socket.emit('clip-render-error', { markerId: marker.id, error: 'FFmpeg spawn failed' });
+      return;
+    }
+
+    clipRenderJobs.set(userId, child);
+    logger.info('[clip-render] started clipId=' + clipId + ' markerId=' + marker.id + ' room=' + roomId);
+
+    child.on('close', function(code) {
+      clipRenderJobs.delete(userId);
+      if (code === 0) {
+        socket.emit('clip-render-done', {
+          markerId: marker.id,
+          clipId:   clipId,
+          label:    label,
+          path:     outPath,
+          ts:       Math.floor(Date.now() / 1000),
+        });
+        // Webhook: clip.ready
+        try {
+          var _crRoom = rooms.get(roomId);
+          var _crHostId = _crRoom ? _crRoom.hostUserId : null;
+          if (_crHostId) {
+            webhooks.clipReady(_crHostId, socket.data.tenantId || '', {
+              roomId:   roomId,
+              clipId:   clipId,
+              markerId: marker.id,
+              label:    label,
+              path:     outPath,
+              ts:       Math.floor(Date.now() / 1000),
+            });
+          }
+        } catch (_cwErr) { logger.warn('[clip-render] webhook: ' + _cwErr.message); }
+        logger.info('[clip-render] done clipId=' + clipId);
+      } else {
+        socket.emit('clip-render-error', { markerId: marker.id, error: 'FFmpeg exited with code ' + code });
+        logger.warn('[clip-render] FFmpeg code=' + code + ' clipId=' + clipId);
+      }
+    });
+
+    child.on('error', function(err) {
+      clipRenderJobs.delete(userId);
+      socket.emit('clip-render-error', { markerId: marker.id, error: err.message });
+      logger.warn('[clip-render] FFmpeg error: ' + err.message);
+    });
   });
 
   // ── chat-react ─────────────────────────────────────────────────────────
