@@ -1,6 +1,6 @@
 import React, { useReducer, useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff, Video, VideoOff, X, Star } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, X, Star, Headphones } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import SpeakerHighlightSettings from './SpeakerHighlightSettings';
 
@@ -122,13 +122,34 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, isSpeaking,
         {hasLiveCam ? (
           <VideoOctInner stream={stream} />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <div style={{ width: size * 0.35, height: size * 0.35, borderRadius: '50%', background: role.color + '30', border: '2px solid ' + role.color + '60', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.18, fontWeight: 900, color: role.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
-              {initials}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <div style={{ position: 'relative', width: size * 0.38, height: size * 0.38, borderRadius: '50%', background: isSpeaking ? (role.color + '28') : (role.color + '18'), border: '2px solid ' + (isSpeaking ? role.color : role.color + '50'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.18, fontWeight: 900, color: role.color, fontFamily: 'Barlow Condensed, sans-serif', transition: 'border-color 0.2s, background 0.2s', boxShadow: isSpeaking ? ('0 0 ' + (size * 0.1) + 'px ' + role.color + '55') : 'none' }}>
+              {guest.avatar_url
+                ? React.createElement('img', { src: guest.avatar_url, style: { width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' } })
+                : initials}
             </div>
+            {/* Waveform bars — visible when audio-only guest is speaking */}
+            {isSpeaking && (
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: size * 0.14 }}>
+                {[0.4, 0.75, 1, 0.75, 0.4].map(function(h, i) {
+                  return React.createElement(motion.div, {
+                    key: i,
+                    animate: { scaleY: [h, 1, h * 0.5, 1, h] },
+                    transition: { duration: 0.6, repeat: Infinity, delay: i * 0.08, ease: 'easeInOut' },
+                    style: { width: size * 0.045, borderRadius: 2, background: role.color, transformOrigin: 'bottom', height: size * 0.14 },
+                  });
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
+      {/* Audio-only badge */}
+      {guest.camOff && !guest.micMuted && (
+        <div style={{ position: 'absolute', top: size * 0.3, right: size * 0.07, background: 'rgba(0,255,136,0.18)', border: '1px solid rgba(0,255,136,0.4)', borderRadius: 99, padding: '1px 3px', zIndex: 3, display: 'flex', alignItems: 'center' }}>
+          <Headphones size={size * 0.09} color="#00FF88" />
+        </div>
+      )}
       {/* Mic indicator */}
       <div style={{ position: 'absolute', bottom: size * 0.12, left: '50%', transform: 'translateX(-50%)', width: size * 0.22, height: size * 0.22, borderRadius: '50%', background: guest.micMuted ? 'rgba(239,68,68,0.9)' : 'rgba(0,255,136,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
         {guest.micMuted ? <MicOff size={size * 0.1} color="#fff" /> : <Mic size={size * 0.1} color="#fff" />}
