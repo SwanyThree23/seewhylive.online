@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, AlertTriangle, Key } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, AlertTriangle, Key, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -89,6 +89,9 @@ export default function SettingsPage() {
   var [pushNotifications, setPushNotifications] = useState(true);
   var [showActivity, setShowActivity] = useState(true);
   var [publicProfile, setPublicProfile] = useState(true);
+  var [payLinks, setPayLinks] = useState({});
+  var [payLinksSaving, setPayLinksSaving] = useState(false);
+  var [myProfileId, setMyProfileId] = useState(null);
   var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -117,6 +120,32 @@ export default function SettingsPage() {
       setPublicProfile(preferences.public_profile || true);
     }
   }, [preferences]);
+
+  useEffect(function() {
+    if (!user) return;
+    base44.entities.CreatorProfile.filter({ user_id: user.id }).then(function(profiles) {
+      if (profiles && profiles[0]) {
+        setMyProfileId(profiles[0].id);
+        setPayLinks(profiles[0].payment_links || {});
+      }
+    }).catch(function() {});
+  }, [user && user.id]);
+
+  async function savePayLinks() {
+    if (!user) return;
+    setPayLinksSaving(true);
+    try {
+      await base44.auth.updateMe({ payment_links: payLinks });
+      if (myProfileId) {
+        await base44.entities.CreatorProfile.update(myProfileId, { payment_links: payLinks });
+      }
+      toast.success('Payment links saved!');
+    } catch {
+      toast.error('Failed to save payment links');
+    } finally {
+      setPayLinksSaving(false);
+    }
+  }
 
   var updateProfileMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
@@ -253,6 +282,35 @@ export default function SettingsPage() {
               </Link>
             ))}
           </div>
+        </Section>
+
+        {/* Direct Payment Links */}
+        <Section icon={DollarSign} title="Direct Payment Links" description="Fans can send money directly — no platform cut">
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 8, ...T }}>
+            Enter your handle or username for each app. Fans will see these on your profile and live streams.
+          </p>
+          {[
+            { id: 'paypal',   label: 'PayPal',    placeholder: 'paypal.me/yourname' },
+            { id: 'cashapp',  label: 'Cash App',  placeholder: '$YourCashtag' },
+            { id: 'venmo',    label: 'Venmo',     placeholder: '@yourvenmo' },
+            { id: 'zelle',    label: 'Zelle',     placeholder: 'Phone or email' },
+            { id: 'chime',    label: 'Chime',     placeholder: 'yourchimetag' },
+            { id: 'applepay', label: 'Apple Pay', placeholder: 'Phone or email' },
+            { id: 'googlepay',label: 'Google Pay',placeholder: 'Phone or email' },
+          ].map(function(p) {
+            return (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <span style={{ ...T, fontSize: 12, fontWeight: 900, color: 'rgba(255,255,255,0.6)', width: 72, flexShrink: 0 }}>{p.label}</span>
+                <input
+                  value={payLinks[p.id] || ''}
+                  onChange={function(e) { setPayLinks(function(prev) { var n = Object.assign({}, prev); n[p.id] = e.target.value; return n; }); }}
+                  placeholder={p.placeholder}
+                  style={{ flex: 1, padding: '7px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,184,0,0.15)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
+                />
+              </div>
+            );
+          })}
+          <SaveButton onClick={savePayLinks} disabled={payLinksSaving} label={payLinksSaving ? 'Saving…' : 'Save Payment Links'} />
         </Section>
 
         {/* API Keys */}

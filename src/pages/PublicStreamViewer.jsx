@@ -3,8 +3,9 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
-import { Radio, Users, MessageCircle, Heart, Share2, Copy, Check, ExternalLink, LogIn } from 'lucide-react';
+import { Radio, Users, MessageCircle, Heart, Share2, Copy, Check, ExternalLink, LogIn, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+import DirectPayments from '../components/live/DirectPayments';
 
 var GOLD = '#C9A84C';
 var BG = '#0E0C09';
@@ -27,6 +28,7 @@ export default function PublicStreamViewer() {
   var [liked, setLiked] = useState(false);
   var [chatInput, setChatInput] = useState('');
   var [chatOpen, setChatOpen] = useState(false);
+  var [payOpen, setPayOpen] = useState(false);
 
   var { data: room } = useQuery({
     queryKey: ['public-room', roomId],
@@ -180,6 +182,18 @@ export default function PublicStreamViewer() {
         </div>
       </div>
 
+      {/* Direct support button */}
+      {(room && room.host_id) && (
+        <div style={{ margin: '0 16px 12px' }}>
+          <button
+            onClick={function() { setPayOpen(true); }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0', borderRadius: 12, background: 'linear-gradient(135deg, #FFB800, #FF8C00)', border: 'none', cursor: 'pointer', ...T, fontSize: 13, fontWeight: 900, color: '#000', letterSpacing: '0.06em', textTransform: 'uppercase' }}
+          >
+            <DollarSign style={{ width: 15, height: 15 }} /> Support {(creator && creator.display_name) || 'Creator'} Directly
+          </button>
+        </div>
+      )}
+
       {/* Chat preview (read-only teaser) */}
       <div style={{ margin: '0 16px 80px' }}>
         <button
@@ -222,6 +236,14 @@ export default function PublicStreamViewer() {
         )}
       </div>
 
+      <DirectPayments
+        isOpen={payOpen}
+        onClose={function() { setPayOpen(false); }}
+        creatorName={(creator && creator.display_name) || (room && room.host_name) || 'Creator'}
+        creatorId={(room && room.host_id) || null}
+        isHost={false}
+      />
+
       {/* Footer share bar */}
       <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 520, padding: '10px 16px', background: 'rgba(14,12,9,0.98)', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: 8, zIndex: 50, boxSizing: 'border-box' }}>
         <button
@@ -242,7 +264,7 @@ export default function PublicStreamViewer() {
           }}
           style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 5 }}
         >
-          🐦 Tweet
+          𝕏
         </button>
         <button
           onClick={function() {
@@ -251,7 +273,17 @@ export default function PublicStreamViewer() {
           }}
           style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 5 }}
         >
-          👥 FB
+          👥
+        </button>
+        <button
+          onClick={function() {
+            var text = '🔴 Watch live on SeeWhy → ' + shareUrl;
+            var url = 'https://wa.me/?text=' + encodeURIComponent(text);
+            window.open(url, '_blank', 'noopener,noreferrer');
+          }}
+          style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 5 }}
+        >
+          💬
         </button>
       </div>
     </div>
