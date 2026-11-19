@@ -1,6 +1,7 @@
 'use strict';
 import React, { useState, useEffect, useRef } from 'react';
 import UpgradeGate from './UpgradeGate.jsx';
+import { StatTile } from '../design/ui.jsx';
 
 var CREATOR_SPLIT = 0.90;
 
@@ -86,19 +87,8 @@ function ChatBucketBars({ buckets }) {
 }
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
-function StatCard({ label, value, sub, color }) {
-  return (
-    <div style={{
-      background: CARD,
-      border: '1px solid ' + BORDER,
-      borderRadius: 10,
-      padding: '10px 12px',
-    }}>
-      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1.5, marginBottom: 4 }}>{label}</div>
-      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: color || GOLD, lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: DIM, marginTop: 3 }}>{sub}</div>}
-    </div>
-  );
+function StatCard(props) {
+  return <StatTile label={props.label} value={props.value} sub={props.sub} color={props.color || GOLD} />;
 }
 
 export default function AnalyticsTab({ socket, roomId, role, isLive, addToast }) {

@@ -5665,6 +5665,9 @@ export default function LiveRoomPage({
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
                     <span style={{ fontWeight: 700, fontSize: 13, color: gold }}>{m.username || 'Guest'}</span>
                     {isMention && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: .5 }}>@you</span>}
+                    {m.lang && m.lang !== 'en' && (
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, background: TEAL + '18', border: '1px solid ' + TEAL + '44', borderRadius: 4, padding: '0 4px', letterSpacing: .3 }}>{m.lang.toUpperCase()}</span>
+                    )}
                     {m.ts && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>
                       {new Date(m.ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>}
