@@ -988,6 +988,21 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 64: Thank-You Wall / Tip Train / Stream Intro / Challenge Banner ──
+  var [thankYouWall,     setThankYouWall]     = useState([]);
+  var [tyNameDraft,      setTyNameDraft]      = useState('');
+  var [showTyWall,       setShowTyWall]       = useState(false);
+  var [tipTrain,         setTipTrain]         = useState(null);
+  var [tipTrainDraft,    setTipTrainDraft]    = useState({ goalCents: '20', label: 'Tip Train' });
+  var [showTipTrainSet,  setShowTipTrainSet]  = useState(false);
+  var [tipTrainComplete, setTipTrainComplete] = useState(null);
+  var [streamIntro,      setStreamIntro]      = useState(null);
+  var [introDraft,       setIntroDraft]       = useState({ title: '', tagline: '' });
+  var [showIntroSet,     setShowIntroSet]     = useState(false);
+  var [challengeBanner,  setChallengeBanner]  = useState(null);
+  var [challengeDraft,   setChallengeDraft]   = useState('');
+  var [showChallengeSet, setShowChallengeSet] = useState(false);
+  var [myAccepted,       setMyAccepted]       = useState(false);
   // ─── Batch 63: Vibe Check / Grid Reaction / Loyalty Card / CTA Button ───────
   var [vibeCheck,       setVibeCheck]       = useState(null);
   var [myVibe,          setMyVibe]          = useState(null);
@@ -1257,6 +1272,10 @@ export default function LiveRoomPage({
       if (data.vibeCheck && data.vibeCheck.active) setVibeCheck(data.vibeCheck);
       if (data.gridReaction && data.gridReaction.active) setGridReaction(data.gridReaction);
       if (data.ctaButton) setCtaButton(data.ctaButton);
+      if (Array.isArray(data.thankYouWall)) setThankYouWall(data.thankYouWall);
+      if (data.tipTrain) setTipTrain(data.tipTrain);
+      if (data.streamIntro && data.streamIntro.active) setStreamIntro(data.streamIntro);
+      if (data.challengeBanner && data.challengeBanner.active) setChallengeBanner(data.challengeBanner);
       if (socket) socket.emit('loyalty-card-get', { roomId: roomId }, function(res) {
         if (res && typeof res.stamps === 'number') setLoyaltyCard({ stamps: res.stamps, goal: res.goal || 10 });
       });
@@ -2585,6 +2604,29 @@ export default function LiveRoomPage({
       setTimeout(function() { setSuperFollowBurst(null); }, 3500);
     });
 
+    // ── Batch 64 listeners ─────────────────────────────────────────────────
+    socket.on('thank-you-wall-update', function(d) {
+      setThankYouWall(Array.isArray(d) ? d : []);
+    });
+
+    socket.on('tip-train-update', function(d) {
+      setTipTrain(d || null);
+    });
+
+    socket.on('tip-train-complete', function(d) {
+      setTipTrainComplete(d || null);
+      setTimeout(function() { setTipTrainComplete(null); }, 4000);
+    });
+
+    socket.on('stream-intro-update', function(d) {
+      setStreamIntro(d || null);
+    });
+
+    socket.on('challenge-banner-update', function(d) {
+      setChallengeBanner(d || null);
+      if (!d) setMyAccepted(false);
+    });
+
     // ── Batch 63 listeners ─────────────────────────────────────────────────
     socket.on('vibe-check-update', function(d) {
       setVibeCheck(d || null);
@@ -3155,6 +3197,11 @@ export default function LiveRoomPage({
       socket.off('grid-reaction-update');
       socket.off('loyalty-card-update');
       socket.off('cta-button-update');
+      socket.off('thank-you-wall-update');
+      socket.off('tip-train-update');
+      socket.off('tip-train-complete');
+      socket.off('stream-intro-update');
+      socket.off('challenge-banner-update');
     };
   }, [socket]);
 
@@ -5065,6 +5112,19 @@ export default function LiveRoomPage({
                 if (ctaButton) { if (socket) socket.emit('cta-button-clear', { roomId: roomId }); }
                 else { setShowCtaSet(function(s) { return !s; }); }
               }},
+              { emoji: '🙏', label: 'Thank-You Wall', active: showTyWall, onTap: function() { setShowTyWall(function(s) { return !s; }); } },
+              { emoji: tipTrain ? '🛑' : '🚂', label: tipTrain ? 'Stop Train' : 'Tip Train', active: !!tipTrain || showTipTrainSet, onTap: function() {
+                if (tipTrain) { if (socket) socket.emit('tip-train-clear', { roomId: roomId }); }
+                else { setShowTipTrainSet(function(s) { return !s; }); }
+              }},
+              { emoji: streamIntro ? '🎬' : '📽️', label: streamIntro ? 'Hide Intro' : 'Stream Intro', active: !!streamIntro || showIntroSet, onTap: function() {
+                if (streamIntro) { if (socket) socket.emit('stream-intro-clear', { roomId: roomId }); }
+                else { setShowIntroSet(function(s) { return !s; }); }
+              }},
+              { emoji: challengeBanner ? '🛑' : '🏆', label: challengeBanner ? 'End Challenge' : 'Challenge', active: !!challengeBanner || showChallengeSet, onTap: function() {
+                if (challengeBanner) { if (socket) socket.emit('challenge-banner-clear', { roomId: roomId }); }
+                else { setShowChallengeSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -5189,6 +5249,13 @@ export default function LiveRoomPage({
               { emoji: loyaltyCard.stamps > 0 ? '🎫' : '🎟', label: loyaltyCard.stamps + '/' + loyaltyCard.goal + ' stamps', active: loyaltyCard.stamps >= loyaltyCard.goal, onTap: function() { } },
               { emoji: gridReaction ? '🎮' : '🎮', label: 'React Grid', active: !!gridReaction, onTap: function() {
                 if (gridReaction) setShowGridPanel(function(s) { return !s; });
+              }},
+              { emoji: challengeBanner && !myAccepted ? '🏆' : '✅', label: challengeBanner ? (myAccepted ? 'Accepted!' : 'Accept') : 'Challenge', active: myAccepted, onTap: function() {
+                if (challengeBanner && !myAccepted) {
+                  if (socket) socket.emit('challenge-accept', { roomId: roomId }, function(res) {
+                    if (res && res.ok) setMyAccepted(true);
+                  });
+                }
               }},
             ] : [])),
           ].map(function(tool) {
@@ -13251,6 +13318,134 @@ export default function LiveRoomPage({
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 64: Stream Intro Card ══ */}
+      {streamIntro && streamIntro.active && (
+        <div style={{ position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', zIndex: 670, background: 'rgba(14,12,9,.82)', border: '1.5px solid ' + GOLD, borderRadius: 14, padding: '18px 28px', textAlign: 'center', maxWidth: 320, animation: 'fadeIn .4s ease' }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 28, color: GOLD, letterSpacing: 2 }}>{streamIntro.title}</div>
+          {streamIntro.tagline && <div style={{ fontFamily: 'Barlow Condensed', fontSize: 15, color: TEXT, marginTop: 6, opacity: .85 }}>{streamIntro.tagline}</div>}
+        </div>
+      )}
+
+      {/* ══ Batch 64: Challenge Banner ══ */}
+      {challengeBanner && challengeBanner.active && (
+        <div style={{ position: 'fixed', top: 56, left: 0, right: 0, zIndex: 671, background: 'rgba(128,0,32,.88)', borderBottom: '2px solid ' + GOLD, padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 20, color: GOLD, letterSpacing: 1, flex: 1 }}>{'🏆 ' + challengeBanner.text}</div>
+          <div style={{ fontFamily: 'DM Mono', fontSize: 11, color: TEXT, opacity: .8 }}>{challengeBanner.accepts} accepted</div>
+          {role === 'viewer' && !myAccepted && (
+            <button onClick={function() {
+              if (socket) socket.emit('challenge-accept', { roomId: roomId }, function(res) {
+                if (res && res.ok) setMyAccepted(true);
+              });
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '4px 12px', fontFamily: 'Bebas Neue', fontSize: 15, cursor: 'pointer' }}>Accept</button>
+          )}
+        </div>
+      )}
+
+      {/* ══ Batch 64: Tip Train Progress ══ */}
+      {tipTrain && (
+        <div style={{ position: 'fixed', bottom: 170, left: 12, right: 12, zIndex: 662, animation: 'slideUp .3s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 10, padding: '8px 14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span style={{ fontFamily: 'Bebas Neue', fontSize: 16, color: GOLD }}>{'🚂 ' + (tipTrain.label || 'Tip Train')}</span>
+              <span style={{ fontFamily: 'DM Mono', fontSize: 11, color: TEXT }}>{Math.round((tipTrain.progress / tipTrain.goal) * 100) + '%'}</span>
+            </div>
+            <div style={{ background: '#1a1510', borderRadius: 4, height: 8, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: Math.min(100, Math.round((tipTrain.progress / tipTrain.goal) * 100)) + '%', background: 'linear-gradient(90deg,#C9A84C,#FFD700)', borderRadius: 4, transition: 'width .5s ease' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 64: Tip Train Complete burst ══ */}
+      {tipTrainComplete && (
+        <div style={{ position: 'fixed', top: '30%', left: '50%', transform: 'translateX(-50%)', zIndex: 680, background: GOLD, borderRadius: 16, padding: '16px 28px', textAlign: 'center', animation: 'fadeIn .3s ease', boxShadow: '0 0 30px rgba(201,168,76,.7)' }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 32, color: '#000', letterSpacing: 2 }}>TRAIN COMPLETE! 🎉</div>
+          <div style={{ fontFamily: 'Barlow Condensed', fontSize: 15, color: '#000' }}>{tipTrainComplete.label || 'Goal reached!'}</div>
+        </div>
+      )}
+
+      {/* ══ Batch 64: Thank-You Wall ══ */}
+      {showTyWall && role === 'host' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 18, color: GOLD, marginBottom: 8 }}>🙏 Thank-You Wall</div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+            <input value={tyNameDraft} onChange={function(e) { setTyNameDraft(e.target.value); }} placeholder="Name to thank…" maxLength={50} style={{ flex: 1, background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <button onClick={function() {
+              var name = tyNameDraft.trim();
+              if (name && socket) { socket.emit('thank-you-add', { roomId: roomId, name: name }); setTyNameDraft(''); }
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '6px 14px', fontFamily: 'Bebas Neue', fontSize: 15, cursor: 'pointer' }}>Add</button>
+            <button onClick={function() { if (socket) socket.emit('thank-you-clear', { roomId: roomId }); }} style={{ background: '#3a2010', color: TEXT, border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', fontFamily: 'DM Mono', fontSize: 11, cursor: 'pointer' }}>Clear</button>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {thankYouWall.map(function(name, i) {
+              return <span key={i} style={{ background: 'rgba(201,168,76,.12)', borderRadius: 20, padding: '3px 10px', fontFamily: 'Barlow Condensed', fontSize: 13, color: GOLD }}>{name}</span>;
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 64: Thank-You Wall overlay (all viewers) ══ */}
+      {thankYouWall.length > 0 && (
+        <div style={{ position: 'absolute', bottom: 110, left: 10, right: 10, zIndex: 640, overflow: 'hidden', pointerEvents: 'none' }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 13, color: GOLD, letterSpacing: 1, marginBottom: 4 }}>🙏 THANK YOU</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {thankYouWall.slice(-16).map(function(name, i) {
+              return <span key={i} style={{ fontFamily: 'Barlow Condensed', fontSize: 13, color: TEXT, background: 'rgba(14,12,9,.7)', borderRadius: 20, padding: '2px 8px' }}>{name}</span>;
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 64: Tip Train Set panel (host) ══ */}
+      {showTipTrainSet && role === 'host' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 18, color: GOLD, marginBottom: 10 }}>🚂 Set Tip Train</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input type="number" min="1" value={tipTrainDraft.goalCents} onChange={function(e) { setTipTrainDraft(Object.assign({}, tipTrainDraft, { goalCents: e.target.value })); }} placeholder="Goal in dollars (e.g. 20)" style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'DM Mono', fontSize: 13 }} />
+            <input value={tipTrainDraft.label} onChange={function(e) { setTipTrainDraft(Object.assign({}, tipTrainDraft, { label: e.target.value })); }} placeholder="Label (e.g. Tip Train)" maxLength={50} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <button onClick={function() {
+              var goalCents = Math.floor(parseFloat(tipTrainDraft.goalCents) * 100) || 2000;
+              if (socket) socket.emit('tip-train-set', { roomId: roomId, goalCents: goalCents, label: tipTrainDraft.label || 'Tip Train' });
+              setShowTipTrainSet(false);
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '8px', fontFamily: 'Bebas Neue', fontSize: 16, cursor: 'pointer' }}>Launch Train</button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 64: Stream Intro Set panel (host) ══ */}
+      {showIntroSet && role === 'host' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 18, color: GOLD, marginBottom: 10 }}>📽️ Stream Intro Card</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input value={introDraft.title} onChange={function(e) { setIntroDraft(Object.assign({}, introDraft, { title: e.target.value })); }} placeholder="Title (max 60 chars)" maxLength={60} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Bebas Neue', fontSize: 16, letterSpacing: 1 }} />
+            <input value={introDraft.tagline} onChange={function(e) { setIntroDraft(Object.assign({}, introDraft, { tagline: e.target.value })); }} placeholder="Tagline (max 80 chars)" maxLength={80} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <button onClick={function() {
+              var t = introDraft.title.trim();
+              if (!t) return;
+              if (socket) socket.emit('stream-intro-set', { roomId: roomId, title: t, tagline: introDraft.tagline.trim() });
+              setShowIntroSet(false);
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '8px', fontFamily: 'Bebas Neue', fontSize: 16, cursor: 'pointer' }}>Show Intro</button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 64: Challenge Banner Set panel (host) ══ */}
+      {showChallengeSet && role === 'host' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 18, color: GOLD, marginBottom: 10 }}>🏆 Set Challenge</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input value={challengeDraft} onChange={function(e) { setChallengeDraft(e.target.value); }} placeholder="Challenge text (max 100 chars)" maxLength={100} style={{ flex: 1, background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <button onClick={function() {
+              var t = challengeDraft.trim();
+              if (!t) return;
+              if (socket) socket.emit('challenge-banner-set', { roomId: roomId, text: t });
+              setChallengeDraft('');
+              setShowChallengeSet(false);
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '6px 14px', fontFamily: 'Bebas Neue', fontSize: 15, cursor: 'pointer' }}>Go</button>
           </div>
         </div>
       )}

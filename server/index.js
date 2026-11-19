@@ -604,6 +604,11 @@ var vibeCheckMap     = new Map();  // roomId → { options:[{emoji,label}], vote
 var gridReactionMap  = new Map();  // roomId → { cells:[{emoji,count}], active }
 var loyaltyCardMap   = new Map();  // roomId → Map<userId, { stamps, goal, awardedAt }>
 var ctaButtonMap     = new Map();  // roomId → { label, url }
+// Batch 64: Thank-You Wall / Tip Train / Stream Intro Card / Challenge Banner
+var thankYouWallMap  = new Map();  // roomId → Array<string> (up to 40 names)
+var tipTrainMap      = new Map();  // roomId → { progress, goal, label }
+var streamIntroMap   = new Map();  // roomId → { title, tagline, active }
+var challengeBannerMap = new Map(); // roomId → { text, accepts: Set<userId>, active }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -923,6 +928,14 @@ function getJoinStateForRoom(roomId) {
   var _gr63 = gridReactionMap.get(roomId);
   state.gridReaction = (_gr63 && _gr63.active) ? { cells: _gr63.cells, active: true } : null;
   state.ctaButton    = ctaButtonMap.get(roomId) || null;
+  // Batch 64
+  state.thankYouWall = thankYouWallMap.get(roomId) || [];
+  state.tipTrain     = tipTrainMap.get(roomId) || null;
+  state.streamIntro  = streamIntroMap.get(roomId) || null;
+  var _cb64 = challengeBannerMap.get(roomId);
+  if (_cb64 && _cb64.active) {
+    state.challengeBanner = { text: _cb64.text, accepts: _cb64.accepts.size, active: true };
+  } else { state.challengeBanner = null; }
   return state;
 }
 
@@ -6603,6 +6616,11 @@ io.on('connection', function(socket) {
     gridReactionMap.delete(roomId);
     loyaltyCardMap.delete(roomId);
     ctaButtonMap.delete(roomId);
+    // Batch 64 cleanup
+    thankYouWallMap.delete(roomId);
+    tipTrainMap.delete(roomId);
+    streamIntroMap.delete(roomId);
+    challengeBannerMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -8052,6 +8070,120 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     ctaButtonMap.delete(roomId);
     io.to(roomId).emit('cta-button-update', null);
+  });
+
+  // ── thank-you-wall (Batch 64) ────────────────────────────────────────────
+  socket.on('thank-you-add', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var name = (data.name || '').trim().slice(0, 50);
+    if (!name) return;
+    if (!thankYouWallMap.has(roomId)) thankYouWallMap.set(roomId, []);
+    var wall = thankYouWallMap.get(roomId);
+    if (!wall.includes(name)) {
+      wall.push(name);
+      if (wall.length > 40) wall.splice(0, wall.length - 40);
+    }
+    io.to(roomId).emit('thank-you-wall-update', { names: wall });
+  });
+
+  socket.on('thank-you-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    thankYouWallMap.delete(roomId);
+    io.to(roomId).emit('thank-you-wall-update', { names: [] });
+  });
+
+  // ── tip-train (Batch 64) ─────────────────────────────────────────────────
+  socket.on('tip-train-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var goal  = Math.min(1000000, Math.max(100, parseInt(data.goalCents, 10) || 1000));
+    var label = (data.label || '').trim().slice(0, 50) || 'Tip Train';
+    tipTrainMap.set(roomId, { progress: 0, goal: goal, label: label });
+    io.to(roomId).emit('tip-train-update', { progress: 0, goal: goal, label: label });
+  });
+
+  socket.on('tip-train-add', function(data) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || userId;
+    if (!roomId || !userId) return;
+    var train = tipTrainMap.get(roomId);
+    if (!train) return;
+    var amount = Math.max(0, parseInt(data.amountCents, 10) || 0);
+    var wasComplete = train.progress >= train.goal;
+    train.progress = Math.min(train.goal, train.progress + amount);
+    tipTrainMap.set(roomId, train);
+    var pct = Math.round(train.progress / train.goal * 100);
+    io.to(roomId).emit('tip-train-update', { progress: train.progress, goal: train.goal, label: train.label, pct: pct });
+    if (!wasComplete && train.progress >= train.goal) {
+      io.to(roomId).emit('tip-train-complete', { label: train.label });
+    }
+    addEnergy(roomId, userId, username, Math.floor(amount / 50));
+  });
+
+  socket.on('tip-train-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    tipTrainMap.delete(roomId);
+    io.to(roomId).emit('tip-train-update', null);
+  });
+
+  // ── stream-intro-card (Batch 64) ────────────────────────────────────────
+  socket.on('stream-intro-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var title   = (data.title   || '').trim().slice(0, 60);
+    var tagline = (data.tagline || '').trim().slice(0, 80);
+    if (!title) return;
+    var intro = { title: title, tagline: tagline, active: true };
+    streamIntroMap.set(roomId, intro);
+    io.to(roomId).emit('stream-intro-update', intro);
+  });
+
+  socket.on('stream-intro-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    streamIntroMap.delete(roomId);
+    io.to(roomId).emit('stream-intro-update', null);
+  });
+
+  // ── challenge-banner (Batch 64) ──────────────────────────────────────────
+  socket.on('challenge-banner-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var text = (data.text || '').trim().slice(0, 100);
+    if (!text) return;
+    challengeBannerMap.set(roomId, { text: text, accepts: new Set(), active: true });
+    io.to(roomId).emit('challenge-banner-update', { text: text, accepts: 0, active: true });
+  });
+
+  socket.on('challenge-accept', function(data, ack) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) { if (ack) ack({ err: 'no room' }); return; }
+    var cb = challengeBannerMap.get(roomId);
+    if (!cb || !cb.active) { if (ack) ack({ err: 'not active' }); return; }
+    cb.accepts.add(userId);
+    io.to(roomId).emit('challenge-banner-update', { text: cb.text, accepts: cb.accepts.size, active: true });
+    addEnergy(roomId, userId, socket.data.username || userId, 2);
+    if (ack) ack({ ok: true, accepts: cb.accepts.size });
+  });
+
+  socket.on('challenge-banner-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    challengeBannerMap.delete(roomId);
+    io.to(roomId).emit('challenge-banner-update', null);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
