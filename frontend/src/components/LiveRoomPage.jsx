@@ -988,6 +988,16 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 63: Vibe Check / Grid Reaction / Loyalty Card / CTA Button ───────
+  var [vibeCheck,       setVibeCheck]       = useState(null);
+  var [myVibe,          setMyVibe]          = useState(null);
+  var [showVibePanel,   setShowVibePanel]   = useState(false);
+  var [gridReaction,    setGridReaction]    = useState(null);
+  var [showGridPanel,   setShowGridPanel]   = useState(false);
+  var [loyaltyCard,     setLoyaltyCard]     = useState({ stamps: 0, goal: 10 });
+  var [ctaButton,       setCtaButton]       = useState(null);
+  var [ctaDraft,        setCtaDraft]        = useState({ label: '', url: '' });
+  var [showCtaSet,      setShowCtaSet]      = useState(false);
   // ─── Batch 62: Crowd Meter / Hot Take / Scroll Credits / Color Overlay ──────
   var [crowdMeter,       setCrowdMeter]       = useState(null);
   var [myRating,         setMyRating]         = useState(0);
@@ -1244,6 +1254,12 @@ export default function LiveRoomPage({
       if (data.hotTake && data.hotTake.active) setHotTake(data.hotTake);
       if (data.scrollCredits && data.scrollCredits.active) setScrollCredits(data.scrollCredits);
       if (data.colorOverlay) setColorOverlay(data.colorOverlay);
+      if (data.vibeCheck && data.vibeCheck.active) setVibeCheck(data.vibeCheck);
+      if (data.gridReaction && data.gridReaction.active) setGridReaction(data.gridReaction);
+      if (data.ctaButton) setCtaButton(data.ctaButton);
+      if (socket) socket.emit('loyalty-card-get', { roomId: roomId }, function(res) {
+        if (res && typeof res.stamps === 'number') setLoyaltyCard({ stamps: res.stamps, goal: res.goal || 10 });
+      });
       if (data.scoreboard) setScoreboard(data.scoreboard);
       if (data.auction && data.auction.active) setAuction(data.auction);
       if (data.timerWidget && data.timerWidget.active) setTimerWidget(data.timerWidget);
@@ -2569,6 +2585,27 @@ export default function LiveRoomPage({
       setTimeout(function() { setSuperFollowBurst(null); }, 3500);
     });
 
+    // ── Batch 63 listeners ─────────────────────────────────────────────────
+    socket.on('vibe-check-update', function(d) {
+      setVibeCheck(d || null);
+      if (!d) setMyVibe(null);
+    });
+
+    socket.on('grid-reaction-update', function(d) {
+      setGridReaction(d || null);
+    });
+
+    socket.on('loyalty-card-update', function(d) {
+      if (!d) return;
+      if (d.userId === userId) {
+        setLoyaltyCard({ stamps: d.stamps, goal: d.goal });
+      }
+    });
+
+    socket.on('cta-button-update', function(d) {
+      setCtaButton(d || null);
+    });
+
     // ── Batch 62 listeners ─────────────────────────────────────────────────
     socket.on('crowd-meter-update', function(d) {
       setCrowdMeter(d || null);
@@ -3114,6 +3151,10 @@ export default function LiveRoomPage({
       socket.off('hot-take-update');
       socket.off('scroll-credits-update');
       socket.off('color-overlay-update');
+      socket.off('vibe-check-update');
+      socket.off('grid-reaction-update');
+      socket.off('loyalty-card-update');
+      socket.off('cta-button-update');
     };
   }, [socket]);
 
@@ -5012,6 +5053,18 @@ export default function LiveRoomPage({
                 if (colorOverlay) { if (socket) socket.emit('color-overlay-clear', { roomId: roomId }); }
                 else { setShowColorOverlaySet(function(s) { return !s; }); }
               }},
+              { emoji: vibeCheck ? '🛑' : '✨', label: vibeCheck ? 'End Vibe' : 'Vibe Check', active: !!vibeCheck, onTap: function() {
+                if (vibeCheck) { if (socket) socket.emit('vibe-check-stop', { roomId: roomId }); }
+                else { if (socket) socket.emit('vibe-check-start', { roomId: roomId, options: null }); }
+              }},
+              { emoji: gridReaction ? '🛑' : '🎮', label: gridReaction ? 'Stop Grid' : 'Grid React', active: !!gridReaction || showGridPanel, onTap: function() {
+                if (gridReaction) { if (socket) socket.emit('grid-reaction-stop', { roomId: roomId }); }
+                else { setShowGridPanel(function(s) { return !s; }); }
+              }},
+              { emoji: ctaButton ? '🚫' : '📢', label: ctaButton ? 'Clear CTA' : 'CTA Button', active: !!ctaButton || showCtaSet, onTap: function() {
+                if (ctaButton) { if (socket) socket.emit('cta-button-clear', { roomId: roomId }); }
+                else { setShowCtaSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -5129,6 +5182,13 @@ export default function LiveRoomPage({
               }},
               { emoji: crowdMeter ? '🌡' : '🌡', label: crowdMeter ? 'Rate It' : 'Crowd', active: !!crowdMeter && myRating > 0, onTap: function() {
                 if (crowdMeter) setShowCrowdMeter(function(s) { return !s; });
+              }},
+              { emoji: vibeCheck ? '✨' : '✨', label: vibeCheck ? 'Vibe Vote' : 'Vibe', active: !!vibeCheck && myVibe !== null, onTap: function() {
+                if (vibeCheck) setShowVibePanel(function(s) { return !s; });
+              }},
+              { emoji: loyaltyCard.stamps > 0 ? '🎫' : '🎟', label: loyaltyCard.stamps + '/' + loyaltyCard.goal + ' stamps', active: loyaltyCard.stamps >= loyaltyCard.goal, onTap: function() { } },
+              { emoji: gridReaction ? '🎮' : '🎮', label: 'React Grid', active: !!gridReaction, onTap: function() {
+                if (gridReaction) setShowGridPanel(function(s) { return !s; });
               }},
             ] : [])),
           ].map(function(tool) {
@@ -13191,6 +13251,108 @@ export default function LiveRoomPage({
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 63: CTA Button (floating) ══ */}
+      {ctaButton && (
+        <div style={{ position: 'fixed', bottom: 148, left: '50%', transform: 'translateX(-50%)', zIndex: 660, animation: 'slideUp .3s ease' }}>
+          <a href={ctaButton.url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: GOLD, border: 'none', borderRadius: 24, padding: '10px 20px', fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: BG, letterSpacing: 2, textDecoration: 'none', boxShadow: '0 2px 12px rgba(201,168,76,.4)' }}>
+            {ctaButton.label}
+          </a>
+        </div>
+      )}
+
+      {/* ══ Batch 63: Vibe Check overlay ══ */}
+      {vibeCheck && vibeCheck.active && (
+        <div style={{ position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)', zIndex: 645, width: 290, animation: 'fadeSlideIn .3s ease' }}>
+          <div style={{ background: CARD, border: '2px solid ' + GOLD, borderRadius: 18, padding: '14px 16px', textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 18, color: GOLD, letterSpacing: 2, marginBottom: 10 }}>✨ VIBE CHECK</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {vibeCheck.options.map(function(opt, i) {
+                var total = vibeCheck.tally.reduce(function(a, b) { return a + b; }, 0);
+                var pct = total > 0 ? Math.round(vibeCheck.tally[i] / total * 100) : 0;
+                return (
+                  <button key={i} onClick={function() {
+                    if (myVibe !== null || !socket) return;
+                    setMyVibe(i);
+                    socket.emit('vibe-check-vote', { roomId: roomId, idx: i });
+                  }} style={{ padding: '10px 6px', borderRadius: 12, background: myVibe === i ? 'rgba(201,168,76,.18)' : CARD2, border: '1px solid ' + (myVibe === i ? GOLD : BORDER), cursor: myVibe !== null ? 'default' : 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                    <span style={{ fontSize: 24 }}>{opt.emoji}</span>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT }}>{opt.label}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: GOLD }}>{pct}%</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 63: Grid Reaction panel ══ */}
+      {showGridPanel && gridReaction && gridReaction.active && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 230, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>🎮 REACT</span>
+              <button onClick={function() { setShowGridPanel(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {gridReaction.cells.map(function(cell, i) {
+                return (
+                  <button key={i} onClick={function() {
+                    if (socket) socket.emit('grid-reaction-tap', { roomId: roomId, idx: i });
+                  }} style={{ padding: '12px', borderRadius: 12, background: CARD2, border: '1px solid ' + BORDER, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                    <span style={{ fontSize: 28 }}>{cell.emoji}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: GOLD }}>{cell.count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 63: Loyalty Card badge (viewer) ══ */}
+      {role === 'viewer' && loyaltyCard.stamps > 0 && (
+        <div style={{ position: 'fixed', top: 50, left: 10, zIndex: 606, pointerEvents: 'none' }}>
+          <div style={{ background: 'rgba(14,12,9,.82)', border: '1px solid ' + (loyaltyCard.stamps >= loyaltyCard.goal ? GOLD : BORDER), borderRadius: 10, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 12 }}>{loyaltyCard.stamps >= loyaltyCard.goal ? '🎫' : '🎟'}</span>
+            <div style={{ display: 'flex', gap: 2 }}>
+              {Array.from({ length: loyaltyCard.goal }).map(function(_, i) {
+                return <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i < loyaltyCard.stamps ? GOLD : 'rgba(201,168,76,.2)' }} />;
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 63: CTA Set panel (host) ══ */}
+      {showCtaSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 700, width: 270, animation: 'slideUp .25s ease' }}>
+          <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 16, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',cursive", fontSize: 16, color: GOLD, letterSpacing: 1.5 }}>📢 CTA BUTTON</span>
+              <button onClick={function() { setShowCtaSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14 }}>✕</button>
+            </div>
+            <input value={ctaDraft.label}
+              onChange={function(e) { setCtaDraft(function(d) { return Object.assign({}, d, { label: e.target.value.slice(0, 40) }); }); }}
+              placeholder="Button label (required)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 8 }} />
+            <input value={ctaDraft.url}
+              onChange={function(e) { setCtaDraft(function(d) { return Object.assign({}, d, { url: e.target.value.slice(0, 300) }); }); }}
+              placeholder="https://… (required)"
+              style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, padding: '7px 10px', outline: 'none', width: '100%', boxSizing: 'border-box', marginBottom: 10 }} />
+            <button onClick={function() {
+              var lbl = ctaDraft.label.trim();
+              var url = ctaDraft.url.trim();
+              if (!lbl || !url || !url.match(/^https?:\/\//)) return;
+              if (socket) socket.emit('cta-button-set', { roomId: roomId, label: lbl, url: url });
+              setShowCtaSet(false);
+            }} disabled={!ctaDraft.label.trim() || !ctaDraft.url.trim().match(/^https?:\/\//)} style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px', width: '100%', fontFamily: "'Bebas Neue',cursive", fontSize: 14, color: BG, cursor: (ctaDraft.label.trim() && ctaDraft.url.trim().match(/^https?:\/\//)) ? 'pointer' : 'not-allowed', letterSpacing: 1, opacity: (ctaDraft.label.trim() && ctaDraft.url.trim().match(/^https?:\/\//)) ? 1 : 0.5 }}>
+              SHOW CTA
+            </button>
           </div>
         </div>
       )}

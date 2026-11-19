@@ -599,6 +599,11 @@ var crowdMeterMap    = new Map();  // roomId → { votes: Map<userId,rating>, ac
 var hotTakeMap       = new Map();  // roomId → { text, agree: Set<userId>, disagree: Set<userId>, active }
 var scrollCreditsMap = new Map();  // roomId → { text, active }
 var colorOverlayMap  = new Map();  // roomId → { color, opacity }
+// Batch 63: Vibe Check / Grid Reaction / Loyalty Card / CTA Button
+var vibeCheckMap     = new Map();  // roomId → { options:[{emoji,label}], votes: Map<userId,idx>, active }
+var gridReactionMap  = new Map();  // roomId → { cells:[{emoji,count}], active }
+var loyaltyCardMap   = new Map();  // roomId → Map<userId, { stamps, goal, awardedAt }>
+var ctaButtonMap     = new Map();  // roomId → { label, url }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -908,6 +913,16 @@ function getJoinStateForRoom(roomId) {
   } else { state.hotTake = null; }
   state.scrollCredits = scrollCreditsMap.get(roomId) || null;
   state.colorOverlay  = colorOverlayMap.get(roomId) || null;
+  // Batch 63
+  var _vc63 = vibeCheckMap.get(roomId);
+  if (_vc63 && _vc63.active) {
+    var _vcTally = [0,0,0,0];
+    _vc63.votes.forEach(function(idx) { if (_vcTally[idx] !== undefined) _vcTally[idx]++; });
+    state.vibeCheck = { options: _vc63.options, tally: _vcTally, active: true };
+  } else { state.vibeCheck = null; }
+  var _gr63 = gridReactionMap.get(roomId);
+  state.gridReaction = (_gr63 && _gr63.active) ? { cells: _gr63.cells, active: true } : null;
+  state.ctaButton    = ctaButtonMap.get(roomId) || null;
   return state;
 }
 
@@ -6583,6 +6598,11 @@ io.on('connection', function(socket) {
     hotTakeMap.delete(roomId);
     scrollCreditsMap.delete(roomId);
     colorOverlayMap.delete(roomId);
+    // Batch 63 cleanup
+    vibeCheckMap.delete(roomId);
+    gridReactionMap.delete(roomId);
+    loyaltyCardMap.delete(roomId);
+    ctaButtonMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -7904,6 +7924,134 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     colorOverlayMap.delete(roomId);
     io.to(roomId).emit('color-overlay-update', null);
+  });
+
+  // ── vibe-check (Batch 63) ───────────────────────────────────────────────
+  var DEFAULT_VIBE_OPTIONS = [
+    { emoji: '🔥', label: 'Fire' },
+    { emoji: '😂', label: 'Lol' },
+    { emoji: '😮', label: 'Wow' },
+    { emoji: '💤', label: 'Meh' }
+  ];
+  socket.on('vibe-check-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var opts = Array.isArray(data.options) ? data.options.slice(0, 4) : DEFAULT_VIBE_OPTIONS;
+    opts = opts.map(function(o) { return { emoji: String(o.emoji || '❓').slice(0, 4), label: String(o.label || '').slice(0, 20) }; });
+    while (opts.length < 2) opts.push(DEFAULT_VIBE_OPTIONS[opts.length]);
+    vibeCheckMap.set(roomId, { options: opts, votes: new Map(), active: true });
+    io.to(roomId).emit('vibe-check-update', { options: opts, tally: opts.map(function() { return 0; }), active: true });
+  });
+
+  socket.on('vibe-check-vote', function(data, ack) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) { if (ack) ack({ err: 'no room' }); return; }
+    var vc = vibeCheckMap.get(roomId);
+    if (!vc || !vc.active) { if (ack) ack({ err: 'not active' }); return; }
+    var idx = parseInt(data.idx, 10);
+    if (isNaN(idx) || idx < 0 || idx >= vc.options.length) { if (ack) ack({ err: 'bad idx' }); return; }
+    vc.votes.set(userId, idx);
+    var tally = vc.options.map(function() { return 0; });
+    vc.votes.forEach(function(i) { tally[i]++; });
+    io.to(roomId).emit('vibe-check-update', { options: vc.options, tally: tally, active: true });
+    addEnergy(roomId, userId, socket.data.username || userId, 1);
+    if (ack) ack({ ok: true, idx: idx });
+  });
+
+  socket.on('vibe-check-stop', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    vibeCheckMap.delete(roomId);
+    io.to(roomId).emit('vibe-check-update', null);
+  });
+
+  // ── grid-reaction (Batch 63) ────────────────────────────────────────────
+  socket.on('grid-reaction-start', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var rawCells = Array.isArray(data.cells) ? data.cells : [{ emoji: '👏' }, { emoji: '😂' }, { emoji: '🔥' }, { emoji: '💯' }];
+    var cells = rawCells.slice(0, 4).map(function(c) { return { emoji: String(c.emoji || '❓').slice(0, 4), count: 0 }; });
+    while (cells.length < 4) cells.push({ emoji: '➕', count: 0 });
+    gridReactionMap.set(roomId, { cells: cells, active: true });
+    io.to(roomId).emit('grid-reaction-update', { cells: cells, active: true });
+  });
+
+  socket.on('grid-reaction-tap', function(data) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId) return;
+    var gr = gridReactionMap.get(roomId);
+    if (!gr || !gr.active) return;
+    var idx = parseInt(data.idx, 10);
+    if (isNaN(idx) || idx < 0 || idx >= gr.cells.length) return;
+    var _grNow = Date.now();
+    if (_grNow - (reactionRainThrottle.get(userId) || 0) < 800) return;
+    reactionRainThrottle.set(userId, _grNow);
+    gr.cells[idx].count++;
+    io.to(roomId).emit('grid-reaction-update', { cells: gr.cells, active: true });
+    addEnergy(roomId, userId, socket.data.username || userId, 1);
+  });
+
+  socket.on('grid-reaction-stop', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    gridReactionMap.delete(roomId);
+    io.to(roomId).emit('grid-reaction-update', null);
+  });
+
+  // ── loyalty-card (Batch 63) ─────────────────────────────────────────────
+  socket.on('loyalty-stamp', function(data, ack) {
+    var roomId   = socket.data.roomId;
+    var userId   = socket.data.userId;
+    var username = socket.data.username || userId;
+    if (!roomId || !userId) { if (ack) ack({ err: 'no room' }); return; }
+    var targetId = data.targetId || userId;
+    var isHost   = socket.data.role === 'host' || socket.data.role === 'cohost';
+    if (targetId !== userId && !isHost) { if (ack) ack({ err: 'auth' }); return; }
+    if (!loyaltyCardMap.has(roomId)) loyaltyCardMap.set(roomId, new Map());
+    var cards = loyaltyCardMap.get(roomId);
+    var card  = cards.get(targetId) || { stamps: 0, goal: data.goal || 10 };
+    card.stamps = Math.min(card.goal, card.stamps + 1);
+    if (data.goal) card.goal = Math.max(1, Math.min(50, parseInt(data.goal, 10) || 10));
+    card.awardedAt = Date.now();
+    cards.set(targetId, card);
+    io.to(roomId).emit('loyalty-card-update', { userId: targetId, stamps: card.stamps, goal: card.goal });
+    if (ack) ack({ ok: true, stamps: card.stamps, goal: card.goal });
+  });
+
+  socket.on('loyalty-card-get', function(data, ack) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId;
+    if (!roomId || !userId || !ack) return;
+    var cards = loyaltyCardMap.get(roomId);
+    var card  = (cards && cards.get(userId)) || { stamps: 0, goal: 10 };
+    ack({ stamps: card.stamps, goal: card.goal });
+  });
+
+  // ── cta-button (Batch 63) ───────────────────────────────────────────────
+  socket.on('cta-button-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var label = (data.label || '').trim().slice(0, 40);
+    var url   = (data.url   || '').trim().slice(0, 300);
+    if (!label || !url || !url.match(/^https?:\/\//)) return;
+    var cta = { label: label, url: url };
+    ctaButtonMap.set(roomId, cta);
+    io.to(roomId).emit('cta-button-update', cta);
+  });
+
+  socket.on('cta-button-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    ctaButtonMap.delete(roomId);
+    io.to(roomId).emit('cta-button-update', null);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
