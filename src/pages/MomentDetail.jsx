@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -10,6 +10,8 @@ var BG   = '#080B18';
 
 export default function MomentDetail() {
   var { id } = useParams();
+  var [playing, setPlaying] = useState(false);
+  var videoRef = useRef(null);
 
   var { data: clip, isLoading } = useQuery({
     queryKey: ['moment', id],
@@ -67,17 +69,42 @@ export default function MomentDetail() {
         </button>
       </div>
 
-      {/* Thumbnail / placeholder */}
-      <div style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0510, #080B18)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {clip.thumbnail_url ? (
-          <img src={clip.thumbnail_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+      {/* Video / Thumbnail */}
+      <div style={{ width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0510, #080B18)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        {(clip.video_url || clip.hls_url) && playing ? (
+          <video
+            ref={videoRef}
+            src={clip.video_url || clip.hls_url}
+            controls
+            autoPlay
+            playsInline
+            onEnded={function() { setPlaying(false); }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, background: '#000' }}
+          />
         ) : (
-          <Play style={{ width: 48, height: 48, color: 'rgba(255,255,255,0.15)' }} />
+          <>
+            {clip.thumbnail_url && (
+              <img src={clip.thumbnail_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+            )}
+            {(clip.video_url || clip.hls_url) && (
+              <button
+                onClick={function() { setPlaying(true); }}
+                style={{ position: 'relative', zIndex: 2, width: 64, height: 64, borderRadius: '50%', background: 'rgba(0,0,0,0.65)', border: '2px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <Play style={{ width: 28, height: 28, color: '#fff', marginLeft: 3 }} />
+              </button>
+            )}
+            {!(clip.video_url || clip.hls_url) && !clip.thumbnail_url && (
+              <Play style={{ width: 48, height: 48, color: 'rgba(255,255,255,0.15)' }} />
+            )}
+          </>
         )}
         {/* Duration */}
-        <div style={{ position: 'absolute', bottom: 10, right: 12, padding: '3px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.8)', fontSize: 13, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.04em' }}>
-          {durStr}
-        </div>
+        {!playing && (
+          <div style={{ position: 'absolute', bottom: 10, right: 12, padding: '3px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.8)', fontSize: 13, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.04em', zIndex: 3 }}>
+            {durStr}
+          </div>
+        )}
       </div>
 
       {/* Clip info */}
