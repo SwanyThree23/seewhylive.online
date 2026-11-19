@@ -1,6 +1,7 @@
 'use strict';
 
 var db = require('../db');
+var logger = require('../lib/logger');
 
 var DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -75,7 +76,7 @@ async function lookupTenant(host) {
     // DB unreachable (ENOTFOUND, ECONNREFUSED, ETIMEDOUT, etc.) — fall back to default tenant
     dbReachable = false;
     dbRetryAt = Date.now() + DB_RETRY_INTERVAL;
-    console.error('resolveTenant: DB unreachable, using fallback tenant:', err.message);
+    logger.warn('resolveTenant: DB unreachable, using fallback tenant', { err: err.message });
     cache.set(subdomain, { tenant: FALLBACK_TENANT, expires: Date.now() + CACHE_TTL_MS });
     return FALLBACK_TENANT;
   }
@@ -96,7 +97,7 @@ async function resolveTenant(req, res, next) {
   } catch (err) {
     if (err.code === 'TENANT_NOT_FOUND') return res.status(404).json({ error: 'unknown tenant' });
     if (err.code === 'TENANT_SUSPENDED') return res.status(403).json({ error: 'tenant suspended' });
-    console.error('resolveTenant error', err);
+    logger.error('resolveTenant error', { err: err.message });
     res.status(500).json({ error: 'tenant resolution failed' });
   }
 }

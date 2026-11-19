@@ -1,14 +1,14 @@
 'use strict';
 const { Pool } = require('pg');
 const fs = require('fs');
+var logger = require('./lib/logger');
 
 // SUPABASE_DB_URL must be the direct Postgres connection string from:
 // Supabase dashboard → Project Settings → Database → Connection string (URI)
 // Example: postgresql://postgres:[password]@db.[ref].supabase.co:5432/postgres
 // For high-traffic use the pooler (port 6543) instead of direct (port 5432).
 if (!process.env.SUPABASE_DB_URL) {
-  console.error('[db] CRITICAL: SUPABASE_DB_URL is not set — Postgres features unavailable.');
-  console.error('[db] Get the connection string from Supabase → Project Settings → Database → URI');
+  logger.error('[db] CRITICAL: SUPABASE_DB_URL is not set — Postgres features unavailable. Get the connection string from Supabase → Project Settings → Database → URI');
 }
 
 const pool = new Pool({
@@ -35,13 +35,13 @@ function _scheduleProbe() {
         if (!_pgUp) {
           _pgUp = true;
           _pgBackoffMs = 5000;
-          console.info('[db] Postgres reconnected ✓');
+          logger.info('[db] Postgres reconnected');
         }
       })
       .catch(function(err) {
         _pgUp = false;
         _pgBackoffMs = Math.min(_pgBackoffMs * 2, _pgMaxBackoffMs);
-        console.warn('[db] Postgres probe failed (' + err.message + '), retrying in ' + (_pgBackoffMs / 1000) + 's');
+        logger.warn('[db] Postgres probe failed, retrying', { err: err.message, retryInSec: _pgBackoffMs / 1000 });
         _scheduleProbe();
       });
   }, _pgBackoffMs);
@@ -51,21 +51,21 @@ pool.on('connect', function() {
   if (!_pgUp) {
     _pgUp = true;
     _pgBackoffMs = 5000;
-    console.info('[db] Postgres connected ✓');
+    logger.info('[db] Postgres connected');
   }
 });
 
 pool.on('error', function(err) {
   _pgUp = false;
-  console.error('[db] Postgres pool error:', err.message);
+  logger.error('[db] Postgres pool error', { err: err.message });
   _scheduleProbe();
 });
 
 // Kick off an initial probe so startup logs show Postgres status quickly
 pool.query('SELECT 1')
-  .then(function() { _pgUp = true; console.info('[db] Postgres ready ✓'); })
+  .then(function() { _pgUp = true; logger.info('[db] Postgres ready'); })
   .catch(function(err) {
-    console.error('[db] Postgres unavailable at startup:', err.message);
+    logger.error('[db] Postgres unavailable at startup', { err: err.message });
     _scheduleProbe();
   });
 
