@@ -136,7 +136,7 @@ export default function VideoPost() {
         tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
       });
 
-      var postUrl = `${window.location.origin}${createPageUrl('Room')}?id=${post.id}`;
+      var postUrl = `${window.location.origin}${createPageUrl('VideoViewer')}?id=${post.id}`;
       setPublishedUrl(postUrl);
       setStep('published');
       toast.success('Video posted!');
