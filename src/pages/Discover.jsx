@@ -278,6 +278,7 @@ export default function DiscoverPage() {
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
+              { id: 'videos', label: 'Videos', icon: Clapperboard },
               { id: 'moments', label: 'Moments', icon: Clapperboard },
               { id: 'episodes', label: 'Episodes', icon: Clapperboard },
             ].map(t => {
@@ -391,6 +392,12 @@ export default function DiscoverPage() {
             </motion.div>
           )}
 
+          {tab === 'videos' && (
+            <motion.div key="videos" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <VideoPostsGrid />
+            </motion.div>
+          )}
+
           {tab === 'moments' && (
             <motion.div key="moments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               <MomentsFeed currentUserId={(user && user.id)} followingIds={followingIds} />
@@ -445,6 +452,66 @@ export default function DiscoverPage() {
         </div>
       </div>
       </PullToRefresh>
+    </div>
+  );
+}
+
+function VideoPostsGrid() {
+  var { data: posts = [], isLoading } = useQuery({
+    queryKey: ['discover-video-posts'],
+    queryFn: function() { return base44.entities.Room.filter({ type: 'video', is_public: true }, '-created_date', 20); },
+    staleTime: 60000,
+  });
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+        {[1,2,3,4].map(function(i) { return <div key={i} style={{ height: 160, background: 'rgba(255,255,255,0.03)', borderRadius: 14, animation: 'pulse 1.5s ease-in-out infinite' }} />; })}
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '48px 0' }}>
+        <span style={{ fontSize: 32 }}>🎬</span>
+        <p style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.3)', fontSize: 14, marginTop: 8 }}>No video posts yet</p>
+        <Link to={createPageUrl('VideoPost')} style={{ display: 'inline-block', marginTop: 12, padding: '8px 20px', borderRadius: 10, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', textDecoration: 'none', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 900 }}>
+          + Post a Video
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+        <Link to={createPageUrl('VideoPost')} style={{ padding: '7px 14px', borderRadius: 8, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', textDecoration: 'none', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 900 }}>
+          + Post Video
+        </Link>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+        {posts.map(function(post) {
+          var thumb = post.thumbnail_url || null;
+          return (
+            <Link key={post.id} to={createPageUrl('Room') + '?id=' + post.id} style={{ textDecoration: 'none' }}>
+              <motion.div whileTap={{ scale: 0.97 }} style={{ borderRadius: 14, overflow: 'hidden', background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}>
+                <div style={{ height: 100, position: 'relative', background: 'linear-gradient(135deg, rgba(0,80,160,0.3), rgba(7,7,15,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {thumb
+                    ? <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                    : <span style={{ fontSize: 28 }}>🎬</span>
+                  }
+                  <div style={{ position: 'absolute', top: 6, left: 6, padding: '1px 6px', borderRadius: 4, background: 'rgba(0,0,0,0.75)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.08em' }}>VIDEO</div>
+                </div>
+                <div style={{ padding: '8px 10px 10px' }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, color: '#fff', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.title || 'Video Post'}</p>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>{post.host_name || 'Creator'} · 👁 {post.viewer_count || 0}</p>
+                </div>
+              </motion.div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

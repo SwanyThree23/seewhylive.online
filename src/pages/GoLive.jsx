@@ -764,6 +764,43 @@ export default function GoLive() {
       });
       setPartyId(party.id);
 
+      // Notify followers that this creator is now live (best-effort — never blocks stream)
+      if ((user && user.id)) {
+        try {
+          var followers = await base44.entities.Follow.filter({ following_id: user.id }, '-created_date', 500);
+          if (followers && followers.length > 0) {
+            var hostName = (user && user.full_name) || 'Your creator';
+            var notifBatch = followers.slice(0, 100).map(function(f) {
+              return Promise.allSettled([
+                base44.entities.Activity.create({
+                  user_id: f.follower_id,
+                  type: 'creator_live',
+                  title: hostName + ' is LIVE now!',
+                  body: title.trim(),
+                  room_id: party.id,
+                  sender_id: (user && user.id),
+                  is_read: false,
+                }).catch(function() {}),
+                base44.entities.Notification.create({
+                  user_id: f.follower_id,
+                  type: 'creator_live',
+                  title: hostName + ' is LIVE!',
+                  message: (title.trim() || 'Tune in now'),
+                  room_id: party.id,
+                  sender_id: (user && user.id),
+                  sender_name: hostName,
+                  is_read: false,
+                  link: '/LiveRoom?id=' + party.id,
+                }).catch(function() {}),
+              ]);
+            });
+            Promise.allSettled(notifBatch);
+          }
+        } catch {
+          // Follower notification is best-effort
+        }
+      }
+
       // Kick off RTMP fanout for the host's enabled destinations (best-effort —
       // failure here does NOT block going live; FFmpeg waits for the RTMP stream).
       if ((user && user.id)) {
