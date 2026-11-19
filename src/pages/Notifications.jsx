@@ -39,9 +39,11 @@ var TYPE_CONFIG = {
   tip:          { icon: Gift,      color: '#FFB800' },
   subscription: { icon: Users,     color: '#FFB800' },
   room_invite:  { icon: Radio,     color: '#FF2040' },
+  creator_live: { icon: Radio,     color: '#FF1A3C' },
   challenge:    { icon: Trophy,    color: '#FFB800' },
   announcement: { icon: Megaphone, color: '#FFB800' },
   referral:     { icon: Gift,      color: '#00FF88' },
+  follow:       { icon: Users,     color: '#00FF88' },
 };
 
 export default function NotificationsPage() {
