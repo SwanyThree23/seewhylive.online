@@ -44,7 +44,7 @@ async function claimOwnershipIfEligible(tenantId, userId, email) {
     var userRes = await client.query(
       `INSERT INTO users (id, tenant_id, email, account_type, display_name)
        VALUES ($1, $2, $3, 'owner', $4)
-       ON CONFLICT (id, tenant_id) DO NOTHING
+       ON CONFLICT (id) DO NOTHING
        RETURNING account_type`,
       [userId, tenantId, email, email.split('@')[0]]
     );
