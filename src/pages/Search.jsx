@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
+import FollowButton from '../components/shared/FollowButton';
 import ChallengeCard from '../components/community/ChallengeCard';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
@@ -96,6 +97,9 @@ function CreatorResult({ creator }) {
             <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> LIVE
           </span>
         )}
+        <div onClick={function(e) { e.preventDefault(); e.stopPropagation(); }}>
+          <FollowButton targetUserId={creator.id} targetUserName={creator.full_name || creator.username || 'Creator'} size="sm" />
+        </div>
       </div>
     </Link>
   );
