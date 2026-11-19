@@ -96,7 +96,7 @@ function StatTile({ label, value, icon: Icon, color = GOLD }) {
   );
 }
 
-var TABS = ['Overview', 'Streams', 'Studios', 'Clips', 'About', 'Settings'];
+var TABS = ['Overview', 'Streams', 'Videos', 'Studios', 'Clips', 'About', 'Settings'];
 
 /* ── main page ──────────────────────────────────────────────────────── */
 
@@ -148,9 +148,12 @@ export default function ProfilePage() {
 
   var { data: myRooms = [] } = useQuery({
     queryKey: ['myRooms', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id) }, '-created_date', 10),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id) }, '-created_date', 20); },
     enabled: !!(user && user.id),
   });
+
+  var myVideoPosts = myRooms.filter(function(r) { return r.type === 'video'; });
+  var myLiveRooms  = myRooms.filter(function(r) { return r.type !== 'video'; });
 
   var { data: myClips = [] } = useQuery({
     queryKey: ['myClips', (user && user.id)],
@@ -465,7 +468,7 @@ export default function ProfilePage() {
 
         {activeTab === 'Streams' && (
           <DarkCard>
-            {myRooms.length === 0 ? (
+            {myLiveRooms.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
                 <Radio className="w-12 h-12" style={{ color: 'rgba(255,255,255,0.12)' }} />
                 <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No streams yet</p>
@@ -478,7 +481,7 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="p-3 space-y-2">
-                {myRooms.slice(0, 10).map(room => {
+                {myLiveRooms.slice(0, 10).map(room => {
                   var isLive = room.status === 'live';
                   return (
                     <div key={room.id}
@@ -513,6 +516,57 @@ export default function ProfilePage() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </DarkCard>
+        )}
+
+        {activeTab === 'Videos' && (
+          <DarkCard>
+            {myVideoPosts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <span style={{ fontSize: 40 }}>🎬</span>
+                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No video posts yet</p>
+                <Link to={createPageUrl('VideoPost')}>
+                  <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
+                    style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+                    + Post a Video
+                  </button>
+                </Link>
+              </div>
+            ) : (
+              <div className="p-3">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                  {myVideoPosts.map(function(post) {
+                    return (
+                      <div
+                        key={post.id}
+                        onClick={function() { navigate(createPageUrl('VideoViewer') + '?id=' + post.id); }}
+                        style={{ borderRadius: 12, overflow: 'hidden', background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}
+                      >
+                        <div style={{ height: 90, position: 'relative', background: 'linear-gradient(135deg, rgba(0,80,160,0.3), rgba(7,7,15,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {post.thumbnail_url
+                            ? <img src={post.thumbnail_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                            : <span style={{ fontSize: 26 }}>🎬</span>
+                          }
+                          <div style={{ position: 'absolute', top: 5, left: 5, padding: '1px 5px', borderRadius: 4, background: 'rgba(0,0,0,0.75)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(255,255,255,0.7)' }}>VIDEO</div>
+                          {post.is_exclusive && (
+                            <div style={{ position: 'absolute', top: 5, right: 5, padding: '1px 5px', borderRadius: 4, background: 'rgba(255,184,0,0.85)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: '#000', fontWeight: 900 }}>$</div>
+                          )}
+                        </div>
+                        <div style={{ padding: '7px 9px 9px' }}>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, color: '#F0E8D4', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.title || 'Video'}</p>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>👁 {post.viewer_count || 0} · ❤️ {post.like_count || 0}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ textAlign: 'center', marginTop: 14 }}>
+                  <Link to={createPageUrl('VideoPost')} style={{ padding: '7px 16px', borderRadius: 8, background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.3)', color: GOLD, textDecoration: 'none', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 900 }}>
+                    + Post New Video
+                  </Link>
+                </div>
               </div>
             )}
           </DarkCard>
