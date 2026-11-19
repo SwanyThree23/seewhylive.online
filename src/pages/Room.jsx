@@ -1139,7 +1139,7 @@ export default function RoomPage() {
       {isHost && roomId && user && <ClipMarker roomId={roomId} user={user} streamStartTs={streamStartRef.current} getClipBlobUrl={extractClipBlobUrl} />}
       {isHost && roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
       <StreamMetricsBar startTime={streamStartRef.current} memberCount={participants.length} tipTotal={tipTotal} peakViewers={peakViewers} netQuality={netQuality} netRtt={netRtt} />
-      <SuperChatRail superchats={[]} />
+      <SuperChatRail roomId={roomId} currentUser={user} />
       <LiveGoalWidget memberCount={participants.length} tipTotal={tipTotal} subCount={0} triggerEdit={goalTick} />
       {isHost && roomId && <AIModeration roomId={roomId} isHost={isHost} />}
       {!isHost && roomId && user && <LoveTap roomId={roomId} user={user} creatorId={(room && room.host_id) || (user && user.id)} creatorName={''} />}

@@ -228,11 +228,11 @@ export default function MultiPlatformIntegration() {
   ];
 
   var watchUrl = roomId
-    ? window.location.origin + '/LiveRoom?id=' + roomId
+    ? window.location.origin + '/watch?id=' + roomId
     : window.location.origin;
 
   var iframeCode = roomId
-    ? '<iframe src="' + window.location.origin + '/LiveRoom?id=' + roomId + '&embed=1" width="640" height="360" allow="camera; microphone; autoplay" allowfullscreen style="border:none;border-radius:12px"></iframe>'
+    ? '<iframe src="' + window.location.origin + '/watch?id=' + roomId + '&embed=1" width="640" height="360" allow="camera; microphone; autoplay" allowfullscreen style="border:none;border-radius:12px"></iframe>'
     : '';
 
   async function schedulePost() {
