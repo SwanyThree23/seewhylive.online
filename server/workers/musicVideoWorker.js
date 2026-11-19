@@ -13,6 +13,7 @@ var { Pool } = require('pg');
 var { Worker, Queue } = require('bullmq');
 var { spawn } = require('child_process');
 var fs = require('fs');
+var logger = require('../lib/logger');
 var path = require('path');
 
 var pool = new Pool({ connectionString: process.env.SUPABASE_DB_URL });
@@ -84,7 +85,7 @@ async function processJob(job) {
   var outputName = 'mv_' + job.id + '.mp4';
   var outputPath = path.join(MEDIA_DIR, outputName);
 
-  console.log('[mv-worker] start job', job.id, 'style:', job.style);
+  logger.info('[mv-worker] start job', job.id, 'style:', job.style);
 
   await pool.query(
     "UPDATE music_video_jobs SET status='processing', updated_at=NOW() WHERE id=$1",
@@ -103,7 +104,7 @@ async function processJob(job) {
 
       if (code !== 0) {
         var msg = 'ffmpeg exit ' + code + ': ' + stderr.slice(-400);
-        console.error('[mv-worker] ffmpeg failed job', job.id, msg);
+        logger.error('[mv-worker] ffmpeg failed job', job.id, msg);
         await pool.query(
           "UPDATE music_video_jobs SET status='failed', error=$1, updated_at=NOW() WHERE id=$2",
           [msg.slice(0, 1000), job.id]
@@ -115,12 +116,12 @@ async function processJob(job) {
         "UPDATE music_video_jobs SET status='done', output_path=$1, updated_at=NOW() WHERE id=$2",
         [outputPath, job.id]
       );
-      console.log('[mv-worker] done job', job.id, '->', outputPath);
+      logger.info('[mv-worker] done job', job.id, '->', outputPath);
       resolve();
     });
 
     proc.on('error', async function(err) {
-      console.error('[mv-worker] spawn error:', err.message);
+      logger.error('[mv-worker] spawn error:', err.message);
       await pool.query(
         "UPDATE music_video_jobs SET status='failed', error=$1, updated_at=NOW() WHERE id=$2",
         ['ffmpeg spawn error: ' + err.message, job.id]
@@ -141,21 +142,21 @@ var worker = new Worker('music-video', async function(bullJob) {
   );
   var row = result.rows[0];
   if (!row) {
-    console.warn('[mv-worker] job row not found, skipping', bullJob.data.jobId);
+    logger.warn('[mv-worker] job row not found, skipping', bullJob.data.jobId);
     return;
   }
   if (row.status === 'done' || row.status === 'failed') {
-    console.log('[mv-worker] job already', row.status, '- skipping', row.id);
+    logger.info('[mv-worker] job already', row.status, '- skipping', row.id);
     return;
   }
   await processJob(row);
 }, { connection: connection, concurrency: 2 });
 
 worker.on('completed', function(bullJob) {
-  console.log('[mv-worker] queue job completed', bullJob.id);
+  logger.info('[mv-worker] queue job completed', bullJob.id);
 });
 worker.on('failed', function(bullJob, err) {
-  console.error('[mv-worker] queue job failed', bullJob && bullJob.id, err && err.message);
+  logger.error('[mv-worker] queue job failed', bullJob && bullJob.id, err && err.message);
 });
 
 // ---- One-time startup sweep for orphaned pending rows --------------------
@@ -169,18 +170,18 @@ worker.on('failed', function(bullJob, err) {
     );
     for (var i = 0; i < result.rows.length; i++) {
       await musicVideoQueue.add('render', { jobId: result.rows[i].id });
-      console.log('[mv-worker] requeued orphaned job', result.rows[i].id);
+      logger.info('[mv-worker] requeued orphaned job', result.rows[i].id);
     }
   } catch (e) {
-    console.error('[mv-worker] orphan sweep error:', e.message);
+    logger.error('[mv-worker] orphan sweep error:', e.message);
   }
 })();
 
-console.log('[mv-worker] started, consuming music-video queue via BullMQ');
+logger.info('[mv-worker] started, consuming music-video queue via BullMQ');
 
 // ---- Graceful shutdown -----------------------------------------------------
 async function shutdown() {
-  console.log('[mv-worker] shutting down...');
+  logger.info('[mv-worker] shutting down...');
   try { await worker.close(); } catch (e) {}
   try { await musicVideoQueue.close(); } catch (e) {}
   try { await pool.end(); } catch (e) {}

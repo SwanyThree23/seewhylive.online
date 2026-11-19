@@ -4,6 +4,7 @@ var express = require('express');
 var router = express.Router();
 var uuidv4 = require('uuid').v4;
 var Database = require('better-sqlite3');
+var logger = require('./lib/logger');
 var jwt = require('jsonwebtoken');
 var crypto = require('crypto');
 var fs = require('fs');
@@ -1301,11 +1302,11 @@ function spawnFanout(streamId, ingestUrl, resolvedDests, restartCount) {
   });
 
   ffmpeg.on('exit', function(code, signal) {
-    console.log('[fanout:%s] exited code=%s signal=%s restarts=%d', streamId, code, signal, restartCount);
+    logger.info('[fanout:' + streamId + '] exited code=' + code + ' signal=' + signal + ' restarts=' + restartCount);
     if (activeFanouts[streamId] && activeFanouts[streamId].process === ffmpeg) {
       // Auto-restart on unexpected exit (not manual kill)
       if (signal !== 'SIGTERM' && restartCount < MAX_RESTARTS) {
-        console.log('[fanout:%s] restarting in %dms (attempt %d/%d)', streamId, RESTART_DELAY_MS, restartCount + 1, MAX_RESTARTS);
+        logger.info('[fanout:' + streamId + '] restarting in ' + RESTART_DELAY_MS + 'ms (attempt ' + (restartCount + 1) + '/' + MAX_RESTARTS + ')');
         setTimeout(function() {
           if (activeFanouts[streamId]) {
             spawnFanout(streamId, ingestUrl, resolvedDests, restartCount + 1);
@@ -1559,7 +1560,7 @@ router.post('/fanout-start', requireAuth, fanoutStartRateLimit, async function(r
     spawnFanout(streamId, ingestUrl, resolvedDests, 0);
     activeFanouts[streamId] = activeFanouts[streamId] || { ownerId: req.user.id };
     activeFanouts[streamId].destinations = resolvedDests.map(function(d) { return d.label || d.url || ''; });
-    console.log('[fanout:%s] started → %d destinations (guest=%s)', streamId, resolvedDests.length, guestId);
+    logger.info('[fanout:' + streamId + '] started → ' + resolvedDests.length + ' destinations (guest=' + guestId + ')');
     res.json({ ok: true, stream_id: streamId, destinations: resolvedDests.length });
   } catch(e) {
     if (activeFanouts[streamId] && !activeFanouts[streamId].process) delete activeFanouts[streamId];
@@ -1599,7 +1600,7 @@ router.post('/fanout-stop-all', requireAuth, function(req, res) {
     }
     delete activeFanouts[id];
   });
-  console.log('[fanout] stop-all: killed %d processes', killed);
+  logger.info('[fanout] stop-all: killed ' + killed + ' processes');
   res.json({ ok: true, killed: killed, stream_ids: ids });
 });
 
