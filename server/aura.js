@@ -4,6 +4,7 @@
 // Client (OpenRouter-primary via llm.js, with Anthropic fallback)
 // ---------------------------------------------------------------------------
 var llm = require('./llm');
+var logger = require('./lib/logger');
 function getClient() {
   return llm.getClient();
 }
@@ -145,7 +146,7 @@ function scheduleNextDrain(delay) {
         try {
           item.callback(null, capResponse(text));
         } catch (cbErr) {
-          console.error('[AURA] callback threw:', cbErr.message);
+          logger.error('[AURA] callback threw:', cbErr.message);
         }
         if (queue.length > 0) {
           scheduleNextDrain(RATE_LIMIT_MS);
@@ -293,7 +294,7 @@ function callAura(streamId, userPrompt, mode) {
   }).then(function(response) {
     return response.content[0].text;
   }, function(err) {
-    console.error('[AURA] API error:', err.message);
+    logger.error('[AURA] API error:', err.message);
     return '[AURA offline]';
   });
 }
@@ -387,7 +388,7 @@ function generateGreeting(username) {
   }).then(function(response) {
     return capResponse(response.content[0].text);
   }, function(err) {
-    console.error('[AURA] generateGreeting error:', err.message);
+    logger.error('[AURA] generateGreeting error:', err.message);
     return 'Welcome ' + username + ' to SeeWhy LIVE!';
   });
 }
@@ -427,7 +428,7 @@ function generateHype(giftName, giftValue, username) {
   }).then(function(response) {
     return capResponse(response.content[0].text);
   }, function(err) {
-    console.error('[AURA] generateHype error:', err.message);
+    logger.error('[AURA] generateHype error:', err.message);
     return (username || 'Someone') + ' just blessed the stream!';
   });
 }
@@ -458,7 +459,7 @@ function generateShoutout(username, tier) {
   }).then(function(response) {
     return capResponse(response.content[0].text);
   }, function(err) {
-    console.error('[AURA] generateShoutout error:', err.message);
+    logger.error('[AURA] generateShoutout error:', err.message);
     return 'Big shoutout to ' + username + ' for the ' + tier + ' subscription!';
   });
 }

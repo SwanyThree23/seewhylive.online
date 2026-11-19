@@ -1,5 +1,6 @@
 'use strict';
 var express = require('express');
+var logger = require('../lib/logger');
 var jwt = require('jsonwebtoken');
 var { rateLimit } = require('express-rate-limit');
 var db = require('../db');
@@ -37,7 +38,7 @@ router.post('/token', guestTokenRateLimit, async function (req, res) {
 
     res.json({ token: token, destinationId: row.destination_id, streamId: row.stream_id });
   } catch (err) {
-    console.error('guestAuth /token failed', err);
+    logger.error('guestAuth /token failed', err);
     res.status(500).json({ error: 'could not issue guest token' });
   }
 });

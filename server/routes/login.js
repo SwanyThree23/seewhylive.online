@@ -1,5 +1,6 @@
 'use strict';
 var express = require('express');
+var logger = require('../lib/logger');
 var { createClient } = require('@supabase/supabase-js');
 var { rateLimit } = require('express-rate-limit');
 var ws = require('ws');
@@ -58,7 +59,7 @@ async function claimOwnershipIfEligible(tenantId, userId, email) {
     return userRes.rows[0] || null;
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('[login] ownership claim failed', err.message);
+    logger.error('[login] ownership claim failed', err.message);
     return null;
   } finally {
     client.release();

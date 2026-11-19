@@ -1,5 +1,6 @@
 'use strict';
 var express     = require('express');
+var logger = require('../lib/logger');
 var https       = require('https');
 var fs          = require('fs');
 var os          = require('os');
@@ -40,7 +41,7 @@ var SB_HOST = (function() {
     if (!h) throw new Error('empty hostname');
     return h;
   } catch (e) {
-    console.error('[sounds] SUPABASE_URL ' + (process.env.SUPABASE_URL ? 'is malformed' : 'is not set') + ' — sound upload will fail');
+    logger.error('[sounds] SUPABASE_URL ' + (process.env.SUPABASE_URL ? 'is malformed' : 'is not set') + ' — sound upload will fail');
     return '';
   }
 }());
@@ -159,7 +160,7 @@ router.delete('/:id', requireAuth, function(req, res) {
       if (delErr || delStatus >= 400) return res.status(500).json({ error: 'Delete failed' });
       sbReq('DELETE', '/storage/v1/object/sounds', { prefixes: [storagePath] }, function(stErr, stStatus) {
         if (stErr || stStatus >= 400) {
-          console.warn('[sounds] storage cleanup failed for path=%s status=%s', storagePath, stStatus);
+          logger.warn('[sounds] storage cleanup failed for path=%s status=%s', storagePath, stStatus);
         }
       });
       res.json({ ok: true, deleted: soundId });

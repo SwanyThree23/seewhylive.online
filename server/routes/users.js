@@ -1,5 +1,6 @@
 'use strict';
 var express = require('express');
+var logger = require('../lib/logger');
 var router = express.Router();
 var db = require('../db');
 var requireAuth = require('../middleware/auth');
@@ -25,7 +26,7 @@ router.delete('/me', requireAuth, async function(req, res) {
     );
     original = origResult.rows[0] || null;
   } catch (e) {
-    console.warn('[delete-account] could not fetch original row for rollback; continuing anyway');
+    logger.warn('[delete-account] could not fetch original row for rollback; continuing anyway');
   }
 
   // Step 2: Soft-delete first — anonymize PII. If this fails nothing has changed.
@@ -37,7 +38,7 @@ router.delete('/me', requireAuth, async function(req, res) {
       [anonName, now, userId, tenantId]
     );
   } catch (e) {
-    console.error('[delete-account] soft-delete failed userId=%s err=%s', userId, e.message);
+    logger.error('[delete-account] soft-delete failed userId=%s err=%s', userId, e.message);
     return res.status(500).json({ success: false, error: 'Could not delete account' });
   }
 
@@ -47,7 +48,7 @@ router.delete('/me', requireAuth, async function(req, res) {
     var delResult = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (delResult.error) throw delResult.error;
   } catch (e) {
-    console.error('[delete-account] supabase auth delete failed userId=%s err=%s', userId, e.message);
+    logger.error('[delete-account] supabase auth delete failed userId=%s err=%s', userId, e.message);
     if (original) {
       try {
         await db.pool.query(
@@ -55,7 +56,7 @@ router.delete('/me', requireAuth, async function(req, res) {
           [original.display_name, original.email, original.avatar_url, original.bio, original.deleted_at, userId, tenantId]
         );
       } catch (rbErr) {
-        console.error('[delete-account] rollback failed userId=%s — data anonymized but auth still active', userId, rbErr.message);
+        logger.error('[delete-account] rollback failed userId=%s — data anonymized but auth still active', userId, rbErr.message);
       }
     }
     return res.status(500).json({ success: false, error: 'Could not delete account' });

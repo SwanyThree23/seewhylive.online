@@ -1,6 +1,7 @@
 'use strict';
 
 var Database = require('better-sqlite3');
+var logger = require('./lib/logger');
 var axios = require('axios');
 
 var DB_PATH = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
@@ -23,7 +24,7 @@ var webPush = null;
 try {
   webPush = require('web-push');
 } catch (e) {
-  console.warn('[notifications] web-push not installed — push notifications disabled');
+  logger.warn('[notifications] web-push not installed — push notifications disabled');
 }
 
 var RESEND_API_URL = 'https://api.resend.com/emails';
@@ -33,7 +34,7 @@ function _sendEmail(toEmail, subject, html) {
   return new Promise(function(resolve, reject) {
     var apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
-      console.warn('[notifications] RESEND_API_KEY not set — skipping email to ' + toEmail);
+      logger.warn('[notifications] RESEND_API_KEY not set — skipping email to ' + toEmail);
       resolve(null);
       return;
     }
@@ -50,7 +51,7 @@ function _sendEmail(toEmail, subject, html) {
     }).then(function(res) {
       resolve(res.data);
     }).catch(function(err) {
-      console.error('[notifications] Email send failed: ' + (err.message || err));
+      logger.error('[notifications] Email send failed: ' + (err.message || err));
       reject(err);
     });
   });
@@ -167,27 +168,27 @@ function sendWeeklyDigest(toEmail, displayName, stats) {
 
 function setVAPIDKeys(publicKey, privateKey, subject) {
   if (!webPush) {
-    console.warn('[notifications] web-push not available — cannot set VAPID keys');
+    logger.warn('[notifications] web-push not available — cannot set VAPID keys');
     return;
   }
   try {
     webPush.setVapidDetails(subject, publicKey, privateKey);
   } catch (e) {
-    console.error('[notifications] setVapidDetails error: ' + e.message);
+    logger.error('[notifications] setVapidDetails error: ' + e.message);
   }
 }
 
 function sendPushNotification(subscription, title, body, data) {
   return new Promise(function(resolve, reject) {
     if (!webPush) {
-      console.warn('[notifications] web-push not available — push skipped');
+      logger.warn('[notifications] web-push not available — push skipped');
       resolve(null);
       return;
     }
     // Defence-in-depth: reject any non-https endpoint before dispatching
     var endpoint = subscription && String(subscription.endpoint || '');
     if (!endpoint || !/^https:\/\//.test(endpoint)) {
-      console.warn('[notifications] Push skipped — invalid endpoint: ' + endpoint);
+      logger.warn('[notifications] Push skipped — invalid endpoint: ' + endpoint);
       resolve(null);
       return;
     }
@@ -196,11 +197,11 @@ function sendPushNotification(subscription, title, body, data) {
       webPush.sendNotification(subscription, payload).then(function(result) {
         resolve(result);
       }).catch(function(err) {
-        console.error('[notifications] Push send error: ' + err.message);
+        logger.error('[notifications] Push send error: ' + err.message);
         reject(err);
       });
     } catch (e) {
-      console.error('[notifications] Push exception: ' + e.message);
+      logger.error('[notifications] Push exception: ' + e.message);
       reject(e);
     }
   });
@@ -233,7 +234,7 @@ function subscribeToNotifications(userId, pushSubscription) {
       now
     );
   } catch (e) {
-    console.error('[notifications] DB push subscription save error: ' + e.message);
+    logger.error('[notifications] DB push subscription save error: ' + e.message);
   }
 }
 

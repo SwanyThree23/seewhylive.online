@@ -1,5 +1,6 @@
 'use strict';
 var express = require('express');
+var logger = require('../lib/logger');
 var router = express.Router();
 var { rateLimit } = require('express-rate-limit');
 var rewardsService = require('../services/rewardsService');
@@ -45,7 +46,7 @@ router.get('/leaderboard', requireAuth, async function(req, res) {
     });
     res.json(data);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -57,7 +58,7 @@ router.get('/me', requireAuth, async function(req, res) {
     var data = await rewardsService.getUserPoints(req.user.id, req.tenantId);
     res.json(data);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -68,7 +69,7 @@ router.get('/my-points', requireAuth, async function(req, res) {
     var data = await rewardsService.getUserPoints(req.user.id, req.tenantId);
     res.json(data);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -79,7 +80,7 @@ router.get('/me/:userId', requireAuth, requireOwnerOrSelf('userId'), async funct
     var data = await rewardsService.getUserPoints(req.params.userId, req.tenantId);
     res.json(data);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -89,7 +90,7 @@ router.get('/tiers', requireAuth, async function(req, res) {
     var data = await rewardsService.getTiers(req.tenantId);
     res.json(data);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -99,7 +100,7 @@ router.get('/challenges', requireAuth, async function(req, res) {
     var data = await rewardsService.getActiveChallenges(req.tenantId);
     res.json(data);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -110,7 +111,7 @@ router.post('/challenges/:id/complete', requireAuth, challengeCompleteRateLimit,
     var result = await rewardsService.completeChallenge(req.user.id, req.params.id, req.tenantId);
     res.json(result);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     var USER_ERRS = ['challenge is not active', 'challenge has expired'];
     var isUserErr = USER_ERRS.includes(err.message);
     res.status(isUserErr ? 400 : 500).json({ error: isUserErr ? err.message : 'Internal server error' });
@@ -122,7 +123,7 @@ router.get('/my-tier', requireAuth, async function(req, res) {
     var data = await rewardsService.getSelectedTier(req.user.id, req.tenantId);
     res.json({ tier: data });
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -133,7 +134,7 @@ router.post('/my-tier', requireAuth, async function(req, res) {
     var data = await rewardsService.setSelectedTier(req.user.id, tierId, req.tenantId);
     res.json({ tier: data });
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     var msg = err && err.message;
     var isUserErr = msg === 'invalid tier id' || msg === 'tierId is required';
     res.status(isUserErr ? 400 : 500).json({ error: isUserErr ? msg : 'Internal server error' });

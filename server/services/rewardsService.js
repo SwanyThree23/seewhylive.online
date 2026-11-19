@@ -1,5 +1,6 @@
 'use strict';
 const { createClient } = require('@supabase/supabase-js');
+var logger = require('../lib/logger');
 const ws = require('ws');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { realtime: { transport: ws } });
 const db = require('../db');
@@ -166,7 +167,7 @@ async function completeChallenge(userId, challengeId, tenantId) {
     await supabase.from('challenge_completions')
       .delete().eq('challenge_id', challengeId).eq('user_id', userId)
       .catch(function(delErr) {
-        console.error('[rewardsService] compensating delete failed challengeId=%s userId=%s err=%s', challengeId, userId, delErr && delErr.message);
+        logger.error('[rewardsService] compensating delete failed challengeId=%s userId=%s err=%s', challengeId, userId, delErr && delErr.message);
       });
     throw awardErr;
   }

@@ -1,5 +1,6 @@
 'use strict';
 var express = require('express');
+var logger = require('../lib/logger');
 var router = express.Router();
 var battleService = require('../services/battleService');
 var requireAuth   = require('../middleware/auth');
@@ -56,7 +57,7 @@ router.post('/', requireAuth, battleCreateRateLimit, async function(req, res) {
     });
     res.status(201).json(battle);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     var isUserErr = err.status === 409 || err.status === 400;
     res.status(isUserErr ? err.status : 500).json({ error: isUserErr ? err.message : 'Internal server error' });
   }
@@ -73,7 +74,7 @@ router.post('/:id/accept', requireAuth, validateId, async function(req, res) {
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -92,7 +93,7 @@ router.post('/:id/start', requireAuth, validateId, async function(req, res) {
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -119,7 +120,7 @@ router.post('/:id/vote', requireAuth, battleVoteRateLimit, validateId, async fun
     });
     res.json(battle);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     var VOTE_USER_ERRS = new Set(['battle not active', 'battle participants may not vote', 'already voted in this battle or battle no longer active', 'invalid side']);
     var isVoteUserErr = VOTE_USER_ERRS.has(err.message);
     res.status(isVoteUserErr ? 400 : 500).json({ error: isVoteUserErr ? err.message : 'Internal server error' });
@@ -131,7 +132,7 @@ router.get('/active', requireAuth, async function(req, res) {
     var battles = await battleService.getActiveBattles(req.tenantId);
     res.json(battles);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -160,7 +161,7 @@ router.get('/leaderboard', async function(req, res) {
       };
     }));
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -171,7 +172,7 @@ router.get('/:id', requireAuth, validateId, async function(req, res) {
     if (!battle) return res.status(404).json({ error: 'battle not found' });
     res.json(battle);
   } catch (err) {
-    console.error('[ROUTE ERROR]', err);
+    logger.error('[ROUTE ERROR]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

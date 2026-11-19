@@ -1,5 +1,6 @@
 'use strict';
 var express     = require('express');
+var logger = require('../lib/logger');
 var https       = require('https');
 var db          = require('../db');
 var router      = express.Router();
@@ -24,7 +25,7 @@ var SB_HOST = (function() {
     if (!h) throw new Error('empty hostname');
     return h;
   } catch (e) {
-    console.error('[directPay] SUPABASE_URL ' + (process.env.SUPABASE_URL ? 'is malformed' : 'is not set') + ' — direct pay will fail');
+    logger.error('[directPay] SUPABASE_URL ' + (process.env.SUPABASE_URL ? 'is malformed' : 'is not set') + ' — direct pay will fail');
     return '';
   }
 }());
@@ -100,7 +101,7 @@ function cleanupVaultRefs(vaultRefs) {
     var vaultId = extractVaultId(vaultRefs[platform]);
     if (vaultId) {
       db.query('SELECT vault.delete_secret($1)', [vaultId]).catch(function(e) {
-        console.error('[directPay] vault cleanup failed for', vaultId, e.message);
+        logger.error('[directPay] vault cleanup failed for', vaultId, e.message);
       });
     }
   });
@@ -122,7 +123,7 @@ router.post('/', requireAuth, directPayLimit, async function(req, res) {
       vaultRefs[platform] = 'vault:' + vaultId;
     }
   } catch (e) {
-    console.error('[directPay] vault store error:', e.message);
+    logger.error('[directPay] vault store error:', e.message);
     cleanupVaultRefs(vaultRefs);
     return res.status(500).json({ error: 'Failed to save direct pay handles' });
   }
@@ -169,7 +170,7 @@ async function loadAndDecryptHandles(userId, tenantId, res) {
       }
       res.json({ handles: decrypted });
     } catch (e) {
-      console.error('[directPay] vault decrypt error:', e.message);
+      logger.error('[directPay] vault decrypt error:', e.message);
       res.status(500).json({ error: 'Failed to decrypt direct pay handles' });
     }
   });
