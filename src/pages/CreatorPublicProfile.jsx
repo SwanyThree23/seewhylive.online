@@ -23,6 +23,7 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+import DirectPayments from '../components/live/DirectPayments';
 import { createPageUrl } from '../utils';
 
 var G = {
@@ -229,7 +230,10 @@ export default function CreatorPublicProfile() {
   var totalStreams = pastStreams.length;
   var followerCount = followers.length;
   var [followToast, setFollowToast] = useState('');
+  var [payOpen, setPayOpen] = useState(false);
   var isFollowing = currentUser && followers.some(f => f.follower_id === currentUser.id);
+  var videoPosts = pastStreams.filter(function(r) { return r.type === 'video'; });
+  var liveStreams = pastStreams.filter(function(r) { return r.type !== 'video'; });
 
   function handleFollow() {
     if (!currentUser) { setFollowToast('Sign in to follow'); setTimeout(() => setFollowToast(''), 2500); return; }
@@ -408,11 +412,21 @@ export default function CreatorPublicProfile() {
         )}
 
         {/* Stats row */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           <StatCard icon={Users} label="FOLLOWERS" value={followerCount} color={G.cyan} />
-          <StatCard icon={Video} label="STREAMS" value={totalStreams} color={G.gold} />
+          <StatCard icon={Video} label="STREAMS" value={liveStreams.length} color={G.gold} />
           <StatCard icon={DollarSign} label="EARNED" value={"$" + totalEarned.toFixed(0)} color="#6DBF7E" />
         </div>
+
+        {/* Support Directly button */}
+        {!isOwnProfile && (
+          <button
+            onClick={function() { setPayOpen(true); }}
+            style={{ width: '100%', minHeight: 46, borderRadius: 12, background: 'linear-gradient(135deg, #FFB800, #FF8C00)', border: 'none', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.1em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 20 }}
+          >
+            <DollarSign size={16} /> Support {(profile && profile.display_name) || 'Creator'} Directly
+          </button>
+        )}
       </div>
 
       {/* Fan Badges */}
@@ -466,14 +480,44 @@ export default function CreatorPublicProfile() {
         </div>
       )}
 
+      {/* Video Posts */}
+      {videoPosts.length > 0 && (
+        <div style={{ padding: "0 16px 20px" }}>
+          <div style={{ fontFamily: "Orbitron, monospace", fontSize: 10, color: G.gold, letterSpacing: 3, marginBottom: 10 }}>
+            🎬 VIDEO POSTS
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+            {videoPosts.map(function(post) {
+              return (
+                <Link key={post.id} to={createPageUrl('VideoViewer') + '?id=' + post.id} style={{ textDecoration: 'none' }}>
+                  <motion.div whileHover={{ scale: 1.02 }} style={{ borderRadius: 12, overflow: 'hidden', background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}>
+                    <div style={{ height: 90, position: 'relative', background: 'linear-gradient(135deg, rgba(0,80,160,0.3), rgba(7,7,15,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {post.thumbnail_url
+                        ? <img src={post.thumbnail_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                        : <span style={{ fontSize: 24 }}>🎬</span>
+                      }
+                      <div style={{ position: 'absolute', top: 5, left: 5, padding: '1px 5px', borderRadius: 4, background: 'rgba(0,0,0,0.75)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(255,255,255,0.7)' }}>VIDEO</div>
+                    </div>
+                    <div style={{ padding: '7px 9px 9px' }}>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, color: '#F0E8D4', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.title || 'Video Post'}</p>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>👁 {post.viewer_count || 0}</p>
+                    </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Past Streams */}
       <div style={{ padding: "0 16px 20px" }}>
         <div style={{ fontFamily: "Orbitron, monospace", fontSize: 10, color: G.gold, letterSpacing: 3, marginBottom: 10 }}>
           📼 PAST STREAMS
         </div>
-        {pastStreams.length > 0 ? (
+        {liveStreams.length > 0 ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
-            {pastStreams.map((room) => (
+            {liveStreams.map((room) => (
               <PastStreamCard key={room.id} room={room} />
             ))}
           </div>
@@ -585,6 +629,13 @@ export default function CreatorPublicProfile() {
         </Link>
       </div>
       <BackgroundCustomizer />
+      <DirectPayments
+        isOpen={payOpen}
+        onClose={function() { setPayOpen(false); }}
+        creatorName={(profile && profile.display_name) || 'Creator'}
+        creatorId={creatorId}
+        isHost={false}
+      />
     </div>
   );
 }
