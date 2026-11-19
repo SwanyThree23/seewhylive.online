@@ -244,6 +244,9 @@ db.prepare('CREATE INDEX IF NOT EXISTS idx_push_subs_device ON push_subscription
 // Initialise vault with same db (vault.initDb() will open its own handle to the same file)
 vault.initDb();
 
+// Ensure clips output directory exists (needed by FFmpeg clip-render handler)
+try { require('fs').mkdirSync('/opt/seewhy/clips', { recursive: true }); } catch (_) {}
+
 // Add to_guest_id to gifts for existing DBs created before this column existed
 try { db.exec('ALTER TABLE gifts ADD COLUMN to_guest_id TEXT'); } catch(_) {}
 // Add play_type to gift_types for power play identification

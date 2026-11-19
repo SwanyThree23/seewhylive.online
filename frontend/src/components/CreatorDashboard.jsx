@@ -118,14 +118,14 @@ export default function CreatorDashboard() {
   }, [rangeVal]);
 
   var s = STATS[rangeVal];
-  var revCents = apiData ? (apiData.creatorCents || 0) : Math.round(s.rev * 100);
+  var revCents = apiData ? (apiData.creatorCents || 0) : Math.floor(s.rev * 100);
   var revDollars = (Math.floor(revCents) / 100).toFixed(2);
-  var tipCents = apiData ? (apiData.byType && apiData.byType.tip ? apiData.byType.tip : 0) : Math.round(s.tips * 100);
+  var tipCents = apiData ? (apiData.byType && apiData.byType.tip ? apiData.byType.tip : 0) : Math.floor(s.tips * 100);
   var tipDollars = (Math.floor(tipCents) / 100).toFixed(2);
   var streamCount = apiData ? (apiData.streamCount || 0) : s.streams;
   var peakViewers = apiData ? (apiData.peakViewers || 0) : s.peak;
 
-  var balCents   = availCents !== null ? availCents : Math.round(s.rev * 100);
+  var balCents   = availCents !== null ? availCents : Math.floor(s.rev * 100);
   var creatorBal = (creatorCents(balCents) / 100).toFixed(2);
 
   var statCards = [
