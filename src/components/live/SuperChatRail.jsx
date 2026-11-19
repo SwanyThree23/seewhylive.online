@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const TIER_COLORS = {
   1:   { bg: 'rgba(255,184,0,0.12)',  border: 'rgba(255,184,0,0.3)',  text: '#FFB800', badge: null },
@@ -22,8 +24,27 @@ function getTierStyle(amount) {
 
 const F = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-export default function SuperChatRail({ superchats = [] }) {
+export default function SuperChatRail({ superchats: propSuperchats, roomId, currentUser }) {
   const railRef = useRef(null);
+
+  var { data: fetchedMessages } = useQuery({
+    queryKey: ['superchats', roomId],
+    queryFn: function() {
+      return base44.entities.Message.filter({ room_id: roomId, message_type: 'super_chat' }, '-created_date', 20);
+    },
+    enabled: !!roomId && !propSuperchats,
+    refetchInterval: 8000,
+  });
+
+  var superchats = propSuperchats || (fetchedMessages ? fetchedMessages.map(function(m) {
+    return {
+      id: m.id,
+      senderName: m.sender_name || m.sender_id || 'Viewer',
+      amount: m.tip_amount || m.super_chat_amount || 0,
+      message: m.content || '',
+      emoji: m.emoji || '',
+    };
+  }) : []);
 
   useEffect(() => {
     if (railRef.current && superchats.length > 0) {

@@ -1047,7 +1047,7 @@ export default function AudioRoom() {
       {isHost && <OverlayThemeBuilder creatorId={(user && user.id)} />}
       <LiveGoalWidget memberCount={memberCount} tipTotal={tipTotal} subCount={subCount} triggerEdit={goalTick} />
       {roomId && user && <RoomReactionOverlay roomId={roomId} currentUser={user} triggerReact={reactEmoji} />}
-      <SuperChatRail superchats={[]} />
+      <SuperChatRail roomId={roomId} currentUser={user} />
       {roomId && (user && user.id) && (party && party.host_id) && <LoveTap roomId={roomId} user={user} creatorId={party.host_id} creatorName={hostName} />}
 
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
