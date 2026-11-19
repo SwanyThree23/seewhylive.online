@@ -405,6 +405,62 @@ export default function PanelGrid({
   return (
     <div style={{ position: 'relative', background: '#07050A', borderRadius: compact ? 0 : 16, padding: compact ? 6 : 14, fontFamily: 'Rajdhani, sans-serif' }}>
       <AnimatePresence>
+        {expandedGuest && !isHost && (
+          <motion.div
+            key="viewer-expand"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+            onClick={() => dispatch({ type: 'SET_EXPANDED', id: expandedGuest.id })}
+          >
+            <motion.div
+              initial={{ scale: 0.85 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.85 }}
+              style={{ position: 'relative', width: '90vw', maxWidth: 540, aspectRatio: '9/16', borderRadius: 20, overflow: 'hidden', background: '#000' }}
+              onClick={function(e) { e.stopPropagation(); }}
+            >
+              {streams[expandedGuest.id] ? (
+                React.createElement('video', {
+                  key: expandedGuest.id,
+                  ref: function(el) {
+                    if (el && streams[expandedGuest.id]) {
+                      el.srcObject = streams[expandedGuest.id];
+                    }
+                  },
+                  autoPlay: true,
+                  playsInline: true,
+                  muted: true,
+                  style: { width: '100%', height: '100%', objectFit: 'cover' },
+                })
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#1a0510,#07050A)', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(255,184,0,0.12)', border: '2px solid rgba(255,184,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
+                    {expandedGuest.avatar_url ? null : (expandedGuest.name || '?')[0].toUpperCase()}
+                  </div>
+                  <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: 18, color: '#fff' }}>{expandedGuest.name || expandedGuest.display_name || 'Guest'}</span>
+                </div>
+              )}
+              {/* Name tag */}
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '32px 16px 16px', background: 'linear-gradient(to top,rgba(0,0,0,0.85),transparent)' }}>
+                <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 900, fontSize: 20, color: '#fff' }}>{expandedGuest.name || expandedGuest.display_name || 'Guest'}</span>
+                {expandedGuest.role && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{expandedGuest.role}</span>}
+              </div>
+              {/* Close */}
+              <button
+                onClick={function() { dispatch({ type: 'SET_EXPANDED', id: expandedGuest.id }); }}
+                style={{ position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
+              >
+                <X style={{ width: 16, height: 16 }} />
+              </button>
+            </motion.div>
+            <p style={{ marginTop: 12, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>Tap outside to close</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {expandedGuest && isHost && (
           <DirectorModal
             guest={expandedGuest}
