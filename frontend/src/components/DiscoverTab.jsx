@@ -686,31 +686,33 @@ export default function DiscoverTab(props) {
         }
       },
       QUICK_ACTIONS.map(function(item) {
+        var routed = (item.id === 'golive' && props.onGoLive) || (QUICK_ACTION_TABS[item.id] && onSwitchTab);
         return React.createElement(
           'button',
           {
             key: item.id,
-            onClick: function() {
-              if (item.id === 'golive' && props.onGoLive) { props.onGoLive(); return; }
-              if (QUICK_ACTION_TABS[item.id] && onSwitchTab) { onSwitchTab(QUICK_ACTION_TABS[item.id]); return; }
-              if (addToast) addToast(item.label + ' - coming soon!', 'info');
-            },
+            disabled: !routed,
+            onClick: routed ? function() {
+              if (item.id === 'golive') { props.onGoLive(); return; }
+              onSwitchTab(QUICK_ACTION_TABS[item.id]);
+            } : null,
             style: {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 4,
               background: 'rgba(26,21,16,.8)',
-              border: '1px solid ' + item.color + '44',
+              border: '1px solid ' + (routed ? item.color + '44' : '#3D302044'),
               borderRadius: 20,
               padding: '6px 12px',
               fontFamily: "'Barlow Condensed',sans-serif",
               fontWeight: 700,
               fontSize: 10,
-              color: item.color,
-              cursor: 'pointer',
+              color: routed ? item.color : '#4A3F30',
+              cursor: routed ? 'pointer' : 'not-allowed',
               whiteSpace: 'nowrap',
               flexShrink: 0,
               letterSpacing: 0.5,
+              opacity: routed ? 1 : 0.5,
             }
           },
           item.icon + ' ' + item.label
