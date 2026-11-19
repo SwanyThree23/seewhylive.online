@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import FollowButton from '../components/shared/FollowButton';
+import DirectPayments from '../components/live/DirectPayments';
 import {
   ArrowLeft, Share2, Instagram, Twitter, Youtube, Globe, MessageCircle, Music2,
   Radio, Eye, DollarSign, Trophy, Loader2, Copy, Check,
@@ -46,6 +48,7 @@ export default function LinkInBio() {
   var [stats, setStats] = useState({ viewers: 0, tips: 0, topStream: '—' });
   var [loading, setLoading] = useState(true);
   var [copied, setCopied] = useState(false);
+  var [payOpen, setPayOpen] = useState(false);
 
   useEffect(() => {
     var cancelled = false;
@@ -173,6 +176,11 @@ export default function LinkInBio() {
               {profile.bio}
             </p>
           )}
+          {creatorId && (
+            <div className="mt-3">
+              <FollowButton targetUserId={creatorId} targetUserName={(profile && profile.display_name) || ''} size="sm" />
+            </div>
+          )}
         </div>
 
         {/* Quick stats */}
@@ -190,6 +198,15 @@ export default function LinkInBio() {
         >
           <Radio className="w-4 h-4" /> {isLive ? 'Watch me live now' : 'See my streams'}
         </a>
+
+        {/* Direct support button */}
+        <button
+          onClick={function() { setPayOpen(true); }}
+          className="mt-3 flex items-center justify-center gap-2 w-full rounded-2xl font-black uppercase tracking-widest"
+          style={{ minHeight: 52, background: 'linear-gradient(135deg, #FFB800, #FF8C00)', border: 'none', color: '#000', fontFamily: FONT, cursor: 'pointer' }}
+        >
+          <DollarSign className="w-4 h-4" /> Support Directly
+        </button>
 
         {/* Social links */}
         <div className="mt-4 space-y-2">
@@ -228,6 +245,14 @@ export default function LinkInBio() {
           SeeWhy LIVE · 90/10
         </p>
       </div>
+
+      <DirectPayments
+        isOpen={payOpen}
+        onClose={function() { setPayOpen(false); }}
+        creatorName={(profile && profile.display_name) || 'Creator'}
+        creatorId={creatorId}
+        isHost={false}
+      />
     </div>
   );
 }

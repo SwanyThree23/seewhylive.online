@@ -1231,7 +1231,7 @@ export default function LiveRoom() {
           <ShareModal
             isOpen={shareOpen}
             onClose={() => setShareOpen(false)}
-            url={`${window.location.origin}/LiveRoom?id=${roomId || 'demo'}`}
+            url={`${window.location.origin}/watch?id=${roomId || 'demo'}`}
             title={roomTitle}
           />
         )}

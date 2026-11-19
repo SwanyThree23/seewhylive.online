@@ -186,12 +186,22 @@ var FONT = 'Barlow Condensed, sans-serif';
 
 var FORMATS = [
   {
+    id: 'single',
+    icon: <Camera style={{ width: 32, height: 32 }} />,
+    emoji: '📸',
+    title: 'Solo Live',
+    subtitle: 'Just you on camera. Full-screen, full focus.',
+    features: ['📸 Solo Cam', '💬 Chat', '🎁 Tips', '📡 Multistream'],
+    color: PINK,
+    dest: 'LiveRoom',
+  },
+  {
     id: 'panel',
     icon: <Mic2 style={{ width: 32, height: 32 }} />,
     emoji: '🎙️',
-    title: '20-Person Panel',
-    subtitle: 'Audio + video stage. Up to 20 speakers.',
-    features: ['🎤 Audio', '📹 Video', '👥 20 seats', '💬 Chat', '🎁 Gifts'],
+    title: 'Panel Room',
+    subtitle: 'Up to 9 camera guests + audio-only seats.',
+    features: ['📹 9 Cam Guests', '🎤 Audio Only', '🔒 Private', '🎁 Gifts'],
     color: GOLD,
     dest: 'BroadcastStudio',
   },
@@ -971,15 +981,27 @@ export default function GoLive() {
               </div>
             </div>
 
-            <div style={{ marginTop: 8, borderRadius: 16, padding: '14px 16px', background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.12)' }}>
-              <Link to={createPageUrl('GreenroomEnhanced')} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-                <span style={{ fontSize: 28 }}>🎬</span>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', fontFamily: FONT }}>Green Room</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: FONT }}>Test camera, mic, and lighting before going live</div>
-                </div>
-                <ChevronRight style={{ width: 16, height: 16, color: GREEN, marginLeft: 'auto' }} />
-              </Link>
+            <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+              <div style={{ flex: 1, borderRadius: 16, padding: '14px 16px', background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.12)' }}>
+                <Link to={createPageUrl('GreenroomEnhanced')} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+                  <span style={{ fontSize: 24 }}>🎬</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', fontFamily: FONT }}>Green Room</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: FONT }}>Test before going live</div>
+                  </div>
+                  <ChevronRight style={{ width: 14, height: 14, color: GREEN }} />
+                </Link>
+              </div>
+              <div style={{ flex: 1, borderRadius: 16, padding: '14px 16px', background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                <Link to={createPageUrl('VideoPost')} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+                  <span style={{ fontSize: 24 }}>🎞️</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', fontFamily: FONT }}>Post Video</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: FONT }}>Up to 10 min clip</div>
+                  </div>
+                  <ChevronRight style={{ width: 14, height: 14, color: GOLD }} />
+                </Link>
+              </div>
             </div>
 
             <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 12, lineHeight: 1.6 }}>
