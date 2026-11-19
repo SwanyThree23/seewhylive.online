@@ -142,16 +142,16 @@ var pushSubscribeRateLimit = rateLimit({
 
 // ─── Optional module loading (graceful fallback) ──────────────────────────────
 var analytics = null;
-try { analytics = require('./analytics'); <x} catch (e) { logger.warn('[routes]> analytics module unavailable'); }
+try { analytics = require('./analytics'); } catch (e) { logger.warn('[routes] analytics module unavailable'); }
 
 var moderation = null;
-try { moderation = require('./moderation'); <x} catch (e) { logger.warn('[routes]> moderation module unavailable'); }
+try { moderation = require('./moderation'); } catch (e) { logger.warn('[routes] moderation module unavailable'); }
 
 var search = null;
-try { search = require('./search'); <x} catch (e) { logger.warn('[routes]> search module unavailable'); }
+try { search = require('./search'); } catch (e) { logger.warn('[routes] search module unavailable'); }
 
 var notifications = null;
-try { notifications = require('./notifications'); <x} catch (e) { logger.warn('[routes]> notifications module unavailable'); }
+try { notifications = require('./notifications'); } catch (e) { logger.warn('[routes] notifications module unavailable'); }
 if (notifications) {
   var _vapidSubject = process.env.VAPID_SUBJECT;
   if (!_vapidSubject || !_vapidSubject.startsWith('mailto:')) {
@@ -161,13 +161,13 @@ if (notifications) {
 }
 
 var vault = null;
-try { vault = require('./vault'); <x} catch (e) { logger.warn('[routes]> vault module unavailable — stream keys will not be encrypted at rest'); }
+try { vault = require('./vault'); } catch (e) { logger.warn('[routes] vault module unavailable — stream keys will not be encrypted at rest'); }
 
 var aura = null;
-try { aura = require('./aura'); <x} catch (e) { logger.warn('[routes]> aura module unavailable'); }
+try { aura = require('./aura'); } catch (e) { logger.warn('[routes] aura module unavailable'); }
 
 var stripe = null;
-try { stripe = require('./stripe'); <x} catch (e) { logger.warn('[routes]> stripe module unavailable'); }
+try { stripe = require('./stripe'); } catch (e) { logger.warn('[routes] stripe module unavailable'); }
 
 // ─── In-memory session state ──────────────────────────────────────────────────
 var _userProfiles = {};
