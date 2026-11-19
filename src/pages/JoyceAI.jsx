@@ -170,7 +170,7 @@ export default function JoyceAI() {
       setMessages(m => [...m, { role: 'assistant', text: "I'm thinking... try me again in a sec! The stream must go on. 🎙️" }]);
     }
     setLoading(false);
-    inputRef.(current && current.focus)();
+    if (inputRef.current) inputRef.current.focus();
   }
 
   function clearChat() {

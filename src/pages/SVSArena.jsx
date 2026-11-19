@@ -170,7 +170,7 @@ export default function SVSArena() {
 
   useEffect(() => {
     var unsub = base44.entities.PKBattle.subscribe(e => {
-      if (e.(data && data.room_id) === SVS_BRACKET_ID) refetchBracket();
+      if ((e.data && e.data.room_id) === SVS_BRACKET_ID) refetchBracket();
     });
     return unsub;
   }, [refetchBracket]);

@@ -74,11 +74,11 @@ function FlaggedItem({ mod, onAction, user }) {
         <div className="flex flex-wrap gap-1.5 items-center">
           <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
             style={{ background: vStyle.bg, color: vStyle.color, border: `1px solid ${vStyle.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {mod.(content_type && content_type.toUpperCase)()}
+            {mod.content_type && mod.content_type.toUpperCase()}
           </span>
           <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
             style={{ background: vStyle.bg, color: vStyle.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {mod.(violation_type && violation_type.replace)('_', ' ')}
+            {mod.violation_type && mod.violation_type.replace('_', ' ')}
           </span>
           {mod.auto_detected && (
             <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
@@ -140,7 +140,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
           <span className="text-[11px] font-bold text-white">{entry.target_user_name || entry.target_user_id}</span>
         </div>
         {entry.reason && <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{entry.reason}</p>}
-        {entry.(keywords_matched && keywords_matched.length) > 0 && (
+        {(entry.keywords_matched && entry.keywords_matched.length) > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
             {entry.keywords_matched.map((kw, i) => (
               <span key={i} className="text-[7px] px-1 py-0.5 rounded"

@@ -155,7 +155,7 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
             if (state === window.YT.PlayerState.PLAYING || state === window.YT.PlayerState.PAUSED) {
               onStateChange({
                 playing: state === window.YT.PlayerState.PLAYING,
-                currentTime: playerRef.(current && current.getCurrentTime)() || 0,
+                currentTime: (playerRef.current && playerRef.current.getCurrentTime()) || 0,
               });
             }
           },
@@ -506,7 +506,7 @@ export default function WatchPartyPage() {
   useEffect(() => {
     if (!partyId) return;
     var unsub = base44.entities.PKBattle.subscribe((event) => {
-      if (event.(data && data.room_id) !== partyId) return;
+      if ((event.data && event.data.room_id) !== partyId) return;
       qc.invalidateQueries({ queryKey: ['pk-battle-active', partyId] });
     });
     return unsub;
@@ -579,7 +579,7 @@ export default function WatchPartyPage() {
   useEffect(() => {
     if (!partyId) return;
     var unsub = base44.entities.WatchPartyMember.subscribe((event) => {
-      if (event.(data && data.party_id) !== partyId) return;
+      if ((event.data && event.data.party_id) !== partyId) return;
       qc.invalidateQueries({ queryKey: ['watchparty-members', partyId] });
     });
     return unsub;
@@ -665,8 +665,8 @@ export default function WatchPartyPage() {
   useEffect(() => {
     if (!partyId) return;
     var onDown = (e) => {
-      var tag = document.(activeElement && activeElement.tagName);
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.(activeElement && activeElement.isContentEditable)) return;
+      var tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement && document.activeElement.isContentEditable)) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleAudio(); }
       if (e.key === ' ' && !e.repeat) {
         e.preventDefault();
@@ -797,7 +797,7 @@ export default function WatchPartyPage() {
   useEffect(() => {
     if (partyId) return;
     var unsub = base44.entities.WatchParty.subscribe((event) => {
-      if (event.(data && data.status) === 'active' || event.(data && data.status) === 'ended') {
+      if ((event.data && event.data.status) === 'active' || (event.data && event.data.status) === 'ended') {
         refetchParties();
       }
     });

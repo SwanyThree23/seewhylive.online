@@ -124,7 +124,7 @@ export default function ViewerDashboard() {
   useEffect(() => {
     if (!user) return;
     var unsub = base44.entities.Notification.subscribe((event) => {
-      if (event.(data && data.user_id) === user.id) {
+      if ((event.data && event.data.user_id) === user.id) {
         qc.invalidateQueries({ queryKey: ['notifications', user.id] });
       }
     });

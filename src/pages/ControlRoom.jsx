@@ -233,7 +233,7 @@ function StatPill({ label, value, color }) {
 }
 
 function RTMPCard({ dest, health, onToggle, onReconnect }) {
-  var platform = dest.(platform && platform.toLowerCase)() || 'custom';
+  var platform = (dest.platform && dest.platform.toLowerCase()) || 'custom';
   var pCfg = PLATFORM_ICONS[platform] || PLATFORM_ICONS.custom;
   var bitrate = (health && health.video_bitrate_kbps) || 0;
   var target = dest.bitrate_kbps || 4000;
@@ -419,7 +419,7 @@ export default function ControlRoomPage() {
   });
   var { data: healthMetrics = [] } = useQuery({
     queryKey: ['cr-health', roomId],
-    queryFn: () => base44.entities.(StreamHealthMetric && StreamHealthMetric.filter) ? base44.entities.StreamHealthMetric.filter({ room_id: roomId }, '-created_date', 20) : Promise.resolve([]),
+    queryFn: () => base44.entities.StreamHealthMetric ? base44.entities.StreamHealthMetric.filter({ room_id: roomId }, '-created_date', 20) : Promise.resolve([]),
     enabled: !!roomId,
     refetchInterval: 5000,
   });

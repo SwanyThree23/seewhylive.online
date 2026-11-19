@@ -567,7 +567,7 @@ export default function EnhancementSuite() {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.(current && current.scrollIntoVie)w({ behavior: "smooth" });
+    if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {

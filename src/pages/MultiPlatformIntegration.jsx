@@ -169,7 +169,7 @@ export default function MultiPlatformIntegration() {
   var [postSent, setPostSent] = useState(false);
 
   // API key display
-  var apiKey = user ? `sw_${user.(id && id.slice)(0,8) || 'demo'}_live_key` : 'sw_demo_live_key';
+  var apiKey = user ? `sw_${(user.id && user.id.slice(0,8)) || 'demo'}_live_key` : 'sw_demo_live_key';
   var webhookEndpoint = `https://api.seewhylive.online/webhooks/${(user && user.id) || 'demo'}`;
 
   function toggleEvent(key) {

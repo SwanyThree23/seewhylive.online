@@ -352,7 +352,7 @@ function AnalyticsTab({ user }) {
                 ? <tr><td colSpan={5} className="px-4 py-6 text-center" style={{ color: CREAM + '30' }}>No data yet</td></tr>
                 : sortedRooms.map(r => (
                   <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <td className="px-4 py-2" style={{ color: CREAM + '80' }}>{r.(room_id && room_id.slice)(0,8) || '—'}</td>
+                    <td className="px-4 py-2" style={{ color: CREAM + '80' }}>{(r.room_id && r.room_id.slice(0,8)) || '—'}</td>
                     <td className="px-4 py-2" style={{ color: CREAM + '40' }}>{new Date(r.created_date).toLocaleDateString()}</td>
                     <td className="px-4 py-2 font-black" style={{ color: GOLD }}>{r.peak_viewers || 0}</td>
                     <td className="px-4 py-2" style={{ color: '#6DBF7E' }}>${Math.floor(r.total_tips || 0)}</td>
@@ -1249,7 +1249,7 @@ function SettingsTab({ user }) {
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <div className="flex-1">
                 <p className="text-[10px] font-bold text-white">{d.label || d.platform}</p>
-                <p className="text-[11px]" style={{ color: CREAM + '35' }}>{d.(rtmp_url && rtmp_url.slice)(0, 30)}…</p>
+                <p className="text-[11px]" style={{ color: CREAM + '35' }}>{(d.rtmp_url && d.rtmp_url.slice(0, 30))}…</p>
               </div>
               <button onClick={() => toggleDest.mutate({ id: d.id, is_enabled: !d.is_enabled })}
                 className="w-9 h-5 rounded-full relative shrink-0"

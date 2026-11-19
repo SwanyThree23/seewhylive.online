@@ -128,7 +128,7 @@ export default function MultiPlatform() {
   useEffect(() => {
     if (!user) return;
     if (user.platform_connections) setConnections(user.platform_connections);
-    if (user.(webhooks && webhooks.length)) setWebhooks(user.webhooks);
+    if (user.webhooks && user.webhooks.length) setWebhooks(user.webhooks);
   }, [user]);
 
   var { data: recentActivities = [] } = useQuery({
@@ -295,7 +295,7 @@ export default function MultiPlatform() {
                       <p style={{ ...T, fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.5)', letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:5 }}>Inbound Webhook URL</p>
                       <div style={{ display:'flex', gap:8 }}>
                         <input readOnly value="https://seewhylive.online/api/webhooks/fanbase" style={{ flex:1, padding:'10px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, color:'rgba(255,255,255,0.5)', fontSize:12, ...T, outline:'none' }} />
-                        <motion.button whileTap={{ scale:0.95 }} onClick={() => { navigator.(clipboard && clipboard.writeText)('https://seewhylive.online/api/webhooks/fanbase'); showToast('URL copied!'); }} style={{ padding:'0 14px', background:`${GOLD}15`, border:`1px solid ${GOLD}40`, borderRadius:10, color:GOLD, fontSize:12, fontWeight:700, cursor:'pointer', ...T }}>Copy</motion.button>
+                        <motion.button whileTap={{ scale:0.95 }} onClick={() => { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText('https://seewhylive.online/api/webhooks/fanbase').catch(() => {}); showToast('URL copied!'); }} style={{ padding:'0 14px', background:`${GOLD}15`, border:`1px solid ${GOLD}40`, borderRadius:10, color:GOLD, fontSize:12, fontWeight:700, cursor:'pointer', ...T }}>Copy</motion.button>
                       </div>
                     </div>
                     <div>
@@ -471,7 +471,7 @@ export default function MultiPlatform() {
                         <span style={{ ...T, fontSize:10, color:virtualBg===bg.id ? GOLD : 'rgba(255,255,255,0.4)', fontWeight:700, maxWidth:60, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{bg.label}</span>
                       </motion.button>
                     ))}
-                    <motion.button whileTap={{ scale:0.95 }} onClick={() => bgUploadRef.(current && current.click)()} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
+                    <motion.button whileTap={{ scale:0.95 }} onClick={() => bgUploadRef.current && bgUploadRef.current.click()} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
                       <div style={{ width:64, height:40, borderRadius:8, background:'rgba(255,255,255,0.04)', border:'2px dashed rgba(255,255,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                         <span style={{ fontSize:18 }}>+</span>
                       </div>

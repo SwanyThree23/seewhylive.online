@@ -141,7 +141,7 @@ export default function TranscriptionStudio() {
       );
       if (!res.ok) return null;
       var data = await res.json();
-      var result = data.(responseData && responseData.translatedText) || null;
+      var result = (data.responseData && data.responseData.translatedText) || null;
       if (result) tsTranslationCache.current.set(key, result);
       return result;
     } catch { return null; }
@@ -155,7 +155,7 @@ export default function TranscriptionStudio() {
   }, []);
 
   useEffect(() => {
-    if (autoScroll) bottomRef.(current && current.scrollIntoVie)w({ behavior: 'smooth' });
+    if (autoScroll && bottomRef.current) bottomRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [lines, autoScroll]);
 
   var SIMULATED = [

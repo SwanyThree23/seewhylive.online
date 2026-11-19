@@ -308,8 +308,8 @@ export default function RoomPage() {
   useEffect(() => {
     var onDown = (e) => {
       if (e.code !== 'Space' || e.repeat) return;
-      var tag = e.(target && target.tagName);
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.(target && target.isContentEditable)) return;
+      var tag = e.target && e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
       if (!pttActive && !audioEnabled) {
         pttWasEnabledRef.current = false;
         toggleAudio();
@@ -329,8 +329,8 @@ export default function RoomPage() {
   // M = toggle mic, V = toggle camera (when not in a text input)
   useEffect(() => {
     var onKey = (e) => {
-      var tag = e.(target && target.tagName);
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.(target && target.isContentEditable)) return;
+      var tag = e.target && e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
       if (e.key === 'm' || e.key === 'M') toggleAudio();
       if (e.key === 'v' || e.key === 'V') toggleVideo();
     };

@@ -127,17 +127,17 @@ export default function GuardianAI() {
   });
 
   useEffect(() => {
-    logEndRef.(current && current.scrollIntoView({ behavior: 'smooth' });
+    if (logEndRef.current) logEndRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [moderations]);
 
   var displayLog = moderations.map(m => ({
     time: new Date(m.created_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-    user: m.(content_id && content_id.slice(0, 12) || 'unknown',
+    user: (m.content_id && m.content_id.slice(0, 12)) || 'unknown',
     msg:  m.ai_explanation || m.violation_type || '—',
     risk: m.ai_confidence || 0,
     action: m.action_taken === 'none' ? 'ALLOWED'
           : m.action_taken === 'flagged' ? 'FLAGGED'
-          : m.(action_taken && action_taken.toUpperCase() || 'FLAGGED',
+          : (m.action_taken && m.action_taken.toUpperCase()) || 'FLAGGED',
   }));
 
   var violationCount = displayLog.filter(e => e.action !== 'ALLOWED').length;
@@ -192,7 +192,7 @@ export default function GuardianAI() {
             ai_explanation:  r.ai_explanation || null,
             action_taken:    action,
           }),
-          base44.entities.(GuardianLog && GuardianLog.create({
+          base44.entities.GuardianLog.create({
             user_id:       r.user_id || null,
             message:       r.content || r.text || '',
             toxicity_score: Math.round((r.ai_confidence || 0) * 100),

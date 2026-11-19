@@ -302,7 +302,7 @@ export default function AdminDashboard() {
                         style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shrink-0" style={{ background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`, color: '#fff', ...T }}>
-                            {u.(full_name && full_name.charAt)(0) || u.(email && email.charAt)(0) || '?'}
+                            {(u.full_name && u.full_name.charAt(0)) || (u.email && u.email.charAt(0)) || '?'}
                           </div>
                           <div>
                             <p className="font-black text-xs text-white" style={T}>{u.full_name || 'No name'}</p>

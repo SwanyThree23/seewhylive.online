@@ -281,7 +281,7 @@ export default function ProfilePage() {
 
         <div className="relative max-w-4xl mx-auto px-6 pt-8 pb-6 flex items-end gap-5">
           {/* octagonal avatar with camera upload */}
-          <div onClick={() => fileRef.(current && current.click)()}>
+          <div onClick={() => fileRef.current && fileRef.current.click()}>
             <OctAvatar size={80} src={(user && user.avatar_url)} initials={initials} uploading={uploadingAvatar} onClick={() => {}} />
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />

@@ -126,7 +126,7 @@ export default function OpenRouterHub() {
       setResponses(p => ({ ...p, [modelId]: text }));
       setTimings(p => ({ ...p, [modelId]: elapsed }));
 
-      var tokens = data.(usage && usage.total_tokens) || 0;
+      var tokens = (data.usage && data.usage.total_tokens) || 0;
       var u = loadUsage();
       u.total += tokens;
       u.sessions = [{ model: modelId, tokens, ts: Date.now() }, ...u.sessions].slice(0, 50);

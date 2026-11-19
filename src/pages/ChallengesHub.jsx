@@ -91,7 +91,7 @@ function LeaderboardDrawer({ challengeId, title, open, onClose }) {
                   style={{ background: i < 3 ? `rgba(212,175,55,0.07)` : 'rgba(255,255,255,0.03)', border: i < 3 ? `1px solid rgba(212,175,55,0.2)` : '1px solid rgba(255,255,255,0.05)' }}>
                   <span className="w-6 text-center text-sm shrink-0">{i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}</span>
                   <div className="flex-1">
-                    <p className="text-[10px] font-bold text-white">{p.(user_id && user_id.slice)(0, 12)}</p>
+                    <p className="text-[10px] font-bold text-white">{p.user_id && p.user_id.slice(0, 12)}</p>
                     <p className="text-[11px]" style={{ color: CREAM + '40' }}>{p.completed ? '✓ Completed' : `Progress: ${p.progress || 0}`}</p>
                   </div>
                   <span className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{p.score || 0}</span>
@@ -107,7 +107,7 @@ function LeaderboardDrawer({ challengeId, title, open, onClose }) {
 }
 
 function ChallengeCard({ challenge, onJoin, userId, myParticipation, showLeaderboard }) {
-  var tc = TYPE_COLORS[challenge.(challenge_type && challenge_type.toLowerCase)()] || { color: GOLD, label: 'CHALLENGE' };
+  var tc = TYPE_COLORS[(challenge.challenge_type || '').toLowerCase()] || { color: GOLD, label: 'CHALLENGE' };
   var progress = challenge.goal_value > 0 ? Math.min(100, Math.round((challenge.participant_count || 0) / challenge.goal_value * 100)) : 0;
   var hasJoined = !!myParticipation;
 
@@ -317,7 +317,7 @@ export default function ChallengesHubPage() {
                       <div key={p.id} className="rounded-xl p-4 space-y-2"
                         style={{ background: 'rgba(8,11,24,0.97)', border: p.completed ? `1px solid rgba(109,191,126,0.25)` : '1px solid rgba(255,255,255,0.08)' }}>
                         <div className="flex items-center justify-between">
-                          <p className="font-bold text-[11px] text-white">{(challenge && challenge.title) || `Challenge ${p.(challenge_id && challenge_id.slice)(0,8)}`}</p>
+                          <p className="font-bold text-[11px] text-white">{(challenge && challenge.title) || `Challenge ${p.challenge_id && p.challenge_id.slice(0,8)}`}</p>
                           <div className="flex items-center gap-1.5">
                             {p.completed && (
                               <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
@@ -350,7 +350,7 @@ export default function ChallengesHubPage() {
                 {upcomingChallenges.length === 0
                   ? <p className="text-center py-10 text-[11px] col-span-2" style={{ color: CREAM + '25' }}>No upcoming challenges</p>
                   : upcomingChallenges.map(c => {
-                    var tc = TYPE_COLORS[c.(challenge_type && challenge_type.toLowerCase)()] || { color: GOLD, label: 'CHALLENGE' };
+                    var tc = TYPE_COLORS[(c.challenge_type || '').toLowerCase()] || { color: GOLD, label: 'CHALLENGE' };
                     var diff = new Date(c.start_date).getTime() - Date.now();
                     var d = Math.floor(diff / 86400000);
                     var h = Math.floor((diff % 86400000) / 3600000);
@@ -382,7 +382,7 @@ export default function ChallengesHubPage() {
                         <Check className="w-4 h-4" style={{ color: '#6DBF7E' }} />
                       </div>
                       <div className="flex-1">
-                        <p className="font-bold text-[11px] text-white">Challenge {p.(challenge_id && challenge_id.slice)(0, 8)}</p>
+                        <p className="font-bold text-[11px] text-white">Challenge {p.challenge_id && p.challenge_id.slice(0, 8)}</p>
                         <p className="text-[11px]" style={{ color: CREAM + '40' }}>
                           Rank: {p.rank || '—'} · Completed {p.updated_date ? new Date(p.updated_date).toLocaleDateString() : ''}
                         </p>

@@ -464,7 +464,11 @@ function RtmpKeyRow({ streamKey }) {
 
   async function copy() {
     var plain = vaultPayload ? await decryptStreamKey(vaultPayload).catch(() => streamKey) : streamKey;
-    navigator.(clipboard && clipboard.writeText)(plain);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(plain);
+      }
+    } catch {}
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     toast.success('Stream key copied');

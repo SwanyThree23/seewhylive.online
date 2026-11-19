@@ -163,7 +163,7 @@ function FloatingReaction({ emoji, id, onDone }) {
 // ── Viewer POV panel ───────────────────────────────────────────────────────────
 function ViewerPanel({ data, chatMessages, reactions, onReact }) {
   var chatEndRef = useRef(null);
-  useEffect(() => { chatEndRef.(current && current.scrollIntoView)({ behavior:'smooth' }); }, [chatMessages]);
+  useEffect(() => { if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior:'smooth' }); }, [chatMessages]);
 
   var cols = data.participants.length <= 2 ? 2
     : data.participants.length <= 6 ? 3 : 4;
@@ -478,7 +478,9 @@ export default function TestMode() {
 
   // Copy a test URL
   function copyURL(path) {
-    navigator.(clipboard && clipboard.writeText)(window.location.origin + path);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(window.location.origin + path).catch(function() {});
+    }
   }
 
   var realPages = [

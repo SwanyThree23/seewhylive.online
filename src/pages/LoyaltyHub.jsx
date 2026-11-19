@@ -122,7 +122,7 @@ function PointsBreakdownRow({ vp }) {
       <button className="w-full flex items-center justify-between px-4 py-3" onClick={() => setExpanded(e => !e)}>
         <div className="flex items-center gap-2">
           <Star className="w-3.5 h-3.5" style={{ color: GOLD }} />
-          <span className="text-[11px] font-bold text-white">{vp.(room_id && room_id.slice)(0, 16) || 'Room'}</span>
+          <span className="text-[11px] font-bold text-white">{(vp.room_id && vp.room_id.slice(0, 16)) || 'Room'}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="font-black text-sm" style={{ color: GOLD }}>{(vp.points || 0).toLocaleString()} pts</span>
@@ -290,7 +290,7 @@ export default function LoyaltyHubPage() {
                 {/* Creator tabs */}
                 {myLoyalties.slice(1).map(l => (
                   <div key={l.id} className="rounded-xl p-3" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                    <p className="text-[11px] mb-2" style={{ color: CREAM + '40' }}>Creator: {l.(creator_id && creator_id.slice)(0,12)}</p>
+                    <p className="text-[11px] mb-2" style={{ color: CREAM + '40' }}>Creator: {l.creator_id && l.creator_id.slice(0,12)}</p>
                     <LoyaltyCard loyalty={l} />
                   </div>
                 ))}
@@ -417,7 +417,7 @@ export default function LoyaltyHubPage() {
                         {i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}
                       </div>
                       <div className="flex-1">
-                        <p className="font-bold text-[11px] text-white">{l.(user_id && user_id.slice)(0, 12) || 'Anonymous'}</p>
+                        <p className="font-bold text-[11px] text-white">{(l.user_id && l.user_id.slice(0, 12)) || 'Anonymous'}</p>
                         <span className="text-[7px] px-1 py-0.5 rounded font-black uppercase" style={{ background: `${tc.color}15`, color: tc.color }}>{tc.label}</span>
                       </div>
                       <div className="text-right">

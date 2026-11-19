@@ -449,7 +449,7 @@ Output only the personality text, no labels or headers.`,
                   <p style={{ fontSize: 13, fontWeight: 800, color: '#fff', ...T }}>{tpl.label}</p>
                   <p style={{ fontSize: 11, color: DIM, ...T, marginTop: 3 }}>{tpl.desc}</p>
                   <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 6, ...T }}>
-                    {tpl.(triggers && triggers.length) || 0} triggers pre-built
+                    {(tpl.triggers && tpl.triggers.length) || 0} triggers pre-built
                   </p>
                 </div>
                 <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
@@ -592,7 +592,7 @@ Output only the personality text, no labels or headers.`,
                     {(draft.triggers || []).map((tr, i) => (
                       <TriggerRow key={i} trigger={tr} onChange={t => updateTrigger(i, t)} onRemove={() => removeTrigger(i)} />
                     ))}
-                    {!draft.(triggers && triggers.length) && <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', ...T }}>No triggers — add one above.</p>}
+                    {!(draft.triggers && draft.triggers.length) && <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', ...T }}>No triggers — add one above.</p>}
                   </div>
 
                   {/* Webhook */}

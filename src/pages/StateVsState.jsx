@@ -327,7 +327,7 @@ function LiveMatchView() {
 
   useEffect(() => {
     var unsub = base44.entities.PKBattle.subscribe(e => {
-      if (e.(data && data.room_id) === SVS_MATCH_ID) qc.invalidateQueries({ queryKey: ['svs-live-match'] });
+      if ((e.data && e.data.room_id) === SVS_MATCH_ID) qc.invalidateQueries({ queryKey: ['svs-live-match'] });
     });
     return unsub;
   }, [qc]);
@@ -343,7 +343,7 @@ function LiveMatchView() {
 
   useEffect(() => {
     var unsub = base44.entities.Message.subscribe(e => {
-      if (e.(data && data.room_id) === SVS_MATCH_ID) qc.invalidateQueries({ queryKey: ['svs-play-log'] });
+      if ((e.data && e.data.room_id) === SVS_MATCH_ID) qc.invalidateQueries({ queryKey: ['svs-play-log'] });
     });
     return unsub;
   }, [qc]);
@@ -817,7 +817,7 @@ export default function StateVsState() {
 
   useEffect(() => {
     var unsub = base44.entities.PKBattle.subscribe(e => {
-      if (e.(data && data.room_id) === SVS_BRACKET_ID) qc.invalidateQueries({ queryKey: ['svs-bracket-records'] });
+      if ((e.data && e.data.room_id) === SVS_BRACKET_ID) qc.invalidateQueries({ queryKey: ['svs-bracket-records'] });
     });
     return unsub;
   }, [qc]);

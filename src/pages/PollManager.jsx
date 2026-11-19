@@ -190,7 +190,7 @@ export default function PollManager() {
 
         {/* Templates grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {(templates && templates.map(template => (
+          {templates && templates.map(template => (
             <motion.div key={template.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
               <div className="flex items-start justify-between mb-2">
@@ -223,7 +223,7 @@ export default function PollManager() {
           ))}
         </div>
 
-        {(templates && templates.length) === 0 && !showForm && (
+        {(templates || []).length === 0 && !showForm && (
           <div className="text-center py-12" style={{ color: 'rgba(255,255,255,0.3)' }}>
             <p className="text-sm mb-4" style={T}>No templates yet. Create your first one!</p>
           </div>

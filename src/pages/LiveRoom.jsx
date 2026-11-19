@@ -347,7 +347,7 @@ function AudienceTile({ p }) {
 function ChatPanel({ messages, onClose, onSend, chatEnabled = true }) {
   var [text, setText] = useState('');
   var bottomRef = useRef(null);
-  useEffect(() => { bottomRef.(current && current.scrollIntoView)({ behavior: 'smooth' }); }, [messages]);
+  useEffect(() => { if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   function submit() {
     if (!text.trim()) return;
@@ -663,8 +663,8 @@ export default function LiveRoom() {
   // Keyboard shortcuts: M = mic toggle, Space = push-to-talk
   useEffect(() => {
     var onDown = (e) => {
-      var tag = document.(activeElement && activeElement.tagName);
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.(activeElement && activeElement.isContentEditable)) return;
+      var tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement && document.activeElement.isContentEditable)) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
       if (e.key === ' ' && !e.repeat) {
         e.preventDefault();
@@ -721,7 +721,7 @@ export default function LiveRoom() {
   useEffect(() => {
     if (!roomId) return;
     var unsub = base44.entities.WatchPartyMember.subscribe((event) => {
-      if (event.(data && data.party_id) !== roomId) return;
+      if ((event.data && event.data.party_id) !== roomId) return;
       // queryClient not available here — data refetches on interval
     });
     return unsub;

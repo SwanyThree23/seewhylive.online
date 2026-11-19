@@ -23,7 +23,6 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
-import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
 var G = {
@@ -444,7 +443,7 @@ export default function CreatorPublicProfile() {
                     {badge.title}
                   </span>
                   <span style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 7, color: rColor, letterSpacing: 1 }}>
-                    {badge.(rarity && rarity.toUpperCas)e()}
+                    {badge.rarity && badge.rarity.toUpperCase()}
                   </span>
                 </motion.div>
               );
@@ -533,11 +532,11 @@ export default function CreatorPublicProfile() {
                     {t.transaction_type === "subscription" ? "New subscriber" : "Direct support"}
                   </div>
                   <div style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 11, color: G.gray }}>
-                    {t.(payment_method && payment_method.toUpperCas)e()}
+                    {t.payment_method && t.payment_method.toUpperCase()}
                   </div>
                 </div>
                 <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 16, fontWeight: 700, color: "#6DBF7E" }}>
-                  ${t.(creator_payout && creator_payout.toFixe)d(2) || "—"}
+                  ${(t.creator_payout && t.creator_payout.toFixed(2)) || "—"}
                 </div>
               </div>
             ))}

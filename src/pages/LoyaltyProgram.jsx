@@ -337,7 +337,7 @@ export default function LoyaltyProgram() {
                     {i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white truncate" style={T}>{l.(user_id && user_id.slice)(0, 8) || 'Anonymous'}</p>
+                    <p className="text-sm text-white truncate" style={T}>{(l.user_id && l.user_id.slice(0, 8)) || 'Anonymous'}</p>
                     <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{l.watch_minutes || 0}min watched</p>
                   </div>
                   <p className="font-black text-sm" style={{ fontFamily: 'Orbitron, monospace', color: '#D4AF37' }}>{(l.points || 0).toLocaleString()} pts</p>

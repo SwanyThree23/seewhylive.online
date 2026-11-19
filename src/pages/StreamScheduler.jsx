@@ -279,7 +279,7 @@ export default function StreamScheduler() {
     setForm({
       title: stream.title, description: stream.description || '',
       category: stream.category || 'gaming',
-      scheduled_start: stream.(scheduled_start && scheduled_start.slice)(0, 16) || '',
+      scheduled_start: (stream.scheduled_start && stream.scheduled_start.slice(0, 16)) || '',
       estimated_duration_minutes: stream.estimated_duration_minutes || 60,
       is_recurring: stream.is_recurring || false,
       recurrence: stream.recurrence || 'weekly',

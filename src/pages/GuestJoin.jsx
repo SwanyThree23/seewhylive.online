@@ -62,8 +62,8 @@ export default function GuestJoin() {
   useEffect(() => {
     if (!participantId) return;
     var unsub = base44.entities.Participant.subscribe((event) => {
-      if (event.id !== participantId && event.(data && data.id) !== participantId) return;
-      var newStatus = event.(data && data.status);
+      if (event.id !== participantId && (event.data && event.data.id) !== participantId) return;
+      var newStatus = event.data && event.data.status;
       if (newStatus === 'admitted') { setStatus('admitted'); toast.success("🎙️ You've been admitted to the stage!"); }
       else if (newStatus === 'rejected') { setStatus('rejected'); toast.error('You were removed from the queue'); }
     });

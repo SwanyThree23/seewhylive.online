@@ -36,7 +36,7 @@ function ClipCard({ clip, onDelete, onShare, onLike }) {
   var status = clip.clip_url ? 'published' : 'processing';
   var S = STATUSES[status];
   var emojis = ['🎮','🎙','🏆','🔥','⚡','🎯'];
-  var emoji = emojis[parseInt(clip.(id && id.slice(-1), 16) % emojis.length] || '🎬';
+  var emoji = emojis[parseInt((clip.id || '').slice(-1), 16) % emojis.length] || '🎬';
   return (
     <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}}
       style={{ borderRadius:10, overflow:'hidden', border:'1px solid rgba(255,255,255,0.06)', background:'rgba(8,11,24,0.9)', cursor:'pointer' }}>

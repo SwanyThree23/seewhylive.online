@@ -97,7 +97,7 @@ export default function VideoPost() {
   };
 
   var handleVideoLoad = () => {
-    var duration = videoRef.(current && current.duration) || 0;
+    var duration = (videoRef.current && videoRef.current.duration) || 0;
     setVideoDuration(Math.round(duration));
     if (duration > MAX_DURATION_SECONDS) {
       toast.error(`Video must be ${MAX_DURATION_SECONDS / 60} minutes or less. Your video is ${Math.round(duration / 60)} minutes.`);
@@ -176,7 +176,7 @@ export default function VideoPost() {
             {/* Drop zone */}
             {!selectedFile ? (
               <div
-                onClick={() => fileInputRef.(current && current.click()}
+                onClick={() => fileInputRef.current && fileInputRef.current.click()}
                 className="border-2 border-dashed border-[#d4af37]/30 rounded-2xl p-12 text-center cursor-pointer hover:border-[#d4af37]/60 hover:bg-[#d4af37]/5 transition-all"
               >
                 <Upload className="w-12 h-12 mx-auto mb-4 text-[#d4af37]/50" />

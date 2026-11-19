@@ -102,7 +102,7 @@ function ProductSheet({ item, onClose, user }) {
             </div>
 
             {/* Sizes */}
-            {item.(sizes_available && sizes_available.length) > 0 && (
+            {(item.sizes_available && item.sizes_available.length) > 0 && (
               <div>
                 <p className="text-[10px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Size</p>
                 <div className="flex gap-2 flex-wrap">
@@ -493,8 +493,8 @@ export default function MerchStorePage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-black text-base" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${order.(total_usd && total_usd.toFixed)(2)}</p>
-                      <p className="text-[10px]" style={{ color: GREEN, ...T }}>+${order.(creator_payout && creator_payout.toFixed)(2)} yours</p>
+                      <p className="font-black text-base" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${order.total_usd && order.total_usd.toFixed(2)}</p>
+                      <p className="text-[10px]" style={{ color: GREEN, ...T }}>+${order.creator_payout && order.creator_payout.toFixed(2)} yours</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

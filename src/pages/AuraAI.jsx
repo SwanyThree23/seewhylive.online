@@ -171,7 +171,7 @@ export default function AuraAI() {
       setMessages(m => [...m, { role: 'assistant', text: "Stay with me — the connection flickered. Ask me again and we'll create something amazing. ✨" }]);
     }
     setLoading(false);
-    inputRef.(current && current.focus());
+    if (inputRef.current) inputRef.current.focus();
   }
 
   function clearChat() {

@@ -212,7 +212,7 @@ export default function VDONinjaManager() {
     if (!activeSession) return;
     var guest = {
       id: Date.now().toString(36),
-      name: `Guest ${(activeSession.(guests && guests.length) || 0) + 1}`,
+      name: `Guest ${((activeSession.guests && activeSession.guests.length) || 0) + 1}`,
       role: 'guest',
       quality: 'medium',
       streamId: randomId(6),
@@ -291,7 +291,7 @@ export default function VDONinjaManager() {
             }}>
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 12, fontWeight: 800, color: activeSessionId === s.id ? GOLD : '#fff', ...T }}>{s.name}</p>
-                <p style={{ fontSize: 9, color: DIM, ...T }}>Room: {s.roomId} · {s.(guests && guests.length) || 0} guests</p>
+                <p style={{ fontSize: 9, color: DIM, ...T }}>Room: {s.roomId} · {(s.guests && s.guests.length) || 0} guests</p>
               </div>
               <button onClick={e => { e.stopPropagation(); deleteSession(s.id); }} style={{ padding: '3px 5px', borderRadius: 5, background: 'rgba(107,31,42,0.08)', border: '1px solid rgba(107,31,42,0.15)', color: BURG, cursor: 'pointer' }}>
                 <Trash2 style={{ width: 10, height: 10 }} />
@@ -347,12 +347,12 @@ export default function VDONinjaManager() {
 
               {/* Guest slots */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {activeSession.(guests && guests.length) === 0 && (
+                {((activeSession.guests && activeSession.guests.length) || 0) === 0 && (
                   <div style={{ textAlign: 'center', padding: '30px 0', color: 'rgba(255,255,255,0.2)', fontSize: 12, ...T }}>
                     No guest slots yet. Hit <strong style={{ color: GOLD }}>Add Guest</strong> to create one.
                   </div>
                 )}
-                {activeSession.(guests && guests.map)(guest => (
+                {(activeSession.guests || []).map(guest => (
                   <GuestCard key={guest.id} guest={guest} roomId={activeSession.roomId}
                     onRemove={() => removeGuest(guest.id)}
                     onUpdate={g => updateGuest(guest.id, g)} />

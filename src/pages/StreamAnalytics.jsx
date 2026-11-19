@@ -102,7 +102,7 @@ export default function StreamAnalytics() {
   var tipData = tipTransactions.map((t, i) => ({
     time: i * 4,
     amount: t.amount || 0,
-    event: t.(metadata && metadata.event) || null,
+    event: (t.metadata && t.metadata.event) || null,
   }));
 
   var peakViewers  = roomAnalytics.length > 0

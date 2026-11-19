@@ -426,8 +426,8 @@ export default function AudioRoom() {
   // Keyboard shortcuts: M = mic toggle, Space = push-to-talk (hold)
   useEffect(() => {
     var onDown = (e) => {
-      var tag = document.(activeElement && activeElement.tagName);
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.(activeElement && activeElement.isContentEditable)) return;
+      var tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement && document.activeElement.isContentEditable)) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
       if (e.key === ' ' && !e.repeat) {
         e.preventDefault();

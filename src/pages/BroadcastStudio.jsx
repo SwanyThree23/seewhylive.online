@@ -254,7 +254,7 @@ function YouTubeEmbed({ videoId, isController, syncData, onStateChange }) {
             if (!isController) return;
             var s = e.data;
             if (s === window.YT.PlayerState.PLAYING || s === window.YT.PlayerState.PAUSED) {
-              onStateChange({ playing: s === window.YT.PlayerState.PLAYING, currentTime: playerRef.(current && current.getCurrentTime() || 0 });
+              onStateChange({ playing: s === window.YT.PlayerState.PLAYING, currentTime: (playerRef.current && playerRef.current.getCurrentTime()) || 0 });
             }
           },
         },
@@ -266,7 +266,7 @@ function YouTubeEmbed({ videoId, isController, syncData, onStateChange }) {
   useEffect(() => {
     if (!isController) return;
     var iv = setInterval(() => {
-      if (!playerRef.(current && current.getPlayerState)) return;
+      if (!(playerRef.current && playerRef.current.getPlayerState)) return;
       if (playerRef.current.getPlayerState() === (window.YT && window.YT.PlayerState && window.YT.PlayerState.PLAYING)) {
         onStateChange({ playing: true, currentTime: playerRef.current.getCurrentTime() || 0 });
       }
@@ -651,7 +651,7 @@ export default function BroadcastStudio() {
   useEffect(() => {
     if (!partyId) return;
     var unsub = base44.entities.WatchPartyMember.subscribe((event) => {
-      if (event.(data && data.party_id) !== partyId) return;
+      if ((event.data && event.data.party_id) !== partyId) return;
       qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
     });
     return unsub;
@@ -661,9 +661,9 @@ export default function BroadcastStudio() {
   useEffect(() => {
     if (!partyId) return;
     var unsub = base44.entities.Message.subscribe((event) => {
-      if (event.(data && data.room_id) !== partyId) return;
+      if ((event.data && event.data.room_id) !== partyId) return;
       try {
-        var d = JSON.parse(event.(data && data.content) || '{}');
+        var d = JSON.parse((event.data && event.data.content) || '{}');
         if (d.action === 'raise-hand') {
           setRaisedHands(prev => new Set([...prev, d.userId]));
         }
@@ -760,7 +760,7 @@ export default function BroadcastStudio() {
       var qual = new Map();
       for (var [peerId, { pc }] of peersRef.current.entries()) {
         if (pc.connectionState !== 'connected') continue;
-        var uid = (peerUserIds && peerUserIds.get(peerId);
+        var uid = peerUserIds && peerUserIds.get(peerId);
         if (!uid) continue;
         try {
           var stats = await pc.getStats();
@@ -812,10 +812,10 @@ export default function BroadcastStudio() {
       screenStream.getTracks().forEach(t => t.stop());
       setScreenStream(null);
       setScreenEnabled(false);
-      var camTrack = localStreamRef2.(current && current.getVideoTracks()[0];
+      var camTrack = localStreamRef2.current && localStreamRef2.current.getVideoTracks()[0];
       if (camTrack) {
         peersRef.current.forEach(({ pc }) => {
-          var sender = pc.getSenders().find(s => s.(track && track.kind) === 'video');
+          var sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
           if (sender) sender.replaceTrack(camTrack).catch(() => {});
         });
       }
@@ -827,10 +827,10 @@ export default function BroadcastStudio() {
       screenTrack.onended = () => {
         setScreenStream(null);
         setScreenEnabled(false);
-        var camTrack = localStreamRef2.(current && current.getVideoTracks()[0];
+        var camTrack = localStreamRef2.current && localStreamRef2.current.getVideoTracks()[0];
         if (camTrack) {
           peersRef.current.forEach(({ pc }) => {
-            var s = pc.getSenders().find(s2 => s2.(track && track.kind) === 'video');
+            var s = pc.getSenders().find(s2 => s2.track && s2.track.kind === 'video');
             if (s) s.replaceTrack(camTrack).catch(() => {});
           });
         }
@@ -838,7 +838,7 @@ export default function BroadcastStudio() {
       setScreenStream(stream);
       setScreenEnabled(true);
       peersRef.current.forEach(({ pc }) => {
-        var sender = pc.getSenders().find(s => s.(track && track.kind) === 'video');
+        var sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
         if (sender) sender.replaceTrack(screenTrack).catch(() => {});
       });
     } catch {
@@ -883,8 +883,8 @@ export default function BroadcastStudio() {
   useEffect(() => {
     if (!canStream) return;
     var onDown = (e) => {
-      var tag = document.(activeElement && activeElement.tagName);
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.(activeElement && activeElement.isContentEditable)) return;
+      var tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement && document.activeElement.isContentEditable)) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
       if (e.key === 'v' || e.key === 'V') { e.preventDefault(); toggleVideo(); }
       if (e.key === 's' || e.key === 'S') { e.preventDefault(); toggleScreenShare(); }
@@ -1140,7 +1140,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     }
     if (remoteStreams) {
       remoteStreams.forEach((stream, peerId) => {
-        var userId = (peerUserIds && peerUserIds.get(peerId);
+        var userId = peerUserIds && peerUserIds.get(peerId);
         var member = members.find(m => m.user_id === userId);
         slots.push({ stream, label: (member && member.user_name) || 'Guest' });
       });
@@ -1425,7 +1425,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                           return (
                             <div key={m.id} className="flex flex-col items-center gap-0.5">
                               <OctAvatarThumb name={m.user_name} stream={mStream} size={36} />
-                              <span className="text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.3)', maxWidth: 36 }}>{m.(user_name && user_name.split(' ')[0]}</span>
+                              <span className="text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.3)', maxWidth: 36 }}>{m.user_name && m.user_name.split(' ')[0]}</span>
                             </div>
                           );
                         })}
@@ -1781,7 +1781,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           currentStream={localStream}
           onSelect={(stream, meta) => {
             // Release picker's own acquired stream tracks
-            (stream && stream.getVideoTracks().forEach(t => t.stop());
+            if (stream) stream.getVideoTracks().forEach(t => t.stop());
             if ((meta && meta.deviceId)) {
               // replaceVideoDevice updates localStream state; useWebRTCPeers auto-replaces
               // sender tracks when localStream changes

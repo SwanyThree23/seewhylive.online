@@ -152,7 +152,7 @@ export default function SwanyBotPage() {
       setMessages(m => [...m, { role: 'assistant', text: "Connection hiccup — ask me again. The culture never sleeps! 🎮" }]);
     }
     setLoading(false);
-    inputRef.(current && current.focus)();
+    if (inputRef.current) inputRef.current.focus();
   }
 
   function clearChat() {

@@ -67,7 +67,7 @@ function MemberRow({ member, currentUserId, onRoleChange, onRemove }) {
         {(member.display_name || member.user_id || '?').charAt(0).toUpperCase()}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-black text-sm text-white truncate" style={T}>{member.display_name || member.username || member.(user_id && user_id.slice)(0, 8)}</p>
+        <p className="font-black text-sm text-white truncate" style={T}>{member.display_name || member.username || (member.user_id && member.user_id.slice(0, 8))}</p>
         <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
           Joined {member.joined_date ? new Date(member.joined_date).toLocaleDateString() : 'recently'}
         </p>

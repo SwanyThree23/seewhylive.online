@@ -102,11 +102,11 @@ function PodiumEntry({ rank, entry, statLabel, statValue }) {
       </div>
 
       {/* oct avatar */}
-      <OctAvatar size={size} src={entry.(user && user.avatar_url)} initials={initials} rankColor={color} glow={isFirst} />
+      <OctAvatar size={size} src={entry.user && entry.user.avatar_url} initials={initials} rankColor={color} glow={isFirst} />
 
       {/* name */}
       <p className="font-black text-[11px] text-white text-center truncate max-w-[96px]" style={T}>
-        {entry.(user && user.full_name) || 'Anonymous'}
+        {(entry.user && entry.user.full_name) || 'Anonymous'}
       </p>
 
       {/* stat */}
@@ -457,12 +457,12 @@ export default function LeaderboardPage() {
             <div className="p-2 space-y-1">
               {rest.map((entry, i) => (
                 <RankRow
-                  key={entry.(user && user.id) || i}
+                  key={(entry.user && entry.user.id) || i}
                   rank={i + 4}
                   user={entry.user}
                   stat={getStat(entry)}
                   statLabel={label}
-                  isCurrentUser={entry.(user && user.id) === (currentUser && currentUser.id)}
+                  isCurrentUser={(entry.user && entry.user.id) === (currentUser && currentUser.id)}
                   isEven={i % 2 === 0}
                 />
               ))}

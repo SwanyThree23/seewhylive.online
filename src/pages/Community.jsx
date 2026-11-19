@@ -187,7 +187,7 @@ export default function CommunityPage() {
           {/* Avatar */}
           <div className="w-20 h-20 rounded-2xl shrink-0 flex items-center justify-center font-black text-3xl"
             style={{ background: community.avatar_url ? undefined : `linear-gradient(135deg, ${CRIMSON}, ${G})`, backgroundImage: community.avatar_url ? `url(${community.avatar_url})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', border: '3px solid rgba(255,184,0,0.3)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)', color: '#fff', ...T }}>
-            {!community.avatar_url && (community.(name && name.charAt(0) || '?')}
+            {!community.avatar_url && (community.name && community.name.charAt(0) || '?')}
           </div>
 
           <div className="flex-1 sm:pt-10 min-w-0">

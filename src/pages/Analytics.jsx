@@ -314,7 +314,7 @@ export default function AnalyticsPage() {
                 {[
                   { label: 'Total Messages', value: messages.length },
                   { label: 'Unique Chatters', value: new Set(messages.map(m => m.user_id)).size },
-                  { label: 'Avg Message Length', value: `${messages.length > 0 ? Math.round(messages.reduce((s, m) => s + (m.(content && content.length) || 0), 0) / messages.length) : 0} chars` },
+                  { label: 'Avg Message Length', value: `${messages.length > 0 ? Math.round(messages.reduce((s, m) => s + (m.content && m.content.length || 0), 0) / messages.length) : 0} chars` },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-center justify-between p-3 rounded-xl"
                     style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>

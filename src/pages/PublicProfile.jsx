@@ -115,7 +115,7 @@ export default function PublicProfile() {
             <div className="absolute inset-[3px] flex items-center justify-center" style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)` }}>
               {profile.avatar_url
                 ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.display_name} style={{ clipPath: OCT }} />
-                : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{profile.(display_name && display_name.charAt(0)}</span>
+                : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{profile.display_name && profile.display_name.charAt(0)}</span>
               }
             </div>
           </div>
