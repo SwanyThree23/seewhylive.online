@@ -1033,6 +1033,17 @@ export default function Home() {
     queryFn: function() { return base44.auth.me(); },
   });
 
+  var { data: myFollows = [] } = useQuery({
+    queryKey: ['my-follows', (user && user.id)],
+    queryFn: function() { return base44.entities.Follow.filter({ follower_id: user.id }); },
+    enabled: !!(user && user.id),
+    staleTime: 60000,
+  });
+
+  var followingLive = liveRooms.filter(function(r) {
+    return myFollows.some(function(f) { return f.creator_id === r.host_id || f.following_id === r.host_id; });
+  });
+
   var { data: onboarding } = useQuery({
     queryKey: ['onboarding-check', (user && user.id)],
     queryFn: async function() {
@@ -1118,6 +1129,39 @@ export default function Home() {
           </motion.div>
         </Link>
       </div>
+
+      {/* ── FOLLOWING LIVE STRIP ── Live rooms from creators you follow */}
+      {followingLive.length > 0 && (
+        <div style={{ padding: '10px 0 4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 8px' }}>
+            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#FF1A3C', textTransform: 'uppercase', letterSpacing: '0.12em', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF1A3C', display: 'inline-block', animation: 'pulse 1.5s ease-in-out infinite' }} />
+              Following Live
+            </span>
+          </div>
+          <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 10, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {followingLive.slice(0, 8).map(function(room) {
+              return (
+                <Link key={room.id} to={createPageUrl('LiveRoom') + '?id=' + room.id} style={{ textDecoration: 'none', flexShrink: 0 }}>
+                  <motion.div whileTap={{ scale: 0.96 }} style={{ width: 140, borderRadius: 12, overflow: 'hidden', background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,26,60,0.25)' }}>
+                    <div style={{ height: 80, position: 'relative', background: 'linear-gradient(135deg, rgba(255,26,60,0.15), rgba(7,7,15,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {room.thumbnail_url
+                        ? <img src={room.thumbnail_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                        : <Radio style={{ width: 24, height: 24, color: '#FF1A3C' }} />
+                      }
+                      <div style={{ position: 'absolute', top: 5, left: 5, padding: '1px 6px', borderRadius: 4, background: '#FF1A3C', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: '#fff', fontWeight: 900, letterSpacing: '0.08em' }}>LIVE</div>
+                    </div>
+                    <div style={{ padding: '7px 9px 9px' }}>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, color: '#F0E8D4', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{room.title || 'Live Stream'}</p>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>👁 {room.viewer_count || 0}</p>
+                    </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ── TOP LIVE STRIP ── Rooms worth being in, the moment they go live */}
       <TopLiveStrip rooms={liveRooms} loading={loadingLive} />
