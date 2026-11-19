@@ -1805,7 +1805,10 @@ router.get('/merch/items', merchRateLimit, function(req, res) {
     var creator = String(req.query.creator || '').slice(0, 80);
     if (!creator) return res.json({ items: [] });
     var mdb = _getMerchDb();
-    var rows = mdb.prepare('SELECT * FROM merch_items WHERE creator_id = ? AND active = 1 ORDER BY created_at ASC').all(creator);
+    // creator param is a display name; look up the UUID from user_profiles
+    var profile = mdb.prepare('SELECT user_id FROM user_profiles WHERE username = ? OR display_name = ? LIMIT 1').get(creator, creator);
+    var creatorId = profile ? profile.user_id : creator;
+    var rows = mdb.prepare('SELECT * FROM merch_items WHERE creator_id = ? AND active = 1 ORDER BY created_at ASC').all(creatorId);
     var items = rows.map(function(r) {
       return {
         id:      r.id,
