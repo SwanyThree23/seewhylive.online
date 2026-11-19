@@ -9,6 +9,7 @@ import {
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import CommunityCard from '../components/communities/CommunityCard';
+import FollowButton from '../components/shared/FollowButton';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
@@ -76,9 +77,14 @@ function FanbaseRoomCard({ room }) {
       <div className="px-3 pt-2 pb-3">
         <p className="font-black text-white leading-tight text-sm line-clamp-2"
           style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{room.title}</p>
-        {room.host_name && (
-          <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,184,0,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{room.host_name}</p>
-        )}
+        <div className="flex items-center justify-between mt-1">
+          {room.host_name && (
+            <p className="text-[10px]" style={{ color: 'rgba(255,184,0,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{room.host_name}</p>
+          )}
+          {room.host_id && (
+            <FollowButton targetUserId={room.host_id} targetUserName={room.host_name || 'Creator'} size="sm" />
+          )}
+        </div>
       </div>
     </motion.div>
   );
@@ -607,6 +613,11 @@ function CreatorCard({ creator }) {
           <Users className="w-3 h-3" style={{ color: '#FFB800' }} />
           <span className="text-[11px] font-bold" style={{ color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif' }}>{(creator.follower_count || 0).toLocaleString()}</span>
         </div>
+        {creator.user_id && (
+          <div className="mt-3" onClick={function(e) { e.preventDefault(); e.stopPropagation(); }}>
+            <FollowButton targetUserId={creator.user_id} targetUserName={creator.display_name} size="sm" />
+          </div>
+        )}
       </motion.div>
     </Link>
   );
