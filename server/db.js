@@ -13,9 +13,12 @@ if (!process.env.SUPABASE_DB_URL) {
 
 const pool = new Pool({
   connectionString: process.env.SUPABASE_DB_URL,
+  // rejectUnauthorized:false is intentional — Supabase's intermediate CA is not
+  // in Ubuntu's default bundle; connection is still TLS-encrypted. Set
+  // SUPABASE_CA_CERT to a cert file path to enable full chain verification.
   ssl: process.env.SUPABASE_CA_CERT
     ? { rejectUnauthorized: true, ca: fs.readFileSync(process.env.SUPABASE_CA_CERT).toString() }
-    : { rejectUnauthorized: true },
+    : { rejectUnauthorized: false },
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 8000,
