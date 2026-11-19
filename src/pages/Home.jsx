@@ -1044,6 +1044,11 @@ export default function Home() {
     return myFollows.some(function(f) { return f.creator_id === r.host_id || f.following_id === r.host_id; });
   });
 
+  var followedIds = myFollows.map(function(f) { return f.following_id || f.creator_id; });
+  var suggestedCreators = liveRooms.filter(function(r) {
+    return r.host_id && r.host_id !== (user && user.id) && followedIds.indexOf(r.host_id) === -1;
+  }).slice(0, 6);
+
   var { data: onboarding } = useQuery({
     queryKey: ['onboarding-check', (user && user.id)],
     queryFn: async function() {
@@ -1157,6 +1162,33 @@ export default function Home() {
                     </div>
                   </motion.div>
                 </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── SUGGESTED CREATORS ── shown when user follows fewer than 3 people */}
+      {user && myFollows.length < 3 && suggestedCreators.length > 0 && (
+        <div style={{ padding: '10px 0 4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 8px' }}>
+            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#C9A84C', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+              Creators to Follow
+            </span>
+          </div>
+          <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 10, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {suggestedCreators.map(function(room) {
+              var initials = (room.host_name || 'C').charAt(0).toUpperCase();
+              return (
+                <div key={room.id} style={{ flexShrink: 0, width: 110, background: 'rgba(7,7,15,0.9)', borderRadius: 14, border: '1px solid rgba(201,168,76,0.15)', overflow: 'hidden', padding: '12px 10px', textAlign: 'center' }}>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'linear-gradient(135deg, rgba(201,168,76,0.3), rgba(255,26,60,0.2))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px', fontSize: 18, fontWeight: 900, color: '#F0E8D4', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    {room.host_avatar_url
+                      ? <img src={room.host_avatar_url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                      : initials}
+                  </div>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, color: '#F0E8D4', margin: '0 0 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{room.host_name || 'Creator'}</p>
+                  <FollowButton targetUserId={room.host_id} targetUserName={room.host_name || 'Creator'} size="sm" />
+                </div>
               );
             })}
           </div>
