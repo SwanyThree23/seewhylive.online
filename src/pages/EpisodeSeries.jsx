@@ -8,8 +8,14 @@ var CREAM = '#F0E8D4';
 var RED   = '#FF1A3C';
 var FONT  = 'Barlow Condensed, sans-serif';
 
-// ── Mock series data (replace with API fetch when backend ready) ──────────────
-var SERIES_LIST = [
+var API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
+
+function authHeaders() {
+  return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('auth_token') || '') };
+}
+
+// Demo series shown to logged-out users or when the API returns empty
+var DEMO_SERIES = [
   {
     id: 'shadow-reign',
     title: 'Shadow Reign',
@@ -29,6 +35,7 @@ var SERIES_LIST = [
     ],
     voteQuestion: 'Should Maya confront her father or build a rival faction?',
     voteOptions: ['Confront him directly', 'Build her own faction', 'Go public with the truth'],
+    isDemo: true,
   },
   {
     id: 'street-code',
@@ -48,6 +55,7 @@ var SERIES_LIST = [
     ],
     voteQuestion: 'What should Marcus do when he finds out about Dre\'s deal?',
     voteOptions: ['Warn him and walk away', 'Help him get out', 'Report it to avoid consequences'],
+    isDemo: true,
   },
   {
     id: 'cyber-hearts',
@@ -71,23 +79,7 @@ var SERIES_LIST = [
     ],
     voteQuestion: 'Should ARIA tell the truth about what she overheard, or protect the secret?',
     voteOptions: ['Tell the truth — always', 'Protect the secret to keep the peace', 'Find a third option'],
-  },
-  {
-    id: 'block-party',
-    title: 'Block Party',
-    emoji: '🎭',
-    color: '#5C1A1A',
-    genre: 'Comedy Drama',
-    seasons: 3,
-    totalEps: 24,
-    description: 'A community center on the verge of closing becomes the stage for the realest characters on the block.',
-    nextEpDate: Date.now() + 2 * 24 * 60 * 60 * 1000,
-    episodes: [
-      { id: 'bp-s1e1', season: 1, ep: 1, title: 'Grand Opening',        locked: false, duration: '11 min', thumb: '🎭' },
-      { id: 'bp-s3e5', season: 3, ep: 5, title: 'The Final Showdown',   locked: false, duration: '15 min', thumb: '🏆' },
-    ],
-    voteQuestion: 'Who should lead the community fundraiser?',
-    voteOptions: ['Big Mama (the veteran)', 'Lil\' D (the newcomer)', 'Everyone together'],
+    isDemo: true,
   },
 ];
 
@@ -107,7 +99,6 @@ function useCountdown(targetMs) {
   return { days: days, hours: hours, minutes: minutes, seconds: seconds, done: diff === 0 };
 }
 
-// ── Countdown block ───────────────────────────────────────────────────────────
 function CountdownBlock(props) {
   var cd = useCountdown(props.targetMs);
   var color = props.color;
@@ -144,7 +135,6 @@ function CountdownBlock(props) {
   );
 }
 
-// ── Viewer Vote Panel ─────────────────────────────────────────────────────────
 function VotePanel(props) {
   var series = props.series;
   var [voted, setVoted] = useState(null);
@@ -155,6 +145,8 @@ function VotePanel(props) {
     if (voted !== null) return;
     setVoted(idx);
   }
+
+  if (!series.voteQuestion) return null;
 
   return (
     <div style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, marginTop: 16 }}>
@@ -170,7 +162,7 @@ function VotePanel(props) {
         Your vote is advisory — episode writing remains with the creator.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {series.voteOptions.map(function(opt, idx) {
+        {(series.voteOptions || []).map(function(opt, idx) {
           var pct = voted !== null ? Math.round((mockVotes[idx] + (voted === idx ? 1 : 0)) / (total + 1) * 100) : 0;
           return (
             <button
@@ -207,7 +199,6 @@ function VotePanel(props) {
   );
 }
 
-// ── Episode row ───────────────────────────────────────────────────────────────
 function EpisodeRow(props) {
   var ep = props.ep;
   var color = props.color;
@@ -224,13 +215,13 @@ function EpisodeRow(props) {
       onClick={handlePlay}
     >
       <div style={{ width: 36, height: 36, borderRadius: 8, background: 'linear-gradient(135deg,' + color + '88,#0E0C09)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>
-        {ep.locked ? '🔒' : (playing ? '⏸' : ep.thumb)}
+        {ep.locked ? '🔒' : (playing ? '⏸' : (ep.thumb || ep.thumbnail_emoji || '🎬'))}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontFamily: FONT, fontWeight: 900, fontSize: 13, color: ep.locked ? 'rgba(255,255,255,0.3)' : CREAM, margin: 0, lineHeight: 1.2 }}>
-          S{ep.season}E{ep.ep} · {ep.title}
+          S{ep.season}E{ep.ep || ep.ep_number} · {ep.title}
         </p>
-        <p style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0', letterSpacing: '0.06em' }}>{ep.duration}</p>
+        <p style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0', letterSpacing: '0.06em' }}>{ep.duration || ep.duration_estimate || '—'}</p>
       </div>
       {ep.locked ? (
         <span style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.08em', flexShrink: 0 }}>SUBSCRIBE</span>
@@ -243,7 +234,6 @@ function EpisodeRow(props) {
   );
 }
 
-// ── Series card (grid view) ───────────────────────────────────────────────────
 function SeriesCard(props) {
   var s = props.series;
   var onClick = props.onClick;
@@ -258,29 +248,102 @@ function SeriesCard(props) {
       <div style={{ padding: '10px 12px 12px' }}>
         <p style={{ fontFamily: FONT, fontWeight: 900, fontSize: 13, color: CREAM, margin: '0 0 2px', lineHeight: 1.2 }}>{s.title}</p>
         <p style={{ fontFamily: FONT, fontSize: 10, color: s.color, margin: '0 0 4px', letterSpacing: '0.05em' }}>{s.genre}</p>
-        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{s.seasons}S · {s.totalEps} eps</p>
+        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+          {s.isDemo ? (s.seasons + 'S · ' + s.totalEps + ' eps') : (s.episodeCount > 0 ? s.episodeCount + ' ep' + (s.episodeCount !== 1 ? 's' : '') : 'No episodes yet')}
+        </p>
       </div>
     </div>
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
 export default function EpisodeSeries() {
-  var [selected, setSelected] = useState(SERIES_LIST[0]);
+  var [seriesList, setSeriesList] = useState(null); // null = loading
+  var [episodeMap, setEpisodeMap] = useState({});
+  var [selected, setSelected] = useState(null);
   var [seasonFilter, setSeasonFilter] = useState(0);
   var [subscribed, setSubscribed] = useState(false);
   var navigate = useNavigate();
 
-  var seasons = [];
-  for (var i = 0; i < selected.seasons; i++) { seasons.push(i + 1); }
+  useEffect(function() {
+    var token = localStorage.getItem('auth_token');
+    if (!token) {
+      setSeriesList(DEMO_SERIES);
+      setSelected(DEMO_SERIES[0]);
+      return;
+    }
+    fetch(API_BASE + '/episodes/series', { headers: authHeaders() })
+      .then(function(r) { return r.json(); })
+      .then(function(rows) {
+        if (!Array.isArray(rows) || rows.length === 0) {
+          setSeriesList(DEMO_SERIES);
+          setSelected(DEMO_SERIES[0]);
+        } else {
+          var mapped = rows.map(function(s) {
+            return Object.assign({}, s, { color: s.color || '#7B2D8B', voteQuestion: null, voteOptions: [], episodes: [] });
+          });
+          setSeriesList(mapped);
+          setSelected(mapped[0]);
+        }
+      })
+      .catch(function() {
+        setSeriesList(DEMO_SERIES);
+        setSelected(DEMO_SERIES[0]);
+      });
+  }, []);
 
-  var filteredEps = selected.episodes.filter(function(ep) {
+  useEffect(function() {
+    if (!selected || selected.isDemo || episodeMap[selected.id]) return;
+    fetch(API_BASE + '/episodes/series/' + selected.id + '/episodes', { headers: authHeaders() })
+      .then(function(r) { return r.json(); })
+      .then(function(rows) {
+        if (Array.isArray(rows)) {
+          setEpisodeMap(function(m) {
+            var next = Object.assign({}, m);
+            next[selected.id] = rows;
+            return next;
+          });
+        }
+      })
+      .catch(function() {});
+  }, [selected]);
+
+  if (!seriesList) {
+    return (
+      <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ color: 'rgba(255,255,255,0.3)', fontFamily: FONT, fontSize: 14 }}>Loading…</span>
+      </div>
+    );
+  }
+
+  var episodes = selected
+    ? (selected.isDemo ? selected.episodes : (episodeMap[selected.id] || []))
+    : [];
+
+  var seasons = [];
+  if (selected) {
+    var maxSeason = 1;
+    episodes.forEach(function(ep) {
+      var s = ep.season;
+      if (s > maxSeason) maxSeason = s;
+    });
+    if (selected.isDemo && selected.seasons > maxSeason) maxSeason = selected.seasons;
+    for (var i = 1; i <= maxSeason; i++) { seasons.push(i); }
+  }
+
+  var filteredEps = episodes.filter(function(ep) {
     return seasonFilter === 0 || ep.season === seasonFilter;
   });
 
-  function handleSubscribe() {
-    setSubscribed(true);
+  function handleSubscribe() { setSubscribed(true); }
+
+  function selectSeries(s) {
+    setSelected(s);
+    setSeasonFilter(0);
+    setSubscribed(false);
   }
+
+  var totalEps = selected ? (selected.isDemo ? selected.totalEps : episodes.length) : 0;
+  var numSeasons = selected ? (selected.isDemo ? selected.seasons : (seasons.length || 1)) : 1;
 
   return (
     <div style={{ minHeight: '100vh', background: BG, color: CREAM, fontFamily: 'sans-serif' }}>
@@ -289,6 +352,9 @@ export default function EpisodeSeries() {
         <button onClick={function() { navigate(-1); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: 20, padding: 0, lineHeight: 1 }}>‹</button>
         <span style={{ fontFamily: FONT, fontWeight: 900, fontSize: 14, color: GOLD, letterSpacing: '0.12em', textTransform: 'uppercase' }}>🎬 Micro Drama</span>
         <div style={{ flex: 1 }} />
+        <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ fontFamily: FONT, fontWeight: 900, fontSize: 10, color: '#7B2D8B', letterSpacing: '0.08em', textDecoration: 'none', border: '1px solid rgba(123,45,139,0.4)', padding: '4px 10px', borderRadius: 6 }}>
+          + New Series
+        </Link>
         <Link to={createPageUrl('GoLive')} style={{ fontFamily: FONT, fontWeight: 900, fontSize: 10, color: RED, letterSpacing: '0.1em', textDecoration: 'none', border: '1px solid ' + RED + '55', padding: '4px 10px', borderRadius: 6 }}>
           🔴 CO-STREAM
         </Link>
@@ -296,97 +362,119 @@ export default function EpisodeSeries() {
 
       {/* Series selector strip */}
       <div style={{ padding: '14px 0 0' }}>
-        <p style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 10px 16px' }}>All Series</p>
+        <p style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 10px 16px' }}>
+          {seriesList.some(function(s) { return s.isDemo; }) ? 'Example Series' : 'Your Series'}
+        </p>
         <div style={{ overflowX: 'auto', display: 'flex', gap: 10, padding: '0 16px 14px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {SERIES_LIST.map(function(s) {
+          {seriesList.map(function(s) {
             return (
               <SeriesCard
                 key={s.id}
                 series={s}
-                onClick={function() { setSelected(s); setSeasonFilter(0); }}
+                onClick={function() { selectSeries(s); }}
               />
             );
           })}
         </div>
       </div>
 
-      {/* Selected series hero */}
-      <div style={{ margin: '0 16px 16px', borderRadius: 16, overflow: 'hidden', border: '1px solid ' + selected.color + '55' }}>
-        <div style={{ padding: '20px 20px 16px', background: 'linear-gradient(135deg,' + selected.color + '44,rgba(14,12,9,0.95))' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-            <div style={{ fontSize: 48, lineHeight: 1 }}>{selected.emoji}</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <h1 style={{ fontFamily: FONT, fontWeight: 900, fontSize: 22, color: CREAM, margin: '0 0 2px', letterSpacing: '0.03em' }}>{selected.title}</h1>
-              <p style={{ fontFamily: FONT, fontSize: 11, color: selected.color, margin: '0 0 8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{selected.genre} · {selected.seasons} Season{selected.seasons > 1 ? 's' : ''} · {selected.totalEps} Episodes</p>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', margin: '0 0 14px', lineHeight: 1.5 }}>{selected.description}</p>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <button
-                  onClick={handleSubscribe}
-                  style={{
-                    padding: '8px 18px', borderRadius: 8, fontFamily: FONT, fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', cursor: subscribed ? 'default' : 'pointer', transition: 'all 0.2s',
-                    background: subscribed ? 'rgba(34,197,94,0.15)' : 'rgba(201,168,76,0.15)',
-                    border: '1px solid ' + (subscribed ? 'rgba(34,197,94,0.5)' : 'rgba(201,168,76,0.4)'),
-                    color: subscribed ? '#22C55E' : GOLD,
-                  }}
-                >
-                  {subscribed ? '✓ Subscribed' : '+ Subscribe to Series'}
-                </button>
-                <Link
-                  to={createPageUrl('GoLive')}
-                  style={{ padding: '8px 16px', borderRadius: 8, fontFamily: FONT, fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', textDecoration: 'none', background: 'rgba(255,26,60,0.1)', border: '1px solid rgba(255,26,60,0.35)', color: RED }}
-                >
-                  🔴 Watch Live Co-Stream
-                </Link>
+      {selected && (
+        <div>
+          {/* Selected series hero */}
+          <div style={{ margin: '0 16px 16px', borderRadius: 16, overflow: 'hidden', border: '1px solid ' + selected.color + '55' }}>
+            <div style={{ padding: '20px 20px 16px', background: 'linear-gradient(135deg,' + selected.color + '44,rgba(14,12,9,0.95))' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                <div style={{ fontSize: 48, lineHeight: 1 }}>{selected.emoji}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h1 style={{ fontFamily: FONT, fontWeight: 900, fontSize: 22, color: CREAM, margin: '0 0 2px', letterSpacing: '0.03em' }}>{selected.title}</h1>
+                  <p style={{ fontFamily: FONT, fontSize: 11, color: selected.color, margin: '0 0 8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{selected.genre} · {numSeasons} Season{numSeasons !== 1 ? 's' : ''} · {totalEps} Episode{totalEps !== 1 ? 's' : ''}</p>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', margin: '0 0 14px', lineHeight: 1.5 }}>{selected.description}</p>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button
+                      onClick={handleSubscribe}
+                      style={{
+                        padding: '8px 18px', borderRadius: 8, fontFamily: FONT, fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', cursor: subscribed ? 'default' : 'pointer', transition: 'all 0.2s',
+                        background: subscribed ? 'rgba(34,197,94,0.15)' : 'rgba(201,168,76,0.15)',
+                        border: '1px solid ' + (subscribed ? 'rgba(34,197,94,0.5)' : 'rgba(201,168,76,0.4)'),
+                        color: subscribed ? '#22C55E' : GOLD,
+                      }}
+                    >
+                      {subscribed ? '✓ Subscribed' : '+ Subscribe to Series'}
+                    </button>
+                    {!selected.isDemo && (
+                      <Link
+                        to={createPageUrl('EpisodeCreatorStudio') + '?seriesId=' + selected.id}
+                        style={{ padding: '8px 16px', borderRadius: 8, fontFamily: FONT, fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', textDecoration: 'none', background: 'rgba(123,45,139,0.1)', border: '1px solid rgba(123,45,139,0.4)', color: '#B066CC' }}
+                      >
+                        ✏️ Edit Series
+                      </Link>
+                    )}
+                    <Link
+                      to={createPageUrl('GoLive')}
+                      style={{ padding: '8px 16px', borderRadius: 8, fontFamily: FONT, fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', textDecoration: 'none', background: 'rgba(255,26,60,0.1)', border: '1px solid rgba(255,26,60,0.35)', color: RED }}
+                    >
+                      🔴 Watch Live Co-Stream
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Countdown */}
+            <div style={{ padding: '14px 20px', background: 'rgba(0,0,0,0.4)', borderTop: '1px solid ' + selected.color + '22' }}>
+              <CountdownBlock targetMs={selected.nextEpDate || (Date.now() + 7 * 24 * 60 * 60 * 1000)} color={selected.color} />
+            </div>
+          </div>
+
+          {/* Season filter + episode list */}
+          <div style={{ margin: '0 16px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, overflowX: 'auto', scrollbarWidth: 'none' }}>
+              <button
+                onClick={function() { setSeasonFilter(0); }}
+                style={{ flexShrink: 0, padding: '5px 14px', borderRadius: 99, fontFamily: FONT, fontWeight: 900, fontSize: 11, letterSpacing: '0.07em', cursor: 'pointer', background: seasonFilter === 0 ? selected.color + '33' : 'rgba(255,255,255,0.05)', border: '1px solid ' + (seasonFilter === 0 ? selected.color + '77' : 'rgba(255,255,255,0.1)'), color: seasonFilter === 0 ? selected.color : 'rgba(255,255,255,0.4)' }}
+              >
+                All Seasons
+              </button>
+              {seasons.map(function(s) {
+                return (
+                  <button
+                    key={s}
+                    onClick={function() { setSeasonFilter(s); }}
+                    style={{ flexShrink: 0, padding: '5px 14px', borderRadius: 99, fontFamily: FONT, fontWeight: 900, fontSize: 11, letterSpacing: '0.07em', cursor: 'pointer', background: seasonFilter === s ? selected.color + '33' : 'rgba(255,255,255,0.05)', border: '1px solid ' + (seasonFilter === s ? selected.color + '77' : 'rgba(255,255,255,0.1)'), color: seasonFilter === s ? selected.color : 'rgba(255,255,255,0.4)' }}
+                  >
+                    Season {s}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div>
+              {filteredEps.map(function(ep) {
+                return <EpisodeRow key={ep.id} ep={ep} color={selected.color} />;
+              })}
+              {filteredEps.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, margin: '0 0 12px' }}>No episodes in this season yet.</p>
+                  {!selected.isDemo && (
+                    <Link to={createPageUrl('EpisodeCreatorStudio') + '?seriesId=' + selected.id}
+                      style={{ display: 'inline-block', padding: '8px 18px', borderRadius: 10, fontFamily: FONT, fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', textDecoration: 'none', background: 'rgba(123,45,139,0.1)', border: '1px solid rgba(123,45,139,0.3)', color: '#B066CC' }}>
+                      + Add Episodes in Studio
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Viewer vote */}
+          <div style={{ margin: '0 16px 20px' }}>
+            <VotePanel series={selected} />
           </div>
         </div>
-
-        {/* Countdown */}
-        <div style={{ padding: '14px 20px', background: 'rgba(0,0,0,0.4)', borderTop: '1px solid ' + selected.color + '22' }}>
-          <CountdownBlock targetMs={selected.nextEpDate} color={selected.color} />
-        </div>
-      </div>
-
-      {/* Season filter + episode list */}
-      <div style={{ margin: '0 16px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, overflowX: 'auto', scrollbarWidth: 'none' }}>
-          <button
-            onClick={function() { setSeasonFilter(0); }}
-            style={{ flexShrink: 0, padding: '5px 14px', borderRadius: 99, fontFamily: FONT, fontWeight: 900, fontSize: 11, letterSpacing: '0.07em', cursor: 'pointer', background: seasonFilter === 0 ? selected.color + '33' : 'rgba(255,255,255,0.05)', border: '1px solid ' + (seasonFilter === 0 ? selected.color + '77' : 'rgba(255,255,255,0.1)'), color: seasonFilter === 0 ? selected.color : 'rgba(255,255,255,0.4)' }}
-          >
-            All Seasons
-          </button>
-          {seasons.map(function(s) {
-            return (
-              <button
-                key={s}
-                onClick={function() { setSeasonFilter(s); }}
-                style={{ flexShrink: 0, padding: '5px 14px', borderRadius: 99, fontFamily: FONT, fontWeight: 900, fontSize: 11, letterSpacing: '0.07em', cursor: 'pointer', background: seasonFilter === s ? selected.color + '33' : 'rgba(255,255,255,0.05)', border: '1px solid ' + (seasonFilter === s ? selected.color + '77' : 'rgba(255,255,255,0.1)'), color: seasonFilter === s ? selected.color : 'rgba(255,255,255,0.4)' }}
-              >
-                Season {s}
-              </button>
-            );
-          })}
-        </div>
-
-        <div>
-          {filteredEps.map(function(ep) {
-            return <EpisodeRow key={ep.id} ep={ep} color={selected.color} />;
-          })}
-          {filteredEps.length === 0 && (
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13, padding: '24px 0' }}>No episodes in this season yet.</p>
-          )}
-        </div>
-      </div>
-
-      {/* Viewer vote */}
-      <div style={{ margin: '0 16px 20px' }}>
-        <VotePanel series={selected} />
-      </div>
+      )}
 
       {/* Co-stream CTA */}
-      <div style={{ margin: '0 16px 32px', padding: '16px 20px', borderRadius: 14, background: 'linear-gradient(135deg,rgba(255,26,60,0.1),rgba(201,168,76,0.08))', border: '1px solid rgba(255,26,60,0.2)' }}>
+      <div style={{ margin: '0 16px 20px', padding: '16px 20px', borderRadius: 14, background: 'linear-gradient(135deg,rgba(255,26,60,0.1),rgba(201,168,76,0.08))', border: '1px solid rgba(255,26,60,0.2)' }}>
         <p style={{ fontFamily: FONT, fontWeight: 900, fontSize: 14, color: CREAM, margin: '0 0 4px', letterSpacing: '0.04em' }}>🔴 Watch with a Creator — Live</p>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: '0 0 14px', lineHeight: 1.5 }}>Join a creator's co-stream and watch this series together with live reactions, panel commentary, and audience interaction.</p>
         <Link

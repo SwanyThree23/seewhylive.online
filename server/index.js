@@ -310,6 +310,38 @@ db.exec(`CREATE TABLE IF NOT EXISTS user_blocks (
 )`);
 db.prepare('CREATE INDEX IF NOT EXISTS idx_user_blocks_blocker ON user_blocks(blocker_id)').run();
 
+// Micro Drama series & episodes tables
+db.exec(`CREATE TABLE IF NOT EXISTS ep_series (
+  id          TEXT PRIMARY KEY,
+  user_id     TEXT NOT NULL,
+  title       TEXT NOT NULL DEFAULT 'Untitled Series',
+  emoji       TEXT NOT NULL DEFAULT '🎬',
+  genre       TEXT NOT NULL DEFAULT 'Drama',
+  color       TEXT NOT NULL DEFAULT '#7B2D8B',
+  description TEXT NOT NULL DEFAULT '',
+  created_at  INTEGER NOT NULL,
+  updated_at  INTEGER NOT NULL
+)`);
+db.prepare('CREATE INDEX IF NOT EXISTS idx_ep_series_user ON ep_series(user_id)').run();
+db.exec(`CREATE TABLE IF NOT EXISTS ep_episodes (
+  id               TEXT PRIMARY KEY,
+  series_id        TEXT NOT NULL,
+  user_id          TEXT NOT NULL,
+  season           INTEGER NOT NULL DEFAULT 1,
+  ep_number        INTEGER NOT NULL DEFAULT 1,
+  title            TEXT NOT NULL DEFAULT 'Untitled Episode',
+  script           TEXT NOT NULL DEFAULT '',
+  thumbnail_emoji  TEXT NOT NULL DEFAULT '🎬',
+  duration_estimate TEXT NOT NULL DEFAULT '10 min',
+  locked           INTEGER NOT NULL DEFAULT 0,
+  status           TEXT NOT NULL DEFAULT 'draft',
+  created_at       INTEGER NOT NULL,
+  updated_at       INTEGER NOT NULL,
+  FOREIGN KEY (series_id) REFERENCES ep_series(id)
+)`);
+db.prepare('CREATE INDEX IF NOT EXISTS idx_ep_episodes_series ON ep_episodes(series_id)').run();
+db.prepare('CREATE INDEX IF NOT EXISTS idx_ep_episodes_user ON ep_episodes(user_id)').run();
+
 // State rankings table (National Domino Federation leaderboard)
 db.exec(`CREATE TABLE IF NOT EXISTS state_rankings (
   state_abbr  TEXT PRIMARY KEY,
@@ -437,6 +469,7 @@ _ppSeedTxn(_ppSeeds);
 var app    = express();
 var server = createServer(app);
 app.set('trust proxy', 1);
+app.locals.db = db;
 app.use(require('express').static(require('path').join(__dirname, '..', 'frontend', 'dist')));
 // Stripe webhook needs raw body - register BEFORE express.json()
 app.post(
@@ -583,6 +616,7 @@ app.use('/api/media', mediaRoutes);
 app.use('/api/sounds', soundsRoutes);
 app.use('/api/creator/direct-pay', directPayRoutes);
 app.use('/api/music-video', musicVideoRoutes);
+app.use('/api/episodes', require('./routes/episodes'));
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/tenant-signup', tenantSignupRoutes);
 app.use('/api', loginRoutes);
