@@ -164,9 +164,11 @@ export default function MultiPlatformIntegration() {
 
   // Creator tools
   var [scheduledPost, setScheduledPost] = useState('');
-  var [postPlatforms, setPostPlatforms] = useState({ fanbase: true, x: false, instagram: false });
+  var [postPlatforms, setPostPlatforms] = useState({ x: false, facebook: false, instagram: false, tiktok: false, snapchat: false, whatsapp: false, telegram: false });
   var [postLoading, setPostLoading] = useState(false);
   var [postSent, setPostSent] = useState(false);
+  var [embedCopied, setEmbedCopied] = useState(false);
+  var [watchLinkCopied, setWatchLinkCopied] = useState(false);
 
   // API key display
   var apiKey = user ? `sw_${(user.id && user.id.slice(0,8)) || 'demo'}_live_key` : 'sw_demo_live_key';
@@ -215,22 +217,42 @@ export default function MultiPlatformIntegration() {
     }
   }
 
+  var SOCIAL_PLATFORMS = [
+    { key: 'x',        label: 'X / Twitter', emoji: '🐦', shareUrl: function(u, t) { return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(t) + '&url=' + encodeURIComponent(u); }, popup: true },
+    { key: 'facebook', label: 'Facebook',    emoji: '👥', shareUrl: function(u, t) { return 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&quote=' + encodeURIComponent(t); }, popup: true },
+    { key: 'whatsapp', label: 'WhatsApp',    emoji: '💬', shareUrl: function(u, t) { return 'https://wa.me/?text=' + encodeURIComponent(t + ' ' + u); }, popup: true },
+    { key: 'telegram', label: 'Telegram',    emoji: '✈️', shareUrl: function(u, t) { return 'https://t.me/share/url?url=' + encodeURIComponent(u) + '&text=' + encodeURIComponent(t); }, popup: true },
+    { key: 'snapchat', label: 'Snapchat',    emoji: '👻', shareUrl: function(u) { return 'https://www.snapchat.com/scan?attachmentUrl=' + encodeURIComponent(u); }, popup: true },
+    { key: 'instagram', label: 'Instagram',  emoji: '📸', shareUrl: null, copyOnly: true, hint: 'Copy link → paste in Story or Bio' },
+    { key: 'tiktok',   label: 'TikTok',     emoji: '🎵', shareUrl: null, copyOnly: true, hint: 'Copy link → paste in TikTok bio or DM' },
+  ];
+
+  var watchUrl = roomId
+    ? window.location.origin + '/LiveRoom?id=' + roomId
+    : window.location.origin;
+
+  var iframeCode = roomId
+    ? '<iframe src="' + window.location.origin + '/LiveRoom?id=' + roomId + '&embed=1" width="640" height="360" allow="camera; microphone; autoplay" allowfullscreen style="border:none;border-radius:12px"></iframe>'
+    : '';
+
   async function schedulePost() {
     if (!scheduledPost.trim()) return;
     setPostLoading(true);
-    try {
-      var platforms_list = Object.entries(postPlatforms).filter(([,v]) => v).map(([k]) => k);
-      await base44.integrations.Core.InvokeLLM({
-        prompt: `Optimize this social media post for live stream promotion on ${platforms_list.join(', ')}: "${scheduledPost}". Keep the same message but add appropriate hashtags and emojis for each platform. Respond with JSON: {"optimized": "the optimized post text"}`,
-      });
-      setPostSent(true);
-      setTimeout(() => { setPostSent(false); setScheduledPost(''); }, 3000);
-    } catch (_) {
-      setPostSent(true);
-      setTimeout(() => { setPostSent(false); setScheduledPost(''); }, 2500);
-    } finally {
-      setPostLoading(false);
-    }
+    var chosen = Object.entries(postPlatforms).filter(function(e) { return e[1]; }).map(function(e) { return e[0]; });
+    if (!chosen.length) { setPostLoading(false); return; }
+    var postText = scheduledPost + ' — Watch live 🔴 ' + watchUrl + ' #SeeWhyLIVE';
+    chosen.forEach(function(key) {
+      var p = SOCIAL_PLATFORMS.find(function(sp) { return sp.key === key; });
+      if (!p) return;
+      if (p.copyOnly || !p.shareUrl) {
+        navigator.clipboard.writeText(postText).catch(function() {});
+      } else {
+        window.open(p.shareUrl(watchUrl, scheduledPost + ' — Watch live 🔴'), '_blank', 'width=620,height=400,noopener,noreferrer');
+      }
+    });
+    setPostSent(true);
+    setPostLoading(false);
+    setTimeout(function() { setPostSent(false); setScheduledPost(''); }, 3000);
   }
 
   return (
@@ -547,23 +569,20 @@ export default function MultiPlatformIntegration() {
           />
 
           <div style={{ display: 'flex', gap: 8, margin: '10px 0', flexWrap: 'wrap' }}>
-            {[
-              { key: 'fanbase',   label: 'Fanbase', disabled: !platforms.fanbase },
-              { key: 'x',        label: 'X',       disabled: !platforms.x },
-              { key: 'instagram', label: 'Instagram', disabled: !platforms.instagram },
-            ].map(p => (
-              <button key={p.key}
-                onClick={() => !p.disabled && setPostPlatforms(prev => ({ ...prev, [p.key]: !prev[p.key] }))}
-                style={{
-                  padding: '4px 12px', borderRadius: 8, ...T, fontSize: 11, fontWeight: 800, cursor: p.disabled ? 'not-allowed' : 'pointer',
-                  background: postPlatforms[p.key] && !p.disabled ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${postPlatforms[p.key] && !p.disabled ? 'rgba(201,168,76,0.35)' : 'rgba(255,255,255,0.08)'}`,
-                  color: p.disabled ? MUTED : postPlatforms[p.key] ? GOLD : 'rgba(255,255,255,0.4)',
-                  opacity: p.disabled ? 0.5 : 1,
-                }}>
-                {postPlatforms[p.key] && !p.disabled ? '✓ ' : ''}{p.label} {p.disabled ? '(not connected)' : ''}
-              </button>
-            ))}
+            {SOCIAL_PLATFORMS.map(function(p) {
+              return (
+                <button key={p.key}
+                  onClick={function() { setPostPlatforms(function(prev) { return { ...prev, [p.key]: !prev[p.key] }; }); }}
+                  style={{
+                    padding: '5px 12px', borderRadius: 8, ...T, fontSize: 11, fontWeight: 800, cursor: 'pointer',
+                    background: postPlatforms[p.key] ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.04)',
+                    border: '1px solid ' + (postPlatforms[p.key] ? 'rgba(201,168,76,0.35)' : 'rgba(255,255,255,0.08)'),
+                    color: postPlatforms[p.key] ? GOLD : 'rgba(255,255,255,0.4)',
+                  }}>
+                  {p.emoji} {postPlatforms[p.key] ? '✓ ' : ''}{p.label}
+                </button>
+              );
+            })}
           </div>
 
           <button
@@ -577,6 +596,88 @@ export default function MultiPlatformIntegration() {
             }}>
             {postSent ? <><Check size={13} /> Posted!</> : postLoading ? <><RefreshCw size={13} style={{ animation: 'spin 1s linear infinite' }} /> Posting…</> : <><Rss size={13} /> Post Now (AI Optimized)</>}
           </button>
+        </Card>
+
+        {/* ── STREAM EMBED KIT ── */}
+        <Card>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <Globe size={15} color={GOLD} />
+            <span style={{ ...T, fontSize: 14, fontWeight: 900, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Stream Embed Kit</span>
+          </div>
+          <p style={{ ...T, fontSize: 11, color: MUTED, marginBottom: 14 }}>Let outsiders watch your stream anywhere — no SeeWhy account needed.</p>
+
+          {/* Watch link */}
+          <div style={{ marginBottom: 14 }}>
+            <p style={{ ...T, fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>PUBLIC WATCH LINK</p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                readOnly
+                value={roomId ? watchUrl : 'Start a live stream to get your watch link'}
+                style={{ flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: 'rgba(255,255,255,0.7)', fontSize: 12, outline: 'none', boxSizing: 'border-box', ...T }}
+              />
+              <button
+                onClick={function() {
+                  if (!roomId) return;
+                  navigator.clipboard.writeText(watchUrl).catch(function() {});
+                  setWatchLinkCopied(true);
+                  setTimeout(function() { setWatchLinkCopied(false); }, 2000);
+                }}
+                style={{ flexShrink: 0, padding: '8px 12px', borderRadius: 8, border: 'none', background: watchLinkCopied ? '#4A9B5E' : GOLD, color: watchLinkCopied ? '#fff' : '#000', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, ...T, fontSize: 11, fontWeight: 800 }}
+              >
+                {watchLinkCopied ? <><Check size={12} /> Copied!</> : <><Copy size={12} /> Copy</>}
+              </button>
+            </div>
+            <p style={{ ...T, fontSize: 10, color: MUTED, marginTop: 4 }}>Anyone with this link can watch — no account required. Share it on Instagram, TikTok, Snapchat, anywhere.</p>
+          </div>
+
+          {/* Iframe embed */}
+          {roomId && (
+            <div>
+              <p style={{ ...T, fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>EMBED ON YOUR WEBSITE</p>
+              <textarea
+                readOnly
+                value={iframeCode}
+                rows={3}
+                style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: 'rgba(255,255,255,0.7)', fontSize: 11, outline: 'none', resize: 'none', boxSizing: 'border-box', ...T, fontFamily: 'monospace' }}
+              />
+              <button
+                onClick={function() {
+                  navigator.clipboard.writeText(iframeCode).catch(function() {});
+                  setEmbedCopied(true);
+                  setTimeout(function() { setEmbedCopied(false); }, 2000);
+                }}
+                style={{ marginTop: 6, padding: '6px 14px', borderRadius: 8, border: 'none', background: embedCopied ? '#4A9B5E' : 'rgba(255,255,255,0.08)', color: embedCopied ? '#fff' : MUTED, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, ...T, fontSize: 11, fontWeight: 800 }}
+              >
+                {embedCopied ? <><Check size={12} /> Embed code copied!</> : <><Copy size={12} /> Copy embed code</>}
+              </button>
+            </div>
+          )}
+
+          {/* Quick share row */}
+          <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <p style={{ ...T, fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>QUICK SHARE THIS STREAM</p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {[
+                { label: '👥 Facebook', url: function() { return 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(watchUrl); } },
+                { label: '🐦 X',        url: function() { return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('🔴 I\'m LIVE on SeeWhy LIVE! Join me →') + '&url=' + encodeURIComponent(watchUrl); } },
+                { label: '💬 WhatsApp', url: function() { return 'https://wa.me/?text=' + encodeURIComponent('🔴 I\'m LIVE on SeeWhy LIVE! Watch → ' + watchUrl); } },
+                { label: '✈️ Telegram', url: function() { return 'https://t.me/share/url?url=' + encodeURIComponent(watchUrl) + '&text=' + encodeURIComponent('🔴 I\'m LIVE on SeeWhy LIVE!'); } },
+              ].map(function(btn) {
+                return (
+                  <button key={btn.label}
+                    onClick={function() { if (roomId) window.open(btn.url(), '_blank', 'width=620,height=400,noopener,noreferrer'); else navigator.clipboard.writeText(watchUrl).catch(function() {}); }}
+                    style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', ...T, fontSize: 11, fontWeight: 700 }}
+                  >{btn.label}</button>
+                );
+              })}
+              <button
+                onClick={function() {
+                  navigator.clipboard.writeText('🔴 I\'m LIVE on SeeWhy LIVE! Watch → ' + watchUrl + ' #SeeWhyLIVE').catch(function() {});
+                }}
+                style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', ...T, fontSize: 11, fontWeight: 700 }}
+              >📸 Instagram / TikTok (copy caption)</button>
+            </div>
+          </div>
         </Card>
 
         {/* ── CREATOR TOOLS ── */}
