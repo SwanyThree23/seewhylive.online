@@ -103,6 +103,7 @@ import TippingModal from '../components/monetization/TippingModal';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import { MerchStrip as MerchWidget } from '../components/merch/MerchWidget';
 import NotificationBell from '../components/shared/NotificationBell';
+import FollowButton from '../components/shared/FollowButton';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import PayPerViewManager from '../components/monetization/PayPerViewManager';
 import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
@@ -855,6 +856,10 @@ export default function LiveRoom() {
             </div>
             <span className="text-xs font-semibold text-white/60">{hostName}</span>
           </div>
+          {/* Follow button — hidden from host */}
+          {!isHost && (party && party.host_id) && (
+            <FollowButton targetUserId={(party && party.host_id)} targetUserName={hostName} size="sm" />
+          )}
           {/* Counts */}
           <div className="flex items-center gap-2 text-[10px] text-white/35">
             <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" />{liveCount}</span>
