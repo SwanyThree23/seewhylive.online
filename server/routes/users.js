@@ -71,8 +71,8 @@ router.get('/search', async function(req, res) {
   if (!q || q.length < 2) return res.json({ users: [] });
   try {
     var result = await db.pool.query(
-      "SELECT id, display_name, avatar_url, account_type FROM users WHERE display_name ILIKE $1 AND deleted_at IS NULL LIMIT 20",
-      ['%' + q + '%']
+      "SELECT id, display_name, avatar_url, account_type FROM users WHERE display_name ILIKE $1 AND tenant_id = $2 AND deleted_at IS NULL LIMIT 20",
+      ['%' + q + '%', req.tenantId]
     );
     return res.json({ users: result.rows.map(function(u) {
       return { id: u.id, displayName: u.display_name, avatarUrl: u.avatar_url, accountType: u.account_type };
@@ -86,7 +86,8 @@ router.get('/search', async function(req, res) {
 router.get('/creators', async function(req, res) {
   try {
     var result = await db.pool.query(
-      "SELECT u.id, u.display_name, u.avatar_url, u.account_type, COUNT(s.id) AS stream_count FROM users u LEFT JOIN streams s ON s.creator_id = u.id WHERE u.deleted_at IS NULL GROUP BY u.id ORDER BY stream_count DESC LIMIT 30"
+      "SELECT u.id, u.display_name, u.avatar_url, u.account_type, COUNT(s.id) AS stream_count FROM users u LEFT JOIN streams s ON s.creator_id = u.id WHERE u.tenant_id = $1 AND u.deleted_at IS NULL GROUP BY u.id ORDER BY stream_count DESC LIMIT 30",
+      [req.tenantId]
     );
     return res.json({ creators: result.rows.map(function(u) {
       return { id: u.id, displayName: u.display_name, avatarUrl: u.avatar_url, accountType: u.account_type, streamCount: parseInt(u.stream_count, 10) || 0 };
@@ -108,8 +109,8 @@ router.get('/:username', async function(req, res) {
   if (!username) return res.status(400).json({ error: 'username required' });
   try {
     var result = await db.pool.query(
-      "SELECT u.id, u.display_name, u.avatar_url, u.account_type, u.bio, u.created_at, COUNT(s.id) AS stream_count FROM users u LEFT JOIN streams s ON s.creator_id = u.id WHERE u.display_name ILIKE $1 AND u.deleted_at IS NULL GROUP BY u.id LIMIT 1",
-      [username]
+      "SELECT u.id, u.display_name, u.avatar_url, u.account_type, u.bio, u.created_at, COUNT(s.id) AS stream_count FROM users u LEFT JOIN streams s ON s.creator_id = u.id WHERE u.display_name ILIKE $1 AND u.tenant_id = $2 AND u.deleted_at IS NULL GROUP BY u.id LIMIT 1",
+      [username, req.tenantId]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'not found' });
     var u = result.rows[0];
