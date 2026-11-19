@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 import FollowButton from '../components/shared/FollowButton';
 import DirectPayments from '../components/live/DirectPayments';
+import ShareButtons from '../components/shared/ShareButtons';
 import {
   ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize2, Heart,
   Share2, DollarSign, MessageSquare, Eye, Clock, Send, Copy, Check,
@@ -48,6 +49,7 @@ export default function VideoViewer() {
   var [commentText, setCommentText] = useState('');
   var [posting, setPosting] = useState(false);
   var [payOpen, setPayOpen] = useState(false);
+  var [shareOpen, setShareOpen] = useState(false);
   var [copied, setCopied] = useState(false);
   var [paused, setPaused] = useState(true);
   var [muted, setMuted] = useState(false);
@@ -295,13 +297,22 @@ export default function VideoViewer() {
             <DollarSign style={{ width: 15, height: 15 }} /> Support
           </button>
           <button
-            onClick={copyLink}
-            style={{ flex: 1, minHeight: 44, borderRadius: 12, background: C.card, border: '1px solid ' + C.line, color: copied ? C.green : C.text, fontFamily: FONT, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}
+            onClick={function() { setShareOpen(function(o) { return !o; }); }}
+            style={{ flex: 1, minHeight: 44, borderRadius: 12, background: shareOpen ? C.cardHi : C.card, border: '1px solid ' + (shareOpen ? C.gold : C.line), color: C.text, fontFamily: FONT, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}
           >
-            {copied ? <Check style={{ width: 15, height: 15 }} /> : <Share2 style={{ width: 15, height: 15 }} />}
-            {copied ? 'Copied' : 'Share'}
+            <Share2 style={{ width: 15, height: 15 }} /> Share
           </button>
         </div>
+
+        {/* Social share panel */}
+        {shareOpen && room && (
+          <div style={{ marginTop: 10, padding: '12px 14px', borderRadius: 12, background: C.card, border: '1px solid ' + C.line }}>
+            <ShareButtons
+              url={window.location.origin + createPageUrl('VideoViewer') + '?id=' + room.id}
+              title={(room.title || 'Watch this video') + ' on SeeWhy LIVE'}
+            />
+          </div>
+        )}
 
         {/* Comments */}
         <div style={{ marginTop: 20 }}>

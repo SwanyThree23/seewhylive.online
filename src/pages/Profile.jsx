@@ -377,10 +377,10 @@ export default function ProfilePage() {
 
         {/* ── stats row ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatTile label="Followers"   value={(user && user.followers_count) || (user && user.points) || 0} icon={User}       color={GOLD} />
-          <StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#FFB800" />
-          <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#FFB800" />
-          <StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#00FF88" />
+          <StatTile label="Followers"   value={(user && user.followers_count) || 0}        icon={User}       color={GOLD} />
+          <StatTile label="Streams"     value={myLiveRooms.length}                         icon={Radio}      color="#FFB800" />
+          <StatTile label="Videos"      value={myVideoPosts.length}                        icon={Video}      color="#7B2D8B" />
+          <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#00F5FF" />
         </div>
 
         {/* ── section tabs ── */}
@@ -409,6 +409,35 @@ export default function ProfilePage() {
         {/* ── tab content ── */}
         {activeTab === 'Overview' && (
           <>
+            {/* Go Live CTA — shown when not streaming */}
+            {!isOnline && (
+              <Link to={createPageUrl('GoLive')} style={{ textDecoration: 'none', display: 'block' }}>
+                <div style={{ borderRadius: 16, padding: '16px 20px', background: 'linear-gradient(135deg, rgba(255,26,60,0.12), rgba(212,175,55,0.08))', border: '1px solid rgba(255,26,60,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 16, color: '#F0E8D4', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ready to Go Live?</p>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Start a stream, panel room, or video post</p>
+                  </div>
+                  <div style={{ padding: '8px 16px', borderRadius: 10, background: '#FF1A3C', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                    <Radio className="w-4 h-4" /> Go Live
+                  </div>
+                </div>
+              </Link>
+            )}
+            {isOnline && activeRoom && (
+              <Link to={createPageUrl('GoLive') + '?room=' + activeRoom.id} style={{ textDecoration: 'none', display: 'block' }}>
+                <div style={{ borderRadius: 16, padding: '16px 20px', background: 'linear-gradient(135deg, rgba(255,26,60,0.2), rgba(255,26,60,0.06))', border: '1px solid rgba(255,26,60,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#FF1A3C', display: 'inline-block', animation: 'pulse 1.5s ease-in-out infinite', flexShrink: 0 }} />
+                    <div>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 16, color: '#FF1A3C', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>You are Live!</p>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{activeRoom.title || 'Live stream in progress'}</p>
+                    </div>
+                  </div>
+                  <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 12, color: '#FF1A3C' }}>Manage →</span>
+                </div>
+              </Link>
+            )}
+
             {/* activity feed */}
             <DarkCard>
               <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
