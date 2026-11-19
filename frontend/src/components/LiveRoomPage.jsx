@@ -385,6 +385,29 @@ function OverlayCustomLT({ lowerThirds, guestId }) {
 }
 
 // ─── Batch 59: Timer Overlay helper ───────────────────────────────────────
+function CountdownBurst65({ burst }) {
+  var [display, setDisplay] = React.useState('');
+  React.useEffect(function() {
+    if (!burst || !burst.active) { setDisplay(''); return; }
+    function tick() {
+      var secs = Math.max(0, Math.floor((burst.endsAt - Date.now()) / 1000));
+      var m = Math.floor(secs / 60);
+      var s = secs % 60;
+      setDisplay((m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+    }
+    tick();
+    var id = setInterval(tick, 500);
+    return function() { clearInterval(id); };
+  }, [burst]);
+  if (!burst || !burst.active) return null;
+  return (
+    React.createElement('div', { style: { position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)', zIndex: 690, textAlign: 'center', pointerEvents: 'none' } },
+      React.createElement('div', { style: { fontFamily: 'Bebas Neue', fontSize: 18, color: '#F0E8D4', letterSpacing: 2, marginBottom: 4, opacity: .8 } }, burst.label),
+      React.createElement('div', { style: { fontFamily: 'Bebas Neue', fontSize: 72, color: '#C9A84C', lineHeight: 1, textShadow: '0 0 24px rgba(201,168,76,.6)', letterSpacing: 4 } }, display)
+    )
+  );
+}
+
 function TimerOverlay59({ overlay }) {
   var [display, setDisplay] = React.useState('');
   React.useEffect(function() {
@@ -988,6 +1011,19 @@ export default function LiveRoomPage({
   var [showNoticeSet,    setShowNoticeSet]    = useState(false);
   var [noticeDismissed,  setNoticeDismissed]  = useState(false);
 
+  // ─── Batch 65: Spotlight Word Cloud / Heatmap Reactions / Countdown Burst / Poll Results ──
+  var [spotlightWords,    setSpotlightWords]    = useState(null);
+  var [showWordCloud,     setShowWordCloud]     = useState(false);
+  var [wordDraft,         setWordDraft]         = useState('');
+  var [heatmap,           setHeatmap]           = useState(null);
+  var [showHeatmap,       setShowHeatmap]       = useState(false);
+  var [countdownBurst,    setCountdownBurst]    = useState(null);
+  var [cdbDraft,          setCdbDraft]          = useState({ secs: '10', label: 'Starting Soon' });
+  var [showCdbSet,        setShowCdbSet]        = useState(false);
+  var [pollResults,       setPollResults]       = useState(null);
+  var [myPollVote,        setMyPollVote]        = useState(null);
+  var [pollDraft,         setPollDraft]         = useState({ question: '', options: ['', '', ''] });
+  var [showPollSet,       setShowPollSet]       = useState(false);
   // ─── Batch 64: Thank-You Wall / Tip Train / Stream Intro / Challenge Banner ──
   var [thankYouWall,     setThankYouWall]     = useState([]);
   var [tyNameDraft,      setTyNameDraft]      = useState('');
@@ -1276,6 +1312,10 @@ export default function LiveRoomPage({
       if (data.tipTrain) setTipTrain(data.tipTrain);
       if (data.streamIntro && data.streamIntro.active) setStreamIntro(data.streamIntro);
       if (data.challengeBanner && data.challengeBanner.active) setChallengeBanner(data.challengeBanner);
+      if (data.spotlightWords) setSpotlightWords(data.spotlightWords);
+      if (data.heatmap) setHeatmap(data.heatmap);
+      if (data.countdownBurst && data.countdownBurst.active) setCountdownBurst(data.countdownBurst);
+      if (data.pollResults && data.pollResults.active) setPollResults(data.pollResults);
       if (socket) socket.emit('loyalty-card-get', { roomId: roomId }, function(res) {
         if (res && typeof res.stamps === 'number') setLoyaltyCard({ stamps: res.stamps, goal: res.goal || 10 });
       });
@@ -2604,6 +2644,24 @@ export default function LiveRoomPage({
       setTimeout(function() { setSuperFollowBurst(null); }, 3500);
     });
 
+    // ── Batch 65 listeners ─────────────────────────────────────────────────
+    socket.on('spotlight-word-update', function(d) {
+      setSpotlightWords(d || null);
+    });
+
+    socket.on('heatmap-update', function(d) {
+      setHeatmap(d || null);
+    });
+
+    socket.on('countdown-burst-update', function(d) {
+      setCountdownBurst(d || null);
+    });
+
+    socket.on('poll-results-update', function(d) {
+      setPollResults(d || null);
+      if (!d) setMyPollVote(null);
+    });
+
     // ── Batch 64 listeners ─────────────────────────────────────────────────
     socket.on('thank-you-wall-update', function(d) {
       setThankYouWall(Array.isArray(d) ? d : []);
@@ -3202,6 +3260,10 @@ export default function LiveRoomPage({
       socket.off('tip-train-complete');
       socket.off('stream-intro-update');
       socket.off('challenge-banner-update');
+      socket.off('spotlight-word-update');
+      socket.off('heatmap-update');
+      socket.off('countdown-burst-update');
+      socket.off('poll-results-update');
     };
   }, [socket]);
 
@@ -5125,6 +5187,22 @@ export default function LiveRoomPage({
                 if (challengeBanner) { if (socket) socket.emit('challenge-banner-clear', { roomId: roomId }); }
                 else { setShowChallengeSet(function(s) { return !s; }); }
               }},
+              { emoji: spotlightWords ? '☁️' : '💬', label: spotlightWords ? 'Word Cloud ✓' : 'Word Cloud', active: !!spotlightWords || showWordCloud, onTap: function() {
+                if (spotlightWords) { if (socket) socket.emit('spotlight-word-clear', { roomId: roomId }); }
+                else { setShowWordCloud(function(s) { return !s; }); }
+              }},
+              { emoji: heatmap ? '🗺️' : '🗺️', label: heatmap ? 'Heatmap ✓' : 'Heatmap', active: !!heatmap || showHeatmap, onTap: function() {
+                if (heatmap) { if (socket) socket.emit('heatmap-clear', { roomId: roomId }); }
+                else { setShowHeatmap(function(s) { return !s; }); }
+              }},
+              { emoji: countdownBurst ? '⏱️' : '⏳', label: countdownBurst ? 'Stop Timer' : 'Countdown', active: !!countdownBurst || showCdbSet, onTap: function() {
+                if (countdownBurst) { if (socket) socket.emit('countdown-burst-clear', { roomId: roomId }); }
+                else { setShowCdbSet(function(s) { return !s; }); }
+              }},
+              { emoji: pollResults ? '📊' : '📊', label: pollResults ? 'End Poll' : 'Poll Results', active: !!pollResults || showPollSet, onTap: function() {
+                if (pollResults) { if (socket) socket.emit('poll-results-clear', { roomId: roomId }); }
+                else { setShowPollSet(function(s) { return !s; }); }
+              }},
             ] : []).concat(role === 'viewer' ? [
               { emoji: '🪙', label: 'Tip Jar', active: showTipJar, onTap: function() { setTipJarDraft({ amount: 5, message: '' }); setShowTipJar(function(s) { return !s; }); } },
               { emoji: '📌', label: 'Clip This!', active: false, onTap: function() {
@@ -5256,6 +5334,11 @@ export default function LiveRoomPage({
                     if (res && res.ok) setMyAccepted(true);
                   });
                 }
+              }},
+              { emoji: '💬', label: 'Word Cloud', active: !!spotlightWords, onTap: function() { setShowWordCloud(function(s) { return !s; }); } },
+              { emoji: '🗺️', label: 'Heatmap', active: !!heatmap, onTap: function() { setShowHeatmap(function(s) { return !s; }); } },
+              { emoji: pollResults && myPollVote === null ? '📊' : '✅', label: pollResults ? (myPollVote !== null ? 'Voted!' : 'Vote') : 'Poll', active: pollResults !== null, onTap: function() {
+                if (pollResults && myPollVote === null) setShowPollSet(function(s) { return !s; });
               }},
             ] : [])),
           ].map(function(tool) {
@@ -13318,6 +13401,139 @@ export default function LiveRoomPage({
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 65: Countdown Burst overlay ══ */}
+      {countdownBurst && countdownBurst.active && (
+        React.createElement(CountdownBurst65, { burst: countdownBurst })
+      )}
+
+      {/* ══ Batch 65: Spotlight Word Cloud overlay ══ */}
+      {spotlightWords && (
+        <div style={{ position: 'absolute', bottom: 100, left: 10, right: 10, zIndex: 641, pointerEvents: 'none', background: 'rgba(14,12,9,.7)', borderRadius: 10, padding: '8px 12px' }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 13, color: GOLD, letterSpacing: 1, marginBottom: 6 }}>💬 WORD CLOUD</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+            {Object.entries(spotlightWords).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 20).map(function(pair, i) {
+              var word = pair[0]; var count = pair[1];
+              var sz = Math.min(22, 11 + count * 2);
+              return <span key={i} style={{ fontFamily: 'Barlow Condensed', fontSize: sz, color: i < 3 ? GOLD : TEXT, opacity: .85 + Math.min(.15, count * .02) }}>{word}</span>;
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 65: Heatmap overlay ══ */}
+      {showHeatmap && heatmap && (
+        <div style={{ position: 'absolute', top: 70, left: 10, right: 10, zIndex: 641, background: 'rgba(14,12,9,.78)', borderRadius: 10, padding: '8px 10px' }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 13, color: GOLD, letterSpacing: 1, marginBottom: 6 }}>🗺️ VIEWER HEATMAP</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 4 }}>
+            {['TL','TC','TR','ML','MC','MR','BL','BC','BR'].map(function(zone) {
+              var v = heatmap[zone] || 0;
+              var mx = Math.max(1, Math.max.apply(null, Object.values(heatmap)));
+              var pct = Math.round((v / mx) * 100);
+              return <div key={zone} style={{ background: 'rgba(201,168,76,' + (.08 + pct / 150) + ')', borderRadius: 4, padding: '6px 2px', textAlign: 'center' }}>
+                <div style={{ fontFamily: 'DM Mono', fontSize: 9, color: GOLD, opacity: .7 }}>{zone}</div>
+                <div style={{ fontFamily: 'Bebas Neue', fontSize: 14, color: TEXT }}>{v}</div>
+              </div>;
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 65: Poll Results Bar overlay ══ */}
+      {pollResults && pollResults.active && (
+        <div style={{ position: 'fixed', bottom: 180, left: 12, right: 12, zIndex: 662, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 16, color: GOLD, marginBottom: 8 }}>{'📊 ' + pollResults.question}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {pollResults.options.map(function(opt, i) {
+              var total = pollResults.options.reduce(function(acc, o) { return acc + o.votes; }, 0) || 1;
+              var pct = Math.round((opt.votes / total) * 100);
+              return <div key={i}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                  <span style={{ fontFamily: 'Barlow Condensed', fontSize: 13, color: TEXT }}>{opt.label}</span>
+                  <span style={{ fontFamily: 'DM Mono', fontSize: 11, color: GOLD }}>{pct + '%'}</span>
+                </div>
+                <div style={{ background: '#1a1510', borderRadius: 3, height: 6, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: pct + '%', background: myPollVote === i ? GOLD : 'rgba(201,168,76,.4)', borderRadius: 3, transition: 'width .4s ease' }} />
+                </div>
+              </div>;
+            })}
+            {myPollVote === null && role === 'viewer' && (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                {pollResults.options.map(function(opt, i) {
+                  return <button key={i} onClick={function() {
+                    if (socket) socket.emit('poll-vote', { roomId: roomId, idx: i }, function(res) {
+                      if (res && res.ok) setMyPollVote(i);
+                    });
+                  }} style={{ background: CARD2, color: TEXT, border: '1px solid ' + BORDER, borderRadius: 6, padding: '4px 10px', fontFamily: 'Barlow Condensed', fontSize: 13, cursor: 'pointer' }}>{opt.label}</button>;
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 65: Viewer Word Cloud tap panel ══ */}
+      {showWordCloud && role === 'viewer' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 16, color: GOLD, marginBottom: 8 }}>💬 Add a Word</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input value={wordDraft} onChange={function(e) { setWordDraft(e.target.value); }} placeholder="One word…" maxLength={30} style={{ flex: 1, background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <button onClick={function() {
+              var w = wordDraft.trim();
+              if (w && socket) { socket.emit('spotlight-word-tap', { roomId: roomId, word: w }); setWordDraft(''); }
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '6px 14px', fontFamily: 'Bebas Neue', fontSize: 15, cursor: 'pointer' }}>Add</button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 65: Host Word Cloud clear panel ══ */}
+      {showWordCloud && role === 'host' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 16, color: GOLD, marginBottom: 8 }}>💬 Spotlight Word Cloud</div>
+          <div style={{ fontFamily: 'Barlow Condensed', fontSize: 13, color: TEXT, marginBottom: 8, opacity: .8 }}>{spotlightWords ? Object.keys(spotlightWords).length + ' unique words' : 'No words yet — viewers add words'}</div>
+          <button onClick={function() { if (socket) socket.emit('spotlight-word-clear', { roomId: roomId }); setShowWordCloud(false); }} style={{ background: '#3a2010', color: TEXT, border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 14px', fontFamily: 'DM Mono', fontSize: 11, cursor: 'pointer' }}>Clear Cloud</button>
+        </div>
+      )}
+
+      {/* ══ Batch 65: Countdown Burst Set panel (host) ══ */}
+      {showCdbSet && role === 'host' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 18, color: GOLD, marginBottom: 10 }}>⏳ Countdown Burst</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input type="number" min="3" max="300" value={cdbDraft.secs} onChange={function(e) { setCdbDraft(Object.assign({}, cdbDraft, { secs: e.target.value })); }} placeholder="Seconds (3–300)" style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'DM Mono', fontSize: 13 }} />
+            <input value={cdbDraft.label} onChange={function(e) { setCdbDraft(Object.assign({}, cdbDraft, { label: e.target.value })); }} placeholder="Label (e.g. Starting Soon)" maxLength={60} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            <button onClick={function() {
+              if (socket) socket.emit('countdown-burst-set', { roomId: roomId, secs: parseInt(cdbDraft.secs) || 10, label: cdbDraft.label || 'Starting Soon' });
+              setShowCdbSet(false);
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '8px', fontFamily: 'Bebas Neue', fontSize: 16, cursor: 'pointer' }}>Start Countdown</button>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Batch 65: Poll Set panel (host) ══ */}
+      {showPollSet && role === 'host' && (
+        <div style={{ position: 'fixed', bottom: 220, left: 12, right: 12, zIndex: 663, background: CARD, border: '1px solid ' + BORDER, borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: 'Bebas Neue', fontSize: 18, color: GOLD, marginBottom: 10 }}>📊 Set Poll</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input value={pollDraft.question} onChange={function(e) { setPollDraft(Object.assign({}, pollDraft, { question: e.target.value })); }} placeholder="Question (max 120 chars)" maxLength={120} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />
+            {pollDraft.options.map(function(opt, i) {
+              return <input key={i} value={opt} onChange={function(e) {
+                var newOpts = pollDraft.options.slice();
+                newOpts[i] = e.target.value;
+                setPollDraft(Object.assign({}, pollDraft, { options: newOpts }));
+              }} placeholder={'Option ' + (i + 1)} maxLength={50} style={{ background: '#1a1510', border: '1px solid ' + BORDER, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: 'Barlow Condensed', fontSize: 14 }} />;
+            })}
+            <button onClick={function() {
+              var q = pollDraft.question.trim();
+              var opts = pollDraft.options.map(function(o) { return o.trim(); }).filter(function(o) { return o.length > 0; });
+              if (!q || opts.length < 2) return;
+              if (socket) socket.emit('poll-results-set', { roomId: roomId, question: q, options: opts });
+              setShowPollSet(false);
+              setMyPollVote(null);
+            }} style={{ background: GOLD, color: '#000', border: 'none', borderRadius: 6, padding: '8px', fontFamily: 'Bebas Neue', fontSize: 16, cursor: 'pointer' }}>Launch Poll</button>
           </div>
         </div>
       )}

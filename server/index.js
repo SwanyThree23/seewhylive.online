@@ -609,6 +609,11 @@ var thankYouWallMap  = new Map();  // roomId → Array<string> (up to 40 names)
 var tipTrainMap      = new Map();  // roomId → { progress, goal, label }
 var streamIntroMap   = new Map();  // roomId → { title, tagline, active }
 var challengeBannerMap = new Map(); // roomId → { text, accepts: Set<userId>, active }
+// Batch 65: Spotlight Word Cloud / Heatmap Reactions / Countdown Burst / Poll Results Bar
+var spotlightWordMap = new Map();  // roomId → Map<word, count>
+var heatmapMap       = new Map();  // roomId → Map<zone, count>  (zones: TL,TC,TR,ML,MC,MR,BL,BC,BR)
+var countdownBurstMap = new Map(); // roomId → { label, endsAt, timerId, active }
+var pollResultsMap   = new Map();  // roomId → { question, options:[{label,votes}], active, votedUsers: Set<userId> }
 var STOP_WORDS = new Set(['the','a','an','is','it','in','on','of','to','and','or','for','are','was','this','that','my','your','with','be','do','not','at','so','me','we','you','i','get','got','what','when','can','will','how','no','yes','up','out','just','like','go','all','but','he','she','they','they\'re','i\'m','it\'s','don\'t','can\'t','won\'t','i\'ve','we\'re','let\'s','there','here','from','have','has','had','been','more','than','its','im','its','our','some','by','as','about','if','would','could','should','said','did','now','see','say','then','them','their','also','into','any','new','one','two']);
 
 
@@ -936,6 +941,17 @@ function getJoinStateForRoom(roomId) {
   if (_cb64 && _cb64.active) {
     state.challengeBanner = { text: _cb64.text, accepts: _cb64.accepts.size, active: true };
   } else { state.challengeBanner = null; }
+  // Batch 65
+  var _swm65 = spotlightWordMap.get(roomId);
+  state.spotlightWords = _swm65 ? Object.fromEntries(_swm65) : null;
+  var _hm65 = heatmapMap.get(roomId);
+  state.heatmap = _hm65 ? Object.fromEntries(_hm65) : null;
+  var _cdb65 = countdownBurstMap.get(roomId);
+  state.countdownBurst = (_cdb65 && _cdb65.active) ? { label: _cdb65.label, endsAt: _cdb65.endsAt, active: true } : null;
+  var _pr65 = pollResultsMap.get(roomId);
+  if (_pr65 && _pr65.active) {
+    state.pollResults = { question: _pr65.question, options: _pr65.options.map(function(o) { return { label: o.label, votes: o.votes }; }), active: true };
+  } else { state.pollResults = null; }
   return state;
 }
 
@@ -6621,6 +6637,13 @@ io.on('connection', function(socket) {
     tipTrainMap.delete(roomId);
     streamIntroMap.delete(roomId);
     challengeBannerMap.delete(roomId);
+    // Batch 65 cleanup
+    spotlightWordMap.delete(roomId);
+    heatmapMap.delete(roomId);
+    var _cdbClean = countdownBurstMap.get(roomId);
+    if (_cdbClean && _cdbClean.timerId) clearTimeout(_cdbClean.timerId);
+    countdownBurstMap.delete(roomId);
+    pollResultsMap.delete(roomId);
     swanybot.cleanupRoom && swanybot.cleanupRoom(roomId);
 
     if (ack) ack({ ended: true });
@@ -8184,6 +8207,129 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     challengeBannerMap.delete(roomId);
     io.to(roomId).emit('challenge-banner-update', null);
+  });
+
+  // ── spotlight-word-cloud (Batch 65) ──────────────────────────────────────
+  socket.on('spotlight-word-tap', function(data) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId || socket.id;
+    if (!roomId) return;
+    var word = (data.word || '').trim().slice(0, 30).toLowerCase();
+    if (!word || STOP_WORDS.has(word)) return;
+    var now = Date.now();
+    var key = userId + ':swt';
+    var last = reactionRainThrottle.get(key);
+    if (last && now - last < 2000) return;
+    reactionRainThrottle.set(key, now);
+    var wm = spotlightWordMap.get(roomId);
+    if (!wm) { wm = new Map(); spotlightWordMap.set(roomId, wm); }
+    wm.set(word, (wm.get(word) || 0) + 1);
+    io.to(roomId).emit('spotlight-word-update', Object.fromEntries(wm));
+    addEnergy(roomId, userId, socket.data.username || userId, 1);
+  });
+
+  socket.on('spotlight-word-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    spotlightWordMap.delete(roomId);
+    io.to(roomId).emit('spotlight-word-update', null);
+  });
+
+  // ── heatmap-reactions (Batch 65) ─────────────────────────────────────────
+  socket.on('heatmap-tap', function(data) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId || socket.id;
+    if (!roomId) return;
+    var zone = (data.zone || '').trim().toUpperCase();
+    var VALID_ZONES = ['TL','TC','TR','ML','MC','MR','BL','BC','BR'];
+    if (VALID_ZONES.indexOf(zone) === -1) return;
+    var now = Date.now();
+    var key = userId + ':hmt';
+    var last = reactionRainThrottle.get(key);
+    if (last && now - last < 1000) return;
+    reactionRainThrottle.set(key, now);
+    var hm = heatmapMap.get(roomId);
+    if (!hm) { hm = new Map(); heatmapMap.set(roomId, hm); }
+    hm.set(zone, (hm.get(zone) || 0) + 1);
+    io.to(roomId).emit('heatmap-update', Object.fromEntries(hm));
+    addEnergy(roomId, userId, socket.data.username || userId, 1);
+  });
+
+  socket.on('heatmap-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    heatmapMap.delete(roomId);
+    io.to(roomId).emit('heatmap-update', null);
+  });
+
+  // ── countdown-burst (Batch 65) ───────────────────────────────────────────
+  socket.on('countdown-burst-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var secs = Math.min(300, Math.max(3, parseInt(data.secs) || 10));
+    var label = (data.label || 'Starting Soon').slice(0, 60);
+    var endsAt = Date.now() + secs * 1000;
+    var old = countdownBurstMap.get(roomId);
+    if (old && old.timerId) clearTimeout(old.timerId);
+    var timerId = setTimeout(function() {
+      var cur = countdownBurstMap.get(roomId);
+      if (cur) { cur.active = false; }
+      io.to(roomId).emit('countdown-burst-update', null);
+    }, secs * 1000);
+    countdownBurstMap.set(roomId, { label: label, endsAt: endsAt, timerId: timerId, active: true });
+    io.to(roomId).emit('countdown-burst-update', { label: label, endsAt: endsAt, active: true });
+  });
+
+  socket.on('countdown-burst-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var cur = countdownBurstMap.get(roomId);
+    if (cur && cur.timerId) clearTimeout(cur.timerId);
+    countdownBurstMap.delete(roomId);
+    io.to(roomId).emit('countdown-burst-update', null);
+  });
+
+  // ── poll-results (Batch 65) ───────────────────────────────────────────────
+  socket.on('poll-results-set', function(data) {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var question = (data.question || '').trim().slice(0, 120);
+    if (!question) return;
+    var opts = Array.isArray(data.options) ? data.options.slice(0, 5) : [];
+    if (opts.length < 2) return;
+    var options = opts.map(function(o) { return { label: (o + '').slice(0, 50), votes: 0 }; });
+    pollResultsMap.set(roomId, { question: question, options: options, active: true, votedUsers: new Set() });
+    io.to(roomId).emit('poll-results-update', { question: question, options: options.map(function(o) { return { label: o.label, votes: 0 }; }), active: true });
+  });
+
+  socket.on('poll-vote', function(data, ack) {
+    var roomId = socket.data.roomId;
+    var userId = socket.data.userId || socket.id;
+    if (!roomId) { if (ack) ack({ err: 'no room' }); return; }
+    var pr = pollResultsMap.get(roomId);
+    if (!pr || !pr.active) { if (ack) ack({ err: 'no poll' }); return; }
+    if (pr.votedUsers.has(userId)) { if (ack) ack({ err: 'voted' }); return; }
+    var idx = parseInt(data.idx);
+    if (isNaN(idx) || idx < 0 || idx >= pr.options.length) { if (ack) ack({ err: 'invalid' }); return; }
+    pr.votedUsers.add(userId);
+    pr.options[idx].votes++;
+    var out = pr.options.map(function(o) { return { label: o.label, votes: o.votes }; });
+    io.to(roomId).emit('poll-results-update', { question: pr.question, options: out, active: true });
+    addEnergy(roomId, userId, socket.data.username || userId, 2);
+    if (ack) ack({ ok: true });
+  });
+
+  socket.on('poll-results-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    pollResultsMap.delete(roomId);
+    io.to(roomId).emit('poll-results-update', null);
   });
 
   // ── audio-chunk ────────────────────────────────────────────────────────
