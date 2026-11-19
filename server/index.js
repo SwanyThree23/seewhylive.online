@@ -41,37 +41,7 @@ var winston       = require('winston');
 require('winston-daily-rotate-file');
 var os = require('os');
 
-var webpush = null;
-try {
-  webpush = require('web-push');
-  if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-    webpush.setVapidDetails('mailto:admin@seewhylive.online', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
-  } else {
-    webpush = null;
-  }
-} catch(wpErr) {
-  console.warn('[push] web-push not loaded: ' + wpErr.message);
-}
-
-var pgDb         = require('./db');
-var mediasoup    = require('./mediasoup');
-var rtmp         = require('./rtmp');
-var bridge       = require('./mediasoup-rtmp-bridge');
-var vault        = require('./vault');
-var stripeModule = require('./stripe');
-var SwanyBot     = require('./swanybot');
-var moderation   = null;
-try { moderation = require('./moderation'); } catch (e) { console.warn('[index] moderation module unavailable: ' + e.message); }
-var ttsRouter    = require('./tts');
-var translation  = require('./translation');
-var aura         = require('./aura');
-var whisper      = require('./whisper');
-var analytics    = require('./analytics');
-
-// ─── Revenue split constants (immutable) ─────────────────────────────────
-var CREATOR_SPLIT = 0.90;
-
-// ─── Logger ───────────────────────────────────────────────────────────────
+// ─── Logger (must be before any module that calls logger.warn/error at load time) ───
 var logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
@@ -90,6 +60,36 @@ var logger = winston.createLogger({
     })
   ]
 });
+
+var webpush = null;
+try {
+  webpush = require('web-push');
+  if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails('mailto:admin@seewhylive.online', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
+  } else {
+    webpush = null;
+  }
+} catch(wpErr) {
+  logger.warn('[push] web-push not loaded: ' + wpErr.message);
+}
+
+var pgDb         = require('./db');
+var mediasoup    = require('./mediasoup');
+var rtmp         = require('./rtmp');
+var bridge       = require('./mediasoup-rtmp-bridge');
+var vault        = require('./vault');
+var stripeModule = require('./stripe');
+var SwanyBot     = require('./swanybot');
+var moderation   = null;
+try { moderation = require('./moderation'); } catch (e) { logger.warn('[index] moderation module unavailable: ' + e.message); }
+var ttsRouter    = require('./tts');
+var translation  = require('./translation');
+var aura         = require('./aura');
+var whisper      = require('./whisper');
+var analytics    = require('./analytics');
+
+// ─── Revenue split constants (immutable) ─────────────────────────────────
+var CREATOR_SPLIT = 0.90;
 
 // ─── Database ─────────────────────────────────────────────────────────────
 var DB_PATH = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
