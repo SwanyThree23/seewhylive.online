@@ -105,6 +105,25 @@ export default function ShowcaseTab(p) {
 
   var [viewerCounts, setViewerCounts] = useState({});
 
+  // EXPAND subtab: apply for your state
+  var [applyDone,  setApplyDone]  = useState(false);
+  var [applyState, setApplyState] = useState('');
+  var [applyMsg,   setApplyMsg]   = useState('');
+
+  var submitApplication = function() {
+    if (!applyState.trim()) { if (addToast) addToast('Enter your state abbreviation', 'error'); return; }
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(_) {}
+    fetch('/api/showcase/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+      body: JSON.stringify({ state: applyState.trim(), message: applyMsg.trim() }),
+    })
+      .then(function(r) { return r.ok ? r.json() : r.json().then(function(e) { throw new Error(e.error || 'Failed'); }); })
+      .then(function() { setApplyDone(true); if (addToast) addToast('Application submitted!', 'success'); })
+      .catch(function(err) { if (addToast) addToast(err.message || 'Failed to submit', 'error'); });
+  };
+
   var getState = function(id) {
     for (var i = 0; i < STATES.length; i++) {
       if (STATES[i].id === id) return STATES[i];
