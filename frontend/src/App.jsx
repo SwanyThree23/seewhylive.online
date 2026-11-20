@@ -2130,7 +2130,7 @@ export default function App() {
           <MerchTab addToast={addToast} isLive={isLive} socket={socketRef.current} roomId={APP_ID} username={username} />
         )}
         {activeTab === 'replay' && (
-          <ReplayTab addToast={addToast} isLive={isLive} />
+          <ReplayTab addToast={addToast} isLive={isLive} socket={socket} roomId={roomId} />
         )}
         {activeTab === 'mcp' && (
           <MCPTab addToast={addToast} isLive={isLive} />
