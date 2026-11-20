@@ -29,7 +29,7 @@ router.get('/leaderboard', requireAuth, async function(req, res) {
     if (userIds.length > 0 && pgDb.isPgUp()) {
       try {
         var result = await pgDb.pool.query(
-          'SELECT id, display_name FROM users WHERE id = ANY($1::uuid[])',
+          'SELECT id, display_name FROM users WHERE id = ANY($1::uuid[]) AND deleted_at IS NULL',
           [userIds]
         );
         result.rows.forEach(function(u) { if (u.display_name) nameMap[u.id] = u.display_name; });
