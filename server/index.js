@@ -629,6 +629,24 @@ app.use('/api/sounds', soundsRoutes);
 app.use('/api/creator/direct-pay', directPayRoutes);
 app.use('/api/music-video', musicVideoRoutes);
 app.use('/api/episodes', require('./routes/episodes'));
+// GET /api/leaderboard?roomId=<id>  — room-specific gift leaderboard (SQLite)
+// Must be registered before the router so it intercepts the root path.
+app.get('/api/leaderboard', requireAuth, function(req, res) {
+  try {
+    var roomId = typeof req.query.roomId === 'string' ? req.query.roomId.trim() : '';
+    if (!roomId) return res.status(400).json({ error: 'roomId required' });
+    var rows = db.prepare(
+      'SELECT from_user AS username, SUM(value_cents) AS total_cents ' +
+      'FROM gifts WHERE room_id = ? GROUP BY from_user ORDER BY total_cents DESC LIMIT 20'
+    ).all(roomId);
+    return res.json({ leaderboard: rows.map(function(r) {
+      return { username: r.username || 'Anonymous', total_cents: r.total_cents || 0 };
+    }) });
+  } catch (e) {
+    logger.error('[leaderboard-room] ' + e.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/tenant-signup', tenantSignupRoutes);
 app.use('/api', loginRoutes);
