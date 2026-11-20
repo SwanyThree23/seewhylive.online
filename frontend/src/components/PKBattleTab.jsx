@@ -22,14 +22,17 @@ var MUTED = '#8A7A62';
 
 var DURATION_LABELS = { 60: '1 MIN', 180: '3 MIN', 300: '5 MIN', 600: '10 MIN' };
 
-var RIVALS_DATA = [
+var RIVALS_FALLBACK = [
   { name: 'STORM_RIDER',  wins: 3,  losses: 1, status: 'LIVE',    elo: 2840 },
-  { name: 'MYSTIC_GIRL',  wins: 0,  losses: 0, status: 'NEW',     elo: 1200 },
   { name: 'DARK_KNIGHT',  wins: 7,  losses: 2, status: 'ONLINE',  elo: 3210 },
   { name: 'PHANTOM_X',    wins: 12, losses: 3, status: 'OFFLINE', elo: 4100 },
-  { name: 'NEON_WOLF',    wins: 5,  losses: 4, status: 'ONLINE',  elo: 2200 },
-  { name: 'SOLAR_STRIKE', wins: 9,  losses: 1, status: 'LIVE',    elo: 3900 },
 ];
+
+function _authHdrs() {
+  var tok = '';
+  try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+  return tok ? { 'Authorization': 'Bearer ' + tok } : {};
+}
 
 export default function PKBattleTab({ socket, roomId, role, isLive, addToast, viewerCount, username }) {
   var [battleState, setBattleState]           = useState('idle');
@@ -51,6 +54,8 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   var [cheerB, setCheerB]                     = useState([]);
   var [matchmakeType, setMatchmakeType]       = useState(null);
   var [matchmakePos, setMatchmakePos]         = useState(0);
+  var [rivals, setRivals]                     = useState(RIVALS_FALLBACK);
+  var [myStats, setMyStats]                   = useState({ wins: 0, losses: 0, elo: 1200 });
 
   var countdownRef  = useRef(null);
   var challengerScoreRef = useRef(0);
@@ -73,6 +78,42 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   useEffect(function() { defenderScoreRef.current = defenderScore; }, [defenderScore]);
   useEffect(function() { challengerRef.current = challenger; }, [challenger]);
   useEffect(function() { defenderRef.current = defender; }, [defender]);
+
+  // Load real battle leaderboard as rivals list
+  useEffect(function() {
+    fetch('/api/battles/leaderboard?limit=10')
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (!data || !Array.isArray(data) || data.length === 0) return;
+        var mapped = data.map(function(r) {
+          var computed_elo = 1200 + (r.wins || 0) * 150;
+          return {
+            name: (r.displayName || 'Unknown').toUpperCase().replace(/\s+/g, '_').slice(0, 16),
+            wins: r.wins || 0,
+            losses: 0,
+            status: 'ONLINE',
+            elo: computed_elo,
+            userId: r.userId,
+          };
+        });
+        setRivals(mapped);
+      })
+      .catch(function() {});
+  }, []);
+
+  // Load user's own battle stats
+  useEffect(function() {
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+    if (!tok) return;
+    fetch('/api/battles/my-stats', { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (!data) return;
+        setMyStats({ wins: data.wins || 0, losses: data.losses || 0, elo: data.elo || 1200 });
+      })
+      .catch(function() {});
+  }, []);
 
   useEffect(function() {
     if (!socket) return;
@@ -472,7 +513,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
           ⚔ BATTLE RIVALS
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
-          {RIVALS_DATA.map(function(r) {
+          {rivals.map(function(r) {
             var statusColor = r.status === 'LIVE' ? '#800020' : (r.status === 'ONLINE' ? '#C9A84C' : (r.status === 'NEW' ? '#C9A84C' : '#3D3020'));
             return (
               <div key={r.name} style={{
@@ -567,7 +608,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1 }}>YOUR ELO</span>
-            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C' }}>2,840</span>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C' }}>{myStats.elo.toLocaleString()}</span>
           </div>
         </div>
       </div>
