@@ -56,15 +56,16 @@ function fmtUptime(sec) {
 
 
 export default function InsForgeTab({ addToast, isLive }) {
-  var [services,    setServices]    = useState(INITIAL_SERVICES.map(function(s) { return Object.assign({}, s); }));
-  var [refreshing,  setRefreshing]  = useState(false);
-  var [lastRefresh, setLastRefresh] = useState(null);
-  var [tab,         setTab]         = useState('status');
-  var [countdown,   setCountdown]   = useState(AUTO_REFRESH_SEC);
-  var [liveLogs,    setLiveLogs]    = useState([]);
-  var [actionLog,   setActionLog]   = useState([]);
-  var [uptimeSec,   setUptimeSec]   = useState(0);
-  var [systemStats, setSystemStats] = useState(SYSTEM_STATS.map(function(s) { return Object.assign({}, s); }));
+  var [services,      setServices]      = useState(INITIAL_SERVICES.map(function(s) { return Object.assign({}, s); }));
+  var [refreshing,    setRefreshing]    = useState(false);
+  var [lastRefresh,   setLastRefresh]   = useState(null);
+  var [tab,           setTab]           = useState('status');
+  var [countdown,     setCountdown]     = useState(AUTO_REFRESH_SEC);
+  var [liveLogs,      setLiveLogs]      = useState([]);
+  var [actionLog,     setActionLog]     = useState([]);
+  var [uptimeSec,     setUptimeSec]     = useState(0);
+  var [systemStats,   setSystemStats]   = useState(SYSTEM_STATS.map(function(s) { return Object.assign({}, s); }));
+  var [runningAction, setRunningAction] = useState(null);
 
   var refreshRef   = useRef(null);
   var prevStatusRef = useRef({});
@@ -105,9 +106,36 @@ export default function InsForgeTab({ addToast, isLive }) {
   }, [isLive]);
 
   var runAction = function(action) {
-    var entry = { ts: Date.now(), label: action.label, status: 'done', output: 'VPS action execution requires a secure backend endpoint — not yet available.' };
+    if (runningAction) return;
+    setRunningAction(action.id);
+    var entryTs = Date.now();
+    var entry = { ts: entryTs, label: action.label, status: 'running', output: '' };
     setActionLog(function(prev) { return [entry].concat(prev.slice(0, 19)); });
-    if (addToast) addToast(action.label + ' — VPS actions require server-side integration', 'error');
+    var tok = localStorage.getItem('sw_token') || '';
+    fetch('/api/admin/vps-action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+      body: JSON.stringify({ actionId: action.id })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var output = data.output || (data.error ? 'Error: ' + data.error : 'Done');
+        setActionLog(function(prev) {
+          return prev.map(function(e) {
+            return e.ts === entryTs ? Object.assign({}, e, { status: 'done', output: output }) : e;
+          });
+        });
+        if (addToast) addToast(action.label + ' complete', 'success');
+        setRunningAction(null);
+      })
+      .catch(function(err) {
+        setActionLog(function(prev) {
+          return prev.map(function(e) {
+            return e.ts === entryTs ? Object.assign({}, e, { status: 'done', output: 'Request failed: ' + err.message }) : e;
+          });
+        });
+        setRunningAction(null);
+      });
   }
 
   var doRefresh = function() {
@@ -355,10 +383,11 @@ export default function InsForgeTab({ addToast, isLive }) {
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2, padding: '0 2px' }}>VPS QUICK ACTIONS</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
             {VPS_ACTIONS.map(function(a) {
+              var isThis = runningAction === a.id;
               return (
-                <button key={a.id} onClick={function() { runAction(a); }}
-                  style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 8px', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <div style={{ fontSize: 18 }}>{a.icon}</div>
+                <button key={a.id} onClick={function() { runAction(a); }} disabled={runningAction !== null}
+                  style={{ background: isThis ? 'rgba(201,168,76,.12)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (isThis ? '#C9A84C' : '#3D3020'), borderRadius: 10, padding: '10px 8px', cursor: runningAction ? 'not-allowed' : 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4, opacity: runningAction && !isThis ? 0.5 : 1 }}>
+                  <div style={{ fontSize: 18 }}>{isThis ? '⏳' : a.icon}</div>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4', letterSpacing: 1 }}>{a.label}</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020', wordBreak: 'break-all' }}>{a.cmd}</div>
                 </button>
@@ -387,7 +416,7 @@ export default function InsForgeTab({ addToast, isLive }) {
           )}
 
           <div style={{ background: 'rgba(255,107,53,.06)', border: '1px solid rgba(255,107,53,.2)', borderRadius: 8, padding: '8px 12px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#D4854A', letterSpacing: 1 }}>⚠ Actions above simulate VPS commands. In production, connect to a secure SSH exec endpoint on the backend to run real commands.</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#D4854A', letterSpacing: 1 }}>⚠ Admin only. These actions run real commands on the VPS. Use with care.</div>
           </div>
         </div>
       )}

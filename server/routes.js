@@ -172,7 +172,6 @@ try { stripe = require('./stripe'); } catch (e) { logger.warn('[routes] stripe m
 // ─── In-memory session state ──────────────────────────────────────────────────
 var _userProfiles = {};
 var _usernameIndex = {}; // displayName → userId — lets GET /users/:username find profiles by name
-var _notificationPrefs = {};
 var _pushSubscriptions = {};
 
 // ─── SQLite helper (for user_profiles lookups) ───────────────────────────────
@@ -903,24 +902,6 @@ router.post('/push/subscribe', requireAuth, pushSubscribeRateLimit, function(req
         notifications.subscribeToNotifications(userId, subscription);
       } catch (e) { /* ignore notifications error */ }
     }
-    return res.json({ success: true });
-  } catch (err) {
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-router.post('/users/me/notifications', requireAuth, function(req, res) {
-  try {
-    var prefKey = req.user.id;
-    if (!_notificationPrefs[prefKey] && Object.keys(_notificationPrefs).length >= 50000) {
-      return res.status(503).json({ success: false, error: 'Server at capacity' });
-    }
-    _notificationPrefs[prefKey] = {
-      notifyNewStream: req.body.notifyNewStream || false,
-      notifyTip: req.body.notifyTip || false,
-      notifySubscriber: req.body.notifySubscriber || false,
-      notifyEmailDigest: req.body.notifyEmailDigest || false
-    };
     return res.json({ success: true });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
