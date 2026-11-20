@@ -1402,9 +1402,8 @@ router.post('/rtmp/done', async function(req, res) {
     if (ioInst) {
       ioInst.to(streamId).emit('broadcast-ended', { roomId: streamId, ts: Math.floor(Date.now() / 1000), reason: 'rtmp_done' });
     }
-    // Remove stale HLS segments (streamId already validated by UUID regex above)
-    require('child_process').exec(
-      'rm -rf /var/www/html/hls/' + streamId,
+    // Remove stale HLS segments — execFile avoids any shell interpretation of streamId
+    require('child_process').execFile('rm', ['-rf', '/var/www/html/hls/' + streamId],
       function(err) { if (err) logger.warn('[rtmp/done] HLS cleanup failed', { err: err.message }); }
     );
     return res.status(200).json({ ok: true });
@@ -1694,8 +1693,8 @@ router.get('/discover/live', discoverRateLimit, async function(req, res) {
     var limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 50);
     var result = await db.query(
       'SELECT id, creator_id, creator_username, title, viewer_count, peak_viewers, thumbnail_url, started_at ' +
-      'FROM streams WHERE is_live = true AND tenant_id = $2 ORDER BY viewer_count DESC NULLS LAST LIMIT $1',
-      [limit, req.tenantId]
+      'FROM streams WHERE is_live = true AND tenant_id = $2 AND (privacy IS NULL OR privacy != $3) ORDER BY viewer_count DESC NULLS LAST LIMIT $1',
+      [limit, req.tenantId, 'private']
     );
     var streams = (result.rows || []).map(function(r) {
       return {
