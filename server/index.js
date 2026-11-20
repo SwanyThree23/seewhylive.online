@@ -587,6 +587,15 @@ var followRateLimit = rateLimit({
   validate: { xForwardedForHeader: false },
   message: { error: 'Too many follow requests — please wait.' }
 });
+var dmRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many DM requests — please wait.' }
+});
 // NOTE: stripeOnboardRateLimit is applied on the route itself (after requireAuth)
 // so req.user.id is available for per-user keying.
 app.use(express.json({ limit: '2mb' }));
@@ -1699,6 +1708,183 @@ app.delete('/api/follows/:creatorId', requireAuth, followRateLimit, async functi
   } catch (err) {
     logger.error('[follows/delete] ' + err.message);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ── DM (Direct Messages) ─────────────────────────────────────────────────
+var _DM_VALID_PRIVACY = new Set(['everyone', 'followers', 'nobody']);
+
+// GET /api/dm/privacy
+app.get('/api/dm/privacy', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var row = db.prepare('SELECT dm_privacy FROM user_profiles WHERE user_id = ?').get(userId);
+    return res.json({ privacy: (row && row.dm_privacy) || 'everyone' });
+  } catch (e) {
+    logger.error('[dm/privacy GET] ' + e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/dm/privacy
+app.post('/api/dm/privacy', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var val = String(req.body.privacy || '');
+    if (!_DM_VALID_PRIVACY.has(val)) return res.status(400).json({ error: 'privacy must be everyone, followers, or nobody' });
+    db.prepare('UPDATE user_profiles SET dm_privacy = ? WHERE user_id = ?').run(val, userId);
+    return res.json({ success: true });
+  } catch (e) {
+    logger.error('[dm/privacy POST] ' + e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/dm/requests — list pending requests where I am the recipient
+app.get('/api/dm/requests', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var profile = db.prepare('SELECT username FROM user_profiles WHERE user_id = ?').get(userId);
+    var myUsername = (profile && profile.username) || userId;
+    var rows = db.prepare(
+      'SELECT id, from_user, body, created_at FROM dm_requests WHERE to_user = ? AND status = ? ORDER BY created_at DESC LIMIT 50'
+    ).all(myUsername, 'pending');
+    return res.json({ requests: rows });
+  } catch (e) {
+    logger.error('[dm/requests GET] ' + e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/dm/requests — send a DM request to a user by username
+app.post('/api/dm/requests', requireAuth, dmRateLimit, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var toUser = String(req.body.toUser || '').trim().slice(0, 64);
+    var body   = String(req.body.body   || '').trim().slice(0, 500);
+    if (!toUser) return res.status(400).json({ error: 'toUser is required' });
+    if (!body)   return res.status(400).json({ error: 'body is required' });
+
+    var myProfile = db.prepare('SELECT username, dm_privacy FROM user_profiles WHERE user_id = ?').get(userId);
+    var myUsername = (myProfile && myProfile.username) || userId;
+    if (myUsername === toUser) return res.status(400).json({ error: 'Cannot DM yourself' });
+
+    var toProfile = db.prepare('SELECT user_id, dm_privacy FROM user_profiles WHERE username = ?').get(toUser);
+    if (!toProfile) return res.status(404).json({ error: 'User not found' });
+    var privacy = toProfile.dm_privacy || 'everyone';
+    if (privacy === 'nobody') return res.status(403).json({ error: 'This user is not accepting messages' });
+
+    var now = Math.floor(Date.now() / 1000);
+    db.prepare(
+      'INSERT OR IGNORE INTO dm_requests (id, from_user, to_user, body, status, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+    ).run(uuidv4(), myUsername, toUser, body, 'pending', now);
+    return res.json({ success: true });
+  } catch (e) {
+    logger.error('[dm/requests POST] ' + e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/dm/requests/:id/accept
+app.post('/api/dm/requests/:id/accept', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var reqId = String(req.params.id || '');
+    var myProfile = db.prepare('SELECT username FROM user_profiles WHERE user_id = ?').get(userId);
+    var myUsername = (myProfile && myProfile.username) || userId;
+    var dmReq = db.prepare('SELECT * FROM dm_requests WHERE id = ? AND to_user = ? AND status = ?').get(reqId, myUsername, 'pending');
+    if (!dmReq) return res.status(404).json({ error: 'Request not found or already handled' });
+
+    var fromProfile = db.prepare('SELECT user_id FROM user_profiles WHERE username = ?').get(dmReq.from_user);
+    var fromUserId = fromProfile ? fromProfile.user_id : dmReq.from_user;
+
+    var userA = fromUserId < userId ? fromUserId : userId;
+    var userB = fromUserId < userId ? userId : fromUserId;
+    var now = Math.floor(Date.now() / 1000);
+    db.prepare('INSERT OR IGNORE INTO dm_threads (id, user_a, user_b, created_at) VALUES (?, ?, ?, ?)').run(uuidv4(), userA, userB, now);
+    db.prepare('UPDATE dm_requests SET status = ? WHERE id = ?').run('accepted', reqId);
+    return res.json({ success: true });
+  } catch (e) {
+    logger.error('[dm/requests/:id/accept] ' + e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/dm/requests/:id/decline
+app.post('/api/dm/requests/:id/decline', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var reqId = String(req.params.id || '');
+    var myProfile = db.prepare('SELECT username FROM user_profiles WHERE user_id = ?').get(userId);
+    var myUsername = (myProfile && myProfile.username) || userId;
+    var dmReq = db.prepare('SELECT id FROM dm_requests WHERE id = ? AND to_user = ? AND status = ?').get(reqId, myUsername, 'pending');
+    if (!dmReq) return res.status(404).json({ error: 'Request not found or already handled' });
+    db.prepare('UPDATE dm_requests SET status = ? WHERE id = ?').run('declined', reqId);
+    return res.json({ success: true });
+  } catch (e) {
+    logger.error('[dm/requests/:id/decline] ' + e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/dm/threads — list all threads for the current user
+app.get('/api/dm/threads', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var rows = db.prepare(
+      'SELECT t.id, t.user_a, t.user_b, t.created_at, ' +
+      '(SELECT body FROM dm_messages WHERE thread_id = t.id ORDER BY created_at DESC LIMIT 1) AS last_body, ' +
+      '(SELECT created_at FROM dm_messages WHERE thread_id = t.id ORDER BY created_at DESC LIMIT 1) AS last_ts ' +
+      'FROM dm_threads t WHERE t.user_a = ? OR t.user_b = ? ORDER BY COALESCE(last_ts, t.created_at) DESC LIMIT 50'
+    ).all(userId, userId);
+    return res.json({ threads: rows });
+  } catch (e) {
+    logger.error('[dm/threads GET] ' + e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/dm/threads/:threadId/messages
+app.get('/api/dm/threads/:threadId/messages', requireAuth, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var threadId = String(req.params.threadId || '');
+    var thread = db.prepare('SELECT id FROM dm_threads WHERE id = ? AND (user_a = ? OR user_b = ?)').get(threadId, userId, userId);
+    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    var msgs = db.prepare(
+      'SELECT id, sender_id, body, type, created_at FROM dm_messages WHERE thread_id = ? ORDER BY created_at ASC LIMIT 200'
+    ).all(threadId);
+    return res.json({ messages: msgs });
+  } catch (e) {
+    logger.error('[dm/threads/:id/messages GET] ' + e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/dm/threads/:threadId/messages
+app.post('/api/dm/threads/:threadId/messages', requireAuth, dmRateLimit, function(req, res) {
+  try {
+    var userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+    var threadId = String(req.params.threadId || '');
+    var body = String(req.body.body || '').trim().slice(0, 2000);
+    if (!body) return res.status(400).json({ error: 'body is required' });
+    var thread = db.prepare('SELECT id FROM dm_threads WHERE id = ? AND (user_a = ? OR user_b = ?)').get(threadId, userId, userId);
+    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    var now = Math.floor(Date.now() / 1000);
+    db.prepare('INSERT INTO dm_messages (id, thread_id, sender_id, body, type, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(uuidv4(), threadId, userId, body, 'text', now);
+    return res.json({ success: true });
+  } catch (e) {
+    logger.error('[dm/threads/:id/messages POST] ' + e.message);
+    return res.status(500).json({ error: 'Server error' });
   }
 });
 
