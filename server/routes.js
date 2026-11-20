@@ -842,6 +842,22 @@ router.get('/users/me/earnings', requireAuth, function(req, res) {
   }
 });
 
+// ─── account soft-delete ────────────────────────────────────────────────────
+router.delete('/users/me', requireAuth, async function(req, res) {
+  var userId   = req.user.id;
+  var tenantId = req.user.tenantId;
+  if (!userId || userId === 'anon') return res.status(401).json({ error: 'Not authenticated' });
+  try {
+    await db.query(
+      'UPDATE users SET deleted_at = NOW() WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL',
+      [userId, tenantId]
+    );
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ─── NOTIFICATION routes ──────────────────────────────────────────────────────
 
 router.post('/push/subscribe', requireAuth, pushSubscribeRateLimit, function(req, res) {
