@@ -53,6 +53,26 @@ export default function StateRankingsTab({ isLive, addToast }) {
     try { return localStorage.getItem('sw_my_state') || null; } catch(e) { return null; }
   });
   var [shareCopied, setShareCopied] = useState(false);
+  var [reminders,   setReminders]   = useState(function() {
+    try { return JSON.parse(localStorage.getItem('sw_match_reminders') || '{}'); } catch(e) { return {}; }
+  });
+
+  var toggleReminder = function(match) {
+    var key = match.home + '_' + match.away + '_' + match.date.replace(/\s+/g, '');
+    setReminders(function(prev) {
+      var next = Object.assign({}, prev);
+      if (next[key]) {
+        delete next[key];
+        try { localStorage.setItem('sw_match_reminders', JSON.stringify(next)); } catch(_) {}
+        if (addToast) addToast('🕕 Reminder removed', 'info');
+      } else {
+        next[key] = true;
+        try { localStorage.setItem('sw_match_reminders', JSON.stringify(next)); } catch(_) {}
+        if (addToast) addToast('🔔 Reminder set for ' + match.home + ' vs ' + match.away + ' \xB7 ' + match.date, 'success');
+      }
+      return next;
+    });
+  };
 
   useEffect(function() {
     try { if (myState) { localStorage.setItem('sw_my_state', myState); } else { localStorage.removeItem('sw_my_state'); } } catch(e) {}
@@ -414,10 +434,10 @@ export default function StateRankingsTab({ isLive, addToast }) {
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', marginTop: 2 }}>{match.venue}</div>
                   </div>
                   <button
-                    onClick={function() { if (addToast) { addToast('Reminder set for ' + match.home + ' vs ' + match.away + ' · ' + match.date, 'success'); } }}
-                    style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, padding: '5px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, letterSpacing: 1, cursor: 'pointer', flexShrink: 0 }}
+                    onClick={function() { toggleReminder(match); }}
+                    style={{ background: (function() { var k = match.home + '_' + match.away + '_' + match.date.replace(/\s+/g, ''); return reminders[k] ? 'rgba(201,168,76,.22)' : 'rgba(201,168,76,.12)'; })(), border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, padding: '5px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, letterSpacing: 1, cursor: 'pointer', flexShrink: 0 }}
                   >
-                    🔔 SET REMINDER
+                    {(function() { var k = match.home + '_' + match.away + '_' + match.date.replace(/\s+/g, ''); return reminders[k] ? '✓ REMINDER SET' : '🔔 SET REMINDER'; })()}
                   </button>
                 </div>
               </div>
