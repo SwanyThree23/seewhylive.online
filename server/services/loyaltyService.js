@@ -104,7 +104,7 @@ async function getGlobalLeaderboard(limit, tenantId) {
             u.avatar_url
      FROM user_loyalty ul
      LEFT JOIN users u ON u.id = ul.user_id
-     WHERE ul.tenant_id = $2
+     WHERE ul.tenant_id = $2 AND (u.id IS NULL OR u.deleted_at IS NULL)
      ORDER BY ul.total_points DESC
      LIMIT $1`,
     [limit || 50, tenantId]
@@ -122,6 +122,7 @@ async function getWeeklyLeaderboard(limit, tenantId) {
      LEFT JOIN users u ON u.id = e.user_id
      WHERE e.created_at >= now() - interval '7 days'
        AND e.tenant_id = $2
+       AND (u.id IS NULL OR u.deleted_at IS NULL)
      GROUP BY e.user_id, u.display_name, u.avatar_url
      ORDER BY total_points DESC
      LIMIT $1`,
