@@ -1894,7 +1894,7 @@ export default function App() {
           <BlocksTab addToast={addToast} />
         )}
         {activeTab === 'dms' && (
-          <DMTab addToast={addToast} />
+          <DMTab addToast={addToast} socket={socket} />
         )}
         {activeTab === 'upcoming' && (
           <ScheduledRoomsTab addToast={addToast} />
