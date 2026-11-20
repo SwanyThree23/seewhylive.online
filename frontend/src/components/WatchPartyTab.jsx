@@ -3,6 +3,7 @@ import WatchGuestVideo from './WatchGuestVideo.jsx';
 import AvatarPortrait from './AvatarPortrait.jsx';
 import VideoPlayerControls from './video/VideoPlayerControls.jsx';
 import VideoSourcePicker, { detectVideoType } from './video/VideoSourcePicker.jsx';
+import BackgroundPicker, { bgStyleFromPreset } from './panel/BackgroundPicker.jsx';
 
 var OCT_CLIP = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
@@ -162,6 +163,10 @@ export default function WatchPartyTab(props) {
   var [aiSummary,    setAiSummary]    = useState('');
   var [aiLoading,    setAiLoading]    = useState(false);
   var [showAiPanel,  setShowAiPanel]  = useState(false);
+
+  // --- background ---
+  var [roomBg,          setRoomBg]          = useState('default');
+  var [roomBgCustomUrl, setRoomBgCustomUrl] = useState('');
 
   // refs
   var playerRef        = useRef(null);
@@ -478,32 +483,40 @@ export default function WatchPartyTab(props) {
 
     var onWatchPartyStarted = function() { setWatchPartyActive(true); }
 
-    socket.on('watch-party-url',     onWatchUrl);
-    socket.on('watch-party-play',    onWatchPlay);
-    socket.on('watch-party-pause',   onWatchPause);
-    socket.on('watch-party-seek',    onWatchSeek);
-    socket.on('watch-party-sync',    onWatchSync);
-    socket.on('watch-react',         onWatchReact);
-    socket.on('screen-share-active', onScreenShareActive);
-    socket.on('screen-share-ended',  onScreenShareEnded);
-    socket.on('watch-sync',          onSyncAction);
-    socket.on('watch-party-started', onWatchPartyStarted);
+    var onWatchPartyBgChanged = function(data) {
+      if (!data) return;
+      setRoomBg(data.presetId || 'default');
+      setRoomBgCustomUrl(data.customUrl || '');
+    };
+
+    socket.on('watch-party-url',        onWatchUrl);
+    socket.on('watch-party-play',       onWatchPlay);
+    socket.on('watch-party-pause',      onWatchPause);
+    socket.on('watch-party-seek',       onWatchSeek);
+    socket.on('watch-party-sync',       onWatchSync);
+    socket.on('watch-react',            onWatchReact);
+    socket.on('screen-share-active',    onScreenShareActive);
+    socket.on('screen-share-ended',     onScreenShareEnded);
+    socket.on('watch-sync',             onSyncAction);
+    socket.on('watch-party-started',    onWatchPartyStarted);
+    socket.on('watch-party-bg-changed', onWatchPartyBgChanged);
 
     if (!isHost && socket && roomId) {
       socket.emit('watch-party-sync-request', { roomId: roomId });
     }
 
     return function() {
-      socket.off('watch-party-url',     onWatchUrl);
-      socket.off('watch-party-play',    onWatchPlay);
-      socket.off('watch-party-pause',   onWatchPause);
-      socket.off('watch-party-seek',    onWatchSeek);
-      socket.off('watch-party-sync',    onWatchSync);
-      socket.off('watch-react',         onWatchReact);
-      socket.off('screen-share-active', onScreenShareActive);
-      socket.off('screen-share-ended',  onScreenShareEnded);
-      socket.off('watch-sync',          onSyncAction);
-      socket.off('watch-party-started', onWatchPartyStarted);
+      socket.off('watch-party-url',        onWatchUrl);
+      socket.off('watch-party-play',       onWatchPlay);
+      socket.off('watch-party-pause',      onWatchPause);
+      socket.off('watch-party-seek',       onWatchSeek);
+      socket.off('watch-party-sync',       onWatchSync);
+      socket.off('watch-react',            onWatchReact);
+      socket.off('screen-share-active',    onScreenShareActive);
+      socket.off('screen-share-ended',     onScreenShareEnded);
+      socket.off('watch-sync',             onSyncAction);
+      socket.off('watch-party-started',    onWatchPartyStarted);
+      socket.off('watch-party-bg-changed', onWatchPartyBgChanged);
     };
   }, [socket, isHost, sourceType]);
 
@@ -918,8 +931,10 @@ export default function WatchPartyTab(props) {
   // ─────────────────────────────────────────────
   // RENDER
   // ─────────────────────────────────────────────
+  var _wpBgStyle = bgStyleFromPreset(roomBg, roomBgCustomUrl);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: BG, fontFamily: "'Barlow Condensed',sans-serif" }}>
+    <div style={Object.assign({ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', fontFamily: "'Barlow Condensed',sans-serif", transition: 'background 0.6s ease' }, _wpBgStyle)}>
 
       <style dangerouslySetInnerHTML={{ __html: ANIMATION_STYLES }} />
 
@@ -985,6 +1000,16 @@ export default function WatchPartyTab(props) {
               + QUEUE
             </button>
           )}
+          <BackgroundPicker
+            currentBgId={roomBg}
+            currentCustomUrl={roomBgCustomUrl}
+            onSelect={function(preset) {
+              if (!socket || !roomId) return;
+              var payload = { roomId: roomId, presetId: preset.id };
+              if (preset.customUrl) payload.customUrl = preset.customUrl;
+              socket.emit('watch-party-bg', payload);
+            }}
+          />
         </div>
       )}
 

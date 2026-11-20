@@ -1032,6 +1032,12 @@ function seedEphemeralState(socketId, roomId) {
     }
     io.to(socketId).emit('watch-party-sync', { videoId: _room.watchParty.videoId || null, url: _room.watchParty.url || '', type: _room.watchParty.type || 'youtube', playing: !!_room.watchParty.playing, position: _wpPos, timestamp: Date.now() });
   }
+  if (_room && _room.watchPartyBg) {
+    io.to(socketId).emit('watch-party-bg-changed', { roomId: roomId, presetId: _room.watchPartyBg.presetId, customUrl: _room.watchPartyBg.customUrl || null });
+  }
+  if (_room && _room.panelBg) {
+    io.to(socketId).emit('panel:stage_background_changed', { roomId: roomId, presetId: _room.panelBg.presetId, customUrl: _room.panelBg.customUrl || null });
+  }
   var _loveTotal = loveCounts.get(roomId) || 0;
   if (_loveTotal > 0) io.to(socketId).emit('love-update', { roomId: roomId, total: _loveTotal });
   var _ls = liveSyncState.get(roomId);
@@ -4926,6 +4932,31 @@ io.on('connection', function(socket) {
         ts:       Date.now()
       });
     }
+  });
+
+  // ── watch-party-bg ────────────────────────────────────────────────────
+  socket.on('watch-party-bg', function(data) {
+    if (!data) return;
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var presetId = String(data.presetId || 'default');
+    var VALID_WP_BG = ['default', 'aurora', 'gold', 'neon', 'space', 'fire', 'ocean', 'custom'];
+    if (!VALID_WP_BG.includes(presetId)) return;
+    var customUrl = null;
+    if (presetId === 'custom') {
+      var _rawWpUrl = String(data.customUrl || '');
+      if (!/^https:\/\//i.test(_rawWpUrl)) return;
+      try { new URL(_rawWpUrl); } catch(e) { return; }
+      customUrl = _rawWpUrl.slice(0, 500);
+    }
+    var room = getRoom(roomId);
+    if (presetId === 'default') {
+      delete room.watchPartyBg;
+    } else {
+      room.watchPartyBg = { presetId: presetId, customUrl: customUrl };
+    }
+    io.to(roomId).emit('watch-party-bg-changed', { roomId: roomId, presetId: presetId, customUrl: customUrl });
   });
 
   // ── bot-manual-message ─────────────────────────────────────────────────

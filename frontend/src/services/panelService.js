@@ -89,9 +89,11 @@ function setRoomPrivacy(roomId, isPrivate, gatingMode) {
   }).then(function (r) { return r.json(); });
 }
 
-function setStageBackground(socket, roomId, presetId) {
+function setStageBackground(socket, roomId, preset) {
   return new Promise(function(resolve, reject) {
-    socket.emit('panel:set_stage_background', { roomId: roomId, presetId: presetId }, function(res) {
+    var payload = { roomId: roomId, presetId: preset.id || preset };
+    if (preset.customUrl) payload.customUrl = preset.customUrl;
+    socket.emit('panel:set_stage_background', payload, function(res) {
       if (res && res.ok) resolve(); else reject(new Error((res && res.error) || 'set background failed'));
     });
   });

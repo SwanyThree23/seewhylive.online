@@ -19,7 +19,7 @@ function injectPanelGridStyles() {
   document.head.appendChild(el);
 }
 import PanelTile from './PanelTile';
-import BackgroundPicker, { PRESETS } from './BackgroundPicker';
+import BackgroundPicker, { PRESETS, bgStyleFromPreset } from './BackgroundPicker';
 import PrivateRoomGate from './PrivateRoomGate';
 import PanelJoinModal from './PanelJoinModal';
 import JoinRequestQueue from './JoinRequestQueue';
@@ -67,6 +67,7 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
   var confirmLeaveTimerRef = useRef(null);
   var [localAudioStream, setLocalAudioStream] = useState(null);
   var [roomBackground, setRoomBackground] = useState('default');
+  var [roomBgCustomUrl, setRoomBgCustomUrl] = useState('');
   var [brbBanner, setBrbBanner] = useState(null); // { msg } or null
   var [brbActive, setBrbActive] = useState(false); // host BRB toggle state (local tracking)
   var [showInviteMenu, setShowInviteMenu] = useState(false);
@@ -235,6 +236,7 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
       unsubs.push(panelService.onStageBackgroundChanged(socket, function(payload) {
         if (payload.roomId !== roomId) return;
         setRoomBackground(payload.presetId || 'default');
+        setRoomBgCustomUrl(payload.customUrl || '');
       }));
 
       var onBrb = function(data) {
@@ -526,8 +528,9 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
             {isHost && (
               <BackgroundPicker
                 currentBgId={roomBackground}
+                currentCustomUrl={roomBgCustomUrl}
                 onSelect={function(preset) {
-                  panelService.setStageBackground(socket, roomId, preset.id).catch(function() {
+                  panelService.setStageBackground(socket, roomId, preset).catch(function() {
                     if (addToast) addToast('Failed to set background', 'error');
                   });
                 }}
@@ -683,8 +686,7 @@ export default function PanelGrid({ socket, roomId, userId, username, isHost, rt
     ? Math.min(3, slots.length)
     : (slots.length <= 1 ? 1 : slots.length <= 4 ? 2 : slots.length <= 9 ? 3 : slots.length <= 16 ? 4 : 5);
 
-  var bgPreset = PRESETS.find(function(p) { return p.id === roomBackground; }) || PRESETS[0];
-  var bgStyle = bgPreset.style || {};
+  var bgStyle = bgStyleFromPreset(roomBackground, roomBgCustomUrl);
 
   return (
     <div style={Object.assign({ display: 'flex', flexDirection: 'column', height: '100%', transition: 'background 0.6s ease' }, bgStyle)}>
