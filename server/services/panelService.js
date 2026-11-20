@@ -41,7 +41,7 @@ async function assignSlot({ roomId, userId, tenantId }) {
        RETURNING *
      )
      SELECT i.*, u.display_name, u.avatar_url
-     FROM inserted i JOIN users u ON u.id = i.user_id`,
+     FROM inserted i LEFT JOIN users u ON u.id = i.user_id AND u.deleted_at IS NULL`,
     [roomId, maxGuests, userId]
   );
   if (!result.rows.length) {

@@ -95,7 +95,7 @@ router.get('/watch/:id', previewRateLimit, async function(req, res) {
     var result = await db.query(
       `SELECT r.id, r.title, r.thumbnail_url, r.playback_url, r.status,
               u.display_name AS creator_name
-       FROM streams r JOIN users u ON u.id = r.creator_id
+       FROM streams r LEFT JOIN users u ON u.id = r.creator_id AND u.deleted_at IS NULL
        WHERE r.id = $1 AND r.tenant_id = $2`,
       [req.params.id, req.tenantId]
     );
@@ -124,7 +124,7 @@ router.get('/post/:id', previewRateLimit, async function(req, res) {
   try {
     var result = await db.query(
       `SELECT p.id, p.title AS caption, p.thumbnail_url, p.video_url, u.display_name AS creator_name
-       FROM video_posts p JOIN users u ON u.id = p.creator_id
+       FROM video_posts p LEFT JOIN users u ON u.id = p.creator_id AND u.deleted_at IS NULL
        WHERE p.id = $1 AND p.tenant_id = $2`,
       [req.params.id, req.tenantId]
     );
