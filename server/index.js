@@ -2747,6 +2747,7 @@ app.get('/api/streams/live', requireAuth, async function(req, res) {
 app.get('/api/rooms/live', function(req, res) {
   var result = [];
   rooms.forEach(function(room, roomId) {
+    if (roomPrivateMap.has(roomId)) return; // never expose private rooms in discovery
     var viewerCount = room.viewers ? room.viewers.size : 0;
     if (viewerCount < 1) return;
     var hostName = '';
@@ -2772,6 +2773,7 @@ app.get('/api/rooms/live', function(req, res) {
 app.get('/api/active-rooms', function(req, res) {
   var rooms_out = [];
   rooms.forEach(function(room, id) {
+    if (roomPrivateMap.has(id)) return; // never expose private rooms in discovery
     if (room && room.hostSocketId) {
       rooms_out.push({
         id:          id,
