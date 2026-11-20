@@ -2784,6 +2784,7 @@ app.get('/api/rooms/live', function(req, res) {
       viewers:   viewerCount,
       hasHost:   !!room.hostSocketId,
       hostName:  hostName,
+      hostUserId: room.hostUserId || null,
       isLive:    !!room.isLive,
       title:     room.streamTitle || '',
       category:  room.streamCategory || '',
