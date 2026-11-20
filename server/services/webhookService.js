@@ -2,8 +2,14 @@
 var crypto   = require('crypto');
 var https    = require('https');
 var http     = require('http');
+var dns      = require('dns');
 var urlLib   = require('url');
 var Database = require('better-sqlite3');
+
+// Block private/loopback ranges at delivery time to prevent DNS-rebinding SSRF.
+// Registration already validates the URL hostname; this guard covers the case
+// where the DNS record is changed after registration.
+var _DELIVER_SSRF_RE = /^(127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0$|::1$)/i;
 var logger;
 try { logger = require('../logger'); } catch (_) { logger = console; }
 
@@ -38,27 +44,36 @@ function deliver(row, body, sig, event) {
   try {
     var parsed = urlLib.parse(row.url);
     if (!parsed.hostname) return;
-    var mod = parsed.protocol === 'https:' ? https : http;
-    var req = mod.request({
-      hostname: parsed.hostname,
-      port:     parsed.port || (parsed.protocol === 'https:' ? 443 : 80),
-      path:     parsed.path || '/',
-      method:   'POST',
-      headers: {
-        'Content-Type':       'application/json',
-        'Content-Length':     Buffer.byteLength(body),
-        'x-seewhy-signature': sig,
-        'x-seewhy-event':     event,
-        'User-Agent':         'SeeWhyLIVE-Webhooks/1.0',
-      },
-      timeout: 8000,
-    }, function(res) {
-      res.resume();
+    var isHttps = parsed.protocol === 'https:';
+    // Resolve first, then block private IPs before connecting (DNS-rebinding guard)
+    dns.lookup(parsed.hostname, function(lookupErr, address) {
+      if (lookupErr || !address) return;
+      if (_DELIVER_SSRF_RE.test(address)) return;
+      try {
+        var mod = isHttps ? https : http;
+        var opts = {
+          hostname: address,  // connect to resolved IP — no second lookup
+          port:     parsed.port || (isHttps ? 443 : 80),
+          path:     parsed.path || '/',
+          method:   'POST',
+          headers: {
+            'Content-Type':       'application/json',
+            'Content-Length':     Buffer.byteLength(body),
+            'x-seewhy-signature': sig,
+            'x-seewhy-event':     event,
+            'User-Agent':         'SeeWhyLIVE-Webhooks/1.0',
+            'Host':               parsed.host,
+          },
+          timeout: 8000,
+        };
+        if (isHttps) opts.servername = parsed.hostname;  // TLS SNI + cert CN check
+        var req = mod.request(opts, function(res) { res.resume(); });
+        req.on('error',   function() {});
+        req.on('timeout', function() { try { req.destroy(); } catch (_e) {} });
+        req.write(body);
+        req.end();
+      } catch (_e) {}
     });
-    req.on('error',   function() {});
-    req.on('timeout', function() { try { req.destroy(); } catch (_e) {} });
-    req.write(body);
-    req.end();
   } catch (_e) {}
 }
 
