@@ -1514,12 +1514,6 @@ function TranscriptionPanel() {
 
 // ── ROOMS PANEL ────────────────────────────────────────────────────────────
 function RoomsPanel() {
-  var MOCK_ROOMS = [
-    { id: 'nyc-la',        name: 'NYC vs LA',      status: 'live',    viewers: 312 },
-    { id: 'dominos-champ', name: 'Domino Champ',   status: 'offline', viewers: 0   },
-    { id: 'weekly-cypher', name: 'Weekly Cypher',  status: 'offline', viewers: 0   },
-  ];
-
   var DESTINATIONS = [
     { id: 'youtube',  label: 'YouTube',  icon: '▶', color: '#FF0000' },
     { id: 'twitch',   label: 'Twitch',   icon: '🟣', color: '#9146FF' },
@@ -1532,7 +1526,9 @@ function RoomsPanel() {
   var VDO_WATCH = `https://vdo.ninja/?room=${VDO_ROOM}&view`;
   var VDO_OBS   = `https://vdo.ninja/?room=${VDO_ROOM}&scene`;
 
-  var [selectedRoom, setSelectedRoom] = useState(MOCK_ROOMS[0].id);
+  var [rooms, setRooms]           = useState([]);
+  var [roomsLoading, setRoomsLoading] = useState(true);
+  var [selectedRoom, setSelectedRoom] = useState(null);
   var [recording, setRecording] = useState(false);
   var [recSeconds, setRecSeconds] = useState(0);
   var [recLib, setRecLib] = useState([]);
@@ -1540,6 +1536,21 @@ function RoomsPanel() {
   var [mtxStatus, setMtxStatus] = useState(null);
   var [toastMsg, setToastMsg] = useState('');
   var timerRef = useRef(null);
+
+  useEffect(function() {
+    setRoomsLoading(true);
+    fetch('/api/active-rooms')
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function(data) {
+        var list = (data.rooms || []).map(function(r) {
+          return { id: r.id, name: r.title || r.id, status: r.isLive ? 'live' : 'offline', viewers: r.viewerCount || 0 };
+        });
+        setRooms(list);
+        if (list.length > 0) setSelectedRoom(list[0].id);
+      })
+      .catch(function() { setRooms([]); })
+      .finally(function() { setRoomsLoading(false); });
+  }, []);
 
   useEffect(() => {
     if (recording) {
@@ -1597,7 +1608,9 @@ function RoomsPanel() {
       <Card style={{ marginBottom: 16 }}>
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>Rooms</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {MOCK_ROOMS.map(room => (
+          {roomsLoading && <span style={{ color: C.textM, fontSize: 12 }}>Loading rooms…</span>}
+          {!roomsLoading && rooms.length === 0 && <span style={{ color: C.textM, fontSize: 12 }}>No active rooms</span>}
+          {rooms.map(room => (
             <button
               key={room.id}
               onClick={() => setSelectedRoom(room.id)}
