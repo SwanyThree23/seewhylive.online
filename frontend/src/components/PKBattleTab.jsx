@@ -49,6 +49,8 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   var [defenderInput, setDefenderInput]       = useState('');
   var [cheerA, setCheerA]                     = useState([]);
   var [cheerB, setCheerB]                     = useState([]);
+  var [matchmakeType, setMatchmakeType]       = useState(null);
+  var [matchmakePos, setMatchmakePos]         = useState(0);
 
   var countdownRef  = useRef(null);
   var challengerScoreRef = useRef(0);
@@ -127,20 +129,55 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       if (addToastRef.current) addToastRef.current('⚡ SUDDEN DEATH round!', 'error');
     }
 
-    socket.on('pk-start',        onPkStart);
-    socket.on('pk-end',          onPkEnd);
-    socket.on('pk-vote-update',  onPkVoteUpdate);
-    socket.on('pk-gift-boost',   onPkGiftBoost);
-    socket.on('pk-cheer-update', onPkCheerUpdate);
-    socket.on('pk-sudden-death', onPkSuddenDeath);
+    var onMatchFound = function(data) {
+      if (!data) return;
+      setMatchmakeType(null);
+      setMatchmakePos(0);
+      if (addToastRef.current) addToastRef.current('⚔️ Match found! ' + (data.opponentUsername || 'Opponent') + ' is ready!', 'success');
+      if (data.role === 'challenger') {
+        setChallengerInput(username || 'You');
+        setDefenderInput(data.opponentUsername || 'Opponent');
+      } else {
+        setChallengerInput(data.opponentUsername || 'Opponent');
+        setDefenderInput(username || 'You');
+      }
+    };
+    var onMatchmakeSearching = function(data) {
+      if (!data) return;
+      setMatchmakeType(data.type || 'instant');
+      setMatchmakePos(data.position || 1);
+    };
+    var onMatchmakeCancelled = function() {
+      setMatchmakeType(null);
+      setMatchmakePos(0);
+    };
+    var onMatchmakeError = function(data) {
+      setMatchmakeType(null);
+      if (addToastRef.current) addToastRef.current((data && data.error) || 'Matchmaking unavailable', 'error');
+    };
+
+    socket.on('pk-start',               onPkStart);
+    socket.on('pk-end',                 onPkEnd);
+    socket.on('pk-vote-update',         onPkVoteUpdate);
+    socket.on('pk-gift-boost',          onPkGiftBoost);
+    socket.on('pk-cheer-update',        onPkCheerUpdate);
+    socket.on('pk-sudden-death',        onPkSuddenDeath);
+    socket.on('pk-match-found',         onMatchFound);
+    socket.on('pk-matchmake-searching', onMatchmakeSearching);
+    socket.on('pk-matchmake-cancelled', onMatchmakeCancelled);
+    socket.on('pk-matchmake-error',     onMatchmakeError);
 
     return function() {
-      socket.off('pk-start',        onPkStart);
-      socket.off('pk-end',          onPkEnd);
-      socket.off('pk-vote-update',  onPkVoteUpdate);
-      socket.off('pk-gift-boost',   onPkGiftBoost);
-      socket.off('pk-cheer-update', onPkCheerUpdate);
-      socket.off('pk-sudden-death', onPkSuddenDeath);
+      socket.off('pk-start',               onPkStart);
+      socket.off('pk-end',                 onPkEnd);
+      socket.off('pk-vote-update',         onPkVoteUpdate);
+      socket.off('pk-gift-boost',          onPkGiftBoost);
+      socket.off('pk-cheer-update',        onPkCheerUpdate);
+      socket.off('pk-sudden-death',        onPkSuddenDeath);
+      socket.off('pk-match-found',         onMatchFound);
+      socket.off('pk-matchmake-searching', onMatchmakeSearching);
+      socket.off('pk-matchmake-cancelled', onMatchmakeCancelled);
+      socket.off('pk-matchmake-error',     onMatchmakeError);
     };
   }, [socket]);
 
@@ -500,13 +537,30 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#8A7A62', marginBottom: 14 }}>
             Find a battle partner · matched by ELO rating
           </div>
+          {matchmakeType && (
+            <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 1 }}>{'⌛ SEARCHING ' + matchmakeType.toUpperCase() + '… #' + matchmakePos}</span>
+              <button
+                onClick={function() { if (socket) socket.emit('pk-matchmake-cancel'); }}
+                style={{ background: 'transparent', border: '1px solid rgba(255,26,60,.4)', borderRadius: 6, padding: '4px 10px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 1 }}>
+                CANCEL
+              </button>
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-            {[{ label: 'INSTANT', icon: '⚡' }, { label: 'RANKED', icon: '🏆' }, { label: 'CLANS', icon: '👥' }].map(function(m) {
+            {[{ label: 'INSTANT', icon: '⚡', type: 'instant' }, { label: 'RANKED', icon: '🏆', type: 'ranked' }, { label: 'CLANS', icon: '👥', type: 'clans' }].map(function(m) {
+              var isActive = matchmakeType === m.type;
               return (
-                <button key={m.label} onClick={function() { if (addToast) addToast('Searching for ' + m.label + ' match...', 'info'); }}
-                  style={{ flex: 1, padding: '12px 4px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                <button key={m.label}
+                  onClick={function() {
+                    if (!socket) { if (addToast) addToast('Not connected', 'error'); return; }
+                    if (matchmakeType) { if (addToast) addToast('Already searching — cancel first', 'info'); return; }
+                    socket.emit('pk-matchmake', { type: m.type });
+                    if (addToast) addToast('🔎 Searching for ' + m.label + ' match...', 'info');
+                  }}
+                  style={{ flex: 1, padding: '12px 4px', background: isActive ? 'rgba(201,168,76,.12)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (isActive ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.08)'), borderRadius: 8, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                   <span style={{ fontSize: 18 }}>{m.icon}</span>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>{m.label}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: isActive ? '#C9A84C' : '#8A7A62', letterSpacing: 1 }}>{m.label}</span>
                 </button>
               );
             })}

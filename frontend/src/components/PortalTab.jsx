@@ -110,7 +110,7 @@ export default function PortalTab({ addToast, isLive, socket, roomId }) {
                 return s.creatorUsername && ch.host && ch.host.toLowerCase().indexOf(s.creatorUsername.toLowerCase()) !== -1;
               });
               if (match) {
-                return Object.assign({}, ch, { live: true, viewers: match.viewerCount || 0, latestEp: match.title || ch.latestEp });
+                return Object.assign({}, ch, { live: true, viewers: match.viewerCount || 0, latestEp: match.title || ch.latestEp, roomId: match.id || match.roomId || null, hostUserId: match.hostUserId || null, hostUsername: match.creatorUsername || null });
               }
               return ch;
             });
@@ -129,11 +129,27 @@ export default function PortalTab({ addToast, isLive, socket, roomId }) {
   }
 
   var handleFeature = function() {
-    addToast('📺 Now featuring ' + active.name + ' on your stream!', 'info');
+    if (socket && roomId) {
+      socket.emit('portal-share', { roomId: roomId, channelName: active.name });
+    }
+    addToast('📺 Featuring ' + active.name + ' in your stream chat!', 'success');
   }
 
   var handleFollow = function() {
-    addToast(active.avatar + ' Following ' + active.name + '!', 'success');
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+    if (active.hostUserId && tok) {
+      fetch('/api/follows/' + encodeURIComponent(active.hostUserId), {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + tok }
+      }).catch(function() {});
+      if (socket && active.hostUsername) {
+        socket.emit('follow-creator', { username: active.hostUsername });
+      }
+      addToast(active.avatar + ' Following @' + (active.hostUsername || active.host) + '!', 'success');
+    } else {
+      addToast(active.avatar + ' Following ' + active.name + '!', 'success');
+    }
   }
 
   var handleShare = function() {
@@ -213,6 +229,16 @@ export default function PortalTab({ addToast, isLive, socket, roomId }) {
             📤 SHARE TO CHAT
           </button>
         </div>
+        {active.live && active.roomId && (
+          <div style={{ margin: '8px 14px 0 14px' }}>
+            <button
+              onClick={function() { window.location.href = window.location.origin + '?room=' + encodeURIComponent(active.roomId); }}
+              style={{ width: '100%', background: 'linear-gradient(135deg,rgba(192,24,56,.3),rgba(192,24,56,.15))', border: '1px solid rgba(192,24,56,.55)', borderRadius: 9, padding: '11px 0', color: '#FF6680', fontFamily: fU, fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#C01838', display: 'inline-block', flexShrink: 0 }} />
+              JOIN LIVE
+            </button>
+          </div>
+        )}
 
         {/* Other channels */}
         <div style={{ margin: '18px 14px 0 14px', flexShrink: 0 }}>
