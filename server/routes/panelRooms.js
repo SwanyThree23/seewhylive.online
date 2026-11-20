@@ -41,7 +41,7 @@ router.get('/:id/join-requests', requireAuth, validateId, async function(req, re
     var result = await db.query(
       `SELECT r.id, r.user_id, r.requested_at, u.display_name, u.avatar_url
        FROM room_join_requests r JOIN users u ON u.id = r.user_id
-       WHERE r.stream_id = $1 AND r.tenant_id = $2 AND r.status = 'pending' ORDER BY r.requested_at`,
+       WHERE r.stream_id = $1 AND r.tenant_id = $2 AND r.status = 'pending' AND u.deleted_at IS NULL ORDER BY r.requested_at`,
       [req.params.id, req.tenantId]
     );
     res.json(result.rows);

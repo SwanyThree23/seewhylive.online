@@ -82,11 +82,14 @@ router.post('/login', loginRateLimit, async function(req, res) {
     var user = authResult.data.user;
 
     var profileResult = await db.query(
-      'SELECT account_type FROM users WHERE id = $1 AND tenant_id = $2',
+      'SELECT account_type, deleted_at FROM users WHERE id = $1 AND tenant_id = $2',
       [user.id, req.tenantId]
     );
 
     var finalProfile = profileResult.rows[0] || null;
+    if (finalProfile && finalProfile.deleted_at) {
+      return res.status(403).json({ error: 'This account has been deleted' });
+    }
     if (!finalProfile) {
       finalProfile = await claimOwnershipIfEligible(req.tenantId, user.id, email);
     }

@@ -202,7 +202,7 @@ router.get('/check-username', usernameCheckLimit, async function(req, res) {
   }
   try {
     var result = await db.query(
-      'SELECT 1 FROM users WHERE lower(username) = $1 AND tenant_id = $2 LIMIT 1',
+      'SELECT 1 FROM users WHERE lower(username) = $1 AND tenant_id = $2 AND deleted_at IS NULL LIMIT 1',
       [username, req.tenantId]
     );
     return res.json({ available: result.rows.length === 0 });
