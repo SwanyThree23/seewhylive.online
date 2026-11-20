@@ -16,7 +16,7 @@ const panelHandThrottle    = new Map(); // userId -> last hand-raise timestamp
 const panelLoyaltyThrottle = new Map(); // `userId:roomId` -> last award timestamp
 const panelSpotlight       = new Map(); // roomId -> spotlitUserId (null = cleared)
 const panelInviteThrottle  = new Map(); // `hostId:targetId` -> last invite timestamp
-const panelStageBackground = new Map(); // roomId -> presetId (cleared when reset to default)
+const panelStageBackground = new Map(); // roomId -> { presetId, customUrl } (cleared when reset to default)
 
 const LOYALTY_AWARD_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour per user per room
 const THROTTLE_STALE_MS = 30000; // 30 s >> any window (max 3 s) — safe to prune
@@ -422,13 +422,28 @@ function registerPanelHandlers(io, socket, rooms) {
       if ((socket.data.role !== 'host' && socket.data.role !== 'cohost' && socket.data.role !== 'owner' && socket.data.role !== 'admin') || socket.data.roomId !== roomId) {
         if (ack) ack({ ok: false, error: 'forbidden' }); return;
       }
-      var VALID_BG_IDS = ['default', 'aurora', 'gold', 'neon', 'space', 'fire', 'ocean'];
+      var VALID_BG_IDS = ['default', 'aurora', 'gold', 'neon', 'space', 'fire', 'ocean', 'custom'];
       if (!VALID_BG_IDS.includes(presetId)) {
         if (ack) ack({ ok: false, error: 'invalid preset' }); return;
       }
-      if (presetId === 'default') panelStageBackground.delete(roomId);
-      else panelStageBackground.set(roomId, presetId);
-      io.to(roomId).emit('panel:stage_background_changed', { roomId: roomId, presetId: presetId });
+      var customUrl = null;
+      if (presetId === 'custom') {
+        var rawCustomUrl = String(payload.customUrl || '');
+        if (!/^https:\/\//i.test(rawCustomUrl)) { if (ack) ack({ ok: false, error: 'customUrl must start with https://' }); return; }
+        try { new URL(rawCustomUrl); } catch(e) { if (ack) ack({ ok: false, error: 'invalid customUrl' }); return; }
+        customUrl = rawCustomUrl.slice(0, 500);
+      }
+      if (presetId === 'default') {
+        panelStageBackground.delete(roomId);
+        // Also clear from room object for join sync
+        var _roomForBg = rooms && rooms.get(roomId);
+        if (_roomForBg) delete _roomForBg.panelBg;
+      } else {
+        panelStageBackground.set(roomId, { presetId: presetId, customUrl: customUrl });
+        var _roomForBg2 = rooms && rooms.get(roomId);
+        if (_roomForBg2) _roomForBg2.panelBg = { presetId: presetId, customUrl: customUrl };
+      }
+      io.to(roomId).emit('panel:stage_background_changed', { roomId: roomId, presetId: presetId, customUrl: customUrl });
       if (ack) ack({ ok: true });
     } catch (err) {
       logger.error('[panelHandlers] panel:set_stage_background error:', err);
