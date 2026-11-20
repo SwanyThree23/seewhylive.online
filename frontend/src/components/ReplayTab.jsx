@@ -54,7 +54,7 @@ function fmtDate(ts) {
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
-export default function ReplayTab({ addToast, isLive }) {
+export default function ReplayTab({ addToast, isLive, socket, roomId }) {
   var [clips, setClips]           = useState(REPLAY_CLIPS.map(function(c) { return Object.assign({}, c); }));
   var [playHead, setPlayHead]     = useState(0);
   var [playing, setPlaying]       = useState(false);
@@ -68,6 +68,8 @@ export default function ReplayTab({ addToast, isLive }) {
   var [searchQuery, setSearchQuery] = useState('');
   var [pastStreams, setPastStreams] = useState([]);
   var [activeStream, setActiveStream] = useState(null);
+  var [renderingId, setRenderingId] = useState(null);
+  var [renderedClipId, setRenderedClipId] = useState(null);
   var playRef                     = useRef(null);
   var recRef                      = useRef(null);
   var clipTimerRef                = useRef(null);
@@ -147,6 +149,39 @@ export default function ReplayTab({ addToast, isLive }) {
     }
   }, [isLive]);
 
+  useEffect(function() {
+    if (!activeStream) return;
+    var tok = _replayAuthToken();
+    fetch('/api/clips/' + encodeURIComponent(activeStream), { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (!data || !data.clips || data.clips.length === 0) return;
+        setClips(data.clips.map(function(c) {
+          return { id: c.id, title: c.label || ('Clip at ' + new Date(c.ts * 1000).toLocaleTimeString()), start: 0, end: 0, highlight: false, chapter: false, thumb: '📍', isMarker: true };
+        }));
+      })
+      .catch(function() {});
+  }, [activeStream]);
+
+  useEffect(function() {
+    if (!socket) return;
+    var onDone = function(data) {
+      setRenderingId(null);
+      setRenderedClipId(data.clipId || null);
+      if (addToast) addToast('Clip rendered: ' + (data.label || 'clip'), 'success');
+    };
+    var onErr = function(data) {
+      setRenderingId(null);
+      if (addToast) addToast('Render failed: ' + (data.error || 'unknown'), 'error');
+    };
+    socket.on('clip-render-done', onDone);
+    socket.on('clip-render-error', onErr);
+    return function() {
+      socket.off('clip-render-done', onDone);
+      socket.off('clip-render-error', onErr);
+    };
+  }, [socket]);
+
   var currentClip = null;
   for (var i = 0; i < clips.length; i++) {
     if (playHead >= clips[i].start && playHead < clips[i].end) {
@@ -202,6 +237,33 @@ export default function ReplayTab({ addToast, isLive }) {
       if (reel[ri].id === id) return true;
     }
     return false;
+  }
+
+  var exportClip = function(clip) {
+    if (!clip || !clip.isMarker) { addToast('Select a live clip marker to export', 'info'); return; }
+    if (!socket) { addToast('Not connected — rejoin the room to export clips', 'error'); return; }
+    if (renderingId) { addToast('A render is already in progress', 'info'); return; }
+    setRenderingId(clip.id);
+    setRenderedClipId(null);
+    socket.emit('clip-render', { markerId: clip.id });
+    addToast('Rendering clip…', 'info');
+  }
+
+  var downloadClip = function() {
+    if (!renderedClipId) { addToast('No rendered clip to download', 'error'); return; }
+    var tok = _replayAuthToken();
+    var headers = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+    fetch('/api/clips/download/' + renderedClipId, { headers: headers })
+      .then(function(r) { return r.ok ? r.blob() : Promise.reject(r.status); })
+      .then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'clip-' + renderedClipId.slice(0, 8) + '.mp4';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
+        addToast('Download started', 'success');
+      })
+      .catch(function() { addToast('Download failed', 'error'); });
   }
 
   var exportLabels = {
@@ -352,8 +414,7 @@ export default function ReplayTab({ addToast, isLive }) {
 
           <button
             onClick={function() {
-              var label = exportLabels[exportMode] || exportMode;
-              addToast('📤 ' + label + ' exported! Creator gets 90% of revenue.', 'success');
+              addToast('Select a clip marker from the list below and use EXPORT CLIP to render it', 'info');
             }}
             style={{ background: 'linear-gradient(135deg,' + TEAL + ',' + TEAL_H + ')', border: 'none', borderRadius: 6, padding: '5px 10px', color: BG0, fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0 }}
           >EXPORT</button>
@@ -513,9 +574,16 @@ export default function ReplayTab({ addToast, isLive }) {
                     >— REMOVE REEL</button>
                   )}
                   <button
-                    onClick={function() { addToast('Clip exported: ' + clip.title.slice(0, 20), 'info'); }}
-                    style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '5px 10px', color: TEAL, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
-                  >📤 EXPORT CLIP</button>
+                    onClick={function() { exportClip(clip); }}
+                    disabled={renderingId === clip.id}
+                    style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '5px 10px', color: TEAL, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: renderingId === clip.id ? 'default' : 'pointer', opacity: renderingId === clip.id ? 0.6 : 1 }}
+                  >{renderingId === clip.id ? '⏳ RENDERING…' : (renderedClipId && selected === clip.id ? '⬇ DOWNLOAD' : '📤 EXPORT CLIP')}</button>
+                  {renderedClipId && selected === clip.id && (
+                    <button
+                      onClick={downloadClip}
+                      style={{ background: 'rgba(201,168,76,.18)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 6, padding: '5px 10px', color: GOLD, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
+                    >⬇ DOWNLOAD MP4</button>
+                  )}
                   <button
                     onClick={function() { shareReplay(clip); }}
                     style={{ background: copiedId === clip.id ? 'rgba(201,168,76,.2)' : 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,' + (copiedId === clip.id ? '.6' : '.3') + ')', borderRadius: 6, padding: '5px 10px', color: GOLD, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
@@ -542,13 +610,19 @@ export default function ReplayTab({ addToast, isLive }) {
               </div>
               <div style={{ display: 'flex', gap: 5 }}>
                 <button
-                  onClick={function() { addToast('🎬 Highlight reel exported! Creator gets 90%', 'success'); }}
+                  onClick={function() {
+                    var titles = reel.map(function(c) { return c.title; }).join(', ');
+                    addToast('Export each reel clip using the EXPORT CLIP button above', 'info');
+                  }}
                   style={{ background: 'linear-gradient(135deg,' + PURP + ',' + PURP_H + ')', border: 'none', borderRadius: 6, padding: '5px 10px', color: '#fff', fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
-                >🎬 EXPORT</button>
+                >🎬 EXPORT EACH</button>
                 <button
-                  onClick={function() { addToast('📤 Shared to Techmunity!', 'info'); }}
+                  onClick={function() {
+                    var txt = reel.map(function(c) { return c.title; }).join('\n');
+                    if (navigator.clipboard) { navigator.clipboard.writeText(txt); addToast('Reel titles copied', 'success'); }
+                  }}
                   style={{ background: 'rgba(128,0,32,.15)', border: '1px solid rgba(128,0,32,.4)', borderRadius: 6, padding: '5px 10px', color: PURP_H, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
-                >📤 SHARE</button>
+                >📋 COPY LIST</button>
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
