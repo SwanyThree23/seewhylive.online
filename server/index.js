@@ -2915,6 +2915,10 @@ io.on('connection', function(socket) {
   if (socket.data.userId && !String(socket.data.userId).startsWith('anon')) {
     socket.join('user:' + socket.data.userId);
   }
+  // Join the tenant room so tenant-scoped broadcasts (stream-alert, etc.) are received
+  if (socket.data.tenantId) {
+    socket.join('tenant:' + socket.data.tenantId);
+  }
 
   // ── join-room ──────────────────────────────────────────────────────────
   socket.on('join-room', function(data, ack) {
@@ -2931,6 +2935,7 @@ io.on('connection', function(socket) {
         socket.data.decoded = _upgradeDecoded;
         // Join the per-user room so user-targeted events reach this socket
         socket.join('user:' + socket.data.userId);
+        if (socket.data.tenantId) socket.join('tenant:' + socket.data.tenantId);
       } catch (_upgradeErr) { /* token invalid — stay anon */ }
     }
     var guestId  = socket.data.userId;
