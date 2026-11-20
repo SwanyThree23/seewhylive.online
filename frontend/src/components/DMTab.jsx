@@ -84,14 +84,16 @@ function RequestsPane({ addToast, onAccepted }) {
   );
 }
 
-function ThreadView({ thread, myUserId, onBack }) {
+function ThreadView({ thread, myUserId, onBack, socket }) {
   var [messages, setMessages] = useState([]);
   var [body,     setBody]     = useState('');
   var [sending,  setSending]  = useState(false);
   var bottomRef = useRef(null);
+  var threadIdRef = useRef(thread.id);
+  threadIdRef.current = thread.id;
 
   function load() {
-    fetch('/api/dm/threads/' + encodeURIComponent(thread.id) + '/messages', { headers: _authHeaders() })
+    fetch('/api/dm/threads/' + encodeURIComponent(threadIdRef.current) + '/messages', { headers: _authHeaders() })
       .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(d) { if (d) setMessages(d.messages || []); })
       .catch(function() {});
@@ -99,9 +101,18 @@ function ThreadView({ thread, myUserId, onBack }) {
 
   useEffect(function() {
     load();
-    var id = setInterval(load, 5000);
-    return function() { clearInterval(id); };
   }, [thread.id]);
+
+  useEffect(function() {
+    if (!socket) return;
+    var onNew = function(data) {
+      if (data && (data.threadId === threadIdRef.current || data.thread_id === threadIdRef.current)) {
+        load();
+      }
+    };
+    socket.on('dm:new', onNew);
+    return function() { socket.off('dm:new', onNew); };
+  }, [socket]);
 
   useEffect(function() {
     if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -169,7 +180,7 @@ function ThreadView({ thread, myUserId, onBack }) {
   );
 }
 
-export default function DMTab({ addToast }) {
+export default function DMTab({ addToast, socket }) {
   var [view,       setView]       = useState('threads');
   var [threads,    setThreads]    = useState([]);
   var [loading,    setLoading]    = useState(true);
@@ -198,6 +209,13 @@ export default function DMTab({ addToast }) {
   }
 
   useEffect(function() { loadThreads(); loadPrivacy(); }, []);
+
+  useEffect(function() {
+    if (!socket) return;
+    var onNew = function() { loadThreads(); };
+    socket.on('dm:new', onNew);
+    return function() { socket.off('dm:new', onNew); };
+  }, [socket]);
 
   function handleSavePrivacy(val) {
     setPrivSaving(true);
@@ -243,7 +261,7 @@ export default function DMTab({ addToast }) {
   if (activeThread) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: 480, padding: '0 2px' }}>
-        <ThreadView thread={activeThread} myUserId={myUserId} onBack={function() { setActiveThread(null); loadThreads(); }} />
+        <ThreadView thread={activeThread} myUserId={myUserId} onBack={function() { setActiveThread(null); loadThreads(); }} socket={socket} />
       </div>
     );
   }

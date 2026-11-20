@@ -41,6 +41,7 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
   var [exporting, setExporting]   = useState(false);
   var [exported, setExported]     = useState(null);
   var [exportThumb, setExportThumb] = useState(null);
+  var [exportedClipId, setExportedClipId] = useState(null);
   var [selectedFormat, setFormat] = useState('mp4-1080');
   var [sharing, setSharing]       = useState({});
   var [liveClipping, setLiveClipping] = useState(false);
@@ -76,6 +77,28 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
   useEffect(function() {
     return function() { if (liveClipRef.current) clearTimeout(liveClipRef.current); };
   }, []);
+
+  useEffect(function() {
+    if (!socket) return;
+    var onDone = function(data) {
+      setExporting(false);
+      setExported('mp4');
+      setExportedClipId(data.clipId || null);
+      var label = data.label || 'clip';
+      if (addToastRef.current) addToastRef.current('Clip rendered: ' + label, 'success');
+      setTab('share');
+    };
+    var onErr = function(data) {
+      setExporting(false);
+      if (addToastRef.current) addToastRef.current('Render failed: ' + (data.error || 'unknown error'), 'error');
+    };
+    socket.on('clip-render-done', onDone);
+    socket.on('clip-render-error', onErr);
+    return function() {
+      socket.off('clip-render-done', onDone);
+      socket.off('clip-render-error', onErr);
+    };
+  }, [socket]);
 
   useEffect(function() {
     if (!roomId) return;
@@ -255,30 +278,51 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, s
   }
 
   var exportClip = function() {
+    if (!socket || !selected || !selected.isMarker) {
+      addToast('Select a clip marker to export', 'error');
+      return;
+    }
     setExporting(true);
-    var capturedFormat = selectedFormat;
-    var thumbVal = editClip ? editClip.thumbnail : null;
-    setTimeout(function() {
-      setExporting(false);
-      setExported(capturedFormat);
-      setExportThumb(thumbVal);
-      var fmt = EXPORT_FORMATS.find(function(f) { return f.id === capturedFormat; });
-      addToast('Exported: ' + (fmt ? fmt.label : capturedFormat), 'success');
-      setTab('share');
-    }, 1800 + Math.floor(Math.random() * 1200));
+    setExported(null);
+    setExportedClipId(null);
+    var thumbVal = selected ? selected.thumbnail : null;
+    setExportThumb(thumbVal);
+    socket.emit('clip-render', { markerId: selected.id });
   }
 
   var shareClip = function(pid) {
+    if (pid === 'dl') {
+      if (!exportedClipId) { addToast('No rendered clip to download', 'error'); return; }
+      var tok = '';
+      try { tok = localStorage.getItem('sw_token') || ''; } catch(_) {}
+      var dlHeaders = tok ? { 'Authorization': 'Bearer ' + tok } : {};
+      setSharing(function(prev) { return Object.assign({}, prev, { dl: true }); });
+      fetch('/api/clips/download/' + exportedClipId, { headers: dlHeaders })
+        .then(function(r) { return r.ok ? r.blob() : Promise.reject(r.status); })
+        .then(function(blob) {
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'clip-' + exportedClipId.slice(0, 8) + '.mp4';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
+          setSharing(function(prev) { return Object.assign({}, prev, { dl: false }); });
+          addToast('Download started', 'success');
+        })
+        .catch(function() {
+          setSharing(function(prev) { return Object.assign({}, prev, { dl: false }); });
+          addToast('Download failed', 'error');
+        });
+      return;
+    }
     setSharing(function(prev) { return Object.assign({}, prev, { [pid]: true }); });
     setTimeout(function() {
       setSharing(function(prev) { return Object.assign({}, prev, { [pid]: false }); });
       var plat = SHARE_PLATFORMS.find(function(p) { return p.id === pid; });
-      if (pid === 'dl') {
-        addToast('Download started', 'success');
-      } else {
-        addToast('Shared to ' + (plat ? plat.label : pid), 'success');
-      }
-    }, 900 + Math.floor(Math.random() * 600));
+      addToast('Share to ' + (plat ? plat.label : pid) + ' — copy the download link to share', 'info');
+    }, 300);
   }
 
   var editClip = selected;

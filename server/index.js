@@ -2472,6 +2472,25 @@ app.get('/api/clips/:roomId', requireAuth, function(req, res) {
   }
 });
 
+// GET /api/clips/download/:clipId — serve rendered mp4 to the requesting host/cohost
+app.get('/api/clips/download/:clipId', requireAuth, function(req, res) {
+  var clipId = String(req.params.clipId || '');
+  if (!clipId || !/^[0-9a-f-]{36}$/.test(clipId)) {
+    return res.status(400).json({ error: 'invalid clipId' });
+  }
+  if (req.user.role !== 'host' && req.user.role !== 'owner' && req.user.role !== 'cohost' && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'forbidden' });
+  }
+  var filePath = '/opt/seewhy/clips/' + clipId + '.mp4';
+  var fs = require('fs');
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'clip not found' });
+  }
+  res.setHeader('Content-Disposition', 'attachment; filename="clip-' + clipId.slice(0, 8) + '.mp4"');
+  res.setHeader('Content-Type', 'video/mp4');
+  res.sendFile(filePath);
+});
+
 // POST /api/connect/onboard
 app.post('/api/connect/onboard', requireAuth, stripeOnboardRateLimit, async function(req, res) {
   try {
