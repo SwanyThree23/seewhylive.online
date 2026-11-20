@@ -499,7 +499,16 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                     {/* Action buttons */}
                     <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                       <button
-                        onClick={function() { addToast('📡 Collab stream shared to all platforms!', 'info'); }}
+                        onClick={function() {
+                          var shareUrl = window.location.origin + (roomId ? '?room=' + encodeURIComponent(roomId) : '');
+                          if (navigator.clipboard) {
+                            navigator.clipboard.writeText(shareUrl).catch(function() {});
+                          }
+                          if (socket && roomId) {
+                            socket.emit('collab-message', { roomId: roomId, collabId: req.id, fromUser: username || 'Host', toCreator: req.from, text: '🔗 Tune in: ' + shareUrl });
+                          }
+                          addToast('📡 Stream link copied & shared to collab!', 'success');
+                        }}
                         style={{ flex: 1, background: 'linear-gradient(135deg,rgba(201,168,76,.16),rgba(201,168,76,.07))', border: '1px solid rgba(201,168,76,.35)', borderRadius: 8, padding: '9px 0', color: TEAL_H, fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
                         📡 SHARE STREAM
                       </button>

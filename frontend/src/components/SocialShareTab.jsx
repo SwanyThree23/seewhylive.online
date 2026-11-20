@@ -248,7 +248,17 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
                   </div>
                 </div>
                 <button
-                  onClick={function() { setInvitedIds(function(prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; }); if (addToast) addToast('📨 Invite sent to ' + m.name, 'success'); }}
+                  onClick={function() {
+                    if (wasInvited) return;
+                    var token = localStorage.getItem('sw_token') || '';
+                    fetch('/api/invites', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                      body: JSON.stringify({ toUserId: m.id, roomId: roomId, message: shareMsg })
+                    }).catch(function() {});
+                    setInvitedIds(function(prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; });
+                    if (addToast) addToast('📨 Invite sent to ' + m.name, 'success');
+                  }}
                   style={{ background: wasInvited ? 'rgba(201,168,76,.15)' : 'rgba(201,168,76,.12)', border: '1px solid ' + (wasInvited ? 'rgba(201,168,76,.4)' : 'rgba(201,168,76,.35)'), borderRadius: 7, padding: '6px 12px', color: wasInvited ? '#C9A84C' : '#C9A84C', fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: wasInvited ? 'default' : 'pointer', flexShrink: 0, minWidth: 66, textAlign: 'center', letterSpacing: 1 }}>
                   {wasInvited ? '✓ SENT' : 'INVITE'}
                 </button>
@@ -257,7 +267,20 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
           })}
 
           <button
-            onClick={function() { communityMembers.forEach(function(m) { if (m.status !== 'OFFLINE') { setInvitedIds(function(prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; }); } }); if (addToast) addToast('📨 Invites sent to all online members!', 'success'); }}
+            onClick={function() {
+              var token = localStorage.getItem('sw_token') || '';
+              communityMembers.forEach(function(m) {
+                if (m.status !== 'OFFLINE') {
+                  fetch('/api/invites', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ toUserId: m.id, roomId: roomId, message: shareMsg })
+                  }).catch(function() {});
+                  setInvitedIds(function(prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; });
+                }
+              });
+              if (addToast) addToast('📨 Invites sent to all online members!', 'success');
+            }}
             style={{ marginTop: 4, background: 'linear-gradient(135deg,rgba(201,168,76,.2),rgba(128,0,32,.12))', border: '1px solid rgba(201,168,76,.4)', borderRadius: 10, padding: '12px 0', color: '#C9A84C', fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 2, textAlign: 'center' }}>
             📨 INVITE ALL ONLINE
           </button>
