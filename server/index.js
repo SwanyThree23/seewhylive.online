@@ -2174,10 +2174,21 @@ app.delete('/api/community/:id', requireAuth, function(req, res) {
 });
 
 // POST /api/push/subscribe
+var _PUSH_SSRF_PRIV = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
 app.post('/api/push/subscribe', requireAuth, function(req, res) {
   var sub = req.body.subscription;
   if (!sub || !sub.endpoint) return res.status(400).json({ error: 'Missing subscription' });
-  var endpoint = String(sub.endpoint).slice(0, 2000);
+  var endpoint = String(sub.endpoint);
+  if (!/^https:\/\//.test(endpoint) || endpoint.length > 2048) {
+    return res.status(400).json({ error: 'invalid push subscription endpoint' });
+  }
+  var _parsedEndpoint;
+  try { _parsedEndpoint = new URL(endpoint); } catch (_) {
+    return res.status(400).json({ error: 'invalid push subscription endpoint' });
+  }
+  if (!_parsedEndpoint.hostname || _PUSH_SSRF_PRIV.test(_parsedEndpoint.hostname)) {
+    return res.status(400).json({ error: 'invalid push subscription endpoint' });
+  }
   var username = String(req.body.username || '').slice(0, 100);
   var keys = sub.keys || {};
   var p256dh = String(keys.p256dh || '').slice(0, 200);
