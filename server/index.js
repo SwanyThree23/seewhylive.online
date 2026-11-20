@@ -792,6 +792,7 @@ var roomTimerState      = new Map();  // roomId → { seconds, startTs } when co
 var roomRaisedHands     = new Map();  // roomId → Map<guestId, { username, ts }> for raised hands
 var pendingJoinRequests = new Map();  // roomId → Map<guestId, { username, ts }> for locked-stage join requests
 var qaAnsweringState    = new Map();  // roomId → { id, username, text } when host is answering a Q&A question
+var pkMatchmakeQueue    = new Map();  // type → [{ socketId, userId, username, roomId, ts }]
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
 var qaUpvoteThrottle    = new Map();  // socketId → lastQaUpvoteTs ms (500ms throttle)
@@ -2071,6 +2072,19 @@ try {
 try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedule_rsvps_schedule ON schedule_rsvps(schedule_id)').run(); } catch(_) {}
 try { db.prepare('CREATE INDEX IF NOT EXISTS idx_schedule_rsvps_user    ON schedule_rsvps(user_id)').run();     } catch(_) {}
 
+try {
+  db.exec(`CREATE TABLE IF NOT EXISTS showcase_applications (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL,
+    username   TEXT NOT NULL,
+    state      TEXT NOT NULL,
+    message    TEXT,
+    status     TEXT NOT NULL DEFAULT 'pending',
+    applied_at INTEGER NOT NULL
+  )`);
+} catch(_) {}
+try { db.prepare('CREATE INDEX IF NOT EXISTS idx_showcase_apps_user ON showcase_applications(user_id)').run(); } catch(_) {}
+
 // POST /api/schedule/:id/rsvp  — RSVP to an event
 app.post('/api/schedule/:id/rsvp', requireAuth, function(req, res) {
   var id = String(req.params.id || '').trim();
@@ -2131,6 +2145,22 @@ app.post('/api/state-rankings/results', requireAuth, function(req, res) {
       update.run(idx + 1, idx + 1, r.state_abbr);
     });
     return res.json({ ok: true });
+  } catch(e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/showcase/apply  — submit state showcase application
+app.post('/api/showcase/apply', requireAuth, function(req, res) {
+  var state   = String(req.body.state   || '').trim().toUpperCase().slice(0, 4);
+  var message = String(req.body.message || '').trim().slice(0, 500);
+  if (!state) return res.status(400).json({ error: 'state is required' });
+  try {
+    var existing = db.prepare('SELECT id FROM showcase_applications WHERE user_id = ? AND status = ?').get(req.user.id, 'pending');
+    if (existing) return res.json({ ok: true, duplicate: true, message: 'Application already pending' });
+    var crypto = require('crypto');
+    var id = crypto.randomUUID();
+    db.prepare('INSERT INTO showcase_applications (id, user_id, username, state, message, status, applied_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      .run(id, req.user.id, req.user.userId || req.user.id, state, message || null, 'pending', Math.floor(Date.now() / 1000));
+    return res.status(201).json({ ok: true, id: id });
   } catch(e) { return res.status(500).json({ error: 'Server error' }); }
 });
 
@@ -6444,6 +6474,51 @@ io.on('connection', function(socket) {
     });
   });
 
+  // ── PK matchmaking queue ──────────────────────────────────────────────
+  socket.on('pk-matchmake', function(data) {
+    var _mmUserId = socket.data.userId;
+    if (!_mmUserId || String(_mmUserId).startsWith('anon')) { socket.emit('pk-matchmake-error', { error: 'Sign in to use matchmaking' }); return; }
+    var type = String((data && data.type) || 'instant').toLowerCase().slice(0, 20);
+    if (['instant', 'ranked', 'clans'].indexOf(type) === -1) type = 'instant';
+    var username = socket.data.username || String(_mmUserId).slice(0, 12);
+    var roomId   = socket.data.roomId   || null;
+    var now      = Date.now();
+    var entry    = { socketId: socket.id, userId: String(_mmUserId), username: username, roomId: roomId, type: type, ts: now };
+    if (!pkMatchmakeQueue.has(type)) pkMatchmakeQueue.set(type, []);
+    var queue = pkMatchmakeQueue.get(type);
+    if (queue.find(function(e) { return e.userId === entry.userId; })) {
+      socket.emit('pk-matchmake-searching', { type: type, position: queue.length }); return;
+    }
+    queue = queue.filter(function(e) { return now - e.ts < 120000; });
+    var opponent = null;
+    for (var qi = 0; qi < queue.length; qi++) {
+      var candidate = queue[qi];
+      if (candidate.userId !== entry.userId) {
+        var opponentSk = io.sockets.sockets.get(candidate.socketId);
+        if (opponentSk && opponentSk.connected) { opponent = candidate; queue.splice(qi, 1); break; }
+      }
+    }
+    pkMatchmakeQueue.set(type, queue);
+    if (opponent) {
+      var opponentSock = io.sockets.sockets.get(opponent.socketId);
+      var matchPayload = { type: type, challengerUsername: entry.username, challengerRoomId: entry.roomId, defenderUsername: opponent.username, defenderRoomId: opponent.roomId, matchedAt: now };
+      socket.emit('pk-match-found', Object.assign({}, matchPayload, { role: 'challenger', opponentUsername: opponent.username, opponentRoomId: opponent.roomId }));
+      if (opponentSock) opponentSock.emit('pk-match-found', Object.assign({}, matchPayload, { role: 'defender', opponentUsername: entry.username, opponentRoomId: entry.roomId }));
+    } else {
+      queue.push(entry);
+      pkMatchmakeQueue.set(type, queue);
+      socket.emit('pk-matchmake-searching', { type: type, position: queue.length });
+    }
+  });
+
+  socket.on('pk-matchmake-cancel', function() {
+    var _mmcId = String(socket.data.userId || '');
+    pkMatchmakeQueue.forEach(function(q, type) {
+      pkMatchmakeQueue.set(type, q.filter(function(e) { return e.userId !== _mmcId; }));
+    });
+    socket.emit('pk-matchmake-cancelled', {});
+  });
+
   // ── PK cheer handler ──────────────────────────────────────────────────
   socket.on('pk-cheer', function(data) {
     var cheerRoomId = socket.data.roomId;
@@ -7167,6 +7242,8 @@ io.on('connection', function(socket) {
     soundFxThrottle.delete(socket.id);
     pkStartThrottle.delete(socket.id);
     watchPartyThrottle.delete(socket.id);
+    var _mmDcId = String(socket.data.userId || '');
+    if (_mmDcId) { pkMatchmakeQueue.forEach(function(q, t) { pkMatchmakeQueue.set(t, q.filter(function(e) { return e.userId !== _mmDcId; })); }); }
     auraTriggerThrottle.delete(socket.id);
     botMsgThrottle.delete(socket.id);
     streamInfoThrottle.delete(socket.id);
