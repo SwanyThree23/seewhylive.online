@@ -18,7 +18,7 @@ async function assignSlot({ roomId, userId, tenantId }) {
 
   const existing = await db.query(
     `SELECT s.*, u.display_name, u.avatar_url
-     FROM room_panel_slots s JOIN users u ON u.id = s.user_id
+     FROM room_panel_slots s LEFT JOIN users u ON u.id = s.user_id AND u.deleted_at IS NULL
      WHERE s.stream_id = $1 AND s.user_id = $2`,
     [roomId, userId]
   );
@@ -103,7 +103,7 @@ async function requestJoin({ roomId, userId }) {
   );
   const row = result.rows[0];
   // Enrich with display info for the host's approval queue
-  const userRow = await db.query('SELECT display_name, avatar_url FROM users WHERE id = $1', [userId]);
+  const userRow = await db.query('SELECT display_name, avatar_url FROM users WHERE id = $1 AND deleted_at IS NULL', [userId]);
   if (userRow.rows[0]) {
     row.display_name = userRow.rows[0].display_name;
     row.avatar_url   = userRow.rows[0].avatar_url;
@@ -204,7 +204,7 @@ async function swapSlots({ roomId, userA, userB }) {
 async function getPanelState(roomId) {
   const slots = await db.query(
     `SELECT s.*, u.display_name, u.avatar_url
-     FROM room_panel_slots s JOIN users u ON u.id = s.user_id
+     FROM room_panel_slots s LEFT JOIN users u ON u.id = s.user_id AND u.deleted_at IS NULL
      WHERE s.stream_id = $1 ORDER BY s.slot_index`,
     [roomId]
   );
