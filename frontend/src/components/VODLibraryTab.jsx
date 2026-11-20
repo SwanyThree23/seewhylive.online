@@ -79,19 +79,30 @@ export default function VODLibraryTab({ addToast, isLive }) {
 
   useEffect(function() {
     if (tab !== 'channels') return;
-    fetch('/api/users/creators')
-      .then(function(r) { return r.json(); })
+    var liveRoomsByHostId = {};
+    fetch('/api/rooms/live')
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (d && Array.isArray(d.rooms)) {
+          d.rooms.forEach(function(r) {
+            if (r.hostUserId) liveRoomsByHostId[r.hostUserId] = r.roomId;
+          });
+        }
+        return fetch('/api/users/creators').then(function(r) { return r.json(); });
+      })
       .then(function(d) {
         if (!d || !Array.isArray(d.creators) || d.creators.length === 0) return;
         var CHANNEL_COLORS_VOD = [GOLD, TEAL, '#C0392B', '#FF6B9D', '#7B5DA6'];
         var mapped = d.creators.slice(0, 8).map(function(c, i) {
+          var liveRoomId = liveRoomsByHostId[c.id] || null;
           return {
             id:     c.id,
             name:   c.displayName || c.id.slice(0, 12),
             handle: '@' + (c.displayName || c.id).toLowerCase().replace(/\s+/g, '').slice(0, 15),
             thumb:  '🎙',
             color:  CHANNEL_COLORS_VOD[i % CHANNEL_COLORS_VOD.length],
-            status: 'online',
+            status: liveRoomId ? 'live' : 'online',
+            roomId: liveRoomId,
           };
         });
         setChannels(mapped);
@@ -329,9 +340,15 @@ export default function VODLibraryTab({ addToast, isLive }) {
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: isLiveCh ? RED : TEAL }} />
                     <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: isLiveCh ? RED : TEAL, letterSpacing: 1 }}>{isLiveCh ? 'LIVE' : 'ONLINE'}</span>
                   </div>
-                  <button onClick={function() { if (addToast) addToast('Opening ' + ch.name, 'info'); }}
-                    style={{ width: '100%', padding: '7px 0', background: 'rgba(255,255,255,.06)', border: '1px solid ' + BORDER, borderRadius: 8, color: TEXT, fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, letterSpacing: 1, cursor: 'pointer' }}>
-                    VISIT
+                  <button onClick={function() {
+                    if (ch.roomId) {
+                      window.location.href = window.location.origin + '?room=' + encodeURIComponent(ch.roomId);
+                    } else {
+                      if (addToast) addToast(ch.name + ' is not live right now', 'info');
+                    }
+                  }}
+                    style={{ width: '100%', padding: '7px 0', background: isLiveCh ? 'rgba(255,26,60,.15)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (isLiveCh ? 'rgba(255,26,60,.4)' : BORDER), borderRadius: 8, color: isLiveCh ? RED : TEXT, fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, letterSpacing: 1, cursor: ch.roomId ? 'pointer' : 'not-allowed', opacity: ch.roomId ? 1 : 0.5 }}>
+                    {isLiveCh ? 'JOIN LIVE' : 'VISIT'}
                   </button>
                 </div>
               );

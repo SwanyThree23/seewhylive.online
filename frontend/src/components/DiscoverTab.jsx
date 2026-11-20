@@ -416,7 +416,14 @@ export default function DiscoverTab(props) {
           marginBottom: 8,
           cursor: 'pointer',
         },
-        onClick: function() { addToast('Joining ' + stream.title + '...', 'info'); }
+        onClick: function() {
+          var roomId = stream.id;
+          if (roomId) {
+            window.location.href = window.location.origin + '?room=' + encodeURIComponent(roomId);
+          } else {
+            addToast('Room unavailable', 'info');
+          }
+        }
       },
       React.createElement(
         'div',
