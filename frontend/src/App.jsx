@@ -1586,7 +1586,7 @@ export default function App() {
             onComplete={function(title, priv) {
               setShowWizard(false);
               if (title) setStreamInfo(function(s) { return Object.assign({}, s, { title: title }); });
-              if (priv) { if (socketRef.current) socketRef.current.emit('room-privacy', { roomId: roomId, isPrivate: true }); }
+              if (priv) { if (socketRef.current) socketRef.current.emit('room-private', { enabled: true }); }
             }}
             onDismiss={function() { setShowWizard(false); }}
           />

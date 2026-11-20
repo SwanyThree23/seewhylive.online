@@ -7634,7 +7634,7 @@ export default function LiveRoomPage({
                 <button onClick={function() {
                   var next = !privateMode;
                   setPrivateMode(next);
-                  if (socket) socket.emit('room-private', { roomId: roomId, private: next, password: next ? (privatePwd.trim() || null) : null });
+                  if (socket) socket.emit('room-private', { enabled: next });
                   if (addToast) addToast(next ? '🔒 Room locked' : '🔓 Room opened', next ? 'success' : 'info');
                 }} style={{ background: privateMode ? 'rgba(109,30,212,.7)' : 'rgba(255,255,255,.08)', border: '1px solid ' + (privateMode ? 'rgba(109,30,212,.5)' : BORDER), borderRadius: 8, padding: '6px 14px', color: privateMode ? '#fff' : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
                   {privateMode ? 'LOCKED' : 'OPEN'}
