@@ -114,26 +114,9 @@ async function getSelectedTier(userId, tenantId) {
 async function setSelectedTier(userId, tierId, tenantId) {
   if (!tierId || typeof tierId !== 'string' || tierId.length > 100) throw new Error('tierId is required');
   var payload = { tierId: tierId.trim() };
-
-  let selQ = supabase.from('user_settings').select('id')
-    .eq('user_id', userId).eq('setting_key', 'selected_tier').limit(1);
-  if (tenantId) selQ = selQ.eq('tenant_id', tenantId);
-  const { data: existing, error: selErr } = await selQ;
-  if (selErr) throw selErr;
-
-  if (existing && existing.length) {
-    const { error: updErr } = await supabase
-      .from('user_settings')
-      .update({ setting_value: payload, updated_at: new Date().toISOString() })
-      .eq('id', existing[0].id)
-      .eq('user_id', userId);
-    if (updErr) throw updErr;
-  } else {
-    var insRow = { user_id: userId, setting_key: 'selected_tier', setting_value: payload };
-    if (tenantId) insRow.tenant_id = tenantId;
-    const { error: insErr } = await supabase.from('user_settings').insert(insRow);
-    if (insErr) throw insErr;
-  }
+  var row = { user_id: userId, tenant_id: tenantId || null, setting_key: 'selected_tier', setting_value: payload, updated_at: new Date().toISOString() };
+  const { error } = await supabase.from('user_settings').upsert(row, { onConflict: 'user_id,tenant_id,setting_key' });
+  if (error) throw error;
   return payload;
 }
 
