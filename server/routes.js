@@ -783,9 +783,29 @@ var _DEFAULT_SUBSCRIBER_TIERS = [
 router.get('/users/:username', async function(req, res) {
   try {
     var username = String(req.params.username || '').slice(0, 80);
-    var _profileUserId = _usernameIndex[username];
-    var _storedProfile = (_profileUserId && _userProfiles[_profileUserId]) || null;
 
+    // Look up user in Postgres
+    var pgUser = null;
+    try {
+      var pgRes = await db.query(
+        'SELECT id, display_name FROM users WHERE lower(username) = lower($1) AND tenant_id = $2 AND deleted_at IS NULL LIMIT 1',
+        [username, req.tenantId]
+      );
+      pgUser = pgRes.rows[0] || null;
+    } catch (_pgErr) {}
+
+    // Read extended profile from SQLite (display_name, bio, avatar_emoji may be overridden here)
+    var sdb = getRoutesDb();
+    var sqliteProfile = null;
+    if (pgUser) {
+      try {
+        sqliteProfile = sdb.prepare(
+          'SELECT display_name, bio, avatar_emoji, tier FROM user_profiles WHERE user_id = ?'
+        ).get(pgUser.id);
+      } catch (_sErr) {}
+    }
+
+    var userId = pgUser ? pgUser.id : '';
     var recentStreams = [];
     try {
       var _streamsRes = await db.query(
@@ -795,46 +815,20 @@ router.get('/users/:username', async function(req, res) {
       recentStreams = (_streamsRes.rows || []).map(function(r) {
         return { id: r.id, title: r.title, viewerPeak: r.peak_viewers || 0, endedAt: r.ended_at };
       });
-    } catch (dbErr) { /* Supabase unavailable — return empty */ }
+    } catch (_dbErr) {}
 
-    var baseProfile = {
-      id:              _profileUserId || '',
+    return res.json({
+      id:              userId,
       username:        username,
-      displayName:     (_storedProfile && _storedProfile.displayName) || username,
-      bio:             (_storedProfile && _storedProfile.bio)         || 'SeeWhy LIVE creator',
-      avatarEmoji:     (_storedProfile && _storedProfile.avatarEmoji) || '🎙',
+      displayName:     (sqliteProfile && sqliteProfile.display_name) || (pgUser && pgUser.display_name) || username,
+      bio:             (sqliteProfile && sqliteProfile.bio)          || 'SeeWhy LIVE creator',
+      avatarEmoji:     (sqliteProfile && sqliteProfile.avatar_emoji) || '🎙',
+      tier:            (sqliteProfile && sqliteProfile.tier)         || 'free',
       followerCount:   0,
       isLive:          false,
-      tier:            'free',
       recentStreams:   recentStreams,
       subscriberTiers: _DEFAULT_SUBSCRIBER_TIERS,
-    };
-
-    return res.json(baseProfile);
-  } catch (err) {
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-router.put('/users/me', requireAuth, profileUpdateRateLimit, function(req, res) {
-  try {
-    var displayName = String(req.body.displayName || '').slice(0, 80);
-    var bio         = String(req.body.bio         || '').slice(0, 500);
-    var avatarEmoji = String(req.body.avatarEmoji || '').slice(0, 8);
-    if (!_userProfiles[req.user.id] && Object.keys(_userProfiles).length >= 50000) {
-      return res.status(503).json({ success: false, error: 'Server at capacity' });
-    }
-    var _oldProfile = _userProfiles[req.user.id];
-    if (_oldProfile && _oldProfile.displayName && _oldProfile.displayName !== displayName) {
-      delete _usernameIndex[_oldProfile.displayName];
-    }
-    _userProfiles[req.user.id] = {
-      displayName: displayName,
-      bio: bio,
-      avatarEmoji: avatarEmoji
-    };
-    if (displayName) _usernameIndex[displayName] = req.user.id;
-    return res.json({ success: true });
+    });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
   }
