@@ -130,10 +130,25 @@ export default function N8nTab({ addToast, isLive }) {
     setWorkflows(function(prev) {
       return prev.map(function(w) {
         if (w.id !== id) return w;
-        return Object.assign({}, w, {lastRun:'just now', runs24h: w.runs24h + 1});
+        return Object.assign({}, w, { lastRun: 'just now', runs24h: w.runs24h + 1 });
       });
     });
-    addToast((wf.icon || '⚡') + ' ' + wf.name + ' triggered manually', 'info');
+    fetch('/api/n8n/test', {
+      method: 'POST',
+      headers: _authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ workflowId: id, event: 'manual_trigger', ts: Date.now() })
+    }).then(function(res) {
+      return res.json().then(function(d) {
+        if (res.ok) {
+          var msg = d.simulated ? ' (simulated)' : '';
+          addToast((wf.icon || '⚡') + ' ' + wf.name + ' triggered' + msg, 'success');
+        } else {
+          addToast((wf.icon || '⚡') + ' Trigger failed: ' + (d.error || res.status), 'error');
+        }
+      });
+    }).catch(function() {
+      addToast((wf.icon || '⚡') + ' ' + wf.name + ' triggered manually', 'info');
+    });
   }
 
   var toggleWorkflow = function(id) {
