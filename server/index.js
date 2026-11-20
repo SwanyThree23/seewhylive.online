@@ -1407,8 +1407,8 @@ app.post('/api/fuel/daily-bonus', requireAuth, fuelRateLimit, function(req, res)
 // Valid FUEL packages: { amountCents -> fuelGrant }
 var FUEL_PACKAGES = { 499: 500, 999: 1100, 1999: 2500, 4999: 7000 };
 
-// POST /api/fuel/purchase  — credit FUEL after Stripe payment confirmed client-side
-app.post('/api/fuel/purchase', requireAuth, fuelRateLimit, function(req, res) {
+// POST /api/fuel/purchase  — credit FUEL after verifying Stripe payment succeeded server-side
+app.post('/api/fuel/purchase', requireAuth, fuelRateLimit, async function(req, res) {
   try {
     var userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Not authenticated' });
@@ -1421,6 +1421,15 @@ app.post('/api/fuel/purchase', requireAuth, fuelRateLimit, function(req, res) {
     }
     var dup = db.prepare('SELECT id FROM fuel_transactions WHERE type = ? AND ref_id = ?').get('purchase', paymentIntentId);
     if (dup) return res.status(409).json({ error: 'Payment already applied' });
+    // Verify the payment intent succeeded on Stripe — never trust the client alone.
+    var pi;
+    try { pi = await stripeModule.getStripe().paymentIntents.retrieve(paymentIntentId); }
+    catch (stripeErr) {
+      logger.error('[fuel/purchase] Stripe PI lookup failed pi=%s err=%s', paymentIntentId, stripeErr.message);
+      return res.status(400).json({ error: 'Could not verify payment' });
+    }
+    if (pi.status !== 'succeeded') return res.status(400).json({ error: 'Payment not completed' });
+    if (pi.amount !== amountCents) return res.status(400).json({ error: 'Amount mismatch' });
     var now = Math.floor(Date.now() / 1000);
     var txId = uuidv4();
     var credit = db.transaction(function() {
@@ -1440,17 +1449,27 @@ app.post('/api/fuel/purchase', requireAuth, fuelRateLimit, function(req, res) {
   }
 });
 
-// POST /api/fuel/confirm  — idempotent credit with paymentIntentId dedup
-app.post('/api/fuel/confirm', requireAuth, fuelRateLimit, function(req, res) {
+// POST /api/fuel/confirm  — idempotent credit with server-side Stripe verification
+app.post('/api/fuel/confirm', requireAuth, fuelRateLimit, async function(req, res) {
   try {
     var userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Not authenticated' });
-    var paymentIntentId = req.body && req.body.paymentIntentId;
-    if (!paymentIntentId || typeof paymentIntentId !== 'string') return res.status(400).json({ error: 'paymentIntentId required' });
-    var amountFuel = parseInt(req.body.amountFuel, 10);
-    if (!amountFuel || amountFuel <= 0 || amountFuel > 100000) return res.status(400).json({ error: 'Invalid amountFuel' });
+    var paymentIntentId = String((req.body && req.body.paymentIntentId) || '').trim();
+    if (!paymentIntentId || !/^pi_[A-Za-z0-9]{10,}$/.test(paymentIntentId)) {
+      return res.status(400).json({ error: 'Valid paymentIntentId required' });
+    }
     var dup = db.prepare('SELECT id FROM fuel_transactions WHERE type = ? AND ref_id = ?').get('purchase', paymentIntentId);
     if (dup) return res.status(409).json({ error: 'Payment already applied' });
+    // Verify payment on Stripe and derive amountFuel from the actual charge — never trust client amount.
+    var pi;
+    try { pi = await stripeModule.getStripe().paymentIntents.retrieve(paymentIntentId); }
+    catch (stripeErr) {
+      logger.error('[fuel/confirm] Stripe PI lookup failed pi=%s err=%s', paymentIntentId, stripeErr.message);
+      return res.status(400).json({ error: 'Could not verify payment' });
+    }
+    if (pi.status !== 'succeeded') return res.status(400).json({ error: 'Payment not completed' });
+    var amountFuel = FUEL_PACKAGES[pi.amount];
+    if (!amountFuel) return res.status(400).json({ error: 'Unknown package amount' });
     var now = Math.floor(Date.now() / 1000);
     var txId = uuidv4();
     var credit = db.transaction(function() {
