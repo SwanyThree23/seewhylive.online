@@ -166,6 +166,34 @@ router.get('/leaderboard', async function(req, res) {
   }
 });
 
+// GET /api/battles/my-stats — authenticated user's own battle record
+router.get('/my-stats', requireAuth, async function(req, res) {
+  try {
+    var userId = req.user.id;
+    var result = await db.query(
+      'SELECT ' +
+      '  COUNT(*) FILTER (WHERE winner_id = $1) AS wins, ' +
+      '  COUNT(*) FILTER (WHERE (challenger_id = $1 OR defender_id = $1) AND winner_id IS NOT NULL AND winner_id != $1) AS losses, ' +
+      '  COALESCE(SUM(CASE WHEN winner_id = $1 THEN ' +
+      '    CASE WHEN challenger_id = $1 THEN challenger_points ELSE defender_points END ' +
+      '  ELSE 0 END), 0) AS total_points ' +
+      'FROM pk_battles ' +
+      'WHERE (challenger_id = $1 OR defender_id = $1) AND status = $2 AND tenant_id = $3',
+      [userId, 'ended', req.tenantId]
+    );
+    var row  = result.rows[0] || {};
+    var wins = parseInt(row.wins, 10) || 0;
+    var losses = parseInt(row.losses, 10) || 0;
+    var pts  = parseInt(row.total_points, 10) || 0;
+    var elo  = 1200 + wins * 150 - losses * 75;
+    if (elo < 400) elo = 400;
+    res.json({ wins: wins, losses: losses, totalPoints: pts, elo: elo });
+  } catch (err) {
+    logger.error('[ROUTE ERROR]', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/:id', requireAuth, validateId, async function(req, res) {
   try {
     var battle = await battleService.getBattle(req.params.id, req.tenantId);
