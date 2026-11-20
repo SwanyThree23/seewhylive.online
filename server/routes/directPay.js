@@ -128,9 +128,11 @@ router.post('/', requireAuth, directPayLimit, async function(req, res) {
     return res.status(500).json({ error: 'Failed to save direct pay handles' });
   }
 
+  // Fetch the existing row including setting_value so we can clean up old vault refs after a
+  // successful update — without this, every POST to this route orphans the previous vault secrets.
   var selectPath = '/rest/v1/user_settings?user_id=eq.' + encodeURIComponent(userId) +
     '&tenant_id=eq.' + encodeURIComponent(tenantId) +
-    '&setting_key=eq.direct_pay_handles&select=id';
+    '&setting_key=eq.direct_pay_handles&select=id,setting_value';
 
   sbReq('GET', selectPath, null, function(err, status, existing) {
     if (err) {
@@ -138,9 +140,13 @@ router.post('/', requireAuth, directPayLimit, async function(req, res) {
       return res.status(500).json({ error: 'Failed to check existing settings' });
     }
 
+    var existingRow = Array.isArray(existing) && existing.length > 0 ? existing[0] : null;
+    var oldVaultRefs = (existingRow && existingRow.setting_value && typeof existingRow.setting_value === 'object')
+      ? existingRow.setting_value : null;
+
     // Include user_id in the PATCH filter to prevent cross-user overwrite if RLS is misconfigured.
-    var op = (Array.isArray(existing) && existing.length > 0)
-      ? { method: 'PATCH', path: '/rest/v1/user_settings?id=eq.' + encodeURIComponent(existing[0].id) + '&user_id=eq.' + encodeURIComponent(userId) + '&tenant_id=eq.' + encodeURIComponent(tenantId), body: { setting_value: vaultRefs, updated_at: new Date().toISOString() } }
+    var op = existingRow
+      ? { method: 'PATCH', path: '/rest/v1/user_settings?id=eq.' + encodeURIComponent(existingRow.id) + '&user_id=eq.' + encodeURIComponent(userId) + '&tenant_id=eq.' + encodeURIComponent(tenantId), body: { setting_value: vaultRefs, updated_at: new Date().toISOString() } }
       : { method: 'POST', path: '/rest/v1/user_settings', body: { tenant_id: tenantId, user_id: userId, setting_key: 'direct_pay_handles', setting_value: vaultRefs } };
 
     sbReq(op.method, op.path, op.body, function(err2, status2) {
@@ -148,6 +154,8 @@ router.post('/', requireAuth, directPayLimit, async function(req, res) {
         cleanupVaultRefs(vaultRefs);
         return res.status(500).json({ error: 'Failed to save direct pay handles' });
       }
+      // Delete old vault secrets now that the new ones are durably stored.
+      if (oldVaultRefs) cleanupVaultRefs(oldVaultRefs);
       res.json({ handles: rawHandles });
     });
   });
