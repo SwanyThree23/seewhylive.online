@@ -36,6 +36,10 @@ export default function CreatorProfileTab(props) {
   var following = followingState[0];
   var setFollowing = followingState[1];
 
+  var followLoadingState = useState(false);
+  var followLoading = followLoadingState[0];
+  var setFollowLoading = followLoadingState[1];
+
   var activeSectionState = useState('about');
   var activeSection = activeSectionState[0];
   var setActiveSection = activeSectionState[1];
@@ -46,12 +50,26 @@ export default function CreatorProfileTab(props) {
 
   useEffect(function() {
     setProfile(null);
+    setFollowing(false);
     var mounted = true;
     fetch('/api/users/' + encodeURIComponent(creatorUsername))
       .then(function(r) { return r.json(); })
       .then(function(d) {
         if (!mounted) return;
-        setProfile((d && d.username) ? d : null);
+        var p = (d && d.username) ? d : null;
+        setProfile(p);
+        if (p && p.id) {
+          var tok = '';
+          try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+          if (tok) {
+            fetch('/api/follows/status/' + encodeURIComponent(p.id), {
+              headers: { 'Authorization': 'Bearer ' + tok }
+            })
+              .then(function(r2) { return r2.ok ? r2.json() : null; })
+              .then(function(fd) { if (mounted && fd) setFollowing(!!fd.following); })
+              .catch(function() {});
+          }
+        }
       })
       .catch(function() {
         if (mounted) setProfile(null);
@@ -60,16 +78,35 @@ export default function CreatorProfileTab(props) {
   }, [creatorUsername]);
 
   var handleFollow = function() {
+    if (followLoading || !profile || !profile.id) return;
     var next = !following;
-    setFollowing(next);
-    if (socket) {
-      socket.emit('follow-creator', { username: profile.username });
-    }
-    if (next) {
-      addToast('Following @' + profile.username, 'success');
-    } else {
-      addToast('Unfollowed @' + profile.username, 'info');
-    }
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+    if (!tok) { addToast('Sign in to follow', 'error'); return; }
+    setFollowLoading(true);
+    var method = next ? 'POST' : 'DELETE';
+    fetch('/api/follows/' + encodeURIComponent(profile.id), {
+      method: method,
+      headers: { 'Authorization': 'Bearer ' + tok }
+    })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) {
+        setFollowLoading(false);
+        if (!d || !d.success) { addToast('Could not update follow — try again', 'error'); return; }
+        setFollowing(next);
+        if (socket) {
+          socket.emit('follow-creator', { username: profile.username });
+        }
+        if (next) {
+          addToast('Following @' + profile.username, 'success');
+        } else {
+          addToast('Unfollowed @' + profile.username, 'info');
+        }
+      })
+      .catch(function() {
+        setFollowLoading(false);
+        addToast('Network error — try again', 'error');
+      });
   }
 
   var handleShareProfile = function() {

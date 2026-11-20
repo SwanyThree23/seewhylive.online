@@ -578,6 +578,15 @@ var referralRegisterLimit = rateLimit({
   validate: { xForwardedForHeader: false },
   message: { error: 'Too many referral attempts — please wait before trying again.' }
 });
+var followRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many follow requests — please wait.' }
+});
 // NOTE: stripeOnboardRateLimit is applied on the route itself (after requireAuth)
 // so req.user.id is available for per-user keying.
 app.use(express.json({ limit: '2mb' }));
@@ -1600,6 +1609,79 @@ app.get('/api/blocks/check/:targetId', requireAuth, function(req, res) {
     var theyBlocked = !!db.prepare('SELECT 1 FROM user_blocks WHERE blocker_id = ? AND blocked_id = ?').get(targetId, userId);
     return res.json({ iBlocked: iBlocked, theyBlocked: theyBlocked });
   } catch (e) { return res.status(500).json({ error: 'Server error' }); }
+});
+
+// ── Follow / Unfollow ────────────────────────────────────────────────────────
+var _FOLLOW_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// GET /api/follows/status/:creatorId
+app.get('/api/follows/status/:creatorId', requireAuth, async function(req, res) {
+  try {
+    var followerId = req.user && req.user.id;
+    if (!followerId) return res.status(401).json({ error: 'Not authenticated' });
+    var creatorId = String(req.params.creatorId || '');
+    if (!_FOLLOW_UUID_RE.test(creatorId)) return res.status(400).json({ error: 'invalid creatorId' });
+    var result = await pgDb.query('SELECT 1 FROM follows WHERE follower_id = $1 AND following_id = $2', [followerId, creatorId]);
+    return res.json({ following: result.rows.length > 0 });
+  } catch (err) {
+    logger.error('[follows/status] ' + err.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/follows/:creatorId — follow a creator
+app.post('/api/follows/:creatorId', requireAuth, followRateLimit, async function(req, res) {
+  try {
+    var followerId = req.user && req.user.id;
+    if (!followerId) return res.status(401).json({ error: 'Not authenticated' });
+    var creatorId = String(req.params.creatorId || '');
+    if (!_FOLLOW_UUID_RE.test(creatorId)) return res.status(400).json({ error: 'invalid creatorId' });
+    if (followerId === creatorId) return res.status(400).json({ error: 'Cannot follow yourself' });
+    var client = await pgDb.pool.connect();
+    try {
+      await client.query('BEGIN');
+      var ins = await client.query(
+        'INSERT INTO follows (id, follower_id, following_id) VALUES (gen_random_uuid(), $1, $2) ON CONFLICT DO NOTHING RETURNING id',
+        [followerId, creatorId]
+      );
+      if (ins.rows.length > 0) {
+        await client.query('UPDATE users SET follower_count = follower_count + 1 WHERE id = $1', [creatorId]);
+        await client.query('UPDATE users SET following_count = following_count + 1 WHERE id = $1', [followerId]);
+      }
+      await client.query('COMMIT');
+    } catch (e) { await client.query('ROLLBACK'); throw e; } finally { client.release(); }
+    return res.json({ success: true });
+  } catch (err) {
+    logger.error('[follows/post] ' + err.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /api/follows/:creatorId — unfollow
+app.delete('/api/follows/:creatorId', requireAuth, followRateLimit, async function(req, res) {
+  try {
+    var followerId = req.user && req.user.id;
+    if (!followerId) return res.status(401).json({ error: 'Not authenticated' });
+    var creatorId = String(req.params.creatorId || '');
+    if (!_FOLLOW_UUID_RE.test(creatorId)) return res.status(400).json({ error: 'invalid creatorId' });
+    var client = await pgDb.pool.connect();
+    try {
+      await client.query('BEGIN');
+      var del = await client.query(
+        'DELETE FROM follows WHERE follower_id = $1 AND following_id = $2 RETURNING id',
+        [followerId, creatorId]
+      );
+      if (del.rows.length > 0) {
+        await client.query('UPDATE users SET follower_count = GREATEST(0, follower_count - 1) WHERE id = $1', [creatorId]);
+        await client.query('UPDATE users SET following_count = GREATEST(0, following_count - 1) WHERE id = $1', [followerId]);
+      }
+      await client.query('COMMIT');
+    } catch (e) { await client.query('ROLLBACK'); throw e; } finally { client.release(); }
+    return res.json({ success: true });
+  } catch (err) {
+    logger.error('[follows/delete] ' + err.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // ── User profile self-service ─────────────────────────────────────────────
