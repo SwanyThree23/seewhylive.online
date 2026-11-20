@@ -1886,7 +1886,7 @@ app.get('/api/users/me', requireAuth, function(req, res) {
 });
 
 // PUT /api/users/me  — update display_name, bio, avatar_emoji
-app.put('/api/users/me', requireAuth, function(req, res) {
+app.put('/api/users/me', requireAuth, async function(req, res) {
   try {
     var userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'Not authenticated' });
@@ -1910,6 +1910,22 @@ app.put('/api/users/me', requireAuth, function(req, res) {
       fields.push('updated_at = ?'); params.push(now);
       params.push(userId);
       db.prepare('UPDATE user_profiles SET ' + fields.join(', ') + ' WHERE user_id = ?').run(...params);
+    }
+    // Mirror display_name and bio to Postgres users table so public profile reads stay consistent
+    if (pgDb.isPgUp()) {
+      var pgFields = [];
+      var pgVals   = [];
+      var pgIdx    = 1;
+      if (displayName !== null) { pgFields.push('display_name = $' + pgIdx++); pgVals.push(displayName); }
+      if (bio !== null)         { pgFields.push('bio = $' + pgIdx++);          pgVals.push(bio); }
+      if (pgFields.length > 0) {
+        pgVals.push(userId);
+        pgVals.push(req.tenantId);
+        pgDb.query(
+          'UPDATE users SET ' + pgFields.join(', ') + ' WHERE id = $' + pgIdx++ + ' AND tenant_id = $' + pgIdx + ' AND deleted_at IS NULL',
+          pgVals
+        ).catch(function(e) { logger.error('[users/me PUT pg-sync] ' + e.message); });
+      }
     }
     return res.json({ success: true });
   } catch (e) {
@@ -1940,25 +1956,6 @@ app.post('/api/users/me/notifications', requireAuth, function(req, res) {
     return res.json({ success: true });
   } catch (e) {
     logger.error('[users/me/notifications] ' + e.message);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// DELETE /api/users/me — soft-delete the authenticated user's account
-app.delete('/api/users/me', requireAuth, async function(req, res) {
-  var userId = req.user && req.user.id;
-  if (!userId || String(userId).startsWith('anon')) return res.status(401).json({ error: 'Not authenticated' });
-  try {
-    var result = await pgDb.query(
-      'UPDATE users SET deleted_at = NOW(), display_name = $1 WHERE id = $2 AND deleted_at IS NULL RETURNING id',
-      ['[deleted]', userId]
-    );
-    if (!result.rows.length) return res.status(404).json({ error: 'User not found or already deleted' });
-    // Also clear the SQLite profile so local lookups return nothing
-    try { db.prepare('DELETE FROM user_profiles WHERE user_id = ?').run(userId); } catch (e) { /* non-fatal */ }
-    return res.json({ success: true });
-  } catch (e) {
-    logger.error('[users/me DELETE] ' + e.message);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
