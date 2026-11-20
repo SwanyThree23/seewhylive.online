@@ -109,20 +109,21 @@ router.get('/:username', async function(req, res) {
   if (!username) return res.status(400).json({ error: 'username required' });
   try {
     var result = await db.pool.query(
-      "SELECT u.id, u.display_name, u.avatar_url, u.account_type, u.bio, u.created_at, COUNT(s.id) AS stream_count FROM users u LEFT JOIN streams s ON s.creator_id = u.id WHERE u.display_name ILIKE $1 AND u.tenant_id = $2 AND u.deleted_at IS NULL GROUP BY u.id LIMIT 1",
+      "SELECT u.id, u.display_name, u.avatar_url, u.account_type, u.bio, u.created_at, u.follower_count, COUNT(s.id) AS stream_count FROM users u LEFT JOIN streams s ON s.creator_id = u.id WHERE u.display_name ILIKE $1 AND u.tenant_id = $2 AND u.deleted_at IS NULL GROUP BY u.id LIMIT 1",
       [username, req.tenantId]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'not found' });
     var u = result.rows[0];
     return res.json({
-      id:          u.id,
-      username:    u.display_name,
-      displayName: u.display_name,
-      avatarUrl:   u.avatar_url || null,
-      accountType: u.account_type || 'standard',
-      bio:         u.bio || '',
-      streamCount: parseInt(u.stream_count, 10) || 0,
-      createdAt:   u.created_at
+      id:            u.id,
+      username:      u.display_name,
+      displayName:   u.display_name,
+      avatarUrl:     u.avatar_url || null,
+      accountType:   u.account_type || 'standard',
+      bio:           u.bio || '',
+      streamCount:   parseInt(u.stream_count, 10) || 0,
+      followerCount: parseInt(u.follower_count, 10) || 0,
+      createdAt:     u.created_at
     });
   } catch (e) {
     return res.status(500).json({ error: 'Internal server error' });
