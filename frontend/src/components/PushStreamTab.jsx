@@ -57,11 +57,29 @@ var STEPS = {
   ],
 };
 
-export default function PushStreamTab({ isLive, addToast }) {
+export default function PushStreamTab({ isLive, addToast, roomId }) {
   var [activeSetup, setActiveSetup] = useState('obs');
   var [selectedPreset, setSelectedPreset] = useState('1080');
   var [keyVisible, setKeyVisible] = useState(false);
   var [copied, setCopied] = useState('');
+  var [streamKey, setStreamKey] = useState('');
+  var [ingestUrl, setIngestUrl] = useState(RTMP_URL);
+
+  useEffect(function() {
+    if (!roomId) return;
+    var tok = localStorage.getItem('sw_token') || '';
+    fetch('/api/streams/' + encodeURIComponent(roomId) + '/ingest', {
+      headers: tok ? { 'Authorization': 'Bearer ' + tok } : {}
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && d.ok && d.stream_key) {
+          setStreamKey(d.stream_key);
+          if (d.ingest_url) setIngestUrl(d.ingest_url.replace(/\?key=.*/, ''));
+        }
+      })
+      .catch(function() {});
+  }, [roomId]);
 
   var copyText = function(text, label) {
     navigator.clipboard.writeText(text).then(function() {
@@ -107,7 +125,7 @@ export default function PushStreamTab({ isLive, addToast }) {
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginTop: 4 }}>STREAM KEY</div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <div style={{ flex: 1, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '6px 8px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#F0E8D4' }}>
-            {keyVisible ? STREAM_KEY_PLACEHOLDER : '••••••••••••••••••••'}
+            {keyVisible ? (streamKey || STREAM_KEY_PLACEHOLDER) : '••••••••••••••••••••'}
           </div>
           <button
             onClick={function() { setKeyVisible(function(v) { return !v; }); }}
@@ -115,7 +133,7 @@ export default function PushStreamTab({ isLive, addToast }) {
             {keyVisible ? '🙈' : '👁'}
           </button>
           <button
-            onClick={function() { if (addToast) addToast('This is a placeholder — enter your real stream key in the KEYS tab', 'info'); }}
+            onClick={function() { copyText(streamKey || STREAM_KEY_PLACEHOLDER, 'Stream Key'); }}
             style={{ background: copied === 'Stream Key' ? 'rgba(201,168,76,.2)' : 'rgba(201,168,76,.1)', border: '1px solid ' + (copied === 'Stream Key' ? '#C9A84C' : '#C9A84C44'), borderRadius: 6, padding: '6px 10px', color: copied === 'Stream Key' ? '#C9A84C' : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>
             {copied === 'Stream Key' ? '✓' : 'COPY'}
           </button>

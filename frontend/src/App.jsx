@@ -1923,6 +1923,7 @@ export default function App() {
           <PushStreamTab
             isLive={isLive}
             addToast={addToast}
+            roomId={APP_ID}
           />
         )}
         {activeTab === 'clips' && (
