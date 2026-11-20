@@ -758,10 +758,36 @@ export default function ShowcaseTab(p) {
             <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.28)', borderRadius: 10, padding: '14px' }}>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 2, marginBottom: 5 }}>🌎 APPLY FOR YOUR STATE</div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#9A90AA', marginBottom: 10, lineHeight: 1.5 }}>Min. 5 players · Regional qualifying · Live stream required on SeeWhy LIVE</div>
-              <button onClick={function() { if (addToast) addToast('Application opened! 🌎', 'success'); }}
-                style={{ width: '100%', padding: '11px', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 2, cursor: 'pointer' }}>
-                APPLY NOW →
-              </button>
+              {applyDone ? (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C', textAlign: 'center', padding: '11px 0' }}>✓ Application received — we'll be in touch!</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  <input
+                    type="text"
+                    maxLength={4}
+                    value={applyState}
+                    onChange={function(e) {
+                      var v = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
+                      setApplyState(v);
+                      try { localStorage.setItem('sw_showcase_state', v); } catch(_) {}
+                    }}
+                    placeholder="Your state (e.g. WA)"
+                    style={{ background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 7, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10, outline: 'none', letterSpacing: 2 }}
+                  />
+                  <input
+                    type="text"
+                    maxLength={200}
+                    value={applyMsg}
+                    onChange={function(e) { setApplyMsg(e.target.value); }}
+                    placeholder="Why should your state compete? (optional)"
+                    style={{ background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 7, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10, outline: 'none' }}
+                  />
+                  <button onClick={submitApplication}
+                    style={{ width: '100%', padding: '11px', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 2, cursor: 'pointer' }}>
+                    APPLY NOW →
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
