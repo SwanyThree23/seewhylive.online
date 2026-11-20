@@ -640,16 +640,26 @@ app.use('/api/music-video', musicVideoRoutes);
 app.use('/api/episodes', require('./routes/episodes'));
 // GET /api/leaderboard?roomId=<id>  — room-specific gift leaderboard (SQLite)
 // Must be registered before the router so it intercepts the root path.
+var _LB_ROOM_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 app.get('/api/leaderboard', requireAuth, function(req, res) {
   try {
     var roomId = typeof req.query.roomId === 'string' ? req.query.roomId.trim() : '';
-    if (!roomId) return res.status(400).json({ error: 'roomId required' });
+    if (!roomId) {
+      if (req.user.role !== 'admin') return res.status(400).json({ error: 'roomId required' });
+      var allRows = db.prepare(
+        'SELECT from_user AS username, SUM(value_cents) AS total_cents, SUM(creator_cents) AS creator_cents, COUNT(*) AS gift_count FROM gifts GROUP BY from_user ORDER BY total_cents DESC LIMIT 20'
+      ).all();
+      return res.json({ leaderboard: allRows.map(function(r) {
+        return { username: r.username || 'Anonymous', total_cents: Math.floor(r.total_cents || 0), creator_cents: Math.floor(r.creator_cents || 0), gift_count: r.gift_count || 0 };
+      }) });
+    }
+    if (!_LB_ROOM_UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
     var rows = db.prepare(
-      'SELECT from_user AS username, SUM(value_cents) AS total_cents ' +
+      'SELECT from_user AS username, SUM(value_cents) AS total_cents, SUM(creator_cents) AS creator_cents, COUNT(*) AS gift_count ' +
       'FROM gifts WHERE room_id = ? GROUP BY from_user ORDER BY total_cents DESC LIMIT 20'
     ).all(roomId);
     return res.json({ leaderboard: rows.map(function(r) {
-      return { username: r.username || 'Anonymous', total_cents: r.total_cents || 0 };
+      return { username: r.username || 'Anonymous', total_cents: Math.floor(r.total_cents || 0), creator_cents: Math.floor(r.creator_cents || 0), gift_count: r.gift_count || 0 };
     }) });
   } catch (e) {
     logger.error('[leaderboard-room] ' + e.message);
@@ -2453,42 +2463,6 @@ app.post('/api/admin/vps-action', requireAuth, function(req, res) {
     if (err && !output) return res.json({ output: 'Error: ' + err.message, error: true });
     res.json({ output: output.slice(0, 4096) });
   });
-});
-
-// GET /api/leaderboard
-app.get('/api/leaderboard', requireAuth, function(req, res) {
-  try {
-    var roomId = req.query.roomId || '';
-    if (roomId && !/^[0-9a-f]{24}$|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roomId)) {
-      return res.status(400).json({ error: 'invalid roomId' });
-    }
-    var rows;
-    if (roomId) {
-      rows = db.prepare(
-        'SELECT from_user, SUM(value_cents) as total, SUM(creator_cents) as creator_total, COUNT(*) as cnt FROM gifts WHERE room_id = ? GROUP BY from_user ORDER BY total DESC LIMIT 10'
-      ).all(roomId);
-    } else {
-      if (req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'roomId required' });
-      }
-      rows = db.prepare(
-        'SELECT from_user, SUM(value_cents) as total, SUM(creator_cents) as creator_total, COUNT(*) as cnt FROM gifts GROUP BY from_user ORDER BY total DESC LIMIT 10'
-      ).all();
-    }
-    res.json({
-      leaderboard: rows.map(function(r) {
-        return {
-          username:      r.from_user,
-          total_cents:   Math.floor(r.total),
-          creator_cents: Math.floor(r.creator_total),
-          gift_count:    r.cnt
-        };
-      })
-    });
-  } catch (err) {
-    logger.error('[leaderboard] ' + err.message);
-    res.status(500).json({ error: 'Leaderboard query failed' });
-  }
 });
 
 // GET /api/clips/:roomId — clip markers for a room (host/cohost/admin only)
