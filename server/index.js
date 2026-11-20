@@ -2237,6 +2237,42 @@ app.get('/api/admin/financial-summary', requireAuth, function(req, res) {
   }
 });
 
+// POST /api/admin/vps-action  (admin only)
+// Executes a whitelisted shell command on the VPS and returns its output.
+// Commands are hardcoded server-side — the client only sends an actionId.
+var _vpsActionThrottle = {};
+var VPS_ACTION_MAP = {
+  pm2restart:  { cmd: 'pm2',       args: ['restart', 'seewhy-server'] },
+  pm2logs:     { cmd: 'pm2',       args: ['logs', '--lines', '50', '--nostream'] },
+  nginxtest:   { cmd: 'nginx',     args: ['-t'] },
+  nginxreload: { cmd: 'nginx',     args: ['-s', 'reload'] },
+  diskcheck:   { cmd: 'df',        args: ['-h', '/opt/seewhy'] },
+  memcheck:    { cmd: 'free',      args: ['-h'] },
+  dbbackup:    { cmd: 'cp',        args: [process.env.DB_PATH || '/opt/seewhy/data/seewhy.db', (process.env.DB_PATH || '/opt/seewhy/data/seewhy.db') + '.bak'] },
+  sslcheck:    { cmd: 'certbot',   args: ['certificates'] },
+};
+app.post('/api/admin/vps-action', requireAuth, function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  var actionId = String(req.body && req.body.actionId || '');
+  var entry = VPS_ACTION_MAP[actionId];
+  if (!entry) return res.status(400).json({ error: 'unknown action' });
+
+  // Rate limit: 3 actions per 60s per admin user
+  var now = Date.now();
+  var uid = req.user.id;
+  if (!_vpsActionThrottle[uid]) _vpsActionThrottle[uid] = [];
+  _vpsActionThrottle[uid] = _vpsActionThrottle[uid].filter(function(t) { return now - t < 60000; });
+  if (_vpsActionThrottle[uid].length >= 3) return res.status(429).json({ error: 'Too many actions — wait 60s' });
+  _vpsActionThrottle[uid].push(now);
+
+  logger.info('[vps-action] admin=%s action=%s', uid, actionId);
+  require('child_process').execFile(entry.cmd, entry.args, { timeout: 10000, maxBuffer: 4096 }, function(err, stdout, stderr) {
+    var output = (stdout || '') + (stderr || '');
+    if (err && !output) return res.json({ output: 'Error: ' + err.message, error: true });
+    res.json({ output: output.slice(0, 4096) });
+  });
+});
+
 // GET /api/leaderboard
 app.get('/api/leaderboard', requireAuth, function(req, res) {
   try {
