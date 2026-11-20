@@ -168,6 +168,11 @@ export default function WatchPartyTab(props) {
   var [roomBg,          setRoomBg]          = useState('default');
   var [roomBgCustomUrl, setRoomBgCustomUrl] = useState('');
 
+  // --- media upload ---
+  var [uploadingMedia,  setUploadingMedia]  = useState(false);
+  var [uploadMediaPct,  setUploadMediaPct]  = useState(0);
+  var [uploadMediaErr,  setUploadMediaErr]  = useState('');
+
   // refs
   var playerRef        = useRef(null);
   var videoRef2        = useRef(null);
@@ -621,16 +626,61 @@ export default function WatchPartyTab(props) {
   var handleFileSelect = function(e) {
     var file = e.target.files && e.target.files[0];
     if (!file) return;
-    if (localFileUrl) URL.revokeObjectURL(localFileUrl);
-    var blob = URL.createObjectURL(file);
-    setLocalFileUrl(blob);
-    setDirectUrl(blob);
-    setVideoId('');
-    setCurrentTitle(file.name);
-    setPosition(0); posRef.current = 0;
-    setDuration(0);
-    if (addToast) addToast('Local file loaded: ' + file.name, 'success');
-    // Local blob URLs can't be shared with other users
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setUploadingMedia(true);
+    setUploadMediaPct(0);
+    setUploadMediaErr('');
+    if (addToast) addToast('Uploading ' + file.name + '…', 'info');
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(ex) {}
+    var formData = new FormData();
+    formData.append('file', file);
+    var headers = {};
+    if (tok) headers['Authorization'] = 'Bearer ' + tok;
+    // Use XHR for upload progress
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/media/upload');
+    if (tok) xhr.setRequestHeader('Authorization', 'Bearer ' + tok);
+    xhr.upload.onprogress = function(ev) {
+      if (ev.lengthComputable) setUploadMediaPct(Math.floor((ev.loaded / ev.total) * 100));
+    };
+    xhr.onload = function() {
+      setUploadingMedia(false);
+      setUploadMediaPct(0);
+      var data = null;
+      try { data = JSON.parse(xhr.responseText); } catch(ex) {}
+      if (xhr.status >= 200 && xhr.status < 300 && data && data.url) {
+        var url = data.url;
+        setDirectUrl(url);
+        setLocalFileUrl('');
+        setVideoId('');
+        setTwitchChannel('');
+        setCurrentTitle(file.name);
+        setPosition(0); posRef.current = 0;
+        setDuration(0);
+        setSourceType('direct');
+        if (socket && roomId) {
+          socket.emit('watch-party-url', { roomId: roomId, videoId: null, url: url, type: 'direct' });
+        }
+        if (!watchPartyActive) {
+          setWatchPartyActive(true);
+          setShowCreatePanel(false);
+          if (socket) socket.emit('watch-party-start', { roomId: roomId });
+        }
+        if (addToast) addToast('Uploaded & shared: ' + file.name, 'success');
+      } else {
+        var errMsg = (data && data.error) ? data.error : 'Upload failed';
+        setUploadMediaErr(errMsg);
+        if (addToast) addToast(errMsg, 'error');
+      }
+    };
+    xhr.onerror = function() {
+      setUploadingMedia(false);
+      setUploadMediaPct(0);
+      setUploadMediaErr('Upload failed — check your connection');
+      if (addToast) addToast('Upload failed — check your connection', 'error');
+    };
+    xhr.send(formData);
   }
 
   var _playerPlay = function() {
@@ -961,12 +1011,13 @@ export default function WatchPartyTab(props) {
           />
           {sourceType === 'direct' && (
             <button
-              onClick={function() { if (fileInputRef.current) fileInputRef.current.click(); }}
-              style={{ background: 'rgba(212,133,74,.1)', border: '1px solid rgba(212,133,74,.3)', borderRadius: 6, padding: '6px 8px', color: AMBER, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', flexShrink: 0, letterSpacing: .5 }}>
-              📂 FILE
+              onClick={function() { if (!uploadingMedia && fileInputRef.current) fileInputRef.current.click(); }}
+              disabled={uploadingMedia}
+              style={{ background: uploadingMedia ? 'rgba(212,133,74,.05)' : 'rgba(212,133,74,.1)', border: '1px solid rgba(212,133,74,.3)', borderRadius: 6, padding: '6px 8px', color: uploadingMedia ? MUTED : AMBER, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: uploadingMedia ? 'default' : 'pointer', flexShrink: 0, letterSpacing: .5 }}>
+              {uploadingMedia ? (uploadMediaPct > 0 ? uploadMediaPct + '%' : '⏳') : '📂 UPLOAD'}
             </button>
           )}
-          <input type="file" ref={fileInputRef} accept="video/*" onChange={handleFileSelect} style={{ display: 'none' }} />
+          <input type="file" ref={fileInputRef} accept="video/mp4,video/webm,video/quicktime,video/*" onChange={handleFileSelect} style={{ display: 'none' }} />
           <button
             onClick={handleLoadUrl}
             style={{ background: BURG, border: 'none', borderRadius: 6, padding: '6px 12px', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
@@ -1160,18 +1211,24 @@ export default function WatchPartyTab(props) {
                 style={{ display: 'none' }}
               />
               <button
-                onClick={function() { if (fileInputRef.current) fileInputRef.current.click(); }}
-                style={{ width: '100%', background: 'rgba(212,133,74,.08)', border: '1px dashed rgba(212,133,74,.4)', borderRadius: 7, padding: '10px', color: AMBER, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1, marginBottom: 8 }}>
-                📂 UPLOAD FROM DEVICE
+                onClick={function() { if (!uploadingMedia && fileInputRef.current) fileInputRef.current.click(); }}
+                disabled={uploadingMedia}
+                style={{ width: '100%', background: uploadingMedia ? 'rgba(212,133,74,.04)' : 'rgba(212,133,74,.08)', border: '1px dashed rgba(212,133,74,.4)', borderRadius: 7, padding: '10px', color: uploadingMedia ? MUTED : AMBER, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: uploadingMedia ? 'default' : 'pointer', letterSpacing: 1, marginBottom: 8 }}>
+                {uploadingMedia ? ('⏳ UPLOADING' + (uploadMediaPct > 0 ? ' ' + uploadMediaPct + '%' : '…')) : '📂 UPLOAD FROM DEVICE'}
               </button>
-              {localFileUrl && (
+              {uploadMediaErr && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF1A3C', marginBottom: 6, letterSpacing: 1 }}>
+                  ✕ {uploadMediaErr}
+                </div>
+              )}
+              {!uploadingMedia && directUrl && !localFileUrl && sourceType === 'direct' && (
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: AMBER, marginBottom: 6, letterSpacing: 1 }}>
-                  ✓ {currentTitle || 'File loaded'} (device-only — not shared to room)
+                  ✓ {currentTitle || 'File uploaded'} — shared to all viewers
                 </div>
               )}
               {sourceType === 'direct' && (
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginBottom: 8, lineHeight: 1.5 }}>
-                  Supports MP4, WebM, HLS (.m3u8). Direct URLs sync to all guests. Device uploads are local only.
+                  Supports MP4, WebM, MOV. Uploaded files are shared with all guests. HLS URLs can be pasted above.
                 </div>
               )}
             </div>

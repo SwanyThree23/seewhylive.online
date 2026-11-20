@@ -57,6 +57,9 @@ export default function BackgroundPicker({ currentBgId, currentCustomUrl, onSele
   var [open, setOpen] = useState(false);
   var [showCustomInput, setShowCustomInput] = useState(false);
   var [customInput, setCustomInput] = useState('');
+  var [uploading, setUploading] = useState(false);
+  var [uploadError, setUploadError] = useState('');
+  var fileInputRef = useRef(null);
   var wrapRef = useRef(null);
 
   useEffect(function() {
@@ -71,10 +74,41 @@ export default function BackgroundPicker({ currentBgId, currentCustomUrl, onSele
   var handleCustomSubmit = function() {
     var url = customInput.trim();
     if (!url) return;
-    if (!/^https:\/\//i.test(url)) { alert('Image URL must start with https://'); return; }
+    if (!/^https:\/\//i.test(url)) { setUploadError('URL must start with https://'); return; }
+    setUploadError('');
     onSelect({ id: 'custom', customUrl: url });
     setShowCustomInput(false);
     setOpen(false);
+  };
+
+  var handleFileChange = function(e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setUploading(true);
+    setUploadError('');
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(ex) {}
+    var formData = new FormData();
+    formData.append('file', file);
+    var headers = {};
+    if (tok) headers['Authorization'] = 'Bearer ' + tok;
+    fetch('/api/media/upload', { method: 'POST', headers: headers, body: formData })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        setUploading(false);
+        if (data && data.url) {
+          onSelect({ id: 'custom', customUrl: data.url });
+          setShowCustomInput(false);
+          setOpen(false);
+        } else {
+          setUploadError(data && data.error ? data.error : 'Upload failed');
+        }
+      })
+      .catch(function() {
+        setUploading(false);
+        setUploadError('Upload failed — check your connection');
+      });
   };
 
   return (
@@ -151,13 +185,40 @@ export default function BackgroundPicker({ currentBgId, currentCustomUrl, onSele
           </div>
           {showCustomInput && (
             <div style={{ marginTop: 10, borderTop: '1px solid rgba(201,168,76,.15)', paddingTop: 10 }}>
-              <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 9, color: '#888', marginBottom: 5 }}>Paste an image URL (https://)</div>
+              {/* File upload from device */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+              <button
+                onClick={function() { if (!uploading && fileInputRef.current) fileInputRef.current.click(); }}
+                disabled={uploading}
+                style={{
+                  width: '100%', background: uploading ? 'rgba(201,168,76,.08)' : 'rgba(201,168,76,.14)',
+                  border: '1px solid rgba(201,168,76,.35)', borderRadius: 5,
+                  padding: '7px 0', color: uploading ? '#888' : GOLD,
+                  fontFamily: '"DM Sans",sans-serif', fontSize: 10, fontWeight: 700,
+                  cursor: uploading ? 'default' : 'pointer', letterSpacing: 0.5,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                  boxSizing: 'border-box',
+                }}
+              >
+                {uploading ? '⏳ Uploading…' : '📂 Upload from device'}
+              </button>
+              {/* Divider */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '8px 0' }}>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,.07)' }} />
+                <span style={{ fontFamily: '"DM Sans",sans-serif', fontSize: 8, color: '#555' }}>or paste URL</span>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,.07)' }} />
+              </div>
               <input
                 value={customInput}
-                onChange={function(e) { setCustomInput(e.target.value); }}
+                onChange={function(e) { setCustomInput(e.target.value); setUploadError(''); }}
                 onKeyDown={function(e) { if (e.key === 'Enter') handleCustomSubmit(); }}
                 placeholder="https://example.com/bg.jpg"
-                autoFocus
                 style={{
                   width: '100%', background: 'rgba(14,12,9,.9)', border: '1px solid #333',
                   borderRadius: 5, padding: '5px 8px', color: TEXT,
@@ -168,14 +229,18 @@ export default function BackgroundPicker({ currentBgId, currentCustomUrl, onSele
               <button
                 onClick={handleCustomSubmit}
                 style={{
-                  marginTop: 6, width: '100%', background: 'rgba(201,168,76,.2)',
+                  marginTop: 5, width: '100%', background: 'rgba(201,168,76,.2)',
                   border: '1px solid rgba(201,168,76,.4)', borderRadius: 5,
                   padding: '5px 0', color: GOLD, fontFamily: '"DM Sans",sans-serif',
                   fontSize: 10, fontWeight: 700, cursor: 'pointer', letterSpacing: 0.5,
+                  boxSizing: 'border-box',
                 }}
               >
-                Apply
+                Apply URL
               </button>
+              {uploadError && (
+                <div style={{ marginTop: 5, fontFamily: '"DM Sans",sans-serif', fontSize: 9, color: '#FF1A3C' }}>{uploadError}</div>
+              )}
             </div>
           )}
         </div>
