@@ -794,6 +794,8 @@ var loveCounts          = new Map();  // roomId → total love count
 var loveEarnings        = new Map();  // roomId → { creator: microcents, platform: microcents }
 var giftLeaderboards    = new Map();  // roomId → [{username, totalCents}] top 10
 var triviaRooms         = new Map();  // roomId → { question, options:[{text}], answers:Map<socketId,idx>, correctIdx, timer, active }
+var pollRooms           = new Map();  // roomId → { id, question, options:[string], votes:Map<optionStr,count>, voters:Set<userId>, endsAt, timer }
+var streamGoals         = new Map();  // roomId → { type, target, label }
 var viewerAlertSnapshot = new Map();  // roomId → { count, ts } — baseline for host-alert engagement checks
 var shieldedGuests      = new Map();  // roomId+':'+guestId → expiresTs (unix sec)
 var bracketUpdates         = new Map();  // roomId → Array<{round,matchId,score,status,winner}> (last 20)
@@ -973,6 +975,14 @@ function seedEphemeralState(socketId, roomId) {
         durationMs: _msRem
       });
     }
+  }
+  var _activePoll = pollRooms.get(roomId);
+  if (_activePoll && Date.now() < _activePoll.endsAt) {
+    io.to(socketId).emit('poll-start', { id: _activePoll.id, question: _activePoll.question, options: _activePoll.options, votes: _activePoll.votes, endsAt: _activePoll.endsAt });
+  }
+  var _activeGoal = streamGoals.get(roomId);
+  if (_activeGoal) {
+    io.to(socketId).emit('stream-goal-set', { roomId: roomId, type: _activeGoal.type, target: _activeGoal.target, label: _activeGoal.label });
   }
   var _pk = pkBattleState.get(roomId);
   if (_pk) {
@@ -6699,6 +6709,82 @@ io.on('connection', function(socket) {
     endTrivia(tEndRoomId);
   });
 
+  // ── polls ──────────────────────────────────────────────────────────────
+  socket.on('poll-create', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var pRoomId = socket.data.roomId;
+    if (!pRoomId) return;
+    var question = String(data.question || '').trim().slice(0, 200);
+    if (!question) return;
+    var options = Array.isArray(data.options)
+      ? data.options.map(function(o) { return String(o || '').trim().slice(0, 80); }).filter(Boolean).slice(0, 6)
+      : [];
+    if (options.length < 2) return;
+    var durationSec = Math.min(Math.max(Math.floor(Number(data.duration) || 60), 10), 300);
+    var endsAt = Date.now() + durationSec * 1000;
+    var pollId = uuidv4();
+    var prev = pollRooms.get(pRoomId);
+    if (prev && prev.timer) clearTimeout(prev.timer);
+    var voteMap = {};
+    options.forEach(function(o) { voteMap[o] = 0; });
+    var poll = { id: pollId, question: question, options: options, votes: voteMap, voters: new Set(), endsAt: endsAt, timer: null };
+    pollRooms.set(pRoomId, poll);
+    io.to(pRoomId).emit('poll-start', { id: pollId, question: question, options: options, votes: voteMap, endsAt: endsAt });
+    poll.timer = setTimeout(function() {
+      var cur = pollRooms.get(pRoomId);
+      if (cur && cur.id === pollId) {
+        io.to(pRoomId).emit('poll-end', { id: pollId, votes: cur.votes, totalVotes: cur.voters.size });
+        pollRooms.delete(pRoomId);
+      }
+    }, durationSec * 1000);
+  });
+
+  socket.on('poll-vote', function(data) {
+    var pRoomId = socket.data.roomId;
+    if (!pRoomId) return;
+    var poll = pollRooms.get(pRoomId);
+    if (!poll || Date.now() > poll.endsAt) return;
+    var voterId = socket.data.userId || socket.id;
+    if (poll.voters.has(voterId)) return;
+    var option = String(data.option || '');
+    if (!Object.prototype.hasOwnProperty.call(poll.votes, option)) return;
+    poll.voters.add(voterId);
+    poll.votes[option] = (poll.votes[option] || 0) + 1;
+    io.to(pRoomId).emit('poll-update', { id: poll.id, votes: poll.votes, totalVotes: poll.voters.size });
+  });
+
+  socket.on('poll-end', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var pRoomId = socket.data.roomId;
+    if (!pRoomId) return;
+    var poll = pollRooms.get(pRoomId);
+    if (!poll) return;
+    if (poll.timer) clearTimeout(poll.timer);
+    io.to(pRoomId).emit('poll-end', { id: poll.id, votes: poll.votes, totalVotes: poll.voters.size });
+    pollRooms.delete(pRoomId);
+  });
+
+  // ── stream goals ───────────────────────────────────────────────────────
+  var _VALID_GOAL_TYPES = new Set(['viewers', 'revenue', 'loves']);
+  socket.on('stream-goal-set', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var sgRoomId = socket.data.roomId;
+    if (!sgRoomId) return;
+    var type   = _VALID_GOAL_TYPES.has(String(data.type || '')) ? String(data.type) : 'viewers';
+    var target = Math.min(Math.max(Math.floor(Number(data.target) || 0), 1), 1000000);
+    var label  = String(data.label || '').trim().slice(0, 80);
+    streamGoals.set(sgRoomId, { type: type, target: target, label: label });
+    io.to(sgRoomId).emit('stream-goal-set', { roomId: sgRoomId, type: type, target: target, label: label });
+  });
+
+  socket.on('stream-goal-clear', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var sgRoomId = socket.data.roomId;
+    if (!sgRoomId) return;
+    streamGoals.delete(sgRoomId);
+    io.to(sgRoomId).emit('stream-goal-clear', { roomId: sgRoomId });
+  });
+
   // ── end-broadcast ──────────────────────────────────────────────────────
   socket.on('end-broadcast', function(data, ack) {
     var roomId = socket.data.roomId;
@@ -6804,6 +6890,8 @@ io.on('connection', function(socket) {
     sentimentState.delete(roomId);
     pendingJoinRequests.delete(roomId);
     if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
+    if (pollRooms.has(roomId)) { var _pr = pollRooms.get(roomId); if (_pr && _pr.timer) clearTimeout(_pr.timer); pollRooms.delete(roomId); }
+    streamGoals.delete(roomId);
     viewerAlertSnapshot.delete(roomId);
 
     try {
