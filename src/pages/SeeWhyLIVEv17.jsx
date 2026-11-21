@@ -1527,9 +1527,9 @@ function StreamTab({ autoStart, currentUser }) {
   var [joined, setJoined] = useState(!!autoStart);
   var [camOn, setCamOn] = useState(true);
   var [micOn, setMicOn] = useState(true);
-  var [bitrate, setBitrate] = useState(2500);
-  var [fps, setFps] = useState(30);
-  var [latency, setLatency] = useState(120);
+  var [bitrate, setBitrate] = useState(0);
+  var [fps, setFps] = useState(0);
+  var [latency, setLatency] = useState(0);
   var [floatingGifts, setFloatingGifts] = useState([]);
   var [tipAlert, setTipAlert] = useState(null);
   var [giftQueue, setGiftQueue] = useState([]);
