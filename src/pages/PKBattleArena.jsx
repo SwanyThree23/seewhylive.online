@@ -38,13 +38,7 @@ var MONO = { fontFamily: 'Space Mono, monospace' };
 
 var OCT = 'polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)';
 
-var OPPONENTS = [
-  { id: 'swanythree',   name: 'SwanyThree',    state: 'WA', wins: 47, losses: 8,  avatar: '🦁' },
-  { id: 'bigbone',      name: 'BigBoneEarl',   state: 'WA', wins: 38, losses: 14, avatar: '🏆' },
-  { id: 'fasthandsr',   name: 'FastHandsR',    state: 'TX', wins: 52, losses: 11, avatar: '⚡' },
-  { id: 'domqueen',     name: 'DomQueen',      state: 'GA', wins: 29, losses: 9,  avatar: '👑' },
-  { id: 'stonewall',    name: 'StoneWall',     state: 'CA', wins: 33, losses: 19, avatar: '🪨' },
-];
+var OPPONENTS = [];
 
 var GLOBAL_CSS = `
 @keyframes pkPulse{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0);}50%{box-shadow:0 0 0 8px rgba(192,57,43,0.18);}}

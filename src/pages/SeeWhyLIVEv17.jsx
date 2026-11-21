@@ -949,22 +949,13 @@ function LiveChat() {
 }
 
 // ── DM / WHISPER SYSTEM (v16.2) ──────────────────────────────────
-var DM_PANELISTS = [
-  {id:"p1",name:"VibeN",role:"cohost",online:true,color:G.gold},
-  {id:"p2",name:"CaliBones",role:"guest",online:true,color:G.cyan},
-  {id:"p3",name:"WestCoast",role:"guest",online:false,color:G.purple},
-  {id:"p4",name:"JayDomino",role:"guest",online:true,color:G.green},
-];
+var DM_PANELISTS = [];
 
 function DMWhisper({ localName }) {
   var [open, setOpen] = useState(false);
   var [view, setView] = useState("list");
   var [selected, setSelected] = useState(null);
-  var [threads, setThreads] = useState({
-    p1:[{from:"VibeN",text:"Ready to go live!",ts:Date.now()-300000,whisper:false},{from:"Host",text:"Let's get it 🎲",ts:Date.now()-240000,whisper:false}],
-    p2:[{from:"CaliBones",text:"Can you hear me ok?",ts:Date.now()-120000,whisper:true}],
-    p3:[],p4:[],
-  });
+  var [threads, setThreads] = useState({});
   var [input, setInput] = useState("");
   var [isWhisper, setIsWhisper] = useState(false);
   var endRef = useRef(null);
@@ -1641,7 +1632,7 @@ function StreamTab({ autoStart, currentUser }) {
           <OctagonalVideoGrid participants={[]} hostName="Host" />
           <StreamControls camOn={camOn} setCamOn={setCamOn} micOn={micOn} setMicOn={setMicOn} bitrate={bitrate} fps={fps} latency={latency} />
           <ViewerControlsV2 />
-          <InRoomSubWidgetV2 creatorName="SwanyThree" />
+          <InRoomSubWidgetV2 creatorName={(currentUser && currentUser.full_name) || 'Host'} />
           <GiftShop onSend={handleGiftSend} gemBalance={150} />
           <TipAlertConfig />
           <MerchShopV2 />

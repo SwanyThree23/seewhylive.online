@@ -646,7 +646,7 @@ export default function PodcastStudio() {
   var [sourceInput, setSourceInput] = useState('');
   var [sourceType, setSourceType] = useState('text');
   var [episodeTitle, setEpisodeTitle] = useState('');
-  var [hostName, setHostName] = useState('SwanyThree');
+  var [hostName, setHostName] = useState('');
   var [cohostName, setCohostName] = useState('ARIA');
   var [duration, setDuration] = useState('15min');
   var [tone, setTone] = useState('Casual');
