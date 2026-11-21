@@ -259,11 +259,7 @@ function OctaCell({ slot, user, isHost, isLive, isMuted, onClick }) {
 // ─── STAGE PANEL ─────────────────────────────────────────────────────────────
 function StagePanel() {
   var [streams] = useState([]);
-  var [chat, setChat] = useState([
-    {user:"CaliBonesOG",msg:"Let's DOMINO! 🎯",time:"8:42PM",badge:"gold"},
-    {user:"JoyceAI",msg:"Stream is live — 90% to creator always 🔥",time:"8:42PM",badge:"ai"},
-    {user:"VibeNBones",msg:"State vs State TONIGHT! WA vs CA 🔥",time:"8:43PM",badge:"gold"},
-  ]);
+  var [chat, setChat] = useState([]);
   var [chatMsg, setChatMsg] = useState("");
   var [lang, setLang] = useState("EN");
   var [tipOpen, setTipOpen] = useState(false);
@@ -345,6 +341,7 @@ function StagePanel() {
           </div>
         </div>
         <div ref={chatRef} style={{height:110,overflowY:"auto",marginBottom:8,display:"flex",flexDirection:"column",gap:3}}>
+          {chat.length===0&&<div style={{fontSize:11,color:C.textM,textAlign:"center",padding:"8px 0"}}>No messages yet.</div>}
           {chat.map((m,i)=>(
             <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
               <span style={{fontSize:9,color:C.textM,whiteSpace:"nowrap",marginTop:2}}>{m.time}</span>
@@ -390,11 +387,7 @@ var BRACKET_MATCHES = [
 function SVSPanel() {
   var [view, setView] = useState("bracket");
   var [liveScore, setLiveScore] = useState({s1:1,s2:0});
-  var [playLog, setPlayLog] = useState([
-    {time:"9:04",player:"SwanyThree23",action:"Double-Six opener 🎯",pts:6},
-    {time:"9:03",player:"Sunshine Bone",action:"Block attempt — failed",pts:0},
-    {time:"9:02",player:"CaliBonesKing",action:"7-0 DOMINO! 🏆",pts:7},
-  ]);
+  var [playLog, setPlayLog] = useState([]);
 
   function getState(id) { return STATES_DATA.find(s=>s.id===id)||{id,name:id,color:C.textM,record:{w:0,l:0},pts:0,players:[]}; }
 
@@ -516,6 +509,7 @@ function SVSPanel() {
           </GCard>
           <GCard>
             <div style={{fontFamily:F.display,fontSize:13,color:C.gold,marginBottom:8,letterSpacing:1}}>LIVE PLAY LOG</div>
+            {playLog.length===0&&<div style={{fontSize:11,color:C.textM,textAlign:"center",padding:"8px 0"}}>No plays logged yet.</div>}
             {playLog.map((p,i)=>(
               <div key={i} style={{display:"flex",gap:8,alignItems:"center",padding:"6px 0",borderBottom:`1px solid ${C.slate}`}}>
                 <span style={{fontSize:9,color:C.textM,fontFamily:F.mono,whiteSpace:"nowrap"}}>{p.time}</span>
@@ -572,11 +566,7 @@ var LEGENDS = [
 function TributePanel() {
   var [selected, setSelected] = useState(null);
   var [tributeMsg, setTributeMsg] = useState("");
-  var [messages, setMessages] = useState([
-    {legendId:1,author:"CaliBonesOG",msg:"Big Bone Earl — REST EASY LEGEND. You built this whole culture 🙏",time:"2 days ago"},
-    {legendId:2,author:"SwanyThree23",msg:"Mama Joyce your tournaments gave us all a home. We carry you forward ❤️",time:"1 week ago"},
-    {legendId:3,author:"VibeNBones",msg:"Fast Hands was the reason I got serious about domino. GOAT forever ⚡",time:"3 days ago"},
-  ]);
+  var [messages, setMessages] = useState([]);
   var [eventOpen, setEventOpen] = useState(false);
 
   function postTribute() {
@@ -650,6 +640,9 @@ function TributePanel() {
                   {leg.achievements.map(a=><Tag key={a} label={a} color={leg.color}/>)}
                 </div>
                 <div style={{fontSize:10,color:C.textM,letterSpacing:1,marginBottom:7,textTransform:"uppercase"}}>Community Tributes</div>
+                {messages.filter(function(m){return m.legendId===leg.id;}).length===0&&(
+                  <div style={{fontSize:11,color:C.textM,fontStyle:"italic",padding:"4px 0 8px"}}>Be the first to leave a tribute.</div>
+                )}
                 {messages.filter(m=>m.legendId===leg.id).map((m,i)=>(
                   <div key={i} style={{background:C.bg2,borderRadius:R.sm,padding:8,marginBottom:6}}>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
@@ -686,10 +679,7 @@ function PodcastPanel() {
   var [tab, setTab] = useState("create");
   var [topic, setTopic] = useState("");
   var [hosts, setHosts] = useState(["JoyceAI","SwanyBot"]);
-  var [sources, setSources] = useState([
-    {id:1,text:"SeeWhy LIVE Tournament Archive 2025–2026",type:"text"},
-    {id:2,text:"Washington Classic Results — 7 Rock 5/150 Double Elimination",type:"text"},
-  ]);
+  var [sources, setSources] = useState([]);
   var [sourceInput, setSourceInput] = useState("");
   var [loading, setLoading] = useState(false);
   var [episode, setEpisode] = useState(null);
@@ -913,13 +903,7 @@ function MusicStudioPanel() {
   var [playing, setPlaying] = useState(false);
   var [stems, setStems] = useState({Drums:true,Bass:true,Melody:true,Vocals:false,FX:false,"808s":true});
   var [royalty, setRoyalty] = useState(85);
-  var [library] = useState([
-    {title:"SeeWhy Anthem v2",genre:"Trap",bpm:142,status:"published"},
-    {title:"Bone Roll Bounce",genre:"Bounce",bpm:120,status:"draft"},
-    {title:"Tribute to Earl",genre:"Soul",bpm:88,status:"published"},
-    {title:"State vs State Theme",genre:"Drill",bpm:155,status:"mastering"},
-    {title:"Domino Nights",genre:"Domino Beat",bpm:96,status:"draft"},
-  ]);
+  var [library] = useState([]);
 
   async function generateTrack() {
     if (!prompt.trim()) return;
@@ -1142,6 +1126,7 @@ function MusicStudioPanel() {
 
       {tab==="library" && (
         <div>
+          {library.length===0&&<div style={{fontSize:11,color:C.textM,textAlign:"center",padding:"12px 0"}}>No tracks yet. Generate your first track above.</div>}
           {library.map((t,i)=>(
             <GCard key={i} style={{marginBottom:7}}>
               <div style={{display:"flex",gap:10,alignItems:"center"}}>
@@ -1180,12 +1165,7 @@ var PLATFORM_LIST = [
 function PlatformsPanel() {
   var [tab, setTab] = useState("fanout");
   var [platforms, setPlatforms] = useState(PLATFORM_LIST);
-  var [webhookLog, setWebhookLog] = useState([
-    {time:"9:04PM",platform:"Fanbase",event:"tip_received",data:"$10.00 from FanUser99",status:"processed"},
-    {time:"9:03PM",platform:"YouTube",event:"superchat",data:"$25.00 — DominoKing44",status:"received"},
-    {time:"9:02PM",platform:"Fanbase",event:"new_subscriber",data:"user_8821 subscribed",status:"processed"},
-    {time:"9:01PM",platform:"Twitch",event:"sub_gift",data:"WestBoneSlayer gifted 5 subs",status:"received"},
-  ]);
+  var [webhookLog, setWebhookLog] = useState([]);
   var [vcOverlays, setVcOverlays] = useState({
     "SVS Scoreboard":true,"Tribute Banner":false,"Tip Alerts":true,"Domino Play Log":false,
     "Chat Overlay":true,"Viewer Count":true,"Gold Tick Badges":false,"RTMP Status":true,
@@ -1359,6 +1339,7 @@ function PlatformsPanel() {
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <GCard>
             <div style={{fontFamily:F.display,fontSize:13,color:C.gold,marginBottom:10,letterSpacing:1}}>WEBHOOK LOG</div>
+            {webhookLog.length===0&&<div style={{fontSize:11,color:C.textM,textAlign:"center",padding:"8px 0"}}>No webhook events received yet.</div>}
             {webhookLog.map((w,i)=>(
               <div key={i} style={{background:C.bg2,borderRadius:R.sm,padding:8,marginBottom:5}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:3,alignItems:"center",flexWrap:"wrap",gap:4}}>
@@ -1416,11 +1397,7 @@ function WatchPartyPanel() {
   var [active, setActive] = useState(false);
   var [sync, setSync] = useState("host");
   var [reaction, setReaction] = useState(null);
-  var [partyChat, setPartyChat] = useState([
-    {user:"CaliBonesOG",msg:"LET'S GOOO STATE VS STATE 🎯",reaction:"🔥"},
-    {user:"JoyceAI",msg:"Watch Party synced — 90% stays with creator 💰",reaction:null},
-    {user:"VibeNBones",msg:"WA about to run this 🏆",reaction:"👑"},
-  ]);
+  var [partyChat, setPartyChat] = useState([]);
   var [partyMsg, setPartyMsg] = useState("");
 
   function triggerReaction(r) {
@@ -1494,6 +1471,7 @@ function WatchPartyPanel() {
       <GCard>
         <div style={{fontFamily:F.display,fontSize:12,color:C.gold,marginBottom:8,letterSpacing:1}}>PARTY CHAT</div>
         <div style={{maxHeight:130,overflowY:"auto",marginBottom:8}}>
+          {partyChat.length===0&&<div style={{fontSize:11,color:C.textM,textAlign:"center",padding:"8px 0"}}>No messages yet.</div>}
           {partyChat.map((m,i)=>(
             <div key={i} style={{display:"flex",gap:6,padding:"4px 0",borderBottom:`1px solid ${C.slate}`,alignItems:"flex-start"}}>
               <span style={{fontWeight:700,fontSize:11,color:C.gold,whiteSpace:"nowrap"}}>{m.user}:</span>
