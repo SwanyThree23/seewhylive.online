@@ -716,7 +716,13 @@ export default function AIMusic() {
   var genTimerRef = useRef(null);
 
   // Library
-  var [tracks, setTracks] = useState(INITIAL_TRACKS);
+  var [tracks, setTracks] = useState(function() {
+    try {
+      var saved = JSON.parse(localStorage.getItem('swl_music_library'));
+      if (Array.isArray(saved) && saved.length > 0) return saved;
+    } catch {}
+    return INITIAL_TRACKS;
+  });
   var [playingId, setPlayingId] = useState(null);
 
   // Continue panel
@@ -736,6 +742,11 @@ export default function AIMusic() {
     .split(',')
     .map(t => t.trim().toLowerCase())
     .filter(Boolean);
+
+  // Persist library to localStorage
+  useEffect(() => {
+    try { localStorage.setItem('swl_music_library', JSON.stringify(tracks)); } catch {}
+  }, [tracks]);
 
   // Cycling gen steps
   useEffect(() => {

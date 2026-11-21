@@ -137,16 +137,32 @@ function CountdownBlock(props) {
 
 function VotePanel(props) {
   var series = props.series;
-  var [voted, setVoted] = useState(null);
-  var mockVotes = [214, 97, 143];
-  var total = mockVotes.reduce(function(a, b) { return a + b; }, 0);
+  var storageKey = 'swl_vote_' + series.id;
+
+  var [voted, setVoted] = useState(function() {
+    try { return JSON.parse(localStorage.getItem(storageKey + '_choice')); } catch { return null; }
+  });
+  var [voteCounts, setVoteCounts] = useState(function() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(storageKey + '_counts'));
+      if (Array.isArray(saved)) return saved;
+    } catch {}
+    return (series.voteOptions || []).map(function() { return 0; });
+  });
 
   function handleVote(idx) {
     if (voted !== null) return;
     setVoted(idx);
+    setVoteCounts(function(prev) {
+      var next = prev.map(function(v, i) { return i === idx ? v + 1 : v; });
+      try { localStorage.setItem(storageKey + '_counts', JSON.stringify(next)); } catch {}
+      return next;
+    });
+    try { localStorage.setItem(storageKey + '_choice', JSON.stringify(idx)); } catch {}
   }
 
   if (!series.voteQuestion) return null;
+  var total = voteCounts.reduce(function(a, b) { return a + b; }, 0);
 
   return (
     <div style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, marginTop: 16 }}>
@@ -163,7 +179,7 @@ function VotePanel(props) {
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {(series.voteOptions || []).map(function(opt, idx) {
-          var pct = voted !== null ? Math.round((mockVotes[idx] + (voted === idx ? 1 : 0)) / (total + 1) * 100) : 0;
+          var pct = (voted !== null && total > 0) ? Math.round(voteCounts[idx] / total * 100) : 0;
           return (
             <button
               key={idx}

@@ -613,10 +613,10 @@ export default function LiveRoom() {
   var [stageData, setStageData]       = useState(stage);
   var [spotlit, setSpotlit]           = useState(null);
   var [chatOpen, setChatOpen]         = useState(false);
-  var [chatMsgs, setChatMsgs]         = useState(DEMO_CHAT);
+  var [chatMsgs, setChatMsgs]         = useState(roomId ? [] : DEMO_CHAT);
   var [unread, setUnread]             = useState(0);
   var [liked, setLiked]               = useState(false);
-  var [likeCount, setLikeCount]       = useState(3);
+  var [likeCount, setLikeCount]       = useState(0);
   var [handRaised, setHandRaised]     = useState(false);
   var [shareOpen, setShareOpen]       = useState(false);
   var [payOpen, setPayOpen]           = useState(false);
