@@ -31,7 +31,6 @@ const StreamerMonetizationCenter = ({ userId }) => {
   const [analytics, setAnalytics] = useState(null);
 
   useEffect(function() {
-    if (!userId) return;
     fetch('/api/creator/analytics?period=' + selectedPeriod, { credentials: 'include' })
       .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(data) { if (data) setAnalytics(data); })

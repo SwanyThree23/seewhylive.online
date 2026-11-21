@@ -387,14 +387,14 @@ export default function AnalyticsPage() {
 
         {/* Revenue + Stream dashboards */}
         <div className="mt-4 space-y-4">
-          <RevenueDashboard />
+          <RevenueDashboard userId={(user && user.id) || null} />
           <StreamAnalyticsDashboard />
         </div>
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <LeaderboardPanel roomId={(rooms[0] && rooms[0].id) || null} />
           <ShareToSocial content={{ title: 'SeeWhy LIVE Analytics', url: window.location.href }} />
-          <AudienceInsights />
+          <AudienceInsights creatorId={(user && user.id) || null} />
           <StreamerMonetizationCenter userId={(user && user.id)} />
         </div>
 
@@ -416,7 +416,7 @@ export default function AnalyticsPage() {
           <OnlineUsersGrid compact maxVisible={8} />
           <CollaborationMatcher />
           <ContentRecommendations />
-          <EarningsBreakdown userId={(user && user.id)} />
+          <EarningsBreakdown creatorId={(user && user.id) || null} />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={totalViews} />
