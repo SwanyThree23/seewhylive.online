@@ -33,14 +33,18 @@ var GOLD = '#FFB800';
 var CRIMSON = '#FF1564';
 var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-function Section({ icon: Icon, title, description, children }) {
+function Section(props) {
+  var Icon = props.icon;
+  var title = props.title;
+  var description = props.description;
+  var children = props.children;
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,184,0,0.1)' }}>
       <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Icon className="w-4 h-4" style={{ color: GOLD }} />
         <div>
           <p className="font-black text-sm text-white leading-none" style={T}>{title}</p>
-          {description && <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{description}</p>}
+          {description && <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{description}</p>}
         </div>
       </div>
       <div className="p-4 space-y-4">{children}</div>
@@ -48,31 +52,42 @@ function Section({ icon: Icon, title, description, children }) {
   );
 }
 
-function ToggleRow({ label, description, checked, onChange }) {
+function ToggleRow(props) {
+  var label = props.label;
+  var description = props.description;
+  var checked = props.checked;
+  var onChange = props.onChange;
   return (
     <div className="flex items-center justify-between gap-3">
       <div>
         <p className="font-black text-sm text-white" style={T}>{label}</p>
         {description && <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{description}</p>}
       </div>
-      <div onClick={() => onChange(!checked)} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+      <div onClick={function() { onChange(!checked); }} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#FF1564' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
         <div style={{ position: 'absolute', top: 3, left: checked ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
       </div>
     </div>
   );
 }
 
-function SaveButton({ onClick, disabled, label = 'Save Changes' }) {
+function SaveButton(props) {
+  var onClick = props.onClick;
+  var disabled = props.disabled;
+  var label = props.label || 'Save Changes';
   return (
     <button onClick={onClick} disabled={disabled}
       className="px-5 py-2 rounded-xl font-black uppercase text-[11px] disabled:opacity-50"
-      style={{ background: disabled ? 'rgba(255,184,0,0.1)' : CRIMSON, color: GOLD, border: '1px solid rgba(255,184,0,0.3)', boxShadow: disabled ? 'none' : '0 0 12px rgba(255,21,100,0.3)', ...T }}>
+      style={{ background: disabled ? 'rgba(255,184,0,0.1)' : CRIMSON, color: GOLD, border: '1px solid rgba(255,184,0,0.3)', boxShadow: disabled ? 'none' : '0 0 12px rgba(255,21,100,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
       {label}
     </button>
   );
 }
 
-function DarkInput({ value, onChange, placeholder, disabled }) {
+function DarkInput(props) {
+  var value = props.value;
+  var onChange = props.onChange;
+  var placeholder = props.placeholder;
+  var disabled = props.disabled;
   return (
     <input value={value} onChange={onChange} placeholder={placeholder} disabled={disabled}
       className="w-full px-3 py-2.5 rounded-xl text-sm text-white outline-none disabled:opacity-40"
@@ -82,40 +97,64 @@ function DarkInput({ value, onChange, placeholder, disabled }) {
 
 export default function SettingsPage() {
   var queryClient = useQueryClient();
-  var [showCreatorSetup, setShowCreatorSetup] = useState(false);
-  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+  var showCreatorSetupState = useState(false);
+  var showCreatorSetup = showCreatorSetupState[0];
+  var setShowCreatorSetup = showCreatorSetupState[1];
+  var showTierEditorState = useState(false);
+  var showTierEditor = showTierEditorState[0];
+  var setShowTierEditor = showTierEditorState[1];
+  var editingTierState = useState(null);
+  var editingTier = editingTierState[0];
+  var setEditingTier = editingTierState[1];
+  var fullNameState = useState('');
+  var fullName = fullNameState[0];
+  var setFullName = fullNameState[1];
+  var emailNotificationsState = useState(true);
+  var emailNotifications = emailNotificationsState[0];
+  var setEmailNotifications = emailNotificationsState[1];
+  var pushNotificationsState = useState(true);
+  var pushNotifications = pushNotificationsState[0];
+  var setPushNotifications = pushNotificationsState[1];
+  var showActivityState = useState(true);
+  var showActivity = showActivityState[0];
+  var setShowActivity = showActivityState[1];
+  var publicProfileState = useState(true);
+  var publicProfile = publicProfileState[0];
+  var setPublicProfile = publicProfileState[1];
+  var payLinksState = useState({});
+  var payLinks = payLinksState[0];
+  var setPayLinks = payLinksState[1];
+  var payLinksSavingState = useState(false);
+  var payLinksSaving = payLinksSavingState[0];
+  var setPayLinksSaving = payLinksSavingState[1];
+  var myProfileIdState = useState(null);
+  var myProfileId = myProfileIdState[0];
+  var setMyProfileId = myProfileIdState[1];
 
-  var [showTierEditor, setShowTierEditor] = useState(false);
-  var [editingTier, setEditingTier] = useState(null);
-  var [fullName, setFullName] = useState('');
-  var [emailNotifications, setEmailNotifications] = useState(true);
-  var [pushNotifications, setPushNotifications] = useState(true);
-  var [showActivity, setShowActivity] = useState(true);
-  var [publicProfile, setPublicProfile] = useState(true);
-  var [payLinks, setPayLinks] = useState({});
-  var [payLinksSaving, setPayLinksSaving] = useState(false);
-  var [myProfileId, setMyProfileId] = useState(null);
-  var { data: user } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
+  var user = userQuery.data || null;
   var roomId = new URLSearchParams(window.location.search).get('room_id');
   var activeRoomId = roomId;
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
 
-  var { data: preferences } = useQuery({
+  var preferencesQuery = useQuery({
     queryKey: ['userPreferences', (user && user.id)],
-    queryFn: async () => {
+    queryFn: async function() {
       var prefs = await base44.entities.UserPreference.filter({ user_id: (user && user.id) });
       return prefs[0] || null;
     },
     enabled: !!user,
   });
+  var preferences = preferencesQuery.data || null;
 
-  useEffect(() => {
+  useEffect(function() {
     if (user) setFullName(user.full_name || '');
   }, [user]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (preferences) {
       setEmailNotifications(preferences.email_notifications || true);
       setPushNotifications(preferences.push_notifications || true);
@@ -151,24 +190,25 @@ export default function SettingsPage() {
   }
 
   var updateProfileMutation = useMutation({
-    mutationFn: (data) => base44.auth.updateMe(data),
-    onSuccess: () => {
+    mutationFn: function(data) { return base44.auth.updateMe(data); },
+    onSuccess: function() {
       toast.success('Profile saved!');
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var savePreferencesMutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: function(data) {
       if ((preferences && preferences.id)) return base44.entities.UserPreference.update(preferences.id, data);
-      return base44.entities.UserPreference.create({ user_id: (user && user.id), ...data });
+      var createData = Object.assign({ user_id: (user && user.id) }, data);
+      return base44.entities.UserPreference.create(createData);
     },
-    onSuccess: () => {
+    onSuccess: function() {
       toast.success('Preferences saved!');
       queryClient.invalidateQueries({ queryKey: ['userPreferences'] });
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var CREATOR_LINKS = [
@@ -240,14 +280,14 @@ export default function SettingsPage() {
         <Section icon={User} title="Profile" description="Manage your personal information">
           <div className="space-y-3">
             <div>
-              <label className="block text-[10px] font-black uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Full Name</label>
-              <DarkInput value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" />
+              <label className="block text-[10px] font-black uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Full Name</label>
+              <DarkInput value={fullName} onChange={function(e) { setFullName(e.target.value); }} placeholder="Your name" />
             </div>
             <div>
-              <label className="block text-[10px] font-black uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Email</label>
+              <label className="block text-[10px] font-black uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Email</label>
               <DarkInput value={(user && user.email) || ''} disabled />
             </div>
-            <SaveButton onClick={() => updateProfileMutation.mutate({ full_name: fullName.slice(0, 60) })} disabled={updateProfileMutation.isPending} />
+            <SaveButton onClick={function() { updateProfileMutation.mutate({ full_name: fullName.slice(0, 60) }); }} disabled={updateProfileMutation.isPending} />
           </div>
         </Section>
 
@@ -256,7 +296,7 @@ export default function SettingsPage() {
           <ToggleRow label="Email Notifications" description="Receive updates via email" checked={emailNotifications} onChange={setEmailNotifications} />
           <ToggleRow label="Push Notifications" description="Real-time alerts in browser" checked={pushNotifications} onChange={setPushNotifications} />
           <SaveButton
-            onClick={() => savePreferencesMutation.mutate({ email_notifications: emailNotifications, push_notifications: pushNotifications })}
+            onClick={function() { savePreferencesMutation.mutate({ email_notifications: emailNotifications, push_notifications: pushNotifications }); }}
             disabled={savePreferencesMutation.isPending}
             label="Save Notification Preferences"
           />
@@ -267,7 +307,7 @@ export default function SettingsPage() {
           <ToggleRow label="Show Activity" description="Let others see your activity feed" checked={showActivity} onChange={setShowActivity} />
           <ToggleRow label="Public Profile" description="Make your profile visible to all users" checked={publicProfile} onChange={setPublicProfile} />
           <SaveButton
-            onClick={() => savePreferencesMutation.mutate({ show_activity: showActivity, public_profile: publicProfile })}
+            onClick={function() { savePreferencesMutation.mutate({ show_activity: showActivity, public_profile: publicProfile }); }}
             disabled={savePreferencesMutation.isPending}
             label="Save Privacy Settings"
           />
@@ -276,20 +316,20 @@ export default function SettingsPage() {
         {/* Creator Tools */}
         <Section icon={LayoutDashboard} title="Creator Tools" description="Quick access to creator features">
           <div className="grid grid-cols-2 gap-2">
-            {CREATOR_LINKS.map(item => (
+            {CREATOR_LINKS.map(function(item) { return (
               <Link key={item.href} to={createPageUrl(item.href)}>
                 <div className="px-3 py-2.5 rounded-xl font-black text-[10px] uppercase text-center transition-all"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,184,0,0.12)', color: 'rgba(255,255,255,0.6)', ...T }}>
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,184,0,0.12)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   {item.label}
                 </div>
               </Link>
-            ))}
+            ); })}
           </div>
         </Section>
 
         {/* Direct Payment Links */}
         <Section icon={DollarSign} title="Direct Payment Links" description="Fans can send money directly — no platform cut">
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 8, ...T }}>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 8, fontFamily: 'Barlow Condensed, sans-serif' }}>
             Enter your handle or username for each app. Fans will see these on your profile and live streams.
           </p>
           {[
@@ -303,7 +343,7 @@ export default function SettingsPage() {
           ].map(function(p) {
             return (
               <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <span style={{ ...T, fontSize: 12, fontWeight: 900, color: 'rgba(255,255,255,0.6)', width: 72, flexShrink: 0 }}>{p.label}</span>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 900, color: 'rgba(255,255,255,0.6)', width: 72, flexShrink: 0 }}>{p.label}</span>
                 <input
                   value={payLinks[p.id] || ''}
                   onChange={function(e) { setPayLinks(function(prev) { var n = Object.assign({}, prev); n[p.id] = e.target.value; return n; }); }}
@@ -325,7 +365,7 @@ export default function SettingsPage() {
         <Section icon={Download} title="Data Export" description="Download your data as PDF, CSV, or JSON">
           <Link to={createPageUrl('DataExport')}>
             <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-black uppercase text-[11px] w-full"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,184,0,0.12)', color: 'rgba(255,255,255,0.6)', ...T }}>
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,184,0,0.12)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <Download className="w-4 h-4" />Export My Data
             </button>
           </Link>
@@ -339,9 +379,9 @@ export default function SettingsPage() {
           </div>
           <div className="p-4 space-y-3">
             <button
-              onClick={() => base44.auth.logout()}
+              onClick={function() { base44.auth.logout(); }}
               className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left"
-              style={{ background: 'rgba(255,32,64,0.08)', border: '1px solid rgba(255,32,64,0.2)', color: '#FF2040', userSelect: 'none', ...T }}>
+              style={{ background: 'rgba(255,32,64,0.08)', border: '1px solid rgba(255,32,64,0.2)', color: '#FF2040', userSelect: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Log Out
             </button>
             <AccountDeletionFlow user={user} />
@@ -355,8 +395,8 @@ export default function SettingsPage() {
       {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       {(user && user.id) && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={(user && user.id)} isSubscribed={false} />}
       {(user && user.id) && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={(user && user.id)} isHighlighted={false} />}
-      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
-      <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
+      <TierEditor open={showTierEditor} onClose={function() { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
+      <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={function() { setShowCreatorSetup(false); }} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
