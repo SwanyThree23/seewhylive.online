@@ -22,11 +22,21 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
   var [wagerTab,    setWagerTab]    = useState('wager');
   var [myWager,     setMyWager]     = useState(null);
   var [wagerGems,   setWagerGems]   = useState(50);
-  var [allWagers,   setAllWagers]   = useState({ team1Gems: 1200, team2Gems: 800 });
+  var [allWagers,   setAllWagers]   = useState({ team1Gems: 0, team2Gems: 0 });
   var [wagerResult, setWagerResult] = useState(null);
-  var [gemBalance,  setGemBalance]  = useState(350);
+  var [gemBalance,  setGemBalance]  = useState(0);
 
   var isHost = role === 'host' || role === 'cohost';
+
+  useEffect(function() {
+    var tok = '';
+    try { tok = localStorage.getItem('sw_token') || ''; } catch(e) {}
+    if (!tok) return;
+    fetch('/api/fuel/balance', { headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(d) { if (d && typeof d.balance === 'number') setGemBalance(d.balance); })
+      .catch(function() {});
+  }, []);
 
   useEffect(function() {
     if (scores) setFadeScores(scores);
