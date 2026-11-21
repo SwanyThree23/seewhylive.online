@@ -1279,7 +1279,7 @@ function PlatformsPanel() {
               <div style={{fontFamily:F.display,fontSize:14,color:C.gold,letterSpacing:2}}>VIRTUAL CAM OUTPUT</div>
               <div style={{fontSize:10,color:C.textM,margin:"4px 0"}}>Scene: <span style={{color:C.gold}}>{activeScene}</span></div>
               <AudioBars active color={C.gold}/>
-              <div style={{fontSize:10,color:C.textM,marginTop:4}}>1920×1080 · 60fps · 6000kbps</div>
+              <div style={{fontSize:10,color:C.textM,marginTop:4}}>Output active</div>
             </div>
           </div>
           <GCard>

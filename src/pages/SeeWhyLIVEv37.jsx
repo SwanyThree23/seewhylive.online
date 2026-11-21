@@ -180,7 +180,7 @@ function StagePanel() {
   function startStream() {
     if (!roomName.trim()) { toast('Enter a room name', setToastMsg); return; }
     setLive(true);
-    setHealth({ bitrate: 4200, fps: 30, latency: 42, dropped: 0 });
+    setHealth({ bitrate: 0, fps: 0, latency: 0, dropped: 0 });
     setViewers(0);
     toast('Stream started!', setToastMsg);
   }
