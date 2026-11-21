@@ -207,7 +207,7 @@ export default function CoverPage() {
         <ContentRecommendations />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         <CollaborationMatcher />
-        <StreamGoals isHost={false} />
+        <StreamGoals isHost={false} creatorId={(user && user.id) || null} />
       </div>
     </div>
   );

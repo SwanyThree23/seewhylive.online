@@ -342,7 +342,7 @@ export default function GuestJoin() {
           <OctagonalVideoWindow stream={localStream} label={(user && user.full_name) || 'You'} isHost={false} isMuted={false} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
-          <StreamGoals isHost={false} />
+          <StreamGoals isHost={false} creatorId={(room && room.host_id) || null} roomId={roomId} />
           {user && <PreStreamCountdown room={room || null} currentUser={user} onGoLive={() => {}} />}
         </div>
 
