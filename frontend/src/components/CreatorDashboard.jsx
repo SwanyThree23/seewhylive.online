@@ -28,29 +28,20 @@ var QA = [
 ];
 
 var STATS = {
-  '7D':   { rev: 312.40,  streams: 4,   peak: 847,  followers: 203,   tips: 189.20,   avg: '8m 42s'  },
-  '30D':  { rev: 1847.90, streams: 18,  peak: 2341, followers: 1204,  tips: 1102.50,  avg: '11m 18s' },
-  '365D': { rev: 22180,   streams: 214, peak: 8903, followers: 18420, tips: 13408,    avg: '14m 55s' },
+  '7D':   { rev: 0, streams: 0, peak: 0, followers: 0, tips: 0, avg: '—' },
+  '30D':  { rev: 0, streams: 0, peak: 0, followers: 0, tips: 0, avg: '—' },
+  '365D': { rev: 0, streams: 0, peak: 0, followers: 0, tips: 0, avg: '—' },
 };
 
 var DAILY = {
-  '7D':   [12,45,28,89,34,156,72],
-  '30D':  [22,34,18,65,48,92,31,27,54,83,19,66,44,71,38,92,57,43,88,34,61,75,49,33,97,52,68,41,85,90],
+  '7D':   [0,0,0,0,0,0,0],
+  '30D':  Array.from({ length: 30 }, function() { return 0; }),
   '365D': Array.from({ length: 52 }, function() { return 0; }),
 };
 
-var STREAMS = [
-  { title: 'Washington Classic Domino Tournament',  date: '2026-05-28', dur: '3h 42m', peak: 847,  rev: 312.40,  avg: '22m' },
-  { title: 'Cali Bones x VibeN\'Bones Session',     date: '2026-05-22', dur: '1h 18m', peak: 412,  rev: 189.20,  avg: '14m' },
-  { title: 'DOMINO ARENA — Season 4 Finals',        date: '2026-05-15', dur: '2h 05m', peak: 2341, rev: 748.60,  avg: '31m' },
-  { title: 'Creator Q&A + Watch Party',             date: '2026-05-08', dur: '0h 54m', peak: 203,  rev: 67.80,   avg: '9m'  },
-];
+var STREAMS = [];
 
-var TXN = [
-  { date: '2026-05-31', amt: 281.16, method: 'CashApp', status: 'paid' },
-  { date: '2026-05-15', amt: 673.74, method: 'Zelle',   status: 'paid' },
-  { date: '2026-05-01', amt: 156.33, method: 'PayPal',  status: 'paid' },
-];
+var TXN = [];
 
 function Bar(props) {
   var data  = props.data;
@@ -233,6 +224,7 @@ export default function CreatorDashboard() {
         'div',
         { style: { marginBottom: 20 } },
         React.createElement('div', { style: { fontFamily: D.disp, fontSize: 16, color: D.golH, letterSpacing: 1, marginBottom: 10, borderLeft: '3px solid ' + D.gold, paddingLeft: 10 } }, 'TOP STREAMS'),
+        STREAMS.length === 0 && React.createElement('div', { style: { fontFamily: D.mono, fontSize: 10, color: D.mut, textAlign: 'center', padding: '20px 0' } }, 'Go live to see your top streams here.'),
         STREAMS.map(function(stream, i) {
           var metrics = [
             { l: 'REVENUE',   v: '$' + stream.rev, c: D.gold },
@@ -267,6 +259,7 @@ export default function CreatorDashboard() {
         React.createElement(
           'div',
           { style: { background: D.card, border: '1px solid ' + D.bord, borderRadius: 12, overflow: 'hidden' } },
+          TXN.length === 0 && React.createElement('div', { style: { fontFamily: D.mono, fontSize: 10, color: D.mut, textAlign: 'center', padding: '20px 0' } }, 'No payouts yet.'),
           TXN.map(function(t, i) {
             return React.createElement(
               'div',
