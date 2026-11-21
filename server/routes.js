@@ -378,13 +378,22 @@ router.get('/creator/analytics', requireAuth, function(req, res) {
       var result = analytics.getCreatorAnalytics(creatorId, period, req.tenantId || null);
       return res.json(result);
     }
+    var _topSupporters = [];
+    try {
+      var _sdb = getRoutesDb();
+      _topSupporters = _sdb.prepare(
+        'SELECT username AS name, SUM(creator_cents) AS totalCents, COUNT(*) AS tipCount ' +
+        'FROM super_chats WHERE room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) ' +
+        'GROUP BY username ORDER BY totalCents DESC LIMIT 10'
+      ).all(creatorId);
+    } catch (_e2) {}
     return res.json({
       totalEarningsCents: 0,
       creatorCents: 0,
       platformCents: 0,
       byType: { tip: 0, subscription: 0, paywall: 0, gift: 0 },
       recentEarnings: [],
-      topSupporters: [],
+      topSupporters: _topSupporters,
       streamCount: 0,
       avgViewersPerStream: 0,
       peakViewers: 0
@@ -936,13 +945,22 @@ router.get('/metrics', requireAuth, function(req, res) {
         recentEarnings: result.recentEarnings || []
       });
     }
+    var _topSupporters2 = [];
+    try {
+      var _sdb2 = getRoutesDb();
+      _topSupporters2 = _sdb2.prepare(
+        'SELECT username AS name, SUM(creator_cents) AS totalCents, COUNT(*) AS tipCount ' +
+        'FROM super_chats WHERE room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) ' +
+        'GROUP BY username ORDER BY totalCents DESC LIMIT 10'
+      ).all(roomId);
+    } catch (_e3) {}
     return res.json({
       roomId: roomId,
       viewerCount: 0,
       totalEarningsCents: 0,
       creatorCents: 0,
       platformCents: 0,
-      topSupporters: [],
+      topSupporters: _topSupporters2,
       recentEarnings: []
     });
   } catch (err) {
