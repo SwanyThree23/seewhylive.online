@@ -2167,11 +2167,11 @@ export default function SeeWhyLIVEv41() {
       <SwanDirectorHUD roomId={activeRoomId} participants={[]} onAdmit={() => {}} onRemove={() => {}} />
       <GiftSystem roomId={activeRoomId} userId={(user && user.id) || null} isHost={true} />
       <GiftLeaderboard roomId={activeRoomId} />
-      <ViewerCount count={0} peakViewers={0} />
+      <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.peak_viewers) || 0} />
       <HostAlertCenter />
       <StreamHealthMonitor isStreaming={!!activeRoomId} />
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout='v41' viewerCount={0} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout='v41' viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
+      <StreamGoals isHost={true} roomId={activeRoomId} creatorId={(user && user.id) || null} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <MilestoneAlerts userId={(user && user.id) || null} roomId={activeRoomId} />
       <BroadcastAnalyticsDashboard />
       <StreamerMonetizationCenter />
