@@ -23,21 +23,19 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 var SVS_BRACKET_ID = 'svs_bracket_v1';
 
-// Static config: colors/names/abbr only — W-L derived from DB
+// Static config: colors/names/abbr only — W-L and pts derived from DB
 var SVS_STATE_CONFIG = [
-  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#D4854A', pts: 1820 },
-  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#C0392B', pts: 1740 },
-  { id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E', pts: 1650 },
-  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#800020', pts: 1610 },
-  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#D4AF37', pts: 1380 },
-  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#CC7755', pts: 1120 },
+  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#D4854A', pts: 0 },
+  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#C0392B', pts: 0 },
+  { id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E', pts: 0 },
+  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#800020', pts: 0 },
+  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#D4AF37', pts: 0 },
+  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#CC7755', pts: 0 },
 ];
-// Fallback with static W-L for when DB has no records yet
-var SVS_STATES = SVS_STATE_CONFIG.map((s, i) => ({
-  ...s,
-  w: [4, 3, 3, 3, 2, 1][i],
-  l: [1, 1, 2, 2, 3, 4][i],
-}));
+// Fallback with zero W-L until DB has records
+var SVS_STATES = SVS_STATE_CONFIG.map(function(s) {
+  return Object.assign({}, s, { w: 0, l: 0 });
+});
 
 var PERIOD_MS = { week: 7 * 86_400_000, month: 30 * 86_400_000, all: Infinity };
 

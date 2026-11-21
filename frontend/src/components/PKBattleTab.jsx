@@ -22,11 +22,7 @@ var MUTED = '#8A7A62';
 
 var DURATION_LABELS = { 60: '1 MIN', 180: '3 MIN', 300: '5 MIN', 600: '10 MIN' };
 
-var RIVALS_FALLBACK = [
-  { name: 'STORM_RIDER',  wins: 3,  losses: 1, status: 'LIVE',    elo: 2840 },
-  { name: 'DARK_KNIGHT',  wins: 7,  losses: 2, status: 'ONLINE',  elo: 3210 },
-  { name: 'PHANTOM_X',    wins: 12, losses: 3, status: 'OFFLINE', elo: 4100 },
-];
+var RIVALS_FALLBACK = [];
 
 function _authHdrs() {
   var tok = '';
