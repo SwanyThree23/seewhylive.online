@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Heart, Gift, Users, TrendingUp, DollarSign } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const GOLD = '#FFB800';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -29,6 +30,7 @@ const StreamerMonetizationCenter = ({ userId }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [activeTab, setActiveTab] = useState('subscriptions');
   const [analytics, setAnalytics] = useState(null);
+  const [subscriptionTiers, setSubscriptionTiers] = useState([]);
 
   useEffect(function() {
     fetch('/api/creator/analytics?period=' + selectedPeriod, { credentials: 'include' })
@@ -36,6 +38,25 @@ const StreamerMonetizationCenter = ({ userId }) => {
       .then(function(data) { if (data) setAnalytics(data); })
       .catch(function() {});
   }, [userId, selectedPeriod]);
+
+  useEffect(function() {
+    if (!userId) return;
+    var tiersPromise = base44.entities.SubscriptionTier.filter({ creator_id: userId, is_active: true }, 'sort_order', 20);
+    var subsPromise = base44.entities.Subscription.filter({ creator_id: userId, status: 'active' });
+    Promise.all([tiersPromise, subsPromise])
+      .then(function(results) {
+        var tiers = results[0] || [];
+        var subs = results[1] || [];
+        var mapped = tiers.map(function(tier) {
+          var tierSubs = subs.filter(function(s) { return s.tier_name === tier.name; });
+          var priceDollars = tier.price_cents ? Math.floor(tier.price_cents / 100) : (tier.price || 0);
+          var monthlyRevenue = Math.floor(tierSubs.length * priceDollars * 0.90);
+          return { name: tier.name, price: priceDollars, members: tierSubs.length, revenue: monthlyRevenue };
+        });
+        setSubscriptionTiers(mapped);
+      })
+      .catch(function() {});
+  }, [userId]);
 
   var totalEarningsCents = (analytics && analytics.totalEarningsCents) || 0;
   var byType = (analytics && analytics.byType) || {};
@@ -47,8 +68,6 @@ const StreamerMonetizationCenter = ({ userId }) => {
     { label: 'Pay-per-view', amount: Math.floor((byType.paywall || 0) / 100), growth: 0, color: '#5B7FA6' },
     { label: 'Gifts', amount: Math.floor((byType.gift || 0) / 100), growth: 0, color: '#C9A84C' },
   ].filter(function(item) { return item.amount > 0; });
-
-  var subscriptionTiers = [];
 
   var topSupporters = rawTopSupporters;
 
