@@ -113,7 +113,7 @@ export default function CreatorAnalytics() {
         </div>
         <div>
           <div style={{ fontSize: 18, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>CREATOR ANALYTICS</div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>SeeWhy LIVE · SwanyThree23 · 90% Creator Split</div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>SeeWhy LIVE · 90% Creator Split</div>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
           {RANGES.map(r => (

@@ -1862,8 +1862,8 @@ function JoyceAIPanel() {
 function SettingsPanel() {
   var [streamKey, setStreamKey] = useState("swl_•••••••••••••••");
   var [rtmpUrl, setRtmpUrl] = useState("rtmp://live.seewhylive.online/stream");
-  var [displayName, setDisplayName] = useState("SwanyThree");
-  var [bio, setBio] = useState("SwanyThree EntTech LLC · Creator-First Broadcast Platform");
+  var [displayName, setDisplayName] = useState("");
+  var [bio, setBio] = useState("");
   var [notifs, setNotifs] = useState({tips:true,joins:true,raids:false,milestones:true});
   var [showKey, setShowKey] = useState(false);
   var [saved, setSaved] = useState(false);
