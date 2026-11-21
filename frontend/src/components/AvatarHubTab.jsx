@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
 
 var AVATAR_ITEMS = [
-  { id: 'a1', name: 'Domino King',    emoji: '👑', price: 200, owned: true,  equipped: true,  rarity: 'legendary', desc: 'Washington Classic champion' },
-  { id: 'a2', name: 'Cali Flame',     emoji: '🔥', price: 50,  owned: true,  equipped: false, rarity: 'rare',      desc: 'West Coast energy' },
+  { id: 'a1', name: 'Domino King',    emoji: '👑', price: 200, owned: false, equipped: false, rarity: 'legendary', desc: 'Washington Classic champion' },
+  { id: 'a2', name: 'Cali Flame',     emoji: '🔥', price: 50,  owned: false, equipped: false, rarity: 'rare',      desc: 'West Coast energy' },
   { id: 'a3', name: 'Volt Strike',    emoji: '⚡', price: 100, owned: false, equipped: false, rarity: 'epic',      desc: 'Electric power' },
   { id: 'a4', name: 'Teal Wave',      emoji: '🌊', price: 75,  owned: false, equipped: false, rarity: 'epic',      desc: 'Smooth like the coast' },
   { id: 'a5', name: 'Gold Standard',  emoji: '🏆', price: 300, owned: false, equipped: false, rarity: 'legendary', desc: 'The highest tier' },
   { id: 'a6', name: 'Purple Reign',   emoji: '💜', price: 150, owned: false, equipped: false, rarity: 'epic',      desc: 'Royalty vibes' },
   { id: 'a7', name: 'Diamond Hard',   emoji: '💎', price: 500, owned: false, equipped: false, rarity: 'mythic',    desc: 'Unbreakable' },
-  { id: 'a8', name: 'Domino Nation',  emoji: '🎲', price: 25,  owned: true,  equipped: false, rarity: 'common',    desc: 'The original' },
+  { id: 'a8', name: 'Domino Nation',  emoji: '🎲', price: 25,  owned: false, equipped: false, rarity: 'common',    desc: 'The original' },
 ];
 
 var RARITY_COLORS = {
@@ -21,7 +21,7 @@ var RARITY_COLORS = {
 };
 
 var FRAMES = [
-  { id: 'f1', name: 'Gold Classic',  style: '3px solid #C9A84C', price: 50,  owned: true  },
+  { id: 'f1', name: 'Gold Classic',  style: '3px solid #C9A84C', price: 50,  owned: false },
   { id: 'f2', name: 'Blood Ring',    style: '3px solid #C01838', price: 75,  owned: false },
   { id: 'f3', name: 'Teal Pulse',    style: '3px solid #C9A84C', price: 100, owned: false },
   { id: 'f4', name: 'Mythic Flame',  style: '4px solid #FF1A3C', price: 200, owned: false },
@@ -35,11 +35,11 @@ var FRAME_ACCENT_COLORS = {
 };
 
 var BADGES = [
-  { id: 'b1', icon: '🎲', label: 'Domino Pioneer', unlocked: true,  progress: null, total: null, how: null           },
-  { id: 'b2', icon: '🏆', label: 'Champion',       unlocked: true,  progress: null, total: null, how: null           },
-  { id: 'b3', icon: '⚡', label: 'Fades Veteran',  unlocked: false, progress: 3,    total: 10,   how: 'Fades matches' },
-  { id: 'b4', icon: '💎', label: 'Diamond Tier',   unlocked: false, progress: 1247, total: 5000, how: 'Loyalty pts'   },
-  { id: 'b5', icon: '🔥', label: '10-Streak',      unlocked: false, progress: 7,    total: 10,   how: 'Win streak'    },
+  { id: 'b1', icon: '🎲', label: 'Domino Pioneer', unlocked: false, progress: null, total: null, how: null           },
+  { id: 'b2', icon: '🏆', label: 'Champion',       unlocked: false, progress: null, total: null, how: null           },
+  { id: 'b3', icon: '⚡', label: 'Fades Veteran',  unlocked: false, progress: 0,    total: 10,   how: 'Fades matches' },
+  { id: 'b4', icon: '💎', label: 'Diamond Tier',   unlocked: false, progress: 0,    total: 5000, how: 'Loyalty pts'   },
+  { id: 'b5', icon: '🔥', label: '10-Streak',      unlocked: false, progress: 0,    total: 10,   how: 'Win streak'    },
 ];
 
 var VIEWER_NAMES = ['King D', 'Cali J', 'Volt V', 'Teal B', 'Gold G', 'Purp R', 'Dia H', 'Dom N'];
@@ -47,7 +47,7 @@ var VIEWER_COLORS = ['#FF1A3C','#C9A84C','#C9A84C','#C9A84C','#C9A84C','#D4854A'
 
 export default function AvatarHubTab({ addToast, isLive }) {
   var [items,            setItems]            = useState(AVATAR_ITEMS.map(function(a) { return Object.assign({}, a); }));
-  var [gemBal,           setGemBal]           = useState(350);
+  var [gemBal,           setGemBal]           = useState(0);
   var [dailyClaimed,     setDailyClaimed]     = useState(false);
   var [filter,           setFilter]           = useState('all');
   var [frames,           setFrames]           = useState(FRAMES.map(function(f) { return Object.assign({}, f); }));

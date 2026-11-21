@@ -27,13 +27,13 @@ var fmtN = function(n) { n = n || 0; if (n >= 1000000) return (n/1000000).toFixe
 var CREATOR = 0.90;
 
 var MERCH_ITEMS = [
-  {id:'m1', name:'Washington Classic Hoodie', price:65, stock:12, emoji:'🧥', color:'#C01838', limited:true, sold:38, cat:'apparel'},
-  {id:'m2', name:'Domino OG Snapback', price:45, stock:24, emoji:'🧢', color:'#E8C46A', limited:false, sold:71, cat:'apparel'},
-  {id:'m3', name:'SeeWhy LIVE Creator Mug', price:25, stock:50, emoji:'☕', color:'#800020', limited:false, sold:134, cat:'accessories'},
-  {id:'m4', name:'Techmunity Tee — Black', price:35, stock:6, emoji:'👕', color:'#C9A84C', limited:true, sold:94, cat:'apparel'},
-  {id:'m5', name:'Washington Classic 2026 Tee', price:40, stock:20, emoji:'🏆', color:'#FFD700', limited:true, sold:52, cat:'apparel'},
-  {id:'m6', name:'Cali Bones Domino Set (Premium)', price:120, stock:5, emoji:'🎲', color:'#E8C46A', limited:true, sold:19, cat:'collectibles'},
-  {id:'m7', name:"VibeN'Bones Phone Case", price:30, stock:35, emoji:'📱', color:'#B4E628', limited:false, sold:87, cat:'accessories'},
+  {id:'m1', name:'Washington Classic Hoodie', price:65, stock:12, emoji:'🧥', color:'#C01838', limited:true, sold:0, cat:'apparel'},
+  {id:'m2', name:'Domino OG Snapback', price:45, stock:24, emoji:'🧢', color:'#E8C46A', limited:false, sold:0, cat:'apparel'},
+  {id:'m3', name:'SeeWhy LIVE Creator Mug', price:25, stock:50, emoji:'☕', color:'#800020', limited:false, sold:0, cat:'accessories'},
+  {id:'m4', name:'Techmunity Tee — Black', price:35, stock:6, emoji:'👕', color:'#C9A84C', limited:true, sold:0, cat:'apparel'},
+  {id:'m5', name:'Washington Classic 2026 Tee', price:40, stock:20, emoji:'🏆', color:'#FFD700', limited:true, sold:0, cat:'apparel'},
+  {id:'m6', name:'Cali Bones Domino Set (Premium)', price:120, stock:5, emoji:'🎲', color:'#E8C46A', limited:true, sold:0, cat:'collectibles'},
+  {id:'m7', name:"VibeN'Bones Phone Case", price:30, stock:35, emoji:'📱', color:'#B4E628', limited:false, sold:0, cat:'accessories'},
   {id:'m8', name:'Signed Poster', price:80, stock:3, emoji:'🖼', color:'#D4854A', limited:true, sold:0, cat:'collectibles'},
 ];
 

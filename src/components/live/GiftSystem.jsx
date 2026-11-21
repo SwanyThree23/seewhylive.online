@@ -19,14 +19,14 @@ var RARITY_STYLES = {
 };
 
 var DEFAULT_GIFTS = [
-  { id: "rose", name: "Rose", emoji: "🌹", price: 1, rarity: "common", times_sent: 842 },
-  { id: "heart", name: "Heart", emoji: "❤️", price: 5, rarity: "common", times_sent: 631 },
-  { id: "fire", name: "Fire", emoji: "🔥", price: 10, rarity: "rare", times_sent: 412 },
-  { id: "crown", name: "Crown", emoji: "👑", price: 50, rarity: "rare", times_sent: 189 },
-  { id: "rocket", name: "Rocket", emoji: "🚀", price: 100, rarity: "epic", times_sent: 74 },
-  { id: "unicorn", name: "Unicorn", emoji: "🦄", price: 200, rarity: "epic", times_sent: 31 },
-  { id: "diamond", name: "Diamond", emoji: "💎", price: 500, rarity: "legendary", times_sent: 12 },
-  { id: "galaxy", name: "Galaxy", emoji: "🌌", price: 1000, rarity: "legendary", times_sent: 4 },
+  { id: "rose", name: "Rose", emoji: "🌹", price: 1, rarity: "common", times_sent: 0 },
+  { id: "heart", name: "Heart", emoji: "❤️", price: 5, rarity: "common", times_sent: 0 },
+  { id: "fire", name: "Fire", emoji: "🔥", price: 10, rarity: "rare", times_sent: 0 },
+  { id: "crown", name: "Crown", emoji: "👑", price: 50, rarity: "rare", times_sent: 0 },
+  { id: "rocket", name: "Rocket", emoji: "🚀", price: 100, rarity: "epic", times_sent: 0 },
+  { id: "unicorn", name: "Unicorn", emoji: "🦄", price: 200, rarity: "epic", times_sent: 0 },
+  { id: "diamond", name: "Diamond", emoji: "💎", price: 500, rarity: "legendary", times_sent: 0 },
+  { id: "galaxy", name: "Galaxy", emoji: "🌌", price: 1000, rarity: "legendary", times_sent: 0 },
 ];
 
 // Full-screen gift animation overlay
