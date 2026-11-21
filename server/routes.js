@@ -378,26 +378,64 @@ router.get('/creator/analytics', requireAuth, function(req, res) {
       var result = analytics.getCreatorAnalytics(creatorId, period, req.tenantId || null);
       return res.json(result);
     }
-    var _topSupporters = [];
-    try {
-      var _sdb = getRoutesDb();
-      _topSupporters = _sdb.prepare(
-        'SELECT username AS name, SUM(creator_cents) AS totalCents, COUNT(*) AS tipCount ' +
-        'FROM super_chats WHERE room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) ' +
-        'GROUP BY username ORDER BY totalCents DESC LIMIT 10'
-      ).all(creatorId);
-    } catch (_e2) {}
-    return res.json({
+    var _fallback = {
       totalEarningsCents: 0,
       creatorCents: 0,
       platformCents: 0,
       byType: { tip: 0, subscription: 0, paywall: 0, gift: 0 },
       recentEarnings: [],
-      topSupporters: _topSupporters,
+      topSupporters: [],
       streamCount: 0,
       avgViewersPerStream: 0,
       peakViewers: 0
-    });
+    };
+    try {
+      var _sdb = getRoutesDb();
+      var _now = Date.now();
+      var _periodMs = period === 'today' ? 86400000 : period === 'week' ? 604800000 : 2592000000;
+      var _since = _now - _periodMs;
+      var _totRow = _sdb.prepare(
+        'SELECT SUM(amount_cents) AS total, SUM(creator_cents) AS creator, SUM(platform_cents) AS platform ' +
+        'FROM creator_earnings WHERE creator_id = ? AND created_at >= ?'
+      ).get(creatorId, _since);
+      if (_totRow) {
+        _fallback.totalEarningsCents = Math.floor(_totRow.total || 0);
+        _fallback.creatorCents = Math.floor(_totRow.creator || 0);
+        _fallback.platformCents = Math.floor(_totRow.platform || 0);
+      }
+      var _typeRows = _sdb.prepare(
+        'SELECT payment_type, SUM(creator_cents) AS total FROM creator_earnings ' +
+        'WHERE creator_id = ? AND created_at >= ? GROUP BY payment_type'
+      ).all(creatorId, _since);
+      for (var _ti = 0; _ti < _typeRows.length; _ti++) {
+        var _tr = _typeRows[_ti];
+        if (_fallback.byType.hasOwnProperty(_tr.payment_type)) {
+          _fallback.byType[_tr.payment_type] = Math.floor(_tr.total || 0);
+        }
+      }
+      _fallback.recentEarnings = _sdb.prepare(
+        'SELECT * FROM creator_earnings WHERE creator_id = ? ORDER BY created_at DESC LIMIT 20'
+      ).all(creatorId);
+      _fallback.topSupporters = _sdb.prepare(
+        'SELECT username AS name, SUM(creator_cents) AS totalCents, COUNT(*) AS tipCount ' +
+        'FROM super_chats WHERE room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) ' +
+        'GROUP BY username ORDER BY totalCents DESC LIMIT 10'
+      ).all(creatorId);
+      var _streamRows = _sdb.prepare(
+        'SELECT stream_id, MAX(viewer_count) AS peak, AVG(viewer_count) AS avg_viewers ' +
+        'FROM stream_analytics WHERE host_id = ? AND recorded_at >= ? GROUP BY stream_id'
+      ).all(creatorId, _since);
+      _fallback.streamCount = _streamRows.length;
+      var _peakV = 0;
+      var _avgSum = 0;
+      for (var _si = 0; _si < _streamRows.length; _si++) {
+        _avgSum += _streamRows[_si].avg_viewers || 0;
+        if ((_streamRows[_si].peak || 0) > _peakV) _peakV = _streamRows[_si].peak;
+      }
+      _fallback.peakViewers = _peakV;
+      _fallback.avgViewersPerStream = _streamRows.length > 0 ? Math.floor(_avgSum / _streamRows.length) : 0;
+    } catch (_e2) {}
+    return res.json(_fallback);
   } catch (err) {
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
@@ -945,24 +983,36 @@ router.get('/metrics', requireAuth, function(req, res) {
         recentEarnings: result.recentEarnings || []
       });
     }
-    var _topSupporters2 = [];
-    try {
-      var _sdb2 = getRoutesDb();
-      _topSupporters2 = _sdb2.prepare(
-        'SELECT username AS name, SUM(creator_cents) AS totalCents, COUNT(*) AS tipCount ' +
-        'FROM super_chats WHERE room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) ' +
-        'GROUP BY username ORDER BY totalCents DESC LIMIT 10'
-      ).all(roomId);
-    } catch (_e3) {}
-    return res.json({
+    var _mFallback = {
       roomId: roomId,
       viewerCount: 0,
       totalEarningsCents: 0,
       creatorCents: 0,
       platformCents: 0,
-      topSupporters: _topSupporters2,
+      topSupporters: [],
       recentEarnings: []
-    });
+    };
+    try {
+      var _sdb2 = getRoutesDb();
+      var _mTotRow = _sdb2.prepare(
+        'SELECT SUM(amount_cents) AS total, SUM(creator_cents) AS creator, SUM(platform_cents) AS platform ' +
+        'FROM creator_earnings WHERE creator_id = ?'
+      ).get(roomId);
+      if (_mTotRow) {
+        _mFallback.totalEarningsCents = Math.floor(_mTotRow.total || 0);
+        _mFallback.creatorCents = Math.floor(_mTotRow.creator || 0);
+        _mFallback.platformCents = Math.floor(_mTotRow.platform || 0);
+      }
+      _mFallback.recentEarnings = _sdb2.prepare(
+        'SELECT * FROM creator_earnings WHERE creator_id = ? ORDER BY created_at DESC LIMIT 20'
+      ).all(roomId);
+      _mFallback.topSupporters = _sdb2.prepare(
+        'SELECT username AS name, SUM(creator_cents) AS totalCents, COUNT(*) AS tipCount ' +
+        'FROM super_chats WHERE room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) ' +
+        'GROUP BY username ORDER BY totalCents DESC LIMIT 10'
+      ).all(roomId);
+    } catch (_e3) {}
+    return res.json(_mFallback);
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
   }
