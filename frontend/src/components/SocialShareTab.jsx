@@ -18,16 +18,7 @@ var fM      = "'DM Mono',monospace";
 
 var STREAM_BASE_URL = 'https://seewhylive.online/watch/';
 
-var COMMUNITY_MEMBERS = [
-  { id: 'cm1', name: 'CaliBonesOG',   status: 'LIVE',    mutual: true  },
-  { id: 'cm2', name: 'SwanyFan99',    status: 'ONLINE',  mutual: true  },
-  { id: 'cm3', name: 'VibeNBones',    status: 'LIVE',    mutual: false },
-  { id: 'cm4', name: 'DJ_Cipher',     status: 'ONLINE',  mutual: true  },
-  { id: 'cm5', name: 'LyricQueen',    status: 'OFFLINE', mutual: false },
-  { id: 'cm6', name: 'BeatKing_X',    status: 'ONLINE',  mutual: true  },
-  { id: 'cm7', name: 'NeonBeats',     status: 'OFFLINE', mutual: false },
-  { id: 'cm8', name: 'TechNerd42',    status: 'LIVE',    mutual: true  },
-];
+var COMMUNITY_MEMBERS = [];
 
 var SHARE_PLATFORMS = [
   {
@@ -231,6 +222,9 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
       {mainView === 'community' && (
         <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, letterSpacing: 2, marginBottom: 2 }}>INVITE TO YOUR STREAM</div>
+          {communityMembers.length === 0 && (
+            <div style={{ padding: '24px 16px', textAlign: 'center', fontFamily: fM, fontSize: 9, color: MUTED }}>No community members found.</div>
+          )}
           {communityMembers.map(function(m) {
             var statusColor = m.status === 'LIVE' ? '#FF1A3C' : m.status === 'ONLINE' ? '#C9A84C' : '#3D3020';
             var wasInvited = Boolean(invitedIds[m.id]);

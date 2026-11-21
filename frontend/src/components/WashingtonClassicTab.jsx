@@ -14,37 +14,22 @@ var ROUND_LABELS = { qf: 'QUARTERFINALS', sf: 'SEMIFINALS', fn: 'THE FINALS' };
 var ROUND_SHORT  = { qf: 'QF', sf: 'SF', fn: 'FINALS' };
 
 var INIT_QF = [
-  { id: 1, p1: 'CaliBonesOG', p2: 'DJ_Phantom',  score: '3-2', status: 'DONE', winner: 'CaliBonesOG' },
-  { id: 2, p1: 'SwanyThree',  p2: 'VibeNBones',   score: '—',   status: 'LIVE', winner: null },
-  { id: 3, p1: 'BeatKing_X',  p2: 'LyricQueen',   score: '2-1', status: 'DONE', winner: 'BeatKing_X' },
-  { id: 4, p1: 'NeonBeats',   p2: 'VibeStar',     score: '3-0', status: 'DONE', winner: 'NeonBeats' },
+  { id: 1, p1: 'TBD', p2: 'TBD', score: '—', status: 'NEXT', winner: null },
+  { id: 2, p1: 'TBD', p2: 'TBD', score: '—', status: 'NEXT', winner: null },
+  { id: 3, p1: 'TBD', p2: 'TBD', score: '—', status: 'NEXT', winner: null },
+  { id: 4, p1: 'TBD', p2: 'TBD', score: '—', status: 'NEXT', winner: null },
 ];
 var INIT_SF = [
-  { id: 5, p1: 'CaliBonesOG', p2: 'TBD', score: '—', status: 'NEXT', winner: null },
-  { id: 6, p1: 'BeatKing_X',  p2: 'NeonBeats', score: '—', status: 'NEXT', winner: null },
+  { id: 5, p1: 'TBD', p2: 'TBD', score: '—', status: 'NEXT', winner: null },
+  { id: 6, p1: 'TBD', p2: 'TBD', score: '—', status: 'NEXT', winner: null },
 ];
 var INIT_FN = [
   { id: 7, p1: 'TBD', p2: 'TBD', score: '—', status: 'NEXT', winner: null },
 ];
 
-var LEADERBOARD = [
-  { name: 'CaliBonesOG', flag: '&#x1F1FA;&#x1F1F8;', w: 8, l: 0, pts: 240, streak: 8, color: '#C9A84C' },
-  { name: 'SwanyThree',  flag: '&#x1F1FA;&#x1F1F8;', w: 7, l: 1, pts: 210, streak: 5, color: '#C01838' },
-  { name: 'VibeNBones',  flag: '&#x1F1FA;&#x1F1F8;', w: 6, l: 2, pts: 180, streak: 3, color: '#D4854A' },
-  { name: 'BeatKing_X',  flag: '&#x1F1EC;&#x1F1E7;', w: 5, l: 3, pts: 150, streak: 2, color: '#D4854A' },
-  { name: 'NeonBeats',   flag: '&#x1F1F0;&#x1F1F7;', w: 4, l: 4, pts: 120, streak: 0, color: '#C9A84C' },
-  { name: 'LyricQueen',  flag: '&#x1F1FA;&#x1F1F8;', w: 3, l: 5, pts: 90,  streak: 0, color: '#FF8C5A' },
-  { name: 'DJ_Phantom',  flag: '&#x1F1FA;&#x1F1F8;', w: 2, l: 6, pts: 60,  streak: 0, color: '#8A7A62' },
-  { name: 'VibeStar',    flag: '&#x1F1EF;&#x1F1F5;', w: 1, l: 7, pts: 30,  streak: 0, color: '#F0E8D4' },
-];
+var LEADERBOARD = [];
 
-var PLAYER_STATS = [
-  { name: 'CaliBonesOG', avgScore: 28.4, highGame: 35, winPct: 100, dominoes: 142, pts: 240, color: '#C9A84C' },
-  { name: 'SwanyThree',  avgScore: 26.1, highGame: 33, winPct: 87,  dominoes: 130, pts: 210, color: '#C01838' },
-  { name: 'VibeNBones',  avgScore: 23.8, highGame: 31, winPct: 75,  dominoes: 119, pts: 180, color: '#D4854A' },
-  { name: 'BeatKing_X',  avgScore: 21.5, highGame: 30, winPct: 63,  dominoes: 107, pts: 150, color: '#D4854A' },
-  { name: 'NeonBeats',   avgScore: 19.2, highGame: 27, winPct: 50,  dominoes: 96,  pts: 120, color: '#C9A84C' },
-];
+var PLAYER_STATS = [];
 
 var STATUS_COLORS = { LIVE: '#FF1A3C', NEXT: '#D4854A', DONE: '#8A7A62' };
 
@@ -548,6 +533,9 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020', width: 24, textAlign: 'center' }}>L</div>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020', width: 30, textAlign: 'right' }}>PTS</div>
           </div>
+          {LEADERBOARD.length === 0 && (
+            <div style={{ color: 'rgba(240,232,212,0.4)', fontSize: 11, fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>Standings will appear once the tournament begins.</div>
+          )}
           {LEADERBOARD.map(function(p, i) {
             return (
               <div key={p.name} style={{ background: i === 0 ? 'rgba(201,168,76,.1)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (i === 0 ? '#C9A84C44' : '#241C12'), borderRadius: 10, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: i === 0 ? '0 0 12px rgba(201,168,76,.15)' : 'none' }}>
@@ -609,6 +597,9 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
       {view === 'stats' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, textAlign: 'center' }}>TOP 5 — SESSION STATS</div>
+          {PLAYER_STATS.length === 0 && (
+            <div style={{ color: 'rgba(240,232,212,0.4)', fontSize: 11, fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>Player stats will appear once the tournament begins.</div>
+          )}
           {PLAYER_STATS.map(function(p, i) {
             var winBarW = Math.floor(p.winPct);
             return (

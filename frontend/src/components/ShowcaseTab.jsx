@@ -5,39 +5,13 @@ var CREATOR = 0.90;
 var PLATFORM = 0.10;
 var OCT_CLIP = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
-var STATES = [
-  { id:'wa', name:'Washington',     abbr:'WA', emoji:'🏔️', captain:'CaliBonesOG',   co:'SwanyThree',     city:'Des Moines, WA',  region:'West',      cp:'#004C97', cs:'#69BE28', w:8, l:0, pts:240, rank:1, streak:8, tiles:1840, roster:['CaliBonesOG','SwanyThree','VibeNBones','DJ_Cipher','BeatKing_X'],     bio:'Home of the Washington Classic. Undefeated in the 2026 State Showcase. Pacific Northwest dominoes royalty.' },
-  { id:'ca', name:'California',     abbr:'CA', emoji:'🌴', captain:'CaliBonesMusic', co:'LyricQueen',     city:'Los Angeles, CA', region:'West',      cp:'#003087', cs:'#FDB927', w:7, l:1, pts:210, rank:2, streak:5, tiles:1720, roster:['CaliBonesMusic','LyricQueen','WestCoast_D','BonesDaddy','TileMaster'],  bio:'West Coast dominoes elite. Cali Bones carrying the flag for the Golden State.' },
-  { id:'tx', name:'Texas',          abbr:'TX', emoji:'⭐', captain:'TileMaster_TX',  co:'HoustonHeat',    city:'Houston, TX',     region:'Southwest', cp:'#BF0A30', cs:'#FFFFFF', w:6, l:2, pts:180, rank:3, streak:3, tiles:1580, roster:['TileMaster_TX','HoustonHeat','LoneStar_D','BigTex','DallasDomino'],   bio:'Everything is bigger in Texas — including the dominoes. Houston to Dallas, TX runs deep.' },
-  { id:'ga', name:'Georgia',        abbr:'GA', emoji:'🍑', captain:'ATL_Domino',     co:'PeachState_P',   city:'Atlanta, GA',     region:'Southeast', cp:'#BA0C2F', cs:'#E8C46A', w:6, l:2, pts:178, rank:4, streak:2, tiles:1560, roster:['ATL_Domino','PeachState_P','ATL_BoneKing','SouthSide_D','TechWoodT'], bio:"ATL bringing that Southern dominoes heat. Georgia peaches don't play." },
-  { id:'ny', name:'New York',       abbr:'NY', emoji:'🗽', captain:'BrooklynBones',  co:'HarlemKing',     city:'Brooklyn, NY',    region:'Northeast', cp:'#003087', cs:'#CF7F2D', w:5, l:3, pts:150, rank:5, streak:1, tiles:1440, roster:['BrooklynBones','HarlemKing','BronxBlitz','QueensTile','LIBoneGod'],   bio:'NYC runs five boroughs deep. Brooklyn to the Bronx — we set the table.' },
-  { id:'fl', name:'Florida',        abbr:'FL', emoji:'🌊', captain:'MiamiTile',      co:'OrlandoD',       city:'Miami, FL',       region:'Southeast', cp:'#0021A5', cs:'#FA4616', w:5, l:3, pts:148, rank:6, streak:0, tiles:1420, roster:['MiamiTile','OrlandoD','TampaBone','SunshineD','KeysKing'],          bio:"Florida's heat doesn't stop at the weather. Miami to Jax — FL is coming for the crown." },
-  { id:'il', name:'Illinois',       abbr:'IL', emoji:'🏙️', captain:'ChicagoD',       co:'SouthSideSlate', city:'Chicago, IL',     region:'Midwest',   cp:'#00A3E0', cs:'#FFFFFF', w:4, l:4, pts:120, rank:7, streak:0, tiles:1280, roster:['ChicagoD','SouthSideSlate','NorthShoreN','WestSideW','WindyCityB'], bio:'Chi-town dominoes scene is real. Bronzeville bred — city built on bones.' },
-  { id:'nc', name:'North Carolina', abbr:'NC', emoji:'🌲', captain:'CLTBoneKing',    co:'TriangleTile',   city:'Charlotte, NC',   region:'Southeast', cp:'#990000', cs:'#FFFFFF', w:4, l:4, pts:118, rank:8, streak:0, tiles:1240, roster:['CLTBoneKing','TriangleTile','OBXtile','Piedmont_D','RaleighR'],      bio:'Queen City rising. NC blending tradition with new school domino energy.' },
-];
+var STATES = [];
 
-var FUTURE = [
-  { id:'oh', name:'Ohio',          abbr:'OH', emoji:'🌰', cp:'#BB0000', region:'Midwest' },
-  { id:'pa', name:'Pennsylvania',  abbr:'PA', emoji:'🔔', cp:'#002147', region:'Northeast' },
-  { id:'az', name:'Arizona',       abbr:'AZ', emoji:'🌵', cp:'#CC0000', region:'Southwest' },
-  { id:'mi', name:'Michigan',      abbr:'MI', emoji:'🚗', cp:'#00274C', region:'Midwest' },
-  { id:'va', name:'Virginia',      abbr:'VA', emoji:'🏛️', cp:'#003087', region:'Southeast' },
-  { id:'ma', name:'Massachusetts', abbr:'MA', emoji:'🦞', cp:'#0000AA', region:'Northeast' },
-];
+var FUTURE = [];
 
-var QF = [
-  { id:'m1', a:'wa', b:'nc', date:'Sat Jun 7',  ppv:'4.99' },
-  { id:'m2', a:'ca', b:'il', date:'Sat Jun 7',  ppv:'4.99' },
-  { id:'m3', a:'tx', b:'fl', date:'Sun Jun 8',  ppv:'4.99' },
-  { id:'m4', a:'ga', b:'ny', date:'Sun Jun 8',  ppv:'4.99' },
-];
+var QF = [];
 
-var RESULTS = [
-  { id:'r1', a:'wa', b:'ny', sa:7, sb:2, ta:210, tb:168, date:'May 17', mvp:'CaliBonesOG' },
-  { id:'r2', a:'ca', b:'nc', sa:6, sb:3, ta:198, tb:154, date:'May 17', mvp:'CaliBonesMusic' },
-  { id:'r3', a:'tx', b:'ga', sa:5, sb:4, ta:180, tb:176, date:'May 18', mvp:'TileMaster_TX' },
-  { id:'r4', a:'fl', b:'il', sa:5, sb:4, ta:172, tb:168, date:'May 18', mvp:'MiamiTile' },
-];
+var RESULTS = [];
 
 var BATTLE_GIFTS = [
   { id:'g1', e:'🎲', n:'Domino',   pts:5  },

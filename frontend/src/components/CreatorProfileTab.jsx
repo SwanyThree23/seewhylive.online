@@ -22,7 +22,7 @@ function formatFollowersLarge(n) {
 
 export default function CreatorProfileTab(props) {
   var addToast = props.addToast;
-  var creatorUsername = props.creatorUsername || 'SwanyThree';
+  var creatorUsername = props.creatorUsername || '';
   var isLive = props.isLive;
   var viewerCount = props.viewerCount;
   var streamTitle = props.streamTitle;

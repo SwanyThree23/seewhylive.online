@@ -32,18 +32,9 @@ function fmtDuration(sec) {
   return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
 }
 
-var REPLAY_CLIPS = [
-  {id:'r1', title:'Opener — SwanyThree goes live',    start:0,    end:145,  highlight:false, chapter:true,  thumb:'🎤'},
-  {id:'r2', title:'CaliBonesOG joins + hype moment',  start:145,  end:420,  highlight:true,  chapter:false, thumb:'🔥'},
-  {id:'r3', title:'$200 tip from DominoKing',         start:420,  end:438,  highlight:true,  chapter:false, thumb:'💰'},
-  {id:'r4', title:'Fades (Online Corruption) Round 1',start:438,  end:858,  highlight:false, chapter:true,  thumb:'⚡'},
-  {id:'r5', title:'Washington Classic leaderboard',   start:858,  end:1020, highlight:true,  chapter:false, thumb:'🎲'},
-  {id:'r6', title:'Joyce Moore storytelling segment', start:1020, end:1320, highlight:false, chapter:true,  thumb:'💜'},
-  {id:'r7', title:'Music Studio jam session',         start:1320, end:1680, highlight:true,  chapter:false, thumb:'🎛'},
-  {id:'r8', title:'Outro + stream wrap',              start:1680, end:1842, highlight:false, chapter:true,  thumb:'⭐'},
-];
+var REPLAY_CLIPS = [];
 
-var TOTAL_DURATION = 1842;
+var TOTAL_DURATION = 0;
 
 function _replayAuthToken() {
   try { return localStorage.getItem('sw_token') || ''; } catch(e) { return ''; }
