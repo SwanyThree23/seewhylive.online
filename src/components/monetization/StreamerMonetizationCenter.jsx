@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Heart, Gift, Users, TrendingUp, DollarSign } from 'lucide-react';
 
@@ -25,17 +25,35 @@ const RevenueCard = ({ icon: IconComponent, label, amount, growth, color }) => (
 const TABS = ['subscriptions', 'supporters', 'analytics'];
 const TAB_LABELS = { subscriptions: 'Subs', supporters: 'Top Fans', analytics: 'Analytics' };
 
-const StreamerMonetizationCenter = () => {
+const StreamerMonetizationCenter = ({ userId }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [activeTab, setActiveTab] = useState('subscriptions');
+  const [analytics, setAnalytics] = useState(null);
 
-  const revenueBreakdown = [];
+  useEffect(function() {
+    if (!userId) return;
+    fetch('/api/creator/analytics?period=' + selectedPeriod, { credentials: 'include' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) { if (data) setAnalytics(data); })
+      .catch(function() {});
+  }, [userId, selectedPeriod]);
 
-  const subscriptionTiers = [];
+  var totalEarningsCents = (analytics && analytics.totalEarningsCents) || 0;
+  var byType = (analytics && analytics.byType) || {};
+  var rawTopSupporters = (analytics && analytics.topSupporters) || [];
 
-  const topSupporters = [];
+  var revenueBreakdown = [
+    { label: 'Tips', amount: Math.floor((byType.tip || 0) / 100), growth: 0, color: '#FFB800' },
+    { label: 'Subscriptions', amount: Math.floor((byType.subscription || 0) / 100), growth: 0, color: '#00FF88' },
+    { label: 'Pay-per-view', amount: Math.floor((byType.paywall || 0) / 100), growth: 0, color: '#5B7FA6' },
+    { label: 'Gifts', amount: Math.floor((byType.gift || 0) / 100), growth: 0, color: '#C9A84C' },
+  ].filter(function(item) { return item.amount > 0; });
 
-  const totalRevenue = revenueBreakdown.reduce((sum, item) => sum + item.amount, 0);
+  var subscriptionTiers = [];
+
+  var topSupporters = rawTopSupporters;
+
+  var totalRevenue = Math.floor(totalEarningsCents / 100);
 
   return (
     <motion.div

@@ -2178,8 +2178,8 @@ export default function SeeWhyLIVEv41() {
       {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onTipReceived={function(msg) { setTipTotal(function(t) { return t + Math.floor((msg && msg.tip_amount) || 0); }); }} />}
       <StreamGoals isHost={true} roomId={activeRoomId} creatorId={(user && user.id) || null} currentTips={tipTotal} currentSubs={subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <MilestoneAlerts userId={(user && user.id) || null} roomId={activeRoomId} />
-      <BroadcastAnalyticsDashboard />
-      <StreamerMonetizationCenter />
+      <BroadcastAnalyticsDashboard roomId={activeRoomId} streamSession={activeRoom || null} isLive={!!(activeRoomId && activeRoom)} />
+      <StreamerMonetizationCenter userId={(user && user.id) || null} />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />
       <BackgroundCustomizer />
     </div>
