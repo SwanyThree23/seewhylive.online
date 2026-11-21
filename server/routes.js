@@ -1073,6 +1073,32 @@ router.get('/leaderboard', function(req, res) {
   }
 });
 
+// ─── CHAT top-chatters route ─────────────────────────────────────────────────
+
+router.get('/creator/top-chatters', requireAuth, function(req, res) {
+  try {
+    var creatorId = req.user.id;
+    var roomId = req.query.roomId || null;
+    var limit = Math.min(parseInt(req.query.limit || '10', 10), 50);
+    var chatters = [];
+    try {
+      var _ctDb = getRoutesDb();
+      if (roomId) {
+        chatters = _ctDb.prepare(
+          'SELECT username, COUNT(*) AS messageCount FROM chat_history WHERE room_id = ? GROUP BY username ORDER BY messageCount DESC LIMIT ?'
+        ).all(roomId, limit);
+      } else {
+        chatters = _ctDb.prepare(
+          'SELECT username, COUNT(*) AS messageCount FROM chat_history WHERE room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) GROUP BY username ORDER BY messageCount DESC LIMIT ?'
+        ).all(creatorId, limit);
+      }
+    } catch (_ce) {}
+    return res.json({ chatters: chatters });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // ─── PPV routes ───────────────────────────────────────────────────────────────
 
 var _ppvTokens = {};

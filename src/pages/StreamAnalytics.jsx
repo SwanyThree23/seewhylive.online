@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, Link } from 'react-router-dom';
@@ -119,8 +119,18 @@ export default function StreamAnalytics() {
     ? (roomAnalytics[0].chat_messages || 0)
     : viewerData.reduce((s, d) => s + d.messages, 0);
 
-  var topChatters = [];
+  var [topChatters, setTopChatters] = useState([]);
   var reactionData = [];
+
+  useEffect(function() {
+    if (!effectiveRoomId && !(user && user.id)) return;
+    var url = '/api/creator/top-chatters?limit=10';
+    if (effectiveRoomId) url += '&roomId=' + encodeURIComponent(effectiveRoomId);
+    fetch(url, { credentials: 'include' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) { if (data && data.chatters) setTopChatters(data.chatters); })
+      .catch(function() {});
+  }, [effectiveRoomId, user && user.id]);
 
   var exportReport = () => {
     var lines = [
