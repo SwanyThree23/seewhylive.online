@@ -39,16 +39,24 @@ var T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ── primitives ─────────────────────────────────────────────────────── */
 
-function DarkCard({ children, className = '', style = {} }) {
+function DarkCard(props) {
+  var children = props.children;
+  var className = props.className || '';
+  var style = props.style || {};
   return (
-    <div className={`rounded-2xl ${className}`}
-      style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,184,0,0.1)', ...style }}>
+    <div className={'rounded-2xl ' + className}
+      style={Object.assign({ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(255,184,0,0.1)' }, style)}>
       {children}
     </div>
   );
 }
 
-function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
+function OctAvatar(props) {
+  var size = props.size || 80;
+  var src = props.src;
+  var initials = props.initials;
+  var uploading = props.uploading;
+  var onClick = props.onClick;
   return (
     <div className="relative cursor-pointer shrink-0" style={{ width: size, height: size }} onClick={onClick}>
       {/* gold border layer */}
@@ -78,7 +86,11 @@ function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
   );
 }
 
-function StatTile({ label, value, icon: Icon, color = GOLD }) {
+function StatTile(props) {
+  var label = props.label;
+  var value = props.value;
+  var Icon = props.icon;
+  var color = props.color || GOLD;
   return (
     <DarkCard>
       <div className="p-4 flex items-start justify-between gap-2">
@@ -102,72 +114,106 @@ var TABS = ['Overview', 'Streams', 'Videos', 'Studios', 'Clips', 'About', 'Setti
 /* ── main page ──────────────────────────────────────────────────────── */
 
 export default function ProfilePage() {
-  var [searchParams] = useSearchParams();
+  var searchParamsArr = useSearchParams();
+  var searchParams = searchParamsArr[0];
   var roomId = searchParams.get('room_id');
   var queryClient   = useQueryClient();
   var navigate      = useNavigate();
-  var [showCreatorSetup, setShowCreatorSetup] = useState(false);
-  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
 
-  var [isEditing, setIsEditing]         = useState(false);
-  var [bio, setBio]                     = useState('');
-  var [displayName, setDisplayName]     = useState('');
-  var [uploadingAvatar, setUploadingAvatar] = useState(false);
-  var [activeTab, setActiveTab]         = useState('Overview');
-  var [setupOpen, setSetupOpen]         = useState(false);
+  var showCreatorSetupState = useState(false);
+  var showCreatorSetup = showCreatorSetupState[0];
+  var setShowCreatorSetup = showCreatorSetupState[1];
+
+  var isEditingState = useState(false);
+  var isEditing = isEditingState[0];
+  var setIsEditing = isEditingState[1];
+
+  var bioState = useState('');
+  var bio = bioState[0];
+  var setBio = bioState[1];
+
+  var displayNameState = useState('');
+  var displayName = displayNameState[0];
+  var setDisplayName = displayNameState[1];
+
+  var uploadingAvatarState = useState(false);
+  var uploadingAvatar = uploadingAvatarState[0];
+  var setUploadingAvatar = uploadingAvatarState[1];
+
+  var activeTabState = useState('Overview');
+  var activeTab = activeTabState[0];
+  var setActiveTab = activeTabState[1];
+
+  var setupOpenState = useState(false);
+  var setupOpen = setupOpenState[0];
+  var setSetupOpen = setupOpenState[1];
+
   var fileRef = useRef();
 
   /* ── queries ── */
-  var { data: user, isLoading } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
-  var { data: activeRoom } = useQuery({
+  var user = userQuery.data || null;
+  var isLoading = userQuery.isLoading;
+
+  var activeRoomQuery = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() {
+      return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; });
+    },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = activeRoomQuery.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var isOnline = !!activeRoom;
 
-  var { data: referrals = [] } = useQuery({
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
+  var referralsQuery = useQuery({
     queryKey: ['userReferrals', (user && user.id)],
-    queryFn: () => base44.entities.Referral.filter({ referrer_id: (user && user.id) }),
+    queryFn: function() { return base44.entities.Referral.filter({ referrer_id: (user && user.id) }); },
     enabled: !!user,
   });
+  var referrals = referralsQuery.data || [];
 
-  var { data: subscriptions = [] } = useQuery({
+  var subscriptionsQuery = useQuery({
     queryKey: ['userSubscriptions', (user && user.id)],
-    queryFn: () => base44.entities.Subscription.filter({ user_id: (user && user.id), status: 'active' }),
+    queryFn: function() { return base44.entities.Subscription.filter({ user_id: (user && user.id), status: 'active' }); },
     enabled: !!user,
   });
+  var subscriptions = subscriptionsQuery.data || [];
 
-  var { data: inventory = [] } = useQuery({
+  var inventoryQuery = useQuery({
     queryKey: ['userInventory', (user && user.id)],
-    queryFn: () => base44.entities.UserInventory.filter({ user_id: (user && user.id) }),
+    queryFn: function() { return base44.entities.UserInventory.filter({ user_id: (user && user.id) }); },
     enabled: !!user,
   });
+  var inventory = inventoryQuery.data || [];
 
-  var { data: myRooms = [] } = useQuery({
+  var myRoomsQuery = useQuery({
     queryKey: ['myRooms', (user && user.id)],
     queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id) }, '-created_date', 20); },
     enabled: !!(user && user.id),
   });
+  var myRooms = myRoomsQuery.data || [];
 
   var myVideoPosts = myRooms.filter(function(r) { return r.type === 'video'; });
   var myLiveRooms  = myRooms.filter(function(r) { return r.type !== 'video'; });
 
-  var { data: myClips = [] } = useQuery({
+  var myClipsQuery = useQuery({
     queryKey: ['myClips', (user && user.id)],
-    queryFn: () => base44.entities.StreamClip.filter({ creator_id: (user && user.id) }, '-created_date', 12),
+    queryFn: function() { return base44.entities.StreamClip.filter({ creator_id: (user && user.id) }, '-created_date', 12); },
     enabled: !!(user && user.id),
   });
+  var myClips = myClipsQuery.data || [];
 
   /* ── mutations ── */
   var updateProfileMutation = useMutation({
-    mutationFn: async (data) => base44.auth.updateMe(data),
-    onSuccess: () => {
+    mutationFn: function(data) { return base44.auth.updateMe(data); },
+    onSuccess: function() {
       toast.success('Profile updated!');
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setIsEditing(false);
@@ -176,35 +222,39 @@ export default function ProfilePage() {
           user_id: user.id,
           type: 'milestone',
           title: 'Updated profile',
-        }).catch(() => {});
+        }).catch(function() {});
       }
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
-  var { data: userCommunity } = useQuery({
+  var userCommunityQuery = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() {
+      return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; });
+    },
     enabled: !!(user && user.id),
   });
+  var userCommunity = userCommunityQuery.data || null;
   var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  useEffect(() => {
+  useEffect(function() {
     if (user) {
       setBio(user.bio || '');
       setDisplayName(user.full_name || '');
     }
   }, [user]);
 
-  var handleAvatarUpload = async (e) => {
+  var handleAvatarUpload = async function(e) {
     var file = (e.target.files && e.target.files[0]);
     if (!file) return;
     setUploadingAvatar(true);
     try {
-      var { file_url } = await base44.integrations.Core.UploadFile({ file });
+      var uploadResult = await base44.integrations.Core.UploadFile({ file });
+      var file_url = uploadResult.file_url;
       await base44.auth.updateMe({ avatar_url: file_url });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       toast.success('Avatar updated!');
-    } catch {
+    } catch (err) {
       toast.error('Failed to upload avatar.');
     } finally {
       setUploadingAvatar(false);
@@ -232,7 +282,7 @@ export default function ProfilePage() {
     }
   };
 
-  var completedReferrals = referrals.filter(r => r.status === 'completed').length;
+  var completedReferrals = referrals.filter(function(r) { return r.status === 'completed'; }).length;
   var initials = ((user && user.full_name) || (user && user.email) || '?')[0].toUpperCase();
 
   /* ── activity items (derived from available data) ── */
@@ -241,21 +291,21 @@ export default function ProfilePage() {
       id: 'subs',
       icon: TrendingUp,
       color: '#FFB800',
-      desc: `${subscriptions.length} active subscription${subscriptions.length !== 1 ? 's' : ''}`,
+      desc: subscriptions.length + ' active subscription' + (subscriptions.length !== 1 ? 's' : ''),
       time: 'Active now',
     },
     completedReferrals > 0 && {
       id: 'refs',
       icon: Gift,
       color: '#FFB800',
-      desc: `${completedReferrals} completed referral${completedReferrals !== 1 ? 's' : ''}`,
+      desc: completedReferrals + ' completed referral' + (completedReferrals !== 1 ? 's' : ''),
       time: 'Recent',
     },
     inventory.length > 0 && {
       id: 'inv',
       icon: Award,
       color: '#00FF88',
-      desc: `${inventory.length} virtual item${inventory.length !== 1 ? 's' : ''} in inventory`,
+      desc: inventory.length + ' virtual item' + (inventory.length !== 1 ? 's' : '') + ' in inventory',
       time: 'Collected',
     },
     {
@@ -275,7 +325,7 @@ export default function ProfilePage() {
         style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(255,184,0,0.1)', backdropFilter: 'blur(12px)' }}>
         <h1 className="font-black text-lg text-white" style={T}>My Profile</h1>
         <button
-          onClick={() => setIsEditing(e => !e)}
+          onClick={function() { setIsEditing(function(e) { return !e; }); }}
           className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all"
           style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
           {isEditing ? 'Cancel' : 'Edit Profile'}
@@ -290,8 +340,8 @@ export default function ProfilePage() {
 
         <div className="relative max-w-4xl mx-auto px-6 pt-8 pb-6 flex items-end gap-5">
           {/* octagonal avatar with camera upload */}
-          <div onClick={() => fileRef.current && fileRef.current.click()}>
-            <OctAvatar size={80} src={(user && user.avatar_url)} initials={initials} uploading={uploadingAvatar} onClick={() => {}} />
+          <div onClick={function() { if (fileRef.current) fileRef.current.click(); }}>
+            <OctAvatar size={80} src={(user && user.avatar_url)} initials={initials} uploading={uploadingAvatar} onClick={function() {}} />
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
 
@@ -327,7 +377,7 @@ export default function ProfilePage() {
                   Share
                 </button>
                 <button
-                  onClick={() => setIsEditing(e => !e)}
+                  onClick={function() { setIsEditing(function(e) { return !e; }); }}
                   className="hidden sm:flex px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all items-center gap-1.5"
                   style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}50`, color: GOLD, ...T }}>
                   {isEditing ? 'Cancel' : 'Edit Profile'}
@@ -347,14 +397,14 @@ export default function ProfilePage() {
               <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Edit Profile</p>
               <input
                 value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
+                onChange={function(e) { setDisplayName(e.target.value); }}
                 placeholder="Display name"
                 className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,184,0,0.2)' }}
               />
               <textarea
                 value={bio}
-                onChange={(e) => setBio(e.target.value)}
+                onChange={function(e) { setBio(e.target.value); }}
                 placeholder="Tell us about yourself..."
                 rows={2}
                 className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none resize-none"
@@ -362,13 +412,13 @@ export default function ProfilePage() {
               />
               <div className="flex gap-2">
                 <button
-                  onClick={() => updateProfileMutation.mutate({ bio: bio.slice(0, 500), full_name: displayName.slice(0, 60) })}
+                  onClick={function() { updateProfileMutation.mutate({ bio: bio.slice(0, 500), full_name: displayName.slice(0, 60) }); }}
                   disabled={updateProfileMutation.isPending}
                   className="px-4 py-1.5 rounded-xl font-black uppercase text-[10px]"
                   style={{ background: CRIMSON, color: GOLD, border: '1px solid rgba(255,184,0,0.3)', ...T }}>
                   {updateProfileMutation.isPending ? 'Saving…' : 'Save'}
                 </button>
-                <button onClick={() => setIsEditing(false)}
+                <button onClick={function() { setIsEditing(false); }}
                   className="px-4 py-1.5 rounded-xl font-black uppercase text-[10px]"
                   style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', ...T }}>
                   Cancel
@@ -388,10 +438,10 @@ export default function ProfilePage() {
 
         {/* ── section tabs ── */}
         <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
-          {TABS.map(tab => {
+          {TABS.map(function(tab) {
             var active = activeTab === tab;
             return (
-              <button key={tab} onClick={() => setActiveTab(tab)}
+              <button key={tab} onClick={function() { setActiveTab(tab); }}
                 className="relative shrink-0 px-4 py-2 rounded-full font-black text-[11px] uppercase transition-all"
                 style={{
                   background: active ? 'rgba(255,184,0,0.12)' : 'rgba(255,255,255,0.04)',
@@ -450,7 +500,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div className="p-3 space-y-2">
-                {activityItems.map(item => (
+                {activityItems.map(function(item) { return (
                   <div key={item.id} className="flex items-center gap-3 p-3 rounded-2xl"
                     style={{ background: `${item.color}08`, borderLeft: `2px solid ${item.color}30` }}>
                     <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
@@ -460,7 +510,7 @@ export default function ProfilePage() {
                     <p className="flex-1 font-black text-[12px] text-white" style={T}>{item.desc}</p>
                     <span className="text-[11px] shrink-0" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{item.time}</span>
                   </div>
-                ))}
+                ); })}
               </div>
             </DarkCard>
 
@@ -473,12 +523,12 @@ export default function ProfilePage() {
                 {[
                   { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio,     color: PINK },
                   { label: 'Monetization',       href: createPageUrl('Monetization'),    icon: DollarSign, color: GOLD },
-                  { label: 'My Link-in-Bio',     href: (user && user.id) ? `/link-in-bio/${user.id}` : '/link-in-bio', icon: Share2,     color: '#00F5FF' },
+                  { label: 'My Link-in-Bio',     href: (user && user.id) ? ('/link-in-bio/' + user.id) : '/link-in-bio', icon: Share2,     color: '#00F5FF' },
                   { label: 'Post Video',         href: createPageUrl('VideoPost'),       icon: Video,      color: '#7B2D8B' },
                   { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: '#8B5CF6' },
                   { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#FFB800' },
-                  { label: 'Creator Setup',      href: null,                             icon: Star,       color: GOLD, onClick: () => setSetupOpen(true) },
-                ].map(item => {
+                  { label: 'Creator Setup',      href: null,                             icon: Star,       color: GOLD, onClick: function() { setSetupOpen(true); } },
+                ].map(function(item) {
                   var inner = (
                     <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110 cursor-pointer"
                       style={{ background: `${item.color}08`, border: `1px solid ${item.color}18` }}>
@@ -517,11 +567,11 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="p-3 space-y-2">
-                {myLiveRooms.slice(0, 10).map(room => {
+                {myLiveRooms.slice(0, 10).map(function(room) {
                   var isLive = room.status === 'live';
                   return (
                     <div key={room.id}
-                      onClick={() => navigate(createPageUrl('LiveRoom') + '?id=' + room.id)}
+                      onClick={function() { navigate(createPageUrl('LiveRoom') + '?id=' + room.id); }}
                       className="flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all hover:brightness-110"
                       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                       <div className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -653,7 +703,7 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="p-3 grid grid-cols-2 gap-2">
-                {myClips.slice(0, 12).map(clip => (
+                {myClips.slice(0, 12).map(function(clip) { return (
                   <div key={clip.id} className="rounded-xl overflow-hidden cursor-pointer transition-all hover:brightness-110"
                     style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
                     <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
@@ -679,7 +729,7 @@ export default function ProfilePage() {
                       </p>
                     </div>
                   </div>
-                ))}
+                ); })}
               </div>
             )}
           </DarkCard>
@@ -704,12 +754,12 @@ export default function ProfilePage() {
                 <div>
                   <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Badges</p>
                   <div className="flex flex-wrap gap-2">
-                    {user.badges.map((badge, idx) => (
+                    {user.badges.map(function(badge, idx) { return (
                       <span key={idx} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase"
                         style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)', color: GOLD, ...T }}>
                         <Award className="w-3 h-3" />{badge}
                       </span>
-                    ))}
+                    ); })}
                   </div>
                 </div>
               )}
@@ -717,7 +767,7 @@ export default function ProfilePage() {
                 <div>
                   <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Active Subscriptions</p>
                   <div className="space-y-2">
-                    {subscriptions.map((sub) => (
+                    {subscriptions.map(function(sub) { return (
                       <div key={sub.id} className="flex items-center justify-between p-3 rounded-xl"
                         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
                         <div>
@@ -729,7 +779,7 @@ export default function ProfilePage() {
                           Active
                         </span>
                       </div>
-                    ))}
+                    ); })}
                   </div>
                 </div>
               )}
@@ -764,7 +814,7 @@ export default function ProfilePage() {
                 </button>
               </Link>
               <button
-                onClick={() => base44.auth.logout()}
+                onClick={function() { base44.auth.logout(); }}
                 className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', userSelect: 'none', ...T }}>
                 <LogOut className="w-3.5 h-3.5" />
@@ -780,7 +830,7 @@ export default function ProfilePage() {
       <MilestoneAlerts userId={(user && user.id)} roomId={null} />
       {(user && user.id) && <AlertConfig creatorId={user.id} />}
       {(user && user.id) && <ShopDashboard creatorId={user.id} />}
-      <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
+      <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={function() { setShowCreatorSetup(false); }} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
