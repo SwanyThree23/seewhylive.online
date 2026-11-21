@@ -36,12 +36,7 @@ var DESTINATIONS = [
   { key: 'kick',     label: 'Kick',     color: '#53fc18', icon: '⚡' },
 ];
 
-var INITIAL_ROOMS = [
-  { id: 1, name: 'State vs State Main Stage', host: 'SwanyThree', status: 'live', viewers: 247, category: 'Tournament' },
-  { id: 2, name: 'PK Battle Arena #1',        host: 'BigBoneEarl', status: 'live', viewers: 89, category: 'PK Battle' },
-  { id: 3, name: 'Practice Lounge',           host: 'SwanyThree', status: 'idle', viewers: 0, category: 'Practice' },
-  { id: 4, name: 'Watch Party — Classics',    host: 'SwanyThree', status: 'scheduled', viewers: 0, category: 'Watch Party' },
-];
+var INITIAL_ROOMS = [];
 
 var GLOBAL_CSS = `
 @keyframes pulse-live{0%,100%{opacity:1;}50%{opacity:.35;}}
