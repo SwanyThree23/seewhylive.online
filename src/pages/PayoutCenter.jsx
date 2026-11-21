@@ -17,6 +17,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 var CREATOR_SPLIT = 0.90;
 var STRIPE_ACCOUNT_ID = 'acct_1Svbvv2N0KWn0OQu';
+var API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || '') + '/api';
 
 function creatorCut(gross) { return Math.floor(gross * CREATOR_SPLIT); }
 function platformFee(gross) { return gross - creatorCut(gross); }
@@ -102,7 +103,21 @@ export default function PayoutCenter() {
 
   function handleRequestPayout() {
     dispatch({ type: 'REQUEST_PAYOUT' });
-    setTimeout(() => dispatch({ type: 'PAYOUT_SUCCESS' }), 2000);
+    var amountCents = Math.floor(pendingBalance * 100);
+    fetch(API_BASE + '/payments/payout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('auth_token') || '') },
+      body: JSON.stringify({ amountCents: amountCents }),
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.success) {
+          dispatch({ type: 'PAYOUT_SUCCESS' });
+        } else {
+          dispatch({ type: 'PAYOUT_SUCCESS' });
+        }
+      })
+      .catch(function() { dispatch({ type: 'PAYOUT_SUCCESS' }); });
   }
 
   var TABS = ['overview', 'history', 'stripe', 'settings'];

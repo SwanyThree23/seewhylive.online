@@ -325,13 +325,9 @@ function SVSPanel() {
   var [s2, setS2] = useState('TX');
   var [scores, setScores] = useState({ s1: 0, s2: 0 });
   var [judges] = useState(['Judge A','Judge B','Judge C']);
-  var [judgeScores] = useState(() =>
-    ['Judge A','Judge B','Judge C'].map(j => {
-      var h = 0;
-      for (var i = 0; i < j.length; i++) h = (h * 31 + j.charCodeAt(i)) & 0xff;
-      return { s1: 6 + (h % 5), s2: 6 + ((h >> 2) % 5) };
-    })
-  );
+  var [judgeScores] = useState(function() {
+    return ['Judge A','Judge B','Judge C'].map(function() { return { s1: 0, s2: 0 }; });
+  });
   var [toastMsg, setToastMsg] = useState('');
 
   function vote(side) {
