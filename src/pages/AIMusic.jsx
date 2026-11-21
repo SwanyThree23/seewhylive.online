@@ -100,65 +100,16 @@ function tagColor(tags) {
 
 // ── Trending styles data ──────────────────────────────────────────────────────
 var TRENDING = [
-  { emoji: '🌑', label: 'Dark Trap', style: 'trap, 808, dark, hype', count: '128 tracks' },
-  { emoji: '🎧', label: 'Lo-Fi Chill', style: 'lo-fi, piano, chill, ambient', count: '214 tracks' },
-  { emoji: '🎺', label: 'Gospel Vibes', style: 'gospel, choir, uplifting, piano', count: '73 tracks' },
-  { emoji: '🌍', label: 'Afrobeats', style: 'afrobeats, drums, hype, fast', count: '96 tracks' },
-  { emoji: '🎛️', label: 'EDM Hype', style: 'edm, synth, hype, hyper (150+)', count: '142 tracks' },
-  { emoji: '💜', label: 'R&B Late Night', style: 'r&b, bass, romantic, slow (60-80)', count: '61 tracks' },
+  { emoji: '🌑', label: 'Dark Trap',     style: 'trap, 808, dark, hype',              count: '' },
+  { emoji: '🎧', label: 'Lo-Fi Chill',   style: 'lo-fi, piano, chill, ambient',       count: '' },
+  { emoji: '🎺', label: 'Gospel Vibes',  style: 'gospel, choir, uplifting, piano',    count: '' },
+  { emoji: '🌍', label: 'Afrobeats',     style: 'afrobeats, drums, hype, fast',       count: '' },
+  { emoji: '🎛️', label: 'EDM Hype',     style: 'edm, synth, hype, hyper (150+)',     count: '' },
+  { emoji: '💜', label: 'R&B Late Night',style: 'r&b, bass, romantic, slow (60-80)', count: '' },
 ];
 
 // ── Initial mock library ──────────────────────────────────────────────────────
-var INITIAL_TRACKS = [
-  {
-    id: 't1',
-    title: 'Midnight Trap Session',
-    tags: ['trap', '808', 'dark', 'hype'],
-    duration: '2:47',
-    emoji: '🌑',
-    playing: false,
-    liked: false,
-    likeCount: 24,
-    streamReady: true,
-    lyrics: '[Verse 1]\nLate nights in the booth, grinding till the dawn\nEvery bar I spit another diamond born\nDark energy rising, 808 low\nStream started rolling, watch the numbers grow\n\n[Chorus]\nMidnight session, dark trap nation\nEvery beat a dedication\nLive from the shadows, lights are low\nChat is moving, here we go\n\n[Verse 2]\nSub train rolling, hype train lit\nDrops so heavy make the whole room hit\nProducers on the beat while I hold it down\nSeeWhy LIVE, we run this town',
-  },
-  {
-    id: 't2',
-    title: 'Lo-Fi Study Beats Vol.3',
-    tags: ['lo-fi', 'piano', 'chill', 'ambient'],
-    duration: '3:22',
-    emoji: '🎧',
-    playing: false,
-    liked: true,
-    likeCount: 89,
-    streamReady: true,
-    lyrics: null,
-  },
-  {
-    id: 't3',
-    title: 'Gospel Rising',
-    tags: ['gospel', 'choir', 'uplifting', 'piano'],
-    duration: '4:05',
-    emoji: '🎺',
-    playing: false,
-    liked: false,
-    likeCount: 12,
-    streamReady: false,
-    lyrics: '[Intro]\nRise up, rise up\nLet the music carry you\n\n[Verse 1]\nIn the morning when I open my eyes\nI hear the choir singing from the skies\nEvery note a testament to grace\nEvery melody a holy place\n\n[Chorus]\nGospel rising, voices lifting high\nSeeWhy LIVE, we touch the sky\nHands together, hearts aligned\nLeave the darkness far behind',
-  },
-  {
-    id: 't4',
-    title: 'Afrobeats Summer Jam',
-    tags: ['afrobeats', 'drums', 'hype', 'fast'],
-    duration: '3:15',
-    emoji: '🌍',
-    playing: false,
-    liked: false,
-    likeCount: 31,
-    streamReady: true,
-    lyrics: null,
-  },
-];
+var INITIAL_TRACKS = [];
 
 // ── Advanced generation options ───────────────────────────────────────────────
 var VOCAL_TYPES = [

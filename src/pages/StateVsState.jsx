@@ -33,71 +33,24 @@ var SVS_BRACKET_ID = 'svs_bracket_v1';
 var SVS_MATCH_ID   = 'svs_sf1_live';
 
 var STATES_DATA = [
-  {
-    id: 'wa', name: 'Washington', abbr: 'WA', color: BLUE,
-    record: { w: 4, l: 1 }, pts: 1820,
-    players: ['K. Daniels', 'T. Brooks', 'M. Evans', 'J. Carter', 'L. Hayes'],
-  },
-  {
-    id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E',
-    record: { w: 3, l: 2 }, pts: 1650,
-    players: ['D. Reyes', 'A. Nguyen', 'C. Moore', 'R. Torres', 'P. Green'],
-  },
-  {
-    id: 'tx', name: 'Texas', abbr: 'TX', color: '#B71C1C',
-    record: { w: 3, l: 2 }, pts: 1610,
-    players: ['B. Williams', 'S. Johnson', 'H. Davis', 'N. Wilson', 'F. Martinez'],
-  },
-  {
-    id: 'fl', name: 'Florida', abbr: 'FL', color: '#C0392B',
-    record: { w: 3, l: 1 }, pts: 1740,
-    players: ['O. Smith', 'V. Brown', 'Q. Jones', 'I. Garcia', 'E. Miller'],
-  },
-  {
-    id: 'ny', name: 'New York', abbr: 'NY', color: '#D4AF37',
-    record: { w: 2, l: 3 }, pts: 1380,
-    players: ['Z. Anderson', 'W. Thomas', 'U. Jackson', 'Y. White', 'X. Harris'],
-  },
-  {
-    id: 'ga', name: 'Georgia', abbr: 'GA', color: '#CC7755',
-    record: { w: 1, l: 4 }, pts: 1120,
-    players: ['G. Lewis', 'J. Robinson', 'P. Walker', 'K. Hall', 'T. Allen'],
-  },
+  { id: 'wa', name: 'Washington', abbr: 'WA', color: BLUE,        record: { w: 0, l: 0 }, pts: 0, players: [] },
+  { id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E',   record: { w: 0, l: 0 }, pts: 0, players: [] },
+  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#B71C1C',   record: { w: 0, l: 0 }, pts: 0, players: [] },
+  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#C0392B',   record: { w: 0, l: 0 }, pts: 0, players: [] },
+  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#D4AF37',   record: { w: 0, l: 0 }, pts: 0, players: [] },
+  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#CC7755',   record: { w: 0, l: 0 }, pts: 0, players: [] },
 ];
 
 var BRACKET_MATCHES = [
-  {
-    id: 'qf1', round: 'QF', status: 'complete',
-    teamA: 'wa', teamB: 'ny', scoreA: 7, scoreB: 3,
-  },
-  {
-    id: 'qf2', round: 'QF', status: 'complete',
-    teamA: 'fl', teamB: 'ga', scoreA: 7, scoreB: 4,
-  },
-  {
-    id: 'qf3', round: 'QF', status: 'complete',
-    teamA: 'ca', teamB: 'tx', scoreA: 5, scoreB: 7,
-  },
-  {
-    id: 'sf1', round: 'SF', status: 'live',
-    teamA: 'wa', teamB: 'fl', scoreA: 4, scoreB: 3,
-  },
-  {
-    id: 'sf2', round: 'SF', status: 'upcoming',
-    teamA: 'tx', teamB: null, scoreA: 0, scoreB: 0,
-  },
-  {
-    id: 'final', round: 'FINAL', status: 'upcoming',
-    teamA: null, teamB: null, scoreA: 0, scoreB: 0,
-  },
+  { id: 'qf1',   round: 'QF',    status: 'upcoming', teamA: 'wa',  teamB: 'ny',  scoreA: 0, scoreB: 0 },
+  { id: 'qf2',   round: 'QF',    status: 'upcoming', teamA: 'fl',  teamB: 'ga',  scoreA: 0, scoreB: 0 },
+  { id: 'qf3',   round: 'QF',    status: 'upcoming', teamA: 'ca',  teamB: 'tx',  scoreA: 0, scoreB: 0 },
+  { id: 'sf1',   round: 'SF',    status: 'upcoming', teamA: null,  teamB: null,  scoreA: 0, scoreB: 0 },
+  { id: 'sf2',   round: 'SF',    status: 'upcoming', teamA: null,  teamB: null,  scoreA: 0, scoreB: 0 },
+  { id: 'final', round: 'FINAL', status: 'upcoming', teamA: null,  teamB: null,  scoreA: 0, scoreB: 0 },
 ];
 
-var INITIAL_PLAYS = [
-  { time: '12:04', player: 'K. Daniels', action: 'Double domino block', pts: 4 },
-  { time: '10:58', player: 'O. Smith', action: 'Spinner chain play', pts: 3 },
-  { time: '9:33', player: 'T. Brooks', action: 'Closing hand sweep', pts: 2 },
-  { time: '8:17', player: 'V. Brown', action: 'Draw challenge win', pts: 1 },
-];
+var INITIAL_PLAYS = [];
 
 function GCard({ children, style = {}, glow = false }) {
   return (
@@ -359,12 +312,11 @@ function LiveMatchView() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['svs-live-match'] }),
   });
 
-  var PLAY_PLAYERS = ['K. Daniels', 'O. Smith', 'T. Brooks', 'V. Brown'];
   var addPlayMut = useMutation({
     mutationFn: () => base44.entities.Message.create({
       room_id: SVS_MATCH_ID,
       type: 'play_log',
-      user_name: PLAY_PLAYERS[playMsgs.length % PLAY_PLAYERS.length],
+      user_name: 'Host',
       content: 'Manual log play (+1)',
     }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['svs-play-log'] }),
