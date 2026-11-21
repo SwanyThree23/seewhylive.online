@@ -36,12 +36,12 @@ var TONES = [
 ];
 
 var TEMPLATES = [
-  { label: 'WA Classic Go Live', type: 'hype_post', tone: 'hype', platform: 'all', prompt: 'Write a hype post announcing the Washington Classic domino tournament going live on SeeWhy LIVE, hosted by SwanyThree23 at Jamar\'s Sports Bar & Grill, Des Moines WA.' },
+  { label: 'WA Classic Go Live', type: 'hype_post', tone: 'hype', platform: 'all', prompt: 'Write a hype post announcing the Washington Classic domino tournament going live on SeeWhy LIVE.' },
   { label: 'PK Battle Callout', type: 'hype_post', tone: 'hype', platform: 'instagram', prompt: 'Write an aggressive but respectful PK Battle callout for a domino creator challenge on SeeWhy LIVE platform.' },
   { label: 'SVS Pride Post', type: 'social_caption', tone: 'community', platform: 'all', prompt: 'Write a State vs State pride post for the Washington Classic domino tournament representing the Pacific Northwest.' },
   { label: 'Gem Thank You', type: 'social_caption', tone: 'community', platform: 'instagram', prompt: 'Write a heartfelt thank you post to the community for gem support during a live domino stream on SeeWhy LIVE.' },
-  { label: 'Tournament Recap', type: 'tournament_recap', tone: 'pro', platform: 'youtube', prompt: 'Write a professional tournament recap for the Washington Classic 2026 domino championship.' },
-  { label: 'Creator Bio', type: 'creator_bio', tone: 'griot', platform: 'all', prompt: 'Write a compelling creator bio for SwanyThree23 (Ladrue Swanson), founder of SeeWhy LIVE and Cali Bones domino entertainment platform.' },
+  { label: 'Tournament Recap', type: 'tournament_recap', tone: 'pro', platform: 'youtube', prompt: 'Write a professional tournament recap for the Washington Classic domino championship.' },
+  { label: 'Creator Bio', type: 'creator_bio', tone: 'griot', platform: 'all', prompt: 'Write a compelling creator bio for the founder of SeeWhy LIVE, a domino entertainment streaming platform.' },
 ];
 
 var STATUS_COLORS = { draft: 'rgba(255,255,255,0.4)', scheduled: '#d4af37', posted: '#6DBF7E', failed: '#ef4444' };
@@ -135,7 +135,7 @@ export default function INSForgeStudio() {
     dispatch({ type: 'GENERATING' });
     var toneLabel = TONES.find(t => t.id === state.tone);
     var ctLabel = CONTENT_TYPES.find(c => c.id === state.contentType);
-    var fullPrompt = `You are an AI content creator for SeeWhy LIVE, a domino entertainment streaming platform founded by SwanyThree23 (Ladrue Swanson). The platform centers on the Washington Classic domino tournament and Cali Bones × Domino Entertainment brand.
+    var fullPrompt = `You are an AI content creator for SeeWhy LIVE, a domino entertainment streaming platform. The platform centers on the Washington Classic domino tournament and domino culture.
 
 Content Type: ${ctLabel ? ctLabel.label : state.contentType}
 Platform: ${state.platform.toUpperCase()}
