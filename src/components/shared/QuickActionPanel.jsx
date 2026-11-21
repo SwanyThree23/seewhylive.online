@@ -6,8 +6,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 
-export default function QuickActionPanel({ isOpen, onClose }) {
-  const quickActions = [
+export default function QuickActionPanel(props) {
+  var isOpen = props.isOpen;
+  var onClose = props.onClose;
+
+  var quickActions = [
     { icon: Plus, label: 'Create Room', href: createPageUrl('CreateRoom'), color: 'bg-gradient-to-br from-[#800020] to-[#D4854A]' },
     { icon: Video, label: 'Go Live', href: createPageUrl('CreateRoom'), color: 'bg-gradient-to-br from-[#800020] to-[#C0392B]' },
     { icon: Users, label: 'New Community', href: createPageUrl('CreateCommunity'), color: 'bg-gradient-to-br from-[#800020] to-[#D4AF37]' },
@@ -37,24 +40,26 @@ export default function QuickActionPanel({ isOpen, onClose }) {
             <Card className="p-6 bg-white/95 backdrop-blur shadow-2xl">
               <h3 className="text-xl font-bold mb-4 text-center">Quick Actions</h3>
               <div className="grid grid-cols-2 gap-4">
-                {quickActions.map((action, index) => (
-                  <Link key={action.label} to={action.href} onClick={onClose}>
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.05 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Button
-                        className={`${action.color} text-white h-24 w-full flex flex-col gap-2 hover:opacity-90`}
+                {quickActions.map(function(action, index) {
+                  return (
+                    <Link key={action.label} to={action.href} onClick={onClose}>
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.05 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
-                        <action.icon className="w-8 h-8" />
-                        <span className="text-sm font-medium">{action.label}</span>
-                      </Button>
-                    </motion.div>
-                  </Link>
-                ))}
+                        <Button
+                          className={action.color + ' text-white h-24 w-full flex flex-col gap-2 hover:opacity-90'}
+                        >
+                          <action.icon className="w-8 h-8" />
+                          <span className="text-sm font-medium">{action.label}</span>
+                        </Button>
+                      </motion.div>
+                    </Link>
+                  );
+                })}
               </div>
             </Card>
           </motion.div>

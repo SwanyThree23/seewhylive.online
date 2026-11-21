@@ -9,16 +9,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 
-export default function ActivitySidebar({ isOpen, onClose }) {
-  const { data: activities = [] } = useQuery({
-    queryKey: ['recent-activities'],
-    queryFn: () => base44.entities.Activity.list('-created_date', 10),
-  });
+export default function ActivitySidebar(props) {
+  var isOpen = props.isOpen;
+  var onClose = props.onClose;
 
-  const { data: liveRooms = [] } = useQuery({
-    queryKey: ['trending-rooms'],
-    queryFn: () => base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 5),
+  var actQuery = useQuery({
+    queryKey: ['recent-activities'],
+    queryFn: function() { return base44.entities.Activity.list('-created_date', 10); },
   });
+  var activities = actQuery.data || [];
+
+  var roomQuery = useQuery({
+    queryKey: ['trending-rooms'],
+    queryFn: function() { return base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 5); },
+  });
+  var liveRooms = roomQuery.data || [];
 
   return (
     <AnimatePresence>
@@ -58,24 +63,26 @@ export default function ActivitySidebar({ isOpen, onClose }) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {liveRooms.map((room) => (
-                    <motion.div
-                      key={room.id}
-                      whileHover={{ scale: 1.02 }}
-                      className="p-3 bg-white rounded-lg border border-[rgba(212,175,55,0.2)] cursor-pointer"
-                    >
-                      <Link to={createPageUrl('Room') + `?id=${room.id}`}>
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
-                          <p className="font-semibold text-sm line-clamp-1">{room.title}</p>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Users className="w-3 h-3" />
-                          {room.viewer_count || 0} watching
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
+                  {liveRooms.map(function(room) {
+                    return (
+                      <motion.div
+                        key={room.id}
+                        whileHover={{ scale: 1.02 }}
+                        className="p-3 bg-white rounded-lg border border-[rgba(212,175,55,0.2)] cursor-pointer"
+                      >
+                        <Link to={createPageUrl('Room') + '?id=' + room.id}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
+                            <p className="font-semibold text-sm line-clamp-1">{room.title}</p>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Users className="w-3 h-3" />
+                            {room.viewer_count || 0} watching
+                          </div>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
                 </CardContent>
               </Card>
 
@@ -85,25 +92,27 @@ export default function ActivitySidebar({ isOpen, onClose }) {
                   <CardTitle className="text-lg">Recent Activity</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {activities.map((activity, index) => (
-                    <motion.div
-                      key={activity.id}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex gap-3 pb-3 border-b last:border-0"
-                    >
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{activity.title}</p>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {activity.description}
-                        </p>
-                        <Badge variant="secondary" className="mt-1 text-xs">
-                          {activity.type.replace('_', ' ')}
-                        </Badge>
-                      </div>
-                    </motion.div>
-                  ))}
+                  {activities.map(function(activity, index) {
+                    return (
+                      <motion.div
+                        key={activity.id}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex gap-3 pb-3 border-b last:border-0"
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{activity.title}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {activity.description}
+                          </p>
+                          <Badge variant="secondary" className="mt-1 text-xs">
+                            {(activity.type || '').replace('_', ' ')}
+                          </Badge>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </CardContent>
               </Card>
             </div>

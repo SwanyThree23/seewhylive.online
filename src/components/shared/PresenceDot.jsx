@@ -4,16 +4,17 @@ import { useQuery } from '@tanstack/react-query';
 
 // Heartbeat hook — call once at app root to register presence
 export function usePresenceHeartbeat(roomId) {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
 
-  useEffect(() => {
-    if (!user?.id) return;
+  useEffect(function() {
+    if (!user || !user.id) return;
 
-    let presenceId = null;
+    var presenceId = null;
 
-    const upsertPresence = async () => {
+    var upsertPresence = async function() {
       try {
-        const data = {
+        var data = {
           user_id: user.id,
           user_name: user.full_name || user.email,
           avatar_url: user.avatar_url || '',
@@ -24,12 +25,12 @@ export function usePresenceHeartbeat(roomId) {
         if (presenceId) {
           await base44.entities.OnlinePresence.update(presenceId, data);
         } else {
-          const existing = await base44.entities.OnlinePresence.filter({ user_id: user.id });
+          var existing = await base44.entities.OnlinePresence.filter({ user_id: user.id });
           if (existing[0]) {
             presenceId = existing[0].id;
             await base44.entities.OnlinePresence.update(presenceId, data);
           } else {
-            const created = await base44.entities.OnlinePresence.create(data);
+            var created = await base44.entities.OnlinePresence.create(data);
             presenceId = created.id;
           }
         }
@@ -38,14 +39,14 @@ export function usePresenceHeartbeat(roomId) {
     };
 
     upsertPresence();
-    const interval = setInterval(upsertPresence, 60000); // heartbeat every 60s (increased from 30s)
+    var interval = setInterval(upsertPresence, 60000);
 
-    const markOffline = async () => {
+    var markOffline = async function() {
       try {
         if (presenceId) {
           await base44.entities.OnlinePresence.update(presenceId, { status: 'offline', last_seen: new Date().toISOString() });
         } else {
-          const existing = await base44.entities.OnlinePresence.filter({ user_id: user.id });
+          var existing = await base44.entities.OnlinePresence.filter({ user_id: user.id });
           if (existing[0]) {
             await base44.entities.OnlinePresence.update(existing[0].id, { status: 'offline', last_seen: new Date().toISOString() });
           }
@@ -55,40 +56,44 @@ export function usePresenceHeartbeat(roomId) {
     };
 
     window.addEventListener('beforeunload', markOffline);
-    return () => {
+    return function() {
       clearInterval(interval);
       window.removeEventListener('beforeunload', markOffline);
     };
-  }, [user?.id, roomId]);
+  }, [user && user.id, roomId]);
 }
 
 // Visual dot component
-export default function PresenceDot({ userId, size = 'sm' }) {
-  const { data: presence } = useQuery({
+export default function PresenceDot(props) {
+  var userId = props.userId;
+  var size = props.size || 'sm';
+
+  var presenceQuery = useQuery({
     queryKey: ['presence', userId],
-    queryFn: async () => {
-      const results = await base44.entities.OnlinePresence.filter({ user_id: userId });
+    queryFn: async function() {
+      var results = await base44.entities.OnlinePresence.filter({ user_id: userId });
       return results[0] || null;
     },
     enabled: !!userId,
-    refetchInterval: 65000, // increased from 35s to match heartbeat
+    refetchInterval: 65000,
     retry: 1,
     retryDelay: 1000,
   });
+  var presence = presenceQuery.data || null;
 
-  const isOnline = presence?.status === 'online';
-  const lastSeen = presence?.last_seen ? new Date(presence.last_seen) : null;
-  const isRecent = lastSeen && (Date.now() - lastSeen.getTime()) < 60000; // within 1 min
+  var isOnline = (presence && presence.status === 'online') || false;
+  var lastSeen = (presence && presence.last_seen) ? new Date(presence.last_seen) : null;
+  var isRecent = lastSeen && (Date.now() - lastSeen.getTime()) < 60000;
 
-  const active = isOnline && isRecent;
+  var active = isOnline && isRecent;
 
-  const sizeClass = size === 'sm' ? 'w-2.5 h-2.5' : size === 'md' ? 'w-3.5 h-3.5' : 'w-4 h-4';
+  var sizeClass = size === 'sm' ? 'w-2.5 h-2.5' : size === 'md' ? 'w-3.5 h-3.5' : 'w-4 h-4';
 
   return (
     <span
-      className={`${sizeClass} rounded-full border-2 border-white shrink-0 ${active ? '' : 'bg-slate-300'}`}
+      className={sizeClass + ' rounded-full border-2 border-white shrink-0 ' + (active ? '' : 'bg-slate-300')}
       style={active ? { background: '#6DBF7E' } : undefined}
-      title={active ? 'Online' : lastSeen ? `Last seen ${lastSeen.toLocaleTimeString()}` : 'Offline'}
+      title={active ? 'Online' : lastSeen ? ('Last seen ' + lastSeen.toLocaleTimeString()) : 'Offline'}
     />
   );
 }

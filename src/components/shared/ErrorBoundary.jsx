@@ -5,6 +5,7 @@ export default class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null };
+    this.handleTryAgain = this.handleTryAgain.bind(this);
   }
 
   static getDerivedStateFromError(error) {
@@ -24,6 +25,10 @@ export default class ErrorBoundary extends React.Component {
     }
   }
 
+  handleTryAgain() {
+    this.setState({ hasError: false, error: null });
+  }
+
   render() {
     if (this.state.hasError) {
       return (
@@ -34,7 +39,7 @@ export default class ErrorBoundary extends React.Component {
             An unexpected error occurred in this section. Please try again.
           </p>
           <button
-            onClick={() => this.setState({ hasError: false, error: null })}
+            onClick={this.handleTryAgain}
             style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 14px', background:'transparent', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:12, cursor:'pointer' }}
           >
             <RefreshCw style={{ width:14, height:14 }} /> Try Again
