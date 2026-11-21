@@ -94,11 +94,7 @@ export default function AdminDashboard() {
   var [suspensions, setSuspensions] = useState([]);
   var [suspendUser, setSuspendUser] = useState('');
   var [suspendDuration, setSuspendDuration] = useState('24h');
-  var [auditLog, setAuditLog] = useState([
-    { icon: '🛡️', action: 'Guardian AI enabled for all rooms', time: 'Jun 1, 7:00 PM', color: '#6DBF7E', severity: 'info' },
-    { icon: '📋', action: 'Reports dashboard accessed', time: 'Jun 1, 6:45 PM', color: '#D4AF37', severity: 'low' },
-    { icon: '⚙️', action: 'Rate limits verified — all healthy', time: 'Jun 1, 6:30 PM', color: '#6DBF7E', severity: 'info' },
-  ]);
+  var [auditLog, setAuditLog] = useState([]);
 
   var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   var roomId = new URLSearchParams(window.location.search).get('room_id');

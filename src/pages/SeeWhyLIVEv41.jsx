@@ -1002,10 +1002,7 @@ function GuardianPanel() {
     { id: 4, text: 'Detect spam patterns', active: true, level: 'medium' },
     { id: 5, text: 'Auto-mute repeat offenders', active: false, level: 'low' },
   ]);
-  var [flagged, setFlagged] = useState([
-    { id: 1, user: 'user_329', msg: 'Message flagged for review', reason: 'Potential hate speech', time: '2m ago' },
-    { id: 2, user: 'user_441', msg: 'Excessive spam detected', reason: 'Spam pattern', time: '8m ago' },
-  ]);
+  var [flagged, setFlagged] = useState([]);
 
   function toggleRule(id) {
     setRules(prev => prev.map(r => r.id === id ? { ...r, active: !r.active } : r));
@@ -1016,7 +1013,7 @@ function GuardianPanel() {
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
-        {[{ label: 'Monitored', val: '1,240', color: C.teal }, { label: 'Flagged', val: flagged.length, color: C.warn }, { label: 'Removed', val: '3', color: C.red }, { label: 'Clear', val: '97%', color: C.green }].map(s => (
+        {[{ label: 'Monitored', val: '—', color: C.teal }, { label: 'Flagged', val: flagged.length, color: C.warn }, { label: 'Removed', val: '0', color: C.red }, { label: 'Clear', val: '—', color: C.green }].map(s => (
           <Card key={s.label} style={{ textAlign: 'center', padding: 10 }}>
             <div style={{ color: s.color, fontWeight: 700, fontSize: 20 }}>{s.val}</div>
             <div style={{ color: C.textM, fontSize: 10 }}>{s.label}</div>

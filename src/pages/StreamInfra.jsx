@@ -587,11 +587,7 @@ function LiveRoomTab({ user }) {
 ═══════════════════════════════════════ */
 
 function StudioTab({ user }) {
-  var [rooms, setRooms] = useState([
-    { id: '1', name: 'Main Stage', type: 'video', participants: 3, status: 'live', bitrate: '4.2 Mbps' },
-    { id: '2', name: 'Green Room', type: 'audio', participants: 1, status: 'active', bitrate: '0.4 Mbps' },
-    { id: '3', name: 'Backstage Chat', type: 'audio', participants: 5, status: 'active', bitrate: '1.1 Mbps' },
-  ]);
+  var [rooms, setRooms] = useState([]);
   var [newRoomName, setNewRoomName] = useState('');
   var [newRoomType, setNewRoomType] = useState('video');
 
@@ -633,6 +629,9 @@ function StudioTab({ user }) {
       {/* Room list */}
       <PanelCard title="LiveKit Room Management" icon={Server} color="#C9A84C">
         <div className="space-y-2">
+          {rooms.length === 0 && (
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '12px 0', margin: 0 }}>No rooms yet — create one below.</p>
+          )}
           {rooms.map(function(room) {
             var TypeIcon = typeIcon[room.type] || Video;
             var sc = statusColor[room.status] || '#d4af37';
