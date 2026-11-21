@@ -19,6 +19,8 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
+import StreamEventBus from '../components/live/StreamEventBus';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
@@ -2090,6 +2092,8 @@ export default function SeeWhyLIVEv41() {
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var [activeTab, setActiveTab] = useState('stage');
+  var [tipTotal, setTipTotal] = useState(0);
+  var subCount = useSubscriptionCount((user && user.id) || null);
 
   var panelMap = {
     stage:         <StagePanel />,
@@ -2171,7 +2175,8 @@ export default function SeeWhyLIVEv41() {
       <HostAlertCenter />
       <StreamHealthMonitor isStreaming={!!activeRoomId} />
       <SwanAIRecommendations roomId={activeRoomId} currentLayout='v41' viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
-      <StreamGoals isHost={true} roomId={activeRoomId} creatorId={(user && user.id) || null} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
+      {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onTipReceived={function(msg) { setTipTotal(function(t) { return t + Math.floor((msg && msg.tip_amount) || 0); }); }} />}
+      <StreamGoals isHost={true} roomId={activeRoomId} creatorId={(user && user.id) || null} currentTips={tipTotal} currentSubs={subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <MilestoneAlerts userId={(user && user.id) || null} roomId={activeRoomId} />
       <BroadcastAnalyticsDashboard />
       <StreamerMonetizationCenter />
