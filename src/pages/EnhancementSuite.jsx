@@ -589,13 +589,16 @@ export default function EnhancementSuite() {
 
   var sendMessage = useCallback(() => {
     if (!chatInput.trim()) return;
+    var myName = (user && user.full_name) || (user && user.username) || 'You';
+    var myRole = (user && user.role) || 'viewer';
+    var myAvatar = (user && user.avatar) || '😎';
     setMessages(prev => [...prev, {
-      id: Date.now(), user: "You", role: "sub", avatar: "😎",
+      id: Date.now(), user: myName, role: myRole, avatar: myAvatar,
       text: chatInput,
       time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
     }]);
     setChatInput("");
-  }, [chatInput]);
+  }, [chatInput, user]);
 
   var addEmoji = (emoji) => {
     setChatInput(prev => prev + emoji);
@@ -609,9 +612,12 @@ export default function EnhancementSuite() {
     var id = Date.now();
     setFloatingReactions(prev => [...prev, { id, emoji, x: rect.left + rect.width / 2, y: rect.top }]);
     setTimeout(() => setFloatingReactions(prev => prev.filter(r => r.id !== id)), 2000);
+    var myName2 = (user && user.full_name) || (user && user.username) || 'You';
+    var myRole2 = (user && user.role) || 'viewer';
+    var myAvatar2 = (user && user.avatar) || '😎';
     setMessages(prev => [...prev, {
-      id, user: "You", role: "sub", avatar: "😎",
-      text: `${emoji} ${emoji} ${emoji}`,
+      id: id, user: myName2, role: myRole2, avatar: myAvatar2,
+      text: emoji + ' ' + emoji + ' ' + emoji,
       time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
     }]);
   };
