@@ -66,7 +66,7 @@ function OctAvatar(props) {
         style={{
           inset: size <= 48 ? '2px' : '3px',
           clipPath: OCT,
-          background: `linear-gradient(145deg, ${CRIMSON}99, #03030A)`,
+          background: 'linear-gradient(145deg, ' + CRIMSON + '99, #03030A)',
         }}>
         {src
           ? <img src={src} alt="" className="w-full h-full object-cover" />
@@ -95,12 +95,12 @@ function StatTile(props) {
     <DarkCard>
       <div className="p-4 flex items-start justify-between gap-2">
         <div>
-          <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{label}</p>
+          <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</p>
           <p className="text-2xl font-black leading-none" style={{ color, fontFamily: 'Syne, monospace' }}>{value}</p>
         </div>
         {Icon && (
           <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: `${color}15`, border: `1px solid ${color}25` }}>
+            style={{ background: color + '15', border: '1px solid ' + color + '25' }}>
             <Icon className="w-4 h-4" style={{ color }} />
           </div>
         )}
@@ -318,7 +318,7 @@ export default function ProfilePage() {
   ].filter(Boolean);
 
   return (
-    <div className="min-h-screen pb-10" style={{ background: '#03030A', ...T }}>
+    <div className="min-h-screen pb-10" style={{ background: '#03030A', fontFamily: 'Barlow Condensed, sans-serif' }}>
 
       {/* ── sticky header ── */}
       <div className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between"
@@ -327,7 +327,7 @@ export default function ProfilePage() {
         <button
           onClick={function() { setIsEditing(function(e) { return !e; }); }}
           className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all"
-          style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+          style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid ' + GOLD + '40', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
           {isEditing ? 'Cancel' : 'Edit Profile'}
         </button>
       </div>
@@ -336,7 +336,7 @@ export default function ProfilePage() {
       <div className="relative w-full overflow-hidden" style={{ background: 'linear-gradient(145deg, #1a0824, #03030A)', minHeight: 160 }}>
         {/* glow spot */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 pointer-events-none"
-          style={{ background: `radial-gradient(ellipse at center, ${CRIMSON}33 0%, transparent 70%)` }} />
+          style={{ background: 'radial-gradient(ellipse at center, ' + CRIMSON + '33 0%, transparent 70%)' }} />
 
         <div className="relative max-w-4xl mx-auto px-6 pt-8 pb-6 flex items-end gap-5">
           {/* octagonal avatar with camera upload */}
@@ -357,7 +357,7 @@ export default function ProfilePage() {
                   </p>
                   {isOnline && (
                     <span className="flex items-center gap-1 text-[10px] font-black"
-                      style={{ color: '#00FF88', ...T }}>
+                      style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
                       <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#00FF88' }} />
                       Online
                     </span>
@@ -366,20 +366,20 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="px-2 py-0.5 rounded-md font-black uppercase text-[11px]"
-                  style={{ background: (user && user.role) === 'admin' ? 'rgba(255,21,100,0.25)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,184,0,0.25)', color: GOLD, ...T }}>
+                  style={{ background: (user && user.role) === 'admin' ? 'rgba(255,21,100,0.25)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,184,0,0.25)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                   {(user && user.role) || 'member'}
                 </span>
                 <button
                   onClick={handleShare}
                   className="hidden sm:flex px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all items-center gap-1.5"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', ...T }}>
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   <Share2 className="w-3 h-3" />
                   Share
                 </button>
                 <button
                   onClick={function() { setIsEditing(function(e) { return !e; }); }}
                   className="hidden sm:flex px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all items-center gap-1.5"
-                  style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}50`, color: GOLD, ...T }}>
+                  style={{ background: GOLD + '18', border: '1px solid ' + GOLD + '50', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                   {isEditing ? 'Cancel' : 'Edit Profile'}
                 </button>
               </div>
@@ -394,7 +394,7 @@ export default function ProfilePage() {
         {isEditing && (
           <DarkCard>
             <div className="p-4 space-y-3">
-              <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Edit Profile</p>
+              <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Edit Profile</p>
               <input
                 value={displayName}
                 onChange={function(e) { setDisplayName(e.target.value); }}
@@ -415,12 +415,12 @@ export default function ProfilePage() {
                   onClick={function() { updateProfileMutation.mutate({ bio: bio.slice(0, 500), full_name: displayName.slice(0, 60) }); }}
                   disabled={updateProfileMutation.isPending}
                   className="px-4 py-1.5 rounded-xl font-black uppercase text-[10px]"
-                  style={{ background: CRIMSON, color: GOLD, border: '1px solid rgba(255,184,0,0.3)', ...T }}>
+                  style={{ background: CRIMSON, color: GOLD, border: '1px solid rgba(255,184,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   {updateProfileMutation.isPending ? 'Saving…' : 'Save'}
                 </button>
                 <button onClick={function() { setIsEditing(false); }}
                   className="px-4 py-1.5 rounded-xl font-black uppercase text-[10px]"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', ...T }}>
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   Cancel
                 </button>
               </div>
@@ -445,9 +445,9 @@ export default function ProfilePage() {
                 className="relative shrink-0 px-4 py-2 rounded-full font-black text-[11px] uppercase transition-all"
                 style={{
                   background: active ? 'rgba(255,184,0,0.12)' : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${active ? GOLD + '50' : 'rgba(255,255,255,0.08)'}`,
+                  border: '1px solid ' + (active ? GOLD + '50' : 'rgba(255,255,255,0.08)'),
                   color: active ? GOLD : 'rgba(255,255,255,0.45)',
-                  ...T,
+                  fontFamily: 'Barlow Condensed, sans-serif',
                 }}>
                 {tab}
                 {active && (
@@ -496,19 +496,19 @@ export default function ProfilePage() {
               <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 <div className="flex items-center gap-2">
                   <Activity className="w-4 h-4" style={{ color: GOLD }} />
-                  <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Recent Activity</p>
+                  <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Recent Activity</p>
                 </div>
               </div>
               <div className="p-3 space-y-2">
                 {activityItems.map(function(item) { return (
                   <div key={item.id} className="flex items-center gap-3 p-3 rounded-2xl"
-                    style={{ background: `${item.color}08`, borderLeft: `2px solid ${item.color}30` }}>
+                    style={{ background: item.color + '08', borderLeft: '2px solid ' + item.color + '30' }}>
                     <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: `${item.color}15`, border: `1px solid ${item.color}25` }}>
+                      style={{ background: item.color + '15', border: '1px solid ' + item.color + '25' }}>
                       <item.icon className="w-4 h-4" style={{ color: item.color }} />
                     </div>
                     <p className="flex-1 font-black text-[12px] text-white" style={T}>{item.desc}</p>
-                    <span className="text-[11px] shrink-0" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{item.time}</span>
+                    <span className="text-[11px] shrink-0" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{item.time}</span>
                   </div>
                 ); })}
               </div>
@@ -517,7 +517,7 @@ export default function ProfilePage() {
             {/* quick links */}
             <DarkCard>
               <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Quick Access</p>
+                <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Quick Access</p>
               </div>
               <div className="p-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {[
@@ -531,9 +531,9 @@ export default function ProfilePage() {
                 ].map(function(item) {
                   var inner = (
                     <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110 cursor-pointer"
-                      style={{ background: `${item.color}08`, border: `1px solid ${item.color}18` }}>
+                      style={{ background: item.color + '08', border: '1px solid ' + item.color + '18' }}>
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ background: `${item.color}18`, border: `1px solid ${item.color}30` }}>
+                        style={{ background: item.color + '18', border: '1px solid ' + item.color + '30' }}>
                         <item.icon className="w-4 h-4" style={{ color: item.color }} />
                       </div>
                       <p className="font-black text-[11px] text-white" style={T}>{item.label}</p>
@@ -557,10 +557,10 @@ export default function ProfilePage() {
             {myLiveRooms.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
                 <Radio className="w-12 h-12" style={{ color: 'rgba(255,255,255,0.12)' }} />
-                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No streams yet</p>
+                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>No streams yet</p>
                 <Link to={createPageUrl('GoLive')}>
                   <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
-                    style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+                    style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid ' + GOLD + '40', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Go Live
                   </button>
                 </Link>
@@ -580,22 +580,22 @@ export default function ProfilePage() {
                         {room.title || 'Untitled Stream'}
                       </span>
                       {room.viewer_count != null && (
-                        <span className="text-[10px] shrink-0" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>
+                        <span className="text-[10px] shrink-0" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                           {room.viewer_count} viewers
                         </span>
                       )}
                       {room.duration != null && (
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-black shrink-0"
-                          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', ...T }}>
+                          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                           {Math.floor((room.duration || 0) / 60)}m
                         </span>
                       )}
                       <span className="px-1.5 py-0.5 rounded text-[11px] font-black uppercase shrink-0"
                         style={{
                           background: isLive ? 'rgba(255,32,64,0.15)' : 'rgba(255,255,255,0.06)',
-                          border: `1px solid ${isLive ? 'rgba(255,32,64,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                          border: '1px solid ' + (isLive ? 'rgba(255,32,64,0.3)' : 'rgba(255,255,255,0.1)'),
                           color: isLive ? PINK : 'rgba(255,255,255,0.4)',
-                          ...T,
+                          fontFamily: 'Barlow Condensed, sans-serif',
                         }}>
                         {isLive ? 'LIVE' : room.status || 'ended'}
                       </span>
@@ -612,10 +612,10 @@ export default function ProfilePage() {
             {myVideoPosts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
                 <span style={{ fontSize: 40 }}>🎬</span>
-                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No video posts yet</p>
+                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>No video posts yet</p>
                 <Link to={createPageUrl('VideoPost')}>
                   <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
-                    style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+                    style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid ' + GOLD + '40', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                     + Post a Video
                   </button>
                 </Link>
@@ -661,7 +661,7 @@ export default function ProfilePage() {
         {activeTab === 'Studios' && (
           <DarkCard>
             <div className="p-5 space-y-4">
-              <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Creator Studios</p>
+              <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Creator Studios</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1,1fr)', gap: 10 }}>
                 {[
                   { emoji: '🎵', label: 'AI Music Studio',      sub: 'Generate AI beats and co-stream live with your audience',       page: 'AIMusic',              color: '#C9A84C' },
@@ -693,10 +693,10 @@ export default function ProfilePage() {
             {myClips.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
                 <Scissors className="w-12 h-12" style={{ color: 'rgba(255,255,255,0.12)' }} />
-                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No clips yet</p>
+                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>No clips yet</p>
                 <Link to={createPageUrl('ClipsLibrary')}>
                   <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
-                    style={{ background: 'rgba(255,184,0,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+                    style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid ' + GOLD + '40', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Go to Clips Library
                   </button>
                 </Link>
@@ -718,7 +718,7 @@ export default function ProfilePage() {
                       )}
                       {clip.duration != null && (
                         <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[11px] font-black"
-                          style={{ background: 'rgba(0,0,0,0.75)', color: 'rgba(255,255,255,0.85)', ...T }}>
+                          style={{ background: 'rgba(0,0,0,0.75)', color: 'rgba(255,255,255,0.85)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                           {Math.floor((clip.duration || 0) / 60)}:{String((clip.duration || 0) % 60).padStart(2, '0')}
                         </span>
                       )}
@@ -739,24 +739,24 @@ export default function ProfilePage() {
           <DarkCard>
             <div className="p-5 space-y-4">
               <div>
-                <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Bio</p>
+                <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Bio</p>
                 <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
                   {(user && user.bio) || 'No bio yet.'}
                 </p>
               </div>
               <div>
-                <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Email</p>
+                <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Email</p>
                 <p className="text-sm flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
                   <Mail className="w-3.5 h-3.5" style={{ color: GOLD }} />{(user && user.email)}
                 </p>
               </div>
               {(user && user.badges) && user.badges.length > 0 && (
                 <div>
-                  <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Badges</p>
+                  <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Badges</p>
                   <div className="flex flex-wrap gap-2">
                     {user.badges.map(function(badge, idx) { return (
                       <span key={idx} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase"
-                        style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)', color: GOLD, ...T }}>
+                        style={{ background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                         <Award className="w-3 h-3" />{badge}
                       </span>
                     ); })}
@@ -765,7 +765,7 @@ export default function ProfilePage() {
               )}
               {subscriptions.length > 0 && (
                 <div>
-                  <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Active Subscriptions</p>
+                  <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Active Subscriptions</p>
                   <div className="space-y-2">
                     {subscriptions.map(function(sub) { return (
                       <div key={sub.id} className="flex items-center justify-between p-3 rounded-xl"
@@ -775,7 +775,7 @@ export default function ProfilePage() {
                           <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>${sub.price}/month</p>
                         </div>
                         <span className="px-2 py-0.5 rounded-md font-black text-[11px] uppercase"
-                          style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.2)', color: '#00FF88', ...T }}>
+                          style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.2)', color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
                           Active
                         </span>
                       </div>
@@ -798,9 +798,9 @@ export default function ProfilePage() {
             <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <div className="flex items-center gap-2">
                 <Settings className="w-4 h-4" style={{ color: GOLD }} />
-                <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Account</p>
+                <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Account</p>
               </div>
-              <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>
+              <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 Leaving SeeWhy LIVE? Download a copy of your data, then remove your account and personal data.
               </p>
             </div>
@@ -808,7 +808,7 @@ export default function ProfilePage() {
               <Link to={createPageUrl('DataExport')}>
                 <button
                   className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,184,0,0.15)', color: 'rgba(255,255,255,0.6)', userSelect: 'none', ...T }}>
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,184,0,0.15)', color: 'rgba(255,255,255,0.6)', userSelect: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   <Download className="w-3.5 h-3.5" />
                   Download My Data
                 </button>
@@ -816,7 +816,7 @@ export default function ProfilePage() {
               <button
                 onClick={function() { base44.auth.logout(); }}
                 className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', userSelect: 'none', ...T }}>
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', userSelect: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 <LogOut className="w-3.5 h-3.5" />
                 Log Out
               </button>
