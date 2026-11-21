@@ -18,6 +18,7 @@ import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -124,6 +125,8 @@ function BattleCard({ battle, index }) {
 export default function LiveBattles() {
   var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   var [filter, setFilter] = useState('active');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, roomId);
+
   var [selectedBitrate, setSelectedBitrate] = useState(3000);
 
   var { data: battles = [], isLoading } = useQuery({
@@ -236,7 +239,7 @@ export default function LiveBattles() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={battles.length} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={battles.length} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={user && user.id} roomId={roomId} currentUser={user} />

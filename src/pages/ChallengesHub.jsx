@@ -27,6 +27,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -48,6 +49,8 @@ var TYPE_COLORS = {
 
 function ChallengeCountdown({ endDate }) {
   var [rem, setRem] = useState('');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   useEffect(() => {
     var tick = () => {
       var diff = new Date(endDate).getTime() - Date.now();
@@ -468,7 +471,7 @@ export default function ChallengesHubPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

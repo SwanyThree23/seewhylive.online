@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import AlertConfig from '@/components/live/AlertConfig';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
@@ -72,6 +73,8 @@ function ToggleSwitch({ enabled, onToggle }) {
 
 export default function StreamAlerts() {
   var [activeTab, setActiveTab] = useState('sound');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [enabledOverlays, setEnabledOverlays] = useState(
     () => new Set(OVERLAY_TYPES.map((o) => o.type))
   );
@@ -366,7 +369,7 @@ export default function StreamAlerts() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />

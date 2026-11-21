@@ -29,6 +29,7 @@ import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -44,6 +45,8 @@ var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function PublicProfile() {
   var [showCreatorSetup, setShowCreatorSetup] = useState(false);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   var urlParams = new URLSearchParams(window.location.search);
   var userId = urlParams.get('id');
@@ -248,7 +251,7 @@ export default function PublicProfile() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

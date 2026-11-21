@@ -22,6 +22,7 @@ import ShopDashboard from '../components/merch/ShopDashboard';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -55,6 +56,8 @@ export default function LoyaltyProgram() {
   var urlParams = new URLSearchParams(window.location.search);
   var creatorId = urlParams.get('creator');
   var [activeTab, setActiveTab] = useState(null);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [showRewardForm, setShowRewardForm] = useState(false);
   var [showTierEditor, setShowTierEditor] = useState(false);
   var [editingTier, setEditingTier] = useState(null);
@@ -405,7 +408,7 @@ export default function LoyaltyProgram() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />

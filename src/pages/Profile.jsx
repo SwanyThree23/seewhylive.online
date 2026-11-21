@@ -22,6 +22,7 @@ import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import AccountDeletionFlow from '../components/settings/AccountDeletionFlow';
 import PayoutMethodSettings from '../components/settings/PayoutMethodSettings';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -106,6 +107,8 @@ export default function ProfilePage() {
   var queryClient   = useQueryClient();
   var navigate      = useNavigate();
   var [showCreatorSetup, setShowCreatorSetup] = useState(false);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [isEditing, setIsEditing]         = useState(false);
   var [bio, setBio]                     = useState('');
   var [displayName, setDisplayName]     = useState('');
@@ -782,7 +785,7 @@ export default function ProfilePage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />

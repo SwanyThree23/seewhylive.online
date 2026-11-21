@@ -18,6 +18,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ShareToSocial from '../components/social/ShareToSocial';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
@@ -93,6 +94,8 @@ function FanbaseRoomCard({ room }) {
 export default function DiscoverPage() {
   var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   var [search, setSearch] = useState('');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var [debouncedSearch, setDebouncedSearch] = useState('');
   var [genre, setGenre] = useState('All');
   var [tab, setTab] = useState('live'); // live | scheduled | communities | creators | episodes
@@ -640,7 +643,7 @@ function EmptyState({ icon: Icon, title, desc }) {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

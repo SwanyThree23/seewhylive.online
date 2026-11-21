@@ -22,6 +22,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import AlertConfig from '../components/live/AlertConfig';
@@ -55,6 +56,8 @@ function CopyField(props) {
   var mono = props.mono !== undefined ? props.mono : true;
   var secret = props.secret !== undefined ? props.secret : false;
   var [shown, setShown] = useState(!secret);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
 
   function copy() {
     navigator.clipboard.writeText(value).then(function() {
@@ -567,7 +570,7 @@ export default function RTMPServer() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />

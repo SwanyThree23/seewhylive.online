@@ -10,6 +10,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -123,6 +124,8 @@ export default function MultiPlatform() {
   var activeRoomId = (activeRoom && activeRoom.id) || null;
 
   var [tab, setTab] = useState('platforms');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
 
   // Sync platform connections and webhooks from user profile
   useEffect(() => {
@@ -617,7 +620,7 @@ export default function MultiPlatform() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />

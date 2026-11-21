@@ -6,6 +6,7 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
@@ -76,6 +77,8 @@ function PreviewModal({ newsletter, onClose }) {
 
 export default function NewsletterHubPage() {
   var [tab, setTab] = useState('compose');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var [preview, setPreview] = useState(null);
   var [toast, setToast] = useState('');
   var [scheduleMode, setScheduleMode] = useState(false);
@@ -289,7 +292,7 @@ export default function NewsletterHubPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

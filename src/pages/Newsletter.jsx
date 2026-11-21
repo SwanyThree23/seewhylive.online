@@ -28,6 +28,7 @@ import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import ViewerCount from '../components/live/ViewerCount';
@@ -56,6 +57,8 @@ function DarkCard({ title, desc, children, style = {} }) {
 export default function NewsletterPage() {
   var queryClient = useQueryClient();
   var [title, setTitle] = useState('');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [content, setContent] = useState('');
   var [previewText, setPreviewText] = useState('');
   var [generating, setGenerating] = useState(false);
@@ -279,7 +282,7 @@ export default function NewsletterPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

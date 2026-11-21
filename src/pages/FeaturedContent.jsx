@@ -14,6 +14,7 @@ import LoveHearts from '../components/live/LoveHearts';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ShareToSocial from '../components/social/ShareToSocial';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -87,6 +88,8 @@ var FEATURED_VIDEOS = [
 
 function YouTubeEmbed({ videoId, title }) {
   var [playing, setPlaying] = useState(false);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
 
   if (!playing) {
     return (
@@ -286,7 +289,7 @@ export default function FeaturedContent() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

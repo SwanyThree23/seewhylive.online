@@ -20,6 +20,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -115,6 +116,8 @@ export default function TributeWall() {
   var userCommunityId = (userCommunity && userCommunity.id) || null;
 
   var [selected, setSelected] = useState(null);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [tributeMsg, setTributeMsg] = useState('');
   var [messages, setMessages] = useState(INIT_MESSAGES);
   var [aiWriting, setAiWriting] = useState(false);
@@ -361,7 +364,7 @@ export default function TributeWall() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

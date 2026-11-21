@@ -9,6 +9,7 @@ import { createPageUrl } from '../utils';
 import PullToRefresh from '../components/shared/PullToRefresh';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
 import PointsNotification from '../components/live/PointsNotification';
@@ -279,7 +280,7 @@ export default function NotificationsPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

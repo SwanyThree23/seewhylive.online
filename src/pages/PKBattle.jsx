@@ -20,6 +20,7 @@ import ShopDashboard from '../components/merch/ShopDashboard';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -71,6 +72,8 @@ function BattleListItem({ battle, isSelected, onClick }) {
 
 export default function PKBattlePage() {
   var [showInviteModal, setShowInviteModal] = useState(false);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var [selectedBattle, setSelectedBattle] = useState(null);
   var [selectedBitrate, setSelectedBitrate] = useState(3000);
   var [tab, setTab] = useState('active');
@@ -280,7 +283,7 @@ export default function PKBattlePage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(battles && battles.length) || 0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(battles && battles.length) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={(activeBattle && activeBattle.id) || null} currentUser={user || null} />

@@ -14,6 +14,7 @@ import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
@@ -265,6 +266,8 @@ function ViewerPanel({ data, chatMessages, reactions, onReact }) {
 // ── Creator POV panel ──────────────────────────────────────────────────────────
 function CreatorPanel({ data, chatMessages, onSendChat }) {
   var [msg, setMsg] = useState('');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var stats = [
     { label:'Viewers', value: data.viewerCount.toLocaleString(), color:GOLD },
     { label:'On Stage', value: data.participants.length, color:'#6DBF7E' },
@@ -705,7 +708,7 @@ export default function TestMode() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />

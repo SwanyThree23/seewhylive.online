@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import DirectPayments from '../components/live/DirectPayments';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import ShareToSocial from '../components/social/ShareToSocial';
 import StripeConnectButton from '../components/monetization/StripeConnectButton';
 import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
@@ -97,6 +98,8 @@ export default function PayoutsPage() {
   var [stripeId, setStripeId]     = useState('');
   var [bank4, setBank4]           = useState('');
   var [connecting, setConnecting] = useState(false);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var [directPayOpen, setDirectPayOpen] = useState(false);
 
   /* ─── queries ──────────────────────────────────────────────────────── */
@@ -656,7 +659,7 @@ export default function PayoutsPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

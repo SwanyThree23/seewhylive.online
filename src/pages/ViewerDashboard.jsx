@@ -13,6 +13,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDashboard';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
@@ -67,6 +68,8 @@ function StatTile({ label, value, icon: Icon, color }) {
 export default function ViewerDashboard() {
   var qc = useQueryClient();
   var [activeTab, setActiveTab] = useState('following');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [notifFilter, setNotifFilter] = useState('all');
   var [reactEmoji, setReactEmoji] = useState(null);
 
@@ -492,7 +495,7 @@ export default function ViewerDashboard() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id)} roomId={activeRoomId} currentUser={user} />

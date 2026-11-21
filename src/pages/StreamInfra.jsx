@@ -14,6 +14,7 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import NativeSelect from '../components/shared/NativeSelect';
@@ -80,6 +81,8 @@ function StatusDot({ active, label, pulse }) {
 
 function CopyField({ label, value, mono }) {
   var [copied, setCopied] = useState(false);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   function handle() {
     copyText(value);
     setCopied(true);
@@ -970,7 +973,7 @@ export default function StreamInfra() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />

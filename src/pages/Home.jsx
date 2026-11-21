@@ -26,6 +26,7 @@ var AlertConfig                  = lazy(() => import('../components/live/AlertCo
 var ShopDashboard                = lazy(() => import('../components/merch/ShopDashboard'));
 var BackgroundCustomizer         = lazy(() => import('../components/settings/BackgroundCustomizer'));
 var StreamGoals                  = lazy(() => import('../components/live/StreamGoals'));
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 var StreamerMonetizationCenter   = lazy(() => import('../components/monetization/StreamerMonetizationCenter'));
 var RewardShop                   = lazy(() => import('../components/loyalty/RewardShop'));
 var HostAlertCenter              = lazy(() => import('../components/live/HostAlertCenter'));
@@ -1032,6 +1033,7 @@ export default function Home() {
     queryKey: ['currentUser'],
     queryFn: function() { return base44.auth.me(); },
   });
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
 
   var { data: myFollows = [] } = useQuery({
     queryKey: ['my-follows', (user && user.id)],
@@ -1396,7 +1398,7 @@ export default function Home() {
       <Suspense fallback={null}>
         <CollaborationMatcher />
         <CreatorBridge user={user || null} />
-        <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+        <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
         <StreamerMonetizationCenter />
       </Suspense>
       <NotificationBell />

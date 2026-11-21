@@ -24,6 +24,7 @@ import ShopDashboard from '../components/merch/ShopDashboard';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -79,6 +80,8 @@ var TABS = ['revenue', 'rooms', 'engagement', 'platform'];
 
 export default function AnalyticsPage() {
   var [activeTab, setActiveTab] = useState('revenue');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, roomId);
+
 
   var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   var [searchParams] = useSearchParams();
@@ -451,7 +454,7 @@ export default function AnalyticsPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={subscriptions.length} currentViewers={totalViews} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={subscriptions.length} currentViewers={totalViews} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />

@@ -6,6 +6,7 @@ import { Plus, X, Upload, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
 import SpotlightBanner from '../components/community/SpotlightBanner';
@@ -59,6 +60,8 @@ export default function CreateRoomPage() {
     recording_enabled: false,
     community_id: '',
   });
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [tagInput, setTagInput] = useState('');
   var [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
@@ -323,7 +326,7 @@ export default function CreateRoomPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

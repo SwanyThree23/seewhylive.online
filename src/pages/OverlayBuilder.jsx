@@ -8,6 +8,7 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import AlertConfig from '../components/live/AlertConfig';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
@@ -152,6 +153,8 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
 
 export default function OverlayBuilderPage() {
   var [elements, setElements] = useState([]);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [selected, setSelected] = useState(null);
   var [layoutName, setLayoutName] = useState('My Overlay');
   var [selectedLayout, setSelectedLayout] = useState(null);
@@ -358,7 +361,7 @@ export default function OverlayBuilderPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />

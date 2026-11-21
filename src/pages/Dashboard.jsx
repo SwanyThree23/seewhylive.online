@@ -43,6 +43,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
@@ -417,6 +418,8 @@ function AnalyticsTab({ user }) {
 /* ═══════════════ CONTENT TAB ═══════════════ */
 function ContentTab({ user }) {
   var [filter, setFilter] = useState('all');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [sort, setSort] = useState('newest');
   var [showCreate, setShowCreate] = useState(false);
   var [editVod, setEditVod] = useState(null);
@@ -1388,7 +1391,7 @@ export default function DashboardPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id)} roomId={activeRoomId} currentUser={user} />

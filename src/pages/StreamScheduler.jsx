@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -196,6 +197,8 @@ function Toggle({ checked, onChange }) {
 export default function StreamScheduler() {
   var qc = useQueryClient();
   var [viewMode, setViewMode] = useState('month');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [calendarDate, setCalendarDate] = useState(new Date());
   var [showForm, setShowForm] = useState(false);
   var [editingStream, setEditingStream] = useState(null);
@@ -675,7 +678,7 @@ export default function StreamScheduler() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

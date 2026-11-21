@@ -38,6 +38,7 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -289,6 +290,8 @@ export default function PKBattlePage() {
   var navigate = useNavigate();
 
   var [leftName, setLeftName] = useState('');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var [rightName, setRightName] = useState('');
   var [leftStream, setLeftStream] = useState('');
   var [rightStream, setRightStream] = useState('');
@@ -868,7 +871,7 @@ export default function PKBattlePage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={subCount} currentViewers={battleRemoteStreams.size} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={subCount} currentViewers={battleRemoteStreams.size} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id)} roomId={battleId} currentUser={user} />

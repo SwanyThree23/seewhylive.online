@@ -10,6 +10,7 @@ import ShareButtons from '../components/shared/ShareButtons';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -36,7 +37,9 @@ export default function VideoPost() {
 
   useEffect(() => () => { if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current); }, []);
 
-  var [step, setStep] = useState('upload'); // upload | details | published
+  var [step, setStep] = useState('upload');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+ // upload | details | published
   var [selectedFile, setSelectedFile] = useState(null);
   var [videoUrl, setVideoUrl] = useState(null);
   var [videoDuration, setVideoDuration] = useState(0);
@@ -361,7 +364,7 @@ export default function VideoPost() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

@@ -23,6 +23,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
@@ -84,6 +85,8 @@ export default function MultiStreamManager() {
   var qc = useQueryClient();
   var roomId = new URLSearchParams(window.location.search).get('room_id');
   var [showKeyFor, setShowKeyFor] = useState({});
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [testingId, setTestingId] = useState(null);
   var [newLabel, setNewLabel] = useState('');
   var [selectedPlatform, setSelectedPlatform] = useState('twitch');
@@ -504,7 +507,7 @@ export default function MultiStreamManager() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={destinations.length} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={destinations.length} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id)} roomId={activeRoomId} currentUser={user} />

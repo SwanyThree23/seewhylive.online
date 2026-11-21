@@ -35,6 +35,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -180,6 +181,8 @@ function FlywheelDiagram({ activeStage, onStageClick }) {
 /* ─── TierLadderPanel ─────────────────────────────────────────────────── */
 function TierLadderPanel({ subCount }) {
   var [hovered, setHovered] = useState(null);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var achieved = subCount || 0;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -929,7 +932,7 @@ export default function MonetizationPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />

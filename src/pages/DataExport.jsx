@@ -7,6 +7,7 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import AudienceInsights from '../components/dashboard/AudienceInsights';
@@ -89,6 +90,8 @@ var EXPORT_SETS = [
 
 export default function DataExportPage() {
   var [loading, setLoading] = useState({});
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
 
   var { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -213,7 +216,7 @@ export default function DataExportPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />

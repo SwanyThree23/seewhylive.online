@@ -17,6 +17,7 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -67,7 +68,9 @@ function ClipCard({ clip, onDelete, onShare, onLike }) {
 }
 
 export default function ClipsLibraryPage() {
-  var [tab, setTab] = useState('library'); // 'library' | 'moments'
+  var [tab, setTab] = useState('library');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+ // 'library' | 'moments'
   var [filter, setFilter] = useState('all');
   var [sort, setSort] = useState('newest');
   var [toast, setToast] = useState('');
@@ -310,7 +313,7 @@ export default function ClipsLibraryPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

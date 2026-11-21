@@ -15,6 +15,7 @@ import ChallengeCard from '../components/community/ChallengeCard';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -53,6 +54,8 @@ var DRAMA_SERIES = [
 
 function useDebounce(value, delay = 300) {
   var [debounced, setDebounced] = useState(value);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   useEffect(() => {
     var t = setTimeout(() => setDebounced(value), delay);
     return () => clearTimeout(t);
@@ -433,7 +436,7 @@ export default function SearchPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

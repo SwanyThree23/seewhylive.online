@@ -15,6 +15,7 @@ import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDas
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -52,6 +53,8 @@ var Badge = ({ type, children }) => {
 
 var Code = ({ children, copy = true }) => {
   var [copied, setCopied] = useState(false);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var handleCopy = () => {
     navigator.clipboard.writeText(children).then(() => {
       setCopied(true);
@@ -810,7 +813,7 @@ export default function StreamInfraRef() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />

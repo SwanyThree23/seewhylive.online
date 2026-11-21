@@ -18,6 +18,7 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
@@ -124,6 +125,8 @@ export default function SocialExpo() {
   });
   var userCommunityId = (userCommunity && userCommunity.id) || null;
   var [activeTab, setActiveTab] = useState('overview');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var [sponsorToast, setSponsorToast] = useState('');
 
   function handleSponsorInquiry(tierLabel, price) {
@@ -863,7 +866,7 @@ export default function SocialExpo() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

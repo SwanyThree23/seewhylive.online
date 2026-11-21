@@ -16,6 +16,7 @@ import PollCard from '../components/community/PollCard';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -133,6 +134,8 @@ export default function CommunityPage() {
   var isOwner = (membership && membership.role) === 'owner' || (community && community.creator_id) === (user && user.id);
 
   var [showCreatePoll, setShowCreatePoll] = useState(false);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var [activeTab, setActiveTab] = useState('feed');
 
   var TABS = [
@@ -405,7 +408,7 @@ export default function CommunityPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />

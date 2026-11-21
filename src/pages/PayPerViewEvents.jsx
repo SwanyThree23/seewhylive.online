@@ -22,6 +22,7 @@ import ShopDashboard from '../components/merch/ShopDashboard';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -138,6 +139,8 @@ function EventCard({ event, user, myEventIds, onPurchase, purchasing }) {
 
 function CreateEventForm({ onSuccess }) {
   var [form, setForm] = useState({ title: '', description: '', price: '', event_date: '', duration_minutes: 60, max_participants: '' });
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   var createMutation = useMutation({
@@ -510,7 +513,7 @@ export default function PayPerViewEventsPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

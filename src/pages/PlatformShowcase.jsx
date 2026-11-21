@@ -9,6 +9,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import ShopDashboard from '../components/merch/ShopDashboard';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -131,6 +132,8 @@ var FEATURES = [
 export default function PlatformShowcase() {
   var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   var [selected, setSelected] = useState(0);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var feature = FEATURES[selected];
 
   return (
@@ -307,7 +310,7 @@ export default function PlatformShowcase() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

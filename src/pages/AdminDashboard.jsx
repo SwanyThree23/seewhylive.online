@@ -35,6 +35,7 @@ import ShopDashboard from '../components/merch/ShopDashboard';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -86,6 +87,8 @@ var TABS = ['overview', 'users', 'rooms', 'reports', 'revenue', 'security', 'aud
 export default function AdminDashboard() {
   var qc = useQueryClient();
   var [activeTab, setActiveTab] = useState('overview');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, roomId);
+
   var [userSearch, setUserSearch] = useState('');
   var [roomFilter, setRoomFilter] = useState('all');
   var [bannedIPs, setBannedIPs] = useState([]);
@@ -623,7 +626,7 @@ export default function AdminDashboard() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

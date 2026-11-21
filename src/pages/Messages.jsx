@@ -19,6 +19,7 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import RewardShop from '../components/loyalty/RewardShop';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import ViewerCount from '../components/live/ViewerCount';
@@ -49,6 +50,8 @@ function fmtTime(ts) {
 export default function Messages() {
   var roomId = new URLSearchParams(window.location.search).get('room_id');
   var [user, setUser] = useState(null);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, roomId);
+
   var [selectedThread, setSelectedThread] = useState(null);
   var [input, setInput] = useState("");
   var [showCompose, setShowCompose] = useState(false);
@@ -540,7 +543,7 @@ export default function Messages() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

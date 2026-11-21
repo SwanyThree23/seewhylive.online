@@ -25,6 +25,7 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
@@ -117,6 +118,8 @@ function LoyaltyCard({ loyalty, isMain = false }) {
 
 function PointsBreakdownRow({ vp }) {
   var [expanded, setExpanded] = useState(false);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
       <button className="w-full flex items-center justify-between px-4 py-3" onClick={() => setExpanded(e => !e)}>
@@ -470,7 +473,7 @@ export default function LoyaltyHubPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id)} roomId={null} currentUser={user} />

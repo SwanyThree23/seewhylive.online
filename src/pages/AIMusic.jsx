@@ -11,6 +11,7 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -205,6 +206,8 @@ function StyleChip({ label, color, active, onClick, onRemove }) {
 // ── MiniScrubber ──────────────────────────────────────────────────────────────
 function MiniScrubber({ isPlaying, duration }) {
   var [progress, setProgress] = useState(0);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var rafRef = useRef(null);
   var startRef = useRef(null);
   var [totalSecs] = useState(() => {
@@ -1515,7 +1518,7 @@ Return ONLY valid JSON (no markdown, no backticks):
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

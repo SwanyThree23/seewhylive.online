@@ -12,6 +12,7 @@ import { createPageUrl } from '../utils';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import PresenceDot from '../components/shared/PresenceDot';
 import OnlinePresence from '../components/shared/OnlinePresence';
 import PointsNotification from '../components/live/PointsNotification';
@@ -100,6 +101,8 @@ function groupByDate(items) {
 export default function ActivityPage() {
   var qc = useQueryClient();
   var [filter, setFilter] = useState('all');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   var { data: activeRoom } = useQuery({
     queryKey: ['activity-active-room', (user && user.id)],
@@ -394,7 +397,7 @@ export default function ActivityPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

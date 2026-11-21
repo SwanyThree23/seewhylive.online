@@ -10,6 +10,7 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import AlertConfig from '../components/live/AlertConfig';
@@ -113,6 +114,8 @@ export default function JoyceAI() {
   var [messages, setMessages] = useState([
     { role: 'assistant', text: "Hey! I'm Joyce AI — your SeeWhy LIVE co-host. Ask me anything about running your stream, the tournament, tributes, or revenue. Let's make this broadcast fire! 🔥" },
   ]);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [input, setInput] = useState('');
   var [loading, setLoading] = useState(false);
   var [copiedIdx, setCopiedIdx] = useState(null);
@@ -366,7 +369,7 @@ export default function JoyceAI() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={busViewerCount} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={busViewerCount} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />

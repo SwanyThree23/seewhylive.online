@@ -8,6 +8,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';
 import GlobalSearch from '../components/shared/GlobalSearch';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import VoiceAISettings from '../components/settings/VoiceAISettings';
 
@@ -125,6 +126,8 @@ export default function AuraAI() {
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var [activeMode, setActiveMode] = useState('STRATEGY');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+
   var [messages, setMessages] = useState([
     { role: 'assistant', text: "I'm Aura — your premium creative partner on SeeWhy LIVE. Ready to elevate your stream, sharpen your brand, and help you build something unforgettable. What are we creating today? ✨" },
   ]);
@@ -321,7 +324,7 @@ export default function AuraAI() {
       <SwanyBotWidget />
       <NotificationBell />
       <GlobalSearch />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       {/* Creator Studios */}
       <div style={{ margin: '0 0 16px', padding: 16, borderRadius: 16, border: '1px solid rgba(123,45,139,0.22)', background: 'rgba(13,6,24,0.5)' }}>
         <p style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(176,102,204,0.7)', marginBottom: 12 }}>Creator Studios</p>

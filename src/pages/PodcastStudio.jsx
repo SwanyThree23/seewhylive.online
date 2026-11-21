@@ -14,6 +14,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import { isSafeUrl } from '@/lib/security';
 
 
@@ -143,6 +144,8 @@ function PanelSlot({ name, emoji, borderColor, onInvite }) {
 function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
   var [urlInput, setUrlInput]   = useState('');
   var [titleInput, setTitleInput] = useState('');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
   var [topicInput, setTopicInput] = useState('');
   var [fetchState, setFetchState] = useState('idle'); // idle | fetching | ok | partial | failed
   var [editIdx, setEditIdx]     = useState(null);
@@ -1522,7 +1525,7 @@ export default function PodcastStudio() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />
