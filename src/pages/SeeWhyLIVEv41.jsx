@@ -299,9 +299,7 @@ function StagePanel() {
 
       <Card>
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>Recent Sessions</p>
-        {['NYC vs LA — 347 viewers', 'Domino Championship — 512 viewers', 'Weekly Cypher — 88 viewers'].map(s => (
-          <div key={s} style={{ color: C.textM, fontSize: 12, padding: '6px 0', borderBottom: `1px solid ${C.slate2}` }}>{s}</div>
-        ))}
+        <div style={{ color: C.textM, fontSize: 11, fontStyle: 'italic' }}>No recent sessions yet.</div>
       </Card>
 
       {/* Co-Streaming Hub — 20-seat VDO.Ninja panel */}
@@ -884,46 +882,29 @@ function WatchPartyPanel() {
 // ── ANALYTICS PANEL ────────────────────────────────────────────────────────
 function AnalyticsPanel() {
   var stats = [
-    { label: 'Total Views', val: '24,817', delta: '+12%', color: C.gold },
-    { label: 'Watch Time (hrs)', val: '3,402', delta: '+8%', color: C.teal },
-    { label: 'Followers', val: '1,284', delta: '+22%', color: C.green },
-    { label: 'Revenue', val: '$892', delta: '+31%', color: C.amber },
-    { label: 'Avg Viewers / Stream', val: '347', delta: '+5%', color: C.purple },
-    { label: 'Chat Messages', val: '18,440', delta: '+17%', color: C.blue },
-  ];
-
-  var topContent = [
-    { title: 'NY vs TX — Domino Championship', views: '8,412', rev: '$214' },
-    { title: 'Friday Night Cypher Live', views: '4,200', rev: '$98' },
-    { title: 'Culture Talk w/ Joyce AI', views: '3,100', rev: '$74' },
-    { title: 'State Tribute: GA Edition', views: '2,900', rev: '$63' },
+    { label: 'Total Views', val: '—', color: C.gold },
+    { label: 'Watch Time (hrs)', val: '—', color: C.teal },
+    { label: 'Followers', val: '—', color: C.green },
+    { label: 'Revenue', val: '$0', color: C.amber },
+    { label: 'Avg Viewers / Stream', val: '—', color: C.purple },
+    { label: 'Chat Messages', val: '—', color: C.blue },
   ];
 
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px,1fr))', gap: 12, marginBottom: 20 }}>
-        {stats.map(s => (
+        {stats.map(function(s) { return (
           <Card key={s.label} style={{ textAlign: 'center' }}>
             <div style={{ color: s.color, fontWeight: 900, fontSize: 22 }}>{s.val}</div>
             <div style={{ color: C.textM, fontSize: 10, margin: '4px 0' }}>{s.label}</div>
-            <Badge label={s.delta} color={s.delta.startsWith('+') ? '#1a3d1a' : '#3d1a1a'} />
           </Card>
-        ))}
+        ); })}
       </div>
 
       <Card>
         <p style={{ color: C.textD, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>Top Content (30 days)</p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 8, alignItems: 'center' }}>
-          <span style={{ color: C.textM, fontSize: 10, fontWeight: 700 }}>TITLE</span>
-          <span style={{ color: C.textM, fontSize: 10, fontWeight: 700 }}>VIEWS</span>
-          <span style={{ color: C.textM, fontSize: 10, fontWeight: 700 }}>REV</span>
-          {topContent.map(c => (
-            <React.Fragment key={c.title}>
-              <span style={{ color: C.textD, fontSize: 13 }}>{c.title}</span>
-              <span style={{ color: C.teal, fontSize: 12, textAlign: 'right' }}>{c.views}</span>
-              <span style={{ color: C.gold, fontSize: 12, textAlign: 'right' }}>{c.rev}</span>
-            </React.Fragment>
-          ))}
+        <div style={{ color: C.textM, fontSize: 11, fontStyle: 'italic', textAlign: 'center', padding: '12px 0' }}>
+          Go live to see your top content.
         </div>
       </Card>
     </div>
