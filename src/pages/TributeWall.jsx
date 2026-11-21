@@ -94,29 +94,9 @@ function Btn({ label, icon, onClick, variant = 'gold', size = 'md', disabled, st
   );
 }
 
-var LEGENDS = [
-  {
-    id: 1, name: 'Big Bone Earl', years: '1958–2021', state: 'WA', photo: '🎯', color: PURPLE,
-    bio: 'Pioneer of Pacific Northwest domino culture. Won the Regional 7-0 Championship 4 consecutive times. Founded the Seattle Domino Society in 1994.',
-    achievements: ['4× Regional Champion', 'Founder: Seattle Domino Society', 'Mentored 200+ players', 'Hall of Fame 2019'],
-  },
-  {
-    id: 2, name: 'Mama Joyce Thompson', years: '1962–2023', state: 'GA', photo: '👑', color: '#9C6B3C',
-    bio: "Queen of Southern domino culture. Her community tournaments brought thousands together across Georgia and the Southeast for over 30 years.",
-    achievements: ['Community Builder Award', '30-Year Teaching Legacy', 'ATL Domino Hall of Fame', 'Founded 12 Community Leagues'],
-  },
-  {
-    id: 3, name: 'Fast Hands Rodriguez', years: '1971–2022', state: 'TX', photo: '⚡', color: '#C62828',
-    bio: 'Speed play innovator. Set the world record for fastest 7-0 sweep at 4 minutes 12 seconds. ESPN feature subject in 2018.',
-    achievements: ['World Speed Record Holder', 'TX State Champ 2009–2015', 'ESPN Feature 2018', '3× Nationals Finalist'],
-  },
-];
+var LEGENDS = [];
 
-var INIT_MESSAGES = [
-  { legendId: 1, author: 'CaliBonesOG', msg: 'Big Bone Earl — REST EASY LEGEND. You built this whole culture 🙏', time: '2 days ago' },
-  { legendId: 2, author: 'SwanyThree23', msg: 'Mama Joyce your tournaments gave us all a home. We carry you forward ❤️', time: '1 week ago' },
-  { legendId: 3, author: 'VibeNBones', msg: 'Fast Hands was the reason I got serious about domino. GOAT forever ⚡', time: '3 days ago' },
-];
+var INIT_MESSAGES = [];
 
 export default function TributeWall() {
   var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -266,6 +246,11 @@ export default function TributeWall() {
         </div>
 
         {/* Legend cards */}
+        {LEGENDS.length === 0 && (
+          <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13, padding: '32px 0', ...T }}>
+            No legends added yet — nominations will appear here once approved.
+          </div>
+        )}
         {LEGENDS.map(leg => {
           var isOpen = selected && selected.id === leg.id;
           return (
