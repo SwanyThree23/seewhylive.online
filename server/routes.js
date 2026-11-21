@@ -326,7 +326,17 @@ router.get('/search', async function(req, res) {
     var limit = Math.min(parseInt(req.query.limit || '20', 10) || 20, 100);
 
     if (type === 'creators') {
-      if (!db.isPgUp()) return res.json({ results: [] });
+      if (!db.isPgUp()) {
+        var _crFallback = [];
+        try {
+          var _likeQ2 = '%' + q.replace(/%/g, '\\%').replace(/_/g, '\\_') + '%';
+          _crFallback = getRoutesDb().prepare(
+            'SELECT user_id AS id, username, display_name AS displayName FROM creator_index ' +
+            'WHERE (username LIKE ? OR display_name LIKE ?) ORDER BY is_live DESC, follower_count DESC LIMIT ?'
+          ).all(_likeQ2, _likeQ2, limit);
+        } catch (_cre) {}
+        return res.json({ results: _crFallback });
+      }
       var rows = await db.pool.query(
         "SELECT id, display_name, account_type FROM users WHERE display_name ILIKE $1 AND tenant_id = $2 AND deleted_at IS NULL LIMIT 20",
         ['%' + q + '%', req.tenantId]
