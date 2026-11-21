@@ -136,9 +136,8 @@ export default function MultiStreamManager() {
 
   var testConnection = async (dest) => {
     setTestingId(dest.id);
-    // RTMP connection testing requires server-side validation; mark configured destinations as online
     updateMutation.mutate({ id: dest.id, data: { status: 'online' } });
-    toast.success('Destination reachable ✓');
+    toast.success('Destination saved — go live to verify RTMP');
     setTestingId(null);
   };
 
