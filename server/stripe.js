@@ -286,6 +286,12 @@ async function handleStripeWebhook(rawBody, signature) {
           var subRowId   = require('crypto').randomUUID();
           moderation.addSubscription(subRowId, subId, creatorId, subTier, subCents, session.subscription || null);
           logger.info('[stripe] creator subscription activated: subscriber=' + subId + ' creator=' + creatorId + ' tier=' + subTier);
+          try {
+            var analytics = require('./analytics');
+            analytics.recordEarning(creatorId, null, 'subscription', subCents, subTier + ' subscription from ' + subId);
+          } catch (earningsErr) {
+            logger.warn('[stripe] subscription earnings recording failed', { err: earningsErr.message });
+          }
         } catch (subErr) {
           logger.error('[stripe] creator_subscription activation failed', { err: subErr.message });
         }
