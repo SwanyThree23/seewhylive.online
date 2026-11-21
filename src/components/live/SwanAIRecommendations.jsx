@@ -11,6 +11,7 @@ export default function SwanAIRecommendations({ roomId, currentLayout, viewerCou
   const [applying, setApplying] = useState(false);
 
   useEffect(() => {
+    if (!roomId) return;
     const getRecommendation = async () => {
       try {
         const result = await base44.integrations.Core.InvokeLLM({

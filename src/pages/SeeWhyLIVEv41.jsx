@@ -16,11 +16,11 @@ import { GiftTray as GiftSystem } from '../components/live/GiftSystem';
 import { GiftLeaderboard } from '../components/live/GiftSystem';
 import ViewerCount from '../components/live/ViewerCount';
 import HostAlertCenter from '../components/live/HostAlertCenter';
-import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import StreamHealthMonitor from '../components/live/StreamHealthMonitor';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
 import StreamEventBus from '../components/live/StreamEventBus';
-import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
@@ -2092,8 +2092,9 @@ export default function SeeWhyLIVEv41() {
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var [activeTab, setActiveTab] = useState('stage');
-  var [tipTotal, setTipTotal] = useState(0);
-  var subCount = useSubscriptionCount((user && user.id) || null);
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+  var tipTotal = goalMetrics.tipTotal;
+  var subCount = goalMetrics.subCount;
 
   var panelMap = {
     stage:         <StagePanel />,
@@ -2173,9 +2174,9 @@ export default function SeeWhyLIVEv41() {
       <GiftLeaderboard roomId={activeRoomId} />
       <ViewerCount count={(activeRoom && activeRoom.viewer_count) || 0} peakViewers={(activeRoom && activeRoom.peak_viewers) || 0} />
       <HostAlertCenter />
-      <StreamHealthMonitor isStreaming={!!activeRoomId} />
+      <StreamHealthMonitor isLive={!!(activeRoomId && activeRoom)} />
       <SwanAIRecommendations roomId={activeRoomId} currentLayout='v41' viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />
-      {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onTipReceived={function(msg) { setTipTotal(function(t) { return t + Math.floor((msg && msg.tip_amount) || 0); }); }} />}
+      {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onTipReceived={goalMetrics.onTipReceived} />}
       <StreamGoals isHost={true} roomId={activeRoomId} creatorId={(user && user.id) || null} currentTips={tipTotal} currentSubs={subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <MilestoneAlerts userId={(user && user.id) || null} roomId={activeRoomId} />
       <BroadcastAnalyticsDashboard roomId={activeRoomId} streamSession={activeRoom || null} isLive={!!(activeRoomId && activeRoom)} />
