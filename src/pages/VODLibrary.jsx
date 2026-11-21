@@ -50,40 +50,49 @@ export default function VODLibraryPage() {
   var [editSaving, setEditSaving] = useState(false);
   var queryClient = useQueryClient();
 
-  var { data: user } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
-  var { data: activeRoom } = useQuery({
+  var user = userQuery.data || null;
+
+  var roomQuery = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() {
+      return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; });
+    },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = roomQuery.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var roomId = activeRoomId;
 
-  var { data: stats } = useQuery({
+  var statsQuery = useQuery({
     queryKey: ['vodStats', (user && user.id)],
-    queryFn: async () => {
+    queryFn: async function() {
       if (!(user && user.id)) return { vods: 0, clips: 0, totalViews: 0, highlights: 0 };
-      var [vods, clips] = await Promise.all([
+      var results = await Promise.all([
         base44.entities.VODVideo.filter({ creator_id: user.id }),
         base44.entities.StreamClip.filter({ creator_id: user.id }),
       ]);
+      var vods = results[0];
+      var clips = results[1];
       var highlights = [];
-      var totalViews = (vods || []).reduce((s, v) => s + (v.views || 0), 0)
-        + (clips || []).reduce((s, c) => s + (c.view_count || 0), 0);
-      return { vods: (vods && vods.length) || 0, clips: (clips && clips.length) || 0, totalViews, highlights: (highlights && highlights.length) || 0 };
+      var totalViews = (vods || []).reduce(function(s, v) { return s + (v.views || 0); }, 0)
+        + (clips || []).reduce(function(s, c) { return s + (c.view_count || 0); }, 0);
+      return { vods: (vods && vods.length) || 0, clips: (clips && clips.length) || 0, totalViews: totalViews, highlights: (highlights && highlights.length) || 0 };
     },
     enabled: !!(user && user.id),
   });
+  var stats = statsQuery.data || null;
 
-  var { data: myVODs = [] } = useQuery({
+  var myVODsQuery = useQuery({
     queryKey: ['myVODs', (user && user.id)],
-    queryFn: () => base44.entities.VODVideo.filter({ creator_id: user.id }),
+    queryFn: function() { return base44.entities.VODVideo.filter({ creator_id: user.id }); },
     enabled: !!(user && user.id),
   });
+  var myVODs = myVODsQuery.data || [];
 
   var TABS = [
     { id: 'library',    icon: <Film className="w-3.5 h-3.5" />,     label: 'Library' },
@@ -114,18 +123,21 @@ export default function VODLibraryPage() {
             { label: 'Clips', value: (stats && stats.clips) || 0, color: '#D4854A' },
             { label: 'AI Highlights', value: (stats && stats.highlights) || 0, color: '#6DBF7E' },
             { label: 'Total Views', value: ((stats && stats.totalViews) || 0).toLocaleString(), color: GOLD },
-          ].map(({ label, value, color }) => (
+          ].map(function(stat) {
+            var label = stat.label; var value = stat.value; var color = stat.color;
+            return (
             <div key={label} className="p-3 rounded-2xl text-center" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <p className="text-2xl font-black" style={{ color, fontFamily: 'Orbitron, monospace' }}>{value}</p>
               <p className="text-[10px] font-black uppercase mt-0.5" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>{label}</p>
             </div>
-          ))}
+            );
+          })}
         </div>
 
       {/* Tab nav */}
       <div className="flex gap-0 border-b sticky top-0 z-10 overflow-x-auto scrollbar-hide" style={{ borderColor: 'rgba(212,175,55,0.1)', background: 'rgba(10,7,16,0.97)', backdropFilter: 'blur(12px)' }}>
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)}
+        {TABS.map(function(t) { return (
+          <button key={t.id} onClick={function() { setActiveTab(t.id); }}
             className="flex items-center gap-1.5 flex-1 min-w-[80px] py-3 text-[11px] font-black uppercase transition-all border-b-2"
             style={{
               fontFamily: 'Barlow Condensed, sans-serif',
@@ -135,7 +147,7 @@ export default function VODLibraryPage() {
             }}>
             <span className="mx-auto flex items-center gap-1.5">{t.icon}{t.label}</span>
           </button>
-        ))}
+        ); })}
       </div>
 
       {/* Content */}
@@ -147,13 +159,13 @@ export default function VODLibraryPage() {
               <VODCard
                 key={v.id}
                 vod={v}
-                onEdit={() => { setSelectedForEdit(v); setEditTitle(v.title || ''); setEditDesc(v.description || ''); }}
-                onTrim={() => setSelectedForTrim(v)}
-                onChapters={() => setSelectedForChapters(v)}
-                onPublish={() => {
+                onEdit={function() { setSelectedForEdit(v); setEditTitle(v.title || ''); setEditDesc(v.description || ''); }}
+                onTrim={function() { setSelectedForTrim(v); }}
+                onChapters={function() { setSelectedForChapters(v); }}
+                onPublish={function() {
                   base44.entities.VODVideo.update(v.id, { status: 'published' })
-                    .then(() => queryClient.invalidateQueries({ queryKey: ['myVODs', (user && user.id)] }))
-                    .catch(() => {});
+                    .then(function() { queryClient.invalidateQueries({ queryKey: ['myVODs', (user && user.id)] }); })
+                    .catch(function() {});
                 }}
               />
             ))}
@@ -162,7 +174,7 @@ export default function VODLibraryPage() {
                 <p className="text-sm font-black mb-4" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>Edit VOD</p>
                 <input
                   value={editTitle}
-                  onChange={e => setEditTitle(e.target.value)}
+                  onChange={function(e) { setEditTitle(e.target.value); }}
                   placeholder="Title"
                   className="w-full mb-3 px-3 py-2 rounded-lg text-sm text-white outline-none"
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
@@ -170,7 +182,7 @@ export default function VODLibraryPage() {
                 />
                 <textarea
                   value={editDesc}
-                  onChange={e => setEditDesc(e.target.value)}
+                  onChange={function(e) { setEditDesc(e.target.value); }}
                   placeholder="Description"
                   rows={3}
                   className="w-full mb-4 px-3 py-2 rounded-lg text-sm text-white outline-none resize-none"
@@ -178,15 +190,15 @@ export default function VODLibraryPage() {
                   maxLength={1000}
                 />
                 <div className="flex gap-2 justify-end">
-                  <button onClick={() => setSelectedForEdit(null)} style={{ padding: '6px 16px', borderRadius: 8, background: 'transparent', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 12, cursor: 'pointer' }}>Cancel</button>
+                  <button onClick={function() { setSelectedForEdit(null); }} style={{ padding: '6px 16px', borderRadius: 8, background: 'transparent', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 12, cursor: 'pointer' }}>Cancel</button>
                   <button
                     disabled={editSaving}
-                    onClick={() => {
+                    onClick={function() {
                       setEditSaving(true);
                       base44.entities.VODVideo.update(selectedForEdit.id, { title: editTitle, description: editDesc })
-                        .then(() => { queryClient.invalidateQueries({ queryKey: ['myVODs', (user && user.id)] }); setSelectedForEdit(null); })
-                        .catch(() => {})
-                        .finally(() => setEditSaving(false));
+                        .then(function() { queryClient.invalidateQueries({ queryKey: ['myVODs', (user && user.id)] }); setSelectedForEdit(null); })
+                        .catch(function() {})
+                        .finally(function() { setEditSaving(false); });
                     }}
                     style={{ padding: '6px 16px', borderRadius: 8, background: G, color: '#000', fontSize: 12, fontWeight: 700, cursor: editSaving ? 'not-allowed' : 'pointer', opacity: editSaving ? 0.6 : 1, border: 'none' }}
                   >{editSaving ? 'Saving…' : 'Save'}</button>
@@ -202,7 +214,7 @@ export default function VODLibraryPage() {
           <div>
             <VODPicker vods={myVODs} selected={selectedForChapters} onSelect={setSelectedForChapters} placeholder="Pick a VOD to edit chapters…" />
             {selectedForChapters
-              ? <ChapterEditor video={selectedForChapters} onSave={() => setSelectedForChapters(null)} onCancel={() => setSelectedForChapters(null)} />
+              ? <ChapterEditor video={selectedForChapters} onSave={function() { setSelectedForChapters(null); }} onCancel={function() { setSelectedForChapters(null); }} />
               : <p className="text-white/40 text-sm text-center py-16" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Select a video above to edit its chapters</p>
             }
           </div>
@@ -212,7 +224,7 @@ export default function VODLibraryPage() {
           <div>
             <VODPicker vods={myVODs} selected={selectedForTrim} onSelect={setSelectedForTrim} placeholder="Pick a VOD to trim…" />
             {selectedForTrim
-              ? <VODTrimEditor video={selectedForTrim} onSave={() => setSelectedForTrim(null)} onCancel={() => setSelectedForTrim(null)} />
+              ? <VODTrimEditor video={selectedForTrim} onSave={function() { setSelectedForTrim(null); }} onCancel={function() { setSelectedForTrim(null); }} />
               : <p className="text-white/40 text-sm text-center py-16" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Select a video above to trim it</p>
             }
           </div>
@@ -226,7 +238,7 @@ export default function VODLibraryPage() {
                   streamSessionId={selectedForClips.id}
                   roomId={selectedForClips.room_id || selectedForClips.id}
                   creatorId={user.id}
-                  onClipCreated={() => {}}
+                  onClipCreated={function() {}}
                 />
               : <p className="text-white/40 text-sm text-center py-16" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Select a recording above to create a clip</p>
             }

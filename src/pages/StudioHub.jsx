@@ -177,16 +177,21 @@ var TOOLS = [
 ];
 
 export default function StudioHub() {
-  var { data: user } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
-  var { data: activeRoom } = useQuery({
+  var user = userQuery.data || null;
+
+  var roomQuery = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() {
+      return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; });
+    },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = roomQuery.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
 
   return (
@@ -221,7 +226,7 @@ export default function StudioHub() {
             <p className="font-black text-sm text-white leading-none truncate" style={T}>{activeRoom.title || 'Live Stream'}</p>
             <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>{activeRoom.viewer_count || 0} watching</p>
           </div>
-          <Link to={`/LiveRoom?id=${activeRoomId}`} style={{ textDecoration: 'none' }}>
+          <Link to={'/LiveRoom?id=' + activeRoomId} style={{ textDecoration: 'none' }}>
             <button className="px-3 py-1.5 rounded-lg font-black text-[11px] uppercase transition-all hover:brightness-110"
               style={{ background: 'rgba(192,57,43,0.25)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.4)', ...T }}>
               Return <ChevronRight className="inline w-3 h-3" />
@@ -232,7 +237,7 @@ export default function StudioHub() {
 
       {/* Tool grid */}
       <div className="grid grid-cols-2 gap-3 px-4 pt-5" style={{ maxWidth: 640, margin: '0 auto' }}>
-        {TOOLS.map((tool, i) => {
+        {TOOLS.map(function(tool, i) {
           var Icon = tool.icon;
           return (
             <motion.div
@@ -263,7 +268,7 @@ export default function StudioHub() {
 
       {/* Engagement widgets */}
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 640, margin: '0 auto' }}>
-        <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
+        <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
         <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="studio" viewerCount={0} />
         <OnlineUsersGrid compact maxVisible={8} />
