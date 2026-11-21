@@ -522,7 +522,7 @@ export default function MultiPlatform() {
                     {chatAgg && (
                       <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:'auto' }} exit={{ opacity:0, height:0 }} style={{ overflow:'hidden' }}>
                         {[
-                          { platform:'🎭', name:'SwanyFan', text:'This is fire! 🔥', color:GOLD },
+                          { platform:'🎭', name:'Viewer1', text:'This is fire! 🔥', color:GOLD },
                           { platform:'▶️', name:'Viewer123', text:'Just found this, amazing!', color:'#FF0000' },
                           { platform:'🟣', name:'TwitchUser', text:'poggers', color:'#9146FF' },
                         ].map((m,i) => (

@@ -347,7 +347,7 @@ export default function GuestJoin() {
         </div>
 
         <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.15)' }}>
-          SeeWhy LIVE by Domino Entertainment / SwanyThree AI
+          SeeWhy LIVE · SwanyThree EntTech LLC
         </p>
       </div>
     </div>

@@ -36,7 +36,7 @@ var OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0%
 var PALETTE = ['#D4AF37','#C0392B','#00C8C8','#A855F7','#22D3EE','#F97316','#84CC16','#C0392B'];
 var avatarColor = n => PALETTE[((n && n.charCodeAt)(0) || 0) % PALETTE.length];
 
-var ALL_NAMES = ['SwanyThree','Joyce 🦋','CaliBonesOG','Marvin','Yahawadah','Tom','Durand','Phelo','Simone','Obi','Kenya','Marcus','Tasha','DeeJay','Rakim','Zara','Kwame','Blessed','BigFacts','Nijah'];
+var ALL_NAMES = ['Host','Co-Host','Guest 1','Guest 2','Guest 3','Guest 4','Guest 5','Guest 6','Speaker 1','Speaker 2','Speaker 3','Speaker 4','Speaker 5','Speaker 6','Speaker 7','Speaker 8'];
 
 var CHAT_POOL = [
   '🔥 Let\'s go!','This is fire 🔥','Good morning everyone!','💯💯💯',
@@ -55,13 +55,13 @@ var SCENARIOS = {
   solo:   {
     label: 'Solo Host', emoji: '🎙️', status: 'live', viewerCount: 42,
     participants: [
-      { id:1, name:'SwanyThree', role:'host',     speaking:true,  muted:false },
+      { id:1, name:'Host', role:'host',     speaking:true,  muted:false },
     ],
   },
   panel:  {
     label: '4-Person Panel', emoji: '👥', status: 'live', viewerCount: 247,
     participants: [
-      { id:1, name:'SwanyThree', role:'host',     speaking:false, muted:false },
+      { id:1, name:'Host', role:'host',     speaking:false, muted:false },
       { id:2, name:'Joyce 🦋',   role:'co-host',  speaking:true,  muted:false },
       { id:3, name:'Marvin',     role:'speaker',  speaking:false, muted:false },
       { id:4, name:'Tom',        role:'speaker',  speaking:false, muted:true  },
@@ -78,14 +78,14 @@ var SCENARIOS = {
     label: 'PK Battle', emoji: '⚔️', status: 'battle', viewerCount: 1203,
     scoreA: 4850, scoreB: 3920,
     participants: [
-      { id:1, name:'SwanyThree',  role:'host', speaking:true,  muted:false, team:'A' },
-      { id:2, name:'CaliBonesOG', role:'host', speaking:false, muted:false, team:'B' },
+      { id:1, name:'Host A', role:'host', speaking:true,  muted:false, team:'A' },
+      { id:2, name:'Host B', role:'host', speaking:false, muted:false, team:'B' },
     ],
   },
   watchparty: {
     label: 'Watch Party', emoji: '📺', status: 'watching', viewerCount: 88,
     participants: [
-      { id:1, name:'SwanyThree', role:'host',    speaking:false, muted:false },
+      { id:1, name:'Host', role:'host',    speaking:false, muted:false },
       { id:2, name:'Joyce 🦋',  role:'speaker', speaking:false, muted:false },
       { id:3, name:'Marvin',    role:'speaker', speaking:false, muted:true  },
     ],
@@ -322,11 +322,11 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
         </div>
         <div className="flex gap-2 px-3 py-2" style={{ borderTop:'1px solid rgba(255,255,255,0.04)' }}>
           <input value={msg} onChange={e=>setMsg(e.target.value)}
-            onKeyDown={e=>{ if(e.key==='Enter'&&msg.trim()){ onSendChat('SwanyThree',msg.trim()); setMsg(''); }}}
+            onKeyDown={e=>{ if(e.key==='Enter'&&msg.trim()){ onSendChat('Host',msg.trim()); setMsg(''); }}}
             placeholder="Send as host…"
             className="flex-1 h-7 px-2 rounded-lg text-xs text-white outline-none placeholder:text-white/20"
             style={{ background:'rgba(255,255,255,0.06)', border:`1px solid ${GOLD}22` }} />
-          <button onClick={()=>{ if(msg.trim()){ onSendChat('SwanyThree',msg.trim()); setMsg(''); }}}
+          <button onClick={()=>{ if(msg.trim()){ onSendChat('Host',msg.trim()); setMsg(''); }}}
             className="h-7 px-3 rounded-lg text-xs font-bold"
             style={{ background:`linear-gradient(135deg,${CRIMSON},#A0003A)`, color:GOLD }}>
             Send
