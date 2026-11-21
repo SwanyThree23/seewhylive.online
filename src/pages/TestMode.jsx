@@ -701,7 +701,7 @@ export default function TestMode() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamGoals isHost={true} />
+        <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
         <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
       </div>
       <SwanyBotWidget />

@@ -13,6 +13,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import TippingModal from '../components/monetization/TippingModal';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 
@@ -133,6 +134,7 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
 
   var uid = currentUser && currentUser.id;
   var resolvedRoomId = roomId || 'wisperflo-demo';
+  var goalMetrics = useStreamGoalMetrics((currentUser && currentUser.id) || null, roomId || null);
 
   var { data: dbMessages } = useQuery({
     queryKey: ['wisperflo-msgs', resolvedRoomId],
@@ -311,7 +313,7 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
       <CollaborationMatcher />
       <ShareToSocial content={{ title: 'WisperFlo Chat', url: window.location.href }} />
       <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} communityId={null} />
-      <StreamGoals isHost={isHost} />
+      <StreamGoals isHost={isHost} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       {/* Creator Studios */}
       <div style={{ margin: '0 0 16px', padding: 16, borderRadius: 16, border: '1px solid rgba(123,45,139,0.22)', background: 'rgba(13,6,24,0.5)' }}>
         <p style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(176,102,204,0.7)', marginBottom: 12 }}>Creator Studios</p>

@@ -14,6 +14,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -109,6 +110,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
     setToken(genToken((user && user.id)));
   }, [(user && user.id)]);
   var activeRoomId = new URLSearchParams(window.location.search).get('room_id');
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
   var [showKey, setShowKey] = useState(false);
   var [previewMicOn, setPreviewMicOn] = useState(true);
   var [previewVideoOn, setPreviewVideoOn] = useState(true);
@@ -268,7 +270,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamGoals isHost={true} />
+        <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
         <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />
       </div>
     </div>

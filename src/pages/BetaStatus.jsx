@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import PointsNotification from '../components/live/PointsNotification';
@@ -77,6 +78,7 @@ export default function BetaStatusPage() {
     refetchInterval: 30000,
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
   var { data: userCommunity } = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
     queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
@@ -220,7 +222,7 @@ export default function BetaStatusPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16, paddingBottom: 24 }}>
           <LeaderboardPanel roomId={activeRoomId} />
-          <StreamGoals isHost={true} />
+          <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
           <StreamAnalyticsDashboard roomId={activeRoomId} />
           <HostAlertCenter />
           <PointsNotification userId={(user && user.id)} />

@@ -13,6 +13,7 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -151,6 +152,7 @@ export default function AIHub() {
     refetchInterval: 30000,
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var subCount = useSubscriptionCount((user && user.id) || null);
   var { data: recentRoomMessages = [] } = useQuery({
     queryKey: ['aihub-recent-messages', activeRoomId],
     queryFn: () => base44.entities.Message.filter({ room_id: activeRoomId }, '-created_date', 50),
@@ -1121,7 +1123,7 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={0} currentViewers={busViewerCount} />
+      <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={subCount} currentViewers={busViewerCount} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />

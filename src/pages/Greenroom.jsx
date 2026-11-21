@@ -791,7 +791,7 @@ export default function GreenroomPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
               <ZEGOStreamHealthCard roomId={(room && room.id) || null} />
-              {isHost && <StreamGoals isHost={true} />}
+              {isHost && <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={subCount} currentViewers={Math.max(busViewerCount, participants.length)} />}
               <EnhancedAudioMixer roomId={(room && room.id) || null} isHost={isHost} />
               <PanelMusicPlayer roomId={(room && room.id) || null} isHost={isHost} />
               <PrivatePanel roomId={(room && room.id) || null} currentUser={user} isHost={isHost} />
