@@ -341,7 +341,26 @@ router.get('/search', async function(req, res) {
       var data = search.search(q, type, limit);
       return res.json({ results: data, total: data.length });
     }
-    return res.json({ results: [], total: 0 });
+    var _srRes = [];
+    try {
+      var _srDb = getRoutesDb();
+      var _likeQ = '%' + q.replace(/%/g, '\\%').replace(/_/g, '\\_') + '%';
+      if (type !== 'creators') {
+        var _streams = _srDb.prepare(
+          'SELECT stream_id, title, host_username, host_display_name, genre, status, viewer_count FROM stream_index ' +
+          'WHERE (title LIKE ? OR host_username LIKE ? OR host_display_name LIKE ?) ORDER BY (CASE WHEN status=\'live\' THEN 1 ELSE 0 END) DESC, viewer_count DESC LIMIT ?'
+        ).all(_likeQ, _likeQ, _likeQ, limit);
+        _srRes = _srRes.concat(_streams);
+      }
+      if (type !== 'streams') {
+        var _creators = _srDb.prepare(
+          'SELECT user_id, username, display_name, bio, is_live, follower_count FROM creator_index ' +
+          'WHERE (username LIKE ? OR display_name LIKE ?) ORDER BY is_live DESC, follower_count DESC LIMIT ?'
+        ).all(_likeQ, _likeQ, limit);
+        _srRes = _srRes.concat(_creators);
+      }
+    } catch (_se) {}
+    return res.json({ results: _srRes, total: _srRes.length });
   } catch (err) {
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
@@ -467,7 +486,9 @@ router.get('/moderation/word-filters', requireAuth, function(req, res) {
     if (moderation) {
       return res.json({ filters: moderation.getWordFilters(creatorId) });
     }
-    return res.json({ filters: [] });
+    var _wf = [];
+    try { _wf = getRoutesDb().prepare('SELECT id, word FROM word_filters WHERE creator_id = ?').all(creatorId); } catch (_e) {}
+    return res.json({ filters: _wf });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
   }
@@ -556,7 +577,9 @@ router.get('/moderation/bans', requireAuth, function(req, res) {
     if (moderation) {
       return res.json({ bans: moderation.getBannedUsers(creatorId) });
     }
-    return res.json({ bans: [] });
+    var _bans = [];
+    try { _bans = getRoutesDb().prepare('SELECT banned_user_id AS userId, banned_username AS username, reason, created_at AS createdAt FROM creator_bans WHERE creator_id = ? ORDER BY created_at DESC').all(creatorId); } catch (_e) {}
+    return res.json({ bans: _bans });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
   }
@@ -854,15 +877,25 @@ router.get('/users/:username', async function(req, res) {
 
     var userId = pgUser ? pgUser.id : '';
     var recentStreams = [];
+    var followerCount = 0;
+    var isLive = false;
     try {
       var _streamsRes = await db.query(
-        'SELECT id, title, peak_viewers, ended_at FROM streams WHERE creator_username = $1 AND tenant_id = $2 AND is_live = false ORDER BY created_at DESC LIMIT 5',
+        'SELECT id, title, peak_viewers, ended_at, is_live FROM streams WHERE creator_username = $1 AND tenant_id = $2 ORDER BY created_at DESC LIMIT 10',
         [username, req.tenantId]
       );
-      recentStreams = (_streamsRes.rows || []).map(function(r) {
+      var _allStreams = _streamsRes.rows || [];
+      isLive = _allStreams.some(function(r) { return r.is_live; });
+      recentStreams = _allStreams.filter(function(r) { return !r.is_live; }).slice(0, 5).map(function(r) {
         return { id: r.id, title: r.title, viewerPeak: r.peak_viewers || 0, endedAt: r.ended_at };
       });
     } catch (_dbErr) {}
+    if (pgUser) {
+      try {
+        var _fcRes = await db.query('SELECT follower_count FROM users WHERE id = $1', [pgUser.id]);
+        followerCount = (_fcRes.rows[0] && _fcRes.rows[0].follower_count) || 0;
+      } catch (_fcErr) {}
+    }
 
     return res.json({
       id:              userId,
@@ -871,8 +904,8 @@ router.get('/users/:username', async function(req, res) {
       bio:             (sqliteProfile && sqliteProfile.bio)          || 'SeeWhy LIVE creator',
       avatarEmoji:     (sqliteProfile && sqliteProfile.avatar_emoji) || '🎙',
       tier:            (sqliteProfile && sqliteProfile.tier)         || 'free',
-      followerCount:   0,
-      isLive:          false,
+      followerCount:   followerCount,
+      isLive:          isLive,
       recentStreams:   recentStreams,
       subscriberTiers: _DEFAULT_SUBSCRIBER_TIERS,
     });
@@ -1025,7 +1058,16 @@ router.get('/leaderboard', function(req, res) {
       var top = analytics.getTopCreators(limit);
       return res.json({ leaderboard: top, updatedAt: Date.now() });
     }
-    return res.json({ leaderboard: [], updatedAt: Date.now() });
+    var _lbRows = [];
+    try {
+      _lbRows = getRoutesDb().prepare(
+        'SELECT creator_id, SUM(creator_cents) AS total_cents, COUNT(*) AS txn_count ' +
+        'FROM creator_earnings GROUP BY creator_id ORDER BY total_cents DESC LIMIT ?'
+      ).all(limit).map(function(r) {
+        return { creatorId: r.creator_id, totalCents: Math.floor(r.total_cents || 0), txnCount: r.txn_count || 0 };
+      });
+    } catch (_le) {}
+    return res.json({ leaderboard: _lbRows, updatedAt: Date.now() });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
   }
