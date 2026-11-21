@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import { Link, useNavigate } from "react-router-dom";
@@ -179,6 +179,7 @@ function ScheduledCard({ room }) {
 }
 
 export default function CreatorPublicProfile() {
+  var qc = useQueryClient();
   var [showCreatorSetup, setShowCreatorSetup] = useState(false);
   var urlParams = new URLSearchParams(window.location.search);
   var creatorId = urlParams.get("id");
@@ -240,20 +241,24 @@ export default function CreatorPublicProfile() {
   function handleFollow() {
     if (!currentUser) { setFollowToast('Sign in to follow'); setTimeout(() => setFollowToast(''), 2500); return; }
     if (isFollowing) {
-      var existing = followers.find(f => f.follower_id === currentUser.id);
-      if (existing) base44.entities.Follow.delete(existing.id).catch(() => {});
+      var existing = followers.find(function(f) { return f.follower_id === currentUser.id; });
+      if (existing) base44.entities.Follow.delete(existing.id).then(function() {
+        qc.invalidateQueries({ queryKey: ['creatorFollowers', creatorId] });
+      }).catch(function() {});
       setFollowToast('Unfollowed');
     } else {
-      base44.entities.Follow.create({ creator_id: creatorId, follower_id: currentUser.id }).catch(() => {});
+      base44.entities.Follow.create({ creator_id: creatorId, follower_id: currentUser.id }).then(function() {
+        qc.invalidateQueries({ queryKey: ['creatorFollowers', creatorId] });
+      }).catch(function() {});
       setFollowToast('Following!');
       base44.entities.Activity.create({
         user_id: currentUser.id,
         type: 'follow',
-        title: `Followed creator: ${(profile && profile.display_name) || (profile && profile.full_name) || 'Creator'}`,
+        title: 'Followed creator: ' + ((profile && profile.display_name) || (profile && profile.full_name) || 'Creator'),
         recipient_id: creatorId,
-      }).catch(() => {});
+      }).catch(function() {});
     }
-    setTimeout(() => setFollowToast(''), 2500);
+    setTimeout(function() { setFollowToast(''); }, 2500);
   }
 
   function handleShare() {

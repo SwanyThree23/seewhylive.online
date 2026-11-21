@@ -41,7 +41,8 @@ function MilestoneToast({ milestone, onDismiss }) {
   );
 }
 
-export default function MilestoneAlerts({ creatorId }) {
+export default function MilestoneAlerts({ creatorId, userId, roomId }) {
+  creatorId = creatorId || userId;
   const [shown, setShown] = useState(() => {
     try { return JSON.parse(localStorage.getItem('shownMilestones') || '[]'); } catch { return []; }
   });
