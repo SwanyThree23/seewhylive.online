@@ -366,6 +366,22 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     socket.on('gift-received',     onGiftReceived);
     socket.on('panel:camera_command',     onPanelCameraCommand);
     socket.on('panel:background_command', onPanelBackgroundCommand);
+
+    var onGoalSet = function(data) {
+      if (!data) return;
+      setStreamGoal(function(p) { return Object.assign({}, p, { enabled: true, label: data.label || 'Stream Goal', targetCents: data.target || 5000, currentCents: p.currentCents || 0 }); });
+    };
+    var onGoalProgress = function(data) {
+      if (!data) return;
+      setStreamGoal(function(p) { return Object.assign({}, p, { currentCents: data.currentCents || 0 }); });
+    };
+    var onGoalClear = function() {
+      setStreamGoal(function(p) { return Object.assign({}, p, { enabled: false, currentCents: 0 }); });
+    };
+    socket.on('stream-goal-set',      onGoalSet);
+    socket.on('stream-goal-progress', onGoalProgress);
+    socket.on('stream-goal-clear',    onGoalClear);
+
     return function() {
       socket.off('join-room-ack',     onJoinRoomAck);
       socket.off('hand-raise',        onHandRaise);
@@ -387,6 +403,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       socket.off('gift-received',     onGiftReceived);
       socket.off('panel:camera_command',     onPanelCameraCommand);
       socket.off('panel:background_command', onPanelBackgroundCommand);
+      socket.off('stream-goal-set',      onGoalSet);
+      socket.off('stream-goal-progress', onGoalProgress);
+      socket.off('stream-goal-clear',    onGoalClear);
       floatTimersRef.current.forEach(function(tid) { clearTimeout(tid); });
       floatTimersRef.current.clear();
     };
