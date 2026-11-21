@@ -527,7 +527,7 @@ export default function LiveRoom() {
 
   var roomTitle  = (party && party.title) || (roomId ? 'Live Room' : 'Demo Room');
   var _hostMember = party && members.find(function(m) { return m.user_id === party.host_id; });
-  var hostName   = party ? ((_hostMember && _hostMember.user_name) || 'Host') : 'SwanyThree';
+  var hostName   = party ? ((_hostMember && _hostMember.user_name) || 'Host') : 'Host';
   var [busViewerCount, setBusViewerCount] = useState(0);
   var [tipTotal, setTipTotal] = useState(0);
   var [peakViewers, setPeakViewers] = useState(0);
