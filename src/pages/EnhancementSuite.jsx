@@ -851,13 +851,13 @@ export default function EnhancementSuite() {
                     </div>
                     <div className="stream-og-body">
                       <div className="stream-og-title">Late Night Lo-Fi Beats — SeeWhy LIVE</div>
-                      <div className="stream-og-meta">DJ SwanyThree · 1,247 watching</div>
-                      <div className="stream-og-url">seewhylive.com/live/swanythree</div>
+                      <div className="stream-og-meta">SeeWhy LIVE</div>
+                      <div className="stream-og-url">seewhylive.online</div>
                     </div>
                   </div>
                   <textarea className="share-message-area" value={shareMessage} onChange={e => setShareMessage(e.target.value)} rows={3} />
                   <div className="copy-link-row">
-                    <input className="copy-link-input" readOnly value="seewhylive.com/live/swanythree?ref=DJ_SwanyThree" />
+                    <input className="copy-link-input" readOnly value="seewhylive.online/live" />
                     <button className={`copy-link-btn${copiedLink ? " copied" : ""}`} onClick={handleCopyLink}>
                       {copiedLink ? "✓ Copied!" : "Copy"}
                     </button>

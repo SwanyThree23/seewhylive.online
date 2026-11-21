@@ -366,14 +366,7 @@ function StagePanel() {
 }
 
 // ─── STATE VS STATE ───────────────────────────────────────────────────────────
-var STATES_DATA = [
-  {id:"WA",name:"Washington",color:C.state1,record:{w:3,l:0},pts:210,players:["SwanyThree23","CaliBonesKing","King Domino","West Side Bone","Pacific Shuffle"]},
-  {id:"CA",name:"California",color:"#1B5E20",record:{w:2,l:1},pts:178,players:["West Coast Bone","SunsetSlayer","Bay Bone","LA King","Valley Boss"]},
-  {id:"TX",name:"Texas",color:"#B71C1C",record:{w:2,l:1},pts:165,players:["Lone Star Domino","Houston Hustle","Dallas King","Rio Bone","Alamo Ace"]},
-  {id:"FL",name:"Florida",color:"#E65100",record:{w:1,l:2},pts:140,players:["Sunshine Bone","Miami Domino","Tallahassee T","Tampa King","Gator Slide"]},
-  {id:"NY",name:"New York",color:"#1B3D7B",record:{w:1,l:2},pts:132,players:["Empire Bone","Bronx King","Brooklyn Shuffle","Harlem Hustle","Queens Bone"]},
-  {id:"GA",name:"Georgia",color:"#BF360C",record:{w:0,l:3},pts:88,players:["ATL Domino","Peach State Bone","Savannah Slide","Augusta Ace","Macon Masher"]},
-];
+var STATES_DATA = [];
 
 var BRACKET_MATCHES = [
   {id:1,s1:"WA",s2:"CA",score1:3,score2:1,status:"complete",round:"QF"},
@@ -519,7 +512,7 @@ function SVSPanel() {
               </div>
             ))}
             <Btn label="+ LOG PLAY" variant="ghost" size="sm" style={{width:"100%",marginTop:8}}
-              onClick={()=>setPlayLog(l=>[{time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),player:"SwanyThree23",action:"Custom play logged",pts:0},...l])}/>
+              onClick={function(){setPlayLog(function(l){return [{time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),player:"Player",action:"Custom play logged",pts:0}].concat(l);});}} />
           </GCard>
         </div>
       )}
@@ -934,7 +927,7 @@ function MusicStudioPanel() {
         hook:"We see why, we live live — every bone on the table is mine",
         mix_tips:["Side-chain kick to bass","Automate reverb sends on the hook","Layer 2 snares +3 semitones apart"],
         release_strategy:"Drop on SeeWhy LIVE during State vs State finals broadcast",
-        collab_suggestion:"Feature CaliBonesOG for authentic street credibility"});
+        collab_suggestion:""});
     }
     setLoading(false);
   }
@@ -1105,12 +1098,7 @@ function MusicStudioPanel() {
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <GCard>
             <div style={{fontFamily:F.display,fontSize:14,color:C.gold,marginBottom:10}}>COLLAB STUDIO</div>
-            {["CaliBonesOG — Producer / Beatmaker","JoyceAI — AI Vocal Director","SwanyBot — AI Mix Engineer"].map(c=>(
-              <div key={c} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.slate}`}}>
-                <span style={{fontSize:12,color:C.textD}}>👤 {c}</span>
-                <div style={{display:"flex",gap:4}}><Tag label="10%" color={C.purple}/><Btn label="×" variant="ghost" size="sm"/></div>
-              </div>
-            ))}
+            <div style={{fontSize:11,color:C.textM,fontStyle:"italic",textAlign:"center",padding:"10px 0"}}>No collaborators yet.</div>
             <Btn label="+ INVITE COLLABORATOR" variant="ghost" size="sm" style={{width:"100%",marginTop:10}}/>
           </GCard>
           <GCard>

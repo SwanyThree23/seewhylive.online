@@ -67,7 +67,7 @@ var GLOBAL_CSS = `
 .joyce-glow{animation:joyce-glow 2.5s ease infinite;}
 `;
 
-var JOYCE_SYSTEM = `You are Joyce AI — SeeWhy LIVE co-host by SwanyThree EntTech LLC. Creator keeps 90%, platform 10%. Platform: seewhylive.online. VPS: 2.24.194.112 (srv1581658.hstgr.cloud). Supabase project: rxlgywvfclyjdfyvfvyc. RTMP: rtmp://seewhylive.online/live. N8N: srv1587098.hstgr.cloud.
+var JOYCE_SYSTEM = `You are Joyce AI — SeeWhy LIVE co-host by SwanyThree EntTech LLC. Creator keeps 90%, platform 10%. Platform: seewhylive.online.
 
 State vs State domino: 7 Rock format, 5-point/150-point games, Double Elimination brackets. Washington Classic held at Jamar's Sports Bar, Des Moines WA. WA currently ranked #1.
 

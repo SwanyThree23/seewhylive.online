@@ -39,20 +39,7 @@ var INIT_BRACKET = {
   ],
 };
 
-var STATE_ROSTERS = {
-  Washington: [
-    { name: 'SwanyThree23', role: 'CAPTAIN', gems: 8420, wins: 34 },
-    { name: 'DominoKing_WA', role: 'ANCHOR', gems: 6180, wins: 28 },
-    { name: 'WashingtonDomz', role: 'PLAYER', gems: 3810, wins: 19 },
-    { name: 'PNW_Bones', role: 'PLAYER', gems: 2140, wins: 14 },
-  ],
-  California: [
-    { name: 'CaliBones_Champ', role: 'CAPTAIN', gems: 7240, wins: 31 },
-    { name: 'LADomino_King', role: 'ANCHOR', gems: 5890, wins: 26 },
-    { name: 'BayArea_Bones', role: 'PLAYER', gems: 3210, wins: 18 },
-    { name: 'SoCal_Domz', role: 'PLAYER', gems: 1980, wins: 12 },
-  ],
-};
+var STATE_ROSTERS = {};
 
 var ROLE_COLORS = { CAPTAIN: '#d4af37', ANCHOR: '#C0392B', PLAYER: '#D4854A' };
 
@@ -379,30 +366,8 @@ export default function SVSArena() {
         {/* ROSTERS */}
         {state.tab === 'rosters' && (
           <div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-              {Object.keys(STATE_ROSTERS).map(st => (
-                <button key={st} onClick={() => dispatch({ type: 'SET_STATE', payload: st })}
-                  style={{ padding: '6px 16px', borderRadius: 8, border: state.selectedState === st ? '1px solid #d4af37' : '1px solid rgba(255,255,255,0.12)', background: state.selectedState === st ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)', color: state.selectedState === st ? '#d4af37' : 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <StateFlag state={st} /> {st}
-                </button>
-              ))}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {(STATE_ROSTERS[state.selectedState] || []).map((player, i) => (
-                <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(212,175,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
-                    {player.role === 'CAPTAIN' ? '👑' : player.role === 'ANCHOR' ? '⚓' : '🎯'}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>{player.name}</div>
-                    <div style={{ fontSize: 10, fontWeight: 900, color: ROLE_COLORS[player.role] || '#fff', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.12em', marginTop: 2 }}>{player.role}</div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 14, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>{player.gems.toLocaleString()} 💎</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{player.wins}W</div>
-                  </div>
-                </div>
-              ))}
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, fontStyle: 'italic', textAlign: 'center', padding: '24px 0' }}>
+              No rosters yet. Players join from active state vs state events.
             </div>
           </div>
         )}

@@ -53,20 +53,9 @@ var TRAFFIC_SOURCES = [
   { name: 'Referral', value: 15, color: '#D4854A' },
 ];
 
-var TIPPERS = [
-  { rank: 1, handle: 'DominoKing_WA', gems: 8420, streams: 34, value: 842 },
-  { rank: 2, handle: 'CaliBones_Champ', gems: 6180, streams: 28, value: 618 },
-  { rank: 3, handle: 'SwanyFan_OG', gems: 4290, streams: 41, value: 429 },
-  { rank: 4, handle: 'WashingtonDomz', gems: 3810, streams: 19, value: 381 },
-  { rank: 5, handle: 'VibeNBones99', gems: 2940, streams: 22, value: 294 },
-];
+var TIPPERS = [];
 
-var TOP_STREAMS = [
-  { title: 'Washington Classic 2026 — Finals', date: 'Jun 8', revenue: 1840, viewers: 4120, gems: 18400 },
-  { title: 'PK Battle Night — SwanyThree23 vs King James', date: 'Jun 2', revenue: 920, viewers: 2840, gems: 9200 },
-  { title: 'State vs State — WA vs CA Semifinals', date: 'May 28', revenue: 680, viewers: 1980, gems: 6800 },
-  { title: 'Cali Bones × VibeN\'Bones Collab', date: 'May 22', revenue: 480, viewers: 1420, gems: 4800 },
-];
+var TOP_STREAMS = [];
 
 var initState = { tab: 'overview', range: '30d' };
 function reducer(state, action) {
@@ -278,7 +267,10 @@ export default function CreatorAnalytics() {
             {/* Tippers leaderboard */}
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', marginBottom: 12, fontFamily: 'Barlow Condensed, sans-serif' }}>TOP TIPPERS</div>
-              {TIPPERS.map(t => (
+              {TIPPERS.length === 0 && (
+                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, fontStyle: 'italic', textAlign: 'center', padding: '12px 0' }}>No tippers yet.</div>
+              )}
+              {TIPPERS.map(function(t) { return (
                 <div key={t.rank} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ width: 26, height: 26, borderRadius: 8, background: t.rank <= 3 ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: t.rank <= 3 ? '#d4af37' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', flexShrink: 0 }}>
                     {t.rank === 1 ? '👑' : t.rank}
@@ -288,7 +280,7 @@ export default function CreatorAnalytics() {
                   <span style={{ fontSize: 14, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>{t.gems.toLocaleString()} 💎</span>
                   <span style={{ fontSize: 13, color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>${t.value}</span>
                 </div>
-              ))}
+              ); })}
             </div>
           </div>
         )}
@@ -326,7 +318,10 @@ export default function CreatorAnalytics() {
         {state.tab === 'streams' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ fontSize: 13, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 4 }}>TOP STREAMS</div>
-            {TOP_STREAMS.map((stream, i) => (
+            {TOP_STREAMS.length === 0 && (
+              <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>Go live to see your top streams here.</div>
+            )}
+            {TOP_STREAMS.map(function(stream, i) { return (
               <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', flexShrink: 0 }}>#{i + 1}</div>
                 <div style={{ flex: 1, minWidth: 180 }}>
@@ -348,7 +343,7 @@ export default function CreatorAnalytics() {
                   </div>
                 </div>
               </div>
-            ))}
+            ); })}
           </div>
         )}
       </div>

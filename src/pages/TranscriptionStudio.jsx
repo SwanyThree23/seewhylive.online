@@ -165,7 +165,7 @@ export default function TranscriptionStudio() {
     "Washington's captain is already calling plays — strategic dominoes.",
     "The crowd here is electric, Jamar's Sports Bar showing out!",
     "Double elimination means one loss doesn't end your night.",
-    "SwanyThree in the building with the official commentary.",
+    "The host is in the building with the official commentary.",
     "Chat, drop your predictions — who's taking it tonight?",
     "Remember, creator keeps ninety percent on SeeWhy LIVE.",
     "Let's get this bracket started, domino culture all day.",

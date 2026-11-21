@@ -220,12 +220,7 @@ function avatarColor(name) {
 // ── Demo data (replaced by real WebRTC when roomId is available) ──────────────
 var DEMO_STAGE = [];
 var DEMO_AUDIENCE = [];
-var DEMO_CHAT = [
-  { id: 1, user: 'Joyce 🦋',   text: 'Welcome to the session everyone! 🎉', host: true  },
-  { id: 2, user: 'SwanyThree', text: 'Thanks for joining — we go live in 2 min', host: false },
-  { id: 3, user: 'Marvin',     text: 'Ready! 🔥',                            host: false },
-  { id: 4, user: 'Sim 11',     text: 'Looking good on stage 👏',             host: false },
-];
+var DEMO_CHAT = [];
 
 // ── Octagonal stage tile (speaker) ───────────────────────────────────────────
 function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
