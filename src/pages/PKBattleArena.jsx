@@ -40,12 +40,10 @@ var OCT = 'polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)';
 
 var OPPONENTS = [];
 
-var GLOBAL_CSS = `
-@keyframes pkPulse{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0);}50%{box-shadow:0 0 0 8px rgba(192,57,43,0.18);}}
-@keyframes voteShake{0%,100%{transform:scale(1);}25%{transform:scale(1.08);}75%{transform:scale(0.96);}}
-@keyframes pk-in{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-.pk-in{animation:pk-in .35s ease forwards;}
-`;
+var GLOBAL_CSS = '@keyframes pkPulse{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0);}50%{box-shadow:0 0 0 8px rgba(192,57,43,0.18);}}' +
+  '@keyframes voteShake{0%,100%{transform:scale(1);}25%{transform:scale(1.08);}75%{transform:scale(0.96);}}' +
+  '@keyframes pk-in{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}' +
+  '.pk-in{animation:pk-in .35s ease forwards;}';
 
 function battleToUI(b) {
   var creatorScore  = (b.creator_tips || 0) + (b.creator_subs || 0) * 10;

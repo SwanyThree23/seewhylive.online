@@ -195,24 +195,24 @@ export default function StudioHub() {
   var activeRoomId = (activeRoom && activeRoom.id) || null;
 
   return (
-    <div className="min-h-screen pb-10" style={{ background: BG, ...T }}>
+    <div className="min-h-screen pb-10" style={{ background: BG, fontFamily: 'Barlow Condensed, sans-serif' }}>
 
       {/* Header */}
       <div className="sticky top-0 z-20 px-4 py-3 flex items-center gap-3"
         style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(12px)' }}>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ background: `${GOLD}20`, border: `1px solid ${GOLD}40` }}>
+          style={{ background: GOLD + '20', border: '1px solid ' + GOLD + '40' }}>
           <Radio className="w-4 h-4" style={{ color: GOLD }} />
         </div>
         <div>
           <h1 className="font-black text-lg text-white leading-none" style={T}>Studio Hub</h1>
-          <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>All your broadcasting tools</p>
+          <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>All your broadcasting tools</p>
         </div>
         {activeRoomId && (
           <div className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full"
             style={{ background: 'rgba(192,57,43,0.2)', border: '1px solid rgba(192,57,43,0.4)' }}>
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B' }} />
-            <span className="text-[10px] font-black uppercase" style={{ color: '#C0392B', ...T }}>LIVE</span>
+            <span className="text-[10px] font-black uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
           </div>
         )}
       </div>
@@ -224,11 +224,11 @@ export default function StudioHub() {
           <span className="w-2 h-2 rounded-full animate-pulse shrink-0" style={{ background: '#C0392B' }} />
           <div className="flex-1 min-w-0">
             <p className="font-black text-sm text-white leading-none truncate" style={T}>{activeRoom.title || 'Live Stream'}</p>
-            <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>{activeRoom.viewer_count || 0} watching</p>
+            <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{activeRoom.viewer_count || 0} watching</p>
           </div>
           <Link to={'/LiveRoom?id=' + activeRoomId} style={{ textDecoration: 'none' }}>
             <button className="px-3 py-1.5 rounded-lg font-black text-[11px] uppercase transition-all hover:brightness-110"
-              style={{ background: 'rgba(192,57,43,0.25)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.4)', ...T }}>
+              style={{ background: 'rgba(192,57,43,0.25)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Return <ChevronRight className="inline w-3 h-3" />
             </button>
           </Link>
@@ -249,15 +249,15 @@ export default function StudioHub() {
               <Link to={createPageUrl(tool.page)} style={{ textDecoration: 'none' }}>
                 <div
                   className="rounded-2xl p-4 flex flex-col gap-2 cursor-pointer transition-all hover:brightness-110 active:scale-[0.97]"
-                  style={{ background: 'rgba(13,10,28,0.9)', border: `1px solid ${tool.color}25` }}
+                  style={{ background: 'rgba(13,10,28,0.9)', border: '1px solid ' + tool.color + '25' }}
                 >
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ background: `${tool.color}18`, border: `1px solid ${tool.color}35` }}>
+                    style={{ background: tool.color + '18', border: '1px solid ' + tool.color + '35' }}>
                     <Icon className="w-5 h-5" style={{ color: tool.color }} />
                   </div>
                   <div>
                     <p className="font-black text-sm text-white leading-snug" style={T}>{tool.label}</p>
-                    <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>{tool.desc}</p>
+                    <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{tool.desc}</p>
                   </div>
                 </div>
               </Link>
