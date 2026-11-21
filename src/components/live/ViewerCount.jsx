@@ -18,7 +18,7 @@ function getPerMinuteDelta(history) {
   return Math.round(diff);
 }
 
-export default function ViewerCount({ count = 0, peakViewers = 0 }) {
+export default function ViewerCount({ count = 0, peakViewers = 0, hideWhenZero = true }) {
   const [displayed, setDisplayed]       = useState(count);
   const [history, setHistory]           = useState(Array.from({ length: 20 }, () => ({ v: count })));
   const [deltaFlash, setDeltaFlash]     = useState(null);
@@ -59,6 +59,8 @@ export default function ViewerCount({ count = 0, peakViewers = 0 }) {
   const nextMile   = getNextMilestone(count);
   const awayFromNext = nextMile != null ? nextMile - count : null;
   const trendDir   = perMinute > 0 ? 'up' : perMinute < 0 ? 'down' : 'flat';
+
+  if (hideWhenZero && count === 0) return null;
 
   return (
     <div className="flex flex-col items-center gap-0.5">

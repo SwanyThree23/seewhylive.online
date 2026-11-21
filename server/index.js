@@ -7205,7 +7205,9 @@ io.on('connection', function(socket) {
     } else {
       liveSyncState.delete(lsRoomId);
     }
-    io.to(lsRoomId).emit('livesync-state', { roomId: lsRoomId, enabled: enabled, delayMs: delayMs, viewerCount: 0 });
+    var _lsRoom = rooms.get(lsRoomId);
+    var _lsVc = _lsRoom ? (_lsRoom.viewers ? _lsRoom.viewers.size : 0) + (_lsRoom.guests ? _lsRoom.guests.size : 0) : 0;
+    io.to(lsRoomId).emit('livesync-state', { roomId: lsRoomId, enabled: enabled, delayMs: delayMs, viewerCount: _lsVc });
   });
 
   // ── platform health check ────────────────────────────────────────────────
