@@ -545,7 +545,7 @@ export default function SwanyBotWidget({ pageName }) {
                              <Sparkles className="w-4 h-4 text-white" />
                            </div>
                            <div className="flex-1 min-w-0">
-                             <p className="text-xs font-black uppercase tracking-wider" style={{ color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif' }}>SwanyBot Pro <span style={{ color: '#8B5CF6' }}>·</span> SwanyThree</p>
+                             <p className="text-xs font-black uppercase tracking-wider" style={{ color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif' }}>SwanyBot Pro <span style={{ color: '#8B5CF6' }}>·</span> SeeWhy LIVE</p>
                              <p className="text-[10px] mt-0.5 leading-tight" style={{ color: 'rgba(255,255,255,0.55)' }}>Real-time video transform, voice clone, music videos, product ads — open the studio →</p>
                            </div>
                          </div>
