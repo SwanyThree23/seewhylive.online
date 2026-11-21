@@ -4,115 +4,125 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserPlus, UserMinus } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function FollowButton({ targetUserId, targetUserName, size = 'sm', className = '' }) {
-  const qc = useQueryClient();
+export default function FollowButton(props) {
+  var targetUserId = props.targetUserId;
+  var targetUserName = props.targetUserName;
+  var size = props.size || 'sm';
+  var className = props.className || '';
 
-  const { data: currentUser } = useQuery({
+  var qc = useQueryClient();
+
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
+  var currentUser = userQuery.data || null;
+  var currentUserId = (currentUser && currentUser.id) || null;
 
-  const { data: followRecord } = useQuery({
-    queryKey: ['follow', currentUser?.id, targetUserId],
-    queryFn: async () => {
-      if (!currentUser?.id || !targetUserId || currentUser.id === targetUserId) return null;
-      const results = await base44.entities.Follow.filter({ follower_id: currentUser.id, following_id: targetUserId });
-      return results[0] || null;
+  var followQuery = useQuery({
+    queryKey: ['follow', currentUserId, targetUserId],
+    queryFn: function() {
+      if (!currentUserId || !targetUserId || currentUserId === targetUserId) return Promise.resolve(null);
+      return base44.entities.Follow.filter({ follower_id: currentUserId, following_id: targetUserId }).then(function(results) {
+        return (results && results[0]) || null;
+      });
     },
-    enabled: !!currentUser?.id && !!targetUserId && currentUser?.id !== targetUserId,
+    enabled: !!(currentUserId && targetUserId && currentUserId !== targetUserId),
   });
+  var followRecord = followQuery.data || null;
 
-  const followKey = ['follow', currentUser?.id, targetUserId];
+  var followKey = ['follow', currentUserId, targetUserId];
 
-  const followMutation = useMutation({
-    mutationFn: () => base44.entities.Follow.create({
-      follower_id: currentUser.id,
-      following_id: targetUserId,
-      follower_name: currentUser.full_name || currentUser.email,
-      following_name: targetUserName,
-    }),
-    onMutate: async () => {
-      await qc.cancelQueries({ queryKey: followKey });
-      const prev = qc.getQueryData(followKey);
-      // Optimistically mark as following so the button flips instantly
-      qc.setQueryData(followKey, { id: '__optimistic__', follower_id: currentUser?.id, following_id: targetUserId });
-      return { prev };
+  var followMutation = useMutation({
+    mutationFn: function() {
+      return base44.entities.Follow.create({
+        follower_id: currentUserId,
+        following_id: targetUserId,
+        follower_name: (currentUser && (currentUser.full_name || currentUser.email)) || '',
+        following_name: targetUserName || '',
+      });
     },
-    onError: (err, vars, context) => {
-      qc.setQueryData(followKey, context?.prev);
+    onMutate: function() {
+      qc.cancelQueries({ queryKey: followKey });
+      var prev = qc.getQueryData(followKey);
+      qc.setQueryData(followKey, { id: '__optimistic__', follower_id: currentUserId, following_id: targetUserId });
+      return { prev: prev };
+    },
+    onError: function(err, vars, context) {
+      qc.setQueryData(followKey, context && context.prev);
       toast.error('Could not follow. Please try again.');
     },
-    onSuccess: () => {
-      toast.success(`Following ${targetUserName || 'creator'}!`);
+    onSuccess: function() {
+      toast.success('Following ' + (targetUserName || 'creator') + '!');
       qc.invalidateQueries({ queryKey: followKey });
       qc.invalidateQueries({ queryKey: ['followers', targetUserId] });
       Promise.allSettled([
         base44.entities.Activity.create({
-          user_id: currentUser.id,
+          user_id: currentUserId,
           type: 'follow',
-          title: `Now following ${targetUserName || 'a creator'}`,
+          title: 'Now following ' + (targetUserName || 'a creator'),
           recipient_id: targetUserId,
         }),
         base44.entities.Activity.create({
           user_id: targetUserId,
           type: 'follow',
-          title: `${currentUser.full_name || 'Someone'} is now following you`,
-          sender_id: currentUser.id,
+          title: ((currentUser && currentUser.full_name) || 'Someone') + ' is now following you',
+          sender_id: currentUserId,
         }),
       ]);
     },
   });
 
-  const unfollowMutation = useMutation({
-    mutationFn: () => base44.entities.Follow.delete(followRecord.id),
-    onMutate: async () => {
-      await qc.cancelQueries({ queryKey: followKey });
-      const prev = qc.getQueryData(followKey);
-      // Optimistically mark as not following so the button flips instantly
-      qc.setQueryData(followKey, null);
-      return { prev };
+  var unfollowMutation = useMutation({
+    mutationFn: function() {
+      return base44.entities.Follow.delete(followRecord.id);
     },
-    onError: (err, vars, context) => {
-      qc.setQueryData(followKey, context?.prev);
+    onMutate: function() {
+      qc.cancelQueries({ queryKey: followKey });
+      var prev = qc.getQueryData(followKey);
+      qc.setQueryData(followKey, null);
+      return { prev: prev };
+    },
+    onError: function(err, vars, context) {
+      qc.setQueryData(followKey, context && context.prev);
       toast.error('Could not unfollow. Please try again.');
     },
-    onSuccess: () => {
+    onSuccess: function() {
       toast.success('Unfollowed');
       qc.invalidateQueries({ queryKey: followKey });
       qc.invalidateQueries({ queryKey: ['followers', targetUserId] });
     },
   });
 
-  // Don't show button for own profile
-  if (!currentUser || currentUser.id === targetUserId) return null;
+  if (!currentUser || currentUserId === targetUserId) return null;
 
-  const isFollowing = !!followRecord;
-  const isPending = followMutation.isPending || unfollowMutation.isPending;
+  var isFollowing = !!followRecord;
+  var isPending = followMutation.isPending || unfollowMutation.isPending;
 
   return (
     <button
       disabled={isPending}
-      onClick={() => isFollowing ? unfollowMutation.mutate() : followMutation.mutate()}
+      onClick={function() { if (isFollowing) { unfollowMutation.mutate(); } else { followMutation.mutate(); } }}
       className={className}
       style={{
-        display:'inline-flex', alignItems:'center', gap:6,
+        display: 'inline-flex', alignItems: 'center', gap: 6,
         padding: size === 'sm' ? '5px 12px' : '8px 18px',
         fontSize: size === 'sm' ? 12 : 14,
-        fontWeight:700,
+        fontWeight: 700,
         border: isFollowing ? '1px solid rgba(255,255,255,0.2)' : 'none',
         background: isFollowing ? 'transparent' : '#D4AF37',
         color: isFollowing ? '#fff' : '#000',
-        borderRadius:8,
+        borderRadius: 8,
         cursor: isPending ? 'not-allowed' : 'pointer',
         opacity: isPending ? 0.6 : 1,
-        fontFamily:'Barlow Condensed, sans-serif',
-        transition:'all 0.15s',
+        fontFamily: 'Barlow Condensed, sans-serif',
+        transition: 'all 0.15s',
       }}
     >
       {isFollowing ? (
-        <><UserMinus style={{ width:14, height:14 }} /> Following</>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><UserMinus style={{ width: 14, height: 14 }} /> Following</span>
       ) : (
-        <><UserPlus style={{ width:14, height:14 }} /> Follow</>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><UserPlus style={{ width: 14, height: 14 }} /> Follow</span>
       )}
     </button>
   );
