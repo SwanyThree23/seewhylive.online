@@ -941,7 +941,7 @@ function PKBattleEngine({ myName, onEnd }) {
 
 // ── LIVE CHAT ────────────────────────────────────────────────────
 function LiveChat() {
-  var [msgs, setMsgs] = useState([{id:1,user:"User1",text:"Hello!"}]);
+  var [msgs, setMsgs] = useState([]);
   var [input, setInput] = useState("");
 
   return (
