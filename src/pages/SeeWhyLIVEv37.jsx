@@ -247,9 +247,7 @@ function StagePanel() {
 
       <Card>
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>Recent Sessions</p>
-        {['NYC vs LA — 347 viewers', 'Domino Championship — 512 viewers', 'Weekly Cypher — 88 viewers'].map(s => (
-          <div key={s} style={{ color: C.textM, fontSize: 12, padding: '6px 0', borderBottom: `1px solid ${C.slate2}` }}>{s}</div>
-        ))}
+        <div style={{ color: C.textM, fontSize: 11, fontStyle: 'italic' }}>No recent sessions yet.</div>
       </Card>
     </div>
   );

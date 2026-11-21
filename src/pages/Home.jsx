@@ -609,7 +609,7 @@ function AIAudioSampleWidget() {
 
 // ── Creator Highlights Row ────────────────────────────────────────────────
 var CREATOR_HIGHLIGHTS = [
-  { id: 'c1', handle: '@SwanyThree23',  quote: 'SeeWhy let me co-stream with 4 creators at once — unprecedented!', role: 'Host',       color: '#C9A84C' },
+  { id: 'c1', handle: '@DominoHost',    quote: 'SeeWhy let me co-stream with 4 creators at once — unprecedented!', role: 'Host',       color: '#C9A84C' },
   { id: 'c2', handle: '@QueenPulse',    quote: 'The DSP voice modulator is elite. Studio quality, live.',          role: 'Creator',    color: '#A78BFA' },
   { id: 'c3', handle: '@BlockchainBro', quote: 'Battle mode + loyalty points = my audience never leaves.',         role: 'Host',       color: '#F472B6' },
   { id: 'c4', handle: '@JoyceAI',       quote: 'Co-hosting with an AI kept my stream running 24/7.',              role: 'AI Co-Host', color: '#34D399' },
