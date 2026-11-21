@@ -3998,6 +3998,11 @@ io.on('connection', function(socket) {
     var chatMinKey = Math.floor(Date.now() / 60000);
     chatA.msgCounts[chatMinKey] = (chatA.msgCounts[chatMinKey] || 0) + 1;
 
+    // Loyalty: 2 points per chat message
+    if (userId && socket.data.tenantId) {
+      loyaltyService.awardPoints({ userId: userId, tenantId: socket.data.tenantId, points: 2, source: 'chat_message', sourceId: null }).catch(function() {});
+    }
+
     // Detect and translate
     translation.detectAndTranslate(message)
       .then(function(result) {
@@ -5135,6 +5140,10 @@ io.on('connection', function(socket) {
       autoAura(roomId, function(cb) {
         aura.triggerTip(roomId, fromUser, priceCents, tierLabel + ' subscriber — welcome to the family!', cb);
       });
+      // Loyalty: 100 points for subscribing
+      if (socket.data.userId && socket.data.tenantId) {
+        loyaltyService.awardPoints({ userId: socket.data.userId, tenantId: socket.data.tenantId, points: 100, source: 'subscribe', sourceId: null }).catch(function() {});
+      }
     }
 
     // Paid subscriptions must supply a paymentIntentId so the broadcast is
@@ -5549,10 +5558,15 @@ io.on('connection', function(socket) {
     if (!msgRxns.has(emoji)) msgRxns.set(emoji, new Set());
     var emojiSet = msgRxns.get(emoji);
 
-    if (emojiSet.has(_crKey)) {
+    var _crAdding = !emojiSet.has(_crKey);
+    if (!_crAdding) {
       emojiSet.delete(_crKey);
     } else {
       emojiSet.add(_crKey);
+      // Loyalty: 1 point for adding a reaction
+      if (_crUserId && socket.data.tenantId) {
+        loyaltyService.awardPoints({ userId: _crUserId, tenantId: socket.data.tenantId, points: 1, source: 'reaction', sourceId: null }).catch(function() {});
+      }
     }
 
     var serialized = {};
@@ -5600,6 +5614,14 @@ io.on('connection', function(socket) {
       // Analytics: track super-chat earnings
       var scAnalytics = getAnalytics(roomId);
       scAnalytics.sessionEarnings += amountCents;
+
+      // Loyalty: 10 points per $1 tipped
+      if (userId && socket.data.tenantId) {
+        var _scLoyaltyPts = Math.floor(amountCents / 100) * 10;
+        if (_scLoyaltyPts > 0) {
+          loyaltyService.awardPoints({ userId: userId, tenantId: socket.data.tenantId, points: _scLoyaltyPts, source: 'tip', sourceId: scId }).catch(function() {});
+        }
+      }
 
       io.to(roomId).emit('super-chat', {
         id:           scId,
