@@ -55,13 +55,13 @@ function AlertRow({ alert }) {
 export default React.memo(function StreamHealthMonitor({ isLive, webrtcStats }) {
   const [collapsed, setCollapsed]       = useState(() => { try { return localStorage.getItem('health_monitor_collapsed') === 'true'; } catch { return false; } });
   const [showAlerts, setShowAlerts]     = useState(false);
-  const [health, setHealth]             = useState(85);
-  const [bitrate, setBitrate]           = useState(3200);
-  const [fps, setFps]                   = useState(30);
-  const [latency, setLatency]           = useState(180);
+  const [health, setHealth]             = useState(0);
+  const [bitrate, setBitrate]           = useState(0);
+  const [fps, setFps]                   = useState(0);
+  const [latency, setLatency]           = useState(0);
   const [droppedFrames, setDroppedFrames] = useState(0);
   const [packetLoss, setPacketLoss]     = useState(0);
-  const [audioLevel, setAudioLevel]     = useState(72);
+  const [audioLevel, setAudioLevel]     = useState(0);
   const [resolution, setResolution]     = useState('1080p');
   const [alerts, setAlerts]             = useState([]);
   const prevDropped = useRef(0);
