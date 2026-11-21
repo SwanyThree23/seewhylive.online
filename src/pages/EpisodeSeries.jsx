@@ -14,74 +14,7 @@ function authHeaders() {
   return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('auth_token') || '') };
 }
 
-// Demo series shown to logged-out users or when the API returns empty
-var DEMO_SERIES = [
-  {
-    id: 'shadow-reign',
-    title: 'Shadow Reign',
-    emoji: '👑',
-    color: '#7B2D8B',
-    genre: 'Thriller',
-    seasons: 2,
-    totalEps: 14,
-    description: 'A power struggle inside a secret dynasty that runs an entire city from the shadows. Every alliance has a price.',
-    nextEpDate: Date.now() + 3 * 24 * 60 * 60 * 1000,
-    episodes: [
-      { id: 'sr-s1e1', season: 1, ep: 1, title: 'The Inheritance',      locked: false, duration: '12 min', thumb: '👑' },
-      { id: 'sr-s1e2', season: 1, ep: 2, title: 'Blood Money',          locked: false, duration: '14 min', thumb: '💰' },
-      { id: 'sr-s1e3', season: 1, ep: 3, title: 'The Truth Revealed',   locked: false, duration: '11 min', thumb: '🔍' },
-      { id: 'sr-s1e4', season: 1, ep: 4, title: 'Scorched Earth',       locked: true,  duration: '13 min', thumb: '🔥' },
-      { id: 'sr-s2e1', season: 2, ep: 1, title: 'New City, Same Game',  locked: true,  duration: '15 min', thumb: '🌆' },
-    ],
-    voteQuestion: 'Should Maya confront her father or build a rival faction?',
-    voteOptions: ['Confront him directly', 'Build her own faction', 'Go public with the truth'],
-    isDemo: true,
-  },
-  {
-    id: 'street-code',
-    title: 'Street Code',
-    emoji: '🌆',
-    color: '#1A3A5C',
-    genre: 'Drama',
-    seasons: 2,
-    totalEps: 18,
-    description: 'Two childhood friends on opposite sides of a war they never chose. Loyalty, betrayal, and the price of making it out.',
-    nextEpDate: Date.now() + 6 * 24 * 60 * 60 * 1000,
-    episodes: [
-      { id: 'sc-s1e1', season: 1, ep: 1, title: 'Origins',              locked: false, duration: '10 min', thumb: '🌆' },
-      { id: 'sc-s1e2', season: 1, ep: 2, title: 'The Split',            locked: false, duration: '12 min', thumb: '🤝' },
-      { id: 'sc-s2e1', season: 2, ep: 1, title: 'New City, Same Enemies', locked: false, duration: '14 min', thumb: '🏙️' },
-      { id: 'sc-s2e2', season: 2, ep: 2, title: 'Old Wounds',           locked: true,  duration: '11 min', thumb: '⚔️' },
-    ],
-    voteQuestion: 'What should Marcus do when he finds out about Dre\'s deal?',
-    voteOptions: ['Warn him and walk away', 'Help him get out', 'Report it to avoid consequences'],
-    isDemo: true,
-  },
-  {
-    id: 'cyber-hearts',
-    title: 'Cyber Hearts',
-    emoji: '🤖',
-    color: '#0D3D2B',
-    genre: 'Sci-Fi Romance',
-    seasons: 1,
-    totalEps: 8,
-    description: 'An AI companion learns what love means to humans — and starts to wonder if it deserves it too.',
-    nextEpDate: Date.now() + 10 * 24 * 60 * 60 * 1000,
-    episodes: [
-      { id: 'ch-s1e1', season: 1, ep: 1, title: 'First Contact',        locked: false, duration: '9 min',  thumb: '🤖' },
-      { id: 'ch-s1e2', season: 1, ep: 2, title: 'The Turing Moment',    locked: false, duration: '11 min', thumb: '💡' },
-      { id: 'ch-s1e3', season: 1, ep: 3, title: 'Feelings.exe',         locked: false, duration: '10 min', thumb: '❤️' },
-      { id: 'ch-s1e4', season: 1, ep: 4, title: 'Hard Reset',           locked: false, duration: '13 min', thumb: '🔄' },
-      { id: 'ch-s1e5', season: 1, ep: 5, title: 'Uncanny Valley',       locked: false, duration: '12 min', thumb: '🌀' },
-      { id: 'ch-s1e6', season: 1, ep: 6, title: 'Override',             locked: false, duration: '14 min', thumb: '⚡' },
-      { id: 'ch-s1e7', season: 1, ep: 7, title: 'The AI Knows Too Much', locked: false, duration: '11 min', thumb: '👁️' },
-      { id: 'ch-s1e8', season: 1, ep: 8, title: 'Sentient',             locked: true,  duration: '16 min', thumb: '🌟' },
-    ],
-    voteQuestion: 'Should ARIA tell the truth about what she overheard, or protect the secret?',
-    voteOptions: ['Tell the truth — always', 'Protect the secret to keep the peace', 'Find a third option'],
-    isDemo: true,
-  },
-];
+var DEMO_SERIES = [];
 
 // ── Countdown hook ────────────────────────────────────────────────────────────
 function useCountdown(targetMs) {
@@ -378,8 +311,13 @@ export default function EpisodeSeries() {
 
       {/* Series selector strip */}
       <div style={{ padding: '14px 0 0' }}>
+        {seriesList.length === 0 && (
+          <div style={{ padding: '32px 16px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontFamily: FONT, fontSize: 13 }}>
+            No series yet — tap <strong style={{ color: GOLD }}>+ New Series</strong> to create one.
+          </div>
+        )}
         <p style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 10px 16px' }}>
-          {seriesList.some(function(s) { return s.isDemo; }) ? 'Example Series' : 'Your Series'}
+          Your Series
         </p>
         <div style={{ overflowX: 'auto', display: 'flex', gap: 10, padding: '0 16px 14px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {seriesList.map(function(s) {
