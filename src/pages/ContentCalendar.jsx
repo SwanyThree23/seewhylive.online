@@ -7,6 +7,7 @@ import { createPageUrl } from '../utils';
 import { format, addDays, isSameDay, isToday, startOfMonth, endOfMonth } from 'date-fns';
 import { toast } from 'sonner';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SpotlightBanner from '../components/community/SpotlightBanner';
@@ -61,6 +62,7 @@ export default function ContentCalendarPage() {
     refetchInterval: 30000,
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
   var { data: userCommunity } = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
     queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
@@ -269,7 +271,7 @@ export default function ContentCalendarPage() {
 
       {(user && user.id) && (
         <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <StreamGoals roomId={new URLSearchParams(window.location.search).get('room_id')} isHost={true} />
+          <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
           <AIHighlightGenerator creatorId={user.id} />
         </div>
       )}

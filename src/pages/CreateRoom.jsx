@@ -293,7 +293,7 @@ export default function CreateRoomPage() {
           {/* Stream readiness tools */}
           {(user && user.id) && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-              <StreamGoals isHost={true} />
+              <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
               <ZEGOStreamHealthCard roomId={activeRoomId} />
               <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
               <SpotlightBanner communityId={userCommunityId} isAdmin={false} />

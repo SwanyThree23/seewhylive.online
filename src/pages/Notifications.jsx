@@ -256,7 +256,7 @@ export default function NotificationsPage() {
 
         {(user && user.id) && (
           <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <StreamGoals isHost={true} />
+            <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
             <LeaderboardPanel roomId={activeRoomId} />
             <MilestoneAlerts creatorId={user.id} />
             <AnnouncementFeed communityId={userCommunityId} />

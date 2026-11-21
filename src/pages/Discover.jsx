@@ -455,7 +455,7 @@ export default function DiscoverPage() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
           <ShareToSocial content={{ title: 'Discover on SeeWhy LIVE', url: window.location.href }} />
-          <StreamGoals isHost={true} />
+          <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
           <AnnouncementPanel communityId={userCommunityId} userId={(user && user.id)} />
           <ChallengeLeaderboard challengeId={null} />
         </div>

@@ -18,6 +18,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -1989,6 +1990,7 @@ export default function SeeWhyLIVEv36() {
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var roomId = activeRoomId;
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
   var [activeTab, setActiveTab] = useState("stage");
   var [drawerOpen, setDrawerOpen] = useState(false);
   var [isLive] = useState(true);
@@ -2125,7 +2127,7 @@ export default function SeeWhyLIVEv36() {
         <ContentRecommendations />
         <CollaborationMatcher />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
-        <StreamGoals isHost={true} />
+        <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       </div>
     </>
   );

@@ -262,7 +262,7 @@ export default function PollManager() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamGoals isHost={true} />
+        <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={(activeRoom && activeRoom.viewer_count) || 0} />

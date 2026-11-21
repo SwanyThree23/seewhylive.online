@@ -263,7 +263,7 @@ export default function StudioHub() {
 
       {/* Engagement widgets */}
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 640, margin: '0 auto' }}>
-        <StreamGoals isHost={true} />
+        <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
         <MilestoneAlerts userId={(user && user.id)} roomId={activeRoomId} />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="studio" viewerCount={0} />
         <OnlineUsersGrid compact maxVisible={8} />

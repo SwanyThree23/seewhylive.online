@@ -180,7 +180,7 @@ export default function DataExportPage() {
         </div>
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <StreamGoals isHost={true} />
+          <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
           <BroadcastAnalyticsDashboard streamSession={activeRoom || null} isLive={!!activeRoomId} />
         </div>
 

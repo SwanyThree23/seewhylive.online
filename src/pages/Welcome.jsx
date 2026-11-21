@@ -13,6 +13,7 @@ import FeaturedContentSection from '../components/home/FeaturedContent';
 import ShareToSocial from '../components/social/ShareToSocial';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
@@ -32,6 +33,7 @@ export default function WelcomePage() {
     refetchInterval: 30000,
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
   var { data: userCommunity } = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
     queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
@@ -221,7 +223,7 @@ export default function WelcomePage() {
         {/* new components here */}
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         <CollaborationMatcher />
-        <StreamGoals isHost={true} />
+        <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
         <AnnouncementPanel communityId={userCommunityId} userId={(user && user.id)} />
         <ChallengeLeaderboard challengeId={null} />
       </div>

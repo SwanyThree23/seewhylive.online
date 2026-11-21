@@ -7,6 +7,7 @@ import { createPageUrl } from '../utils';
 import AlertConfig from '@/components/live/AlertConfig';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import ShopDashboard from '../components/merch/ShopDashboard';
@@ -84,6 +85,7 @@ export default function OverlayEditorPage() {
     enabled: !!(user && user.id),
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
   var theme = THEMES.find(function(t) { return t.id === selectedTheme; }) || THEMES[0];
 
   function handleSave() {
@@ -306,7 +308,7 @@ export default function OverlayEditorPage() {
               <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 6 }}>Live preview — bar fills as goal progresses</p>
             </div>
 
-            <StreamGoals isHost={true} />
+            <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
           </div>
         )}
 

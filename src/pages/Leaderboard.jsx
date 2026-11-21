@@ -7,6 +7,7 @@ import { createPageUrl } from '../utils';
 import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
@@ -190,6 +191,7 @@ export default function LeaderboardPage() {
   var activeChallengeId = (activeChallenge && activeChallenge.id) || null;
   var roomId = new URLSearchParams(window.location.search).get('room_id');
   var activeRoomId = roomId;
+  var goalMetrics = useStreamGoalMetrics((currentUser && currentUser.id) || null, activeRoomId);
 
   var { data: creators = [] } = useQuery({
     queryKey: ['leaderboardCreators'],
@@ -504,7 +506,7 @@ export default function LeaderboardPage() {
       <div className="max-w-4xl mx-auto px-4 pb-8 mt-4">
         <SocialLeaderboard />
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <StreamGoals isHost={true} />
+          <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           <TipWidget roomId={roomId} hostId={(currentUser && currentUser.id)} currentUser={currentUser} />
           <TippingOverlay roomId={roomId} creatorId={(currentUser && currentUser.id)} isVisible={true} />

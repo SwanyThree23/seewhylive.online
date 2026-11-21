@@ -853,7 +853,7 @@ export default function SocialExpo() {
 
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
-          <StreamGoals isHost={true} />
+          <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
           <ChallengeLeaderboard challengeId={null} />
           <AnnouncementPanel communityId={userCommunityId} userId={(user && user.id)} />
         </div>
