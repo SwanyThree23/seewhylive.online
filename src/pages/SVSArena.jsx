@@ -17,11 +17,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 var VENUE = "Jamar's Sports Bar & Grill, Des Moines, WA";
 var FORMAT = '7 Rock / 5-150 / Double Elimination';
 
-var HISTORY = [
-  { year: 2023, champion: 'Washington', score: '7-4', opponent: 'California', peak_viewers: 3840 },
-  { year: 2024, champion: 'Washington', score: '7-6', opponent: 'Oregon', peak_viewers: 4920 },
-  { year: 2025, champion: 'California', score: '7-5', opponent: 'Washington', peak_viewers: 6210 },
-];
+var HISTORY = [];
 
 var INIT_BRACKET = {
   quarterfinals: [
@@ -376,6 +372,11 @@ export default function SVSArena() {
         {state.tab === 'history' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 4 }}>WASHINGTON CLASSIC CHAMPIONS</div>
+            {HISTORY.length === 0 && (
+              <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13, padding: '24px 0', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                No championship history yet — results will be recorded here after each season.
+              </div>
+            )}
             {HISTORY.map(h => (
               <div key={h.year} style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 14, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
                 <div style={{ textAlign: 'center', minWidth: 60 }}>
