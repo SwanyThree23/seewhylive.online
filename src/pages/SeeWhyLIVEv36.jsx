@@ -1517,68 +1517,51 @@ function WatchPartyPanel() {
 
 // ─── ANALYTICS ────────────────────────────────────────────────────────────────
 function AnalyticsPanel() {
-  var revenue = 9840;
   return (
     <div style={{display:"flex",flexDirection:"column",gap:14}} className="fade-up">
       <SectionHeader title="ANALYTICS" sub="REVENUE · VIEWS · ENGAGEMENT"/>
       <GCard glow>
         <div style={{textAlign:"center",marginBottom:14}}>
           <div style={{fontSize:10,color:C.textM,letterSpacing:2,textTransform:"uppercase"}}>This Month</div>
-          <div style={{fontFamily:F.display,fontSize:44,color:C.gold,lineHeight:1}}>${revenue.toLocaleString()}</div>
+          <div style={{fontFamily:F.display,fontSize:44,color:C.gold,lineHeight:1}}>$0</div>
           <div style={{fontSize:11,color:C.textD,marginTop:3}}>Total Revenue · 90/10 Split Active</div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
           {[
-            {label:"Creator (90%)",value:`$${Math.floor(revenue*.9).toLocaleString()}`,color:C.gold},
-            {label:"Platform (10%)",value:`$${Math.floor(revenue*.1).toLocaleString()}`,color:C.textM},
-            {label:"SVS Tournaments",value:"$1,840",color:C.state1},
-            {label:"Tribute Events",value:"$720",color:C.tribute},
-            {label:"Podcast Revenue",value:"$1,100",color:C.cyan},
-            {label:"Music Royalties",value:"$1,240",color:C.purple},
-          ].map(s=>(
+            {label:"Creator (90%)",value:"$0",color:C.gold},
+            {label:"Platform (10%)",value:"$0",color:C.textM},
+            {label:"SVS Tournaments",value:"$0",color:C.state1},
+            {label:"Tribute Events",value:"$0",color:C.tribute},
+            {label:"Podcast Revenue",value:"$0",color:C.cyan},
+            {label:"Music Royalties",value:"$0",color:C.purple},
+          ].map(function(s){return(
             <div key={s.label} style={{background:C.bg2,borderRadius:R.sm,padding:10,textAlign:"center"}}>
               <div style={{fontFamily:F.display,fontSize:20,color:s.color}}>{s.value}</div>
               <div style={{fontSize:9,color:C.textM,marginTop:2}}>{s.label}</div>
             </div>
-          ))}
+          );})}
         </div>
       </GCard>
       <GCard>
         <div style={{fontFamily:F.display,fontSize:13,color:C.gold,marginBottom:10,letterSpacing:1}}>PLATFORM BREAKDOWN</div>
-        {[
-          {platform:"SeeWhy LIVE Direct",pct:45,val:4428,color:C.gold},
-          {platform:"YouTube",pct:20,val:1968,color:"#FF0000"},
-          {platform:"Fanbase.com",pct:18,val:1771,color:C.orange},
-          {platform:"Twitch",pct:12,val:1181,color:"#9146FF"},
-          {platform:"Other",pct:5,val:492,color:C.textM},
-        ].map(p=>(
-          <div key={p.platform} style={{marginBottom:10}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-              <span style={{fontSize:11,color:C.textD}}>{p.platform}</span>
-              <span style={{fontFamily:F.mono,fontSize:11,color:p.color}}>${p.val.toLocaleString()} ({p.pct}%)</span>
-            </div>
-            <div style={{height:5,background:C.bg2,borderRadius:3}}>
-              <div style={{height:"100%",width:`${p.pct}%`,background:p.color,borderRadius:3}}/>
-            </div>
-          </div>
-        ))}
+        <div style={{textAlign:"center",padding:"12px 0",fontSize:11,color:C.textM}}>Go live to see per-platform revenue data.</div>
       </GCard>
       <GCard>
         <div style={{fontFamily:F.display,fontSize:13,color:C.gold,marginBottom:10,letterSpacing:1}}>LIVE STATS</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
           {[
-            {label:"Peak Viewers",value:"4,820",color:C.gold},
-            {label:"Total Watch Time",value:"12,440 hrs",color:C.cyan},
-            {label:"SVS Match Views",value:"8,200",color:C.state1},
-            {label:"Tribute Plays",value:"3,100",color:C.tribute},
-            {label:"Podcast Streams",value:"5,880",color:C.purple},
-            {label:"Music Plays",value:"2,240",color:C.teal},
-          ].map(s=>(
+            {label:"Peak Viewers",value:"0",color:C.gold},
+            {label:"Total Watch Time",value:"0 hrs",color:C.cyan},
+            {label:"SVS Match Views",value:"0",color:C.state1},
+            {label:"Tribute Plays",value:"0",color:C.tribute},
+            {label:"Podcast Streams",value:"0",color:C.purple},
+            {label:"Music Plays",value:"0",color:C.teal},
+          ].map(function(s){return(
             <div key={s.label} style={{background:C.bg2,borderRadius:R.sm,padding:10}}>
               <div style={{fontFamily:F.display,fontSize:16,color:s.color}}>{s.value}</div>
               <div style={{fontSize:9,color:C.textM,marginTop:2}}>{s.label}</div>
             </div>
-          ))}
+          );})}
         </div>
       </GCard>
     </div>

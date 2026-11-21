@@ -526,7 +526,11 @@ document.getElementById('chat-input').addEventListener('keydown',function(e){if(
 </div>
 <script>
 function startVoiceCall(){
-  alert('Voice AI agent coming soon! For now, please use the contact form or chat widget to reach us.');
+  var msg = document.createElement('div');
+  msg.textContent = 'Voice AI — coming soon! Use the contact form or chat widget to reach us.';
+  msg.style.cssText='position:fixed;bottom:90px;right:20px;z-index:10000;background:#1a1a1a;color:#F0E8D4;padding:12px 18px;border-radius:10px;font-size:13px;font-family:sans-serif;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
+  document.body.appendChild(msg);
+  setTimeout(function(){msg.remove();},4000);
 }
 </script>`;
   }
