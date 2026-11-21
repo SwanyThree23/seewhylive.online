@@ -7,42 +7,46 @@ import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function NotificationBell() {
-  const qc = useQueryClient();
+  var qc = useQueryClient();
 
-  const { data: user } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
+  var user = userQuery.data || null;
+  var userId = (user && user.id) || null;
 
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['notifications', user?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: user?.id, is_read: false }, '-created_date', 20),
+  var notifQuery = useQuery({
+    queryKey: ['notifications', userId],
+    queryFn: function() {
+      return base44.entities.Notification.filter({ user_id: userId, is_read: false }, '-created_date', 20);
+    },
     enabled: !!user,
     refetchInterval: 30000,
   });
+  var notifications = notifQuery.data || [];
 
-  // Real-time subscription for new notifications
-  useEffect(() => {
+  useEffect(function() {
     if (!user) return;
-    const unsub = base44.entities.Notification.subscribe((event) => {  
-      if (event.data?.user_id === user.id) {
-        qc.invalidateQueries({ queryKey: ['notifications', user.id] });
+    var unsub = base44.entities.Notification.subscribe(function(event) {
+      if (event.data && event.data.user_id === userId) {
+        qc.invalidateQueries({ queryKey: ['notifications', userId] });
       }
     });
     return unsub;
-  }, [user, qc]);
+  }, [userId]);
 
-  const unreadCount = notifications.length;
+  var unreadCount = notifications.length;
 
   return (
     <Link to={createPageUrl('Notifications')}>
       <button
         style={{
-          position:'relative', display:'inline-flex', alignItems:'center', justifyContent:'center',
-          width:40, height:40, borderRadius:8, background:'transparent', border:'none', cursor:'pointer', color:'inherit',
+          position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          width: 40, height: 40, borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', color: 'inherit',
         }}
       >
-        <Bell style={{ width:20, height:20 }} />
+        <Bell style={{ width: 20, height: 20 }} />
         <AnimatePresence>
           {unreadCount > 0 && (
             <motion.div
@@ -51,11 +55,11 @@ export default function NotificationBell() {
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
               style={{
-                position:'absolute', top:-4, right:-4,
-                width:20, height:20, borderRadius:'50%',
-                background:'#FF2040', color:'#fff', fontSize:10, fontWeight:700,
-                display:'flex', alignItems:'center', justifyContent:'center',
-                border:'2px solid #fff',
+                position: 'absolute', top: -4, right: -4,
+                width: 20, height: 20, borderRadius: '50%',
+                background: '#FF2040', color: '#fff', fontSize: 10, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '2px solid #fff',
               }}
             >
               {unreadCount > 9 ? '9+' : unreadCount}
