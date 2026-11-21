@@ -1136,14 +1136,14 @@ function MusicStudioPanel() {
 
 // ─── MULTI-PLATFORM PANEL ─────────────────────────────────────────────────────
 var PLATFORM_LIST = [
-  {id:"youtube",  name:"YouTube",    icon:"▶", connected:true,  live:true,  viewers:1240, color:"#FF0000"},
-  {id:"twitch",   name:"Twitch",     icon:"📺",connected:true,  live:true,  viewers:890,  color:"#9146FF"},
-  {id:"fanbase",  name:"Fanbase",    icon:"⭐",connected:true,  live:false, viewers:0,    color:"#D4854A", webhook:true},
-  {id:"facebook", name:"Facebook",   icon:"📘",connected:true,  live:true,  viewers:560,  color:"#1877F2"},
-  {id:"kick",     name:"Kick",       icon:"🟢",connected:false, live:false, viewers:0,    color:"#53FC18"},
-  {id:"tiktok",   name:"TikTok",     icon:"🎵",connected:false, live:false, viewers:0,    color:"#FF0050"},
-  {id:"instagram",name:"Instagram",  icon:"📸",connected:false, live:false, viewers:0,    color:"#E1306C"},
-  {id:"x",        name:"X / Twitter",icon:"🐦",connected:false, live:false, viewers:0,    color:"#1DA1F2"},
+  {id:"youtube",  name:"YouTube",    icon:"▶", connected:false, live:false, viewers:0, color:"#FF0000"},
+  {id:"twitch",   name:"Twitch",     icon:"📺",connected:false, live:false, viewers:0, color:"#9146FF"},
+  {id:"fanbase",  name:"Fanbase",    icon:"⭐",connected:false, live:false, viewers:0, color:"#D4854A", webhook:true},
+  {id:"facebook", name:"Facebook",   icon:"📘",connected:false, live:false, viewers:0, color:"#1877F2"},
+  {id:"kick",     name:"Kick",       icon:"🟢",connected:false, live:false, viewers:0, color:"#53FC18"},
+  {id:"tiktok",   name:"TikTok",     icon:"🎵",connected:false, live:false, viewers:0, color:"#FF0050"},
+  {id:"instagram",name:"Instagram",  icon:"📸",connected:false, live:false, viewers:0, color:"#E1306C"},
+  {id:"x",        name:"X / Twitter",icon:"🐦",connected:false, live:false, viewers:0, color:"#1DA1F2"},
 ];
 
 function PlatformsPanel() {
