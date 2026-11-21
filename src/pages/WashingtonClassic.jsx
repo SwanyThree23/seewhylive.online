@@ -38,39 +38,34 @@ var C = {
 };
 
 // ── Static seed data (real tournament history) ──────────────────────────────
-var PAST_CHAMPIONS = [
-  { year: 2023, name: 'Marcus "Domino King" Williams', state: 'WA', record: '7-0', prize: '$2,500' },
-  { year: 2022, name: 'Jerome "Big Spin" Carter',      state: 'CA', record: '6-1', prize: '$2,000' },
-  { year: 2021, name: 'Darius "Double Six" Johnson',   state: 'TX', record: '7-0', prize: '$1,500' },
-  { year: 2019, name: 'Antoine "Rock Solid" Freeman',  state: 'GA', record: '5-2', prize: '$1,200' },
-];
+var PAST_CHAMPIONS = [];
 
 var TEAMS_2026 = [
-  { id: 't1', name: 'Pacific NW Kings',   state: 'WA', seed: 1,  wins: 5, losses: 0, ppg: 142 },
-  { id: 't2', name: 'So-Cal Dominators',  state: 'CA', seed: 2,  wins: 4, losses: 1, ppg: 138 },
-  { id: 't3', name: 'ATL Hardliners',     state: 'GA', seed: 3,  wins: 4, losses: 1, ppg: 135 },
-  { id: 't4', name: 'Texas Lone Stars',   state: 'TX', seed: 4,  wins: 3, losses: 2, ppg: 129 },
-  { id: 't5', name: 'NYC Slammers',       state: 'NY', seed: 5,  wins: 3, losses: 2, ppg: 127 },
-  { id: 't6', name: 'Chi-Town Bosses',    state: 'IL', seed: 6,  wins: 2, losses: 3, ppg: 121 },
-  { id: 't7', name: 'DMV Ruthless',       state: 'MD', seed: 7,  wins: 2, losses: 3, ppg: 118 },
-  { id: 't8', name: 'H-Town Originals',   state: 'TX', seed: 8,  wins: 1, losses: 4, ppg: 112 },
+  { id: 't1', name: 'Pacific NW Kings',   state: 'WA', seed: 1,  wins: 0, losses: 0, ppg: 0 },
+  { id: 't2', name: 'So-Cal Dominators',  state: 'CA', seed: 2,  wins: 0, losses: 0, ppg: 0 },
+  { id: 't3', name: 'ATL Hardliners',     state: 'GA', seed: 3,  wins: 0, losses: 0, ppg: 0 },
+  { id: 't4', name: 'Texas Lone Stars',   state: 'TX', seed: 4,  wins: 0, losses: 0, ppg: 0 },
+  { id: 't5', name: 'NYC Slammers',       state: 'NY', seed: 5,  wins: 0, losses: 0, ppg: 0 },
+  { id: 't6', name: 'Chi-Town Bosses',    state: 'IL', seed: 6,  wins: 0, losses: 0, ppg: 0 },
+  { id: 't7', name: 'DMV Ruthless',       state: 'MD', seed: 7,  wins: 0, losses: 0, ppg: 0 },
+  { id: 't8', name: 'H-Town Originals',   state: 'TX', seed: 8,  wins: 0, losses: 0, ppg: 0 },
 ];
 
 var BRACKET_2026 = [
   // QF Winners Bracket
-  { id: 'm1', round: 'QF', bracket: 'W', team_a: 't1', team_b: 't8', score_a: 150, score_b: 112, winner: 't1', status: 'completed' },
-  { id: 'm2', round: 'QF', bracket: 'W', team_a: 't4', team_b: 't5', score_a: 132, score_b: 145, winner: 't5', status: 'completed' },
-  { id: 'm3', round: 'QF', bracket: 'W', team_a: 't2', team_b: 't7', score_a: 150, score_b: 98,  winner: 't2', status: 'completed' },
-  { id: 'm4', round: 'QF', bracket: 'W', team_a: 't3', team_b: 't6', score_a: 150, score_b: 121, winner: 't3', status: 'completed' },
+  { id: 'm1', round: 'QF', bracket: 'W', team_a: 't1', team_b: 't8', score_a: null, score_b: null, winner: null, status: 'upcoming' },
+  { id: 'm2', round: 'QF', bracket: 'W', team_a: 't4', team_b: 't5', score_a: null, score_b: null, winner: null, status: 'upcoming' },
+  { id: 'm3', round: 'QF', bracket: 'W', team_a: 't2', team_b: 't7', score_a: null, score_b: null, winner: null, status: 'upcoming' },
+  { id: 'm4', round: 'QF', bracket: 'W', team_a: 't3', team_b: 't6', score_a: null, score_b: null, winner: null, status: 'upcoming' },
   // SF Winners Bracket
-  { id: 'm5', round: 'SF', bracket: 'W', team_a: 't1', team_b: 't5', score_a: null, score_b: null, winner: null, status: 'scheduled', date: 'Jun 21, 2026' },
-  { id: 'm6', round: 'SF', bracket: 'W', team_a: 't2', team_b: 't3', score_a: null, score_b: null, winner: null, status: 'scheduled', date: 'Jun 21, 2026' },
+  { id: 'm5', round: 'SF', bracket: 'W', team_a: null, team_b: null, score_a: null, score_b: null, winner: null, status: 'upcoming' },
+  { id: 'm6', round: 'SF', bracket: 'W', team_a: null, team_b: null, score_a: null, score_b: null, winner: null, status: 'upcoming' },
   // LF Losers Bracket
-  { id: 'm7', round: 'SF', bracket: 'L', team_a: 't8', team_b: 't4', score_a: 138, score_b: 120, winner: 't8', status: 'completed' },
-  { id: 'm8', round: 'SF', bracket: 'L', team_a: 't6', team_b: 't7', score_a: 115, score_b: 140, winner: 't7', status: 'completed' },
-  // Finals scheduled
-  { id: 'm9', round: 'F',  bracket: 'W', team_a: null, team_b: null, score_a: null, score_b: null, winner: null, status: 'upcoming', date: 'Jul 5, 2026' },
-  { id: 'm10',round: 'GF', bracket: 'G', team_a: null, team_b: null, score_a: null, score_b: null, winner: null, status: 'upcoming', date: 'Jul 12, 2026' },
+  { id: 'm7', round: 'SF', bracket: 'L', team_a: null, team_b: null, score_a: null, score_b: null, winner: null, status: 'upcoming' },
+  { id: 'm8', round: 'SF', bracket: 'L', team_a: null, team_b: null, score_a: null, score_b: null, winner: null, status: 'upcoming' },
+  // Finals
+  { id: 'm9', round: 'F',  bracket: 'W', team_a: null, team_b: null, score_a: null, score_b: null, winner: null, status: 'upcoming' },
+  { id: 'm10',round: 'GF', bracket: 'G', team_a: null, team_b: null, score_a: null, score_b: null, winner: null, status: 'upcoming' },
 ];
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -289,24 +284,31 @@ export default function WashingtonClassic() {
               <div style={{ color: C.textM, fontSize: 13, marginTop: 4 }}>Washington Classic · Est. 2019</div>
             </div>
 
-            {PAST_CHAMPIONS.map((champ, i) => (
-              <div key={champ.year} style={{ background: C.bg3, border: `1px solid ${C.slate}`, borderRadius: 10, padding: 16, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 16 }}>
-                <div style={{ background: i === 0 ? 'rgba(201,168,76,0.15)' : C.bg2, border: `1px solid ${i === 0 ? C.gold : C.slate}`, borderRadius: 10, padding: '10px 16px', textAlign: 'center', minWidth: 64 }}>
-                  <div style={{ color: C.gold, fontWeight: 900, fontSize: 22 }}>{champ.year}</div>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <Star style={{ width: 14, height: 14, color: C.gold }} />
-                    <span style={{ color: C.text, fontWeight: 700, fontSize: 16 }}>{champ.name}</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    <span style={{ color: C.textM, fontSize: 12 }}>📍 {champ.state}</span>
-                    <span style={{ color: C.green, fontSize: 12, fontWeight: 700 }}>Record: {champ.record}</span>
-                    <span style={{ color: C.amber, fontSize: 12, fontWeight: 700 }}>Prize: {champ.prize}</span>
-                  </div>
-                </div>
+            {PAST_CHAMPIONS.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '32px 0', color: C.textM, fontSize: 13, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                Champion records coming soon.
               </div>
-            ))}
+            )}
+            {PAST_CHAMPIONS.map(function(champ, i) {
+              return (
+                <div key={champ.year} style={{ background: C.bg3, border: `1px solid ${C.slate}`, borderRadius: 10, padding: 16, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ background: i === 0 ? 'rgba(201,168,76,0.15)' : C.bg2, border: `1px solid ${i === 0 ? C.gold : C.slate}`, borderRadius: 10, padding: '10px 16px', textAlign: 'center', minWidth: 64 }}>
+                    <div style={{ color: C.gold, fontWeight: 900, fontSize: 22 }}>{champ.year}</div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <Star style={{ width: 14, height: 14, color: C.gold }} />
+                      <span style={{ color: C.text, fontWeight: 700, fontSize: 16 }}>{champ.name}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                      <span style={{ color: C.textM, fontSize: 12 }}>📍 {champ.state}</span>
+                      <span style={{ color: C.green, fontSize: 12, fontWeight: 700 }}>Record: {champ.record}</span>
+                      <span style={{ color: C.amber, fontSize: 12, fontWeight: 700 }}>Prize: {champ.prize}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
