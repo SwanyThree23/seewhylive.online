@@ -218,19 +218,8 @@ function avatarColor(name) {
 }
 
 // ── Demo data (replaced by real WebRTC when roomId is available) ──────────────
-var DEMO_STAGE = [
-  { id: 1, name: 'Joyce 🦋',   role: 'host',    speaking: true,  muted: false },
-  { id: 2, name: 'SwanyThree', role: 'co-host', speaking: false, muted: false },
-  { id: 3, name: 'Tom',        role: 'speaker', speaking: false, muted: true  },
-  { id: 4, name: 'Yahawadah',  role: 'speaker', speaking: false, muted: false },
-  { id: 5, name: 'Marvin',     role: 'speaker', speaking: false, muted: true  },
-  { id: 6, name: 'Durand',     role: 'speaker', speaking: false, muted: true  },
-];
-var DEMO_AUDIENCE = [
-  'SwanyThree','Phelo The Great','Obi Knowledg.','Marvin 10','Sim 11',
-  'Phelo The Gre.','Durand 13','Joyce 14','SwanyThree 15','Obi Knowledg.',
-  'Marvin 17','Sim 18','Phelo The Gre.','Durand 20',
-].map((name, i) => ({ id: 100 + i, name }));
+var DEMO_STAGE = [];
+var DEMO_AUDIENCE = [];
 var DEMO_CHAT = [
   { id: 1, user: 'Joyce 🦋',   text: 'Welcome to the session everyone! 🎉', host: true  },
   { id: 2, user: 'SwanyThree', text: 'Thanks for joining — we go live in 2 min', host: false },

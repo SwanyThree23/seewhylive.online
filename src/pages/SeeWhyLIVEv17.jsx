@@ -295,26 +295,13 @@ function BigoExpandedView({ participants, focusedIdx, onChangeFocus, onClose }) 
 
 function OctagonalVideoGrid({ participants: propParticipants, hostName }) {
   // Build 20-person panel if no props given
-  var defaultParticipants = DEMO_NAMES.slice(0, 20).map(function(name, i) {
-    return {
-      id: "p"+i, name: name,
-      avatar: ["🎤","🎧","🎸","🥁","🎹","🎺","🎻","🪗","🎵","🎶","🎼","🎙️","🎚️","🎛️","📻","🔊","🎤","🥁","🎹","🎸"][i],
-      isHost: i===0, isCoHost: i===1,
-      micOn: true, speaking: false,
-      reaction: null, color: TILE_COLORS[i],
-    };
-  });
-
-  var [participants, setParticipants] = useState(propParticipants || defaultParticipants);
+  var [participants, setParticipants] = useState(propParticipants || []);
   var [focusedIdx, setFocusedIdx] = useState(0);
   var [bigoOpen, setBigoOpen] = useState(false);
   var [viewMode, setViewMode] = useState("panel"); // panel | bigo
   var [reactionQueue, setReactionQueue] = useState([]);
   var [chatMsg, setChatMsg] = useState("");
-  var [chatLog, setChatLog] = useState([
-    {id:1, from:"Host", text:"Welcome everyone!", color:G.crimsonBright},
-    {id:2, from:"MixMaster", text:"LFG! 🔥", color:G.gold},
-  ]);
+  var [chatLog, setChatLog] = useState([]);
   var chatRef = useRef(null);
 
   // Speaking state driven by real WebRTC audio level detection — no simulation
@@ -536,10 +523,7 @@ function MultiStreamRTMP({ roomID }) {
 
 // ── NOTIFICATIONS HUB ────────────────────────────────────────────
 function NotificationsHub({ onClose }) {
-  var notifs = [
-    { id:1, type:"tip", msg:"User sent 💎 50 gems", time:"2m ago", color:G.gold },
-    { id:2, type:"sub", msg:"New subscriber!", time:"5m ago", color:G.cyan },
-  ];
+  var notifs = [];
 
   return (
     <div className="card card-g" style={{margin:"0 16px 14px"}}>
@@ -547,14 +531,16 @@ function NotificationsHub({ onClose }) {
         <span style={{fontFamily:G.fOrb,fontSize:10,color:G.gold,letterSpacing:2}}>🔔 NOTIFICATIONS</span>
       </div>
       <div style={{padding:"10px 14px",maxHeight:200,overflowY:"auto"}}>
-        {notifs.map(function(n) {
-          return (
-            <div key={n.id} className="notif-item" style={{borderLeftColor:n.color}}>
-              <div style={{fontFamily:G.fRaj,fontSize:13,color:G.white}}>{n.msg}</div>
-              <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim}}>{n.time}</div>
-            </div>
-          );
-        })}
+        {notifs.length === 0
+          ? <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,textAlign:"center",padding:"12px 0"}}>No notifications yet.</div>
+          : notifs.map(function(n) {
+            return (
+              <div key={n.id} className="notif-item" style={{borderLeftColor:n.color}}>
+                <div style={{fontFamily:G.fRaj,fontSize:13,color:G.white}}>{n.msg}</div>
+                <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim}}>{n.time}</div>
+              </div>
+            );
+          })}
       </div>
     </div>
   );
@@ -562,10 +548,7 @@ function NotificationsHub({ onClose }) {
 
 // ── GUEST CONTROLS ───────────────────────────────────────────────
 function GuestControls() {
-  var [guests, setGuests] = useState([
-    { id:1, name:"Guest1", role:"Co-Host", live:true },
-    { id:2, name:"Guest2", role:"Guest", live:false },
-  ]);
+  var [guests, setGuests] = useState([]);
 
   return (
     <div className="card card-r" style={{margin:"0 16px 14px"}}>
@@ -573,14 +556,16 @@ function GuestControls() {
         <span style={{fontFamily:G.fOrb,fontSize:10,color:G.crimsonBright,letterSpacing:2}}>🎙️ GUEST CONTROLS</span>
       </div>
       <div style={{padding:"10px 14px"}}>
-        {guests.map(function(g) {
-          return (
-            <div key={g.id} className="guest-row">
-              <div style={{flex:1}}>{g.name}</div>
-              <span style={{fontFamily:G.fMon,fontSize:9,color:G.gray}}>{g.role}</span>
-            </div>
-          );
-        })}
+        {guests.length === 0
+          ? <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,textAlign:"center",padding:"12px 0"}}>No guests connected.</div>
+          : guests.map(function(g) {
+            return (
+              <div key={g.id} className="guest-row">
+                <div style={{flex:1}}>{g.name}</div>
+                <span style={{fontFamily:G.fMon,fontSize:9,color:G.gray}}>{g.role}</span>
+              </div>
+            );
+          })}
       </div>
     </div>
   );
@@ -588,10 +573,7 @@ function GuestControls() {
 
 // ── VOD LIBRARY ──────────────────────────────────────────────────
 function VODLibrary() {
-  var vods = [
-    { id:1, title:"Stream 1", duration:"1h 18m", views:892 },
-    { id:2, title:"Stream 2", duration:"54m", views:641 },
-  ];
+  var vods = [];
 
   return (
     <div className="card card-p" style={{margin:"0 16px 14px"}}>
@@ -599,17 +581,19 @@ function VODLibrary() {
         <span style={{fontFamily:G.fOrb,fontSize:10,color:G.purple,letterSpacing:2}}>📼 VOD LIBRARY</span>
       </div>
       <div style={{padding:"10px 14px"}}>
-        {vods.map(function(v) {
-          return (
-            <div key={v.id} className="vod-card" style={{marginBottom:8}}>
-              <div className="vod-thumb">{v.title}</div>
-              <div style={{padding:"8px 10px"}}>
-                <div style={{fontFamily:G.fRaj,fontSize:11}}>{v.title}</div>
-                <div style={{fontFamily:G.fMon,fontSize:8,color:G.gray}}>{v.duration} • {v.views} views</div>
+        {vods.length === 0
+          ? <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,textAlign:"center",padding:"12px 0"}}>No recordings yet. Completed streams will appear here.</div>
+          : vods.map(function(v) {
+            return (
+              <div key={v.id} className="vod-card" style={{marginBottom:8}}>
+                <div className="vod-thumb">{v.title}</div>
+                <div style={{padding:"8px 10px"}}>
+                  <div style={{fontFamily:G.fRaj,fontSize:11}}>{v.title}</div>
+                  <div style={{fontFamily:G.fMon,fontSize:8,color:G.gray}}>{v.duration} • {v.views} views</div>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
     </div>
   );
@@ -1656,7 +1640,7 @@ function StreamTab({ autoStart, currentUser }) {
 
           <EngagementDashboardV2 roomId={roomId} />
           <LiveAnalytics roomId={roomId} />
-          <OctagonalVideoGrid guests={[]} hostName="Host" />
+          <OctagonalVideoGrid participants={[]} hostName="Host" />
           <StreamControls camOn={camOn} setCamOn={setCamOn} micOn={micOn} setMicOn={setMicOn} bitrate={bitrate} fps={fps} latency={latency} />
           <ViewerControlsV2 />
           <InRoomSubWidgetV2 creatorName="SwanyThree" />
