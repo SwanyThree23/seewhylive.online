@@ -295,17 +295,7 @@ function BigoExpandedView({ participants, focusedIdx, onChangeFocus, onClose }) 
 
 function OctagonalVideoGrid({ participants: propParticipants, hostName }) {
   // Build 20-person panel if no props given
-  var defaultParticipants = DEMO_NAMES.slice(0, 20).map(function(name, i) {
-    return {
-      id: "p"+i, name: name,
-      avatar: ["🎤","🎧","🎸","🥁","🎹","🎺","🎻","🪗","🎵","🎶","🎼","🎙️","🎚️","🎛️","📻","🔊","🎤","🥁","🎹","🎸"][i],
-      isHost: i===0, isCoHost: i===1,
-      micOn: true, speaking: false,
-      reaction: null, color: TILE_COLORS[i],
-    };
-  });
-
-  var [participants, setParticipants] = useState(propParticipants || defaultParticipants);
+  var [participants, setParticipants] = useState(propParticipants || []);
   var [focusedIdx, setFocusedIdx] = useState(0);
   var [bigoOpen, setBigoOpen] = useState(false);
   var [viewMode, setViewMode] = useState("panel"); // panel | bigo
@@ -1650,7 +1640,7 @@ function StreamTab({ autoStart, currentUser }) {
 
           <EngagementDashboardV2 roomId={roomId} />
           <LiveAnalytics roomId={roomId} />
-          <OctagonalVideoGrid guests={[]} hostName="Host" />
+          <OctagonalVideoGrid participants={[]} hostName="Host" />
           <StreamControls camOn={camOn} setCamOn={setCamOn} micOn={micOn} setMicOn={setMicOn} bitrate={bitrate} fps={fps} latency={latency} />
           <ViewerControlsV2 />
           <InRoomSubWidgetV2 creatorName="SwanyThree" />

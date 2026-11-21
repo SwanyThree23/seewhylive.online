@@ -16,14 +16,6 @@ var GOLD = '#d4af37';
 var RED = '#C0392B';
 var GREEN = '#6DBF7E';
 
-var SAMPLE_PARTICIPANTS = [
-  { id: '1', user_id: 'host', name: 'ladrue swanson', role: 'Host', is_host: true, is_muted: false, is_speaking: true, avatar_url: null },
-  { id: '2', user_id: 'cohost', name: 'SwanyThree', role: 'Co-host', is_muted: false, is_speaking: false, avatar_url: null },
-  { id: '3', user_id: 'u3', name: 'Tom', role: 'Member', is_muted: true, is_speaking: false, avatar_url: null },
-  { id: '4', user_id: 'u4', name: 'Yahwadah', role: 'Member', is_muted: false, is_speaking: false, avatar_url: null },
-  { id: '5', user_id: 'u5', name: 'Marvin', role: 'Member', is_muted: true, is_speaking: false, avatar_url: null },
-  { id: '6', user_id: 'u6', name: 'Durand', role: 'Member', is_muted: true, is_speaking: false, avatar_url: null },
-];
 
 export default function UnifiedRoom() {
   var navigate = useNavigate();
@@ -43,11 +35,11 @@ export default function UnifiedRoom() {
     enabled: !!roomId,
   });
 
-  var { data: participants = SAMPLE_PARTICIPANTS } = useQuery({
+  var { data: participants = [] } = useQuery({
     queryKey: ['room-participants', roomId],
     queryFn: async () => {
       var stages = await base44.entities.Stage.filter({ room_id: roomId });
-      if (stages.length === 0) return SAMPLE_PARTICIPANTS;
+      if (stages.length === 0) return [];
       return stages.map(s => ({
         id: s.id,
         user_id: s.user_id,
