@@ -130,7 +130,7 @@ export default function AIModerationPage() {
     return (
       <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
         style={{ ...T, background: s.bg, border: `1px solid ${s.border}`, color: s.color }}>
-        {(type && type.replace)('_', ' ')}
+        {(type || '').replace('_', ' ')}
       </span>
     );
   }

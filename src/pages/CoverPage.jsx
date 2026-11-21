@@ -93,7 +93,7 @@ export default function CoverPage() {
           </motion.div>
 
           {/* Live Rooms */}
-          {(liveRooms && liveRooms.slice)(0, 2).map(room => (
+          {(liveRooms || []).slice(0, 2).map(room => (
             <motion.div
               key={room.id}
               whileHover={{ scale: 1.05 }}
