@@ -29,6 +29,8 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
+import StreamEventBus from '../components/live/StreamEventBus';
 
 function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) {
   return (
@@ -682,6 +684,7 @@ export default function PKBattleManager() {
     refetchInterval: 30000,
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
 
   var { data: battles = [] } = useQuery({
     queryKey: ['pk-battles'],
@@ -855,7 +858,8 @@ export default function PKBattleManager() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeBattleCount} />
+      {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onTipReceived={goalMetrics.onTipReceived} />}
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={activeBattleCount} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={(currentBattle && currentBattle.id) || null} currentUser={user || null} />

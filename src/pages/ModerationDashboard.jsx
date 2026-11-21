@@ -25,6 +25,7 @@ import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamGoals from '../components/live/StreamGoals';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -218,6 +219,7 @@ export default function ModerationDashboardPage() {
     enabled: !!(user && user.id),
   });
   var userCommunityId = (userCommunity && userCommunity.id) || null;
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
   var { data: moderations = [] } = useQuery({
     queryKey: ['mod-content'],
     queryFn: () => base44.entities.ContentModeration.list('-created_date', 100),
@@ -413,7 +415,7 @@ export default function ModerationDashboardPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={null} currentUser={user || null} />

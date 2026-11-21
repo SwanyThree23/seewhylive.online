@@ -39,6 +39,8 @@ import ViewerCount from '../components/live/ViewerCount';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import LiveStage from '../components/live/LiveStage';
 import { useZegoToken } from '../hooks/useZegoToken';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
+import StreamEventBus from '../components/live/StreamEventBus';
 
 var BG = '#080B18';
 var GOLD = '#D4AF37';
@@ -55,6 +57,7 @@ export default function GreenroomEnhanced() {
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var { token: zegoToken } = useZegoToken({ roomId: activeRoomId, userId: (user && user.id), enabled: !!activeRoomId && !!(user && user.id) });
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
   var [cameraStream, setCameraStream] = useState(null);
   var [isLive, setIsLive] = useState(false);
   var [webrtcError, setWebrtcError] = useState(null);
@@ -396,7 +399,8 @@ export default function GreenroomEnhanced() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
+      {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onTipReceived={goalMetrics.onTipReceived} />}
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={(activeRoom && activeRoom.viewer_count) || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id) || null} roomId={activeRoomId} currentUser={user || null} />

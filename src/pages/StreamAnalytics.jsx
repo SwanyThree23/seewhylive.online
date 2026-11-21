@@ -32,6 +32,8 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import { useStreamGoalMetrics } from '../hooks/useStreamGoalMetrics';
+import StreamEventBus from '../components/live/StreamEventBus';
 
 var GOLD = '#D4AF37';
 var CYAN = '#C9A84C';
@@ -80,6 +82,7 @@ export default function StreamAnalytics() {
     refetchInterval: 30000,
   });
   var effectiveRoomId = roomId || (activeRoom && activeRoom.id) || null;
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, effectiveRoomId);
 
   var { data: roomAnalytics = [] } = useQuery({
     queryKey: ['room-analytics', roomId],
@@ -392,7 +395,8 @@ export default function StreamAnalytics() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={avgViewers} />
+      {effectiveRoomId && <StreamEventBus roomId={effectiveRoomId} isHost={true} sessionId={effectiveRoomId} onTipReceived={goalMetrics.onTipReceived} />}
+      <StreamGoals isHost={true} currentTips={goalMetrics.tipTotal} currentSubs={goalMetrics.subCount} currentViewers={avgViewers} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={(user && user.id)} roomId={effectiveRoomId} currentUser={user} />
