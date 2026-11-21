@@ -41,13 +41,7 @@ var SUB_TIERS = [
   { id: 'ride_or_die', label: 'RIDE OR DIE', cents: 2000, color: GOLD,   icon: '👑', perks: ['All Supporter', 'Direct DMs', 'Monthly shoutout', 'RoD badge'] },
 ];
 
-var LEADERBOARD_MOCK = [
-  { rank: 1, name: 'DominoKing_DC',   cents: 12450, badge: '💎', streak: 7  },
-  { rank: 2, name: 'WashClassic2026', cents: 8900,  badge: '👑', streak: 4  },
-  { rank: 3, name: 'VibeNBones',      cents: 6200,  badge: '🔥', streak: 12 },
-  { rank: 4, name: 'TileHolderPRO',   cents: 4100,  badge: '⭐', streak: 2  },
-  { rank: 5, name: 'SwanyFan23',      cents: 2800,  badge: '🎯', streak: 5  },
-];
+var LEADERBOARD_MOCK = [];
 
 function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 
@@ -572,6 +566,9 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
           <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ fontFamily: fD, fontSize: 20, color: TEXT, letterSpacing: 2 }}>TOP SUPPORTERS</div>
             <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, marginBottom: 4 }}>Live session leaderboard · resets each stream</div>
+            {(liveLeaders || LEADERBOARD_MOCK).length === 0 && (
+              <div style={{ color: MUTED, fontSize: 11, fontStyle: 'italic', textAlign: 'center', padding: '16px 0' }}>No supporters yet — be the first to tip!</div>
+            )}
             {(liveLeaders || LEADERBOARD_MOCK).map(function(e, i) {
               var isTop = i < 3;
               var rankColors = ['#C9A84C', '#C0C0C0', '#cd7f32'];

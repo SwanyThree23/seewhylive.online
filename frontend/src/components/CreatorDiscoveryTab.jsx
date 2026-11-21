@@ -2,16 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
 import SelectSheet from './SelectSheet.jsx';
 
-var CREATORS = [
-  { id: 'c1', name: 'CaliBonesOG',  handle: 'calibonesog',  flag: '🇺🇸', category: 'Domino',  followers: 12400, live: true,  viewers: 892,  color: '#C01838' },
-  { id: 'c2', name: 'VibeNBones',   handle: 'vibenbones',   flag: '🇺🇸', category: 'Music',   followers: 8200,  live: false, viewers: 0,    color: '#C9A84C' },
-  { id: 'c3', name: 'LyricQueen',   handle: 'lyricqueen',   flag: '🇳🇬', category: 'Music',   followers: 6700,  live: true,  viewers: 1203, color: '#C9A84C' },
-  { id: 'c4', name: 'TechNerd42',   handle: 'technerd42',   flag: '🇺🇸', category: 'Tech',    followers: 4500,  live: true,  viewers: 4213, color: '#C9A84C' },
-  { id: 'c5', name: 'DJ_Cipher',    handle: 'djcipher',     flag: '🇯🇲', category: 'Music',   followers: 3900,  live: false, viewers: 0,    color: '#C9A84C' },
-  { id: 'c6', name: 'ZenFitPro',    handle: 'zenfitpro',    flag: '🇨🇦', category: 'Fitness', followers: 2800,  live: false, viewers: 0,    color: '#C9A84C' },
-  { id: 'c7', name: 'BeatKing_X',   handle: 'beatkingx',    flag: '🇬🇧', category: 'Music',   followers: 2300,  live: true,  viewers: 387,  color: '#C9A84C' },
-  { id: 'c8', name: 'NeonBeats',    handle: 'neonbeats',    flag: '🇰🇷', category: 'Music',   followers: 1900,  live: false, viewers: 0,    color: '#FF1493' },
-];
+var CREATORS = [];
 
 var CATS = ['All', 'Domino', 'Music', 'Tech', 'Fitness'];
 
@@ -22,21 +13,12 @@ function fmtFollowers(n) {
   return String(n);
 }
 
-var CREATOR_BIO = {
-  c1: { bio: 'Domino legend from Cali. Washington Classic organizer. FADES pioneer.', streams: 214, totalViews: '1.2M' },
-  c2: { bio: "VibeN'Bones bringing that smooth soulful energy. Collab ready.", streams: 87, totalViews: '340k' },
-  c3: { bio: 'Lyric Queen — R&B vocals with a Nigerian twist. Multi-genre artist.', streams: 63, totalViews: '210k' },
-  c4: { bio: 'Tech content, dev streams, AI discussions. Building in public since 2021.', streams: 401, totalViews: '2.1M' },
-  c5: { bio: 'DJ Cipher drops fire sets live every weekend. From Kingston to the world.', streams: 56, totalViews: '180k' },
-  c6: { bio: 'Zen Fit Pro — morning fitness streams, nutrition, mindset coaching.', streams: 38, totalViews: '95k' },
-  c7: { bio: 'Beat King X producing chart-ready tracks live on SeeWhy. UK bass vibes.', streams: 29, totalViews: '72k' },
-  c8: { bio: 'Neon Beats — Korean EDM producer. Lo-fi to techno, all live.', streams: 17, totalViews: '44k' },
-};
+var CREATOR_BIO = {};
 
 export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, username }) {
   var [filter,          setFilter]          = useState('All');
   var [sortBy,          setSortBy]          = useState('live');
-  var [following,       setFollowing]       = useState({ c1: true });
+  var [following,       setFollowing]       = useState({});
   var [search,          setSearch]          = useState('');
   var [profile,         setProfile]         = useState(null);
   var [filterLive,      setFilterLive]      = useState(false);
@@ -152,7 +134,7 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
       <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.22)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 3 }}>🔭 CREATOR DISCOVERY</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{CREATORS.length} creators · {liveCount} live now</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{allCreators.length} creators · {liveCount} live now</div>
         </div>
         <SelectSheet
           label="Sort By"
@@ -252,6 +234,9 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
 
       {/* Creator list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {visible.length === 0 && (
+          <div style={{ padding: '24px 16px', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>No creators found — check back soon.</div>
+        )}
         {visible.map(function(c) {
           var isFollowing = Boolean(following[c.id]);
           var displayViewers = liveViewerCounts[c.id] !== undefined ? liveViewerCounts[c.id] : c.viewers;

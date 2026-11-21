@@ -3,13 +3,7 @@ import SelectSheet from './SelectSheet.jsx';
 
 var NOW = Date.now();
 
-var INIT_SCHEDULE = [
-  { id: 's1', title: 'Friday Night Dominos LIVE',  time: new Date(NOW - 1800000).toISOString(),           status: 'LIVE',  category: 'Domino',     viewers: 2847, recurring: 'weekly'   },
-  { id: 's2', title: 'Washington Classic Round 2', time: new Date(NOW + 86400000).toISOString(),           status: 'SCHED', category: 'Tournament', viewers: null,  recurring: 'none'     },
-  { id: 's3', title: 'AIverse Podcast Ep. 48',     time: new Date(NOW + 172800000).toISOString(),          status: 'SCHED', category: 'Podcast',    viewers: null,  recurring: 'weekly'   },
-  { id: 's4', title: "Cali \xD7 VibeN'Bones Collab",  time: new Date(NOW + 259200000).toISOString(),          status: 'SCHED', category: 'Music',      viewers: null,  recurring: 'none'     },
-  { id: 's5', title: 'Beat Production Workshop',   time: new Date(NOW + 345600000).toISOString(),          status: 'SCHED', category: 'Education',  viewers: null,  recurring: 'biweekly' },
-];
+var INIT_SCHEDULE = [];
 
 var CATS = ['Domino', 'Tournament', 'Podcast', 'Music', 'Education', 'Sports', 'Tech', 'Gaming'];
 
