@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
@@ -128,26 +128,28 @@ export default function VaultPro() {
   var [isLoading, setIsLoading]           = useState(false);
   var [error, setError]                   = useState('');
 
-  // Stream keys
-  var [streamKeys, setStreamKeys]         = useState([]);
+  // Stream keys — loaded from localStorage (encrypted blobs are safe to store)
+  var [streamKeys, setStreamKeys]         = useState(function() {
+    try { return JSON.parse(localStorage.getItem('swl_vault_streamkeys') || '[]'); } catch { return []; }
+  });
   var [showAddKey, setShowAddKey]         = useState(false);
   var [newKeyPlatform, setNewKeyPlatform] = useState('OBS');
   var [newKeyValue, setNewKeyValue]       = useState('');
   var [revealedKeys, setRevealedKeys]     = useState({});
 
-  // Protected content
-  var [protectedContent, setProtectedContent] = useState([
-    { id: 1, title: 'Subscriber Exclusive VOD — March', encryptedDesc: null, raw: 'Full 3-hour stream replay, March 2024. Subscribers only.', protected: true },
-    { id: 2, title: 'Private Q&A Session',              encryptedDesc: null, raw: 'Behind-the-scenes Q&A with top supporters.',              protected: true },
-    { id: 3, title: 'Patreon Bonus Clip Pack',          encryptedDesc: null, raw: '42 premium clips available for Patreon tier members.',    protected: true },
-  ]);
+  // Protected content — loaded from localStorage
+  var [protectedContent, setProtectedContent] = useState(function() {
+    try { return JSON.parse(localStorage.getItem('swl_vault_content') || '[]'); } catch { return []; }
+  });
   var [showProtectContent, setShowProtectContent] = useState(false);
   var [newContentTitle, setNewContentTitle]       = useState('');
   var [newContentDesc, setNewContentDesc]         = useState('');
   var [unlockedContent, setUnlockedContent]       = useState({});
 
-  // Room PINs
-  var [roomPins, setRoomPins]           = useState([]);
+  // Room PINs — loaded from localStorage
+  var [roomPins, setRoomPins]           = useState(function() {
+    try { return JSON.parse(localStorage.getItem('swl_vault_pins') || '[]'); } catch { return []; }
+  });
   var [showAddPin, setShowAddPin]       = useState(false);
   var [newPinRoom, setNewPinRoom]       = useState('');
   var [newPinValue, setNewPinValue]     = useState('');
@@ -203,6 +205,19 @@ export default function VaultPro() {
   function addAudit(action, icon = '🔐') {
     setAuditLog(prev => [{ action, icon, time: new Date().toISOString() }, ...prev]);
   }
+
+  // Persist encrypted vault data to localStorage whenever it changes
+  useEffect(function() {
+    try { localStorage.setItem('swl_vault_streamkeys', JSON.stringify(streamKeys)); } catch {}
+  }, [streamKeys]);
+
+  useEffect(function() {
+    try { localStorage.setItem('swl_vault_content', JSON.stringify(protectedContent)); } catch {}
+  }, [protectedContent]);
+
+  useEffect(function() {
+    try { localStorage.setItem('swl_vault_pins', JSON.stringify(roomPins)); } catch {}
+  }, [roomPins]);
 
   async function handleUnlock() {
     if (!passwordInput.trim()) return;
@@ -472,6 +487,10 @@ export default function VaultPro() {
                       style={{ background: revealedKeys[key.id] ? 'rgba(192,57,43,0.1)' : 'rgba(212,175,55,0.1)', color: revealedKeys[key.id] ? '#C0392B' : GOLD, border: `1px solid ${revealedKeys[key.id] ? 'rgba(192,57,43,0.25)' : 'rgba(212,175,55,0.25)'}`, ...T }}>
                       {revealedKeys[key.id] ? <><EyeOff className="w-3 h-3" /> Hide</> : <><Eye className="w-3 h-3" /> Reveal</>}
                     </button>
+                    <button onClick={() => { setStreamKeys(function(prev) { return prev.filter(function(k) { return k.id !== key.id; }); }); addAudit('Stream key deleted — ' + key.platform, '🗑️'); }}
+                      className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: 'rgba(192,57,43,0.1)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)' }}
+                      title="Delete key">✕</button>
                   </div>
                 ))}
 
@@ -530,6 +549,10 @@ export default function VaultPro() {
                         style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
                         {unlockedContent[item.id] ? 'Lock' : 'Unlock'}
                       </button>
+                      <button onClick={() => { setProtectedContent(function(prev) { return prev.filter(function(c) { return c.id !== item.id; }); }); addAudit('Content deleted — "' + item.title + '"', '🗑️'); }}
+                        className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ background: 'rgba(192,57,43,0.1)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)' }}
+                        title="Delete">✕</button>
                     </div>
                   </div>
                 ))}
@@ -591,6 +614,10 @@ export default function VaultPro() {
                         style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
                         Share
                       </button>
+                      <button onClick={() => { setRoomPins(function(prev) { return prev.filter(function(p) { return p.id !== pin.id; }); }); addAudit('Room PIN deleted — ' + pin.room, '🗑️'); }}
+                        className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ background: 'rgba(192,57,43,0.1)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)' }}
+                        title="Delete PIN">✕</button>
                     </div>
                     {sharePin === pin.id && (
                       <div className="mt-2 p-2 rounded-xl"
