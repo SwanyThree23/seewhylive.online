@@ -4,38 +4,7 @@ import { Brain, ThumbsUp, Play } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
-const SMART_RECOMMENDATIONS = [
-  {
-    id: 'rec1',
-    title: 'Washington Classic 2025 – Full Tournament Replay',
-    channel: 'Rick Astley',
-    reason: 'Tournament Highlights',
-    duration: '1h 18m',
-    views: '847',
-    url: 'https://youtu.be/hjwyNnSWfnI',
-    thumbnail: 'https://img.youtube.com/vi/hjwyNnSWfnI/mqdefault.jpg',
-  },
-  {
-    id: 'rec2',
-    title: 'Aiverse Podcast Ep.47 – The Future of Creator AI',
-    channel: 'AI Verse Podcast',
-    reason: 'Trending with Creators',
-    duration: '1h 2m',
-    views: '512',
-    url: 'https://youtu.be/cDkr2u40oJc',
-    thumbnail: 'https://img.youtube.com/vi/cDkr2u40oJc/mqdefault.jpg',
-  },
-  {
-    id: 'rec3',
-    title: 'Creator Growth Strategies 2025',
-    channel: 'Memoirs of a Shy Girl',
-    reason: 'Top Creator Resource',
-    duration: '45m',
-    views: '3.2K',
-    url: 'https://youtu.be/5AZPCZ8--hc',
-    thumbnail: 'https://img.youtube.com/vi/5AZPCZ8--hc/mqdefault.jpg',
-  },
-];
+const SMART_RECOMMENDATIONS = [];
 
 export default function ContentRecommendations() {
   const [liked, setLiked] = useState(new Set());
@@ -124,6 +93,9 @@ export default function ContentRecommendations() {
             </motion.button>
           </motion.a>
         ))}
+        {SMART_RECOMMENDATIONS.length === 0 && (
+          <p className="text-[11px] text-white/40 text-center py-4">No recommendations yet.</p>
+        )}
       </div>
     </motion.div>
   );
