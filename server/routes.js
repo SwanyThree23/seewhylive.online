@@ -836,7 +836,23 @@ router.get('/users/:username', async function(req, res) {
 
 router.get('/users/me/earnings', requireAuth, function(req, res) {
   try {
-    return res.json({ availableCents: 0, totalEarnedCents: 0, pendingCents: 0 });
+    var creatorId = req.user.id;
+    var sdb = getRoutesDb();
+    var row = sdb.prepare(
+      'SELECT ' +
+      '  COALESCE(SUM(CASE WHEN payment_type != ? THEN creator_cents ELSE 0 END), 0) AS earned,' +
+      '  COALESCE(SUM(CASE WHEN payment_type = ? THEN amount_cents ELSE 0 END), 0) AS paid_out,' +
+      '  COALESCE(SUM(CASE WHEN payment_type != ? AND status = ? THEN creator_cents ELSE 0 END), 0) AS pending ' +
+      'FROM creator_earnings WHERE creator_id = ?'
+    ).get('payout', 'payout', 'payout', 'pending', creatorId);
+    var earned = Math.floor((row && row.earned) || 0);
+    var paidOut = Math.floor((row && row.paid_out) || 0);
+    var pending = Math.floor((row && row.pending) || 0);
+    return res.json({
+      availableCents: Math.max(0, earned - paidOut),
+      totalEarnedCents: earned,
+      pendingCents: pending
+    });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });
   }
