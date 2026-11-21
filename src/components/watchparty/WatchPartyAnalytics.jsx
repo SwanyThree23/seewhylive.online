@@ -24,7 +24,7 @@ function StatCard({ icon: IconComp, label, value, sub, color = '#d4af37' }) {
 export default function WatchPartyAnalytics({ party, members, pollCount, reactionCount }) {
   const peakViewers = Math.max(members.length, party?.participant_count || 0);
   
-  // Build fake time-series from member join times
+  // Build cumulative viewer-join timeline from real member join timestamps
   const joinTimeline = useMemo(() => {
     const sorted = [...members]
       .filter(m => m.joined_at)
