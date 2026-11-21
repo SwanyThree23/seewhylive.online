@@ -805,8 +805,6 @@ function PKBattleEngine({ myName, onEnd }) {
         <div style={{fontSize:32,marginBottom:8}}>⏳</div>
         <div style={{fontFamily:G.fRaj,fontSize:14,color:G.white,marginBottom:4}}>Challenge sent to <span style={{color:G.gold}}>{opponentName}</span></div>
         <div style={{fontFamily:G.fMon,fontSize:10,color:G.gray,marginBottom:16}}>Waiting for them to accept…</div>
-        {/* Simulate accept for demo */}
-        <button className="btn btn-g" style={{width:"100%",marginBottom:8}} onClick={acceptBattle}>✅ SIMULATE ACCEPT</button>
         <button className="btn btn-outline" style={{width:"100%",fontSize:11}} onClick={resetBattle}>Cancel</button>
       </div>
     </div>
