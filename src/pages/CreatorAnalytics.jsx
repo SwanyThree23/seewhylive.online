@@ -23,35 +23,27 @@ var RANGES = ['24h', '7d', '30d', '90d', 'All'];
 var TABS = ['overview', 'revenue', 'gems', 'viewers', 'streams'];
 
 var GEM_TYPES = [
-  { name: 'Ruby', color: '#C0392B', value: 4200 },
-  { name: 'Gold', color: '#d4af37', value: 3100 },
-  { name: 'Diamond', color: '#D4854A', value: 2800 },
-  { name: 'Purple', color: '#C9A84C', value: 1900 },
-  { name: 'Bone', color: '#C4A882', value: 1200 },
+  { name: 'Ruby',    color: '#C0392B', value: 0 },
+  { name: 'Gold',    color: '#d4af37', value: 0 },
+  { name: 'Diamond', color: '#D4854A', value: 0 },
+  { name: 'Purple',  color: '#C9A84C', value: 0 },
+  { name: 'Bone',    color: '#C4A882', value: 0 },
 ];
 
 var MONTHLY_REVENUE = [
-  { month: 'Jan', gross: 620 }, { month: 'Feb', gross: 940 },
-  { month: 'Mar', gross: 1870 }, { month: 'Apr', gross: 2180 },
-  { month: 'May', gross: 3240 }, { month: 'Jun', gross: 2890 },
+  { month: 'Jan', gross: 0 }, { month: 'Feb', gross: 0 },
+  { month: 'Mar', gross: 0 }, { month: 'Apr', gross: 0 },
+  { month: 'May', gross: 0 }, { month: 'Jun', gross: 0 },
 ];
 
 var WEEKLY_GEMS = [
-  { day: 'Mon', gems: 420 }, { day: 'Tue', gems: 380 }, { day: 'Wed', gems: 610 },
-  { day: 'Thu', gems: 520 }, { day: 'Fri', gems: 890 }, { day: 'Sat', gems: 1240 }, { day: 'Sun', gems: 780 },
+  { day: 'Mon', gems: 0 }, { day: 'Tue', gems: 0 }, { day: 'Wed', gems: 0 },
+  { day: 'Thu', gems: 0 }, { day: 'Fri', gems: 0 }, { day: 'Sat', gems: 0 }, { day: 'Sun', gems: 0 },
 ];
 
-var RETENTION = [
-  { min: 0, pct: 100 }, { min: 5, pct: 88 }, { min: 10, pct: 76 }, { min: 15, pct: 68 },
-  { min: 20, pct: 61 }, { min: 30, pct: 54 }, { min: 45, pct: 47 }, { min: 60, pct: 42 },
-];
+var RETENTION = [];
 
-var TRAFFIC_SOURCES = [
-  { name: 'Direct', value: 38, color: '#d4af37' },
-  { name: 'Social', value: 29, color: '#C0392B' },
-  { name: 'Search', value: 18, color: '#6DBF7E' },
-  { name: 'Referral', value: 15, color: '#D4854A' },
-];
+var TRAFFIC_SOURCES = [];
 
 var TIPPERS = [];
 

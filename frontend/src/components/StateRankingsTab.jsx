@@ -4,16 +4,7 @@ import AvatarPortrait from './AvatarPortrait.jsx';
 var SEASON = 2026;
 var WEEK   = 8;
 
-var RANKINGS = [
-  { rank: 1, rank_prev: 1, change:  0, state_name: 'Washington',     state_abbr: 'WA', state_emoji: '🌲', region: 'West',      points: 240, losses: 0, streak: 8, tiles_diff:  42 },
-  { rank: 2, rank_prev: 2, change:  0, state_name: 'California',     state_abbr: 'CA', state_emoji: '🐻', region: 'West',      points: 210, losses: 1, streak: 5, tiles_diff:  31 },
-  { rank: 3, rank_prev: 4, change:  1, state_name: 'Texas',          state_abbr: 'TX', state_emoji: '⭐', region: 'Southwest', points: 180, losses: 2, streak: 3, tiles_diff:  18 },
-  { rank: 4, rank_prev: 3, change: -1, state_name: 'Georgia',        state_abbr: 'GA', state_emoji: '🍑', region: 'Southeast', points: 178, losses: 2, streak: 2, tiles_diff:  16 },
-  { rank: 5, rank_prev: 6, change:  1, state_name: 'New York',       state_abbr: 'NY', state_emoji: '🗽', region: 'Northeast', points: 150, losses: 3, streak: 1, tiles_diff:   8 },
-  { rank: 6, rank_prev: 5, change: -1, state_name: 'Florida',        state_abbr: 'FL', state_emoji: '🌴', region: 'Southeast', points: 148, losses: 3, streak: 0, tiles_diff:   5 },
-  { rank: 7, rank_prev: 7, change:  0, state_name: 'Illinois',       state_abbr: 'IL', state_emoji: '🏙', region: 'Midwest',   points: 120, losses: 4, streak: 0, tiles_diff:  -8 },
-  { rank: 8, rank_prev: 8, change:  0, state_name: 'North Carolina', state_abbr: 'NC', state_emoji: '🌸', region: 'Southeast', points: 118, losses: 4, streak: 0, tiles_diff: -14 },
-];
+var RANKINGS = [];
 
 var REGION_COLORS = {
   West:      '#C9A84C',
@@ -27,13 +18,7 @@ var MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' };
 var REGIONS = ['All', 'West', 'Southwest', 'Southeast', 'Northeast', 'Midwest'];
 var VIEWS = ['RANKINGS', 'SCHEDULE', 'STATS'];
 
-var SCHEDULE = [
-  { home: 'WA', away: 'TX', date: 'Sat Jun 7',  time: '2:00 PM ET',  venue: 'Pacific Classic Arena' },
-  { home: 'CA', away: 'NY', date: 'Sat Jun 7',  time: '4:00 PM ET',  venue: 'West Coast Domino Hall' },
-  { home: 'GA', away: 'FL', date: 'Sun Jun 8',  time: '1:00 PM ET',  venue: 'Southeast Domino Center' },
-  { home: 'IL', away: 'NC', date: 'Sun Jun 8',  time: '3:30 PM ET',  venue: 'Midwest Tiles Arena' },
-  { home: 'TX', away: 'CA', date: 'Fri Jun 13', time: '7:00 PM ET',  venue: 'SeeWhy LIVE Arena' },
-];
+var SCHEDULE = [];
 
 function getEmojiForAbbr(abbr, rankingsList) {
   var i;
@@ -150,9 +135,9 @@ export default function StateRankingsTab({ isLive, addToast }) {
   for (j = 0; j < rankings.length; j++) {
     pointsSum = pointsSum + rankings[j].points;
   }
-  var avgPoints    = Math.floor(pointsSum / rankings.length);
-  var pointsLeader = rankings[0].state_name;
-  var maxPts       = rankings[0].points;
+  var avgPoints    = rankings.length > 0 ? Math.floor(pointsSum / rankings.length) : 0;
+  var pointsLeader = rankings.length > 0 ? rankings[0].state_name : '—';
+  var maxPts       = rankings.length > 0 ? rankings[0].points : 1;
   var i;
   for (i = 1; i < rankings.length; i++) {
     if (rankings[i].points > maxPts) { maxPts = rankings[i].points; }
@@ -294,6 +279,11 @@ export default function StateRankingsTab({ isLive, addToast }) {
 
           {/* Rows */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {rankings.length === 0 && (
+              <div style={{ textAlign: 'center', color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, padding: '32px 0' }}>
+                No states ranked yet — standings will appear once the season begins.
+              </div>
+            )}
             {visible.map(function(r) {
               var rc    = REGION_COLORS[r.region] || '#8A7A62';
               var wins  = WEEK - r.losses;
@@ -398,6 +388,11 @@ export default function StateRankingsTab({ isLive, addToast }) {
 
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C', letterSpacing: 3, paddingLeft: 2 }}>📅 UPCOMING MATCHUPS</div>
 
+          {SCHEDULE.length === 0 && (
+            <div style={{ textAlign: 'center', color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, padding: '32px 0' }}>
+              No matches scheduled yet — check back when the season kicks off.
+            </div>
+          )}
           {SCHEDULE.map(function(match, idx) {
             var homeEmoji = getEmojiForAbbr(match.home, rankings);
             var awayEmoji = getEmojiForAbbr(match.away, rankings);
