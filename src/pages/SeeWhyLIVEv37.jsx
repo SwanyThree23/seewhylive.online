@@ -843,20 +843,15 @@ function WatchPartyPanel() {
 // ── ANALYTICS PANEL ────────────────────────────────────────────────────────
 function AnalyticsPanel() {
   var stats = [
-    { label: 'Total Views', val: '24,817', delta: '+12%', color: C.gold },
-    { label: 'Watch Time (hrs)', val: '3,402', delta: '+8%', color: C.teal },
-    { label: 'Followers', val: '1,284', delta: '+22%', color: C.green },
-    { label: 'Revenue', val: '$892', delta: '+31%', color: C.amber },
-    { label: 'Avg Viewers / Stream', val: '347', delta: '+5%', color: C.purple },
-    { label: 'Chat Messages', val: '18,440', delta: '+17%', color: C.blue },
+    { label: 'Total Views', val: '0', delta: '+0%', color: C.gold },
+    { label: 'Watch Time (hrs)', val: '0', delta: '+0%', color: C.teal },
+    { label: 'Followers', val: '0', delta: '+0%', color: C.green },
+    { label: 'Revenue', val: '$0', delta: '+0%', color: C.amber },
+    { label: 'Avg Viewers / Stream', val: '0', delta: '+0%', color: C.purple },
+    { label: 'Chat Messages', val: '0', delta: '+0%', color: C.blue },
   ];
 
-  var topContent = [
-    { title: 'NY vs TX — Domino Championship', views: '8,412', rev: '$214' },
-    { title: 'Friday Night Cypher Live', views: '4,200', rev: '$98' },
-    { title: 'Culture Talk w/ Joyce AI', views: '3,100', rev: '$74' },
-    { title: 'State Tribute: GA Edition', views: '2,900', rev: '$63' },
-  ];
+  var topContent = [];
 
   return (
     <div>
@@ -876,6 +871,9 @@ function AnalyticsPanel() {
           <span style={{ color: C.textM, fontSize: 10, fontWeight: 700 }}>TITLE</span>
           <span style={{ color: C.textM, fontSize: 10, fontWeight: 700 }}>VIEWS</span>
           <span style={{ color: C.textM, fontSize: 10, fontWeight: 700 }}>REV</span>
+          {topContent.length === 0 && (
+            <span style={{ color: C.textM, fontSize: 12, gridColumn: '1/-1' }}>No streams yet — go live to see top content.</span>
+          )}
           {topContent.map(c => (
             <React.Fragment key={c.title}>
               <span style={{ color: C.textD, fontSize: 13 }}>{c.title}</span>

@@ -544,17 +544,7 @@ function SVSPanel() {
 }
 
 // ─── TRIBUTE PANEL ────────────────────────────────────────────────────────────
-var LEGENDS = [
-  {id:1,name:"Big Bone Earl",years:"1958–2021",state:"WA",photo:"🎯",color:C.tribute,
-    bio:"Pioneer of Pacific Northwest domino culture. Won the Regional 7-0 Championship 4 consecutive times. Founded the Seattle Domino Society in 1994.",
-    achievements:["4× Regional Champion","Founder: Seattle Domino Society","Mentored 200+ players","Hall of Fame 2019"]},
-  {id:2,name:"Mama Joyce Thompson",years:"1962–2023",state:"GA",photo:"👑",color:"#9C6B3C",
-    bio:"Queen of Southern domino culture. Her community tournaments brought thousands together across Georgia and the Southeast for over 30 years.",
-    achievements:["Community Builder Award","30-Year Teaching Legacy","ATL Domino Hall of Fame","Founded 12 Community Leagues"]},
-  {id:3,name:"Fast Hands Rodriguez",years:"1971–2022",state:"TX",photo:"⚡",color:C.state2,
-    bio:"Speed play innovator. Set the world record for fastest 7-0 sweep at 4 minutes 12 seconds. ESPN feature subject in 2018.",
-    achievements:["World Speed Record Holder","TX State Champ 2009–2015","ESPN Feature 2018","3× Nationals Finalist"]},
-];
+var LEGENDS = [];
 
 function TributePanel() {
   var [selected, setSelected] = useState(null);
@@ -608,6 +598,11 @@ function TributePanel() {
         </GCard>
       )}
 
+      {LEGENDS.length === 0 && (
+        <div style={{textAlign:"center",color:C.textM,fontSize:13,padding:"24px 0",fontFamily:F.display}}>
+          No legends yet — nominations appear here once approved.
+        </div>
+      )}
       {LEGENDS.map(leg=>{
         var isOpen = selected && selected.id===leg.id;
         return (

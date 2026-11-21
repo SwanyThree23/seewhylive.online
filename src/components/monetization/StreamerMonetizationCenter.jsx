@@ -29,24 +29,11 @@ const StreamerMonetizationCenter = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [activeTab, setActiveTab] = useState('subscriptions');
 
-  const revenueBreakdown = [
-    { label: 'Tips', amount: 1250, growth: 35, color: '#FF2040' },
-    { label: 'Subscriptions', amount: 3420, growth: 22, color: '#FFB800' },
-    { label: 'Virtual Goods', amount: 890, growth: 15, color: GOLD },
-    { label: 'Sponsorships', amount: 2100, growth: 48, color: '#FFB800' }
-  ];
+  const revenueBreakdown = [];
 
-  const subscriptionTiers = [
-    { name: 'Bronze', price: 4.99, members: 145, revenue: 724 },
-    { name: 'Silver', price: 9.99, members: 82, revenue: 819 },
-    { name: 'Gold', price: 19.99, members: 34, revenue: 680 }
-  ];
+  const subscriptionTiers = [];
 
-  const topSupporters = [
-    { name: 'xXProGamerXx', tips: 850, subs: 3 },
-    { name: 'SilverStar92', tips: 650, subs: 1 },
-    { name: 'LoyalFanatic', tips: 420, subs: 2 }
-  ];
+  const topSupporters = [];
 
   const totalRevenue = revenueBreakdown.reduce((sum, item) => sum + item.amount, 0);
 
@@ -165,10 +152,10 @@ const StreamerMonetizationCenter = () => {
               <p style={{ fontSize: 10, fontWeight: 700, color: '#fff', margin: '0 0 12px', ...T }}>Key Metrics</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {[
-                  { label: 'Conversion Rate:', value: '8.2%' },
-                  { label: 'Avg. Tip Value:', value: '$12.50' },
-                  { label: 'Churn Rate:', value: '3.1%' },
-                  { label: 'Lifetime Value:', value: '$285' },
+                  { label: 'Conversion Rate:', value: '—' },
+                  { label: 'Avg. Tip Value:', value: '—' },
+                  { label: 'Churn Rate:', value: '—' },
+                  { label: 'Lifetime Value:', value: '—' },
                 ].map(({ label, value }) => (
                   <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
                     <span style={{ color: 'rgba(255,255,255,0.6)', ...T }}>{label}</span>

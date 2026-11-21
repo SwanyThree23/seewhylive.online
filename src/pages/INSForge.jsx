@@ -35,11 +35,11 @@ var T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 var QUICK_PROMPTS = {
   svs_bracket:      ['WA vs TX State Championship — Sunday at Jamar\'s Sports Bar', 'Southeast Regional Final — FL vs GA — Double Elimination', 'National Qualifier — Opening Round — 8 States competing'],
-  tribute_card:     ['Big Bone Earl — WA legend, 1958–2021, 4× Regional Champion', 'Mama Joyce Thompson — GA Queen, 1962–2023, 30-year teaching legacy', 'Fast Hands Rodriguez — TX speed record holder, ESPN feature'],
+  tribute_card:     ['Domino legend — state, years, achievements', 'Community pioneer — region, legacy, impact', 'Tournament champion — format, titles, honors'],
   stream_overlay:   ['SeeWhy LIVE tournament — gold & crimson domino theme', 'Podcast interview — dual speakers, Barlow Condensed headlines', 'LIVE NOW alert lower-third — breaking broadcast style'],
   podcast_cover:    ['Domino culture deep dive — dark studio, gold accents', 'AI Live Streaming future — tech theme, cyan gradients', 'Creator economy special — community & money vibes'],
   music_promo:      ['New AI-generated beat drop — trap/chill hybrid release', 'Community remix challenge — open collab call', 'SeeWhy LIVE music showcase playlist announcement'],
-  tournament_flyer: ['State vs State WA Classic — July 4 at Jamar\'s Sports Bar, Des Moines WA', 'Open Invitational — $2,500 prize pool — all states welcome', 'Tribute Gaming Event — Big Bone Earl Memorial Fund'],
+  tournament_flyer: ['State vs State WA Classic — July 4 at Jamar\'s Sports Bar, Des Moines WA', 'Open Invitational — $2,500 prize pool — all states welcome', 'Tribute Gaming Event — Community Memorial Fund'],
 };
 
 var FORGE_TYPES = [
