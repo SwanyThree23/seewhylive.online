@@ -657,11 +657,7 @@ function TributePanel() {
 }
 
 // ─── AI PODCAST STUDIO ───────────────────────────────────────────────────────
-var INITIAL_EPISODES = [
-  {id:1,title:"Domino Culture: Past to Present",duration:"34:12",plays:2140,published:true,hosts:["JoyceAI","SwanyBot"]},
-  {id:2,title:"State vs State — WA vs CA Deep Dive",duration:"28:45",plays:1890,published:true,hosts:["JoyceAI"]},
-  {id:3,title:"Fallen Legends: Big Bone Earl Tribute",duration:"45:00",plays:3200,published:true,hosts:["SwanyBot","GuardianAI"]},
-];
+var INITIAL_EPISODES = [];
 
 function PodcastPanel() {
   var [tab, setTab] = useState("create");
@@ -698,11 +694,11 @@ function PodcastPanel() {
       setEpisode(data);
     } catch(e) {
       setEpisode({title:"Domino Culture Deep Dive",tagline:"The untold story of street domino",duration:"38 min",
-        topics:["Origins","State Rivalries","Tribute Events","Future of Domino"],
+        topics:["Origins","State Rivalries","Community Events","Future of Domino"],
         segments:[
-          {title:"Cold Open",host:"JoyceAI",duration:"2 min",notes:"Hook with a Big Bone Earl story"},
-          {title:"State vs State History",host:"SwanyBot",duration:"12 min",notes:"WA dominance since 2019"},
-          {title:"Tribute Spotlight",host:"JoyceAI",duration:"10 min",notes:"Mama Joyce Thompson legacy"},
+          {title:"Cold Open",host:"JoyceAI",duration:"2 min",notes:"Open with a domino culture hook"},
+          {title:"State vs State History",host:"SwanyBot",duration:"12 min",notes:"WA dominance and tournament history"},
+          {title:"Community Spotlight",host:"JoyceAI",duration:"10 min",notes:"Celebrating the community builders"},
           {title:"Creator Economy",host:"SwanyBot",duration:"10 min",notes:"90/10 split philosophy"},
           {title:"Outro & CTA",host:"JoyceAI",duration:"4 min",notes:"Subscribe & follow on SeeWhy LIVE"},
         ],
@@ -730,7 +726,7 @@ function PodcastPanel() {
       {tab==="create" && (
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <GCard>
-            <Inp label="Topic / Brief" value={topic} onChange={setTopic} placeholder="e.g. Big Bone Earl tribute & the legacy of Pacific Northwest domino..."/>
+            <Inp label="Topic / Brief" value={topic} onChange={setTopic} placeholder="e.g. State vs State dominoes & the legacy of Pacific Northwest culture..."/>
             <div style={{marginBottom:12}}>
               <div style={{fontSize:10,color:C.textM,fontWeight:700,letterSpacing:1.2,marginBottom:7,textTransform:"uppercase"}}>AI Hosts</div>
               <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
@@ -829,6 +825,11 @@ function PodcastPanel() {
 
       {tab==="episodes" && (
         <div>
+          {episodes.length === 0 && (
+            <div style={{textAlign:"center",color:C.textM,fontSize:13,padding:"24px 0",fontFamily:F.display}}>
+              No episodes yet — create your first episode above.
+            </div>
+          )}
           {episodes.map(ep=>(
             <GCard key={ep.id} style={{marginBottom:8}}>
               <div style={{display:"flex",gap:12,alignItems:"center"}}>
@@ -944,7 +945,7 @@ function MusicStudioPanel() {
       {tab==="generate" && (
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <GCard>
-            <Inp label="Track Concept" value={prompt} onChange={setPrompt} placeholder="e.g. Tribute anthem for Big Bone Earl, hard domino culture sound..."/>
+            <Inp label="Track Concept" value={prompt} onChange={setPrompt} placeholder="e.g. Tribute anthem for domino legends, hard domino culture sound..."/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
               <div>
                 <div style={{fontSize:10,color:C.textM,fontWeight:700,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Genre</div>
