@@ -601,10 +601,7 @@ function VODLibrary() {
 
 // ── LEADERBOARD ──────────────────────────────────────────────────
 function Leaderboard() {
-  var data = [
-    { rank:1, name:"User1", val:340, badge:"👑" },
-    { rank:2, name:"User2", val:210, badge:"🥈" },
-  ];
+  var data = [];
 
   return (
     <div className="card card-g" style={{margin:"0 16px 14px"}}>
@@ -612,6 +609,9 @@ function Leaderboard() {
         <span style={{fontFamily:G.fOrb,fontSize:10,color:G.gold,letterSpacing:2}}>🏆 LEADERBOARD</span>
       </div>
       <div style={{padding:"10px 14px"}}>
+        {data.length === 0 && (
+          <div style={{color:'rgba(255,255,255,0.4)',fontSize:12,fontFamily:G.fOrb,textAlign:'center',padding:'8px 0'}}>No entries yet</div>
+        )}
         {data.map(function(item) {
           return (
             <div key={item.rank} className="lb-row">

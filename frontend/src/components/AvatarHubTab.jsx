@@ -42,8 +42,6 @@ var BADGES = [
   { id: 'b5', icon: '🔥', label: '10-Streak',      unlocked: false, progress: 0,    total: 10,   how: 'Win streak'    },
 ];
 
-var VIEWER_NAMES = ['King D', 'Cali J', 'Volt V', 'Teal B', 'Gold G', 'Purp R', 'Dia H', 'Dom N'];
-var VIEWER_COLORS = ['#FF1A3C','#C9A84C','#C9A84C','#C9A84C','#C9A84C','#D4854A','#C9A84C','#FF1493'];
 
 export default function AvatarHubTab({ addToast, isLive }) {
   var [items,            setItems]            = useState(AVATAR_ITEMS.map(function(a) { return Object.assign({}, a); }));
