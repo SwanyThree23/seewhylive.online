@@ -196,14 +196,7 @@ var CREATOR_TOOLS = [
 ];
 
 // ─── Community tracks ────────────────────────────────────────────────────────
-var COMMUNITY = [
-  { id: 'c1', title: 'Late Night Drive',    style: 'Lo-Fi',     mood: 'Chill',      emoji: '🎧', grad: COVER_GRADIENTS[1], dur: '2:34', plays: 1847 },
-  { id: 'c2', title: 'Trap God Season',     style: 'Trap',      mood: 'Hype',       emoji: '👑', grad: COVER_GRADIENTS[0], dur: '3:12', plays: 3290 },
-  { id: 'c3', title: 'Soul Sunday Morning', style: 'Soul',      mood: 'Uplifting',  emoji: '🎵', grad: COVER_GRADIENTS[2], dur: '4:01', plays: 922  },
-  { id: 'c4', title: 'Drill Season Vol. 3', style: 'Drill',     mood: 'Aggressive', emoji: '🔊', grad: COVER_GRADIENTS[6], dur: '2:47', plays: 5614 },
-  { id: 'c5', title: 'Golden Hour Vibes',   style: 'R&B',       mood: 'Romantic',   emoji: '💿', grad: COVER_GRADIENTS[4], dur: '3:55', plays: 2103 },
-  { id: 'c6', title: 'Afrobeats Summer',    style: 'Afrobeats', mood: 'Hype',       emoji: '🎶', grad: COVER_GRADIENTS[7], dur: '3:28', plays: 7831 },
-];
+var COMMUNITY = [];
 
 // ─── WaveformBars ─────────────────────────────────────────────────────────────
 function WaveformBars(props) {
@@ -1260,6 +1253,11 @@ export default function MusicStudioTab(props) {
             {libTab === 'community' && (
               <div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 10 }}>🔥 TRENDING IN THE COMMUNITY</div>
+                {COMMUNITY.length === 0 && (
+                  <div style={{ textAlign: 'center', color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, padding: '32px 0' }}>
+                    No community tracks yet — be the first to drop something.
+                  </div>
+                )}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   {COMMUNITY.map(function(t) {
                     return (
