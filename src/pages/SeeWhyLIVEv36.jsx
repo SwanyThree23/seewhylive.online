@@ -1633,12 +1633,7 @@ function GuardianPanel() {
   var [flagT, setFlagT] = useState(50);
   var [muteT, setMuteT] = useState(75);
   var [banT, setBanT] = useState(95);
-  var [events] = useState([
-    {time:"9:04PM",user:"anon_2931",msg:"spam spam spam",risk:.82,action:"MUTED"},
-    {time:"9:03PM",user:"viewer_445",msg:"Great stream! WA is dominating 🔥",risk:.04,action:"ALLOWED"},
-    {time:"9:02PM",user:"troll_99",msg:"[content removed]",risk:.97,action:"BANNED"},
-    {time:"9:01PM",user:"DomFan22",msg:"Big Bone Earl tribute was 🙏",risk:.03,action:"ALLOWED"},
-  ]);
+  var [events] = useState([]);
   return (
     <div style={{display:"flex",flexDirection:"column",gap:14}} className="fade-up">
       <SectionHeader title="GUARDIAN AI" sub="CLAUDE HAIKU · REAL-TIME MODERATION"/>
@@ -1660,7 +1655,9 @@ function GuardianPanel() {
       </GCard>
       <GCard>
         <div style={{fontFamily:F.display,fontSize:13,color:C.gold,marginBottom:10,letterSpacing:1}}>MODERATION LOG</div>
-        {events.map((e,i)=>(
+        {events.length === 0
+          ? <div style={{fontSize:11,color:C.textM,textAlign:"center",padding:"12px 0"}}>No moderation events yet — Guardian AI is watching.</div>
+          : events.map(function(e,i) { return (
           <div key={i} style={{background:C.bg2,borderRadius:R.sm,padding:9,marginBottom:6}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:3,alignItems:"center"}}>
               <span style={{fontSize:11,color:C.gold,fontWeight:700}}>{e.user}</span>
@@ -1672,7 +1669,7 @@ function GuardianPanel() {
               <span style={{fontFamily:F.mono,fontSize:10,color:e.risk>.9?C.red:e.risk>.7?C.orange:C.green}}>Risk: {Math.floor(e.risk*100)}%</span>
             </div>
           </div>
-        ))}
+        ); })}
       </GCard>
     </div>
   );

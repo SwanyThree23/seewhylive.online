@@ -493,7 +493,7 @@ export default function EnhancementSuite() {
   var [emojiSearch, setEmojiSearch] = useState("");
   var [selectedVod, setSelectedVod] = useState(null);
   var [vodPlaying, setVodPlaying] = useState(false);
-  var [vodProgress, setVodProgress] = useState(22);
+  var [vodProgress, setVodProgress] = useState(0);
   var [activeChapter, setActiveChapter] = useState(1);
   var [sharedPlatforms, setSharedPlatforms] = useState({});
   var [copiedLink, setCopiedLink] = useState(false);

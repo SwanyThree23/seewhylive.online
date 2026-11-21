@@ -163,7 +163,7 @@ export default function MultiPlatform() {
   var [crossPost, setCrossPost] = useState(false);
   var [giftAgg, setGiftAgg] = useState(false);
   var [autoShout, setAutoShout] = useState(false);
-  var [shoutouts, setShoutouts] = useState(['Welcome Creator_XYZ to SeeWhy LIVE! 🎉','100 viewers milestone — you\'re amazing! 🔥','FanbaseUser just gifted you a 💎 Diamond!']);
+  var [shoutouts, setShoutouts] = useState([]);
   var [toast, setToast] = useState('');
   var [reactions] = useState(['🔥','❤️','🎉','💯','👏']);
   var [customBgs, setCustomBgs] = useState([]);
@@ -564,42 +564,13 @@ export default function MultiPlatform() {
                     <p style={{ ...T, fontSize:15, fontWeight:900, color:'#fff', margin:0 }}>🎁 Gift Aggregator</p>
                     <Toggle value={giftAgg} onChange={setGiftAgg} color={GOLD} />
                   </div>
-                  <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
-                    {[
-                      { user:'FanbaseUser', gift:'💎 Diamond', price:'$5.00', platform:'🎭 Fanbase' },
-                      { user:'TwitchViewer', gift:'⭐ Star', price:'$1.00', platform:'🟣 Twitch' },
-                    ].map((g,i) => (
-                      <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 10px', background:'rgba(255,255,255,0.03)', borderRadius:8, border:'1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ fontSize:16 }}>🎁</span>
-                        <div style={{ flex:1 }}>
-                          <span style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.7)', fontWeight:700 }}>{g.user}</span>
-                          <span style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.4)' }}> sent {g.gift} on </span>
-                          <span style={{ ...T, fontSize:12, color:GOLD }}>{g.platform}</span>
-                        </div>
-                        <span style={{ ...T, fontSize:12, fontWeight:900, color:GREEN }}>{g.price}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.3)', margin:0 }}>Enable the toggle to aggregate gifts from connected platforms in real time.</p>
                 </div>
 
                 {/* Milestone Tracker */}
                 <div style={{ gridColumn:'1/-1', background:BG2, borderRadius:16, border:'1px solid rgba(255,255,255,0.07)', padding:'16px 14px' }}>
                   <p style={{ ...T, fontSize:15, fontWeight:900, color:'#fff', margin:'0 0 14px' }}>🎯 Milestone Tracker</p>
-                  <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-                    {[
-                      { platform:'🎭 Fanbase',          current:247,   goal:500,   color:GOLD },
-                      { platform:'▶️ YouTube',           current:1203,  goal:5000,  color:'#FF0000' },
-                      { platform:'🟣 Twitch',            current:89,    goal:250,   color:'#9146FF' },
-                    ].map(m => (
-                      <div key={m.platform}>
-                        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
-                          <span style={{ ...T, fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.6)' }}>{m.platform}</span>
-                          <span style={{ ...T, fontSize:12, fontWeight:900, color:m.color }}>{m.current.toLocaleString()} / {m.goal.toLocaleString()}</span>
-                        </div>
-                        <ProgressBar value={m.current} max={m.goal} color={m.color} />
-                      </div>
-                    ))}
-                  </div>
+                  <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.3)', margin:0 }}>Connect platforms above to track follower milestones across each.</p>
                 </div>
 
                 {/* ARIA Auto-Shoutouts */}
@@ -610,12 +581,14 @@ export default function MultiPlatform() {
                   </div>
                   <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.4)', marginBottom:10 }}>When someone follows on any platform, ARIA generates a welcome automatically.</p>
                   <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
-                    {shoutouts.map((s, i) => (
+                    {shoutouts.length === 0
+                      ? <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.3)', margin:0 }}>No shoutouts yet — enable the toggle and ARIA will generate one on the next follow event.</p>
+                      : shoutouts.map(function(s, i) { return (
                       <div key={i} style={{ padding:'8px 12px', background:'rgba(123,93,166,0.06)', borderRadius:8, border:'1px solid rgba(123,93,166,0.12)' }}>
                         <span style={{ ...T, fontSize:12, color:PURPLE, fontWeight:700 }}>🎙️ ARIA: </span>
                         <span style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.7)' }}>{s}</span>
                       </div>
-                    ))}
+                    ); })}
                   </div>
                 </div>
               </div>
