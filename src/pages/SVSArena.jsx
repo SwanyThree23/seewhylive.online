@@ -21,10 +21,10 @@ var HISTORY = [];
 
 var INIT_BRACKET = {
   quarterfinals: [
-    { id: 'qf1', stateA: 'Washington', stateB: 'Nevada', scoreA: 0, scoreB: 0, winner: null, live: true },
-    { id: 'qf2', stateA: 'California', stateB: 'Arizona', scoreA: 0, scoreB: 0, winner: null, live: false },
-    { id: 'qf3', stateA: 'Oregon', stateB: 'Utah', scoreA: 0, scoreB: 0, winner: null, live: false },
-    { id: 'qf4', stateA: 'Texas', stateB: 'Colorado', scoreA: 0, scoreB: 0, winner: null, live: false },
+    { id: 'qf1', stateA: 'Washington', stateB: 'Nevada',   scoreA: 0, scoreB: 0, winner: null, live: false },
+    { id: 'qf2', stateA: 'California', stateB: 'Arizona',  scoreA: 0, scoreB: 0, winner: null, live: false },
+    { id: 'qf3', stateA: 'Oregon',     stateB: 'Utah',     scoreA: 0, scoreB: 0, winner: null, live: false },
+    { id: 'qf4', stateA: 'Texas',      stateB: 'Colorado', scoreA: 0, scoreB: 0, winner: null, live: false },
   ],
   semifinals: [
     { id: 'sf1', stateA: 'TBD', stateB: 'TBD', scoreA: 0, scoreB: 0, winner: null, live: false },
