@@ -401,7 +401,7 @@ export default function RoomsManager() {
       <NotificationBell />
       <GlobalSearch />
       <QuickActionPanel />
-      <BroadcastAnalyticsDashboard />
+      <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
       <SwanAIRecommendations roomId={null} currentLayout='rooms' viewerCount={rooms.length} />
       {/* Creator Studios */}
       <div style={{ margin: '0 0 16px', padding: 16, borderRadius: 16, border: '1px solid rgba(123,45,139,0.22)', background: 'rgba(13,6,24,0.5)' }}>

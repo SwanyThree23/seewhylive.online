@@ -372,9 +372,9 @@ export default function StreamAnalytics() {
         {/* Health + broadcast analytics panels */}
         <div className="mt-6 space-y-4">
           <StreamHealthDashboard />
-          <BroadcastAnalyticsDashboard />
+          <BroadcastAnalyticsDashboard roomId={effectiveRoomId} streamSession={activeRoom || null} isLive={!!effectiveRoomId} />
           <PerformanceDashboard />
-          <AudienceInsights />
+          <AudienceInsights creatorId={(user && user.id) || null} />
           <StreamerGoalsWidget userId={(user && user.id)} />
           <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         </div>

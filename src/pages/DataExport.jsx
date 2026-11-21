@@ -199,8 +199,8 @@ export default function DataExportPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
           <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
-          <AudienceInsights />
-          <EarningsBreakdown userId={(user && user.id)} />
+          <AudienceInsights creatorId={(user && user.id) || null} />
+          <EarningsBreakdown creatorId={(user && user.id) || null} />
           <ShareToSocial content={{ title: 'Export Data', url: window.location.href }} />
           <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
           <OnlineUsersGrid compact maxVisible={8} />
