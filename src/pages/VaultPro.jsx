@@ -51,7 +51,7 @@ async function encryptText(plaintext, password) {
 }
 
 async function decryptText(cipherB64, password) {
-  var bytes = Uint8Array.from(atob(cipherB64), c => c.charCodeAt(0));
+  var bytes = Uint8Array.from(atob(cipherB64), function(c) { return c.charCodeAt(0); });
   var salt  = bytes.slice(0, 16);
   var iv    = bytes.slice(16, 28);
   var data  = bytes.slice(28);
@@ -66,18 +66,25 @@ function fmtTime(iso) {
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-function TabBtn({ label, active, icon: Icon, onClick }) {
+function TabBtn(props) {
+  var label = props.label;
+  var active = props.active;
+  var Icon = props.icon;
+  var onClick = props.onClick;
   return (
     <button
       onClick={onClick}
       className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all"
-      style={{ ...T, color: active ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: active ? GOLD : 'transparent', background: active ? 'rgba(212,175,55,0.05)' : 'transparent' }}>
+      style={Object.assign({ color: active ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: active ? GOLD : 'transparent', background: active ? 'rgba(212,175,55,0.05)' : 'transparent' }, T)}>
       <Icon className="w-3 h-3" /> {label}
     </button>
   );
 }
 
-function Modal({ title, onClose, children }) {
+function Modal(props) {
+  var title = props.title;
+  var onClose = props.onClose;
+  var children = props.children;
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pb-4">
       <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.75)' }} onClick={onClose} />
@@ -86,23 +93,31 @@ function Modal({ title, onClose, children }) {
         <p className="font-black text-base text-white" style={T}>{title}</p>
         {children}
         <button onClick={onClose} className="w-full py-2 rounded-xl text-xs font-black uppercase"
-          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', ...T }}>Cancel</button>
+          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Cancel</button>
       </div>
     </div>
   );
 }
 
-function GoldBtn({ onClick, children, disabled }) {
+function GoldBtn(props) {
+  var onClick = props.onClick;
+  var children = props.children;
+  var disabled = props.disabled;
   return (
     <button onClick={onClick} disabled={disabled}
       className="w-full py-3 rounded-2xl font-black uppercase text-sm tracking-wide transition-all active:scale-95 disabled:opacity-50"
-      style={{ background: `linear-gradient(135deg, ${GOLD}, #b8941e)`, color: '#080B18', ...T }}>
+      style={{ background: 'linear-gradient(135deg, ' + GOLD + ', #b8941e)', color: '#080B18', fontFamily: 'Barlow Condensed, sans-serif' }}>
       {children}
     </button>
   );
 }
 
-function InputField({ placeholder, value, onChange, type = 'text', maxLength }) {
+function InputField(props) {
+  var placeholder = props.placeholder;
+  var value = props.value;
+  var onChange = props.onChange;
+  var type = props.type || 'text';
+  var maxLength = props.maxLength;
   return (
     <input
       type={type}
@@ -111,7 +126,7 @@ function InputField({ placeholder, value, onChange, type = 'text', maxLength }) 
       onChange={onChange}
       maxLength={maxLength}
       className="w-full h-10 px-3 rounded-xl text-sm text-white outline-none"
-      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', ...T }}
+      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Barlow Condensed, sans-serif' }}
     />
   );
 }
@@ -120,46 +135,93 @@ var PLATFORMS = ['OBS', 'Twitch', 'YouTube', 'Facebook Live', 'Custom RTMP'];
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function VaultPro() {
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
   var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
   // Vault lock state
-  var [vaultUnlocked, setVaultUnlocked]   = useState(false);
-  var [vaultPassword, setVaultPassword]   = useState('');
-  var [passwordInput, setPasswordInput]   = useState('');
-  var [activeTab, setActiveTab]           = useState('streamkeys');
-  var [isLoading, setIsLoading]           = useState(false);
-  var [error, setError]                   = useState('');
+  var vaultUnlockedState = useState(false);
+  var vaultUnlocked = vaultUnlockedState[0];
+  var setVaultUnlocked = vaultUnlockedState[1];
+  var vaultPasswordState = useState('');
+  var vaultPassword = vaultPasswordState[0];
+  var setVaultPassword = vaultPasswordState[1];
+  var passwordInputState = useState('');
+  var passwordInput = passwordInputState[0];
+  var setPasswordInput = passwordInputState[1];
+  var activeTabState = useState('streamkeys');
+  var activeTab = activeTabState[0];
+  var setActiveTab = activeTabState[1];
+  var isLoadingState = useState(false);
+  var isLoading = isLoadingState[0];
+  var setIsLoading = isLoadingState[1];
+  var errorState = useState('');
+  var error = errorState[0];
+  var setError = errorState[1];
 
   // Stream keys — loaded from localStorage (encrypted blobs are safe to store)
-  var [streamKeys, setStreamKeys]         = useState(function() {
+  var streamKeysState = useState(function() {
     try { return JSON.parse(localStorage.getItem('swl_vault_streamkeys') || '[]'); } catch { return []; }
   });
-  var [showAddKey, setShowAddKey]         = useState(false);
-  var [newKeyPlatform, setNewKeyPlatform] = useState('OBS');
-  var [newKeyValue, setNewKeyValue]       = useState('');
-  var [revealedKeys, setRevealedKeys]     = useState({});
+  var streamKeys = streamKeysState[0];
+  var setStreamKeys = streamKeysState[1];
+  var showAddKeyState = useState(false);
+  var showAddKey = showAddKeyState[0];
+  var setShowAddKey = showAddKeyState[1];
+  var newKeyPlatformState = useState('OBS');
+  var newKeyPlatform = newKeyPlatformState[0];
+  var setNewKeyPlatform = newKeyPlatformState[1];
+  var newKeyValueState = useState('');
+  var newKeyValue = newKeyValueState[0];
+  var setNewKeyValue = newKeyValueState[1];
+  var revealedKeysState = useState({});
+  var revealedKeys = revealedKeysState[0];
+  var setRevealedKeys = revealedKeysState[1];
 
   // Protected content — loaded from localStorage
-  var [protectedContent, setProtectedContent] = useState(function() {
+  var protectedContentState = useState(function() {
     try { return JSON.parse(localStorage.getItem('swl_vault_content') || '[]'); } catch { return []; }
   });
-  var [showProtectContent, setShowProtectContent] = useState(false);
-  var [newContentTitle, setNewContentTitle]       = useState('');
-  var [newContentDesc, setNewContentDesc]         = useState('');
-  var [unlockedContent, setUnlockedContent]       = useState({});
+  var protectedContent = protectedContentState[0];
+  var setProtectedContent = protectedContentState[1];
+  var showProtectContentState = useState(false);
+  var showProtectContent = showProtectContentState[0];
+  var setShowProtectContent = showProtectContentState[1];
+  var newContentTitleState = useState('');
+  var newContentTitle = newContentTitleState[0];
+  var setNewContentTitle = newContentTitleState[1];
+  var newContentDescState = useState('');
+  var newContentDesc = newContentDescState[0];
+  var setNewContentDesc = newContentDescState[1];
+  var unlockedContentState = useState({});
+  var unlockedContent = unlockedContentState[0];
+  var setUnlockedContent = unlockedContentState[1];
 
   // Room PINs — loaded from localStorage
-  var [roomPins, setRoomPins]           = useState(function() {
+  var roomPinsState = useState(function() {
     try { return JSON.parse(localStorage.getItem('swl_vault_pins') || '[]'); } catch { return []; }
   });
-  var [showAddPin, setShowAddPin]       = useState(false);
-  var [newPinRoom, setNewPinRoom]       = useState('');
-  var [newPinValue, setNewPinValue]     = useState('');
-  var [copiedPin, setCopiedPin]         = useState(null);
-  var [sharePin, setSharePin]           = useState(null);
+  var roomPins = roomPinsState[0];
+  var setRoomPins = roomPinsState[1];
+  var showAddPinState = useState(false);
+  var showAddPin = showAddPinState[0];
+  var setShowAddPin = showAddPinState[1];
+  var newPinRoomState = useState('');
+  var newPinRoom = newPinRoomState[0];
+  var setNewPinRoom = newPinRoomState[1];
+  var newPinValueState = useState('');
+  var newPinValue = newPinValueState[0];
+  var setNewPinValue = newPinValueState[1];
+  var copiedPinState = useState(null);
+  var copiedPin = copiedPinState[0];
+  var setCopiedPin = copiedPinState[1];
+  var sharePinState = useState(null);
+  var sharePin = sharePinState[0];
+  var setSharePin = sharePinState[1];
 
   // Audit log
-  var [auditLog, setAuditLog] = useState([]);
+  var auditLogState = useState([]);
+  var auditLog = auditLogState[0];
+  var setAuditLog = auditLogState[1];
 
   // AI API Keys (plain localStorage, not vault-encrypted)
   var AI_SERVICES = [
@@ -171,25 +233,36 @@ export default function VaultPro() {
     { id: 'wispr',      label: 'WisperFlo',  desc: 'AI voice automation',                               link: 'https://wispr.io', placeholder: 'API key…' },
   ];
 
-  var [aiKeys, setAiKeys] = useState(() => {
+  var aiKeysState = useState(function() {
     var obj = {};
-    AI_SERVICES.forEach(s => {
-      try { obj[s.id] = localStorage.getItem(`swl_apikey_${s.id}`) || ''; } catch { obj[s.id] = ''; }
+    AI_SERVICES.forEach(function(s) {
+      try { obj[s.id] = localStorage.getItem('swl_apikey_' + s.id) || ''; } catch { obj[s.id] = ''; }
     });
     return obj;
   });
-  var [aiRevealed, setAiRevealed] = useState({});
-  var [aiEditing, setAiEditing]   = useState({});
-  var [aiSaved, setAiSaved]       = useState({});
-  var [aiCopied, setAiCopied]     = useState({});
+  var aiKeys = aiKeysState[0];
+  var setAiKeys = aiKeysState[1];
+  var aiRevealedState = useState({});
+  var aiRevealed = aiRevealedState[0];
+  var setAiRevealed = aiRevealedState[1];
+  var aiEditingState = useState({});
+  var aiEditing = aiEditingState[0];
+  var setAiEditing = aiEditingState[1];
+  var aiSavedState = useState({});
+  var aiSaved = aiSavedState[0];
+  var setAiSaved = aiSavedState[1];
+  var aiCopiedState = useState({});
+  var aiCopied = aiCopiedState[0];
+  var setAiCopied = aiCopiedState[1];
 
   function saveAiKey(id) {
     try {
-      localStorage.setItem(`swl_apikey_${id}`, aiKeys[id]);
-      setAiSaved(p => ({ ...p, [id]: true }));
-      setTimeout(() => setAiSaved(p => ({ ...p, [id]: false })), 1800);
-      setAiEditing(p => ({ ...p, [id]: false }));
-      addAudit(`AI key saved — ${(AI_SERVICES.find(s => s.id === id) && AI_SERVICES.find(s => s.id === id).label) || id}`, '🔑');
+      localStorage.setItem('swl_apikey_' + id, aiKeys[id]);
+      setAiSaved(function(p) { var n = Object.assign({}, p); n[id] = true; return n; });
+      setTimeout(function() { setAiSaved(function(p) { var n = Object.assign({}, p); n[id] = false; return n; }); }, 1800);
+      setAiEditing(function(p) { var n = Object.assign({}, p); n[id] = false; return n; });
+      var svc = AI_SERVICES.find(function(s) { return s.id === id; });
+      addAudit('AI key saved — ' + (svc && svc.label || id), '🔑');
     } catch {
       setError('Could not save key.');
     }
@@ -197,15 +270,17 @@ export default function VaultPro() {
 
   function clearAiKey(id) {
     try {
-      localStorage.removeItem(`swl_apikey_${id}`);
-      setAiKeys(p => ({ ...p, [id]: '' }));
-      setAiRevealed(p => ({ ...p, [id]: false }));
-      addAudit(`AI key cleared — ${(AI_SERVICES.find(s => s.id === id) && AI_SERVICES.find(s => s.id === id).label) || id}`, '🗑️');
+      localStorage.removeItem('swl_apikey_' + id);
+      setAiKeys(function(p) { var n = Object.assign({}, p); n[id] = ''; return n; });
+      setAiRevealed(function(p) { var n = Object.assign({}, p); n[id] = false; return n; });
+      var svc = AI_SERVICES.find(function(s) { return s.id === id; });
+      addAudit('AI key cleared — ' + (svc && svc.label || id), '🗑️');
     } catch {}
   }
 
-  function addAudit(action, icon = '🔐') {
-    setAuditLog(prev => [{ action, icon, time: new Date().toISOString() }, ...prev]);
+  function addAudit(action, icon) {
+    var iconVal = icon || '🔐';
+    setAuditLog(function(prev) { return [{ action: action, icon: iconVal, time: new Date().toISOString() }].concat(prev); });
   }
 
   // Persist encrypted vault data to localStorage whenever it changes
@@ -227,7 +302,7 @@ export default function VaultPro() {
     setError('');
     try {
       // Minimal delay for UX, no real async needed on empty vault
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(function(r) { setTimeout(r, 300); });
       setVaultPassword(passwordInput);
       setVaultUnlocked(true);
       setPasswordInput('');
@@ -255,8 +330,8 @@ export default function VaultPro() {
     setIsLoading(true);
     try {
       var encrypted = await encryptText(newKeyValue.trim(), vaultPassword);
-      setStreamKeys(prev => [...prev, { id: Date.now(), platform: newKeyPlatform, encrypted }]);
-      addAudit(`Stream key added — ${newKeyPlatform}`, '🔑');
+      setStreamKeys(function(prev) { return prev.concat([{ id: Date.now(), platform: newKeyPlatform, encrypted: encrypted }]); });
+      addAudit('Stream key added — ' + newKeyPlatform, '🔑');
       setNewKeyValue('');
       setShowAddKey(false);
     } catch {
@@ -268,16 +343,16 @@ export default function VaultPro() {
 
   async function handleRevealKey(key) {
     if (revealedKeys[key.id]) {
-      setRevealedKeys(prev => { var n = { ...prev }; delete n[key.id]; return n; });
+      setRevealedKeys(function(prev) { var n = Object.assign({}, prev); delete n[key.id]; return n; });
       return;
     }
     setIsLoading(true);
     try {
       var plain = await decryptText(key.encrypted, vaultPassword);
-      setRevealedKeys(prev => ({ ...prev, [key.id]: plain }));
-      addAudit(`Stream key revealed — ${key.platform}`, '👁️');
-      setTimeout(() => {
-        setRevealedKeys(prev => { var n = { ...prev }; delete n[key.id]; return n; });
+      setRevealedKeys(function(prev) { var n = Object.assign({}, prev); n[key.id] = plain; return n; });
+      addAudit('Stream key revealed — ' + key.platform, '👁️');
+      setTimeout(function() {
+        setRevealedKeys(function(prev) { var n = Object.assign({}, prev); delete n[key.id]; return n; });
       }, 10000);
     } catch {
       setError('Decryption failed. Wrong password?');
@@ -292,11 +367,8 @@ export default function VaultPro() {
     setIsLoading(true);
     try {
       var encrypted = await encryptText(newContentDesc || '(no description)', vaultPassword);
-      setProtectedContent(prev => [...prev, {
-        id: Date.now(), title: newContentTitle.trim(),
-        encryptedDesc: encrypted, raw: null, protected: true,
-      }]);
-      addAudit(`Content protected — "${newContentTitle.trim()}"`, '📦');
+      setProtectedContent(function(prev) { return prev.concat([{ id: Date.now(), title: newContentTitle.trim(), encryptedDesc: encrypted, raw: null, protected: true }]); });
+      addAudit('Content protected — "' + newContentTitle.trim() + '"', '📦');
       setNewContentTitle('');
       setNewContentDesc('');
       setShowProtectContent(false);
@@ -309,7 +381,7 @@ export default function VaultPro() {
 
   async function handleUnlockContent(item) {
     if (unlockedContent[item.id]) {
-      setUnlockedContent(prev => { var n = { ...prev }; delete n[item.id]; return n; });
+      setUnlockedContent(function(prev) { var n = Object.assign({}, prev); delete n[item.id]; return n; });
       return;
     }
     setIsLoading(true);
@@ -320,8 +392,8 @@ export default function VaultPro() {
       } else {
         plain = item.raw;
       }
-      setUnlockedContent(prev => ({ ...prev, [item.id]: plain }));
-      addAudit(`Content unlocked — "${item.title}"`, '🔓');
+      setUnlockedContent(function(prev) { var n = Object.assign({}, prev); n[item.id] = plain; return n; });
+      addAudit('Content unlocked — "' + item.title + '"', '🔓');
     } catch {
       setError('Decryption failed.');
     } finally {
@@ -335,8 +407,8 @@ export default function VaultPro() {
     setIsLoading(true);
     try {
       var encrypted = await encryptText(newPinValue.trim(), vaultPassword);
-      setRoomPins(prev => [...prev, { id: Date.now(), room: newPinRoom.trim(), encrypted }]);
-      addAudit(`Room PIN created — ${newPinRoom.trim()}`, '🚪');
+      setRoomPins(function(prev) { return prev.concat([{ id: Date.now(), room: newPinRoom.trim(), encrypted: encrypted }]); });
+      addAudit('Room PIN created — ' + newPinRoom.trim(), '🚪');
       setNewPinRoom('');
       setNewPinValue('');
       setShowAddPin(false);
@@ -353,8 +425,8 @@ export default function VaultPro() {
       var plain = await decryptText(pin.encrypted, vaultPassword);
       await navigator.clipboard.writeText(plain);
       setCopiedPin(pin.id);
-      addAudit(`Room PIN copied — ${pin.room}`, '📋');
-      setTimeout(() => setCopiedPin(null), 2000);
+      addAudit('Room PIN copied — ' + pin.room, '📋');
+      setTimeout(function() { setCopiedPin(null); }, 2000);
     } catch {
       setError('Failed to copy PIN.');
     } finally {
@@ -375,11 +447,11 @@ export default function VaultPro() {
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-black text-white leading-none" style={T}>VaultPro</h1>
                 <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
-                  style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: GREEN, ...T }}>
+                  style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: GREEN, fontFamily: 'Barlow Condensed, sans-serif' }}>
                   AES-256 Encrypted
                 </span>
               </div>
-              <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
+              <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 Your content is encrypted locally before storage. Only you hold the key.
               </p>
             </div>
@@ -392,9 +464,9 @@ export default function VaultPro() {
         {/* Error banner */}
         {error && (
           <div className="mb-4 p-3 rounded-xl text-xs font-bold"
-            style={{ background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', ...T }}>
+            style={{ background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>
             {error}
-            <button onClick={() => setError('')} className="ml-3 underline opacity-70">Dismiss</button>
+            <button onClick={function() { setError(''); }} className="ml-3 underline opacity-70">Dismiss</button>
           </div>
         )}
 
@@ -405,7 +477,7 @@ export default function VaultPro() {
 
             <div className="text-center">
               <h2 className="text-2xl font-black text-white" style={T}>Enter Vault Password</h2>
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Your password never leaves this device</p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Your password never leaves this device</p>
             </div>
 
             <div className="w-full space-y-3">
@@ -413,10 +485,10 @@ export default function VaultPro() {
                 type="password"
                 placeholder="Vault password…"
                 value={passwordInput}
-                onChange={e => setPasswordInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleUnlock()}
+                onChange={function(e) { setPasswordInput(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === 'Enter') { handleUnlock(); } }}
                 className="w-full h-12 px-4 rounded-2xl text-sm text-white outline-none text-center"
-                style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid rgba(212,175,55,0.3)`, ...T }}
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}
               />
               <GoldBtn onClick={handleUnlock} disabled={isLoading || !passwordInput.trim()}>
                 {isLoading
@@ -425,12 +497,12 @@ export default function VaultPro() {
               </GoldBtn>
             </div>
 
-            <button className="text-xs underline" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
+            <button className="text-xs underline" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Create New Vault
             </button>
 
             <div className="text-center text-[11px] leading-relaxed px-4"
-              style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
+              style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               AES-256-GCM · PBKDF2 100k iterations · Zero-knowledge · Keys never leave your device
             </div>
           </div>
@@ -442,18 +514,18 @@ export default function VaultPro() {
 
             {/* Tabs */}
             <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              <TabBtn label="Stream Keys"   icon={Key}           active={activeTab === 'streamkeys'}   onClick={() => setActiveTab('streamkeys')} />
-              <TabBtn label="AI Keys"       icon={Zap}           active={activeTab === 'aikeys'}       onClick={() => setActiveTab('aikeys')} />
-              <TabBtn label="Content"       icon={FileText}      active={activeTab === 'content'}      onClick={() => setActiveTab('content')} />
-              <TabBtn label="Room PINs"     icon={Hash}          active={activeTab === 'pins'}         onClick={() => setActiveTab('pins')} />
-              <TabBtn label="Audit"         icon={ClipboardList} active={activeTab === 'audit'}        onClick={() => setActiveTab('audit')} />
+              <TabBtn label="Stream Keys"   icon={Key}           active={activeTab === 'streamkeys'}   onClick={function() { setActiveTab('streamkeys'); }} />
+              <TabBtn label="AI Keys"       icon={Zap}           active={activeTab === 'aikeys'}       onClick={function() { setActiveTab('aikeys'); }} />
+              <TabBtn label="Content"       icon={FileText}      active={activeTab === 'content'}      onClick={function() { setActiveTab('content'); }} />
+              <TabBtn label="Room PINs"     icon={Hash}          active={activeTab === 'pins'}         onClick={function() { setActiveTab('pins'); }} />
+              <TabBtn label="Audit"         icon={ClipboardList} active={activeTab === 'audit'}        onClick={function() { setActiveTab('audit'); }} />
             </div>
 
             {/* Loading overlay */}
             {isLoading && (
               <div className="flex items-center justify-center gap-2 py-2">
                 <Loader2 className="w-4 h-4 animate-spin" style={{ color: GOLD }} />
-                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Processing…</span>
+                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Processing…</span>
               </div>
             )}
 
@@ -464,10 +536,10 @@ export default function VaultPro() {
                   <div className="text-center py-12 rounded-2xl"
                     style={{ background: BG2, border: '1px solid rgba(255,255,255,0.06)' }}>
                     <Key className="w-10 h-10 mx-auto mb-3 opacity-20" style={{ color: GOLD }} />
-                    <p className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>No stream keys stored.</p>
-                    <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.18)', ...T }}>Add your first key to keep it safe.</p>
+                    <p className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>No stream keys stored.</p>
+                    <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.18)', fontFamily: 'Barlow Condensed, sans-serif' }}>Add your first key to keep it safe.</p>
                   </div>
-                ) : streamKeys.map(key => (
+                ) : streamKeys.map(function(key) { return (
                   <div key={key.id} className="flex items-center gap-3 p-3 rounded-2xl"
                     style={{ background: BG2, border: '1px solid rgba(212,175,55,0.1)' }}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-base"
@@ -481,38 +553,38 @@ export default function VaultPro() {
                         {revealedKeys[key.id] ? revealedKeys[key.id] : 'RTMP Key — [ENCRYPTED]'}
                       </p>
                       {revealedKeys[key.id] && (
-                        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(212,133,74,0.7)', ...T }}>Auto-hides in 10s</p>
+                        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(212,133,74,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>Auto-hides in 10s</p>
                       )}
                     </div>
-                    <button onClick={() => handleRevealKey(key)}
+                    <button onClick={function() { handleRevealKey(key); }}
                       className="h-8 px-3 rounded-xl text-[10px] font-black uppercase flex items-center gap-1 shrink-0"
-                      style={{ background: revealedKeys[key.id] ? 'rgba(192,57,43,0.1)' : 'rgba(212,175,55,0.1)', color: revealedKeys[key.id] ? '#C0392B' : GOLD, border: `1px solid ${revealedKeys[key.id] ? 'rgba(192,57,43,0.25)' : 'rgba(212,175,55,0.25)'}`, ...T }}>
+                      style={{ background: revealedKeys[key.id] ? 'rgba(192,57,43,0.1)' : 'rgba(212,175,55,0.1)', color: revealedKeys[key.id] ? '#C0392B' : GOLD, border: '1px solid ' + (revealedKeys[key.id] ? 'rgba(192,57,43,0.25)' : 'rgba(212,175,55,0.25)'), fontFamily: 'Barlow Condensed, sans-serif' }}>
                       {revealedKeys[key.id] ? <><EyeOff className="w-3 h-3" /> Hide</> : <><Eye className="w-3 h-3" /> Reveal</>}
                     </button>
-                    <button onClick={() => { setStreamKeys(function(prev) { return prev.filter(function(k) { return k.id !== key.id; }); }); addAudit('Stream key deleted — ' + key.platform, '🗑️'); }}
+                    <button onClick={function() { setStreamKeys(function(prev) { return prev.filter(function(k) { return k.id !== key.id; }); }); addAudit('Stream key deleted — ' + key.platform, '🗑️'); }}
                       className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
                       style={{ background: 'rgba(192,57,43,0.1)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)' }}
                       title="Delete key">✕</button>
                   </div>
-                ))}
+                ); })}
 
-                <button onClick={() => setShowAddKey(true)}
+                <button onClick={function() { setShowAddKey(true); }}
                   className="w-full py-3 rounded-2xl text-sm font-black uppercase flex items-center justify-center gap-2 transition-all active:scale-95"
-                  style={{ background: 'rgba(212,175,55,0.06)', border: '1px dashed rgba(212,175,55,0.25)', color: GOLD, ...T }}>
+                  style={{ background: 'rgba(212,175,55,0.06)', border: '1px dashed rgba(212,175,55,0.25)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                   <Plus className="w-4 h-4" /> Add Stream Key
                 </button>
 
                 {showAddKey && (
-                  <Modal title="Add Stream Key" onClose={() => setShowAddKey(false)}>
+                  <Modal title="Add Stream Key" onClose={function() { setShowAddKey(false); }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                      {PLATFORMS.map(p => (
-                        <button key={p} onClick={() => setNewKeyPlatform(p)}
-                          style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: `1px solid ${newKeyPlatform === p ? '#D4AF37' : 'rgba(255,255,255,0.12)'}`, background: newKeyPlatform === p ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', color: newKeyPlatform === p ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                      {PLATFORMS.map(function(p) { return (
+                        <button key={p} onClick={function() { setNewKeyPlatform(p); }}
+                          style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: '1px solid ' + (newKeyPlatform === p ? '#D4AF37' : 'rgba(255,255,255,0.12)'), background: newKeyPlatform === p ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', color: newKeyPlatform === p ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
                           {p}
                         </button>
-                      ))}
+                      ); })}
                     </div>
-                    <InputField placeholder="RTMP stream key…" value={newKeyValue} onChange={e => setNewKeyValue(e.target.value)} type="password" />
+                    <InputField placeholder="RTMP stream key…" value={newKeyValue} onChange={function(e) { setNewKeyValue(e.target.value); }} type="password" />
                     <GoldBtn onClick={handleAddStreamKey} disabled={isLoading || !newKeyValue.trim()}>
                       {isLoading ? 'Encrypting…' : '🔒 Encrypt & Save'}
                     </GoldBtn>
@@ -525,11 +597,11 @@ export default function VaultPro() {
             {activeTab === 'content' && (
               <div className="space-y-3">
                 <div className="p-3 rounded-2xl text-xs"
-                  style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.1)', color: 'rgba(255,255,255,0.4)', ...T }}>
+                  style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.1)', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   Password-protect your VODs and subscriber content. Descriptions are encrypted with your vault key.
                 </div>
 
-                {protectedContent.map(item => (
+                {protectedContent.map(function(item) { return (
                   <div key={item.id} className="p-3 rounded-2xl"
                     style={{ background: BG2, border: '1px solid rgba(212,175,55,0.1)' }}>
                     <div className="flex items-start gap-3">
@@ -537,44 +609,44 @@ export default function VaultPro() {
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <p className="text-sm font-black text-white" style={T}>{item.title}</p>
                           <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full uppercase"
-                            style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)', color: GREEN, ...T }}>
+                            style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)', color: GREEN, fontFamily: 'Barlow Condensed, sans-serif' }}>
                             🔒 Encrypted
                           </span>
                         </div>
                         {unlockedContent[item.id] && (
-                          <p className="text-xs mt-1" style={{ color: GREEN, ...T }}>{unlockedContent[item.id]}</p>
+                          <p className="text-xs mt-1" style={{ color: GREEN, fontFamily: 'Barlow Condensed, sans-serif' }}>{unlockedContent[item.id]}</p>
                         )}
-                        <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Protected by AES-256</p>
+                        <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>Protected by AES-256</p>
                       </div>
-                      <button onClick={() => handleUnlockContent(item)}
+                      <button onClick={function() { handleUnlockContent(item); }}
                         className="h-8 px-3 rounded-xl text-[10px] font-black uppercase shrink-0"
-                        style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
+                        style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                         {unlockedContent[item.id] ? 'Lock' : 'Unlock'}
                       </button>
-                      <button onClick={() => { setProtectedContent(function(prev) { return prev.filter(function(c) { return c.id !== item.id; }); }); addAudit('Content deleted — "' + item.title + '"', '🗑️'); }}
+                      <button onClick={function() { setProtectedContent(function(prev) { return prev.filter(function(c) { return c.id !== item.id; }); }); addAudit('Content deleted — "' + item.title + '"', '🗑️'); }}
                         className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
                         style={{ background: 'rgba(192,57,43,0.1)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)' }}
                         title="Delete">✕</button>
                     </div>
                   </div>
-                ))}
+                ); })}
 
-                <button onClick={() => setShowProtectContent(true)}
+                <button onClick={function() { setShowProtectContent(true); }}
                   className="w-full py-3 rounded-2xl text-sm font-black uppercase flex items-center justify-center gap-2 transition-all active:scale-95"
-                  style={{ background: 'rgba(212,175,55,0.06)', border: '1px dashed rgba(212,175,55,0.25)', color: GOLD, ...T }}>
+                  style={{ background: 'rgba(212,175,55,0.06)', border: '1px dashed rgba(212,175,55,0.25)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                   <Plus className="w-4 h-4" /> Protect Content
                 </button>
 
                 {showProtectContent && (
-                  <Modal title="Protect Content" onClose={() => setShowProtectContent(false)}>
-                    <InputField placeholder="Content title…" value={newContentTitle} onChange={e => setNewContentTitle(e.target.value)} maxLength={150} />
+                  <Modal title="Protect Content" onClose={function() { setShowProtectContent(false); }}>
+                    <InputField placeholder="Content title…" value={newContentTitle} onChange={function(e) { setNewContentTitle(e.target.value); }} maxLength={150} />
                     <textarea
                       placeholder="Description (optional)…"
                       value={newContentDesc}
-                      onChange={e => setNewContentDesc(e.target.value)}
+                      onChange={function(e) { setNewContentDesc(e.target.value); }}
                       rows={3}
                       className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none resize-none"
-                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', ...T }}
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Barlow Condensed, sans-serif' }}
                       maxLength={500}
                     />
                     <GoldBtn onClick={handleProtectContent} disabled={isLoading || !newContentTitle.trim()}>
@@ -589,16 +661,16 @@ export default function VaultPro() {
             {activeTab === 'pins' && (
               <div className="space-y-3">
                 <div className="p-3 rounded-2xl text-xs"
-                  style={{ background: 'rgba(109,191,126,0.04)', border: '1px solid rgba(109,191,126,0.1)', color: 'rgba(255,255,255,0.4)', ...T }}>
+                  style={{ background: 'rgba(109,191,126,0.04)', border: '1px solid rgba(109,191,126,0.1)', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   💡 Tip: Share the <span style={{ color: GREEN }}>vault://</span> link. Only people with the PIN can join.
                 </div>
 
                 {roomPins.length === 0 ? (
                   <div className="text-center py-10 rounded-2xl"
                     style={{ background: BG2, border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No room PINs stored yet.</p>
+                    <p className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>No room PINs stored yet.</p>
                   </div>
-                ) : roomPins.map(pin => (
+                ) : roomPins.map(function(pin) { return (
                   <div key={pin.id} className="p-3 rounded-2xl"
                     style={{ background: BG2, border: '1px solid rgba(109,191,126,0.1)' }}>
                     <div className="flex items-center gap-3">
@@ -606,17 +678,17 @@ export default function VaultPro() {
                         <p className="text-sm font-black text-white" style={T}>{pin.room}</p>
                         <p className="text-xs font-mono mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>PIN: ••••</p>
                       </div>
-                      <button onClick={() => handleCopyPin(pin)}
+                      <button onClick={function() { handleCopyPin(pin); }}
                         className="h-8 px-3 rounded-xl text-[10px] font-black uppercase flex items-center gap-1"
-                        style={{ background: copiedPin === pin.id ? 'rgba(109,191,126,0.15)' : 'rgba(109,191,126,0.08)', color: GREEN, border: '1px solid rgba(109,191,126,0.2)', ...T }}>
+                        style={{ background: copiedPin === pin.id ? 'rgba(109,191,126,0.15)' : 'rgba(109,191,126,0.08)', color: GREEN, border: '1px solid rgba(109,191,126,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                         <Copy className="w-3 h-3" /> {copiedPin === pin.id ? 'Copied!' : 'Copy PIN'}
                       </button>
-                      <button onClick={() => setSharePin(sharePin === pin.id ? null : pin.id)}
+                      <button onClick={function() { setSharePin(sharePin === pin.id ? null : pin.id); }}
                         className="h-8 px-3 rounded-xl text-[10px] font-black uppercase"
-                        style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
+                        style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                         Share
                       </button>
-                      <button onClick={() => { setRoomPins(function(prev) { return prev.filter(function(p) { return p.id !== pin.id; }); }); addAudit('Room PIN deleted — ' + pin.room, '🗑️'); }}
+                      <button onClick={function() { setRoomPins(function(prev) { return prev.filter(function(p) { return p.id !== pin.id; }); }); addAudit('Room PIN deleted — ' + pin.room, '🗑️'); }}
                         className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
                         style={{ background: 'rgba(192,57,43,0.1)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)' }}
                         title="Delete PIN">✕</button>
@@ -624,25 +696,25 @@ export default function VaultPro() {
                     {sharePin === pin.id && (
                       <div className="mt-2 p-2 rounded-xl"
                         style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(109,191,126,0.1)' }}>
-                        <p className="text-[11px] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Share link</p>
+                        <p className="text-[11px] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Share link</p>
                         <p className="text-[10px] font-mono break-all" style={{ color: GREEN }}>
                           vault://{pin.encrypted.slice(0, 32)}…
                         </p>
                       </div>
                     )}
                   </div>
-                ))}
+                ); })}
 
-                <button onClick={() => setShowAddPin(true)}
+                <button onClick={function() { setShowAddPin(true); }}
                   className="w-full py-3 rounded-2xl text-sm font-black uppercase flex items-center justify-center gap-2 transition-all active:scale-95"
-                  style={{ background: 'rgba(109,191,126,0.05)', border: '1px dashed rgba(109,191,126,0.2)', color: GREEN, ...T }}>
+                  style={{ background: 'rgba(109,191,126,0.05)', border: '1px dashed rgba(109,191,126,0.2)', color: GREEN, fontFamily: 'Barlow Condensed, sans-serif' }}>
                   <Plus className="w-4 h-4" /> New Room PIN
                 </button>
 
                 {showAddPin && (
-                  <Modal title="New Room PIN" onClose={() => setShowAddPin(false)}>
-                    <InputField placeholder="Room name…" value={newPinRoom} onChange={e => setNewPinRoom(e.target.value)} />
-                    <InputField placeholder="4-digit PIN…" value={newPinValue} onChange={e => setNewPinValue(e.target.value.replace(/\D/g, '').slice(0, 4))} />
+                  <Modal title="New Room PIN" onClose={function() { setShowAddPin(false); }}>
+                    <InputField placeholder="Room name…" value={newPinRoom} onChange={function(e) { setNewPinRoom(e.target.value); }} />
+                    <InputField placeholder="4-digit PIN…" value={newPinValue} onChange={function(e) { setNewPinValue(e.target.value.replace(/\D/g, '').slice(0, 4)); }} />
                     <GoldBtn onClick={handleAddPin} disabled={isLoading || !newPinRoom.trim() || !newPinValue.trim()}>
                       {isLoading ? 'Encrypting…' : '🔒 Encrypt & Save'}
                     </GoldBtn>
@@ -656,12 +728,12 @@ export default function VaultPro() {
               <div className="space-y-3">
                 <div className="px-1 pb-1 flex items-start gap-2 rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.1)' }}>
                   <Zap className="w-4 h-4 shrink-0 mt-0.5" style={{ color: GOLD }} />
-                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)', ...T }}>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     AI API keys are stored in your browser (localStorage) — not vault-encrypted. They are private to this device. Keys are used by OpenRouter Hub, LLM Lingua Studio, Voice Agent Builder, and other AI tools.
                   </p>
                 </div>
 
-                {AI_SERVICES.map(svc => {
+                {AI_SERVICES.map(function(svc) {
                   var val     = aiKeys[svc.id] || '';
                   var hasKey  = val.length > 0;
                   var revealed = aiRevealed[svc.id];
@@ -674,25 +746,25 @@ export default function VaultPro() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full shrink-0" style={{ background: hasKey ? GREEN : 'rgba(255,255,255,0.15)' }} />
-                            <p className="text-[13px] font-black" style={{ color: hasKey ? '#fff' : 'rgba(255,255,255,0.5)', ...T }}>{svc.label}</p>
+                            <p className="text-[13px] font-black" style={{ color: hasKey ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>{svc.label}</p>
                           </div>
-                          <p className="text-[11px] ml-4" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{svc.desc}</p>
+                          <p className="text-[11px] ml-4" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{svc.desc}</p>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           {hasKey && !editing && (
                             <>
-                              <button onClick={() => setAiRevealed(p => ({ ...p, [svc.id]: !p[svc.id] }))}
+                              <button onClick={function() { setAiRevealed(function(p) { var n = Object.assign({}, p); n[svc.id] = !p[svc.id]; return n; }); }}
                                 className="p-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                                 {revealed ? <EyeOff className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.4)' }} /> : <Eye className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.4)' }} />}
                               </button>
-                              <button onClick={() => { navigator.clipboard.writeText(val).then(() => { setAiCopied(p => ({ ...p, [svc.id]: true })); setTimeout(() => setAiCopied(p => ({ ...p, [svc.id]: false })), 1500); }).catch(() => {}); addAudit(`AI key copied — ${svc.label}`, '📋'); }}
+                              <button onClick={function() { navigator.clipboard.writeText(val).then(function() { setAiCopied(function(p) { var n = Object.assign({}, p); n[svc.id] = true; return n; }); setTimeout(function() { setAiCopied(function(p) { var n = Object.assign({}, p); n[svc.id] = false; return n; }); }, 1500); }).catch(function() {}); addAudit('AI key copied — ' + svc.label, '📋'); }}
                                 className="p-1.5 rounded-lg" style={{ background: aiCopied[svc.id] ? 'rgba(109,191,126,0.1)' : 'rgba(255,255,255,0.05)', border: aiCopied[svc.id] ? '1px solid rgba(109,191,126,0.25)' : '1px solid rgba(255,255,255,0.08)' }}>
                                 {aiCopied[svc.id] ? <Check className="w-3 h-3" style={{ color: GREEN }} /> : <Copy className="w-3 h-3" style={{ color: GOLD }} />}
                               </button>
                             </>
                           )}
-                          <button onClick={() => setAiEditing(p => ({ ...p, [svc.id]: !p[svc.id] }))}
-                            className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase" style={{ background: editing ? 'rgba(255,255,255,0.08)' : 'rgba(212,175,55,0.1)', border: `1px solid ${editing ? 'rgba(255,255,255,0.12)' : 'rgba(212,175,55,0.25)'}`, color: editing ? 'rgba(255,255,255,0.5)' : GOLD, ...T }}>
+                          <button onClick={function() { setAiEditing(function(p) { var n = Object.assign({}, p); n[svc.id] = !p[svc.id]; return n; }); }}
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase" style={{ background: editing ? 'rgba(255,255,255,0.08)' : 'rgba(212,175,55,0.1)', border: '1px solid ' + (editing ? 'rgba(255,255,255,0.12)' : 'rgba(212,175,55,0.25)'), color: editing ? 'rgba(255,255,255,0.5)' : GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                             {editing ? 'Cancel' : hasKey ? 'Update' : 'Add'}
                           </button>
                         </div>
@@ -711,27 +783,27 @@ export default function VaultPro() {
                           <input
                             type="text"
                             value={aiKeys[svc.id] || ''}
-                            onChange={e => setAiKeys(p => ({ ...p, [svc.id]: e.target.value }))}
+                            onChange={function(e) { setAiKeys(function(p) { var n = Object.assign({}, p); n[svc.id] = e.target.value; return n; }); }}
                             placeholder={svc.placeholder}
                             autoFocus
                             className="w-full rounded-xl px-3 py-2 text-[12px] font-mono outline-none"
                             style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(212,175,55,0.3)', color: 'rgba(255,255,255,0.9)' }}
                           />
                           <div className="flex gap-2">
-                            <button onClick={() => saveAiKey(svc.id)}
+                            <button onClick={function() { saveAiKey(svc.id); }}
                               className="flex-1 py-2 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-1.5"
-                              style={{ background: saved ? 'rgba(109,191,126,0.15)' : 'rgba(212,175,55,0.15)', border: `1px solid ${saved ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.3)'}`, color: saved ? GREEN : GOLD, ...T }}>
+                              style={{ background: saved ? 'rgba(109,191,126,0.15)' : 'rgba(212,175,55,0.15)', border: '1px solid ' + (saved ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.3)'), color: saved ? GREEN : GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                               {saved ? <><Check className="w-3 h-3" /> Saved</> : 'Save Key'}
                             </button>
                             {hasKey && (
-                              <button onClick={() => clearAiKey(svc.id)}
+                              <button onClick={function() { clearAiKey(svc.id); }}
                                 className="px-3 py-2 rounded-xl text-[11px] font-black uppercase"
-                                style={{ background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.2)', color: 'rgba(192,57,43,0.8)', ...T }}>
+                                style={{ background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.2)', color: 'rgba(192,57,43,0.8)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                                 Clear
                               </button>
                             )}
                           </div>
-                          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
+                          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                             Get key at: <a href={svc.link} target="_blank" rel="noopener noreferrer" style={{ color: GOLD, textDecoration: 'none' }}>{svc.link.replace('https://', '')}</a>
                           </p>
                         </div>
@@ -746,26 +818,26 @@ export default function VaultPro() {
             {activeTab === 'audit' && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Vault Activity</p>
-                  <button onClick={() => setAuditLog([])}
-                    className="text-[11px] px-2 py-0.5 rounded" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
+                  <p className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Vault Activity</p>
+                  <button onClick={function() { setAuditLog([]); }}
+                    className="text-[11px] px-2 py-0.5 rounded" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Clear
                   </button>
                 </div>
                 {auditLog.length === 0 ? (
-                  <div className="text-center py-10 text-xs" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
+                  <div className="text-center py-10 text-xs" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     No activity yet. Actions you take appear here.
                   </div>
-                ) : auditLog.map((entry, i) => (
+                ) : auditLog.map(function(entry, i) { return (
                   <div key={i} className="flex items-start gap-2 p-2.5 rounded-xl"
                     style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <span className="text-base">{entry.icon}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-white" style={T}>{entry.action}</p>
-                      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{fmtTime(entry.time)}</p>
+                      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{fmtTime(entry.time)}</p>
                     </div>
                   </div>
-                ))}
+                ); })}
               </div>
             )}
 
@@ -778,7 +850,7 @@ export default function VaultPro() {
         <div className="fixed bottom-[96px] md:bottom-10 left-0 right-0 z-30 flex justify-center px-4 pointer-events-none">
           <button onClick={handleLock}
             className="pointer-events-auto h-12 px-8 rounded-2xl font-black uppercase text-sm flex items-center gap-2 shadow-2xl transition-all active:scale-95"
-            style={{ background: 'rgba(128,0,32,0.85)', border: '1px solid rgba(255,0,50,0.3)', color: '#fff', backdropFilter: 'blur(12px)', ...T }}>
+            style={{ background: 'rgba(128,0,32,0.85)', border: '1px solid rgba(255,0,50,0.3)', color: '#fff', backdropFilter: 'blur(12px)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <Lock className="w-4 h-4" /> Lock Vault
           </button>
         </div>
